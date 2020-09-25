@@ -1,0 +1,188 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>飛空城シミュレーター</title>
+    <link rel="stylesheet" href="../../css/main.css?20181201" type="text/css" />
+    <script>
+        const g_startTime = Date.now();
+    </script>
+    <script>
+        // 画像の遅延ロード用の処理。以下の要素を作ると遅延ロードされる
+        // <img src="dummy.png" data-src="actual.png" class="lazy" />
+        document.addEventListener("DOMContentLoaded", function () {
+            let lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+            let lazyInputs = [].slice.call(document.querySelectorAll("input.lazy"));
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            if (lazyImage.tagName == "IMG") {
+                                lazyImage.src = lazyImage.dataset.src;
+                                if (typeof lazyImage.dataset.srcset === "undefined") {
+                                } else {
+                                    lazyImage.srcset = lazyImage.dataset.srcset;
+                                }
+                            }
+                            else if (lazyImage.tagName == "INPUT") {
+                                lazyImage.style.backgroundImage = `url("${lazyImage.dataset.src}")`;
+                            }
+                            lazyImage.classList.remove("lazy");
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+
+                lazyImages.forEach(function (lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+                lazyInputs.forEach(function (lazyInput) {
+                    lazyImageObserver.observe(lazyInput);
+                });
+            } else {
+                // Possibly fall back to a more compatible method here
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <!-- 重要なところは予め接続 -->
+    <link rel="preconnect" href="//cdnjs.cloudflare.com">
+    <link rel="preconnect" href="//code.jquery.com">
+
+    <!-- jquery -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
+    <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <!-- select2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+    <!-- jquery-ui -->
+    <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+
+    <div id="app" style="text-align:center">
+        <table align="center" border="0" style="border-style: none;">
+            <tr>
+                <td>
+                    <p>
+                        {{value.name}}
+                        <label for="merge">☆5 LV.40+</label>
+                        <input name="merge" type="number" v-model="value.merge" min="0" max="10" @input="updateStatus()"
+                            style="width:50px" />
+                        <label for="dragonflower">神竜の花+</label>
+                        <input name="dragonflower" type="number" v-model="value.dragonflower" min="0"
+                            @input="updateStatus()" style="width:50px" v-bind:max="value.maxDragonflower" />
+                    </p>
+                    <p>
+                        <label class="normal" for="ivHigh">得意: </label>
+                        <select v-model="value.ivHighStat" @change="updateStatus()">
+                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <label class="normal" for="ivLow">苦手: </label>
+                        <select v-model="value.ivLowStat" @change="updateStatus()">
+                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <span v-if="value.groupId == UnitGroupType.Ally">
+                            <label class="normal">召喚士との絆: </label>
+                            <select v-model="value.summonerLevel" @change="updateStatus()">
+                                <option v-for="option in SummonerLevelOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                        </span>
+                    </p>
+                    <p>
+                        <input id="isWeaponEnabled" type="checkbox" v-model="isWeaponEnabled"
+                            @change="updateStatus()" />
+                        <label class="normal" for="isWeaponEnabled">武器</label>
+
+                        <input id="isBonusChar" type="checkbox" v-model="value.isBonusChar" @change="updateStatus()" />
+                        <label class="normal" for="isBonusChar">ボナキャラ</label>
+                        <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
+                            <input id="isResplendent" type="checkbox" v-model="value.isResplendent"
+                                @change="updateStatus()" />
+                            <label class="normal" for="isResplendent">神装</label>
+                        </span>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table align="center" border="1">
+                        <tr>
+                            <th></th>
+                            <th>HP</th>
+                            <th>攻撃</th>
+                            <th>速さ</th>
+                            <th>守備</th>
+                            <th>魔防</th>
+                            <th>総合</th>
+                        </tr>
+                        <tr>
+                            <th>加算値</th>
+                            <td>{{value.maxHpWithSkills - value.maxHp}}</td>
+                            <td>{{value.atkWithSkills - value.atk}}</td>
+                            <td>{{value.spdWithSkills - value.spd}}</td>
+                            <td>{{value.defWithSkills - value.def}}</td>
+                            <td>{{value.resWithSkills - value.res}}</td>
+                            <td>{{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills-value.maxHp-value.atk-value.spd-value.def-value.res}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>ステータス</th>
+                            <td>{{value.maxHpWithSkills}}</td>
+                            <td>{{value.atkWithSkills}}</td>
+                            <td>{{value.spdWithSkills}}</td>
+                            <td>{{value.defWithSkills}}</td>
+                            <td>{{value.resWithSkills}}</td>
+                            <td>{{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills}}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        let jsRootPath = "./";
+        // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
+        let reloadSuffix = "20200513";
+        document.write("<script type='text/javascript' src='" + jsRootPath + "GlobalDefinitions.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "Utilities.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "Skill.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "Map.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "Structures.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "Table.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "Unit.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "DamageCalculator.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "Settings.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "AudioManager.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script type='text/javascript' src='" + jsRootPath + "StatusCalcMain.js?" + reloadSuffix + "'><\/script>");
+    </script>
+
+    <script>
+        $(function () {
+            let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '-4/3', '-3/3', '-4/3', '-3/3', '-3/3', 24, -1, 476, -1, 620, 689, SeasonType.None, BlessingType.None, 'リキア一の騎士', 'エリウッド', 0, [24, 33,], [], 82, true, '烈火の剣');
+            let weaponInfo = new SkillInfo(24, 'デュランダル', 16, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 16, false, false, AssistType.None, false, 0, WeaponType.Sword, 400, false, [], [], true);
+            init(heroInfo, [weaponInfo]);
+        });
+    </script>
+
+
+
+</body>
+
+</html>
