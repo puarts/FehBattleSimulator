@@ -12814,7 +12814,6 @@ class AetherRaidTacticsBoard {
             let distOfBlockToTarget = chaseTargetTile.calculateUnitMovementCountToThisTile(unit, blockTile);
             this.writeDebugLogLine(`${blockTile.positionToString()} to ${chaseTargetTile.positionToString()}: distOfBlockToTarget=${distOfBlockToTarget}`);
             if (distOfBlockToTarget == CanNotReachTile || distOfBlockToTarget < distOfBestTileToTarget) {
-                this.writeDebugLogLine(`(distOfBlockToTarget=${distOfBlockToTarget}) < (distOfBestTileToTarget=${distOfBestTileToTarget})`);
                 let context = new TilePriorityContext(blockTile, unit);
                 for (let tile of g_appData.map.enumerateAttackableTiles(unit, blockTile)) {
                     if (!movabableTiles.includes(tile)) {
