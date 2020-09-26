@@ -13886,7 +13886,7 @@ class AetherRaidTacticsBoard {
             }
 
             // 壁などが途中にあったらぶちかましなどを行えない
-            if (!tile.isMovableTile() || tile.obj instanceof StructureBase) {
+            if (!tile.isMovableTile() || !isMovableForUnit(tile.obj)) {
                 moveTile = null;
                 continue;
             }
