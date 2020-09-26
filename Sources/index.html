@@ -1,7 +1,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>飛空城シミュレーター</title>
-    <link rel="stylesheet" href="../../css/main.css?20181201" type="text/css" />
+    <link rel="stylesheet" href="https://puarts.com/css/main.css?20181201" type="text/css" />
     <script>
         const g_startTime = Date.now();
     </script>
@@ -1374,21 +1374,28 @@
     </div>
 
     <script>
-        let jsRootPath = "./";
-        // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
-        let reloadSuffix = "20200513";
-        document.write("<script type='text/javascript' src='" + jsRootPath + "GlobalDefinitions.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Utilities.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Skill.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Map.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Structures.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Table.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Unit.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "DamageCalculator.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Settings.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "AudioManager.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "AetherRaidDefensePresets.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Main.js?" + reloadSuffix + "'><\/script>");     
+        function writeScriptElem(scriptFileName){
+            let jsRootPath = "./";
+            // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
+            let reloadSuffix = "20200513";
+            document.write("<script type='text/javascript' src='" + jsRootPath + scriptFileName + "?" + reloadSuffix + "'><\/script>");
+        }
+
+        {
+            writeScriptElem("GlobalDefinitions.js");
+            writeScriptElem("Utilities.js");
+            writeScriptElem("Skill.js");
+            writeScriptElem("Map.js");
+            writeScriptElem("Structures.js");
+            writeScriptElem("Table.js");
+            writeScriptElem("Unit.js");
+            writeScriptElem("DamageCalculator.js");
+            writeScriptElem("TurnSetting.js");
+            writeScriptElem("AudioManager.js");
+            writeScriptElem("AetherRaidDefensePresets.js");
+            writeScriptElem("AppData.js");
+            writeScriptElem("Main.js");     
+        }
     </script>
     <style>
         .select2-results__options {
