@@ -12344,23 +12344,11 @@ class AetherRaidTacticsBoard {
                 }
             }
 
-            let ignoresUnits = true;
-            let targetTileContexts = [];
-            for (let tile of g_appData.map.getNearestMovableTiles(
-                unit, chaseTargetTile, pivotTiles, false, movableTiles, ignoresUnits, tileUnit => {
-                    if (isThief(unit)) {
-                        if (tileUnit.passiveS == PassiveS.GoeiNoGuzo && unit.isOnInitPos()) {
-                            // シーフは護衛が初期値にいるとき、障害物と扱ってるっぽい挙動を観測
-                            return false;
-                        }
-                    }
-                    return true;
-                })
-            ) {
-                let context = new TilePriorityContext(tile, unit);
-                context.isPivotRequired = pivotTiles.includes(context.tile);
-                context.calcPriorityToMove(unit, chaseTargetTile, g_appData.map.width, g_appData.map.height);
-                targetTileContexts.push(context);
+            let targetTileContexts = this.__createTargetTileContexts(unit, movableTiles, pivotTiles);
+            let targetTileContextsWithoutPivot = targetTileContexts;
+            if (unit.support == Support.Pivot){
+                // 壁破壊計算では回り込みなしの最適タイルが必要
+                targetTileContextsWithoutPivot = this.__createTargetTileContexts(unit, movableTiles, []);
             }
 
             if (targetTileContexts.length == 0) {
@@ -12370,6 +12358,7 @@ class AetherRaidTacticsBoard {
 
             this.writeDebugLogLine("候補タイル数=" + targetTileContexts.length);
             let bestTileToMove = unit.placedTile;
+            let bestTileToMoveWithoutPivot = unit.placedTile;
             let isPivotRequired = false;
             if (targetTileContexts.length > 0) {
                 targetTileContexts.sort(function (a, b) {
@@ -12394,12 +12383,14 @@ class AetherRaidTacticsBoard {
                 }
 
                 bestTileToMove = targetTileContexts[0].tile;
+                if (targetTileContextsWithoutPivot.length > 0) {
+                    bestTileToMoveWithoutPivot = targetTileContextsWithoutPivot[0].tile;
+                }
                 isPivotRequired = targetTileContexts[0].isPivotRequired;
             }
 
-
             // ブロックの破壊の評価
-            let bestTileContextToBreakBlock = this.__findBestTileToBreakBlock(unit, bestTileToMove, movableTiles);
+            let bestTileContextToBreakBlock = this.__findBestTileToBreakBlock(unit, bestTileToMoveWithoutPivot, movableTiles);
             if (bestTileContextToBreakBlock != null) {
                 // ブロック破壊
                 let blockTile = bestTileContextToBreakBlock.tile;
@@ -12432,6 +12423,29 @@ class AetherRaidTacticsBoard {
         }
 
         return isActionActivated;
+    }
+
+    __createTargetTileContexts(unit, movableTiles, pivotTiles) {
+        let chaseTargetTile = unit.actionContext.chaseTargetTile;
+        let ignoresUnits = true;
+        let targetTileContexts = [];
+        for (let tile of g_appData.map.getNearestMovableTiles(
+            unit, chaseTargetTile, pivotTiles, false, movableTiles, ignoresUnits, tileUnit => {
+                if (isThief(unit)) {
+                    if (tileUnit.passiveS == PassiveS.GoeiNoGuzo && unit.isOnInitPos()) {
+                        // シーフは護衛が初期値にいるとき、障害物と扱ってるっぽい挙動を観測
+                        return false;
+                    }
+                }
+                return true;
+            })
+        ) {
+            let context = new TilePriorityContext(tile, unit);
+            context.isPivotRequired = pivotTiles.includes(context.tile);
+            context.calcPriorityToMove(unit, chaseTargetTile, g_appData.map.width, g_appData.map.height);
+            targetTileContexts.push(context);
+        }
+        return targetTileContexts;
     }
 
     __findChaseTargetTile(unit, chaseTarget) {
