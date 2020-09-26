@@ -1,5 +1,5 @@
 
-// ビューに依存してしまっている
+// todo: ビューに依存してしまっているのでどうにかする
 function changeCurrentUnitTab(tabIndex) {
     // $('.jquery .tabs li').removeClass('active').eq(tabIndex).addClass('active');
     if (tabIndex < 0) {
@@ -17,6 +17,7 @@ function changeCurrentUnitTab(tabIndex) {
 
 let g_appData = new AppData();
 
+/// シリアライズ可能なシミュレーターの設定を管理するクラスです。
 class Setting {
     constructor() {
         this._cookieWriter = new CookieWriter();

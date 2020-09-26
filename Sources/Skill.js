@@ -1984,6 +1984,7 @@ function isPrecombatSpecial(special) {
     return isRangedAttackSpecial(special);
 }
 
+/// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,
         effectives,

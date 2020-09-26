@@ -1,5 +1,5 @@
 
-
+/// シリアライズ可能なシミュレーターの設定です。
 class TurnSetting {
     constructor(turn) {
         this._turn = turn;

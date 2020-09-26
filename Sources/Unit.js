@@ -320,7 +320,7 @@ function getFlowStatus(growthValue) {
     }
 }
 
-// 成長値から得意ステータスのLv40の変動値
+/// 成長値から得意ステータスのLv40の変動値を取得します。
 function getAssetStatus(growthValue) {
     switch (growthValue) {
         case 2:
@@ -332,6 +332,7 @@ function getAssetStatus(growthValue) {
     }
 }
 
+/// 英雄情報です。ユニットの初期化に使用します。
 class HeroInfo {
     constructor(name, icon, moveType, weaponType, attackRange,
         hp, atk, spd, def, res,
@@ -434,7 +435,7 @@ class HeroInfo {
 }
 
 
-// ダメージ計算時のコンテキスト
+/// ダメージ計算時のコンテキストです。
 class BattleContext {
     constructor() {
         this.hpBeforeCombat = 0;
@@ -572,6 +573,7 @@ class BattleContext {
     }
 }
 
+/// 攻撃可能なユニット情報です。
 class AttackableUnitInfo {
     constructor(targetUnit) {
         this.targetUnit = targetUnit;
@@ -588,6 +590,7 @@ class AttackableUnitInfo {
     }
 }
 
+/// 攻撃評価に使用するコンテキストです。
 class AttackEvaluationContext {
     constructor() {
         this.damageRatio = 0;
@@ -656,6 +659,7 @@ class AttackEvaluationContext {
     }
 }
 
+/// 補助行動の計算情報
 class AssistableUnitInfo {
     constructor(targetUnit) {
         this.targetUnit = targetUnit;
@@ -773,7 +777,7 @@ class AssistableUnitInfo {
     }
 }
 
-// 敵の動き検証時のコンテキスト
+/// 敵の動き計算時のコンテキスト
 class ActionContext {
     constructor() {
         // 補助のコンテキスト
@@ -845,6 +849,7 @@ class ActionContext {
 
 const NotReserved = -2;
 
+/// ユニットのインスタンス
 class Unit {
     constructor(id = "", name = "", unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry, icon = "", attackRange = 1) {
         this._id = id;
@@ -3557,9 +3562,11 @@ function calcBuffAmount(assistUnit, targetUnit) {
     return totalBuffAmount;
 }
 
-
+/// @function calcHealAmount
+/// 回復補助の回復量を取得します。
+/// @param {Unit} assistUnit 補助者のユニット
+/// @param {Unit} targetUnit 補助対象のユニット
 function calcHealAmount(assistUnit, targetUnit) {
-    // todo: 対応する
     let healAmount = 0;
     switch (assistUnit.support) {
         case Support.Heal:

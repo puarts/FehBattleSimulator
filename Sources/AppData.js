@@ -134,6 +134,7 @@ const SelectModeOptions = [
 const MaxEnemyUnitCount = 12;
 const MaxAllyUnitCount = 8;
 
+/// シミュレーターの持つデータです。
 class AppData {
     constructor() {
         this.gameVersion = 360;

@@ -28,6 +28,7 @@ function updateCellBgColor(posX, posY, bgColor, boderColor = null) {
     }
 }
 
+/// Table クラスのセルを表すクラスです。
 class Cell {
     constructor() {
         this.setToDefault();
@@ -90,6 +91,7 @@ class Cell {
     }
 }
 
+/// HTMLのテーブルを構築するためのクラスです。
 class Table {
     constructor(columnCount, rowCount) {
         this._columnCount = 0;

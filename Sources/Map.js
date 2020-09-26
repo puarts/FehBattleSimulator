@@ -713,6 +713,7 @@ function setUnitToTile(unit, tile) {
     }
 }
 
+/// マップを構成するタイルです。
 class Tile {
     constructor(px, py) {
         this.posX = px;
@@ -1255,6 +1256,7 @@ class Tile {
     }
 }
 
+/// マップです。
 class Map {
     constructor(id, mapKind, gameVersion) {
         this._gameVersion = 0;

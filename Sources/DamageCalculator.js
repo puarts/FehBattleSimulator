@@ -39,6 +39,7 @@ class DamageCalcResult {
     }
 }
 
+/// ダメージ計算を行うためのクラスです。
 class DamageCalculator {
     constructor() {
         this._log = "";

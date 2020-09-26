@@ -39,6 +39,7 @@ const BgmId = {
     Bgm22: 21,
 };
 
+/// BGMやSEなどシミュレーター上で鳴らす音を管理するクラスです。
 class AudioManager {
     constructor() {
         this.isSoundEffectEnabled = false;

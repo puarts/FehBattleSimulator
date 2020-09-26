@@ -53,6 +53,7 @@ function findOrnamentTypeIndexByIcon(icon) {
     return -1;
 }
 
+/// 配置物の基底クラスです。
 class StructureBase {
     constructor(id) {
         this._id = id;

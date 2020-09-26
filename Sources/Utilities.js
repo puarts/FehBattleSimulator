@@ -1,4 +1,4 @@
-
+/// スタックです。
 class Stack {
     constructor(maxLength) {
         this._maxLength = maxLength;
@@ -29,6 +29,7 @@ class Stack {
     }
 }
 
+/// キューです。
 class Queue {
     constructor(maxLength) {
         this._maxLength = maxLength;
@@ -85,6 +86,7 @@ class Queue {
     }
 }
 
+/// クッキーの保存や読み込みを管理するクラスです。
 class CookieWriter {
     constructor() {
         this.useCookieJs = false;
@@ -135,6 +137,7 @@ class CookieWriter {
     }
 }
 
+/// キーボードの入力を管理するクラスです。
 class KeyboardManager {
     constructor() {
         this.isShiftKeyPressing = false;
@@ -160,6 +163,7 @@ class KeyboardManager {
     }
 }
 
+/// ユニークな ID を生成するクラスです。
 class IdGenerator {
     constructor() {
         this._currentId = 0;
@@ -171,6 +175,7 @@ class IdGenerator {
     }
 }
 
+/// オブジェクトを管理するストレージです。
 class Storage {
     constructor(id) {
         this._id = id;
@@ -228,7 +233,7 @@ class Storage {
     }
 }
 
-
+/// 配置物を管理するためのコンテナクラスです。
 class StructureContainer {
     constructor(uiId) {
         this._uiId = uiId;
@@ -280,6 +285,7 @@ class StructureContainer {
     }
 }
 
+/// 区間内の処理時間を計測するためのユーティリティークラスです。
 class ScopedStopwatch {
     constructor(logFunc) {
         this._logFunc = logFunc;
@@ -299,6 +305,7 @@ const CommandType = {
     End: 2,
 };
 
+/// Undo、Redoが可能なコマンドです。
 class Command {
     constructor(label, doFunc, undoFunc, doUserData = null, undoUserData = null, type = CommandType.Normal) {
         this.label = label;
@@ -319,6 +326,7 @@ class Command {
     }
 }
 
+/// Command の履歴を管理するクラスです。
 class CommandQueue {
     constructor() {
         this.queue = new Queue(100);

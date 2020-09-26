@@ -59,6 +59,7 @@ const ModuleLoadState = {
     Loaded: 2,
 };
 
+/// シミュレーター本体です。
 class AetherRaidTacticsBoard {
     constructor() {
         this.isTurnWideCommandQueueEnabled = false;
