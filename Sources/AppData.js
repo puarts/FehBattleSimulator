@@ -51,6 +51,28 @@ function createUnitViewModel(id, unitGroupType) {
     return new Unit(id, "", unitGroupType, MoveType.Infantry, "", 1);
 }
 
+function __registerSkillOptions(options, infos) {
+    for (let info of infos) {
+        options.push({ id: info.id, text: info.name });
+    }
+}
+function __registerPassiveSOptions(options, infos) {
+    for (let info of infos) {
+        if (info.isSacredSealAvailable) {
+            options.push({ id: info.id, text: info.name });
+        }
+    }
+}
+function __findSkillInfo(skillInfos, id) {
+    for (let info of skillInfos) {
+        if (info.id == id) {
+            return info;
+        }
+    }
+
+    return null;
+}
+
 const TabChar = "&emsp;&emsp;";
 const g_idGenerator = new IdGenerator();
 const g_deffenceStructureContainer = new StructureContainer('deffenceStructureContainer');
@@ -428,6 +450,13 @@ class AppData {
         this.commandQueue = new CommandQueue(100);
 
         this.heroInfos = null;
+        this.weaponInfos = [];
+        this.supportInfos = [];
+        this.specialInfos = [];
+        this.passiveAInfos = [];
+        this.passiveBInfos = [];
+        this.passiveCInfos = [];
+        this.passiveSInfos = [];
 
         {
             // 生成順を変えるとIDが変わってしまうので注意
@@ -445,6 +474,300 @@ class AppData {
 
     initHeroInfos(heroInfos){
         this.heroInfos = new HeroDataBase(heroInfos);
+    }
+
+    registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
+        this.weaponInfos = weapons;
+        this.supportInfos = supports;
+        this.specialInfos = specials;
+        this.passiveAInfos = passiveAs;
+        this.passiveBInfos = passiveBs;
+        this.passiveCInfos = passiveCs;
+        this.passiveSInfos = passiveSs;
+        __registerSkillOptions(this.weaponOptions, weapons);
+        __registerSkillOptions(this.supportOptions, supports);
+        __registerSkillOptions(this.specialOptions, specials);
+        __registerSkillOptions(this.passiveAOptions, passiveAs);
+        __registerSkillOptions(this.passiveBOptions, passiveBs);
+        __registerSkillOptions(this.passiveCOptions, passiveCs);
+        __registerSkillOptions(this.passiveSOptions, passiveSs);
+        __registerPassiveSOptions(this.passiveSOptions, passiveAs);
+        __registerPassiveSOptions(this.passiveSOptions, passiveBs);
+        __registerPassiveSOptions(this.passiveSOptions, passiveCs);
+    }
+    __updateUnitSkillInfo(unit) {
+        unit.weaponInfo = this.__findWeaponInfo(unit.weapon);
+        unit.supportInfo = this.__findSupportInfo(unit.support);
+        unit.specialInfo = this.__findSpecialInfo(unit.special);
+        unit.passiveAInfo = this.__findPassiveAInfo(unit.passiveA);
+        unit.passiveBInfo = this.__findPassiveBInfo(unit.passiveB);
+        unit.passiveCInfo = this.__findPassiveCInfo(unit.passiveC);
+        unit.passiveSInfo = this.__findPassiveSInfo(unit.passiveS);
+    }
+    
+    __findWeaponInfo(id) {
+        return __findSkillInfo(this.weaponInfos, id);
+    }
+
+    __findSupportInfo(id) {
+        return __findSkillInfo(this.supportInfos, id);
+    }
+
+    __findSpecialInfo(id) {
+        return __findSkillInfo(this.specialInfos, id);
+    }
+
+    __findPassiveAInfo(id) {
+        return __findSkillInfo(this.passiveAInfos, id);
+    }
+    __findPassiveBInfo(id) {
+        return __findSkillInfo(this.passiveBInfos, id);
+    }
+    __findPassiveCInfo(id) {
+        return __findSkillInfo(this.passiveCInfos, id);
+    }
+    __findPassiveSInfo(id) {
+        let s = __findSkillInfo(this.passiveSInfos, id);
+        if (s != null) { return s; }
+        s = __findSkillInfo(this.passiveAInfos, id);
+        if (s != null) { return s; }
+        s = __findSkillInfo(this.passiveBInfos, id);
+        if (s != null) { return s; }
+        s = __findSkillInfo(this.passiveCInfos, id);
+        if (s != null) { return s; }
+        return null;
+    }
+    __updateStatusByPassiveA(unit, skillId) {
+        let skillInfo = this.__findPassiveSInfo(skillId);
+        if (skillInfo == null) {
+            return;
+        }
+        unit.maxHpWithSkillsWithoutAdd += skillInfo.hp;
+        unit.atkWithSkills += skillInfo.atk;
+        unit.spdWithSkills += skillInfo.spd;
+        unit.defWithSkills += skillInfo.def;
+        unit.resWithSkills += skillInfo.res;
+    }
+    __showStatusToAttackerInfo() {
+        let unit = this.currentUnit;
+        if (unit == null) { return; }
+        let info = "HP:" + unit.hp + "/" + unit.maxHpWithSkills + "(" + unit.hpPercentage + "%)<br/>"
+            + "攻:" + unit.getAtkInPrecombat()
+            + " 速:" + unit.getSpdInPrecombat()
+            + " 守:" + unit.getDefInPrecombat()
+            + " 魔:" + unit.getResInPrecombat();
+        if (unit.groupId == UnitGroupType.Ally) {
+            // this.attackerInfo = info;
+        } else {
+            // this.attackTargetInfo = info;
+        }
+    }
+    __updateStatusBySkillsAndMergeForAllHeroes(updatesPureGrowthRate = false) {
+        for (let unit of this.enumerateUnits()) {
+            this.__updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate);
+        }
+    }
+    __updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate = false) {
+        this.__updateUnitSkillInfo(unit);
+
+        unit.updateBaseStatus(updatesPureGrowthRate);
+
+        unit.maxHpWithSkillsWithoutAdd = unit.hpLvN;
+        unit.atkWithSkills = Math.floor(Number(unit.atkLvN) * Number(unit.atkMult) + Number(unit.atkAdd));
+        unit.spdWithSkills = Math.floor(Number(unit.spdLvN) * Number(unit.spdMult) + Number(unit.spdAdd));
+        unit.defWithSkills = Math.floor(Number(unit.defLvN) * Number(unit.defMult) + Number(unit.defAdd));
+        unit.resWithSkills = Math.floor(Number(unit.resLvN) * Number(unit.resMult) + Number(unit.resAdd));
+
+        // 個体値と限界突破によるステータス上昇
+        unit.updateStatusByMergeAndDragonFlower();
+
+        // 祝福効果
+        {
+            unit.clearBlessingEffects();
+            for (let ally of this.enumerateUnitsInTheSameGroup(unit, false)) {
+                if (!this.isBlessingEffectEnabled(unit, ally)) {
+                    continue;
+                }
+                let heroInfo = this.heroInfos.get(ally.heroIndex);
+                unit.addBlessingEffect(heroInfo.blessingType);
+            }
+
+            unit.updateStatusByBlessing();
+        }
+
+        // 武器錬成
+        unit.updateStatusByWeaponRefinement();
+
+        // 召喚士との絆
+        unit.updateStatusBySummonerLevel();
+
+        unit.updateStatusByWeapon();
+
+        if (unit.passiveA != PassiveA.None) {
+            this.__updateStatusByPassiveA(unit, unit.passiveA);
+        }
+        if (unit.passiveS != PassiveS.None) {
+            this.__updateStatusByPassiveA(unit, unit.passiveS);
+        }
+        switch (unit.weapon) {
+            case Weapon.Mistoruthin:
+                if (unit.isWeaponSpecialRefined) {
+                    unit.atkWithSkills += 3;
+                    unit.spdWithSkills += 3;
+                    unit.defWithSkills += 3;
+                    unit.resWithSkills += 3;
+                }
+                break;
+            case Weapon.KokouNoKen:
+            case Weapon.Bashirikosu:
+                if (unit.isWeaponSpecialRefined) {
+                    unit.spdWithSkills += 5;
+                    unit.atkWithSkills += 5;
+                    unit.defWithSkills -= 5;
+                    unit.resWithSkills -= 5;
+                }
+                break;
+            case Weapon.Yatonokami:
+                if (unit.weaponRefinement != WeaponRefinementType.None) {
+                    unit.atkWithSkills += 2;
+                    unit.spdWithSkills += 2;
+                    unit.defWithSkills += 2;
+                    unit.resWithSkills += 2;
+                }
+                break;
+            case Weapon.BatoruNoGofu:
+            case Weapon.HinataNoMoutou:
+                if (unit.isWeaponSpecialRefined) {
+                    unit.atkWithSkills += 3;
+                    unit.spdWithSkills += 3;
+                    unit.defWithSkills += 3;
+                    unit.resWithSkills += 3;
+                }
+                break;
+        }
+
+        // 化身によるステータス変化
+        if (unit.isTransformed) {
+            switch (unit.weapon) {
+                case Weapon.BrazenCatFang:
+                case Weapon.TaguelFang:
+                case Weapon.TaguelChildFang:
+                case Weapon.FoxkitFang:
+                case Weapon.NewBrazenCatFang:
+                case Weapon.NewFoxkitFang:
+                case Weapon.KarasuOuNoHashizume:
+                case Weapon.TakaouNoHashizume:
+                case Weapon.YoukoohNoTsumekiba:
+                case Weapon.JunaruSenekoNoTsumekiba:
+                case Weapon.ShishiouNoTsumekiba:
+                case Weapon.TrasenshiNoTsumekiba:
+                case Weapon.JinroMusumeNoTsumekiba:
+                case Weapon.JinroOuNoTsumekiba:
+                case Weapon.OkamijoouNoKiba:
+                case Weapon.ShirasagiNoTsubasa:
+                case Weapon.SeijuNoKeshinHiko:
+                case Weapon.BridesFang:
+                case Weapon.GroomsWings:
+                case Weapon.SkyPirateClaw:
+                    unit.atkWithSkills += 2;
+                    break;
+            }
+        }
+
+        // 砦レベル差
+        {
+            let offenceFortlessLevel = Number(this.findOffenceFortress().level);
+            let defenceFortlessLevel = Number(this.findDefenseFortress().level);
+            let fortressLevelDiff = offenceFortlessLevel - defenceFortlessLevel;
+            if (fortressLevelDiff < 0) {
+                if (unit.groupId == UnitGroupType.Enemy) {
+                    let diff = Math.abs(fortressLevelDiff);
+                    unit.atkWithSkills += 4 * diff;
+                    unit.spdWithSkills += 4 * diff;
+                    unit.defWithSkills += 4 * diff;
+                    unit.resWithSkills += 4 * diff;
+                }
+            }
+            else if (fortressLevelDiff > 0) {
+                if (unit.groupId == UnitGroupType.Ally) {
+                    let diff = Math.abs(fortressLevelDiff);
+                    unit.atkWithSkills += 4 * diff;
+                    unit.spdWithSkills += 4 * diff;
+                    unit.defWithSkills += 4 * diff;
+                    unit.resWithSkills += 4 * diff;
+                }
+            }
+        }
+
+        // ボナキャラ補正
+        if (unit.isBonusChar) {
+            unit.maxHpWithSkillsWithoutAdd += 10;
+            unit.atkWithSkills += 4;
+            unit.spdWithSkills += 4;
+            unit.defWithSkills += 4;
+            unit.resWithSkills += 4;
+        }
+
+        // 神装
+        if (unit.isResplendent) {
+            unit.maxHpWithSkillsWithoutAdd += 2;
+            unit.atkWithSkills += 2;
+            unit.spdWithSkills += 2;
+            unit.defWithSkills += 2;
+            unit.resWithSkills += 2;
+        }
+
+        if (this.gameMode == GameMode.Arena) {
+            this.updateArenaScore(unit);
+        }
+        this.__showStatusToAttackerInfo();
+    }
+
+    initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true) {
+        if (heroIndex < 0) {
+            unit.heroIndex = heroIndex;
+            unit.icon = g_siteRootPath + "images/dummy.png";
+        }
+
+        let heroInfo = this.heroInfos.get(heroIndex);
+        if (heroInfo == null) {
+            console.log("heroInfo was not found:" + heroIndex);
+            return;
+        }
+
+        if (unit.heroIndex != heroIndex) {
+            unit.heroIndex = heroIndex;
+        }
+
+        unit.initByHeroInfo(heroInfo);
+
+        if (this.gameMode != GameMode.ResonantBattles
+            || unit.groupId == UnitGroupType.Ally) {
+            // 双界の敵以外は成長率を操作することはないのでリセット
+            unit.updatePureGrowthRate();
+            unit.resetStatusAdd();
+            unit.resetStatusMult();
+        }
+
+        if (initEditableAttrs) {
+            unit.level = 40;
+            unit.merge = 0;
+            unit.dragonflower = 0;
+            unit.initializeSkillsToDefault();
+            unit.setMoveCountFromMoveType();
+            unit.reserveCurrentSkills();
+            unit.isBonusChar = false;
+            if (!unit.heroInfo.isResplendent) {
+                unit.isResplendent = false;
+            }
+            unit.updatePureGrowthRate();
+        }
+        this.__updateStatusBySkillsAndMerges(unit, false);
+        unit.resetMaxSpecialCount();
+        if (initEditableAttrs) {
+            unit.specialCount = unit.maxSpecialCount;
+            unit.hp = unit.maxHpWithSkills;
+        }
     }
 
     getDurabilityTestAlly() {
@@ -668,6 +991,10 @@ class AppData {
         this.primeArenaScore = this.__calcPrimeArenaScore(this.allyUnits);
         this.arenaScoreForEnemy = this.__calcArenaScore(this.enemyUnits);
         this.primeArenaScoreForEnemy = this.__calcPrimeArenaScore(this.enemyUnits);
+    }
+    updateArenaScore(unit) {
+        this.updateArenaScoreOfUnit(unit);
+        this.updateArenaScore();
     }
 
     updateEnemyAndAllyUnits() {
@@ -1260,6 +1587,13 @@ class AppData {
                     yield unit;
                 }
                 break;
+        }
+    }
+    * enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
+        for (let unit of this.enumerateUnitsInSpecifiedGroup(targetUnit.groupId)) {
+            if (withTargetUnit || unit != targetUnit) {
+                yield unit;
+            }
         }
     }
 

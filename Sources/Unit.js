@@ -3466,6 +3466,29 @@ class Unit {
             }
         }
     }
+
+    resetMaxSpecialCount() {
+        if (this.special == Special.None) {
+            this.maxSpecialCount = 0;
+            this.specialCount = 0;
+            return;
+        }
+
+        if (this.specialInfo == null) {
+            console.error("special ID " + this.special + " was not found.");
+            return;
+        }
+
+        let specialCountMax = this.specialInfo.specialCount;
+        if (this.weaponInfo != null) {
+            specialCountMax += this.weaponInfo.cooldownCount;
+        }
+
+        this.maxSpecialCount = specialCountMax;
+        if (this.specialCount > this.maxSpecialCount) {
+            this.specialCount = this.maxSpecialCount;
+        }
+    }
 }
 
 function canDisableAttackOrderSwapSkill(unit, restHpPercentage) {

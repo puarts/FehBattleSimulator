@@ -1,20 +1,4 @@
 
-// ビューに依存してしまっている
-function changeCurrentUnitTab(tabIndex) {
-    // $('.jquery .tabs li').removeClass('active').eq(tabIndex).addClass('active');
-    if (tabIndex < 0) {
-        $('.jquery .contents li').removeClass('active');
-        return;
-    }
-    $('.jquery .contents li').removeClass('active').eq(tabIndex).addClass('active');
-
-    // アイコン
-    $('.weaponIcon').attr('src', g_imageRootPath + "Weapon.png");
-    $('.supportIcon').attr('src', g_imageRootPath + "Support.png");
-    $('.specialIcon').attr('src', g_imageRootPath + "Special.png");
-    // $('.urlJumpIcon').attr('src', g_imageRootPath + "UrlJump.png");
-}
-
 function drawImage(canvas, imageData, scale) {
     const tempCanvas = document.getElementById("tempCanvas");
     let tempCtx = tempCanvas.getContext("2d");
@@ -69,471 +53,6 @@ class MovementAssistResult {
     }
 }
 
-let g_appData = new AppData();
-
-class Setting {
-    constructor() {
-        this._cookieWriter = new CookieWriter();
-    }
-
-    __examineOwnerTypeOfUnit(unit) {
-        if (g_appData.map.isUnitAvailable(unit)) {
-            return OwnerType.Map;
-        }
-        else {
-            return OwnerType.TrashBox;
-        }
-    }
-
-    __examineOwnerTypeOfStructure(structure) {
-        if (g_appData.map.isObjAvailable(structure)) {
-            return OwnerType.Map;
-        }
-        if (g_deffenceStructureContainer.isAvailable(structure.id)) {
-            return OwnerType.DefenceStorage;
-        }
-        if (g_offenceStructureContainer.isAvailable(structure.id)) {
-            return OwnerType.OffenceStorage;
-        }
-
-        return OwnerType.TrashBox;
-    }
-
-    __writeSetting(setting) {
-        let serializable = setting.toString();
-        this._cookieWriter.write(setting.serialId, serializable);
-    }
-
-    __readSetting(setting) {
-        let deserialized = this._cookieWriter.read(setting.serialId);
-        if (deserialized == null) {
-            return false;
-        }
-
-        setting.fromString(deserialized);
-        return true;
-    }
-
-    __setSerialSettingToUnit(unit) {
-        // console.log("saving unit (" + unit.name + ", " + unit.posX + ", " + unit.posY + ")");
-        let heroIndex = g_appData.heroInfos.findIndexOfInfo(unit.name);
-        if (heroIndex < 0) {
-            console.error(unit.id + ' was not found in database.');
-            return;
-        }
-        let ownerType = this.__examineOwnerTypeOfUnit(unit);
-        unit.heroIndex = heroIndex;
-        unit.ownerType = ownerType;
-    }
-
-    __setSerialSettingToStructure(structure) {
-        let ownerType = this.__examineOwnerTypeOfStructure(structure);
-        structure.ownerType = ownerType;
-        switch (ownerType) {
-            case OwnerType.Map:
-            case OwnerType.TrashBox:
-                return structure;
-            case OwnerType.OffenceStorage:
-            case OwnerType.DefenceStorage:
-                // デフォルト位置なので保存する必要なし
-                return null;
-            default:
-                return null;
-        }
-    }
-
-    __setUnitFromSerialSetting(unit) {
-        let evalUnit = unit.snapshot != null ? unit.snapshot : unit;
-        switch (evalUnit.ownerType) {
-            case OwnerType.Map:
-                {
-                    let posX = evalUnit.posX;
-                    let posY = evalUnit.posY;
-                    let targetTile = g_appData.map.getTile(posX, posY);
-                    if (targetTile != null && targetTile.placedUnit != null) {
-                        moveUnitToTrashBox(targetTile.placedUnit);
-                    }
-
-                    let success = g_appData.map.moveUnitForcibly(unit, posX, posY);
-                    if (!success) {
-                        unit.posX = -1;
-                        unit.posY = -1;
-                        moveUnitToMap(unit, posX, posY);
-                    }
-                    // console.log("move " + unit.id + " to (" + unit.posX + ", " + unit.posY + ")");
-                }
-                break;
-            case OwnerType.TrashBox:
-                {
-                    // console.log("move " + unit.id + " to trash box");
-                    moveUnitToTrashBox(unit);
-                }
-                break;
-            default:
-                throw new Error("unknown owner type of unit " + unit.ownerType);
-        }
-    }
-
-    __findStructure(id) {
-        let structure = g_appData.defenseStructureStorage.findById(id);
-        if (structure != null) {
-            return structure;
-        }
-
-        structure = g_appData.offenceStructureStorage.findById(id);
-        return structure;
-    }
-
-    __setStructureFromSerialSetting(structure) {
-        switch (structure.ownerType) {
-            case OwnerType.Map:
-                {
-                    let posX = structure.posX;
-                    let posY = structure.posY;
-                    let targetTile = g_appData.map.getTile(posX, posY);
-                    if (targetTile.isObjPlaceableByNature()) {
-                        if (targetTile != null && targetTile.obj != null) {
-                            moveStructureToTrashBox(targetTile.obj);
-                        }
-                        moveStructureToMap(structure, posX, posY);
-                        console.log("move " + structure.id + " to (" + structure.posX + ", " + structure.posY + ")");
-                    }
-                }
-                break;
-            case OwnerType.DefenceStorage:
-                moveStructureToDefenceStorage(structure);
-                break;
-            case OwnerType.OffenceStorage:
-                moveStructureToOffenceStorage(structure);
-                break;
-            case OwnerType.TrashBox:
-                moveStructureToTrashBox(structure);
-                break;
-            default:
-                throw new Error("Unknown OwnerType " + structure.ownerType);
-        }
-    }
-
-    convertToPerTurnSetting(
-        loadsAllies = true,
-        loadsEnemies = true,
-        loadsOffenceStructures = true,
-        loadsDefenseStructures = true,
-        exportsMapSettings = false
-    ) {
-        let currentTurn = g_appData.currentTurn;
-        let turnSetting = new TurnSetting(currentTurn);
-
-        // ユニットの設定を保存
-        if (loadsEnemies) {
-            for (let unit of g_appData.enumerateEnemyUnits()) {
-                this.__setSerialSettingToUnit(unit);
-                turnSetting.pushUnit(unit);
-            }
-        }
-        if (loadsAllies) {
-            for (let unit of g_appData.enumerateAllyUnits()) {
-                this.__setSerialSettingToUnit(unit);
-                turnSetting.pushUnit(unit);
-            }
-        }
-
-        // 防衛施設の設定
-        if (loadsDefenseStructures) {
-            turnSetting.setAppData(g_appData);
-            // console.log("saving defense structures");
-            for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
-                let setting = this.__setSerialSettingToStructure(structure);
-                if (setting != null) {
-                    turnSetting.pushStructure(setting);
-                }
-            }
-
-            // マップオブジェクトの設定
-            // console.log("saving map objects");
-            for (let structure of g_appData.map.enumerateBreakableWallsOfCurrentMapType()) {
-                let setting = this.__setSerialSettingToStructure(structure);
-                if (setting != null) {
-                    turnSetting.pushStructure(setting);
-                }
-            }
-        }
-
-        // 攻撃施設の設定
-        if (loadsOffenceStructures) {
-            // console.log("saving offence structures");
-            for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
-                let setting = this.__setSerialSettingToStructure(structure);
-                if (setting != null) {
-                    turnSetting.pushStructure(setting);
-                }
-            }
-        }
-
-        if (exportsMapSettings) {
-            for (let structure of g_appData.map.enumerateWallsOnMap()) {
-                let setting = this.__setSerialSettingToStructure(structure);
-                if (setting != null) {
-                    turnSetting.pushStructure(setting);
-                }
-            }
-
-            for (let tile of g_appData.map.enumerateTiles()) {
-                turnSetting.pushTile(tile);
-            }
-        }
-
-        return turnSetting;
-    }
-
-    convertCurrentSettingsToDict(
-        loadsAllies = true,
-        loadsEnemies = true,
-        loadsOffenceStructures = true,
-        loadsDefenseStructures = true,
-        exportsMapSettings = false
-    ) {
-        let turnSetting = this.convertToPerTurnSetting(
-            loadsAllies, loadsEnemies, loadsOffenceStructures, loadsDefenseStructures, exportsMapSettings);
-        let result = {};
-        result[TurnWideCookieId] = turnSetting.turnWideStatusToString();
-        result[turnSetting.serialId] = turnSetting.perTurnStatusToString();
-        return result;
-    }
-
-    saveSettings() {
-        let savesMap = g_appData.mapKind == MapType.ResonantBattles_Default;
-        let dict = this.convertCurrentSettingsToDict(true, true, true, true, savesMap);
-        for (let key in dict) {
-            console.log("delete " + key + "..");
-            this._cookieWriter.delete(key);
-            let settingText = dict[key];
-            console.log(document.cookie);
-            console.log("save " + key + "..");
-            console.log("value = " + settingText);
-            let compressed = LZString.compressToBase64(settingText);
-            // let compressed = LZString.compressToBase64(settingText);
-            console.log(`compressed: ${compressed}`);
-            this._cookieWriter.write(key, compressed);
-        }
-    }
-
-    loadSettingsFromDict(
-        settingDict,
-        loadsAllySettings = true,
-        loadsEnemySettings = true,
-        loadsOffenceSettings = true,
-        loadsDefenceSettings = true,
-        loadsMapSettings = false,
-        clearsAllFirst = true,
-    ) {
-        try {
-            g_disableUpdateUi = true;
-            let currentTurn = g_appData.currentTurn;
-            let turnSetting = new TurnSetting(currentTurn);
-            if (loadsDefenceSettings) {
-                turnSetting.setAppData(g_appData);
-            }
-
-            if (clearsAllFirst) {
-                if (settingDict[turnSetting.serialId]) {
-                    if (loadsDefenceSettings) {
-                        // リセット位置が重なって不定になるのを防ぐために最初に取り除く
-                        for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
-                            moveStructureToDefenceStorage(structure);
-                        }
-                    }
-                    if (loadsOffenceSettings) {
-                        // リセット位置が重なって不定になるのを防ぐために最初に取り除く
-                        for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
-                            moveStructureToOffenceStorage(structure);
-                        }
-                    }
-                    if (loadsEnemySettings) {
-                        for (let unit of g_appData.enumerateEnemyUnits()) {
-                            moveUnitToTrashBox(unit);
-                        }
-                    }
-                    if (loadsAllySettings) {
-                        for (let unit of g_appData.enumerateAllyUnits()) {
-                            moveUnitToTrashBox(unit);
-                        }
-                    }
-
-                    g_appData.map.resetPlacement();
-                }
-            }
-
-            if (loadsEnemySettings) {
-                for (let unit of g_appData.enumerateAllEnemyUnits()) {
-                    turnSetting.pushUnit(unit);
-                }
-            }
-            if (loadsAllySettings) {
-                for (let unit of g_appData.enumerateAllAllyUnits()) {
-                    turnSetting.pushUnit(unit);
-                }
-            }
-            if (loadsOffenceSettings) {
-                for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
-                    turnSetting.pushStructure(structure);
-                }
-            }
-            if (loadsDefenceSettings) {
-                for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
-                    turnSetting.pushStructure(structure);
-                }
-                for (let structure of g_appData.map.enumerateBreakableWalls()) {
-                    turnSetting.pushStructure(structure);
-                }
-            }
-            if (loadsMapSettings) {
-                for (let structure of g_appData.map.enumerateWalls()) {
-                    turnSetting.pushStructure(structure);
-                }
-                for (let tile of g_appData.map.enumerateTiles()) {
-                    turnSetting.pushTile(tile);
-                }
-            }
-
-            // heroIndexChangedイベントが走ってスキルなどが上書きされないよう
-            // 現在のユニットを未設定にしておく
-            g_appData.clearCurrentItemSelection();
-            changeCurrentUnitTab(-1);
-
-            if (settingDict[turnSetting.serialId] == null && settingDict[TurnWideCookieId] == null) {
-                console.log("failed to load turn setting");
-                resetPlacement();
-                updateAllUi();
-                return;
-            }
-
-            if (settingDict[TurnWideCookieId]) {
-                turnSetting.fromTurnWideStatusString(settingDict[TurnWideCookieId]);
-                if (loadsDefenceSettings) {
-                    // マップ種類
-                    g_appData.map.changeMapKind(g_appData.mapKind, g_appData.gameVersion);
-                }
-
-                if (loadsEnemySettings) {
-                    // console.log("敵の設定をロード");
-                    for (let unit of g_appData.enumerateEnemyUnits()) {
-                        g_app.initializeByHeroInfo(unit, unit.heroIndex, false);
-                    }
-                }
-                if (loadsAllySettings) {
-                    // console.log("味方の設定をロード");
-                    for (let unit of g_appData.enumerateAllyUnits()) {
-                        g_app.initializeByHeroInfo(unit, unit.heroIndex, false);
-                    }
-                }
-            }
-
-            if (settingDict[turnSetting.serialId]) {
-                turnSetting.fromPerTurnStatusString(settingDict[turnSetting.serialId]);
-
-                // 施設の設定をロード
-                if (loadsDefenceSettings) {
-                    // マップオブジェクトのロード
-                    // console.log("loading map objects");
-                    // console.log("map object count: " + g_appData.map.breakableObjCountOfCurrentMapType);
-                    for (let structure of g_appData.map.enumerateBreakableWallsOfCurrentMapType()) {
-                        // console.log(structure.id);
-                        if (!turnSetting.isDeserialized(structure)) { continue; }
-                        // console.log(structure.id + " is deserialized");
-                        try {
-                            this.__setStructureFromSerialSetting(structure);
-                        } catch (e) {
-                            moveToDefault(structure);
-                        }
-                    }
-
-                    // console.log("loading deffence structures");
-                    for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
-                        if (!turnSetting.isDeserialized(structure)) { continue; }
-                        try {
-                            this.__setStructureFromSerialSetting(structure);
-                        } catch (e) {
-                            moveToDefault(structure);
-                        }
-                    }
-                }
-
-                if (loadsOffenceSettings) {
-                    // console.log("loading offence structures");
-                    for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
-                        if (!turnSetting.isDeserialized(structure)) { continue; }
-                        try {
-                            this.__setStructureFromSerialSetting(structure);
-                        } catch (e) {
-                            moveToDefault(structure);
-                        }
-                    }
-                }
-
-                if (loadsEnemySettings) {
-                    // console.log("敵の設定をロード");
-                    for (let unit of g_appData.enumerateEnemyUnits()) {
-                        this.__setUnitFromSerialSetting(unit);
-                    }
-                }
-                if (loadsAllySettings) {
-                    // console.log("味方の設定をロード");
-                    for (let unit of g_appData.enumerateAllyUnits()) {
-                        this.__setUnitFromSerialSetting(unit);
-                    }
-                }
-
-                if (loadsMapSettings) {
-                    for (let structure of g_appData.map.enumerateWalls()) {
-                        // console.log(structure.id);
-                        if (!turnSetting.isDeserialized(structure)) {
-                            removeFromAll(structure);
-                            continue;
-                        }
-                        // console.log(structure.id + " is deserialized");
-                        try {
-                            this.__setStructureFromSerialSetting(structure);
-                        } catch (e) {
-                            moveToDefault(structure);
-                        }
-                    }
-                }
-            }
-        }
-        finally {
-            g_disableUpdateUi = false;
-        }
-
-        g_appData.sortUnitsBySlotOrder();
-
-        // 祝福を反映させるために更新が必要
-        g_app.__updateStatusBySkillsAndMergeForAllHeroes(false);
-
-        g_app.updateAllUnitSpur();
-    }
-
-    loadSettings() {
-        let currentTurn = g_appData.currentTurn;
-        let turnSetting = new TurnSetting(currentTurn);
-        let dict = {};
-        dict[TurnWideCookieId] = null;
-        dict[turnSetting.serialId] = null;
-        for (let key in dict) {
-            let readText = this._cookieWriter.read(key);
-            let decompressed = LZString.decompressFromBase64(readText);
-            console.log(`decompressed: ${decompressed}`);
-            dict[key] = decompressed;
-        }
-        if (dict[TurnWideCookieId] == null && dict[turnSetting.serialId] == null) {
-            console.log("ターン" + currentTurn + "の設定なし");
-            return;
-        }
-        let loadsMap = g_appData.mapKind == MapType.ResonantBattles_Default;
-        this.loadSettingsFromDict(dict, true, true, true, true, loadsMap);
-    }
-}
-
 const ModuleLoadState = {
     NotLoaded: 0,
     Loading: 1,
@@ -551,13 +70,6 @@ class AetherRaidTacticsBoard {
 
         this.cropper = null;
         this.damageCalc = new DamageCalculator();
-        this.weaponInfos = [];
-        this.supportInfos = [];
-        this.specialInfos = [];
-        this.passiveAInfos = [];
-        this.passiveBInfos = [];
-        this.passiveCInfos = [];
-        this.passiveSInfos = [];
         this.weaponSkillCharWhiteList = "";
         this.supportSkillCharWhiteList = "";
         this.specialSkillCharWhiteList = "";
@@ -627,7 +139,7 @@ class AetherRaidTacticsBoard {
 
                     g_appData.updateEnemyAndAllyUnits();
                     g_appData.sortUnitsBySlotOrder();
-                    self.__updateStatusBySkillsAndMergeForAllHeroes();
+                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                     changeMap();
                     g_appData.clearReservedSkillsForAllUnits();
                     resetPlacement();
@@ -740,8 +252,8 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let currentUnit = g_app.__getCurrentUnit();
                     if (currentUnit == null) { return; }
-                    self.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
-                    self.__updateStatusBySkillsAndMergeForAllHeroes();
+                    g_appData.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
+                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                     console.log("heroIndexChanged");
                     updateAllUi();
                 },
@@ -759,8 +271,8 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    self.__updateStatusBySkillsAndMerges(unit);
-                    self.__resetMaxSpecialCount(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
+                    unit.resetMaxSpecialCount();
                     self.updateAllUnitSpur();
                     self.updateArenaScore(unit);
                 },
@@ -776,7 +288,7 @@ class AetherRaidTacticsBoard {
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
                     self.__updateUnitSkillInfo(unit);
-                    self.__resetMaxSpecialCount(unit);
+                    unit.resetMaxSpecialCount();
                     self.updateArenaScore(unit);
                     updateAllUi();
                 },
@@ -795,7 +307,7 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    g_app.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     g_app.updateAllUnitSpur();
                     self.updateArenaScore(unit);
                 },
@@ -813,7 +325,7 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    g_app.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     g_app.updateAllUnitSpur();
                     self.updateArenaScore(unit);
                 },
@@ -821,7 +333,7 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    g_app.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     g_app.updateAllUnitSpur();
                     self.updateArenaScore(unit);
 
@@ -832,35 +344,35 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    self.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     updateAllUi();
                 },
                 dragonflowerChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    g_app.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     updateAllUi();
                 },
                 summonerLevelChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    g_app.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     updateAllUi();
                 },
                 grantedBlessingChanged: function () {
                     if (g_app == null) { return; }
                     let currentUnit = g_app.__getCurrentUnit();
                     if (currentUnit == null) { return; }
-                    g_app.__updateStatusBySkillsAndMerges(currentUnit);
+                    g_appData.__updateStatusBySkillsAndMerges(currentUnit);
 
                     for (let unit of g_appData.enumerateSelectedItems(x => x != currentUnit && x instanceof Unit)) {
                         if (unit.grantedBlessing != currentUnit.grantedBlessing
                             && unit.providableBlessingSeason == SeasonType.None
                         ) {
                             unit.grantedBlessing = currentUnit.grantedBlessing;
-                            g_app.__updateStatusBySkillsAndMerges(unit);
+                            g_appData.__updateStatusBySkillsAndMerges(unit);
                         }
                     }
                     updateAllUi();
@@ -870,44 +382,44 @@ class AetherRaidTacticsBoard {
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
                     unit.updatePureGrowthRate();
-                    g_app.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     updateAllUi();
                 },
                 addChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    self.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                     updateAllUi();
                 },
                 blessingChanged: function () {
                     // if (g_app == null) { return; }
                     // let unit = g_app.__getCurrentUnit();
                     // if (unit == null) { return; }
-                    // g_app.__updateStatusBySkillsAndMerges(unit);
+                    // g_appData.__updateStatusBySkillsAndMerges(unit);
                     updateAllUi();
                 },
                 transformedChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    g_app.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
                 },
                 lightSeasonChanged: function () {
                     if (g_app == null) { return; }
                     this.isAstraSeason = !this.isLightSeason;
-                    self.__updateStatusBySkillsAndMergeForAllHeroes();
+                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                     g_appData.resetCurrentAetherRaidDefensePreset();
                 },
                 astraSeasonChanged: function () {
                     if (g_app == null) { return; }
                     this.isLightSeason = !this.isAstraSeason;
-                    g_app.__updateStatusBySkillsAndMergeForAllHeroes();
+                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                     g_appData.resetCurrentAetherRaidDefensePreset();
                 },
                 seasonChanged: function () {
                     if (g_app == null) { return; }
-                    g_app.__updateStatusBySkillsAndMergeForAllHeroes();
+                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                     updateAllUi();
                 },
                 aetherRaidDefensePresetChanged: function () {
@@ -961,7 +473,7 @@ class AetherRaidTacticsBoard {
                         }
                         unit.isBonusChar = value;
                     }
-                    g_app.__updateStatusBySkillsAndMergeForAllHeroes();
+                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 },
                 resetUnitForTesting: function () {
                     if (g_app == null) { return; }
@@ -989,7 +501,7 @@ class AetherRaidTacticsBoard {
                     }
 
                     if (isUpdateUnitRequired) {
-                        g_app.__updateStatusBySkillsAndMergeForAllHeroes();
+                        g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                     }
 
                     updateAllUi();
@@ -1146,7 +658,7 @@ class AetherRaidTacticsBoard {
     }
 
     __findMaxSpWeaponId(defaultSkillId, options) {
-        let skillInfoArrays = [this.weaponInfos];
+        let skillInfoArrays = [g_appData.weaponInfos];
         let maxSpSkillInfo = this.__findSkillInfoFromArrays(skillInfoArrays, defaultSkillId);
         let maxSp = 0;
         if (maxSpSkillInfo != null) {
@@ -1223,25 +735,20 @@ class AetherRaidTacticsBoard {
         if (weaponInfo.sp == 300 && weaponInfo.weaponRefinementOptions.length > 1) {
             unit.weaponRefinement = weaponInfo.weaponRefinementOptions[1].id;
         }
-        unit.support = this.__findMaxSpSkillId(unit.support, unit.heroInfo.supportOptions, [this.supportInfos]);
-        unit.special = this.__findMaxSpSkillId(unit.special, unit.heroInfo.specialOptions, [this.specialInfos]);
-        unit.passiveA = this.__findMaxSpSkillId(unit.passiveA, unit.heroInfo.passiveAOptions, [this.passiveAInfos]);
-        unit.passiveB = this.__findMaxSpSkillId(unit.passiveB, unit.heroInfo.passiveBOptions, [this.passiveBInfos]);
-        unit.passiveC = this.__findMaxSpSkillId(unit.passiveC, unit.heroInfo.passiveCOptions, [this.passiveCInfos]);
+        unit.support = this.__findMaxSpSkillId(unit.support, unit.heroInfo.supportOptions, [g_appData.supportInfos]);
+        unit.special = this.__findMaxSpSkillId(unit.special, unit.heroInfo.specialOptions, [g_appData.specialInfos]);
+        unit.passiveA = this.__findMaxSpSkillId(unit.passiveA, unit.heroInfo.passiveAOptions, [g_appData.passiveAInfos]);
+        unit.passiveB = this.__findMaxSpSkillId(unit.passiveB, unit.heroInfo.passiveBOptions, [g_appData.passiveBInfos]);
+        unit.passiveC = this.__findMaxSpSkillId(unit.passiveC, unit.heroInfo.passiveCOptions, [g_appData.passiveCInfos]);
         unit.passiveS = this.__findMaxSpSkillId(unit.passiveS, unit.heroInfo.passiveSOptions, [
-            this.passiveAInfos,
-            this.passiveBInfos,
-            this.passiveCInfos,
-            this.passiveSInfos]);
-        this.__updateStatusBySkillsAndMerges(unit);
+            g_appData.passiveAInfos,
+            g_appData.passiveBInfos,
+            g_appData.passiveCInfos,
+            g_appData.passiveSInfos]);
+        g_appData.__updateStatusBySkillsAndMerges(unit);
         this.updateAllUnitSpur();
-        this.updateArenaScore(unit);
+        g_appData.updateArenaScore(unit);
         updateAllUi();
-    }
-
-    updateArenaScore(unit) {
-        g_appData.updateArenaScoreOfUnit(unit);
-        g_appData.updateArenaScore();
     }
 
     updateArenaScoreForAllUnits() {
@@ -1917,7 +1424,7 @@ class AetherRaidTacticsBoard {
             }
         }
         unit.weaponRefinement = bestOne;
-        this.__updateStatusBySkillsAndMerges(unit);
+        g_appData.__updateStatusBySkillsAndMerges(unit);
     }
 
     setUnitBlessingByImage(unit, sourceCanvas, canvas) {
@@ -1976,7 +1483,7 @@ class AetherRaidTacticsBoard {
         let bestBlessing = values[0][0];
         unit.grantedBlessing = bestBlessing;
         this.writeDebugLogLine("bestBlessing=" + bestBlessing);
-        this.__updateStatusBySkillsAndMerges(unit);
+        g_appData.__updateStatusBySkillsAndMerges(unit);
     }
 
     setUnitByImage(unit, file, sourceCanvas, binarizedCanvas, ocrCanvases) {
@@ -2042,7 +1549,7 @@ class AetherRaidTacticsBoard {
                         if (result != null) {
                             let info = result[0];
                             let heroIndex = g_appData.heroInfos.findIndexOfInfo(info.name)
-                            self.initializeByHeroInfo(unit, heroIndex, false);
+                            g_appData.initializeByHeroInfo(unit, heroIndex, false);
                             selectItemById(unit.id);
                         }
                     }
@@ -2069,7 +1576,7 @@ class AetherRaidTacticsBoard {
                     let partialName = getMaxLengthElem(filtered);
                     if (Number.isInteger(Number(partialName))) {
                         unit.merge = Number(partialName);
-                        g_app.__updateStatusBySkillsAndMerges(unit);
+                        g_appData.__updateStatusBySkillsAndMerges(unit);
                     }
                 },
                 'eng',
@@ -2092,7 +1599,7 @@ class AetherRaidTacticsBoard {
                     let dragonflower = Number(partialName);
                     if (Number.isInteger(dragonflower) && dragonflower > 0) {
                         unit.dragonflower = dragonflower;
-                        g_app.__updateStatusBySkillsAndMerges(unit);
+                        g_appData.__updateStatusBySkillsAndMerges(unit);
                     }
 
                     // アクセサリー未装備の時は花凸の位置がずれるのでもう一度OCR
@@ -2109,7 +1616,7 @@ class AetherRaidTacticsBoard {
                             let dragonflower = Number(partialName);
                             if (Number.isInteger(dragonflower) && dragonflower > unit.dragonflower) {
                                 unit.dragonflower = dragonflower;
-                                g_app.__updateStatusBySkillsAndMerges(unit);
+                                g_appData.__updateStatusBySkillsAndMerges(unit);
                             }
                         },
                         'eng'
@@ -2152,7 +1659,7 @@ class AetherRaidTacticsBoard {
                     let statusName = g_app.__findSimilarStatusName(partialName);
                     if (statusName != null) {
                         unit.setIvHighStat(nameToStatusType(statusName));
-                        g_app.__updateStatusBySkillsAndMerges(unit);
+                        g_appData.__updateStatusBySkillsAndMerges(unit);
                     }
                 },
                 'jpn',
@@ -2185,7 +1692,7 @@ class AetherRaidTacticsBoard {
                     let statusName = g_app.__findSimilarStatusName(partialName);
                     if (statusName != null) {
                         unit.setIvLowStat(nameToStatusType(statusName));
-                        g_app.__updateStatusBySkillsAndMerges(unit);
+                        g_appData.__updateStatusBySkillsAndMerges(unit);
                     }
                 },
                 'jpn',
@@ -2403,31 +1910,31 @@ class AetherRaidTacticsBoard {
             for (let option of unit.heroInfo.supportOptions) {
                 candidates.push(option.text);
             }
-            infoCandidates.push(this.supportInfos);
+            infoCandidates.push(g_appData.supportInfos);
         }
         if (!dict[SkillType.Special]) {
             for (let option of unit.heroInfo.specialOptions) {
                 candidates.push(option.text);
             }
-            infoCandidates.push(this.specialInfos);
+            infoCandidates.push(g_appData.specialInfos);
         }
         if (!dict[SkillType.PassiveA]) {
             for (let option of unit.heroInfo.passiveAOptions) {
                 candidates.push(option.text);
             }
-            infoCandidates.push(this.passiveAInfos);
+            infoCandidates.push(g_appData.passiveAInfos);
         }
         if (!dict[SkillType.PassiveB]) {
             for (let option of unit.heroInfo.passiveBOptions) {
                 candidates.push(option.text);
             }
-            infoCandidates.push(this.passiveBInfos);
+            infoCandidates.push(g_appData.passiveBInfos);
         }
         if (!dict[SkillType.PassiveC]) {
             for (let option of unit.heroInfo.passiveCOptions) {
                 candidates.push(option.text);
             }
-            infoCandidates.push(this.passiveCInfos);
+            infoCandidates.push(g_appData.passiveCInfos);
         }
         let result = this.findSimilarNameSkillFromNameCandidates(name, candidates);
         if (result == null) {
@@ -2544,7 +2051,7 @@ class AetherRaidTacticsBoard {
 
             let isHeroIndexChanged = heroIndex != null && unit.heroIndex != heroIndex;
             if (heroIndex != null) {
-                this.initializeByHeroInfo(unit, heroIndex, false);
+                g_appData.initializeByHeroInfo(unit, heroIndex, false);
                 unit.updatePureGrowthRate();
                 unit.initializeSkillsToDefault();
             }
@@ -2568,7 +2075,7 @@ class AetherRaidTacticsBoard {
             ++slotOrder;
         }
 
-        this.__updateStatusBySkillsAndMergeForAllHeroes(false);
+        g_appData.__updateStatusBySkillsAndMergeForAllHeroes(false);
     }
 
     __setUnitForTempestTrials(unit, heroIndex) {
@@ -2580,7 +2087,7 @@ class AetherRaidTacticsBoard {
         unit.setIvHighStat(StatusType.None);
         unit.setIvLowStat(StatusType.None);
         unit.level = 45;
-        this.initializeByHeroInfo(unit, heroIndex, false);
+        g_appData.initializeByHeroInfo(unit, heroIndex, false);
         unit.clearReservedSkills();
         unit.clearSkills();
         unit.initializeSkillsToDefault();
@@ -2669,7 +2176,7 @@ class AetherRaidTacticsBoard {
             let heroIndex = g_appData.heroInfos.findIndexOfInfo(heroInfo.name);
             this.__setUnitForTempestTrials(unit, heroIndex);
         }
-        this.__updateStatusBySkillsAndMergeForAllHeroes(false);
+        g_appData.__updateStatusBySkillsAndMergeForAllHeroes(false);
 
 
         for (let unit of units) {
@@ -2900,7 +2407,7 @@ class AetherRaidTacticsBoard {
             currentUnit.spdAdd = 0;
             currentUnit.defAdd = 0;
             currentUnit.resAdd = 0;
-            this.__updateStatusBySkillsAndMerges(currentUnit, true);
+            g_appData.__updateStatusBySkillsAndMerges(currentUnit, true);
         }
 
         let targetHp = Number(this.vm.rbEnemySettingInputHp);
@@ -2917,7 +2424,7 @@ class AetherRaidTacticsBoard {
             let addValue = targetDef - currentUnit.defWithSkills;
             while (addValue > 3) {
                 currentUnit.defGrowthRate += 0.05;
-                this.__updateStatusBySkillsAndMerges(currentUnit);
+                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
                 addValue = targetDef - currentUnit.defWithSkills;
             }
             currentUnit.defGrowthRate = Math.round(currentUnit.defGrowthRate * 100) * 0.01
@@ -2928,14 +2435,14 @@ class AetherRaidTacticsBoard {
             let addValue = targetRes - currentUnit.resWithSkills;
             while (addValue > 3) {
                 currentUnit.resGrowthRate += 0.05;
-                this.__updateStatusBySkillsAndMerges(currentUnit);
+                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
                 addValue = targetRes - currentUnit.resWithSkills;
             }
             currentUnit.resGrowthRate = Math.round(currentUnit.resGrowthRate * 100) * 0.01
             currentUnit.resAdd = addValue;
         }
 
-        this.__updateStatusBySkillsAndMerges(currentUnit);
+        g_appData.__updateStatusBySkillsAndMerges(currentUnit);
     }
 
     __setUnitStatusAdd(unit, addStatuses, growthRates, enableHpMult, enableAtkMult) {
@@ -3166,30 +2673,6 @@ class AetherRaidTacticsBoard {
         return g_appData.offenceStructureStorage;
     }
 
-    __resetMaxSpecialCount(unit) {
-        if (unit.special == Special.None) {
-            unit.maxSpecialCount = 0;
-            unit.specialCount = 0;
-            return;
-        }
-
-        let specialInfo = this.__findSpecialInfo(unit.special);
-        if (specialInfo == null) {
-            console.error("special ID " + unit.special + " was not found.");
-            return;
-        }
-
-        let specialCountMax = specialInfo.specialCount;
-        let weaponInfo = this.__findWeaponInfo(unit.weapon);
-        if (weaponInfo != null) {
-            specialCountMax += weaponInfo.cooldownCount;
-        }
-
-        unit.maxSpecialCount = specialCountMax;
-        if (unit.specialCount > unit.maxSpecialCount) {
-            unit.specialCount = unit.maxSpecialCount;
-        }
-    }
 
     resetUnitRandom() {
         for (let i = 0; i < this.vm.units.length; ++i) {
@@ -3234,8 +2717,8 @@ class AetherRaidTacticsBoard {
             unit.passiveB = 599;
             unit.passiveC = 909;
             unit.passiveS = 539;
-            this.__updateStatusBySkillsAndMerges(unit);
-            this.__resetMaxSpecialCount(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+            unit.resetMaxSpecialCount();
             moveUnitToTrashBox(unit);
         }
 
@@ -3244,8 +2727,8 @@ class AetherRaidTacticsBoard {
             let unit = this.vm.units[4];
             this.setHero(unit, 163);
             unit.weaponRefinement = WeaponRefinementType.Special_Hp3;
-            this.__updateStatusBySkillsAndMerges(unit);
-            this.__resetMaxSpecialCount(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+            unit.resetMaxSpecialCount();
             moveUnitToTrashBox(unit);
         }
 
@@ -3261,8 +2744,8 @@ class AetherRaidTacticsBoard {
             unit.passiveC = 680;
             unit.passiveS = 509;
             unit.merge = 1;
-            this.__updateStatusBySkillsAndMerges(unit);
-            this.__resetMaxSpecialCount(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+            unit.resetMaxSpecialCount();
             // moveUnitToTrashBox(unit);
         }
 
@@ -3308,8 +2791,8 @@ class AetherRaidTacticsBoard {
             unit.PassiveS = PassiveB.KyokugiHiKo3;
             unit.dragonflower = 5;
             unit.merge = 4;
-            this.__updateStatusBySkillsAndMerges(unit);
-            this.__resetMaxSpecialCount(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+            unit.resetMaxSpecialCount();
             moveUnitToTrashBox(unit);
         }
 
@@ -3325,8 +2808,8 @@ class AetherRaidTacticsBoard {
             unit.PassiveS = PassiveA.Atk3;
             unit.dragonflower = 3;
             unit.merge = 3;
-            this.__updateStatusBySkillsAndMerges(unit);
-            this.__resetMaxSpecialCount(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+            unit.resetMaxSpecialCount();
             moveUnitToTrashBox(unit);
         }
 
@@ -3343,8 +2826,8 @@ class AetherRaidTacticsBoard {
             unit.special = Special.Moonbow;
             unit.passiveA = PassiveA.DeathBlow3;
             unit.passiveS = PassiveA.HpAtk2;
-            this.__updateStatusBySkillsAndMerges(unit);
-            this.__resetMaxSpecialCount(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+            unit.resetMaxSpecialCount();
             moveUnitToTrashBox(unit);
         }
 
@@ -3358,8 +2841,8 @@ class AetherRaidTacticsBoard {
             unit.support = Support.Reposition;
             unit.passiveB = PassiveB.Vantage3;
             unit.passiveS = PassiveA.HeavyBlade3;
-            this.__updateStatusBySkillsAndMerges(unit);
-            this.__resetMaxSpecialCount(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+            unit.resetMaxSpecialCount();
         }
 
         // // ノノ
@@ -3379,8 +2862,8 @@ class AetherRaidTacticsBoard {
         //     unit.passiveB = 810;
         //     unit.passiveC = 909;
         //     unit.passiveS = 599;
-        //     this.__updateStatusBySkillsAndMerges(unit);
-        //     this.__resetMaxSpecialCount(unit);
+        //     g_appData.__updateStatusBySkillsAndMerges(unit);
+        //     unit.resetMaxSpecialCount();
         // }
         moveUnit(this.vm.units[0], g_appData.map.getTile(4, 1), false);
         moveUnit(this.vm.units[5], g_appData.map.getTile(1, 1), false);
@@ -3435,226 +2918,7 @@ class AetherRaidTacticsBoard {
             return;
         }
 
-        this.initializeByHeroInfo(unit, heroIndex);
-    }
-
-    initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true) {
-        if (heroIndex < 0) {
-            unit.heroIndex = heroIndex;
-            unit.icon = g_siteRootPath + "images/dummy.png";
-        }
-
-        let heroInfo = g_appData.heroInfos.get(heroIndex);
-        if (heroInfo == null) {
-            console.log("heroInfo was not found:" + heroIndex);
-            return;
-        }
-
-        if (unit.heroIndex != heroIndex) {
-            unit.heroIndex = heroIndex;
-        }
-
-        unit.initByHeroInfo(heroInfo);
-
-        if (this.vm.gameMode != GameMode.ResonantBattles
-            || unit.groupId == UnitGroupType.Ally) {
-            // 双界の敵以外は成長率を操作することはないのでリセット
-            unit.updatePureGrowthRate();
-            unit.resetStatusAdd();
-            unit.resetStatusMult();
-        }
-
-        if (initEditableAttrs) {
-            unit.level = 40;
-            unit.merge = 0;
-            unit.dragonflower = 0;
-            unit.initializeSkillsToDefault();
-            unit.setMoveCountFromMoveType();
-            unit.reserveCurrentSkills();
-            unit.isBonusChar = false;
-            if (!unit.heroInfo.isResplendent) {
-                unit.isResplendent = false;
-            }
-            unit.updatePureGrowthRate();
-        }
-        this.__updateStatusBySkillsAndMerges(unit, false);
-        this.__resetMaxSpecialCount(unit);
-        if (initEditableAttrs) {
-            unit.specialCount = unit.maxSpecialCount;
-            unit.hp = unit.maxHpWithSkills;
-        }
-    }
-
-    __updateUnitSkillInfo(unit) {
-        unit.weaponInfo = this.__findWeaponInfo(unit.weapon);
-        unit.supportInfo = this.__findSupportInfo(unit.support);
-        unit.specialInfo = this.__findSpecialInfo(unit.special);
-        unit.passiveAInfo = this.__findPassiveAInfo(unit.passiveA);
-        unit.passiveBInfo = this.__findPassiveBInfo(unit.passiveB);
-        unit.passiveCInfo = this.__findPassiveCInfo(unit.passiveC);
-        unit.passiveSInfo = this.__findPassiveSInfo(unit.passiveS);
-    }
-
-    __updateStatusBySkillsAndMergeForAllHeroes(updatesPureGrowthRate = false) {
-        for (let unit of this.enumerateAllUnits()) {
-            this.__updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate);
-        }
-    }
-
-    __updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate = false) {
-        this.__updateUnitSkillInfo(unit);
-
-        unit.updateBaseStatus(updatesPureGrowthRate);
-
-        unit.maxHpWithSkillsWithoutAdd = unit.hpLvN;
-        unit.atkWithSkills = Math.floor(Number(unit.atkLvN) * Number(unit.atkMult) + Number(unit.atkAdd));
-        unit.spdWithSkills = Math.floor(Number(unit.spdLvN) * Number(unit.spdMult) + Number(unit.spdAdd));
-        unit.defWithSkills = Math.floor(Number(unit.defLvN) * Number(unit.defMult) + Number(unit.defAdd));
-        unit.resWithSkills = Math.floor(Number(unit.resLvN) * Number(unit.resMult) + Number(unit.resAdd));
-
-        // 個体値と限界突破によるステータス上昇
-        unit.updateStatusByMergeAndDragonFlower();
-
-        // 祝福効果
-        {
-            unit.clearBlessingEffects();
-            for (let ally of this.enumerateUnitsInTheSameGroup(unit, false)) {
-                if (!g_appData.isBlessingEffectEnabled(unit, ally)) {
-                    continue;
-                }
-                let heroInfo = g_appData.heroInfos.get(ally.heroIndex);
-                unit.addBlessingEffect(heroInfo.blessingType);
-            }
-
-            unit.updateStatusByBlessing();
-        }
-
-        // 武器錬成
-        unit.updateStatusByWeaponRefinement();
-
-        // 召喚士との絆
-        unit.updateStatusBySummonerLevel();
-
-        unit.updateStatusByWeapon();
-
-        if (unit.passiveA != PassiveA.None) {
-            this.__updateStatusByPassiveA(unit, unit.passiveA);
-        }
-        if (unit.passiveS != PassiveS.None) {
-            this.__updateStatusByPassiveA(unit, unit.passiveS);
-        }
-        switch (unit.weapon) {
-            case Weapon.Mistoruthin:
-                if (unit.isWeaponSpecialRefined) {
-                    unit.atkWithSkills += 3;
-                    unit.spdWithSkills += 3;
-                    unit.defWithSkills += 3;
-                    unit.resWithSkills += 3;
-                }
-                break;
-            case Weapon.KokouNoKen:
-            case Weapon.Bashirikosu:
-                if (unit.isWeaponSpecialRefined) {
-                    unit.spdWithSkills += 5;
-                    unit.atkWithSkills += 5;
-                    unit.defWithSkills -= 5;
-                    unit.resWithSkills -= 5;
-                }
-                break;
-            case Weapon.Yatonokami:
-                if (unit.weaponRefinement != WeaponRefinementType.None) {
-                    unit.atkWithSkills += 2;
-                    unit.spdWithSkills += 2;
-                    unit.defWithSkills += 2;
-                    unit.resWithSkills += 2;
-                }
-                break;
-            case Weapon.BatoruNoGofu:
-            case Weapon.HinataNoMoutou:
-                if (unit.isWeaponSpecialRefined) {
-                    unit.atkWithSkills += 3;
-                    unit.spdWithSkills += 3;
-                    unit.defWithSkills += 3;
-                    unit.resWithSkills += 3;
-                }
-                break;
-        }
-
-        // 化身によるステータス変化
-        if (unit.isTransformed) {
-            switch (unit.weapon) {
-                case Weapon.BrazenCatFang:
-                case Weapon.TaguelFang:
-                case Weapon.TaguelChildFang:
-                case Weapon.FoxkitFang:
-                case Weapon.NewBrazenCatFang:
-                case Weapon.NewFoxkitFang:
-                case Weapon.KarasuOuNoHashizume:
-                case Weapon.TakaouNoHashizume:
-                case Weapon.YoukoohNoTsumekiba:
-                case Weapon.JunaruSenekoNoTsumekiba:
-                case Weapon.ShishiouNoTsumekiba:
-                case Weapon.TrasenshiNoTsumekiba:
-                case Weapon.JinroMusumeNoTsumekiba:
-                case Weapon.JinroOuNoTsumekiba:
-                case Weapon.OkamijoouNoKiba:
-                case Weapon.ShirasagiNoTsubasa:
-                case Weapon.SeijuNoKeshinHiko:
-                case Weapon.BridesFang:
-                case Weapon.GroomsWings:
-                case Weapon.SkyPirateClaw:
-                    unit.atkWithSkills += 2;
-                    break;
-            }
-        }
-
-        // 砦レベル差
-        {
-            let offenceFortlessLevel = Number(g_appData.findOffenceFortress().level);
-            let defenceFortlessLevel = Number(g_appData.findDefenseFortress().level);
-            let fortressLevelDiff = offenceFortlessLevel - defenceFortlessLevel;
-            if (fortressLevelDiff < 0) {
-                if (unit.groupId == UnitGroupType.Enemy) {
-                    let diff = Math.abs(fortressLevelDiff);
-                    unit.atkWithSkills += 4 * diff;
-                    unit.spdWithSkills += 4 * diff;
-                    unit.defWithSkills += 4 * diff;
-                    unit.resWithSkills += 4 * diff;
-                }
-            }
-            else if (fortressLevelDiff > 0) {
-                if (unit.groupId == UnitGroupType.Ally) {
-                    let diff = Math.abs(fortressLevelDiff);
-                    unit.atkWithSkills += 4 * diff;
-                    unit.spdWithSkills += 4 * diff;
-                    unit.defWithSkills += 4 * diff;
-                    unit.resWithSkills += 4 * diff;
-                }
-            }
-        }
-
-        // ボナキャラ補正
-        if (unit.isBonusChar) {
-            unit.maxHpWithSkillsWithoutAdd += 10;
-            unit.atkWithSkills += 4;
-            unit.spdWithSkills += 4;
-            unit.defWithSkills += 4;
-            unit.resWithSkills += 4;
-        }
-
-        // 神装
-        if (unit.isResplendent) {
-            unit.maxHpWithSkillsWithoutAdd += 2;
-            unit.atkWithSkills += 2;
-            unit.spdWithSkills += 2;
-            unit.defWithSkills += 2;
-            unit.resWithSkills += 2;
-        }
-
-        if (g_appData.gameMode == GameMode.Arena) {
-            this.updateArenaScore(unit);
-        }
-        this.__showStatusToAttackerInfo();
+        g_appData.initializeByHeroInfo(unit, heroIndex);
     }
 
     gainCurrentTurn() {
@@ -3699,21 +2963,9 @@ class AetherRaidTacticsBoard {
     __turnChanged() {
     }
 
-    __updateStatusByPassiveA(unit, skillId) {
-        let skillInfo = this.__findPassiveSInfo(skillId);
-        if (skillInfo == null) {
-            return;
-        }
-        unit.maxHpWithSkillsWithoutAdd += skillInfo.hp;
-        unit.atkWithSkills += skillInfo.atk;
-        unit.spdWithSkills += skillInfo.spd;
-        unit.defWithSkills += skillInfo.def;
-        unit.resWithSkills += skillInfo.res;
-    }
-
     resetUnits(heroIndex) {
         for (let unit of this.vm.units) {
-            this.initializeByHeroInfo(unit, heroIndex);
+            g_appData.initializeByHeroInfo(unit, heroIndex);
         }
 
         this.clearDamageCalcSummary();
@@ -3929,31 +3181,31 @@ class AetherRaidTacticsBoard {
                 let weaponType = stringToWeaponType(heroInfo.weaponType);
                 let moveType = heroInfo.moveType;
                 this.__registerInheritableWeapons(heroInfo);
-                this.__registerInheritableSkills(heroInfo.supportOptions, this.vm.supportOptions[0], [this.supportInfos],
+                this.__registerInheritableSkills(heroInfo.supportOptions, this.vm.supportOptions[0], [g_appData.supportInfos],
                     x => (!x.canInherit && heroInfo.supports.includes(x.id))
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.specialOptions, this.vm.specialOptions[0], [this.specialInfos],
+                this.__registerInheritableSkills(heroInfo.specialOptions, this.vm.specialOptions[0], [g_appData.specialInfos],
                     x => (!x.canInherit && heroInfo.special == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveAOptions, this.vm.passiveAOptions[0], [this.passiveAInfos],
+                this.__registerInheritableSkills(heroInfo.passiveAOptions, this.vm.passiveAOptions[0], [g_appData.passiveAInfos],
                     x => (!x.canInherit && heroInfo.passiveA == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveBOptions, this.vm.passiveBOptions[0], [this.passiveBInfos],
+                this.__registerInheritableSkills(heroInfo.passiveBOptions, this.vm.passiveBOptions[0], [g_appData.passiveBInfos],
                     x => (!x.canInherit && heroInfo.passiveB == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveCOptions, this.vm.passiveCOptions[0], [this.passiveCInfos],
+                this.__registerInheritableSkills(heroInfo.passiveCOptions, this.vm.passiveCOptions[0], [g_appData.passiveCInfos],
                     x => (!x.canInherit && heroInfo.passiveC == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveSOptions, this.vm.passiveSOptions[0], [this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos],
+                this.__registerInheritableSkills(heroInfo.passiveSOptions, this.vm.passiveSOptions[0], [g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
                     x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && this.__isInheritableSkill(weaponType, moveType, x));
 
-                this.__markUnsupportedSkills(heroInfo.weaponOptions, [Weapon], [this.weaponInfos]);
-                this.__markUnsupportedSkills(heroInfo.supportOptions, [Support], [this.supportInfos]);
-                this.__markUnsupportedSkills(heroInfo.specialOptions, [Special], [this.specialInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveAOptions, [PassiveA], [this.passiveAInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveBOptions, [PassiveB], [this.passiveBInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveCOptions, [PassiveC], [this.passiveCInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [this.passiveSInfos, this.passiveAInfos, this.passiveBInfos, this.passiveSInfos]);
+                this.__markUnsupportedSkills(heroInfo.weaponOptions, [Weapon], [g_appData.weaponInfos]);
+                this.__markUnsupportedSkills(heroInfo.supportOptions, [Support], [g_appData.supportInfos]);
+                this.__markUnsupportedSkills(heroInfo.specialOptions, [Special], [g_appData.specialInfos]);
+                this.__markUnsupportedSkills(heroInfo.passiveAOptions, [PassiveA], [g_appData.passiveAInfos]);
+                this.__markUnsupportedSkills(heroInfo.passiveBOptions, [PassiveB], [g_appData.passiveBInfos]);
+                this.__markUnsupportedSkills(heroInfo.passiveCOptions, [PassiveC], [g_appData.passiveCInfos]);
+                this.__markUnsupportedSkills(heroInfo.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos]);
             }
         });
     }
@@ -3976,7 +3228,7 @@ class AetherRaidTacticsBoard {
         // 装備可能な武器の設定
         heroInfo.weaponOptions = [];
         heroInfo.weaponOptions.push(this.vm.weaponOptions[0]);
-        for (let info of this.weaponInfos) {
+        for (let info of g_appData.weaponInfos) {
             if (!this.__canEquipWeapon(info, heroInfo)) {
                 continue;
             }
@@ -3995,7 +3247,7 @@ class AetherRaidTacticsBoard {
 
     __isPlusWeaponAvailable(weaponName) {
         let plusWeaponName = weaponName + "+";
-        for (let info of this.weaponInfos) {
+        for (let info of g_appData.weaponInfos) {
             if (info.name == plusWeaponName) {
                 return true;
             }
@@ -4020,11 +3272,7 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
-    __registerSkillOptions(options, infos) {
-        for (let info of infos) {
-            options.push({ id: info.id, text: info.name });
-        }
-    }
+
 
     * __enumerateElemOfArrays(arrays) {
         for (let array of arrays) {
@@ -4035,64 +3283,56 @@ class AetherRaidTacticsBoard {
     }
 
     * enumerateSkillInfos() {
-        for (let info of this.weaponInfos) {
+        for (let info of g_appData.weaponInfos) {
             yield info;
         }
-        for (let info of this.supportInfos) {
+        for (let info of g_appData.supportInfos) {
             yield info;
         }
-        for (let info of this.specialInfos) {
+        for (let info of g_appData.specialInfos) {
             yield info;
         }
-        for (let info of this.passiveAInfos) {
+        for (let info of g_appData.passiveAInfos) {
             yield info;
         }
-        for (let info of this.passiveBInfos) {
+        for (let info of g_appData.passiveBInfos) {
             yield info;
         }
-        for (let info of this.passiveCInfos) {
+        for (let info of g_appData.passiveCInfos) {
             yield info;
         }
-        for (let info of this.passiveSInfos) {
+        for (let info of g_appData.passiveSInfos) {
             yield info;
         }
     }
 
     __findPassiveAInfoByName(name) {
-        return this.__findSkillInfoByName(this.passiveAInfos, name);
+        return this.__findSkillInfoByName(g_appData.passiveAInfos, name);
     }
 
     __findWeaponInfo(id) {
-        return this.__findSkillInfo(this.weaponInfos, id);
+        return g_appData.__findWeaponInfo(id);
     }
 
     __findSupportInfo(id) {
-        return this.__findSkillInfo(this.supportInfos, id);
+        return g_appData.__findSupportInfo(id);
     }
 
     __findSpecialInfo(id) {
-        return this.__findSkillInfo(this.specialInfos, id);
+        return g_appData.__findSpecialInfo(id);
     }
 
     __findPassiveAInfo(id) {
-        return this.__findSkillInfo(this.passiveAInfos, id);
+        return g_appData.__findPassiveAInfo(id);
     }
     __findPassiveBInfo(id) {
-        return this.__findSkillInfo(this.passiveBInfos, id);
+        return g_appData.__findPassiveBInfo(id);
     }
     __findPassiveCInfo(id) {
-        return this.__findSkillInfo(this.passiveCInfos, id);
+        return g_appData.__findPassiveCInfo(id);
     }
     __findPassiveSInfo(id) {
-        let s = this.__findSkillInfo(this.passiveSInfos, id);
-        if (s != null) { return s; }
-        s = this.__findSkillInfo(this.passiveAInfos, id);
-        if (s != null) { return s; }
-        s = this.__findSkillInfo(this.passiveBInfos, id);
-        if (s != null) { return s; }
-        s = this.__findSkillInfo(this.passiveCInfos, id);
-        if (s != null) { return s; }
-        return null;
+        return g_appData.__findPassiveSInfo(id);
     }
 
     __findSkillInfoByName(skillInfos, name) {
@@ -4106,13 +3346,7 @@ class AetherRaidTacticsBoard {
     }
 
     __findSkillInfo(skillInfos, id) {
-        for (let info of skillInfos) {
-            if (info.id == id) {
-                return info;
-            }
-        }
-
-        return null;
+        return __findSkillInfo(skillInfos, id);
     }
 
     __findSkillInfoFromArrays(skillInfoArrays, id) {
@@ -4128,30 +3362,13 @@ class AetherRaidTacticsBoard {
     }
 
     registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
-        this.weaponInfos = weapons;
-        this.supportInfos = supports;
-        this.specialInfos = specials;
-        this.passiveAInfos = passiveAs;
-        this.passiveBInfos = passiveBs;
-        this.passiveCInfos = passiveCs;
-        this.passiveSInfos = passiveSs;
-        this.__registerSkillOptions(this.vm.weaponOptions, weapons);
-        this.__registerSkillOptions(this.vm.supportOptions, supports);
-        this.__registerSkillOptions(this.vm.specialOptions, specials);
-        this.__registerSkillOptions(this.vm.passiveAOptions, passiveAs);
-        this.__registerSkillOptions(this.vm.passiveBOptions, passiveBs);
-        this.__registerSkillOptions(this.vm.passiveCOptions, passiveCs);
-
-        this.__registerSkillOptions(this.vm.passiveSOptions, passiveSs);
-        this.__registerPassiveSOptions(this.vm.passiveSOptions, passiveAs);
-        this.__registerPassiveSOptions(this.vm.passiveSOptions, passiveBs);
-        this.__registerPassiveSOptions(this.vm.passiveSOptions, passiveCs);
+        g_appData.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
 
         this.passiveSkillCharWhiteList = "";
         this.weaponSkillCharWhiteList = "";
         this.supportSkillCharWhiteList = "";
         this.specialSkillCharWhiteList = "";
-        for (let info of this.weaponInfos) {
+        for (let info of g_appData.weaponInfos) {
             info.type = SkillType.Weapon;
             this.weaponSkillCharWhiteList += info.name;
 
@@ -4187,27 +3404,27 @@ class AetherRaidTacticsBoard {
                 info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Res4, text: "HP+5、魔防+4" });
             }
         }
-        for (let info of this.supportInfos) {
+        for (let info of g_appData.supportInfos) {
             info.type = SkillType.Support;
             this.supportSkillCharWhiteList += info.name;
         }
-        for (let info of this.specialInfos) {
+        for (let info of g_appData.specialInfos) {
             info.type = SkillType.Special;
             this.specialSkillCharWhiteList += info.name;
         }
-        for (let info of this.passiveAInfos) {
+        for (let info of g_appData.passiveAInfos) {
             info.type = SkillType.PassiveA;
             this.passiveSkillCharWhiteList += info.name;
         }
-        for (let info of this.passiveBInfos) {
+        for (let info of g_appData.passiveBInfos) {
             info.type = SkillType.PassiveB;
             this.passiveSkillCharWhiteList += info.name;
         }
-        for (let info of this.passiveCInfos) {
+        for (let info of g_appData.passiveCInfos) {
             info.type = SkillType.PassiveC;
             this.passiveSkillCharWhiteList += info.name;
         }
-        for (let info of this.passiveSInfos) {
+        for (let info of g_appData.passiveSInfos) {
             info.type = SkillType.PassiveS;
             this.passiveSkillCharWhiteList += info.name;
         }
@@ -4218,13 +3435,13 @@ class AetherRaidTacticsBoard {
         distinctStr(this.weaponSkillCharWhiteList);
 
         // 対応してないスキルに目印×をつける
-        this.__markUnsupportedSkills(this.vm.weaponOptions, [Weapon], [this.weaponInfos], () => ++this.vm.weaponCount, () => ++this.vm.weaponImplCount);
-        this.__markUnsupportedSkills(this.vm.supportOptions, [Support], [this.supportInfos], () => ++this.vm.supportCount, () => ++this.vm.supportImplCount);
-        this.__markUnsupportedSkills(this.vm.specialOptions, [Special], [this.specialInfos], () => ++this.vm.specialCount, () => ++this.vm.specialImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveAOptions, [PassiveA], [this.passiveAInfos], () => ++this.vm.passiveACount, () => ++this.vm.passiveAImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveBOptions, [PassiveB], [this.passiveBInfos], () => ++this.vm.passiveBCount, () => ++this.vm.passiveBImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveCOptions, [PassiveC], [this.passiveCInfos], () => ++this.vm.passiveCCount, () => ++this.vm.passiveCImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [this.passiveSInfos, this.passiveAInfos, this.passiveBInfos, this.passiveSInfos], () => ++this.vm.passiveSCount, () => ++this.vm.passiveSImplCount);
+        this.__markUnsupportedSkills(this.vm.weaponOptions, [Weapon], [g_appData.weaponInfos], () => ++this.vm.weaponCount, () => ++this.vm.weaponImplCount);
+        this.__markUnsupportedSkills(this.vm.supportOptions, [Support], [g_appData.supportInfos], () => ++this.vm.supportCount, () => ++this.vm.supportImplCount);
+        this.__markUnsupportedSkills(this.vm.specialOptions, [Special], [g_appData.specialInfos], () => ++this.vm.specialCount, () => ++this.vm.specialImplCount);
+        this.__markUnsupportedSkills(this.vm.passiveAOptions, [PassiveA], [g_appData.passiveAInfos], () => ++this.vm.passiveACount, () => ++this.vm.passiveAImplCount);
+        this.__markUnsupportedSkills(this.vm.passiveBOptions, [PassiveB], [g_appData.passiveBInfos], () => ++this.vm.passiveBCount, () => ++this.vm.passiveBImplCount);
+        this.__markUnsupportedSkills(this.vm.passiveCOptions, [PassiveC], [g_appData.passiveCInfos], () => ++this.vm.passiveCCount, () => ++this.vm.passiveCImplCount);
+        this.__markUnsupportedSkills(this.vm.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos], () => ++this.vm.passiveSCount, () => ++this.vm.passiveSImplCount);
 
         // アルファベットソート(今は全スキルのオプションをメインで使ってないので速度優先でソートは無効化)
         // this.__sortSkillOptionsAlphabetically(this.vm.weaponOptions);
@@ -4244,15 +3461,6 @@ class AetherRaidTacticsBoard {
             return 0;
         });
     }
-
-    __registerPassiveSOptions(options, infos) {
-        for (let info of infos) {
-            if (info.isSacredSealAvailable) {
-                options.push({ id: info.id, text: info.name });
-            }
-        }
-    }
-
     __markUnsupportedSkills(skillOptions, supportedSkillEnums, infoLists, countFunc = null, countImplFunc = null) {
         for (let skill of skillOptions) {
             if (skill < 0) {
@@ -4583,11 +3791,11 @@ class AetherRaidTacticsBoard {
             this.__setWrathfulStaff(defUnit, atkUnit);
 
             // 特効
-            let atkWeaponInfo = this.__findSkillInfo(this.weaponInfos, atkUnit.weapon);
+            let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
             if (atkWeaponInfo != null) {
                 this.__setEffectiveAttackEnabled(atkUnit, defUnit, atkWeaponInfo);
             }
-            let defWeaponInfo = this.__findSkillInfo(this.weaponInfos, defUnit.weapon);
+            let defWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, defUnit.weapon);
             if (defWeaponInfo != null) {
                 this.__setEffectiveAttackEnabled(defUnit, atkUnit, defWeaponInfo);
             }
@@ -4683,8 +3891,8 @@ class AetherRaidTacticsBoard {
             return;
         }
 
-        let atkWeaponInfo = this.__findSkillInfo(this.weaponInfos, atkUnit.weapon);
-        let passiveBInfo = this.__findSkillInfo(this.passiveBInfos, atkUnit.passiveB);
+        let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
+        let passiveBInfo = this.__findSkillInfo(g_appData.passiveBInfos, atkUnit.passiveB);
 
         // 神罰の杖
         if ((atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
@@ -4707,7 +3915,7 @@ class AetherRaidTacticsBoard {
     }
 
     __setAttackCount(atkUnit) {
-        let atkWeaponInfo = this.__findSkillInfo(this.weaponInfos, atkUnit.weapon);
+        let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
         if (atkWeaponInfo != null) {
             atkUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
             atkUnit.battleContext.counterattackCount = atkWeaponInfo.counterattackCount;
@@ -4809,8 +4017,8 @@ class AetherRaidTacticsBoard {
         }
 
         // 反撃不可
-        let atkWeaponInfo = this.__findSkillInfo(this.weaponInfos, atkUnit.weapon);
-        let passiveBInfo = this.__findSkillInfo(this.passiveBInfos, atkUnit.passiveB);
+        let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
+        let passiveBInfo = this.__findSkillInfo(g_appData.passiveBInfos, atkUnit.passiveB);
         if ((atkWeaponInfo != null && atkWeaponInfo.disableCounterattack)
             || (passiveBInfo != null && passiveBInfo.disableCounterattack)
             || (atkUnit.weaponRefinement == WeaponRefinementType.DazzlingStaff)
@@ -8808,12 +8016,8 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    * enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
-        for (let unit of this.enumerateUnitsInSpecifiedGroup(targetUnit.groupId)) {
-            if (withTargetUnit || unit != targetUnit) {
-                yield unit;
-            }
-        }
+    enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
+        return g_appData.enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit);
     }
 
     getDifferentGroup(targetUnit) {
@@ -8898,22 +8102,7 @@ class AetherRaidTacticsBoard {
         this.vm.attackTargetInfo = defaultMessage;
         this.vm.attackerUnitIndex = -1;
         this.vm.attackTargetUnitIndex = -1;
-        this.__showStatusToAttackerInfo();
-    }
-
-    __showStatusToAttackerInfo() {
-        let unit = this.__getCurrentUnit();
-        if (unit == null) { return; }
-        let info = "HP:" + unit.hp + "/" + unit.maxHpWithSkills + "(" + unit.hpPercentage + "%)<br/>"
-            + "攻:" + unit.getAtkInPrecombat()
-            + " 速:" + unit.getSpdInPrecombat()
-            + " 守:" + unit.getDefInPrecombat()
-            + " 魔:" + unit.getResInPrecombat();
-        if (unit.groupId == UnitGroupType.Ally) {
-            // this.vm.attackerInfo = info;
-        } else {
-            // this.vm.attackTargetInfo = info;
-        }
+        g_appData.__showStatusToAttackerInfo();
     }
 
     __createDamageCalcSummaryHtml(unit, damage, attackCount,
@@ -11025,7 +10214,7 @@ class AetherRaidTacticsBoard {
         }
 
         // 化身によりステータス変化する
-        this.__updateStatusBySkillsAndMergeForAllHeroes();
+        g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
 
         // ターン開始時の移動値を記録
         for (let unit of this.enumerateAllUnitsOnMap(x => true)) {
@@ -11676,7 +10865,7 @@ class AetherRaidTacticsBoard {
                     enemyUnit.special = this.vm.durabilityTestDefaultSpecial;
                 }
 
-                this.__updateUnitSkillInfo(enemyUnit);
+                g_appData.__updateUnitSkillInfo(enemyUnit);
                 let weaponRefinement = WeaponRefinementType.Special;
                 if (enemyUnit.weaponInfo.specialRefineHpAdd == 3) {
                     weaponRefinement = WeaponRefinementType.Special_Hp3;
@@ -11684,8 +10873,8 @@ class AetherRaidTacticsBoard {
                 enemyUnit.weaponRefinement = weaponRefinement;
             }
 
-            this.__updateStatusBySkillsAndMerges(enemyUnit, false);
-            this.__resetMaxSpecialCount(enemyUnit);
+            g_appData.__updateStatusBySkillsAndMerges(enemyUnit, false);
+            enemyUnit.resetMaxSpecialCount();
 
 
             targetUnit.heal(99);
@@ -15394,7 +14583,7 @@ class AetherRaidTacticsBoard {
         } else {
             g_appData.selectCurrentItem();
         }
-        this.__showStatusToAttackerInfo();
+        g_appData.__showStatusToAttackerInfo();
     }
     selectItemToggle(targetId) {
         let item = g_appData.findItemById(targetId);
@@ -16335,11 +15524,31 @@ function loadSettings() {
     if (g_appData.gameMode == GameMode.ResonantBattles) {
         g_app.__setUnitsForResonantBattles();
     }
+    g_app.updateAllUnitSpur();
 
     let turnText = g_appData.currentTurn == 0 ? "戦闘開始前" : "ターン" + g_appData.currentTurn;
     g_app.writeSimpleLogLine(turnText + "の設定を読み込みました。");
     g_appData.commandQueuePerAction.clear();
     updateAllUi();
+}
+
+function loadSettingsFromDict(
+    settingDict,
+    loadsAllySettings = true,
+    loadsEnemySettings = true,
+    loadsOffenceSettings = true,
+    loadsDefenceSettings = true,
+    loadsMapSettings = false,
+    clearsAllFirst = true,
+){
+    g_app.settings.loadSettingsFromDict(settingDict,
+        loadsAllySettings,
+        loadsEnemySettings,
+        loadsOffenceSettings,
+        loadsDefenceSettings,
+        loadsMapSettings,
+        clearsAllFirst);
+    g_app.updateAllUnitSpur();
 }
 
 function saveSettings() {
@@ -16375,7 +15584,7 @@ function importPerTurnSetting(perTurnSettingAsString) {
     let turnSetting = new TurnSetting(currentTurn);
     let dict = {};
     dict[turnSetting.serialId] = perTurnSettingAsString;
-    g_app.settings.loadSettingsFromDict(dict, true, true, true, true, false, false);
+    loadSettingsFromDict(dict, true, true, true, true, false, false);
 }
 
 function importSettingsFromString(
@@ -16406,7 +15615,7 @@ function importSettingsFromString(
         let value = setting.substring(idAndValue[0].length + 1).trim();
         dict[id] = value;
     }
-    g_app.settings.loadSettingsFromDict(
+    loadSettingsFromDict(
         dict,
         loadsAllySettings,
         loadsEnemySettings,
