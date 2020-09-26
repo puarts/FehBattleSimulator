@@ -12370,11 +12370,13 @@ class AetherRaidTacticsBoard {
 
             this.writeDebugLogLine("候補タイル数=" + targetTileContexts.length);
             let bestTileToMove = unit.placedTile;
+            let bestTileToMoveWithoutPivot = unit.placedTile;
             let isPivotRequired = false;
             if (targetTileContexts.length > 0) {
                 targetTileContexts.sort(function (a, b) {
                     return b.priorityToMove - a.priorityToMove;
                 });
+                let targetTileContextsWithoutPivot = targetTileContexts.filter(context => !context.isPivotRequired);
 
                 this.writeDebugLogLine("移動先タイルを選択--------");
                 let order = 1;
@@ -12394,12 +12396,14 @@ class AetherRaidTacticsBoard {
                 }
 
                 bestTileToMove = targetTileContexts[0].tile;
+                if (targetTileContextsWithoutPivot.length > 0) {
+                    bestTileToMoveWithoutPivot = targetTileContextsWithoutPivot[0].tile;
+                }
                 isPivotRequired = targetTileContexts[0].isPivotRequired;
             }
 
-
             // ブロックの破壊の評価
-            let bestTileContextToBreakBlock = this.__findBestTileToBreakBlock(unit, bestTileToMove, movableTiles);
+            let bestTileContextToBreakBlock = this.__findBestTileToBreakBlock(unit, bestTileToMoveWithoutPivot, movableTiles);
             if (bestTileContextToBreakBlock != null) {
                 // ブロック破壊
                 let blockTile = bestTileContextToBreakBlock.tile;
