@@ -1608,7 +1608,7 @@ class DamageCalculator {
 
     __calcUnitAttackDamage(defUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial) {
         let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
-        var currentDamage = damage - reducedDamage;
+        var currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
             this.writeDebugLog("ダメージ軽減" + Math.trunc(damageReductionRatio * 100) + "%");
             this.writeDebugLog("ダメージ-" + damageReductionValue);
