@@ -435,7 +435,7 @@ class HeroInfo {
 }
 
 
-/// ダメージ計算時のコンテキストです。
+/// ダメージ計算時のコンテキストです。DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
     constructor() {
         this.hpBeforeCombat = 0;
@@ -500,6 +500,9 @@ class BattleContext {
 
         // 2マス以内に味方がいるか
         this.isThereAnyUnitIn2Spaces = false;
+
+        // 追撃優先度
+        this.followupAttackPriority = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -556,6 +559,7 @@ class BattleContext {
 
         this.initiatesCombat = false;
         this.isThereAnyUnitIn2Spaces = false;
+        this.followupAttackPriority = 0;
     }
 
     invalidateAllBuffs() {
@@ -590,7 +594,7 @@ class AttackableUnitInfo {
     }
 }
 
-/// 攻撃評価に使用するコンテキストです。
+/// 攻撃の優先度評価に使用するコンテキストです。
 class AttackEvaluationContext {
     constructor() {
         this.damageRatio = 0;
@@ -659,7 +663,7 @@ class AttackEvaluationContext {
     }
 }
 
-/// 補助行動の計算情報
+/// 補助行動の優先度を計算するためのクラスです。
 class AssistableUnitInfo {
     constructor(targetUnit) {
         this.targetUnit = targetUnit;
