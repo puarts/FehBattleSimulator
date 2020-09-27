@@ -275,14 +275,14 @@ class AetherRaidTacticsBoard {
                     g_appData.__updateStatusBySkillsAndMerges(unit);
                     unit.resetMaxSpecialCount();
                     self.updateAllUnitSpur();
-                    self.updateArenaScore(unit);
+                    g_appData.updateArenaScore(unit);
                 },
                 supportChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
                     self.__updateUnitSkillInfo(unit);
-                    self.updateArenaScore(unit);
+                    g_appData.updateArenaScore(unit);
                 },
                 specialChanged: function () {
                     if (g_app == null) { return; }
@@ -290,7 +290,7 @@ class AetherRaidTacticsBoard {
                     if (unit == null) { return; }
                     self.__updateUnitSkillInfo(unit);
                     unit.resetMaxSpecialCount();
-                    self.updateArenaScore(unit);
+                    g_appData.updateArenaScore(unit);
                     updateAllUi();
                 },
                 specialCountChanged: function () {
@@ -310,14 +310,14 @@ class AetherRaidTacticsBoard {
                     if (unit == null) { return; }
                     g_appData.__updateStatusBySkillsAndMerges(unit);
                     g_app.updateAllUnitSpur();
-                    self.updateArenaScore(unit);
+                    g_appData.updateArenaScore(unit);
                 },
                 passiveBChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
                     g_app.__updateUnitSkillInfo(unit);
-                    self.updateArenaScore(unit);
+                    g_appData.updateArenaScore(unit);
 
                     // 救援等に変わったら移動可能範囲の更新が必要
                     updateAllUi();
@@ -328,7 +328,7 @@ class AetherRaidTacticsBoard {
                     if (unit == null) { return; }
                     g_appData.__updateStatusBySkillsAndMerges(unit);
                     g_app.updateAllUnitSpur();
-                    self.updateArenaScore(unit);
+                    g_appData.updateArenaScore(unit);
                 },
                 passiveSChanged: function () {
                     if (g_app == null) { return; }
@@ -336,7 +336,7 @@ class AetherRaidTacticsBoard {
                     if (unit == null) { return; }
                     g_appData.__updateStatusBySkillsAndMerges(unit);
                     g_app.updateAllUnitSpur();
-                    self.updateArenaScore(unit);
+                    g_appData.updateArenaScore(unit);
 
                     // 曲技飛行等で移動範囲が変わる
                     updateAllUi();
@@ -4232,7 +4232,7 @@ class AetherRaidTacticsBoard {
     }
 
     __getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
-        let followupAttackPriority = 0;
+        let followupAttackPriority = atkUnit.battleContext.followupAttackPriority;
         if (!this.__canInvalidateAbsoluteFollowupAttack(defUnit, atkUnit)) {
             if (this.__canActivateBreakerSkill(atkUnit, defUnit)) {
                 ++followupAttackPriority;
@@ -5792,6 +5792,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.CraftFighter3:
+                    if (!targetUnit.battleContext.initiatesCombat
+                        && targetUnit.snapshot.restHpPercentage >= 25
+                    ){
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                        ++targetUnit.battleContext.followupAttackPriority;
+                    }
+                    break;
                 case Weapon.Garumu:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 25) {
