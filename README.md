@@ -15,6 +15,7 @@
   * 同様の効果のスキルが既に存在するかは https://puarts.com/?pid=1329 で調べられる
 * ほとんどのスキル効果は Main.js 内に実装されている
   * 戦闘中に発動するスキル効果は AetherRaidTacticsBoard.calcDamage()
+    * ほとんどは calcDamage() 内で呼んでいる AetherRaidTacticsBoard.\_\_applySkillEffectForUnit() に実装されている
   * 戦闘後に発動するスキル効果は AetherRaidTacticsBoard.updateDamageCalculation()
   * ターン開始時のスキル効果は AetherRaidTacticsBoard.\_\_applySkillForBeginningOfTurn()
   * 攻撃の紋章など、戦闘中の無条件強化/弱化効果は AetherRaidTacticsBoard.\_\_updateUnitSpur()
