@@ -5810,6 +5810,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CourtlyCandle:
+                    if (targetUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    break;
                 case PassiveB.CraftFighter3:
                     if (!targetUnit.battleContext.initiatesCombat
                         && targetUnit.snapshot.restHpPercentage >= 25

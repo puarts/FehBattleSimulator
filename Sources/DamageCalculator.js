@@ -180,6 +180,11 @@ class DamageCalculator {
 
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
+            case Weapon.CourtlyCandle:
+                if (unit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
+                    unit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
+                }
+                break;
             case Weapon.SummerStrikers:
                 if (unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
                     unit.battleContext.damageReductionRatioOfFirstAttack = 0.75;
