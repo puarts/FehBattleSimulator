@@ -987,7 +987,7 @@ class AppData {
         unit.updateArenaScore(this.mjolnirsStrikeMajorSeason, this.mjolnirsStrikeMinorSeason);
     }
 
-    updateArenaScore() {
+    updateArenaScoreOfParties() {
         this.arenaScore = this.__calcArenaScore(this.allyUnits);
         this.primeArenaScore = this.__calcPrimeArenaScore(this.allyUnits);
         this.arenaScoreForEnemy = this.__calcArenaScore(this.enemyUnits);
@@ -995,7 +995,7 @@ class AppData {
     }
     updateArenaScore(unit) {
         this.updateArenaScoreOfUnit(unit);
-        this.updateArenaScore();
+        this.updateArenaScoreOfParties();
     }
 
     updateEnemyAndAllyUnits() {

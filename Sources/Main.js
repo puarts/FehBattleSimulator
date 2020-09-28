@@ -283,14 +283,14 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    self.__updateUnitSkillInfo(unit);
+                    g_appData.__updateUnitSkillInfo(unit);
                     g_appData.updateArenaScore(unit);
                 },
                 specialChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    self.__updateUnitSkillInfo(unit);
+                    g_appData.__updateUnitSkillInfo(unit);
                     unit.resetMaxSpecialCount();
                     g_appData.updateArenaScore(unit);
                     updateAllUi();
@@ -318,7 +318,7 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
-                    g_app.__updateUnitSkillInfo(unit);
+                    g_appData.__updateUnitSkillInfo(unit);
                     g_appData.updateArenaScore(unit);
 
                     // 救援等に変わったら移動可能範囲の更新が必要
@@ -758,7 +758,7 @@ class AetherRaidTacticsBoard {
         for (let unit of this.enumerateAllUnits()) {
             g_appData.updateArenaScoreOfUnit(unit);
         }
-        g_appData.updateArenaScore();
+        g_appData.updateArenaScoreOfParties();
     }
 
     get audioManager() {
@@ -1733,7 +1733,7 @@ class AetherRaidTacticsBoard {
                     if (partialName != null) {
                         let result = self.findSimilarNameSkill(partialName,
                             self.__enumerateElemOfArrays([
-                                self.weaponInfos]));
+                                g_appData.weaponInfos]));
                         if (result != null) {
                             let skillInfo = result[0];
                             console.log(skillInfo.name);
@@ -1756,7 +1756,7 @@ class AetherRaidTacticsBoard {
                                 }
                             }
                             unit.weapon = skillId;
-                            self.__updateUnitSkillInfo(unit);
+                            g_appData.__updateUnitSkillInfo(unit);
                         }
                     }
                 },
@@ -1886,10 +1886,10 @@ class AetherRaidTacticsBoard {
                     if (partialName != null) {
                         let result = g_app.findSimilarNameSkill(partialName,
                             self.__enumerateElemOfArrays([
-                                self.passiveAInfos,
-                                self.passiveBInfos,
-                                self.passiveCInfos,
-                                self.passiveSInfos]));
+                                g_appData.passiveAInfos,
+                                g_appData.passiveBInfos,
+                                g_appData.passiveCInfos,
+                                g_appData.passiveSInfos]));
                         if (result != null) {
                             let skillInfo = result[0];
                             console.log(skillInfo.name);
