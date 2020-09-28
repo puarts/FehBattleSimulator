@@ -90,6 +90,8 @@ class AetherRaidTacticsBoard {
 
         this.settings = new Setting();
 
+        this.skillIdToNameDict = {};
+
         let self = this;
         this.vm = new Vue({
             el: "#app",
@@ -3182,43 +3184,45 @@ class AetherRaidTacticsBoard {
                 let weaponType = stringToWeaponType(heroInfo.weaponType);
                 let moveType = heroInfo.moveType;
                 this.__registerInheritableWeapons(heroInfo);
-                this.__registerInheritableSkills(heroInfo.supportOptions, this.vm.supportOptions[0], [g_appData.supportInfos],
+                this.__registerInheritableSkills(heroInfo.supportOptions, this.vm.supportOptions, [g_appData.supportInfos],
                     x => (!x.canInherit && heroInfo.supports.includes(x.id))
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.specialOptions, this.vm.specialOptions[0], [g_appData.specialInfos],
+                this.__registerInheritableSkills(heroInfo.specialOptions, this.vm.specialOptions, [g_appData.specialInfos],
                     x => (!x.canInherit && heroInfo.special == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveAOptions, this.vm.passiveAOptions[0], [g_appData.passiveAInfos],
+                this.__registerInheritableSkills(heroInfo.passiveAOptions, this.vm.passiveAOptions, [g_appData.passiveAInfos],
                     x => (!x.canInherit && heroInfo.passiveA == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveBOptions, this.vm.passiveBOptions[0], [g_appData.passiveBInfos],
+                this.__registerInheritableSkills(heroInfo.passiveBOptions, this.vm.passiveBOptions, [g_appData.passiveBInfos],
                     x => (!x.canInherit && heroInfo.passiveB == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveCOptions, this.vm.passiveCOptions[0], [g_appData.passiveCInfos],
+                this.__registerInheritableSkills(heroInfo.passiveCOptions, this.vm.passiveCOptions, [g_appData.passiveCInfos],
                     x => (!x.canInherit && heroInfo.passiveC == x.id)
                         || this.__isInheritableSkill(weaponType, moveType, x));
-                this.__registerInheritableSkills(heroInfo.passiveSOptions, this.vm.passiveSOptions[0], [g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
+                this.__registerInheritableSkills(heroInfo.passiveSOptions, this.vm.passiveSOptions, [g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
                     x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && this.__isInheritableSkill(weaponType, moveType, x));
 
-                this.__markUnsupportedSkills(heroInfo.weaponOptions, [Weapon], [g_appData.weaponInfos]);
-                this.__markUnsupportedSkills(heroInfo.supportOptions, [Support], [g_appData.supportInfos]);
-                this.__markUnsupportedSkills(heroInfo.specialOptions, [Special], [g_appData.specialInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveAOptions, [PassiveA], [g_appData.passiveAInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveBOptions, [PassiveB], [g_appData.passiveBInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveCOptions, [PassiveC], [g_appData.passiveCInfos]);
-                this.__markUnsupportedSkills(heroInfo.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos]);
+                // this.__markUnsupportedSkills(heroInfo.weaponOptions, [Weapon], [g_appData.weaponInfos]);
+                // this.__markUnsupportedSkills(heroInfo.supportOptions, [Support], [g_appData.supportInfos]);
+                // this.__markUnsupportedSkills(heroInfo.specialOptions, [Special], [g_appData.specialInfos]);
+                // this.__markUnsupportedSkills(heroInfo.passiveAOptions, [PassiveA], [g_appData.passiveAInfos]);
+                // this.__markUnsupportedSkills(heroInfo.passiveBOptions, [PassiveB], [g_appData.passiveBInfos]);
+                // this.__markUnsupportedSkills(heroInfo.passiveCOptions, [PassiveC], [g_appData.passiveCInfos]);
+                // this.__markUnsupportedSkills(heroInfo.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos]);
             }
         });
     }
     __isInheritableSkill(weaponType, moveType, skillInfo) {
         return isInheritableWeaponType(weaponType, skillInfo.inheritableWeaponTypes) && skillInfo.inheritableMoveTypes.includes(moveType);
     }
-    __registerInheritableSkills(options, noneOption, allInfos, canInheritFunc) {
+    __registerInheritableSkills(options, allOptions, allInfos, canInheritFunc) {
+        let noneOption = allOptions[0];
         options.push(noneOption);
         for (let infos of allInfos) {
             for (let info of infos) {
                 if (canInheritFunc(info)) {
-                    options.push({ id: info.id, text: info.name });
+                    let name = this.skillIdToNameDict[info.id];
+                    options.push({ id: info.id, text: name });
                 }
             }
         }
@@ -3239,7 +3243,8 @@ class AetherRaidTacticsBoard {
             //     continue;
             // }
 
-            heroInfo.weaponOptions.push({ id: info.id, text: info.name });
+            let name = this.skillIdToNameDict[info.id];
+            heroInfo.weaponOptions.push({ id: info.id, text: name });
         }
         // if (heroInfo.weaponOptions.length == 1) {
         //     throw new Error(`Undefined weapon type "${heroInfo.weaponType}"`);
@@ -3363,95 +3368,98 @@ class AetherRaidTacticsBoard {
     }
 
     registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
-        g_appData.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
+        let self = this;
+        using(new ScopedStopwatch(time => self.writeDebugLogLine("スキル情報の登録: " + time + " ms")), () => {
+            g_appData.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
 
-        this.passiveSkillCharWhiteList = "";
-        this.weaponSkillCharWhiteList = "";
-        this.supportSkillCharWhiteList = "";
-        this.specialSkillCharWhiteList = "";
-        for (let info of g_appData.weaponInfos) {
-            info.type = SkillType.Weapon;
-            this.weaponSkillCharWhiteList += info.name;
+            self.passiveSkillCharWhiteList = "";
+            self.weaponSkillCharWhiteList = "";
+            self.supportSkillCharWhiteList = "";
+            self.specialSkillCharWhiteList = "";
+            for (let info of g_appData.weaponInfos) {
+                info.type = SkillType.Weapon;
+                self.weaponSkillCharWhiteList += info.name;
 
-            info.weaponRefinementOptions.push(this.vm.weaponRefinementOptions[0]);
-            if (info.hasSpecialWeaponRefinement) {
-                if (info.specialRefineHpAdd == 3) {
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special_Hp3, text: "特殊、HP+3" });
+                info.weaponRefinementOptions.push(self.vm.weaponRefinementOptions[0]);
+                if (info.hasSpecialWeaponRefinement) {
+                    if (info.specialRefineHpAdd == 3) {
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special_Hp3, text: "特殊、HP+3" });
+                    }
+                    else {
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special, text: "特殊" });
+
+                        // 間違ってるものが多いのでHP+3もとりあえず出しておく
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special_Hp3, text: "特殊、HP+3" });
+                    }
+                }
+
+                if (info.weaponType == WeaponType.Staff) {
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.WrathfulStaff, text: "神罰の杖" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.DazzlingStaff, text: "幻惑の杖" });
+                    continue;
+                }
+
+                if (isRangedWeaponType(info.weaponType)) {
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Atk1, text: "HP+2、攻撃+1" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Spd2, text: "HP+2、速さ+2" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Def3, text: "HP+2、守備+3" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Res3, text: "HP+2、魔防+3" });
                 }
                 else {
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special, text: "特殊" });
-
-                    // 間違ってるものが多いのでHP+3もとりあえず出しておく
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special_Hp3, text: "特殊、HP+3" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Atk2, text: "HP+5、攻撃+2" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Spd3, text: "HP+5、速さ+3" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Def4, text: "HP+5、守備+4" });
+                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Res4, text: "HP+5、魔防+4" });
                 }
             }
-
-            if (info.weaponType == WeaponType.Staff) {
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.WrathfulStaff, text: "神罰の杖" });
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.DazzlingStaff, text: "幻惑の杖" });
-                continue;
+            for (let info of g_appData.supportInfos) {
+                info.type = SkillType.Support;
+                self.supportSkillCharWhiteList += info.name;
+            }
+            for (let info of g_appData.specialInfos) {
+                info.type = SkillType.Special;
+                self.specialSkillCharWhiteList += info.name;
+            }
+            for (let info of g_appData.passiveAInfos) {
+                info.type = SkillType.PassiveA;
+                self.passiveSkillCharWhiteList += info.name;
+            }
+            for (let info of g_appData.passiveBInfos) {
+                info.type = SkillType.PassiveB;
+                self.passiveSkillCharWhiteList += info.name;
+            }
+            for (let info of g_appData.passiveCInfos) {
+                info.type = SkillType.PassiveC;
+                self.passiveSkillCharWhiteList += info.name;
+            }
+            for (let info of g_appData.passiveSInfos) {
+                info.type = SkillType.PassiveS;
+                self.passiveSkillCharWhiteList += info.name;
             }
 
-            if (isRangedWeaponType(info.weaponType)) {
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Atk1, text: "HP+2、攻撃+1" });
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Spd2, text: "HP+2、速さ+2" });
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Def3, text: "HP+2、守備+3" });
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Res3, text: "HP+2、魔防+3" });
-            }
-            else {
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Atk2, text: "HP+5、攻撃+2" });
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Spd3, text: "HP+5、速さ+3" });
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Def4, text: "HP+5、守備+4" });
-                info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Res4, text: "HP+5、魔防+4" });
-            }
-        }
-        for (let info of g_appData.supportInfos) {
-            info.type = SkillType.Support;
-            this.supportSkillCharWhiteList += info.name;
-        }
-        for (let info of g_appData.specialInfos) {
-            info.type = SkillType.Special;
-            this.specialSkillCharWhiteList += info.name;
-        }
-        for (let info of g_appData.passiveAInfos) {
-            info.type = SkillType.PassiveA;
-            this.passiveSkillCharWhiteList += info.name;
-        }
-        for (let info of g_appData.passiveBInfos) {
-            info.type = SkillType.PassiveB;
-            this.passiveSkillCharWhiteList += info.name;
-        }
-        for (let info of g_appData.passiveCInfos) {
-            info.type = SkillType.PassiveC;
-            this.passiveSkillCharWhiteList += info.name;
-        }
-        for (let info of g_appData.passiveSInfos) {
-            info.type = SkillType.PassiveS;
-            this.passiveSkillCharWhiteList += info.name;
-        }
+            distinctStr(self.supportSkillCharWhiteList);
+            distinctStr(self.specialSkillCharWhiteList);
+            distinctStr(self.passiveSkillCharWhiteList);
+            distinctStr(self.weaponSkillCharWhiteList);
 
-        distinctStr(this.supportSkillCharWhiteList);
-        distinctStr(this.specialSkillCharWhiteList);
-        distinctStr(this.passiveSkillCharWhiteList);
-        distinctStr(this.weaponSkillCharWhiteList);
+            // 対応してないスキルに目印×をつける
+            self.__markUnsupportedSkills(self.vm.weaponOptions, [Weapon], [g_appData.weaponInfos], () => ++self.vm.weaponCount, () => ++self.vm.weaponImplCount);
+            self.__markUnsupportedSkills(self.vm.supportOptions, [Support], [g_appData.supportInfos], () => ++self.vm.supportCount, () => ++self.vm.supportImplCount);
+            self.__markUnsupportedSkills(self.vm.specialOptions, [Special], [g_appData.specialInfos], () => ++self.vm.specialCount, () => ++self.vm.specialImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveAOptions, [PassiveA], [g_appData.passiveAInfos], () => ++self.vm.passiveACount, () => ++self.vm.passiveAImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveBOptions, [PassiveB], [g_appData.passiveBInfos], () => ++self.vm.passiveBCount, () => ++self.vm.passiveBImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveCOptions, [PassiveC], [g_appData.passiveCInfos], () => ++self.vm.passiveCCount, () => ++self.vm.passiveCImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos], () => ++self.vm.passiveSCount, () => ++self.vm.passiveSImplCount);
 
-        // 対応してないスキルに目印×をつける
-        this.__markUnsupportedSkills(this.vm.weaponOptions, [Weapon], [g_appData.weaponInfos], () => ++this.vm.weaponCount, () => ++this.vm.weaponImplCount);
-        this.__markUnsupportedSkills(this.vm.supportOptions, [Support], [g_appData.supportInfos], () => ++this.vm.supportCount, () => ++this.vm.supportImplCount);
-        this.__markUnsupportedSkills(this.vm.specialOptions, [Special], [g_appData.specialInfos], () => ++this.vm.specialCount, () => ++this.vm.specialImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveAOptions, [PassiveA], [g_appData.passiveAInfos], () => ++this.vm.passiveACount, () => ++this.vm.passiveAImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveBOptions, [PassiveB], [g_appData.passiveBInfos], () => ++this.vm.passiveBCount, () => ++this.vm.passiveBImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveCOptions, [PassiveC], [g_appData.passiveCInfos], () => ++this.vm.passiveCCount, () => ++this.vm.passiveCImplCount);
-        this.__markUnsupportedSkills(this.vm.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos], () => ++this.vm.passiveSCount, () => ++this.vm.passiveSImplCount);
-
-        // アルファベットソート(今は全スキルのオプションをメインで使ってないので速度優先でソートは無効化)
-        // this.__sortSkillOptionsAlphabetically(this.vm.weaponOptions);
-        // this.__sortSkillOptionsAlphabetically(this.vm.supportOptions);
-        // this.__sortSkillOptionsAlphabetically(this.vm.specialOptions);
-        // this.__sortSkillOptionsAlphabetically(this.vm.passiveAOptions);
-        // this.__sortSkillOptionsAlphabetically(this.vm.passiveBOptions);
-        // this.__sortSkillOptionsAlphabetically(this.vm.passiveCOptions);
-        // this.__sortSkillOptionsAlphabetically(this.vm.passiveSOptions);
+            // アルファベットソート(今は全スキルのオプションをメインで使ってないので速度優先でソートは無効化)
+            // self.__sortSkillOptionsAlphabetically(self.vm.weaponOptions);
+            // self.__sortSkillOptionsAlphabetically(self.vm.supportOptions);
+            // self.__sortSkillOptionsAlphabetically(self.vm.specialOptions);
+            // self.__sortSkillOptionsAlphabetically(self.vm.passiveAOptions);
+            // self.__sortSkillOptionsAlphabetically(self.vm.passiveBOptions);
+            // self.__sortSkillOptionsAlphabetically(self.vm.passiveCOptions);
+            // self.__sortSkillOptionsAlphabetically(self.vm.passiveSOptions);
+        });
     }
     __sortSkillOptionsAlphabetically(options) {
         options.sort(function (a, b) {
@@ -3470,22 +3478,32 @@ class AetherRaidTacticsBoard {
             if (countFunc != null) {
                 countFunc();
             }
-            let skillInfo = null;
-            for (let infos of infoLists) {
-                skillInfo = this.__findSkillInfo(infos, skill.id);
-                if (skillInfo != null) {
-                    break;
-                }
-            }
 
-            let isImplRequired = (skillInfo == null || skillInfo.isAdditionalImplRequired)
-            if (isImplRequired && !this.__isSupportedSkill(skill, supportedSkillEnums)) {
+            let isImplemented = this.__isImplementedSkill(skill, supportedSkillEnums, infoLists);
+            if (!isImplemented) {
                 skill.text = "×" + skill.text;
             }
             else if (countImplFunc != null) {
                 countImplFunc();
             }
+
+            this.skillIdToNameDict[skill.id] = skill.text;
         }
+    }
+
+    __findSkillNameFromSkillOptions(skillId, options){
+        let option = options.find(x => x.id == skillId);
+        if (option == null){
+            return "不明";
+        }
+
+        return option.text;
+    }
+
+    __isImplementedSkill(skill, supportedSkillEnums, infoLists) {
+        let skillInfo = this.__findSkillInfoFromArrays(infoLists, skill.id);
+        let isImplRequired = (skillInfo == null || skillInfo.isAdditionalImplRequired)
+        return !isImplRequired || this.__isSupportedSkill(skill, supportedSkillEnums);
     }
 
     __isSupportedSkill(skill, supportedSkillEnums) {
@@ -15652,14 +15670,22 @@ function importSettingsFromString(
 function initAetherRaidBoard(
     heroInfos
 ) {
-    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("シミュレーターの初期化: " + time + " ms")), () => {
+    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
         g_appData.initHeroInfos(heroInfos);
         for (let i = 0; i < g_appData.heroInfos.length; ++i) {
             g_selectHeroInfos.push({ id: i, text: g_appData.heroInfos.get(i).name });
         }
+    });
 
+    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("マップの初期化: " + time + " ms")), () => {
         createMap();
-        g_app.resetUnits(0);
+
+        // 全ユニットをアルフォンスで初期化
+        let defaultHeroIndex = 18;
+        g_app.resetUnits(defaultHeroIndex);
+    });
+
+    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("保存状態の復元: " + time + " ms")), () => {
         // g_app.resetUnitsForTesting();
         loadSettings();
     });
