@@ -8267,6 +8267,10 @@ class AetherRaidTacticsBoard {
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.spdSpur -= 4;
                                 break;
+                            case PassiveC.SpdDefRein3:
+                                targetUnit.spdSpur -= 4;
+                                targetUnit.defSpur -= 4;
+                                break;
                             case Weapon.YashiNoKiNoTsuePlus:
                                 targetUnit.atkSpur -= 5;
                                 targetUnit.spdSpur -= 5;
@@ -9858,6 +9862,12 @@ class AetherRaidTacticsBoard {
                         x.applyAtkDebuff(-5); x.applyResDebuff(-5);
                     });
                 break;
+            case PassiveC.ThreatenAtkDef2:
+                this.__applyThreatenSkill(skillOwner,
+                    x => {
+                        x.applyAtkDebuff(-4); x.applyDefDebuff(-4);
+                    });
+                break;
             case PassiveC.ThreatenAtkDef3:
                 this.__applyThreatenSkill(skillOwner,
                     x => {
@@ -9946,6 +9956,9 @@ class AetherRaidTacticsBoard {
             case PassiveC.JointHoneSpd:
                 this.__applyHoneSkill(skillOwner, x => true,
                     x => { skillOwner.applySpdBuff(5); x.applySpdBuff(5); }); break;
+            case PassiveC.JointHoneDef:
+                this.__applyHoneSkill(skillOwner, x => true,
+                    x => { skillOwner.applyDefBuff(5); x.applyDefBuff(5); }); break;
             case PassiveC.JointHoneRes:
                 this.__applyHoneSkill(skillOwner, x => true,
                     x => { skillOwner.applyResBuff(5); x.applyResBuff(5); }); break;

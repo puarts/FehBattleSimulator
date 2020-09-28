@@ -1419,6 +1419,7 @@ var PassiveC = {
     ThreatenRes3: 721,
     ThreatenAtkSpd3: 979,
     ThreatenAtkRes3: 1068,
+    ThreatenAtkDef2: 1487,
     ThreatenAtkDef3: 1124,
 
     KodoNoGenen3: 909, // 鼓動の幻煙3
@@ -1469,6 +1470,7 @@ var PassiveC = {
     JointHoneAtk: 989, // 相互鼓舞
     JointHoneSpd: 793, // 相互鼓舞
     JointHoneDef: 1015, // 相互鼓舞
+    JointHoneRes: 1477,
 
     HokoNoKodo3: 731, // 歩行の鼓動3
 
@@ -1547,6 +1549,7 @@ var PassiveC = {
     InevitableDeath: 1420, // 死からは逃れられぬ
 
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
+    SpdDefRein3: 1485, // 速さ守備の牽制3
 };
 
 var PassiveS = {
