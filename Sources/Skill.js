@@ -772,6 +772,8 @@ const Weapon = {
     DanielMadeBow: 1447, // ダニエルの錬弓
 
     PrimordialBreath: 1468, // 神祖竜のブレス
+
+    CourtlyCandle: 1478, // 高貴な燭台
 };
 
 var Support = {
