@@ -1347,27 +1347,27 @@
 
             <span v-for="imgFile in templateWeaponRefinementImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_imageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
+                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
                     class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in templateBlessingImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_imageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
+                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
                     class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in templateImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_imageRootPath + 'Templates/' + imgFile" class="lazyTemplateImage"
+                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile" class="lazyTemplateImage"
                     v-bind:id="imgFile" v-bind:alt="imgFile" />
             </span>
             <span v-for="imgFile in mapImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_imageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImage"
+                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImage"
                     v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in arenaMapImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_imageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImage"
+                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImage"
                     v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
             </span>
         </div>
