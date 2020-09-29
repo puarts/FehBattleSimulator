@@ -458,6 +458,7 @@ class AppData {
         this.passiveBInfos = [];
         this.passiveCInfos = [];
         this.passiveSInfos = [];
+        this.skillIdToInfoDict = {};
 
         {
             // 生成順を変えるとIDが変わってしまうので注意
@@ -477,6 +478,12 @@ class AppData {
         this.heroInfos = new HeroDataBase(heroInfos);
     }
 
+    __registerInfosToDict(skillInfos){
+        for(let info of skillInfos){
+            this.skillIdToInfoDict[info.id] = info;
+        }
+    }
+
     registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
         this.weaponInfos = weapons;
         this.supportInfos = supports;
@@ -485,6 +492,15 @@ class AppData {
         this.passiveBInfos = passiveBs;
         this.passiveCInfos = passiveCs;
         this.passiveSInfos = passiveSs;
+
+        this.__registerInfosToDict(weapons);
+        this.__registerInfosToDict(supports);
+        this.__registerInfosToDict(specials);
+        this.__registerInfosToDict(passiveAs);
+        this.__registerInfosToDict(passiveBs);
+        this.__registerInfosToDict(passiveCs);
+        this.__registerInfosToDict(passiveSs);
+
         __registerSkillOptions(this.weaponOptions, weapons);
         __registerSkillOptions(this.supportOptions, supports);
         __registerSkillOptions(this.specialOptions, specials);
@@ -497,49 +513,45 @@ class AppData {
         __registerPassiveSOptions(this.passiveSOptions, passiveCs);
     }
     __updateUnitSkillInfo(unit) {
-        unit.weaponInfo = this.__findWeaponInfo(unit.weapon);
-        unit.supportInfo = this.__findSupportInfo(unit.support);
-        unit.specialInfo = this.__findSpecialInfo(unit.special);
-        unit.passiveAInfo = this.__findPassiveAInfo(unit.passiveA);
-        unit.passiveBInfo = this.__findPassiveBInfo(unit.passiveB);
-        unit.passiveCInfo = this.__findPassiveCInfo(unit.passiveC);
-        unit.passiveSInfo = this.__findPassiveSInfo(unit.passiveS);
+        unit.weaponInfo = this.__findSkillInfoByDict(unit.weapon);
+        unit.supportInfo = this.__findSkillInfoByDict(unit.support);
+        unit.specialInfo = this.__findSkillInfoByDict(unit.special);
+        unit.passiveAInfo = this.__findSkillInfoByDict(unit.passiveA);
+        unit.passiveBInfo = this.__findSkillInfoByDict(unit.passiveB);
+        unit.passiveCInfo = this.__findSkillInfoByDict(unit.passiveC);
+        unit.passiveSInfo = this.__findSkillInfoByDict(unit.passiveS);
+    }
+
+    __findSkillInfoByDict(id){
+        return this.skillIdToInfoDict[id];
     }
     
     __findWeaponInfo(id) {
-        return __findSkillInfo(this.weaponInfos, id);
+        return this.__findSkillInfoByDict(id);
     }
 
     __findSupportInfo(id) {
-        return __findSkillInfo(this.supportInfos, id);
+        return this.__findSkillInfoByDict(id);
     }
 
     __findSpecialInfo(id) {
-        return __findSkillInfo(this.specialInfos, id);
+        return this.__findSkillInfoByDict(id);
     }
 
     __findPassiveAInfo(id) {
-        return __findSkillInfo(this.passiveAInfos, id);
+        return this.__findSkillInfoByDict(id);
     }
     __findPassiveBInfo(id) {
-        return __findSkillInfo(this.passiveBInfos, id);
+        return this.__findSkillInfoByDict(id);
     }
     __findPassiveCInfo(id) {
-        return __findSkillInfo(this.passiveCInfos, id);
+        return this.__findSkillInfoByDict(id);
     }
     __findPassiveSInfo(id) {
-        let s = __findSkillInfo(this.passiveSInfos, id);
-        if (s != null) { return s; }
-        s = __findSkillInfo(this.passiveAInfos, id);
-        if (s != null) { return s; }
-        s = __findSkillInfo(this.passiveBInfos, id);
-        if (s != null) { return s; }
-        s = __findSkillInfo(this.passiveCInfos, id);
-        if (s != null) { return s; }
-        return null;
+        return this.__findSkillInfoByDict(id);
     }
     __updateStatusByPassiveA(unit, skillId) {
-        let skillInfo = this.__findPassiveSInfo(skillId);
+        let skillInfo = this.__findSkillInfoByDict(skillId);
         if (skillInfo == null) {
             return;
         }

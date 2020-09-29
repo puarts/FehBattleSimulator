@@ -3162,14 +3162,7 @@ class AetherRaidTacticsBoard {
     }
 
     findUnitById(id) {
-        for (let i = 0; i < this.vm.units.length; ++i) {
-            let unit = this.vm.units[i];
-            if (unit.id == id) {
-                return unit;
-            }
-        }
-
-        return null;
+        return g_appData.findUnitById(id);
     }
 
     registerHeroOptions(heroInfos) {
