@@ -3484,9 +3484,9 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    __findSkillNameFromSkillOptions(skillId, options){
+    __findSkillNameFromSkillOptions(skillId, options) {
         let option = options.find(x => x.id == skillId);
-        if (option == null){
+        if (option == null) {
             return "不明";
         }
 
@@ -5609,24 +5609,25 @@ class AetherRaidTacticsBoard {
     }
 
     __applyMovementSkillAfterCombat(atkUnit, attackTargetUnit) {
+        let isMoved = false;
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.KaihiTatakikomi3:
                 case PassiveB.Tatakikomi:
-                    this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterShove(unit, target, tile), false);
                     break;
                 case PassiveB.Kirikomi:
-                    this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile), false);
                     break;
                 case PassiveB.Hikikomi:
-                    this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile), false);
                     break;
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.Ichigekiridatsu:
-                    this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile), false, false);
                     break;
                 case Weapon.EishinNoAnki:
@@ -5634,12 +5635,15 @@ class AetherRaidTacticsBoard {
                         let partners = this.__getPartnersInSpecifiedRange(atkUnit, 2);
                         if (partners.length == 1) {
                             let partner = partners[0];
-                            this.__applyMovementAssist(atkUnit, partner,
+                            isMoved = this.__applyMovementAssist(atkUnit, partner,
                                 (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile), false);
                         }
                     }
                     break;
             }
+        }
+        if (isMoved) {
+            this.map.createTileSnapshots();
         }
     }
 
@@ -5812,7 +5816,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.CraftFighter3:
                     if (!targetUnit.battleContext.initiatesCombat
                         && targetUnit.snapshot.restHpPercentage >= 25
-                    ){
+                    ) {
                         targetUnit.battleContext.reducesCooldownCount = true;
                         ++targetUnit.battleContext.followupAttackPriority;
                     }
@@ -10202,6 +10206,8 @@ class AetherRaidTacticsBoard {
             this.__updateMovementOrders(targetUnits);
         }
 
+        this.map.createTileSnapshots();
+
         // 脅威の評価
         this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
 
@@ -12384,7 +12390,7 @@ class AetherRaidTacticsBoard {
 
             let targetTileContexts = this.__createTargetTileContexts(unit, movableTiles, pivotTiles);
             let targetTileContextsWithoutPivot = targetTileContexts;
-            if (unit.support == Support.Pivot){
+            if (unit.support == Support.Pivot) {
                 // 壁破壊計算では回り込みなしの最適タイルが必要
                 targetTileContextsWithoutPivot = this.__createTargetTileContexts(unit, movableTiles, []);
             }
@@ -15593,7 +15599,7 @@ function loadSettingsFromDict(
     loadsDefenceSettings = true,
     loadsMapSettings = false,
     clearsAllFirst = true,
-){
+) {
     g_app.settings.loadSettingsFromDict(settingDict,
         loadsAllySettings,
         loadsEnemySettings,

@@ -456,6 +456,8 @@ class Setting {
 
         // 祝福を反映させるために更新が必要
         g_appData.__updateStatusBySkillsAndMergeForAllHeroes(false);
+
+        g_appData.map.createTileSnapshots();
     }
 
     loadSettings() {
