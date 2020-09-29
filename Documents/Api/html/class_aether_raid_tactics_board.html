@@ -344,9 +344,9 @@ get&#160;</td><td class="memItemRight" valign="bottom"><b>currentUnit</b> ()</td
 <tr class="memitem:a3f171a115e977bb80795c167686f723f"><td class="memItemLeft" align="right" valign="top"><a id="a3f171a115e977bb80795c167686f723f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>__isInheritableSkill</b> (weaponType, moveType, skillInfo)</td></tr>
 <tr class="separator:a3f171a115e977bb80795c167686f723f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6717080464c649ca68e5d7349afb1a0"><td class="memItemLeft" align="right" valign="top"><a id="af6717080464c649ca68e5d7349afb1a0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>__registerInheritableSkills</b> (options, noneOption, allInfos, canInheritFunc)</td></tr>
-<tr class="separator:af6717080464c649ca68e5d7349afb1a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ed423e33b9f358450c3e558c66f8010"><td class="memItemLeft" align="right" valign="top"><a id="a5ed423e33b9f358450c3e558c66f8010"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>__registerInheritableSkills</b> (options, allOptions, allInfos, canInheritFunc)</td></tr>
+<tr class="separator:a5ed423e33b9f358450c3e558c66f8010"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2b6e2465d84bbe81b8acbed1108f2b8"><td class="memItemLeft" align="right" valign="top"><a id="aa2b6e2465d84bbe81b8acbed1108f2b8"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>__registerInheritableWeapons</b> (heroInfo)</td></tr>
 <tr class="separator:aa2b6e2465d84bbe81b8acbed1108f2b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -404,6 +404,12 @@ get&#160;</td><td class="memItemRight" valign="bottom"><b>currentUnit</b> ()</td
 <tr class="memitem:aac24619d1b5d3ddf9dc60ad94525449e"><td class="memItemLeft" align="right" valign="top"><a id="aac24619d1b5d3ddf9dc60ad94525449e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>__markUnsupportedSkills</b> (skillOptions, supportedSkillEnums, infoLists, countFunc=null, countImplFunc=null)</td></tr>
 <tr class="separator:aac24619d1b5d3ddf9dc60ad94525449e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32957a65a11e923043f11bdb067da152"><td class="memItemLeft" align="right" valign="top"><a id="a32957a65a11e923043f11bdb067da152"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>__findSkillNameFromSkillOptions</b> (skillId, options)</td></tr>
+<tr class="separator:a32957a65a11e923043f11bdb067da152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7798ddeb4d95f04c3190985a3648bc3b"><td class="memItemLeft" align="right" valign="top"><a id="a7798ddeb4d95f04c3190985a3648bc3b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>__isImplementedSkill</b> (skill, supportedSkillEnums, infoLists)</td></tr>
+<tr class="separator:a7798ddeb4d95f04c3190985a3648bc3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e5ec6a560a1fd48815ac15c2bbd06d2"><td class="memItemLeft" align="right" valign="top"><a id="a8e5ec6a560a1fd48815ac15c2bbd06d2"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>__isSupportedSkill</b> (skill, supportedSkillEnums)</td></tr>
 <tr class="separator:a8e5ec6a560a1fd48815ac15c2bbd06d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -962,6 +968,9 @@ get&#160;</td><td class="memItemRight" valign="bottom"><b>map</b> ()</td></tr>
 <tr class="memitem:a7dd3a9f68731cab277eed87e9e21125c"><td class="memItemLeft" align="right" valign="top"><a id="a7dd3a9f68731cab277eed87e9e21125c"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>simulateMovement</b> (targetUnits, enemyUnits, allyUnits)</td></tr>
 <tr class="separator:a7dd3a9f68731cab277eed87e9e21125c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1505c3dffd6d9abb4784f01614178a0"><td class="memItemLeft" align="right" valign="top"><a id="ab1505c3dffd6d9abb4784f01614178a0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>__createTargetTileContexts</b> (unit, movableTiles, pivotTiles)</td></tr>
+<tr class="separator:ab1505c3dffd6d9abb4784f01614178a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac69a34520b03c1f799a5dcb7f6677e1f"><td class="memItemLeft" align="right" valign="top"><a id="ac69a34520b03c1f799a5dcb7f6677e1f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>__findChaseTargetTile</b> (unit, chaseTarget)</td></tr>
 <tr class="separator:ac69a34520b03c1f799a5dcb7f6677e1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1227,7 +1236,7 @@ get&#160;</td><td class="memItemRight" valign="bottom"><b>map</b> ()</td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">詳解</h2>
 <div class="textblock"><p>シミュレーター本体です。 </p>
 </div><hr/>このクラス詳解は次のファイルから抽出されました:<ul>
-<li>F:/repos/FehBattleSimulator/Sources/Main.js</li>
+<li>F:/trunk/Websites/puarts.com/FehBattleSimulator/Sources/Main.js</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
