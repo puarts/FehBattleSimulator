@@ -90,7 +90,10 @@ class Tile {
     }
 
     createSnapshot() {
-        this.snapshot = Object.create(this);
+        let tile = new Tile(this.posX, this.posY);
+        tile._dangerLevel = this._dangerLevel;
+        tile._allyDangerLevel = this._allyDangerLevel;
+        this.snapshot = tile;
     }
 
     __getEvalTile() {

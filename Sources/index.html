@@ -1374,7 +1374,7 @@
     </div>
 
     <script>
-        function writeScriptElem(scriptFileName){
+        function writeScriptElem(scriptFileName) {
             let jsRootPath = "./";
             // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
             let reloadSuffix = "20200513";
@@ -1417,6 +1417,10 @@
                     {{ option.text }}
                 </option>
             </select>
+            <br/>
+            敵群の危険度: {{value.getEnemyThreatFor(UnitGroupType.Enemy)}}
+            <br/>
+            自軍の危険度: {{value.getEnemyThreatFor(UnitGroupType.Ally)}}
         </div>
     </script>
     <script type="text/x-template" id="structure-detail-template">
