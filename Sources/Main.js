@@ -10187,6 +10187,11 @@ class AetherRaidTacticsBoard {
             enemyUnits.push(unit);
         }
 
+        let allyUnits = [];
+        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnits[0])) {
+            allyUnits.push(unit);
+        }
+
         // ターンワイド状態の評価と保存
         {
             for (let unit of targetUnits) {
@@ -10206,10 +10211,13 @@ class AetherRaidTacticsBoard {
             this.__updateMovementOrders(targetUnits);
         }
 
+        // 障害物リストの作成
         this.map.createTileSnapshots();
 
         // 脅威の評価
         this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
+
+        this.__updateChaseTargetTiles(targetUnits);
 
         let group = targetUnits[0].groupId;
         for (let unit of targetUnits) {
@@ -12220,6 +12228,125 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __updateChaseTargetTiles(targetUnits) {
+        let enemyUnits = [];
+        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0])) {
+            enemyUnits.push(unit);
+        }
+
+        let allyUnits = [];
+        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnits[0])) {
+            allyUnits.push(unit);
+        }
+
+        let self = this;
+        using(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
+            for (let evalUnit of targetUnits) {
+                self.__updateChaseTargetTile(evalUnit, enemyUnits, allyUnits);
+            }
+        });
+    }
+
+    __updateChaseTargetTile(evalUnit, enemyUnits, allyUnits) {
+        if (!evalUnit.isOnMap) {
+            return;
+        }
+
+        if (this.vm.gameMode == GameMode.ResonantBattles && evalUnit.groupId == UnitGroupType.Enemy) {
+            if (isThief(evalUnit)) {
+                // 双界の盗賊の追跡対象計算
+                let minDist = CanNotReachTile;
+                let minTargetTile = null;
+                for (let tile of g_appData.map.enumerateTiles(tile => tile.posY == 0 && tile.isUnitPlacableForUnit(evalUnit))) {
+                    // todo: 下には移動できない制限があるっぽい？
+                    let dist = tile.calculateUnitMovementCountToThisTile(evalUnit, null, -1, false);
+                    if (dist == CanNotReachTile) {
+                        continue;
+                    }
+
+                    if (dist < minDist) {
+                        minDist = dist;
+                        minTargetTile = tile;
+                    }
+                    else if (dist == minDist) {
+                        // 距離が同じ場合はタイル優先度っぽい
+                        if (minTargetTile.tilePriority < tile.tilePriority) {
+                            minTargetTile = tile;
+                        }
+                    }
+                }
+                if (minTargetTile == null) {
+                    // 追跡対象が見つからない場合は味方を追跡対象になってる気がするが、本当にそうかよくわからない
+                    let chaseTarget = this.__findAllyChaseTargetUnit(evalUnit, targetUnits);
+                    if (chaseTarget != null) {
+                        minTargetTile = chaseTarget.placedTile;
+                    }
+                }
+                evalUnit.chaseTargetTile = minTargetTile;
+            } else {
+                // 双界の護衛は初期位置を追跡
+                evalUnit.chaseTargetTile = g_appData.map.getTile(evalUnit.initPosX, evalUnit.initPosY);
+            }
+        }
+        else {
+            // 通常の追跡対象計算
+            let maxPriorityValue = -100000;
+            let chaseTarget = null;
+            if (evalUnit.hasWeapon) {
+                for (let allyUnit of enemyUnits) {
+                    using(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ` + time + " ms")), () => {
+                        let turnRange = g_appData.map.calculateTurnRange(evalUnit, allyUnit);
+                        if (turnRange < 0) {
+                            // 攻撃不可
+                            return;
+                        }
+
+                        this.writeDebugLogLine("■" + evalUnit.getNameWithGroup() + "から" + allyUnit.getNameWithGroup() + "への追跡優先度計算:");
+
+                        // todo: 攻撃対象の陣営の紋章バフは無効にしないといけない。あと周囲の味方の数で発動する系は必ず発動させないといけない
+                        // 防御系奥義によるダメージ軽減も無視しないといけない
+                        let combatResult = this.calcDamage(evalUnit, allyUnit, null, true);
+                        if (this.vm.isPotentialDamageDetailEnabled) {
+                            this.writeDebugLogLine("ダメージ計算ログ --------------------");
+                            this.writeDebugLogLine(this.damageCalc.log);
+                            this.writeDebugLogLine("------------------------------------");
+                        }
+
+                        let potentialDamageDealt = combatResult.atkUnit_normalAttackDamage * combatResult.atkUnit_totalAttackCount;
+                        let chacePriorityValue = potentialDamageDealt - 5 * turnRange;
+                        let priorityValue =
+                            chacePriorityValue * 10 +
+                            allyUnit.slotOrder;
+                        this.writeDebugLogLine(`- 優先度=${priorityValue}(ターン距離=${turnRange}`
+                            + `, 通常攻撃ダメージ=${combatResult.atkUnit_normalAttackDamage}`
+                            + `, 攻撃回数=${combatResult.atkUnit_totalAttackCount}`
+                            + `, 潜在ダメージ=${potentialDamageDealt}`
+                            + `, 追跡優先度=${chacePriorityValue}`
+                            + `, slotOrder=${allyUnit.slotOrder})`
+                        );
+                        if (priorityValue > maxPriorityValue) {
+                            maxPriorityValue = priorityValue;
+                            chaseTarget = allyUnit;
+                            this.writeDebugLogLine("追跡対象を" + chaseTarget.getNameWithGroup() + "に更新");
+                        }
+                    });
+                }
+            }
+
+            if (chaseTarget == null) {
+                // 敵に追跡対象が見つからない場合は味方を追跡対象にする
+                chaseTarget = this.__findAllyChaseTargetUnit(evalUnit, allyUnits);
+            }
+
+            if (chaseTarget == null) {
+                return;
+            }
+
+            evalUnit.chaseTargetTile = this.__findChaseTargetTile(evalUnit, chaseTarget);
+            this.writeLogLine(evalUnit.getNameWithGroup() + "の追跡対象は" + chaseTarget.getNameWithGroup());
+        }
+    }
+
     simulateMovement(targetUnits, enemyUnits, allyUnits) {
         // コンテキスト初期化
         for (let unit of targetUnits) {
@@ -12229,105 +12356,6 @@ class AetherRaidTacticsBoard {
         for (let unit of enemyUnits) {
             unit.actionContext.clear();
         }
-
-        let self = this;
-        using(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
-            for (let evalUnit of targetUnits) {
-                if (this.vm.gameMode == GameMode.ResonantBattles && evalUnit.groupId == UnitGroupType.Enemy) {
-                    if (isThief(evalUnit)) {
-                        // 双界の盗賊の追跡対象計算
-                        let minDist = CanNotReachTile;
-                        let minTargetTile = null;
-                        for (let tile of g_appData.map.enumerateTiles(tile => tile.posY == 0 && tile.isUnitPlacableForUnit(evalUnit))) {
-                            // todo: 下には移動できない制限があるっぽい？
-                            let dist = tile.calculateUnitMovementCountToThisTile(evalUnit, null, -1, false);
-                            if (dist == CanNotReachTile) {
-                                continue;
-                            }
-
-                            if (dist < minDist) {
-                                minDist = dist;
-                                minTargetTile = tile;
-                            }
-                            else if (dist == minDist) {
-                                // 距離が同じ場合はタイル優先度っぽい
-                                if (minTargetTile.tilePriority < tile.tilePriority) {
-                                    minTargetTile = tile;
-                                }
-                            }
-                        }
-                        if (minTargetTile == null) {
-                            // 追跡対象が見つからない場合は味方を追跡対象になってる気がするが、本当にそうかよくわからない
-                            let chaseTarget = this.__findAllyChaseTargetUnit(evalUnit, targetUnits);
-                            if (chaseTarget != null) {
-                                minTargetTile = chaseTarget.placedTile;
-                            }
-                        }
-                        evalUnit.actionContext.chaseTargetTile = minTargetTile;
-                    } else {
-                        // 双界の護衛は初期位置を追跡
-                        evalUnit.actionContext.chaseTargetTile = g_appData.map.getTile(evalUnit.initPosX, evalUnit.initPosY);
-                    }
-                }
-                else {
-                    // 通常の追跡対象計算
-                    let maxPriorityValue = -100000;
-                    let chaseTarget = null;
-                    if (evalUnit.hasWeapon) {
-                        for (let allyUnit of enemyUnits) {
-                            using(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ` + time + " ms")), () => {
-                                let turnRange = g_appData.map.calculateTurnRange(evalUnit, allyUnit);
-                                if (turnRange < 0) {
-                                    // 攻撃不可
-                                    return;
-                                }
-
-                                this.writeDebugLogLine("■" + evalUnit.getNameWithGroup() + "から" + allyUnit.getNameWithGroup() + "への追跡優先度計算:");
-
-                                // todo: 攻撃対象の陣営の紋章バフは無効にしないといけない。あと周囲の味方の数で発動する系は必ず発動させないといけない
-                                // 防御系奥義によるダメージ軽減も無視しないといけない
-                                let combatResult = this.calcDamage(evalUnit, allyUnit, null, true);
-                                if (self.vm.isPotentialDamageDetailEnabled) {
-                                    this.writeDebugLogLine("ダメージ計算ログ --------------------");
-                                    this.writeDebugLogLine(this.damageCalc.log);
-                                    this.writeDebugLogLine("------------------------------------");
-                                }
-
-                                let potentialDamageDealt = combatResult.atkUnit_normalAttackDamage * combatResult.atkUnit_totalAttackCount;
-                                let chacePriorityValue = potentialDamageDealt - 5 * turnRange;
-                                let priorityValue =
-                                    chacePriorityValue * 10 +
-                                    allyUnit.slotOrder;
-                                this.writeDebugLogLine(`- 優先度=${priorityValue}(ターン距離=${turnRange}`
-                                    + `, 通常攻撃ダメージ=${combatResult.atkUnit_normalAttackDamage}`
-                                    + `, 攻撃回数=${combatResult.atkUnit_totalAttackCount}`
-                                    + `, 潜在ダメージ=${potentialDamageDealt}`
-                                    + `, 追跡優先度=${chacePriorityValue}`
-                                    + `, slotOrder=${allyUnit.slotOrder})`
-                                );
-                                if (priorityValue > maxPriorityValue) {
-                                    maxPriorityValue = priorityValue;
-                                    chaseTarget = allyUnit;
-                                    this.writeDebugLogLine("追跡対象を" + chaseTarget.getNameWithGroup() + "に更新");
-                                }
-                            });
-                        }
-                    }
-
-                    if (chaseTarget == null) {
-                        // 敵に追跡対象が見つからない場合は味方を追跡対象にする
-                        chaseTarget = this.__findAllyChaseTargetUnit(evalUnit, allyUnits);
-                    }
-
-                    if (chaseTarget == null) {
-                        continue;
-                    }
-
-                    evalUnit.actionContext.chaseTargetTile = this.__findChaseTargetTile(evalUnit, chaseTarget);
-                    this.writeLogLine(evalUnit.getNameWithGroup() + "の追跡対象は" + chaseTarget.getNameWithGroup());
-                }
-            }
-        });
 
         targetUnits.sort(function (a, b) {
             return a.movementOrder - b.movementOrder;
@@ -12343,13 +12371,13 @@ class AetherRaidTacticsBoard {
         for (let i = 0; i < targetUnits.length; ++i) {
             let unit = targetUnits[i];
             this.writeDebugLogLine(unit.getNameWithGroup() + "の移動計算");
-            if (unit.actionContext.chaseTargetTile == null) {
+            if (unit.chaseTargetTile == null) {
                 this.__enqueueEndActionCommand(unit);
                 isActionActivated = true;
                 break;
             }
 
-            let chaseTargetTile = unit.actionContext.chaseTargetTile;
+            let chaseTargetTile = unit.chaseTargetTile;
 
             let movableTiles = this.__getMovableTiles(unit);
             if (movableTiles.length == 0) {
@@ -12470,7 +12498,7 @@ class AetherRaidTacticsBoard {
     }
 
     __createTargetTileContexts(unit, movableTiles, pivotTiles) {
-        let chaseTargetTile = unit.actionContext.chaseTargetTile;
+        let chaseTargetTile = unit.chaseTargetTile;
         let ignoresUnits = true;
         let targetTileContexts = [];
         for (let tile of g_appData.map.getNearestMovableTiles(
@@ -12849,7 +12877,7 @@ class AetherRaidTacticsBoard {
             return null;
         }
 
-        let chaseTargetTile = unit.actionContext.chaseTargetTile;
+        let chaseTargetTile = unit.chaseTargetTile;
         let distOfBestTileToTarget = chaseTargetTile.calculateUnitMovementCountToThisTile(unit, bestTileToMove);
         let blockTileContexts = [];
         let minDist = CanNotReachTile;
@@ -15576,6 +15604,13 @@ function updateAllUi() {
     addTouchEventToDraggableElements();
 }
 
+function __updateChaseTargetTilesForAllUnits() {
+    if (g_appData.currentTurn > 0) {
+        g_app.__updateChaseTargetTiles(g_appData.allyUnits);
+        g_app.__updateChaseTargetTiles(g_appData.enemyUnits);
+    }
+}
+
 function loadSettings() {
     console.log("loading..");
     console.log("current cookie:" + document.cookie);
@@ -15588,6 +15623,7 @@ function loadSettings() {
     let turnText = g_appData.currentTurn == 0 ? "戦闘開始前" : "ターン" + g_appData.currentTurn;
     g_app.writeSimpleLogLine(turnText + "の設定を読み込みました。");
     g_appData.commandQueuePerAction.clear();
+    __updateChaseTargetTilesForAllUnits();
     updateAllUi();
 }
 
@@ -15608,6 +15644,7 @@ function loadSettingsFromDict(
         loadsMapSettings,
         clearsAllFirst);
     g_app.updateAllUnitSpur();
+    __updateChaseTargetTilesForAllUnits();
 }
 
 function saveSettings() {

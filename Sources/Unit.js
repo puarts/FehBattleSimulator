@@ -804,7 +804,6 @@ class ActionContext {
 
         // 移動のコンテキスト
         this.movePriority = 0;
-        this.chaseTargetTile = null;
     }
 
     clear() {
@@ -824,7 +823,6 @@ class ActionContext {
         this.attackableTiles = [];
 
         this.movePriority = 0;
-        this.chaseTargetTile = null;
     }
     findAssistableUnitInfo(unit) {
         for (let info of this.assistableUnitInfos) {
@@ -1043,6 +1041,15 @@ class Unit {
         this.reservedPassiveB = NotReserved;
         this.reservedPassiveC = NotReserved;
         this.reservedPassiveS = NotReserved;
+
+        this.chaseTargetTile = null;
+    }
+
+    chaseTargetTileToString() {
+        if (this.chaseTargetTile == null) {
+            return "null";
+        }
+        return this.chaseTargetTile.positionToString();
     }
 
     __calcAppliedGrowthRate(growthRate) {
