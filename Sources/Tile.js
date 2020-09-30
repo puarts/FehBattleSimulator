@@ -9,6 +9,33 @@ const TileType = {
     DefensiveForest: 7,
 };
 
+function tileTypeToString(type) {
+    switch (type) {
+        case TileType.Normal: return "通常";
+        case TileType.Forest: return "森";
+        case TileType.Flier: return "飛行";
+        case TileType.Trench: return "溝";
+        case TileType.Wall: return "壁";
+        case TileType.DefensiveTile: return "防御地形";
+        case TileType.DefensiveTrench: return "溝+防御地形";
+        case TileType.DefensiveForest: return "森+防御地形";
+        default:
+            return "不明";
+    }
+}
+let TileTypeOptions = [];
+for (let key in TileType) {
+    let id = TileType[key];
+    if (id == TileType.Wall) {
+        continue;
+    }
+    TileTypeOptions.push({
+        id: id,
+        text: tileTypeToString(id)
+    });
+}
+
+
 const CanNotReachTile = 1000000;
 const ObstructTile = 10000; // 進軍阻止されているタイルのウェイト
 

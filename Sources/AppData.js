@@ -3,6 +3,16 @@
 class HeroDataBase {
     constructor(heroInfos) {
         this._heroInfos = heroInfos;
+        this._nameToInfoDict = {};
+        for (let info of heroInfos) {
+            this._nameToInfoDict[info.name] = info;
+        }
+
+        this._nameToIndexDict = {};
+        for (let i = 0; i < this._heroInfos.length; ++i) {
+            let info = this._heroInfos[i];
+            this._nameToIndexDict[info.name] = i;
+        }
     }
 
     get data() {
@@ -26,23 +36,11 @@ class HeroDataBase {
     }
 
     findInfo(name) {
-        for (let i = 0; i < this._heroInfos.length; ++i) {
-            let info = this._heroInfos[i];
-            if (info.name == name) {
-                return info;
-            }
-        }
-        return null;
+        return this._nameToInfoDict[name];
     }
 
     findIndexOfInfo(name) {
-        for (let i = 0; i < this._heroInfos.length; ++i) {
-            let info = this._heroInfos[i];
-            if (info.name == name) {
-                return i;
-            }
-        }
-        return -1;
+        return this._nameToIndexDict[name];
     }
 }
 
@@ -474,12 +472,12 @@ class AppData {
         this.updateTargetInfoTdStyle();
     }
 
-    initHeroInfos(heroInfos){
+    initHeroInfos(heroInfos) {
         this.heroInfos = new HeroDataBase(heroInfos);
     }
 
-    __registerInfosToDict(skillInfos){
-        for(let info of skillInfos){
+    __registerInfosToDict(skillInfos) {
+        for (let info of skillInfos) {
             this.skillIdToInfoDict[info.id] = info;
         }
     }
@@ -522,10 +520,10 @@ class AppData {
         unit.passiveSInfo = this.__findSkillInfoByDict(unit.passiveS);
     }
 
-    __findSkillInfoByDict(id){
+    __findSkillInfoByDict(id) {
         return this.skillIdToInfoDict[id];
     }
-    
+
     __findWeaponInfo(id) {
         return this.__findSkillInfoByDict(id);
     }
@@ -1216,7 +1214,7 @@ class AppData {
         this.setAttackerAndAttackTargetInfo();
     }
 
-    clearCurrentItemSelection(){
+    clearCurrentItemSelection() {
         this.currentItemIndex = -1;
     }
 
@@ -1589,7 +1587,7 @@ class AppData {
     }
 
     * enumerateUnitsInSpecifiedGroup(groupId) {
-        switch (groupId){
+        switch (groupId) {
             case UnitGroupType.Enemy:
                 for (let unit of this.enumerateEnemyUnits()) {
                     yield unit;
