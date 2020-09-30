@@ -18,7 +18,7 @@ function changeCurrentUnitTab(tabIndex) {
 let g_appData = new AppData();
 
 /// シリアライズ可能なシミュレーターの設定を管理するクラスです。
-class Setting {
+class SettingManager {
     constructor() {
         this._cookieWriter = new CookieWriter();
     }

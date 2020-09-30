@@ -88,7 +88,7 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        this.settings = new Setting();
+        this.settings = new SettingManager();
 
         this.skillIdToNameDict = {};
 
