@@ -181,6 +181,7 @@ class DamageCalculator {
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
             case Weapon.CourtlyMask:
+            case Weapon.CourtlyBow:
             case Weapon.CourtlyCandle:
                 if (unit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
                     unit.battleContext.damageReductionRatioOfFirstAttack = 0.5;

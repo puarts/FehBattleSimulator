@@ -5819,6 +5819,12 @@ class AetherRaidTacticsBoard {
                         targetUnit.resSpur += 5;
                     }
                     break;
+                case Weapon.CourtlyBow:
+                    if (targetUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    break;
                 case Weapon.CourtlyCandle:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
