@@ -775,6 +775,7 @@ const Weapon = {
 
     CourtlyMask: 1470, // 高貴な仮面
     CourtlyCandle: 1478, // 高貴な燭台
+    GiltGoblet: 1476, // 黄金のゴブレット
 };
 
 var Support = {

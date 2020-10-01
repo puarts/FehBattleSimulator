@@ -5807,6 +5807,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GiltGoblet:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.resSpur += 6;
+                    }
+                    break;
                 case Weapon.CourtlyMask:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;

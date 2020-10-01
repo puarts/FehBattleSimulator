@@ -1148,6 +1148,11 @@ class DamageCalculator {
         totalDamage += rangedSpecialDamage + addDamage + specialAddDamage;
 
         switch (defUnit.weapon) {
+            case Weapon.GiltGoblet:
+                if (atkUnit.snapshot.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
+                    totalDamage = Math.trunc(totalDamage * 0.5);
+                }
+                break;
             case Weapon.BloodTome:
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     totalDamage = Math.trunc(totalDamage * 0.2);
@@ -1322,6 +1327,12 @@ class DamageCalculator {
             let damageReductionValue = 0;
 
             switch (defUnit.weapon) {
+                case Weapon.GiltGoblet:
+                    if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
+                        isWeaponTypeTome(atkUnit.weaponType)) {
+                        damageReductionRatio *= 0.5;
+                    }
+                    break;
                 case Weapon.BloodTome:
                     if (isRangedWeaponType(atkUnit.weaponType)) {
                         damageReductionRatio *= 0.5;
