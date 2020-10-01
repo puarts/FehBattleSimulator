@@ -4204,6 +4204,8 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.CourtlyFan:
+                return unit.battleContext.initiatesCombat;
             case Weapon.Garumu:
                 if (unit.isWeaponRefined) {
                     if (unit.hasPositiveStatusEffect()) {
@@ -7213,6 +7215,10 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CourtlyFan:
+                    atkUnit.atkSpur += 5;
+                    atkUnit.spdSpur += 5;
+                    break;
                 case Weapon.BenihimeNoOno:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (defUnit.snapshot.restHpPercentage == 100) {
