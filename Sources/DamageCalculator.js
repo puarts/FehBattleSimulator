@@ -180,6 +180,8 @@ class DamageCalculator {
 
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
+            case Weapon.CourtlyMask:
+            case Weapon.CourtlyBow:
             case Weapon.CourtlyCandle:
                 if (unit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
                     unit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
@@ -1147,6 +1149,11 @@ class DamageCalculator {
         totalDamage += rangedSpecialDamage + addDamage + specialAddDamage;
 
         switch (defUnit.weapon) {
+            case Weapon.GiltGoblet:
+                if (atkUnit.snapshot.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
+                    totalDamage = Math.trunc(totalDamage * 0.5);
+                }
+                break;
             case Weapon.BloodTome:
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     totalDamage = Math.trunc(totalDamage * 0.2);
@@ -1321,6 +1328,12 @@ class DamageCalculator {
             let damageReductionValue = 0;
 
             switch (defUnit.weapon) {
+                case Weapon.GiltGoblet:
+                    if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
+                        isWeaponTypeTome(atkUnit.weaponType)) {
+                        damageReductionRatio *= 0.5;
+                    }
+                    break;
                 case Weapon.BloodTome:
                     if (isRangedWeaponType(atkUnit.weaponType)) {
                         damageReductionRatio *= 0.5;
