@@ -773,6 +773,7 @@ const Weapon = {
 
     PrimordialBreath: 1468, // 神祖竜のブレス
 
+    CourtlyMask: 1470, // 高貴な仮面
     CourtlyCandle: 1478, // 高貴な燭台
 };
 

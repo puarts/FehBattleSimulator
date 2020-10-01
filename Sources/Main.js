@@ -5807,6 +5807,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CourtlyMask:
+                    if (targetUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                    break;
                 case Weapon.CourtlyCandle:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
