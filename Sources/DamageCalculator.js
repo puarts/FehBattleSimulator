@@ -186,9 +186,9 @@ class DamageCalculator {
 
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
-            case Weapon.CourtlyMask:
-            case Weapon.CourtlyBow:
-            case Weapon.CourtlyCandle:
+            case Weapon.CourtlyMaskPlus:
+            case Weapon.CourtlyBowPlus:
+            case Weapon.CourtlyCandlePlus:
                 if (unit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
                     unit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
                 }
@@ -312,6 +312,9 @@ class DamageCalculator {
 
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.TalreganAxe:
+                        atkUnit.battleContext.isDesperationActivated = true;
+                        break;
                     case Weapon.DarkSpikesT:
                         if (atkUnit.snapshot.restHpPercentage <= 99) {
                             this.writeDebugLog("HP" + atkUnit.snapshot.restHpPercentage + "%でダークスパイクτの攻め立て効果発動、" + atkUnit.getNameWithGroup() + "は自分の攻撃の直後に追撃");
@@ -803,6 +806,13 @@ class DamageCalculator {
                 totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
             }
         }
+        else if (atkUnit.weapon === Weapon.FlameLance) {
+            if (atkUnit.snapshot.restHpPercentage >= 50) {
+                this.writeDebugLog("魔防参照");
+                totalMit = defUnit.getResInCombat(atkUnit);
+                totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
+            }
+        }
         else if ((atkUnit.weapon == Weapon.HelsReaper)) {
             if (isWeaponTypeTome(defUnit.weaponType) || defUnit.weaponType == WeaponType.Staff) {
                 this.writeDebugLog("守備参照");
@@ -860,6 +870,10 @@ class DamageCalculator {
             case Special.Glimmer:
                 // 凶星
                 specialMultDamage = 1.5;
+                break;
+            case Special.Deadeye:
+                specialMultDamage = 2;
+                invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
                 break;
             case Special.Astra: {
                 // 流星

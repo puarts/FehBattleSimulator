@@ -4098,6 +4098,11 @@ class AetherRaidTacticsBoard {
                     break;
             }
             switch (defUnit.weapon) {
+                case Weapon.DoubleBow:
+                    if (this.__isSolo(defUnit)) {
+                        return true;
+                    }
+                    break;
                 case Weapon.KinsekiNoSyo:
                     if (defUnit.isWeaponSpecialRefined) {
                         if (atkUnit.weaponType == WeaponType.Sword
@@ -4208,7 +4213,7 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
-            case Weapon.CourtlyFan:
+            case Weapon.CourtlyFanPlus:
                 return unit.battleContext.initiatesCombat;
             case Weapon.Garumu:
                 if (unit.isWeaponRefined) {
@@ -5691,6 +5696,13 @@ class AetherRaidTacticsBoard {
                         targetUnit.resSpur += 6;
                     }
                     break;
+                case Weapon.SpiritedSpearPlus:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
                 case Weapon.PledgedBladePlus:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                         targetUnit.atkSpur += 4;
@@ -5813,25 +5825,38 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FlameLance:
+                    if (targetUnit.snapshot.restHpPercentage >= 50) {
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                    }
+                    break;
+                case Weapon.TalreganAxe:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.GiltGoblet:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                         targetUnit.atkSpur += 6;
                         targetUnit.resSpur += 6;
                     }
                     break;
-                case Weapon.CourtlyMask:
+                case Weapon.CourtlyMaskPlus:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.resSpur += 5;
                     }
                     break;
-                case Weapon.CourtlyBow:
+                case Weapon.CourtlyBowPlus:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                     }
                     break;
-                case Weapon.CourtlyCandle:
+                case Weapon.CourtlyCandlePlus:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
@@ -7232,7 +7257,7 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case Weapon.CourtlyFan:
+                case Weapon.CourtlyFanPlus:
                     atkUnit.atkSpur += 5;
                     atkUnit.spdSpur += 5;
                     break;
@@ -7325,6 +7350,9 @@ class AetherRaidTacticsBoard {
                     atkUnit.atkSpur += 6;
                     break;
                 case Weapon.RauaFoxPlus:
+                    defUnit.addAllSpur(-4);
+                    break;
+                case Weapon.BlarfoxPlus:
                     defUnit.addAllSpur(-4);
                     break;
                 case Weapon.RohyouNoKnife:
@@ -8646,6 +8674,9 @@ class AetherRaidTacticsBoard {
         if (this.__isSolo(targetUnit) || calcPotentialDamage) {
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.DoubleBow:
+                        targetUnit.addAllSpur(5);
+                        break;
                     case Weapon.GousouJikumunto:
                     case Weapon.KokkiNoKosou:
                     case Weapon.MaritaNoKen:

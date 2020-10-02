@@ -776,11 +776,18 @@ const Weapon = {
 
     PrimordialBreath: 1468, // 神祖竜のブレス
 
-    CourtlyMask: 1470, // 高貴な仮面
-    CourtlyFan: 1472, // 高貴な扇
-    CourtlyBow: 1474, // 高貴な弓
-    CourtlyCandle: 1478, // 高貴な燭台
+    CourtlyMaskPlus: 1470, // 高貴な仮面+
+    CourtlyFanPlus: 1472, // 高貴な扇+
+    CourtlyBowPlus: 1474, // 高貴な弓+
+    CourtlyCandlePlus: 1478, // 高貴な燭台+
     GiltGoblet: 1476, // 黄金のゴブレット
+
+    // 絶望そして希望
+    TalreganAxe: 1484, // ダルレカの激斧
+    DoubleBow: 1480, // バルフレチェ
+    SpiritedSpearPlus: 1482, // 士気旺盛の槍+
+    BlarfoxPlus: 1479, // ブラーフォックス+
+    FlameLance: 1486, // フレイムランス
 };
 
 const Support = {
@@ -863,6 +870,7 @@ const Special = {
     Aether: 470,
     LunaFlash: 889,
     Glimmer: 462,
+    Deadeye: 1481, // 狙撃
     Astra: 461,
     Bonfire: 455,
     Ignis: 450,
@@ -1795,6 +1803,7 @@ function isNormalAttackSpecial(special) {
         case Special.Aether:
         case Special.LunaFlash:
         case Special.Glimmer:
+        case Special.Deadeye:
         case Special.Astra:
         case Special.Bonfire:
         case Special.Ignis:
