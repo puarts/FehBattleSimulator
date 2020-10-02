@@ -14281,8 +14281,8 @@ class AetherRaidTacticsBoard {
                 case PassiveB.FirefloodDance2: targetUnit.applyAtkBuff(3); targetUnit.applyResBuff(4); break;
                 case PassiveB.RockslideDance2: targetUnit.applySpdBuff(3); targetUnit.applyDefBuff(4); break;
                 case PassiveB.DelugeDance2: targetUnit.applySpdBuff(3); targetUnit.applyResBuff(4); break;
-                case PassiveB.GeyserDance1: targetUnit.applyDefBuff(3); targetUnit.applyRefBuff(3); break;
-                case PassiveB.GeyserDance2: targetUnit.applyDefBuff(4); targetUnit.applyRefBuff(4); break;
+                case PassiveB.GeyserDance1: targetUnit.applyDefBuff(3); targetUnit.applyResBuff(3); break;
+                case PassiveB.GeyserDance2: targetUnit.applyDefBuff(4); targetUnit.applyResBuff(4); break;
                 case Weapon.Sukurudo: targetUnit.applyAllBuff(3); break;
                 case PassiveB.AtkCantrip3:
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
