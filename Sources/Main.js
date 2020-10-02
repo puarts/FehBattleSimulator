@@ -14299,6 +14299,12 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case Support.SweetDreams:
+                targetUnit.applyAllBuff(3);
+                for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                    unit.applyAllDebuff(-4);
+                }
+                break;
         }
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {

@@ -806,6 +806,7 @@ var Support = {
     GrayWaves: 789, // ユラリユルレリ
     GentleDream: 1061, // やさしいゆめ
     WhimsicalDream: 1362, // しろいゆめ
+    SweetDreams: 1489, // あまいゆめ
     Play: 1135, // 奏でる
 
     RallyAttack: 418,
