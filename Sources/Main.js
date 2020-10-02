@@ -14207,13 +14207,13 @@ class AetherRaidTacticsBoard {
         applyBuffFunc(targetUnit);
     }
 
-    __applyRefresh(skillOnwerUnit, targetUnit) {
+    __applyRefresh(skillOwnerUnit, targetUnit) {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
-        switch (skillOnwerUnit.support) {
+        switch (skillOwnerUnit.support) {
             case Support.Play:
-                if (skillOnwerUnit.weapon == Weapon.HyosyoNoBreath) {
-                    this.__applyHyosyoNoBreath(skillOnwerUnit);
+                if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
+                    this.__applyHyosyoNoBreath(skillOwnerUnit);
                 }
                 break;
             case Support.Urur:
@@ -14230,10 +14230,10 @@ class AetherRaidTacticsBoard {
                 break;
             case Support.GentleDream:
                 {
-                    for (let unit of this.enumerateUnitsInTheSameGroup(skillOnwerUnit, false)) {
-                        if (unit.posX == skillOnwerUnit.posX
+                    for (let unit of this.enumerateUnitsInTheSameGroup(skillOwnerUnit, false)) {
+                        if (unit.posX == skillOwnerUnit.posX
                             || unit.posX == targetUnit.posX
-                            || unit.posY == skillOnwerUnit.posY
+                            || unit.posY == skillOwnerUnit.posY
                             || unit.posY == targetUnit.posY
                         ) {
                             unit.applyAllBuff(3);
@@ -14258,7 +14258,7 @@ class AetherRaidTacticsBoard {
                 break;
         }
 
-        for (let skillId of skillOnwerUnit.enumerateSkills()) {
+        for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Veruzandhi:
                     targetUnit.applyAllBuff(4);
@@ -14293,7 +14293,7 @@ class AetherRaidTacticsBoard {
         }
 
         // 大地の舞い等の後に実行する必要がある
-        if (skillOnwerUnit.weapon == Weapon.SeireiNoHogu) {
+        if (skillOwnerUnit.weapon == Weapon.SeireiNoHogu) {
             let buffs = [
                 Number(targetUnit.atkBuff),
                 Number(targetUnit.spdBuff),
