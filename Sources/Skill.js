@@ -778,6 +778,9 @@ const Weapon = {
     CourtlyBow: 1474, // 高貴な弓
     CourtlyCandle: 1478, // 高貴な燭台
     GiltGoblet: 1476, // 黄金のゴブレット
+
+    // 絶望そして希望
+    TalreganAxe: 1484, // ダルレカの激斧
 };
 
 var Support = {

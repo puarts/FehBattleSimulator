@@ -306,6 +306,9 @@ class DamageCalculator {
 
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.TalreganAxe:
+                        atkUnit.battleContext.isDesperationActivated = true;
+                        break;
                     case Weapon.DarkSpikesT:
                         if (atkUnit.snapshot.restHpPercentage <= 99) {
                             this.writeDebugLog("HP" + atkUnit.snapshot.restHpPercentage + "%でダークスパイクτの攻め立て効果発動、" + atkUnit.getNameWithGroup() + "は自分の攻撃の直後に追撃");
