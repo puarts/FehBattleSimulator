@@ -773,10 +773,10 @@ const Weapon = {
 
     PrimordialBreath: 1468, // 神祖竜のブレス
 
-    CourtlyMask: 1470, // 高貴な仮面
-    CourtlyFan: 1472, // 高貴な扇
-    CourtlyBow: 1474, // 高貴な弓
-    CourtlyCandle: 1478, // 高貴な燭台
+    CourtlyMaskPlus: 1470, // 高貴な仮面+
+    CourtlyFanPlus: 1472, // 高貴な扇+
+    CourtlyBowPlus: 1474, // 高貴な弓+
+    CourtlyCandlePlus: 1478, // 高貴な燭台+
     GiltGoblet: 1476, // 黄金のゴブレット
 
     // 絶望そして希望

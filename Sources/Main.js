@@ -4209,7 +4209,7 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
-            case Weapon.CourtlyFan:
+            case Weapon.CourtlyFanPlus:
                 return unit.battleContext.initiatesCombat;
             case Weapon.Garumu:
                 if (unit.isWeaponRefined) {
@@ -5840,19 +5840,19 @@ class AetherRaidTacticsBoard {
                         targetUnit.resSpur += 6;
                     }
                     break;
-                case Weapon.CourtlyMask:
+                case Weapon.CourtlyMaskPlus:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.resSpur += 5;
                     }
                     break;
-                case Weapon.CourtlyBow:
+                case Weapon.CourtlyBowPlus:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                     }
                     break;
-                case Weapon.CourtlyCandle:
+                case Weapon.CourtlyCandlePlus:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
@@ -7253,7 +7253,7 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case Weapon.CourtlyFan:
+                case Weapon.CourtlyFanPlus:
                     atkUnit.atkSpur += 5;
                     atkUnit.spdSpur += 5;
                     break;
