@@ -973,6 +973,7 @@ const PassiveA = {
     AtkDefBond1: 1327,
     AtkDefBond2: 1328,
     AtkDefBond3: 575,
+    AtkDefBond4: 1475,
     AtkResBond1: 1329,
     AtkResBond2: 1330,
     AtkResBond3: 576,
@@ -1130,7 +1131,9 @@ const PassiveA = {
     SacaNoOkite: 586, // サカの掟
     OstiasCounter: 587, // オスティアの反撃
 
-    AtkResBojosen3: 881, // 攻撃魔防の防城戦3
+    // 防城戦
+    AtkSpdBojosen3: 1473,
+    AtkResBojosen3: 881,
     SpdDefBojosen3: 907,
     DefResBojosen3: 918,
     SpdResBojosen3: 962,
@@ -1212,6 +1215,10 @@ const PassiveB = {
     GeyserDance1: 1243, // 大地静水の舞い1
     GeyserDance2: 645, // 大地静水の舞い2
     RockslideDance2: 643, // 疾風大地の舞い2
+
+    // 魅了
+    AtkCantrip3: 1380, // 攻撃の魅了3
+    DefCantrip3: 1471,
 
     AtkSpdLink2: 1133, // 攻撃速さの連携2
     AtkSpdLink3: 648, // 攻撃速さの連携3
@@ -1344,7 +1351,6 @@ const PassiveB = {
     SpdDefSnag3: 1373, // 速さ守備の干渉3
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
-    AtkCantrip3: 1380, // 攻撃の魅了3
     DiveBomb3: 1430, // 空からの急襲3
 
     BlueLionRule: 1451, // 蒼き獅子王

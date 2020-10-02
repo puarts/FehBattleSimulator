@@ -6152,6 +6152,12 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
                     }
                     break;
+                case PassiveA.AtkDefBond4:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+                    }
+                    break;
                 case PassiveA.AtkResBond4:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
@@ -7052,6 +7058,13 @@ class AetherRaidTacticsBoard {
                 case PassiveB.Cancel3:
                     if (targetUnit.snapshot.restHpPercentage >= 80) {
                         targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
+                case PassiveA.AtkSpdBojosen3:
+                    {
+                        let spurAmount = this.__calcBojosenSpurAmount();
+                        targetUnit.atkSpur += spurAmount;
+                        targetUnit.spdSpur += spurAmount;
                     }
                     break;
                 case PassiveA.AtkResBojosen3:
@@ -8788,6 +8801,10 @@ class AetherRaidTacticsBoard {
                 case PassiveA.AtkSpdBond4:
                     targetUnit.atkSpur += 7;
                     targetUnit.spdSpur += 7;
+                    break;
+                case PassiveA.AtkDefBond4:
+                    targetUnit.atkSpur += 7;
+                    targetUnit.defSpur += 7;
                     break;
                 case PassiveA.AtkResBond4:
                     targetUnit.atkSpur += 7;
@@ -14194,13 +14211,13 @@ class AetherRaidTacticsBoard {
         applyBuffFunc(targetUnit);
     }
 
-    __applyRefresh(skillOnwerUnit, targetUnit) {
+    __applyRefresh(skillOwnerUnit, targetUnit) {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
-        switch (skillOnwerUnit.support) {
+        switch (skillOwnerUnit.support) {
             case Support.Play:
-                if (skillOnwerUnit.weapon == Weapon.HyosyoNoBreath) {
-                    this.__applyHyosyoNoBreath(skillOnwerUnit);
+                if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
+                    this.__applyHyosyoNoBreath(skillOwnerUnit);
                 }
                 break;
             case Support.Urur:
@@ -14217,10 +14234,10 @@ class AetherRaidTacticsBoard {
                 break;
             case Support.GentleDream:
                 {
-                    for (let unit of this.enumerateUnitsInTheSameGroup(skillOnwerUnit, false)) {
-                        if (unit.posX == skillOnwerUnit.posX
+                    for (let unit of this.enumerateUnitsInTheSameGroup(skillOwnerUnit, false)) {
+                        if (unit.posX == skillOwnerUnit.posX
                             || unit.posX == targetUnit.posX
-                            || unit.posY == skillOnwerUnit.posY
+                            || unit.posY == skillOwnerUnit.posY
                             || unit.posY == targetUnit.posY
                         ) {
                             unit.applyAllBuff(3);
@@ -14245,7 +14262,7 @@ class AetherRaidTacticsBoard {
                 break;
         }
 
-        for (let skillId of skillOnwerUnit.enumerateSkills()) {
+        for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Veruzandhi:
                     targetUnit.applyAllBuff(4);
@@ -14268,19 +14285,24 @@ class AetherRaidTacticsBoard {
                 case PassiveB.FirefloodDance2: targetUnit.applyAtkBuff(3); targetUnit.applyResBuff(4); break;
                 case PassiveB.RockslideDance2: targetUnit.applySpdBuff(3); targetUnit.applyDefBuff(4); break;
                 case PassiveB.DelugeDance2: targetUnit.applySpdBuff(3); targetUnit.applyResBuff(4); break;
-                case PassiveB.GeyserDance1: targetUnit.applyDefBuff(3); targetUnit.applyRefBuff(3); break;
-                case PassiveB.GeyserDance2: targetUnit.applyDefBuff(4); targetUnit.applyRefBuff(4); break;
+                case PassiveB.GeyserDance1: targetUnit.applyDefBuff(3); targetUnit.applyResBuff(3); break;
+                case PassiveB.GeyserDance2: targetUnit.applyDefBuff(4); targetUnit.applyResBuff(4); break;
                 case Weapon.Sukurudo: targetUnit.applyAllBuff(3); break;
                 case PassiveB.AtkCantrip3:
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
                         unit.applyAtkDebuff(-7);
                     }
                     break;
+                case PassiveB.DefCantrip3:
+                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
+                        unit.applyDefDebuff(-7);
+                    }
+                    break;
             }
         }
 
         // 大地の舞い等の後に実行する必要がある
-        if (skillOnwerUnit.weapon == Weapon.SeireiNoHogu) {
+        if (skillOwnerUnit.weapon == Weapon.SeireiNoHogu) {
             let buffs = [
                 Number(targetUnit.atkBuff),
                 Number(targetUnit.spdBuff),
