@@ -1128,7 +1128,9 @@ var PassiveA = {
     SacaNoOkite: 586, // サカの掟
     OstiasCounter: 587, // オスティアの反撃
 
-    AtkResBojosen3: 881, // 攻撃魔防の防城戦3
+    // 防城戦
+    AtkSpdBojosen3: 1473,
+    AtkResBojosen3: 881,
     SpdDefBojosen3: 907,
     DefResBojosen3: 918,
     SpdResBojosen3: 962,

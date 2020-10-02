@@ -7056,6 +7056,13 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.reducesCooldownCount = true;
                     }
                     break;
+                case PassiveA.AtkSpdBojosen3:
+                    {
+                        let spurAmount = this.__calcBojosenSpurAmount();
+                        targetUnit.atkSpur += spurAmount;
+                        targetUnit.spdSpur += spurAmount;
+                    }
+                    break;
                 case PassiveA.AtkResBojosen3:
                     {
                         let spurAmount = this.__calcBojosenSpurAmount();
