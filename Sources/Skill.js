@@ -781,6 +781,7 @@ const Weapon = {
 
     // 絶望そして希望
     TalreganAxe: 1484, // ダルレカの激斧
+    DoubleBow: 1480, // バルフレチェ
 };
 
 var Support = {

@@ -4094,6 +4094,11 @@ class AetherRaidTacticsBoard {
                     break;
             }
             switch (defUnit.weapon) {
+                case Weapon.DoubleBow:
+                    if (this.__isSolo(defUnit)) {
+                        return true;
+                    }
+                    break;
                 case Weapon.KinsekiNoSyo:
                     if (defUnit.isWeaponSpecialRefined) {
                         if (atkUnit.weaponType == WeaponType.Sword
@@ -8649,6 +8654,9 @@ class AetherRaidTacticsBoard {
         if (this.__isSolo(targetUnit) || calcPotentialDamage) {
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.DoubleBow:
+                        targetUnit.addAllSpur(5);
+                        break;
                     case Weapon.GousouJikumunto:
                     case Weapon.KokkiNoKosou:
                     case Weapon.MaritaNoKen:
