@@ -5692,6 +5692,13 @@ class AetherRaidTacticsBoard {
                         targetUnit.resSpur += 6;
                     }
                     break;
+                case Weapon.SpiritedSpearPlus:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
                 case Weapon.PledgedBladePlus:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                         targetUnit.atkSpur += 4;
