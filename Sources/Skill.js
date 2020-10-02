@@ -1213,6 +1213,10 @@ var PassiveB = {
     GeyserDance2: 645, // 大地静水の舞い2
     RockslideDance2: 643, // 疾風大地の舞い2
 
+    // 魅了
+    AtkCantrip3: 1380, // 攻撃の魅了3
+    DefCantrip3: 1471,
+
     AtkSpdLink2: 1133, // 攻撃速さの連携2
     AtkSpdLink3: 648, // 攻撃速さの連携3
     AtkResLink3: 760,
@@ -1344,7 +1348,6 @@ var PassiveB = {
     SpdDefSnag3: 1373, // 速さ守備の干渉3
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
-    AtkCantrip3: 1380, // 攻撃の魅了3
     DiveBomb3: 1430, // 空からの急襲3
 
     BlueLionRule: 1451, // 蒼き獅子王
