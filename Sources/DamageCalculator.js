@@ -858,6 +858,10 @@ class DamageCalculator {
                 // 凶星
                 specialMultDamage = 1.5;
                 break;
+            case Special.Deadeye:
+                specialMultDamage = 2;
+                invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                break;
             case Special.Astra: {
                 // 流星
                 specialMultDamage = 2.5;

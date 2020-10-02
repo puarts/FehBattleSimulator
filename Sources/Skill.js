@@ -864,6 +864,7 @@ var Special = {
     Aether: 470,
     LunaFlash: 889,
     Glimmer: 462,
+    Deadeye: 1481, // 狙撃
     Astra: 461,
     Bonfire: 455,
     Ignis: 450,
@@ -1782,6 +1783,7 @@ function isNormalAttackSpecial(special) {
         case Special.Aether:
         case Special.LunaFlash:
         case Special.Glimmer:
+        case Special.Deadeye:
         case Special.Astra:
         case Special.Bonfire:
         case Special.Ignis:
