@@ -784,6 +784,7 @@ const Weapon = {
     DoubleBow: 1480, // バルフレチェ
     SpiritedSpearPlus: 1482, // 士気旺盛の槍+
     BlarfoxPlus: 1479, // ブラーフォックス+
+    FlameLance: 1486, // フレイムランス
 };
 
 var Support = {

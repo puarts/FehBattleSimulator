@@ -5821,6 +5821,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FlameLance:
+                    if (targetUnit.snapshot.restHpPercentage >= 50) {
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                    }
+                    break;
                 case Weapon.TalreganAxe:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {

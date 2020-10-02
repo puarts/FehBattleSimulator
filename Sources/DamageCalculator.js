@@ -800,6 +800,13 @@ class DamageCalculator {
                 totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
             }
         }
+        else if (atkUnit.weapon === Weapon.FlameLance) {
+            if (atkUnit.snapshot.restHpPercentage >= 50) {
+                this.writeDebugLog("魔防参照");
+                totalMit = defUnit.getResInCombat(atkUnit);
+                totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
+            }
+        }
         else if ((atkUnit.weapon == Weapon.HelsReaper)) {
             if (isWeaponTypeTome(defUnit.weaponType) || defUnit.weaponType == WeaponType.Staff) {
                 this.writeDebugLog("守備参照");
