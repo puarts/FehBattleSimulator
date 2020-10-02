@@ -785,6 +785,9 @@ const Weapon = {
     SpiritedSpearPlus: 1482, // 士気旺盛の槍+
     BlarfoxPlus: 1479, // ブラーフォックス+
     FlameLance: 1486, // フレイムランス
+
+    // プルメリア
+    FlowerOfPlenty: 1488 // 豊潤の花
 };
 
 var Support = {
