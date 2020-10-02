@@ -6148,6 +6148,12 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
                     }
                     break;
+                case PassiveA.AtkDefBond4:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+                    }
+                    break;
                 case PassiveA.AtkResBond4:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
@@ -8784,6 +8790,10 @@ class AetherRaidTacticsBoard {
                 case PassiveA.AtkSpdBond4:
                     targetUnit.atkSpur += 7;
                     targetUnit.spdSpur += 7;
+                    break;
+                case PassiveA.AtkDefBond4:
+                    targetUnit.atkSpur += 7;
+                    targetUnit.defSpur += 7;
                     break;
                 case PassiveA.AtkResBond4:
                     targetUnit.atkSpur += 7;

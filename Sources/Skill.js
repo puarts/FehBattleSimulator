@@ -970,6 +970,7 @@ var PassiveA = {
     AtkDefBond1: 1327,
     AtkDefBond2: 1328,
     AtkDefBond3: 575,
+    AtkDefBond4: 1475,
     AtkResBond1: 1329,
     AtkResBond2: 1330,
     AtkResBond3: 576,
