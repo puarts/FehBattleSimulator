@@ -7342,6 +7342,9 @@ class AetherRaidTacticsBoard {
                 case Weapon.RauaFoxPlus:
                     defUnit.addAllSpur(-4);
                     break;
+                case Weapon.BlarfoxPlus:
+                    defUnit.addAllSpur(-4);
+                    break;
                 case Weapon.RohyouNoKnife:
                     if (defUnit.isMeleeWeaponType()) {
                         atkUnit.defSpur += 20;

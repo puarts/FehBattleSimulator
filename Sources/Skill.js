@@ -783,6 +783,7 @@ const Weapon = {
     TalreganAxe: 1484, // ダルレカの激斧
     DoubleBow: 1480, // バルフレチェ
     SpiritedSpearPlus: 1482, // 士気旺盛の槍+
+    BlarfoxPlus: 1479, // ブラーフォックス+
 };
 
 var Support = {
