@@ -73,6 +73,9 @@ $(function() {
 <div class="title">Unit.js ファイル</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><a class="el" href="class_unit.html" title="ユニットのインスタンス">Unit</a> クラスやそれに関連する関数や変数定義です。  
+<a href="#details">[詳解]</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 クラス</h2></td></tr>
@@ -80,7 +83,7 @@ $(function() {
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">英雄情報です。ユニットの初期化に使用します。  <a href="class_hero_info.html#details">[詳解]</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_battle_context.html">BattleContext</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">ダメージ計算時のコンテキストです。DamageCalculator でこのコンテキストに設定された値が使用されます。  <a href="class_battle_context.html#details">[詳解]</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">ダメージ計算時のコンテキストです。 <a class="el" href="class_damage_calculator.html" title="ダメージ計算を行うためのクラスです。">DamageCalculator</a> でこのコンテキストに設定された値が使用されます。  <a href="class_battle_context.html#details">[詳解]</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_attackable_unit_info.html">AttackableUnitInfo</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">攻撃可能なユニット情報です。  <a href="class_attackable_unit_info.html#details">[詳解]</a><br /></td></tr>
@@ -109,16 +112,20 @@ $(function() {
 <tr class="memitem:a9717bfbdc918b9be47ff6ee8ebca9d6c"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a9717bfbdc918b9be47ff6ee8ebca9d6c">summonerLevelToString</a> (level)</td></tr>
 <tr class="separator:a9717bfbdc918b9be47ff6ee8ebca9d6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae57c52012692582fab9b223a0504dd0c"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ae57c52012692582fab9b223a0504dd0c">isMythicSeasonType</a> (season)</td></tr>
+<tr class="memdesc:ae57c52012692582fab9b223a0504dd0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">シーズンが光、闇、天、理のいずれかであるかを判定します。  <a href="_unit_8js.html#ae57c52012692582fab9b223a0504dd0c">[詳解]</a><br /></td></tr>
 <tr class="separator:ae57c52012692582fab9b223a0504dd0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab69123352d160909f8d80edf759fce79"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ab69123352d160909f8d80edf759fce79">isLegendarySeasonType</a> (season)</td></tr>
+<tr class="memdesc:ab69123352d160909f8d80edf759fce79"><td class="mdescLeft">&#160;</td><td class="mdescRight">シーズンが火、地、水、風のいずれかであるかを判定します。  <a href="_unit_8js.html#ab69123352d160909f8d80edf759fce79">[詳解]</a><br /></td></tr>
 <tr class="separator:ab69123352d160909f8d80edf759fce79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5d2a7a0eb42c4700b86e5451babcfce"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#af5d2a7a0eb42c4700b86e5451babcfce">moveTypeToString</a> (moveType)</td></tr>
 <tr class="separator:af5d2a7a0eb42c4700b86e5451babcfce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae90422b9ae09d250c8fc2c64a38a2e2c"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ae90422b9ae09d250c8fc2c64a38a2e2c">colorTypeToString</a> (colorType)</td></tr>
 <tr class="separator:ae90422b9ae09d250c8fc2c64a38a2e2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace9562f09ef69ae6499cd00eff6caf8e"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ace9562f09ef69ae6499cd00eff6caf8e">isNegativeStatusEffect</a> (type)</td></tr>
+<tr class="memdesc:ace9562f09ef69ae6499cd00eff6caf8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">ステータス効果が不利なステータス効果であるかどうかを判定します。  <a href="_unit_8js.html#ace9562f09ef69ae6499cd00eff6caf8e">[詳解]</a><br /></td></tr>
 <tr class="separator:ace9562f09ef69ae6499cd00eff6caf8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf8b3b080dfdb51ac768aaa418ea8cbf"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#acf8b3b080dfdb51ac768aaa418ea8cbf">isPositiveStatusEffect</a> (type)</td></tr>
+<tr class="memdesc:acf8b3b080dfdb51ac768aaa418ea8cbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">ステータス効果が有利なステータス効果であるかどうかを判定します。  <a href="_unit_8js.html#acf8b3b080dfdb51ac768aaa418ea8cbf">[詳解]</a><br /></td></tr>
 <tr class="separator:acf8b3b080dfdb51ac768aaa418ea8cbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f30d91b2bcf52a28fe2a17c286aa194"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a4f30d91b2bcf52a28fe2a17c286aa194">statusEffectTypeToIconFilePath</a> (value)</td></tr>
 <tr class="separator:a4f30d91b2bcf52a28fe2a17c286aa194"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -134,6 +141,7 @@ $(function() {
 <tr class="memdesc:a1a9f1bb95c41e2b283930d44c271846e"><td class="mdescLeft">&#160;</td><td class="mdescRight">成長値から得意ステータスのLv40の変動値を取得します。  <a href="_unit_8js.html#a1a9f1bb95c41e2b283930d44c271846e">[詳解]</a><br /></td></tr>
 <tr class="separator:a1a9f1bb95c41e2b283930d44c271846e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a491960230d47623dce4b93c6e458dbea"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a491960230d47623dce4b93c6e458dbea">canDisableAttackOrderSwapSkill</a> (<a class="el" href="_status_calc_main_8js.html#a9f26e57c570993d8cb787d2106147125">unit</a>, restHpPercentage)</td></tr>
+<tr class="memdesc:a491960230d47623dce4b93c6e458dbea"><td class="mdescLeft">&#160;</td><td class="mdescRight">ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。  <a href="_unit_8js.html#a491960230d47623dce4b93c6e458dbea">[詳解]</a><br /></td></tr>
 <tr class="separator:a491960230d47623dce4b93c6e458dbea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79c83e9f2ece2aa3c975910805ba1e80"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a79c83e9f2ece2aa3c975910805ba1e80">calcBuffAmount</a> (assistUnit, targetUnit)</td></tr>
 <tr class="separator:a79c83e9f2ece2aa3c975910805ba1e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -141,10 +149,13 @@ $(function() {
 <tr class="memdesc:a7efd906e071cb5a0413a2da4ab310c1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">回復補助の回復量を取得します。  <a href="_unit_8js.html#a7efd906e071cb5a0413a2da4ab310c1e">[詳解]</a><br /></td></tr>
 <tr class="separator:a7efd906e071cb5a0413a2da4ab310c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93652e296db1c20d88ff84a9f49fc3ce"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a93652e296db1c20d88ff84a9f49fc3ce">isDebufferTier1</a> (attackUnit, targetUnit)</td></tr>
+<tr class="memdesc:a93652e296db1c20d88ff84a9f49fc3ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tier 1 のデバッファーであるかどうかを判定します。 <a href="https://vervefeh.github.io/FEH-AI/charts.html#chartG">https://vervefeh.github.io/FEH-AI/charts.html#chartG</a>  <a href="_unit_8js.html#a93652e296db1c20d88ff84a9f49fc3ce">[詳解]</a><br /></td></tr>
 <tr class="separator:a93652e296db1c20d88ff84a9f49fc3ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e94fabeab4df91abb2b1f407620f79f"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a2e94fabeab4df91abb2b1f407620f79f">isDebufferTier2</a> (attackUnit, targetUnit)</td></tr>
+<tr class="memdesc:a2e94fabeab4df91abb2b1f407620f79f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tier 2 のデバッファーであるかどうかを判定します。 <a href="https://vervefeh.github.io/FEH-AI/charts.html#chartG">https://vervefeh.github.io/FEH-AI/charts.html#chartG</a>  <a href="_unit_8js.html#a2e94fabeab4df91abb2b1f407620f79f">[詳解]</a><br /></td></tr>
 <tr class="separator:a2e94fabeab4df91abb2b1f407620f79f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3e90d081cc3970ec92ef9ce4a81d612"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ae3e90d081cc3970ec92ef9ce4a81d612">isAfflictor</a> (attackUnit, lossesInCombat)</td></tr>
+<tr class="memdesc:ae3e90d081cc3970ec92ef9ce4a81d612"><td class="mdescLeft">&#160;</td><td class="mdescRight">ユニットがアフリクターであるかを判定します。 <a href="https://vervefeh.github.io/FEH-AI/charts.html#chartH">https://vervefeh.github.io/FEH-AI/charts.html#chartH</a>  <a href="_unit_8js.html#ae3e90d081cc3970ec92ef9ce4a81d612">[詳解]</a><br /></td></tr>
 <tr class="separator:ae3e90d081cc3970ec92ef9ce4a81d612"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
@@ -180,7 +191,9 @@ $(function() {
 <tr class="memitem:a3ae141ebcb17d867d9d7394dc0d5ee52"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a3ae141ebcb17d867d9d7394dc0d5ee52">NotReserved</a> = -2</td></tr>
 <tr class="separator:a3ae141ebcb17d867d9d7394dc0d5ee52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">関数詳解</h2>
+<a name="details" id="details"></a><h2 class="groupheader">詳解</h2>
+<div class="textblock"><p><a class="el" href="class_unit.html" title="ユニットのインスタンス">Unit</a> クラスやそれに関連する関数や変数定義です。 </p>
+</div><h2 class="groupheader">関数詳解</h2>
 <a id="a79c83e9f2ece2aa3c975910805ba1e80"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a79c83e9f2ece2aa3c975910805ba1e80">&#9670;&nbsp;</a></span>calcBuffAmount()</h2>
 
@@ -271,6 +284,8 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。 </p>
 
 </div>
 </div>
@@ -410,6 +425,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
+<p>ユニットがアフリクターであるかを判定します。 <a href="https://vervefeh.github.io/FEH-AI/charts.html#chartH">https://vervefeh.github.io/FEH-AI/charts.html#chartH</a> </p>
+
 </div>
 </div>
 <a id="a93652e296db1c20d88ff84a9f49fc3ce"></a>
@@ -437,6 +454,8 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Tier 1 のデバッファーであるかどうかを判定します。 <a href="https://vervefeh.github.io/FEH-AI/charts.html#chartG">https://vervefeh.github.io/FEH-AI/charts.html#chartG</a> </p>
 
 </div>
 </div>
@@ -466,6 +485,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
+<p>Tier 2 のデバッファーであるかどうかを判定します。 <a href="https://vervefeh.github.io/FEH-AI/charts.html#chartG">https://vervefeh.github.io/FEH-AI/charts.html#chartG</a> </p>
+
 </div>
 </div>
 <a id="ab69123352d160909f8d80edf759fce79"></a>
@@ -483,6 +504,8 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>シーズンが火、地、水、風のいずれかであるかを判定します。 </p>
 
 </div>
 </div>
@@ -502,6 +525,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
+<p>シーズンが光、闇、天、理のいずれかであるかを判定します。 </p>
+
 </div>
 </div>
 <a id="ace9562f09ef69ae6499cd00eff6caf8e"></a>
@@ -520,6 +545,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
+<p>ステータス効果が不利なステータス効果であるかどうかを判定します。 </p>
+
 </div>
 </div>
 <a id="acf8b3b080dfdb51ac768aaa418ea8cbf"></a>
@@ -537,6 +564,8 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>ステータス効果が有利なステータス効果であるかどうかを判定します。 </p>
 
 </div>
 </div>
@@ -987,8 +1016,8 @@ $(function() {
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="a_unit_8js_html_ac9766b02890cf549503dca2437010001"><div class="ttname"><a href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a></div><div class="ttdeci">const StatusType</div><div class="ttdef"><b>Definition:</b> Unit.js:53</div></div>
-<div class="ttc" id="a_unit_8js_html_aa189daa5834e5fded5fbf9b43d6111ce"><div class="ttname"><a href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a></div><div class="ttdeci">const SummonerLevel</div><div class="ttdef"><b>Definition:</b> Unit.js:100</div></div>
+<div class="ttc" id="a_unit_8js_html_ac9766b02890cf549503dca2437010001"><div class="ttname"><a href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a></div><div class="ttdeci">const StatusType</div><div class="ttdef"><b>Definition:</b> Unit.js:57</div></div>
+<div class="ttc" id="a_unit_8js_html_aa189daa5834e5fded5fbf9b43d6111ce"><div class="ttname"><a href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a></div><div class="ttdeci">const SummonerLevel</div><div class="ttdef"><b>Definition:</b> Unit.js:104</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 構築:&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20

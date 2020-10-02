@@ -1,3 +1,5 @@
+/// @file
+/// @brief TurnSetting クラスとそれに関連するクラスや関数等の定義です。
 
 /// シリアライズ可能なシミュレーターの設定です。
 class TurnSetting {

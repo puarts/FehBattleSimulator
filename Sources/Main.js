@@ -1,3 +1,5 @@
+/// @file
+/// @brief シミュレーターのメインコードです。
 
 function drawImage(canvas, imageData, scale) {
     const tempCanvas = document.getElementById("tempCanvas");
@@ -3510,6 +3512,7 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
+    /// 戦闘ダメージを計算し、計算結果に基づき、ユニットの状態を更新します。戦闘後に発動するスキルの効果も反映されます。
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
         // 攻撃
         let result = this.calcDamage(atkUnit, defUnit, tileToAttack);
@@ -3671,6 +3674,7 @@ class AetherRaidTacticsBoard {
         atkUnit.isActionDone = false;
     }
 
+    /// 戦闘のダメージを計算します。
     calcDamage(
         atkUnit,
         defUnit,

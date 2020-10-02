@@ -1,4 +1,7 @@
-
+/**
+ * @file
+ * @brief 模擬戦機能で使用する飛空城防衛プリセットの定義です。
+ */
 
 const AetherRaidDefensePreset = {
     PresetDark20200809: 0,
@@ -13,6 +16,7 @@ const AetherRaidDefensePreset = {
     PresetAnima20200826: 9,
 };
 
+/// 飛空城防衛プリセットを表すクラスです。
 class AetherRaidDefensePresetInfo {
     constructor(id, title, setting, provider = "") {
         this.id = id;

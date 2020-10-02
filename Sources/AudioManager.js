@@ -1,4 +1,5 @@
-
+/// @file
+/// @brief AudioManager クラスとそれに関連するクラスや関数等の定義です。
 
 const SoundEffectId = {
     Break: 0,

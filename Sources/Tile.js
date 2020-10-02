@@ -1,3 +1,6 @@
+/// @file
+/// @brief Tile クラスとそれに関連するクラスや関数等の定義です。
+
 const TileType = {
     Normal: 0,
     Forest: 1,
@@ -39,6 +42,7 @@ for (let key in TileType) {
 const CanNotReachTile = 1000000;
 const ObstructTile = 10000; // 進軍阻止されているタイルのウェイト
 
+/// ユニットをタイルに配置します。
 function setUnitToTile(unit, tile) {
     if (unit.placedTile != null) {
         unit.placedTile.placedUnit = null;

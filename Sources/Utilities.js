@@ -1,4 +1,8 @@
-/// スタックです。
+/// @file
+/// @brief ユーティリティークラス、関数等の定義です。
+
+
+/// スタックを表すコンテナクラスです。
 class Stack {
     constructor(maxLength) {
         this._maxLength = maxLength;
@@ -29,7 +33,7 @@ class Stack {
     }
 }
 
-/// キューです。
+/// キューを表すコンテナクラスです。
 class Queue {
     constructor(maxLength) {
         this._maxLength = maxLength;
@@ -413,12 +417,13 @@ class CommandQueue {
     }
 }
 
-
+/// 現在のスレッドを指定時間の間、スピンループでスリープします。
 function sleep(waitMilliseconds) {
     var startMilliseconds = new Date();
     while (new Date() - startMilliseconds < waitMilliseconds);
 }
 
+/// 新しいスレッドで処理を開始します。
 function startProgressiveProcess(
     iterMax, // 繰り返し回数
     mainProcess, // メイン処理
@@ -498,6 +503,7 @@ Vue.component('select2_unwatch', {
     }
 });
 
+/// 一定区間で破棄するインスタンスの区間を指定します。
 function using(disposable, func) {
     const result = func();
     disposable.dispose();

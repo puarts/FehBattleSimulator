@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @brief Unit クラスやそれに関連する関数や変数定義です。
+ */
 
 const SeasonType = {
     None: -1,
@@ -182,7 +186,7 @@ const StatusEffectType = {
     ResonantShield: 14, // 双界効果・盾
 };
 
-
+/// シーズンが光、闇、天、理のいずれかであるかを判定します。
 function isMythicSeasonType(season) {
     switch (season) {
         case SeasonType.Light:
@@ -194,6 +198,8 @@ function isMythicSeasonType(season) {
             return false;
     }
 }
+
+/// シーズンが火、地、水、風のいずれかであるかを判定します。
 function isLegendarySeasonType(season) {
     return season != SeasonType.None && !isMythicSeasonType(season);
 }
@@ -218,6 +224,7 @@ function colorTypeToString(colorType) {
     }
 }
 
+/// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
     switch (type) {
         case StatusEffectType.Panic:
@@ -232,6 +239,7 @@ function isNegativeStatusEffect(type) {
     }
 }
 
+/// ステータス効果が有利なステータス効果であるかどうかを判定します。
 function isPositiveStatusEffect(type) {
     return !isNegativeStatusEffect(type);
 }
@@ -285,7 +293,7 @@ function groupIdToString(groupId) {
     }
 }
 
-// 成長量から成長値を計算
+// 成長量から成長値を計算します。
 function getGrowthRateOfStar5(growthAmount) {
     switch (growthAmount) {
         case 8: return 0.2;
@@ -308,7 +316,7 @@ function getGrowthRateOfStar5(growthAmount) {
     }
 }
 
-// 成長値から苦手ステータスのLv40の変動値
+// 成長値から苦手ステータスのLv40の変動値を取得します。
 function getFlowStatus(growthValue) {
     switch (growthValue) {
         case 1:
@@ -435,7 +443,7 @@ class HeroInfo {
 }
 
 
-/// ダメージ計算時のコンテキストです。DamageCalculator でこのコンテキストに設定された値が使用されます。
+/// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
     constructor() {
         this.hpBeforeCombat = 0;
@@ -3507,6 +3515,7 @@ class Unit {
     }
 }
 
+/// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
 function canDisableAttackOrderSwapSkill(unit, restHpPercentage) {
     for (let skillId of unit.enumerateSkills()) {
         switch (skillId) {
@@ -3643,10 +3652,12 @@ function calcHealAmount(assistUnit, targetUnit) {
     return healAmount;
 }
 
+/// Tier 1 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier1(attackUnit, targetUnit) {
     return attackUnit.weapon == Weapon.Hlidskjalf;
 }
 
+/// Tier 2 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier2(attackUnit, targetUnit) {
     for (let skillId of attackUnit.enumerateSkills()) {
         switch (skillId) {
@@ -3679,6 +3690,7 @@ function isDebufferTier2(attackUnit, targetUnit) {
     return false;
 }
 
+/// ユニットがアフリクターであるかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartH
 function isAfflictor(attackUnit, lossesInCombat) {
     for (let skillId of attackUnit.enumerateSkills()) {
         switch (skillId) {

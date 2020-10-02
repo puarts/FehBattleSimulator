@@ -1,3 +1,6 @@
+/// @file
+/// @brief スキル情報の定義とそれに関連するクラス、関数等の定義です。
+
 const SkillType = {
     Weapon: 0,
     Support: 1,
@@ -780,7 +783,7 @@ const Weapon = {
     GiltGoblet: 1476, // 黄金のゴブレット
 };
 
-var Support = {
+const Support = {
     None: -1,
     Reposition: 413,
     Smite: 414, // ぶちかまし
@@ -843,7 +846,7 @@ var Support = {
     Restore: 448, // レスト
 };
 
-var AssistType = {
+const AssistType = {
     None: 0,
     Refresh: 1,
     Heal: 2,
@@ -853,7 +856,7 @@ var AssistType = {
     Move: 6,
 };
 
-var Special = {
+const Special = {
     None: -1,
     Moonbow: 468,
     Luna: 467,
@@ -933,7 +936,7 @@ var Special = {
     NegatingFang: 1469, // 反竜穿
 };
 
-var PassiveA = {
+const PassiveA = {
     None: -1,
     CloseCounter: 561, // 近距離反撃
     DistantCounter: 562, // 遠距離反撃
@@ -1140,7 +1143,7 @@ var PassiveA = {
     AtkDefUnity: 1450, // 攻撃守備の連帯 
 };
 
-var PassiveB = {
+const PassiveB = {
     None: -1,
     QuickRiposte1: 1254, // 切り返し1
     QuickRiposte2: 1255, // 切り返し2
@@ -1348,7 +1351,7 @@ var PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
 };
 
-var PassiveC = {
+const PassiveC = {
     None: -1,
     SpurAtk1: 1268,
     SpurAtk2: 1269,
@@ -1556,7 +1559,7 @@ var PassiveC = {
     SpdDefRein3: 1485, // 速さ守備の牽制3
 };
 
-var PassiveS = {
+const PassiveS = {
     None: -1,
     HardyBearing1: 1244,
     HardyBearing2: 1144,
@@ -1581,7 +1584,7 @@ var PassiveS = {
     TozokuNoGuzoOdori: 1402,
 };
 
-
+/// 武器タイプが物理系の武器であるかを判定します。
 function isPhysicalWeaponType(weaponType) {
     if (isWeaponTypeBeast(weaponType)) {
         return true;
@@ -1602,6 +1605,7 @@ function isPhysicalWeaponType(weaponType) {
     }
 }
 
+/// 武器錬成タイプが特殊錬成であるかを判定します。
 function isWeaponSpecialRefined(weaponRefinementType) {
     switch (weaponRefinementType) {
         case WeaponRefinementType.Special:
@@ -1611,6 +1615,8 @@ function isWeaponSpecialRefined(weaponRefinementType) {
             return false;
     }
 }
+
+/// 自身、敵共に反撃不可になる武器であるかどうかを判定します。
 function isFiresweepWeapon(weapon) {
     switch (weapon) {
         case Weapon.MiraiNoSeikishiNoYari:
@@ -1627,6 +1633,7 @@ function isFiresweepWeapon(weapon) {
     }
 }
 
+/// 補助スキルの射程を取得します。
 function getAssistRange(support) {
     switch (support) {
         case Support.Physic:
@@ -1636,6 +1643,7 @@ function getAssistRange(support) {
     }
 }
 
+/// 補助スキルが大応援かどうかを判定します。
 function isRallyUp(support) {
     switch (support) {
         case Support.RallyUpAtk:
@@ -1648,6 +1656,7 @@ function isRallyUp(support) {
     }
 }
 
+/// 応援スキルの攻撃の強化量を取得します。
 function getAtkBuffAmount(support) {
     switch (support) {
         case Support.RallyAttack: return 4;
@@ -1663,6 +1672,7 @@ function getAtkBuffAmount(support) {
         default: return 0;
     }
 }
+/// 応援スキルの速さの強化量を取得します。
 function getSpdBuffAmount(support) {
     switch (support) {
         case Support.RallySpeed: return 4;
@@ -1676,6 +1686,7 @@ function getSpdBuffAmount(support) {
         default: return 0;
     }
 }
+/// 応援スキルの守備の強化量を取得します。
 function getDefBuffAmount(support) {
     switch (support) {
         case Support.RallyDefense: return 4;
@@ -1689,6 +1700,7 @@ function getDefBuffAmount(support) {
         default: return 0;
     }
 }
+/// 応援スキルの魔防の強化量を取得します。
 function getResBuffAmount(support) {
     switch (support) {
         case Support.RallyUpRes: return 4;
@@ -1704,6 +1716,8 @@ function getResBuffAmount(support) {
         default: return 0;
     }
 }
+/// 回復系の補助スキルの戦闘前補助実行可能な回復量を取得します。
+/// https://vervefeh.github.io/FEH-AI/charts.html#chartF
 function getPrecombatHealThreshold(support) {
     switch (support) {
         case Support.Sacrifice: return 1;
@@ -1729,6 +1743,7 @@ function getPrecombatHealThreshold(support) {
     }
 }
 
+/// 範囲奥義かどうかを判定します。
 function isRangedAttackSpecial(special) {
     switch (special) {
         case Special.GrowingFlame:
@@ -1749,6 +1764,7 @@ function isRangedAttackSpecial(special) {
     }
 }
 
+/// 防御系の奥義かどうかを判定します。
 function isDefenseSpecial(special) {
     switch (special) {
         case Special.Nagatate:
@@ -1765,6 +1781,7 @@ function isDefenseSpecial(special) {
     }
 }
 
+/// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
     switch (special) {
         case Special.Moonbow:
@@ -1809,6 +1826,7 @@ function isNormalAttackSpecial(special) {
     }
 }
 
+/// 範囲奥義かどうかを判定します。
 function isWeaponTypeBow(type) {
     return type == WeaponType.RedBow
         || type == WeaponType.BlueBow
@@ -1816,6 +1834,7 @@ function isWeaponTypeBow(type) {
         || type == WeaponType.ColorlessBow;
 }
 
+/// 武器タイプが暗器であるかを判定します。
 function isWeaponTypeDagger(type) {
     return type == WeaponType.RedDagger
         || type == WeaponType.BlueDagger
@@ -1823,6 +1842,7 @@ function isWeaponTypeDagger(type) {
         || type == WeaponType.ColorlessDagger;
 }
 
+/// 武器タイプが魔法であるかを判定します。
 function isWeaponTypeTome(type) {
     return type == WeaponType.RedTome
         || type == WeaponType.BlueTome
@@ -1830,6 +1850,7 @@ function isWeaponTypeTome(type) {
         || type == WeaponType.ColorlessTome;
 }
 
+/// 武器タイプが竜であるかを判定します。
 function isWeaponTypeBreath(type) {
     return type == WeaponType.RedBreath
         || type == WeaponType.BlueBreath
@@ -1838,6 +1859,7 @@ function isWeaponTypeBreath(type) {
         || type == WeaponType.Breath;
 }
 
+/// 武器タイプが獣であるかを判定します。
 function isWeaponTypeBeast(type) {
     return type == WeaponType.RedBeast
         || type == WeaponType.BlueBeast
@@ -1846,6 +1868,7 @@ function isWeaponTypeBeast(type) {
         || type == WeaponType.Beast;
 }
 
+/// 武器タイプが2距離射程の武器であるかを判定します。
 function isRangedWeaponType(weaponType) {
     return isWeaponTypeDagger(weaponType)
         || isWeaponTypeTome(weaponType)
@@ -1853,6 +1876,7 @@ function isRangedWeaponType(weaponType) {
         || weaponType == WeaponType.Staff;
 }
 
+/// 武器タイプが1距離射程の武器であるかを判定します。
 function isMeleeWeaponType(weaponType) {
     return isWeaponTypeBreathOrBeast(weaponType)
         || weaponType == WeaponType.Sword
@@ -1860,11 +1884,12 @@ function isMeleeWeaponType(weaponType) {
         || weaponType == WeaponType.Lance;
 }
 
+/// 武器タイプが竜、もしくは獣であるかを判定します。
 function isWeaponTypeBreathOrBeast(type) {
     return isWeaponTypeBeast(type) || isWeaponTypeBreath(type);
 }
 
-
+/// 武器タイプが継承可能であるかを判定します。
 function isInheritableWeaponType(targetType, types) {
     for (let type of types) {
         if (type == targetType) {
@@ -1972,6 +1997,7 @@ function weaponTypeToString(weaponType) {
     }
 }
 
+/// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
 function canRallyForcibly(skill) {
     switch (skill) {
         case Support.Uchikudakumono:
@@ -1990,6 +2016,7 @@ function canRallyForcibly(skill) {
     }
 }
 
+/// 戦闘前に発動するスペシャルであるかどうかを判定します。
 function isPrecombatSpecial(special) {
     return isRangedAttackSpecial(special);
 }

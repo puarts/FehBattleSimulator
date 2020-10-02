@@ -1,4 +1,5 @@
-
+/// @file
+/// @brief ステータス計算器のメインコードです。
 
 let unit = new Unit();
 

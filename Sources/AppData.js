@@ -1,5 +1,7 @@
+/// @file
+/// @brief AppData クラスとそれに関連するクラスや関数等の定義です。
 
-
+/// 全ての英雄情報を格納するデータベースです。
 class HeroDataBase {
     constructor(heroInfos) {
         this._heroInfos = heroInfos;

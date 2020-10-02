@@ -1,4 +1,5 @@
-
+/// @file
+/// @brief DamageCalculator クラスとそれに関連するクラスや関数等の定義です。
 
 var TriangleAdvantage = {
     None: 0,
@@ -6,6 +7,7 @@ var TriangleAdvantage = {
     Disadvantageous: 2,
 };
 
+/// ダメージ計算時に一時的に使用するコンテキストです。
 class DamageCalcContext {
     constructor() {
         this.isCounterattack = false;
@@ -28,6 +30,7 @@ class DamageCalcContext {
     }
 }
 
+/// ダメージ計算結果を表すクラスです。
 class DamageCalcResult {
     constructor() {
         this.atkUnit_totalAttackCount = 0;
@@ -72,6 +75,9 @@ class DamageCalculator {
         this._simpleLog = "";
     }
 
+    /// ダメージ計算を行います。
+    /// @param {Unit} atkUnit 攻撃をするユニットです。
+    /// @param {Unit} defUnit 攻撃を受けるユニットです。
     calc(atkUnit, defUnit) {
         // 初期化
         var context = new DamageCalcContext();

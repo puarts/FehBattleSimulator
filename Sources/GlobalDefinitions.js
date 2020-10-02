@@ -1,3 +1,5 @@
+/// @file
+/// @brief 複数ファイル間で参照するグローバル変数の定義です。
 
 const g_siteRootPath = "https://puarts.com/";
 const g_imageRootPath = g_siteRootPath + "AetherRaidTacticsBoard/images/";

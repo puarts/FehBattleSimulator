@@ -73,14 +73,17 @@ $(function() {
 <div class="title">Utilities.js ファイル</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>ユーティリティークラス、関数等の定義です。  
+<a href="#details">[詳解]</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 クラス</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_stack.html">Stack</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">スタックです。  <a href="class_stack.html#details">[詳解]</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">スタックを表すコンテナクラスです。  <a href="class_stack.html#details">[詳解]</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_queue.html">Queue</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">キューです。  <a href="class_queue.html#details">[詳解]</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">キューを表すコンテナクラスです。  <a href="class_queue.html#details">[詳解]</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_cookie_writer.html">CookieWriter</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">クッキーの保存や読み込みを管理するクラスです。  <a href="class_cookie_writer.html#details">[詳解]</a><br /></td></tr>
@@ -110,12 +113,15 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 関数</h2></td></tr>
 <tr class="memitem:a583c8bef8b753ab686ad5591d93a944c"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_utilities_8js.html#a583c8bef8b753ab686ad5591d93a944c">sleep</a> (waitMilliseconds)</td></tr>
+<tr class="memdesc:a583c8bef8b753ab686ad5591d93a944c"><td class="mdescLeft">&#160;</td><td class="mdescRight">現在のスレッドを指定時間の間、スピンループでスリープします。  <a href="_utilities_8js.html#a583c8bef8b753ab686ad5591d93a944c">[詳解]</a><br /></td></tr>
 <tr class="separator:a583c8bef8b753ab686ad5591d93a944c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7fc99924ee2a384a3bfd53758e54e9ce"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_utilities_8js.html#a7fc99924ee2a384a3bfd53758e54e9ce">startProgressiveProcess</a> (iterMax, mainProcess, showProgress, onProcessFinished=null, waitMilliseconds=0, breakLoopFunc=null,)</td></tr>
+<tr class="memdesc:a7fc99924ee2a384a3bfd53758e54e9ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">新しいスレッドで処理を開始します。  <a href="_utilities_8js.html#a7fc99924ee2a384a3bfd53758e54e9ce">[詳解]</a><br /></td></tr>
 <tr class="separator:a7fc99924ee2a384a3bfd53758e54e9ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6f2e10935030565d35deab84bab2846"><td class="memItemLeft" align="right" valign="top">Vue&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_utilities_8js.html#aa6f2e10935030565d35deab84bab2846">component</a> ('select2_unwatch', { template:'&lt; select &gt;&lt;/select &gt;', props:{ options:Array, value:Number, }, mounted:function() { $(this. $el) .select2({ data:this.options }) .val(this.value) .on('change',(event)=&gt; this. $emit('input', parseInt(event.target.value, 10))) .trigger('change') }, watch:{ value:function(value) { $(this. $el) .val(value) }, options:function(options) { $(this. $el).select2({ data:options }) } }, destroyed:function() { $(this. $el).off().select2('destroy') } })</td></tr>
 <tr class="separator:aa6f2e10935030565d35deab84bab2846"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a472508f290117dde80d1884715cc1507"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_utilities_8js.html#a472508f290117dde80d1884715cc1507">using</a> (disposable, func)</td></tr>
+<tr class="memdesc:a472508f290117dde80d1884715cc1507"><td class="mdescLeft">&#160;</td><td class="mdescRight">一定区間で破棄するインスタンスの区間を指定します。  <a href="_utilities_8js.html#a472508f290117dde80d1884715cc1507">[詳解]</a><br /></td></tr>
 <tr class="separator:a472508f290117dde80d1884715cc1507"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af92c5eb47fd76803662bbcf9c2fb26e6"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_utilities_8js.html#af92c5eb47fd76803662bbcf9c2fb26e6">getFirstElementByTagName</a> (elements, targetTagName)</td></tr>
 <tr class="separator:af92c5eb47fd76803662bbcf9c2fb26e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,7 +183,9 @@ $(function() {
 <tr class="memitem:a5437cb3e4ab632aca9a05a43783d76bf"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_utilities_8js.html#a5437cb3e4ab632aca9a05a43783d76bf">CommandType</a></td></tr>
 <tr class="separator:a5437cb3e4ab632aca9a05a43783d76bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">関数詳解</h2>
+<a name="details" id="details"></a><h2 class="groupheader">詳解</h2>
+<div class="textblock"><p>ユーティリティークラス、関数等の定義です。 </p>
+</div><h2 class="groupheader">関数詳解</h2>
 <a id="ad49de2dbf0f91317b4edff49d8501338"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad49de2dbf0f91317b4edff49d8501338">&#9670;&nbsp;</a></span>adjustChars()</h2>
 
@@ -974,6 +982,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
+<p>現在のスレッドを指定時間の間、スピンループでスリープします。 </p>
+
 </div>
 </div>
 <a id="a7fc99924ee2a384a3bfd53758e54e9ce"></a>
@@ -1025,6 +1035,8 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>新しいスレッドで処理を開始します。 </p>
 
 </div>
 </div>
@@ -1117,6 +1129,8 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>一定区間で破棄するインスタンスの区間を指定します。 </p>
 
 </div>
 </div>

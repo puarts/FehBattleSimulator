@@ -8,5 +8,5 @@ var searchData=
   ['arenamapkindoptions_2629',['ArenaMapKindOptions',['../_map_8js.html#a23302ab0b790ef05135e5ff0f984aaf3',1,'Map.js']]],
   ['arenamaprotation_2630',['ArenaMapRotation',['../_map_8js.html#a9a2520b9d349c865d078753fcf6bab96',1,'Map.js']]],
   ['arrayvalueelemdelimiter_2631',['ArrayValueElemDelimiter',['../_global_definitions_8js.html#ae8da290522d8b8ffa820981d2a21cc7d',1,'GlobalDefinitions.js']]],
-  ['assisttype_2632',['AssistType',['../_skill_8js.html#a8e04500c3046dccb05fa66f4db9da740',1,'Skill.js']]]
+  ['assisttype_2632',['AssistType',['../_skill_8js.html#a047fd6c61fe19dfc2cb786d4c66f8a5c',1,'Skill.js']]]
 ];

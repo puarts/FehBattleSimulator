@@ -1,4 +1,6 @@
-// 汎用的なテーブル HTML 生成クラス
+/// @file
+/// @brief Table クラスとそれに関連するクラスや関数等の定義です。
+
 var CellType = {
     Normal: 0,
     Header: 1,

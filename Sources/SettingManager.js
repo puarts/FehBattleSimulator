@@ -1,3 +1,5 @@
+/// @file
+/// @brief SettingManager クラスとそれに関連する関数等の定義です。
 
 // todo: ビューに依存してしまっているのでどうにかする
 function changeCurrentUnitTab(tabIndex) {

@@ -1,3 +1,5 @@
+/// @file
+/// @brief Map クラスとそれに関連するクラスや関数等の定義です。
 
 const MapType_ArenaOffset = 50;
 const MapType_ResonantBattlesOffset = MapType_ArenaOffset + 100;

@@ -46,7 +46,7 @@ var searchData=
   ['arenamaprotation_446',['ArenaMapRotation',['../_map_8js.html#a9a2520b9d349c865d078753fcf6bab96',1,'Map.js']]],
   ['arrayvalueelemdelimiter_447',['ArrayValueElemDelimiter',['../_global_definitions_8js.html#ae8da290522d8b8ffa820981d2a21cc7d',1,'GlobalDefinitions.js']]],
   ['assistableunitinfo_448',['AssistableUnitInfo',['../class_assistable_unit_info.html',1,'']]],
-  ['assisttype_449',['AssistType',['../_skill_8js.html#a8e04500c3046dccb05fa66f4db9da740',1,'Skill.js']]],
+  ['assisttype_449',['AssistType',['../_skill_8js.html#a047fd6c61fe19dfc2cb786d4c66f8a5c',1,'Skill.js']]],
   ['atk_450',['atk',['../class_hero_info.html#a71a0de33906be8438be030f0ab0aaa1f',1,'HeroInfo::atk()'],['../class_unit.html#a098bf47a2fb2859eaeda0ab0cb2caf2d',1,'Unit::atk()'],['../class_unit.html#a50f900edb15967297c9c625d5cbcf393',1,'Unit::atk(value)']]],
   ['atkbuff_451',['atkBuff',['../class_unit.html#adfaac989287dd915bb61ad95ae0b6c66',1,'Unit::atkBuff()'],['../class_unit.html#a21f4fd7e0004ea642cc55634fa0bb36a',1,'Unit::atkBuff(value)']]],
   ['atkdebuff_452',['atkDebuff',['../class_unit.html#a10507a2de2b93833ccdce7af1b70207b',1,'Unit::atkDebuff()'],['../class_unit.html#a2a1e004920d58d12b1c1924fc000d4d4',1,'Unit::atkDebuff(value)']]],
