@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['seasontype_2693',['SeasonType',['../_unit_8js.html#a7f3357599e549eb89f8084806bcabb87',1,'Unit.js']]],
+  ['selectedtilecolor_2694',['SelectedTileColor',['../_map_8js.html#a080ae42771522b29a8c758b4f7ef610a',1,'Map.js']]],
+  ['selectmode_2695',['SelectMode',['../_app_data_8js.html#aaaab0df3c11c54eb040d742d13ed0fde',1,'AppData.js']]],
+  ['selectmodeoptions_2696',['SelectModeOptions',['../_app_data_8js.html#aa9e63ecad308447c17b45c4a26163fac',1,'AppData.js']]],
+  ['settingcompressmode_2697',['SettingCompressMode',['../_app_data_8js.html#a87b011b4b6632fe16558c1fa3a9e653e',1,'AppData.js']]],
+  ['skilltype_2698',['SkillType',['../_skill_8js.html#ab7131a72c238297a2a46ca1e768144c8',1,'Skill.js']]],
+  ['soundeffectid_2699',['SoundEffectId',['../_audio_manager_8js.html#a4d9ebe3483d329dcae28e4d21f95a505',1,'AudioManager.js']]],
+  ['special_2700',['Special',['../_skill_8js.html#a0d1257020c5522b1851a8d3e4c146180',1,'Skill.js']]],
+  ['specialinfos_2701',['specialInfos',['../_sample_skill_infos_8js.html#af9b9a2ca45da8984a92c0b595fbe36b4',1,'SampleSkillInfos.js']]],
+  ['statuseffecttype_2702',['StatusEffectType',['../_unit_8js.html#af8ff4f92be3c890f97a4c1d3048d4fdc',1,'Unit.js']]],
+  ['statustype_2703',['StatusType',['../_unit_8js.html#ac9766b02890cf549503dca2437010001',1,'Unit.js']]],
+  ['structurecookieprefix_2704',['StructureCookiePrefix',['../_global_definitions_8js.html#ae9c5193cf6aae015fcdd6a1134808814',1,'GlobalDefinitions.js']]],
+  ['summonerlevel_2705',['SummonerLevel',['../_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce',1,'Unit.js']]],
+  ['summonerleveloptions_2706',['SummonerLevelOptions',['../_unit_8js.html#a4d22a1fabc62a2b5537bef3b78764eeb',1,'Unit.js']]],
+  ['support_2707',['Support',['../_skill_8js.html#a210fee44d9a91a76bef1421531e10ad1',1,'Skill.js']]],
+  ['supportinfos_2708',['supportInfos',['../_sample_skill_infos_8js.html#ade0273bd7609bdf65a890c3b4a0060c4',1,'SampleSkillInfos.js']]]
+];

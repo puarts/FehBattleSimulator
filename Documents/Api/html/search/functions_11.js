@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['table_5fdragend_2560',['table_dragend',['../_main_8js.html#a8e7bf40526b922ec31f59662372e1ea1',1,'Main.js']]],
+  ['takedamage_2561',['takeDamage',['../class_unit.html#a4c13b51e15c6dd8c9f436e43334c602e',1,'Unit']]],
+  ['tempdata_2562',['tempData',['../class_tile.html#a8502d40414a84cf7140b29ce1e820175',1,'Tile::tempData()'],['../class_tile.html#a0bbd830bb5d24f6f352cf6d1989af89b',1,'Tile::tempData(value)']]],
+  ['tesseractrecognize_2563',['tesseractRecognize',['../_utilities_8js.html#ace2aac855ea7fe0c840ea42c9d09d835',1,'Utilities.js']]],
+  ['tiletypetocolor_2564',['tileTypeToColor',['../_map_8js.html#aa04d4b52078bb4cd8fed0ede131f75af',1,'Map.js']]],
+  ['tiletypetostring_2565',['tileTypeToString',['../_tile_8js.html#a14f7456c663ec073f8a7851608139cd1',1,'Tile.js']]],
+  ['tiletypetothumb_2566',['tileTypeToThumb',['../_map_8js.html#a5fce2fa7965c0f37a899b497817dca67',1,'Map.js']]],
+  ['toboolean_2567',['toBoolean',['../_utilities_8js.html#a513ec79996533da3cd60a6d1927637aa',1,'Utilities.js']]],
+  ['tohtml_2568',['toHtml',['../class_table.html#a487b18a646e50772a418b2a46001c38e',1,'Table::toHtml()'],['../class_structure_container.html#a01f861283024c0b9811f5ef0f90c987f',1,'StructureContainer::toHtml()']]],
+  ['toimgelem_2569',['toImgElem',['../class_map.html#a8bcf1e8208d22325b0bfd70caf7f895a',1,'Map']]],
+  ['topvalue_2570',['topValue',['../class_queue.html#a6922203151348d9b25923b54aa7df6b7',1,'Queue']]],
+  ['tostring_2571',['toString',['../class_structure_base.html#a186de7ed9d670043a8ad865d00046d5c',1,'StructureBase::toString()'],['../class_turn_setting.html#aa7bf77f2e150b14c8b7288142cf4bc63',1,'TurnSetting::toString()'],['../class_attackable_unit_info.html#a92a9f55bbc6ba193de4a886a85cbf516',1,'AttackableUnitInfo::toString()'],['../class_unit.html#a4976e7f5055042dc448e51c67356e041',1,'Unit::toString()']]],
+  ['totable_2572',['toTable',['../class_map.html#abe99ccc6a9b526ed02823400a51b29e4',1,'Map']]],
+  ['touchendevent_2573',['touchEndEvent',['../_main_8js.html#a9522d497333111afc7429dcf7129e703',1,'Main.js']]],
+  ['touchmoveevent_2574',['touchMoveEvent',['../_main_8js.html#a4094384562e40a6a7bd8a7646bea6be7',1,'Main.js']]],
+  ['touchstartevent_2575',['touchStartEvent',['../_main_8js.html#a6d77aff90c52603302d6834dcb32fba3',1,'Main.js']]],
+  ['turnwidestatustostring_2576',['turnWideStatusToString',['../class_app_data.html#aec26bb834b30a842382dfd5884cecf36',1,'AppData::turnWideStatusToString()'],['../class_map.html#a450a0c452360ae5788a73d4c2dab97b8',1,'Map::turnWideStatusToString()'],['../class_structure_base.html#ad621f3629e4ac49c0e9d75e426ca0d79',1,'StructureBase::turnWideStatusToString()'],['../class_tile.html#a9caaf657e9fd6f8e8f435c562f84144b',1,'Tile::turnWideStatusToString()'],['../class_turn_setting.html#a968b8e5a78f2bd34c8f61bc89e139ac7',1,'TurnSetting::turnWideStatusToString()'],['../class_unit.html#aa6bb6941f450a5b964f8b4bc2ee4d0ac',1,'Unit::turnWideStatusToString()']]],
+  ['type_2577',['type',['../class_breakable_wall.html#aa974c56fc2dce582728b1948e476057e',1,'BreakableWall::type()'],['../class_cell.html#a6dfd807c7b8023883e7bb89edf164a23',1,'Cell::type()'],['../class_cell.html#a9ea14e252770930a7f5b4dad279f3259',1,'Cell::type(value)'],['../class_tile.html#ae1f0cb82a9179b3f7ab39698fd8aefa2',1,'Tile::type()'],['../class_tile.html#a6154087c451fd9dc81f0b6dd305b0085',1,'Tile::type(value)']]]
+];

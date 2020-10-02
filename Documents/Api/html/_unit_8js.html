@@ -1,0 +1,997 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.20"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FehBattleSimulator: F:/trunk/Websites/puarts.com/FehBattleSimulator/Sources/Unit.js ファイル</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">FehBattleSimulator
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 構築: Doxygen 1.8.20 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'検索');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','検索');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_937900b87e0c7a5fa01190c395fb83f7.html">Sources</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">クラス</a> &#124;
+<a href="#func-members">関数</a> &#124;
+<a href="#var-members">変数</a>  </div>
+  <div class="headertitle">
+<div class="title">Unit.js ファイル</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+クラス</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_hero_info.html">HeroInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">英雄情報です。ユニットの初期化に使用します。  <a href="class_hero_info.html#details">[詳解]</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_battle_context.html">BattleContext</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">ダメージ計算時のコンテキストです。DamageCalculator でこのコンテキストに設定された値が使用されます。  <a href="class_battle_context.html#details">[詳解]</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_attackable_unit_info.html">AttackableUnitInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">攻撃可能なユニット情報です。  <a href="class_attackable_unit_info.html#details">[詳解]</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_attack_evaluation_context.html">AttackEvaluationContext</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">攻撃の優先度評価に使用するコンテキストです。  <a href="class_attack_evaluation_context.html#details">[詳解]</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_assistable_unit_info.html">AssistableUnitInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">補助行動の優先度を計算するためのクラスです。  <a href="class_assistable_unit_info.html#details">[詳解]</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_action_context.html">ActionContext</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">敵の動き計算時のコンテキスト  <a href="class_action_context.html#details">[詳解]</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_unit.html">Unit</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">ユニットのインスタンス  <a href="class_unit.html#details">[詳解]</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+関数</h2></td></tr>
+<tr class="memitem:a3ce7d60d2dfd35b1afe81961d56aa665"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a3ce7d60d2dfd35b1afe81961d56aa665">isThiefIndex</a> (heroIndex)</td></tr>
+<tr class="separator:a3ce7d60d2dfd35b1afe81961d56aa665"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fc6f895d520d338593aabb5dea66d52"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a8fc6f895d520d338593aabb5dea66d52">isThief</a> (<a class="el" href="_status_calc_main_8js.html#a9f26e57c570993d8cb787d2106147125">unit</a>)</td></tr>
+<tr class="separator:a8fc6f895d520d338593aabb5dea66d52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fa733162297b9ca6915ae390fc8b4e6"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a6fa733162297b9ca6915ae390fc8b4e6">nameToStatusType</a> (statusName)</td></tr>
+<tr class="separator:a6fa733162297b9ca6915ae390fc8b4e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9717bfbdc918b9be47ff6ee8ebca9d6c"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a9717bfbdc918b9be47ff6ee8ebca9d6c">summonerLevelToString</a> (level)</td></tr>
+<tr class="separator:a9717bfbdc918b9be47ff6ee8ebca9d6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae57c52012692582fab9b223a0504dd0c"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ae57c52012692582fab9b223a0504dd0c">isMythicSeasonType</a> (season)</td></tr>
+<tr class="separator:ae57c52012692582fab9b223a0504dd0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab69123352d160909f8d80edf759fce79"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ab69123352d160909f8d80edf759fce79">isLegendarySeasonType</a> (season)</td></tr>
+<tr class="separator:ab69123352d160909f8d80edf759fce79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5d2a7a0eb42c4700b86e5451babcfce"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#af5d2a7a0eb42c4700b86e5451babcfce">moveTypeToString</a> (moveType)</td></tr>
+<tr class="separator:af5d2a7a0eb42c4700b86e5451babcfce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae90422b9ae09d250c8fc2c64a38a2e2c"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ae90422b9ae09d250c8fc2c64a38a2e2c">colorTypeToString</a> (colorType)</td></tr>
+<tr class="separator:ae90422b9ae09d250c8fc2c64a38a2e2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace9562f09ef69ae6499cd00eff6caf8e"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ace9562f09ef69ae6499cd00eff6caf8e">isNegativeStatusEffect</a> (type)</td></tr>
+<tr class="separator:ace9562f09ef69ae6499cd00eff6caf8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf8b3b080dfdb51ac768aaa418ea8cbf"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#acf8b3b080dfdb51ac768aaa418ea8cbf">isPositiveStatusEffect</a> (type)</td></tr>
+<tr class="separator:acf8b3b080dfdb51ac768aaa418ea8cbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f30d91b2bcf52a28fe2a17c286aa194"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a4f30d91b2bcf52a28fe2a17c286aa194">statusEffectTypeToIconFilePath</a> (value)</td></tr>
+<tr class="separator:a4f30d91b2bcf52a28fe2a17c286aa194"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c94e811a91e7eb2a85fe0e2d316bf9d"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a8c94e811a91e7eb2a85fe0e2d316bf9d">combatResultToString</a> (result)</td></tr>
+<tr class="separator:a8c94e811a91e7eb2a85fe0e2d316bf9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1a90eb94813f37a221b31ff1817dfd4"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#aa1a90eb94813f37a221b31ff1817dfd4">groupIdToString</a> (groupId)</td></tr>
+<tr class="separator:aa1a90eb94813f37a221b31ff1817dfd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb163f44c28c11b813d4e42e982286ad"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#acb163f44c28c11b813d4e42e982286ad">getGrowthRateOfStar5</a> (growthAmount)</td></tr>
+<tr class="separator:acb163f44c28c11b813d4e42e982286ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b940bc9601408359da3d522457d89f2"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a4b940bc9601408359da3d522457d89f2">getFlowStatus</a> (growthValue)</td></tr>
+<tr class="separator:a4b940bc9601408359da3d522457d89f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a9f1bb95c41e2b283930d44c271846e"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a1a9f1bb95c41e2b283930d44c271846e">getAssetStatus</a> (growthValue)</td></tr>
+<tr class="memdesc:a1a9f1bb95c41e2b283930d44c271846e"><td class="mdescLeft">&#160;</td><td class="mdescRight">成長値から得意ステータスのLv40の変動値を取得します。  <a href="_unit_8js.html#a1a9f1bb95c41e2b283930d44c271846e">[詳解]</a><br /></td></tr>
+<tr class="separator:a1a9f1bb95c41e2b283930d44c271846e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a491960230d47623dce4b93c6e458dbea"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a491960230d47623dce4b93c6e458dbea">canDisableAttackOrderSwapSkill</a> (<a class="el" href="_status_calc_main_8js.html#a9f26e57c570993d8cb787d2106147125">unit</a>, restHpPercentage)</td></tr>
+<tr class="separator:a491960230d47623dce4b93c6e458dbea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79c83e9f2ece2aa3c975910805ba1e80"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a79c83e9f2ece2aa3c975910805ba1e80">calcBuffAmount</a> (assistUnit, targetUnit)</td></tr>
+<tr class="separator:a79c83e9f2ece2aa3c975910805ba1e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7efd906e071cb5a0413a2da4ab310c1e"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a7efd906e071cb5a0413a2da4ab310c1e">calcHealAmount</a> (assistUnit, targetUnit)</td></tr>
+<tr class="memdesc:a7efd906e071cb5a0413a2da4ab310c1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">回復補助の回復量を取得します。  <a href="_unit_8js.html#a7efd906e071cb5a0413a2da4ab310c1e">[詳解]</a><br /></td></tr>
+<tr class="separator:a7efd906e071cb5a0413a2da4ab310c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93652e296db1c20d88ff84a9f49fc3ce"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a93652e296db1c20d88ff84a9f49fc3ce">isDebufferTier1</a> (attackUnit, targetUnit)</td></tr>
+<tr class="separator:a93652e296db1c20d88ff84a9f49fc3ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e94fabeab4df91abb2b1f407620f79f"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a2e94fabeab4df91abb2b1f407620f79f">isDebufferTier2</a> (attackUnit, targetUnit)</td></tr>
+<tr class="separator:a2e94fabeab4df91abb2b1f407620f79f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3e90d081cc3970ec92ef9ce4a81d612"><td class="memItemLeft" align="right" valign="top">function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ae3e90d081cc3970ec92ef9ce4a81d612">isAfflictor</a> (attackUnit, lossesInCombat)</td></tr>
+<tr class="separator:ae3e90d081cc3970ec92ef9ce4a81d612"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+変数</h2></td></tr>
+<tr class="memitem:a7f3357599e549eb89f8084806bcabb87"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a7f3357599e549eb89f8084806bcabb87">SeasonType</a></td></tr>
+<tr class="separator:a7f3357599e549eb89f8084806bcabb87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59306eec67f1a2fa7b8dce0be1be72b8"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a59306eec67f1a2fa7b8dce0be1be72b8">Hero</a></td></tr>
+<tr class="separator:a59306eec67f1a2fa7b8dce0be1be72b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3cc74b4de5bed9214b969d157b43685b"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a3cc74b4de5bed9214b969d157b43685b">MoveType</a></td></tr>
+<tr class="separator:a3cc74b4de5bed9214b969d157b43685b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9766b02890cf549503dca2437010001"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a></td></tr>
+<tr class="separator:ac9766b02890cf549503dca2437010001"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25412b06f31748ac973552cadd3cf00c"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a25412b06f31748ac973552cadd3cf00c">IvStateOptions</a></td></tr>
+<tr class="separator:a25412b06f31748ac973552cadd3cf00c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa618e4bc72aae692ada7af88d405a920"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#aa618e4bc72aae692ada7af88d405a920">ColorType</a></td></tr>
+<tr class="separator:aa618e4bc72aae692ada7af88d405a920"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9805267d43da637a1c06012148ab0c5f"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a9805267d43da637a1c06012148ab0c5f">UnitGroupType</a></td></tr>
+<tr class="separator:a9805267d43da637a1c06012148ab0c5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa189daa5834e5fded5fbf9b43d6111ce"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a></td></tr>
+<tr class="separator:aa189daa5834e5fded5fbf9b43d6111ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d22a1fabc62a2b5537bef3b78764eeb"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a4d22a1fabc62a2b5537bef3b78764eeb">SummonerLevelOptions</a></td></tr>
+<tr class="separator:a4d22a1fabc62a2b5537bef3b78764eeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e655849b073d4ac7804be5b513d0c41"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a7e655849b073d4ac7804be5b513d0c41">PartnerLevel</a></td></tr>
+<tr class="separator:a7e655849b073d4ac7804be5b513d0c41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20476b2c799b6645cb60d1a2ed54e498"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a20476b2c799b6645cb60d1a2ed54e498">BlessingType</a></td></tr>
+<tr class="separator:a20476b2c799b6645cb60d1a2ed54e498"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a070262c58f0769d22824394e61323b29"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a070262c58f0769d22824394e61323b29">CombatResult</a></td></tr>
+<tr class="separator:a070262c58f0769d22824394e61323b29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56754ead8a95ab55c3279a17001d6b81"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a56754ead8a95ab55c3279a17001d6b81">PerTurnStatusType</a></td></tr>
+<tr class="separator:a56754ead8a95ab55c3279a17001d6b81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8ff4f92be3c890f97a4c1d3048d4fdc"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#af8ff4f92be3c890f97a4c1d3048d4fdc">StatusEffectType</a></td></tr>
+<tr class="separator:af8ff4f92be3c890f97a4c1d3048d4fdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ae141ebcb17d867d9d7394dc0d5ee52"><td class="memItemLeft" align="right" valign="top">const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_unit_8js.html#a3ae141ebcb17d867d9d7394dc0d5ee52">NotReserved</a> = -2</td></tr>
+<tr class="separator:a3ae141ebcb17d867d9d7394dc0d5ee52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">関数詳解</h2>
+<a id="a79c83e9f2ece2aa3c975910805ba1e80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79c83e9f2ece2aa3c975910805ba1e80">&#9670;&nbsp;</a></span>calcBuffAmount()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function calcBuffAmount </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>assistUnit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>targetUnit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7efd906e071cb5a0413a2da4ab310c1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7efd906e071cb5a0413a2da4ab310c1e">&#9670;&nbsp;</a></span>calcHealAmount()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function calcHealAmount </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>assistUnit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>targetUnit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>回復補助の回復量を取得します。 </p>
+<dl class="params"><dt>引数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">{Unit}</td><td>assistUnit 補助者のユニット </td></tr>
+    <tr><td class="paramname">{Unit}</td><td>targetUnit 補助対象のユニット </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a491960230d47623dce4b93c6e458dbea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a491960230d47623dce4b93c6e458dbea">&#9670;&nbsp;</a></span>canDisableAttackOrderSwapSkill()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function canDisableAttackOrderSwapSkill </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>unit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>restHpPercentage</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae90422b9ae09d250c8fc2c64a38a2e2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae90422b9ae09d250c8fc2c64a38a2e2c">&#9670;&nbsp;</a></span>colorTypeToString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function colorTypeToString </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>colorType</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8c94e811a91e7eb2a85fe0e2d316bf9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c94e811a91e7eb2a85fe0e2d316bf9d">&#9670;&nbsp;</a></span>combatResultToString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function combatResultToString </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>result</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1a9f1bb95c41e2b283930d44c271846e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a9f1bb95c41e2b283930d44c271846e">&#9670;&nbsp;</a></span>getAssetStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function getAssetStatus </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>growthValue</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>成長値から得意ステータスのLv40の変動値を取得します。 </p>
+
+</div>
+</div>
+<a id="a4b940bc9601408359da3d522457d89f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b940bc9601408359da3d522457d89f2">&#9670;&nbsp;</a></span>getFlowStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function getFlowStatus </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>growthValue</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acb163f44c28c11b813d4e42e982286ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb163f44c28c11b813d4e42e982286ad">&#9670;&nbsp;</a></span>getGrowthRateOfStar5()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function getGrowthRateOfStar5 </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>growthAmount</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa1a90eb94813f37a221b31ff1817dfd4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1a90eb94813f37a221b31ff1817dfd4">&#9670;&nbsp;</a></span>groupIdToString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function groupIdToString </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>groupId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae3e90d081cc3970ec92ef9ce4a81d612"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3e90d081cc3970ec92ef9ce4a81d612">&#9670;&nbsp;</a></span>isAfflictor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isAfflictor </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>attackUnit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>lossesInCombat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a93652e296db1c20d88ff84a9f49fc3ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93652e296db1c20d88ff84a9f49fc3ce">&#9670;&nbsp;</a></span>isDebufferTier1()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isDebufferTier1 </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>attackUnit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>targetUnit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2e94fabeab4df91abb2b1f407620f79f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e94fabeab4df91abb2b1f407620f79f">&#9670;&nbsp;</a></span>isDebufferTier2()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isDebufferTier2 </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>attackUnit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>targetUnit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab69123352d160909f8d80edf759fce79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab69123352d160909f8d80edf759fce79">&#9670;&nbsp;</a></span>isLegendarySeasonType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isLegendarySeasonType </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>season</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae57c52012692582fab9b223a0504dd0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae57c52012692582fab9b223a0504dd0c">&#9670;&nbsp;</a></span>isMythicSeasonType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isMythicSeasonType </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>season</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ace9562f09ef69ae6499cd00eff6caf8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace9562f09ef69ae6499cd00eff6caf8e">&#9670;&nbsp;</a></span>isNegativeStatusEffect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isNegativeStatusEffect </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acf8b3b080dfdb51ac768aaa418ea8cbf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf8b3b080dfdb51ac768aaa418ea8cbf">&#9670;&nbsp;</a></span>isPositiveStatusEffect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isPositiveStatusEffect </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8fc6f895d520d338593aabb5dea66d52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fc6f895d520d338593aabb5dea66d52">&#9670;&nbsp;</a></span>isThief()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isThief </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>unit</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3ce7d60d2dfd35b1afe81961d56aa665"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ce7d60d2dfd35b1afe81961d56aa665">&#9670;&nbsp;</a></span>isThiefIndex()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function isThiefIndex </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>heroIndex</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af5d2a7a0eb42c4700b86e5451babcfce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5d2a7a0eb42c4700b86e5451babcfce">&#9670;&nbsp;</a></span>moveTypeToString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function moveTypeToString </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>moveType</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6fa733162297b9ca6915ae390fc8b4e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fa733162297b9ca6915ae390fc8b4e6">&#9670;&nbsp;</a></span>nameToStatusType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function nameToStatusType </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>statusName</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4f30d91b2bcf52a28fe2a17c286aa194"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f30d91b2bcf52a28fe2a17c286aa194">&#9670;&nbsp;</a></span>statusEffectTypeToIconFilePath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function statusEffectTypeToIconFilePath </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9717bfbdc918b9be47ff6ee8ebca9d6c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9717bfbdc918b9be47ff6ee8ebca9d6c">&#9670;&nbsp;</a></span>summonerLevelToString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">function summonerLevelToString </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">変数詳解</h2>
+<a id="a20476b2c799b6645cb60d1a2ed54e498"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20476b2c799b6645cb60d1a2ed54e498">&#9670;&nbsp;</a></span>BlessingType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const BlessingType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">=</div>
+<div class="line">{</div>
+<div class="line">    None: -1,</div>
+<div class="line">    Hp5_Atk3: 0,</div>
+<div class="line">    Hp5_Spd4: 1,</div>
+<div class="line">    Hp5_Def5: 2,</div>
+<div class="line">    Hp5_Res5: 3,</div>
+<div class="line">    Hp3_Atk2: 4,</div>
+<div class="line">    Hp3_Spd3: 5,</div>
+<div class="line">    Hp3_Def4: 6,</div>
+<div class="line">    Hp3_Res4: 7,</div>
+<div class="line">    Hp3: 8,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aa618e4bc72aae692ada7af88d405a920"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa618e4bc72aae692ada7af88d405a920">&#9670;&nbsp;</a></span>ColorType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const ColorType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    Unknown: -1,</div>
+<div class="line">    Red: 0,</div>
+<div class="line">    Blue: 1,</div>
+<div class="line">    Green: 2,</div>
+<div class="line">    Colorless: 3,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a070262c58f0769d22824394e61323b29"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a070262c58f0769d22824394e61323b29">&#9670;&nbsp;</a></span>CombatResult</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const CombatResult</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    Win: 2,</div>
+<div class="line">    Draw: 1,</div>
+<div class="line">    Loss: 0,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a59306eec67f1a2fa7b8dce0be1be72b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59306eec67f1a2fa7b8dce0be1be72b8">&#9670;&nbsp;</a></span>Hero</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const Hero</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    HaloweenHector: 432,</div>
+<div class="line">    DuoEphraim: 443,</div>
+<div class="line">    ChristmasMarth: 462,</div>
+<div class="line">    NewYearAlfonse: 468,</div>
+<div class="line">    ValentineAlm: 484,</div>
+<div class="line">    SpringIdunn: 500,</div>
+<div class="line">    YoungPalla: 511,</div>
+<div class="line">    BridalMicaiah: 522,</div>
+<div class="line">    Mila: 524,</div>
+<div class="line">    SummerMia: 534,</div>
+<div class="line">    Thief: 547,</div>
+<div class="line">    RedThief: 548,</div>
+<div class="line">    BlueThief: 549,</div>
+<div class="line">    GreenThief: 550,</div>
+<div class="line">    SummerByleth: 540,</div>
+<div class="line">    PirateVeronica: 555,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a25412b06f31748ac973552cadd3cf00c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25412b06f31748ac973552cadd3cf00c">&#9670;&nbsp;</a></span>IvStateOptions</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const IvStateOptions</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= [</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a>.None, text: <span class="stringliteral">&quot;なし&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a>.Hp, text: <span class="stringliteral">&quot;HP&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a>.Atk, text: <span class="stringliteral">&quot;攻撃&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a>.Spd, text: <span class="stringliteral">&quot;速さ&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a>.Def, text: <span class="stringliteral">&quot;守備&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a>.Res, text: <span class="stringliteral">&quot;魔防&quot;</span> },</div>
+<div class="line">]</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a3cc74b4de5bed9214b969d157b43685b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3cc74b4de5bed9214b969d157b43685b">&#9670;&nbsp;</a></span>MoveType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const MoveType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    Infantry: 0,</div>
+<div class="line">    Flying: 1,</div>
+<div class="line">    Cavalry: 2,</div>
+<div class="line">    Armor: 3,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a3ae141ebcb17d867d9d7394dc0d5ee52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ae141ebcb17d867d9d7394dc0d5ee52">&#9670;&nbsp;</a></span>NotReserved</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const NotReserved = -2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7e655849b073d4ac7804be5b513d0c41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e655849b073d4ac7804be5b513d0c41">&#9670;&nbsp;</a></span>PartnerLevel</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const PartnerLevel</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">=</div>
+<div class="line">{</div>
+<div class="line">    None: -1,</div>
+<div class="line">    C: 0,</div>
+<div class="line">    B: 1,</div>
+<div class="line">    A: 2,</div>
+<div class="line">    S: 3,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a56754ead8a95ab55c3279a17001d6b81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56754ead8a95ab55c3279a17001d6b81">&#9670;&nbsp;</a></span>PerTurnStatusType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const PerTurnStatusType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    None: -1,</div>
+<div class="line">    Pass: 0,</div>
+<div class="line">    ThreatensEnemy: 1,</div>
+<div class="line">    ThreatenedByEnemy: 2,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a7f3357599e549eb89f8084806bcabb87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f3357599e549eb89f8084806bcabb87">&#9670;&nbsp;</a></span>SeasonType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const SeasonType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    None: -1,</div>
+<div class="line">    Light: 0,</div>
+<div class="line">    Dark: 1,</div>
+<div class="line">    Astra: 2,</div>
+<div class="line">    Anima: 3,</div>
+<div class="line">    Fire: 4,</div>
+<div class="line">    Water: 5,</div>
+<div class="line">    Wind: 6,</div>
+<div class="line">    Earth: 7,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="af8ff4f92be3c890f97a4c1d3048d4fdc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8ff4f92be3c890f97a4c1d3048d4fdc">&#9670;&nbsp;</a></span>StatusEffectType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const StatusEffectType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    None: -1,</div>
+<div class="line">    Panic: 0, </div>
+<div class="line">    Gravity: 1, </div>
+<div class="line">    MobilityIncreased: 2, </div>
+<div class="line">    CounterattacksDisrupted: 3, </div>
+<div class="line">    TriangleAdept: 4, </div>
+<div class="line">    Guard: 5, </div>
+<div class="line">    AirOrders: 6, </div>
+<div class="line">    EffectiveAgainstDragons: 7, </div>
+<div class="line">    Isolation: 8, </div>
+<div class="line">    BonusDoubler: 9, </div>
+<div class="line">    SieldDragonArmor: 10, </div>
+<div class="line">    TotalPenaltyDamage: 11, </div>
+<div class="line">    ResonantBlades: 12, </div>
+<div class="line">    Desperation: 13, </div>
+<div class="line">    ResonantShield: 14, </div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ac9766b02890cf549503dca2437010001"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9766b02890cf549503dca2437010001">&#9670;&nbsp;</a></span>StatusType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const StatusType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    None: -1,</div>
+<div class="line">    Hp: 0,</div>
+<div class="line">    Atk: 1,</div>
+<div class="line">    Spd: 2,</div>
+<div class="line">    Def: 3,</div>
+<div class="line">    Res: 4,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aa189daa5834e5fded5fbf9b43d6111ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa189daa5834e5fded5fbf9b43d6111ce">&#9670;&nbsp;</a></span>SummonerLevel</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const SummonerLevel</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">=</div>
+<div class="line">{</div>
+<div class="line">    None: -1,</div>
+<div class="line">    C: 0,</div>
+<div class="line">    B: 1,</div>
+<div class="line">    A: 2,</div>
+<div class="line">    S: 3,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a4d22a1fabc62a2b5537bef3b78764eeb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d22a1fabc62a2b5537bef3b78764eeb">&#9670;&nbsp;</a></span>SummonerLevelOptions</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const SummonerLevelOptions</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= [</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a>.None, text: <span class="stringliteral">&quot;なし&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a>.C, text: <span class="stringliteral">&quot;C&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a>.B, text: <span class="stringliteral">&quot;B&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a>.A, text: <span class="stringliteral">&quot;A&quot;</span> },</div>
+<div class="line">    { id: <a class="code" href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a>.S, text: <span class="stringliteral">&quot;S&quot;</span> },</div>
+<div class="line">]</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a9805267d43da637a1c06012148ab0c5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9805267d43da637a1c06012148ab0c5f">&#9670;&nbsp;</a></span>UnitGroupType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const UnitGroupType</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>初期値:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    Ally: 0,</div>
+<div class="line">    Enemy: 1,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="a_unit_8js_html_ac9766b02890cf549503dca2437010001"><div class="ttname"><a href="_unit_8js.html#ac9766b02890cf549503dca2437010001">StatusType</a></div><div class="ttdeci">const StatusType</div><div class="ttdef"><b>Definition:</b> Unit.js:53</div></div>
+<div class="ttc" id="a_unit_8js_html_aa189daa5834e5fded5fbf9b43d6111ce"><div class="ttname"><a href="_unit_8js.html#aa189daa5834e5fded5fbf9b43d6111ce">SummonerLevel</a></div><div class="ttdeci">const SummonerLevel</div><div class="ttdef"><b>Definition:</b> Unit.js:100</div></div>
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+構築:&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20
+</small></address>
+</body>
+</html>

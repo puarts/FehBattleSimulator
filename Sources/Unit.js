@@ -3573,8 +3573,7 @@ function calcBuffAmount(assistUnit, targetUnit) {
     return totalBuffAmount;
 }
 
-/// @function calcHealAmount
-/// 回復補助の回復量を取得します。
+/// @brief 回復補助の回復量を取得します。
 /// @param {Unit} assistUnit 補助者のユニット
 /// @param {Unit} targetUnit 補助対象のユニット
 function calcHealAmount(assistUnit, targetUnit) {
