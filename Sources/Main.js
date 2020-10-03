@@ -5756,6 +5756,11 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.addAllSpur(3);
                     }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
+                            targetUnit.addAllSpur(5);
+                        }
+                    }
                     break;
                 case Weapon.Randgrior:
                     if (enemyUnit.snapshot.restHpPercentage == 100) {
@@ -6193,13 +6198,6 @@ class AetherRaidTacticsBoard {
                 case Weapon.Vorufuberugu:
                     if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
                         targetUnit.addAllSpur(4);
-                    }
-                    break;
-                case Weapon.GrayNoHyouken:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
-                            targetUnit.addAllSpur(5);
-                        }
                     }
                     break;
                 case Weapon.DevilAxe:
