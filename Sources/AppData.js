@@ -1699,3 +1699,5 @@ class AppData {
         }
     }
 }
+
+let g_appData = new AppData();

@@ -1025,7 +1025,9 @@ function importJs(src, onloadFunc) {
     let element = document.createElement("script");
     element.type = "text/javascript";
     element.src = src;
-    document.body.appendChild(element);
+    let headElement = document.getElementsByTagName('head')[0];
+    headElement.appendChild(element);
+    // document.body.appendChild(element);
     element.onload = onloadFunc;
 }
 

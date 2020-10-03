@@ -17,8 +17,6 @@ function changeCurrentUnitTab(tabIndex) {
     // $('.urlJumpIcon').attr('src', g_imageRootPath + "UrlJump.png");
 }
 
-let g_appData = new AppData();
-
 /// シリアライズ可能なシミュレーターの設定を管理するクラスです。
 class SettingManager {
     constructor() {

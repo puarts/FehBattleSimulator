@@ -8,7 +8,7 @@
     <script>
         // 画像の遅延ロード用の処理。以下の要素を作ると遅延ロードされる
         // <img src="dummy.png" data-src="actual.png" class="lazy" />
-        document.addEventListener("DOMContentLoaded", function () {
+        function loadLazyImages() {
             let lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
             let lazyInputs = [].slice.call(document.querySelectorAll("input.lazy"));
             if ("IntersectionObserver" in window) {
@@ -41,7 +41,7 @@
             } else {
                 // Possibly fall back to a more compatible method here
             }
-        });
+        }
     </script>
 </head>
 
@@ -342,8 +342,7 @@
     <script defer type="text/javascript"
         src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
 
-    <!-- <script defer type="text/javascript"
-        src="https://docs.opencv.org/4.2.0/opencv.js"></script> -->
+    <!-- <script defer type="text/javascript" src="https://docs.opencv.org/4.2.0/opencv.js"></script> -->
 
     <div id="app">
         <table style="border-style: none;">
@@ -1372,33 +1371,6 @@
             </span>
         </div>
     </div>
-
-    <script>
-        function writeScriptElem(scriptFileName) {
-            let jsRootPath = "./";
-            // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
-            let reloadSuffix = "20200513";
-            document.write("<script type='text/javascript' src='" + jsRootPath + scriptFileName + "?" + reloadSuffix + "'><\/script>");
-        }
-
-        {
-            writeScriptElem("GlobalDefinitions.js");
-            writeScriptElem("Utilities.js");
-            writeScriptElem("Skill.js");
-            writeScriptElem("Tile.js");
-            writeScriptElem("Map.js");
-            writeScriptElem("Structures.js");
-            writeScriptElem("Table.js");
-            writeScriptElem("Unit.js");
-            writeScriptElem("DamageCalculator.js");
-            writeScriptElem("TurnSetting.js");
-            writeScriptElem("AudioManager.js");
-            writeScriptElem("AetherRaidDefensePresets.js");
-            writeScriptElem("AppData.js");
-            writeScriptElem("SettingManager.js");
-            writeScriptElem("Main.js");
-        }
-    </script>
     <style>
         .select2-results__options {
             font-size: 12px;
@@ -1836,7 +1808,7 @@
                                 <select2 :options="g_app.vm.weaponOptions" v-model="value.weapon" v-if="g_app.vm.enableAllSkillOptions"
                                     @input="g_app.vm.weaponChanged" class="skill">
                                 </select2>
-                                <select2 :options="value.heroInfo.weaponOptions" v-model="value.weapon" v-bind:name="value.id+'-weapon'" v-else
+                                <select2 :options="value.heroInfo.weaponOptions" v-model="value.weapon" v-bind:name="value.id+'-weapon'" v-else-if="value.heroInfo!=null"
                                     @input="g_app.vm.weaponChanged" class="skill">
                                 </select2>
                                 <a v-bind:href="value.weaponInfo.detailPageUrl" target="_blank" v-if="value.weaponInfo != null" >
@@ -1865,7 +1837,7 @@
                                 @input="g_app.vm.supportChanged"
                                     v-model="value.support" class="skill">
                                 </select2>
-                                <select2 :options="value.heroInfo.supportOptions" v-else
+                                <select2 :options="value.heroInfo.supportOptions" v-else-if="value.heroInfo!=null"
                                 @input="g_app.vm.supportChanged"
                                  v-bind:name="value.id+'-support'"
                                     v-model="value.support" class="skill">
@@ -1884,7 +1856,7 @@
                                 <select2 :options="g_app.vm.specialOptions" v-model="value.special" v-if="g_app.vm.enableAllSkillOptions"
                                     @input="g_app.vm.specialChanged" class="skill">
                                 </select2>
-                                <select2 :options="value.heroInfo.specialOptions" v-model="value.special" v-bind:name="value.id+'-special'" v-else
+                                <select2 :options="value.heroInfo.specialOptions" v-model="value.special" v-bind:name="value.id+'-special'" v-else-if="value.heroInfo!=null"
                                     @input="g_app.vm.specialChanged" class="skill">
                                 </select2>
                                 <a v-bind:href="value.specialInfo.detailPageUrl" target="_blank" v-if="value.specialInfo != null" >
@@ -1904,7 +1876,7 @@
                                 <select2 :options="g_app.vm.passiveAOptions"  v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
                                 </select2>
-                                <select2 :options="value.heroInfo.passiveAOptions" v-bind:name="value.id+'-passiveA'" v-else
+                                <select2 :options="value.heroInfo.passiveAOptions" v-bind:name="value.id+'-passiveA'" v-else-if="value.heroInfo!=null"
                                     v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
                                 </select2>
                                 <a v-bind:href="value.passiveAInfo.detailPageUrl" target="_blank" v-if="value.passiveAInfo != null" >
@@ -1920,7 +1892,7 @@
                                 <select2 :options="g_app.vm.passiveBOptions"  v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
                                 </select2>
-                                <select2 :options="value.heroInfo.passiveBOptions" v-bind:name="value.id+'-passiveB'" v-else
+                                <select2 :options="value.heroInfo.passiveBOptions" v-bind:name="value.id+'-passiveB'" v-else-if="value.heroInfo!=null"
                                     v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
                                 </select2>
                                 <a v-bind:href="value.passiveBInfo.detailPageUrl" target="_blank" v-if="value.passiveBInfo != null" >
@@ -1936,7 +1908,7 @@
                                 <select2 :options="g_app.vm.passiveCOptions" v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
                                 </select2>
-                                <select2 :options="value.heroInfo.passiveCOptions" v-bind:name="value.id+'-passiveC'" v-else
+                                <select2 :options="value.heroInfo.passiveCOptions" v-bind:name="value.id+'-passiveC'" v-else-if="value.heroInfo!=null"
                                     v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
                                 </select2>
                                 <a v-bind:href="value.passiveCInfo.detailPageUrl" target="_blank" v-if="value.passiveCInfo != null" >
@@ -1953,7 +1925,7 @@
                                 <select2 :options="g_app.vm.passiveSOptions" v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
                                 </select2>
-                                <select2 :options="value.heroInfo.passiveSOptions" v-bind:name="value.id+'-passiveS'" v-else
+                                <select2 :options="value.heroInfo.passiveSOptions" v-bind:name="value.id+'-passiveS'" v-else-if="value.heroInfo!=null"
                                     v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
                                 </select2>
                                 <a v-bind:href="value.passiveSInfo.detailPageUrl" target="_blank" v-if="value.passiveSInfo != null" >
@@ -2100,7 +2072,7 @@
             });
         }
 
-        $(function () {
+        function createDialogs() {
             $('#simpleLogPanel').on('DOMSubtreeModified propertychange', function () {
                 var objDiv = document.getElementById("simpleLogPanel");
                 objDiv.scrollTop = objDiv.scrollHeight;
@@ -2161,7 +2133,7 @@
             createDialog($("#settingDialog"), "詳細設定", 370, 370, "#mapArea");
             createDialog($("#exportDialog"), "設定のエクスポート", 370, 420, "#mapArea");
             createDialog($("#importDialog"), "設定のインポート", 370, 420, "#mapArea");
-        });
+        }
         function copyMapSourceCodeToClipboard() {
             var textarea = $("#mapSourceCode")[0];
             textarea.select();
@@ -2218,18 +2190,71 @@
             // };
         }
 
+        function createScriptElement(src, onloadFunc) {
+            let element = document.createElement("script");
+            element.type = "text/javascript";
+            element.src = src;
+            element.onload = onloadFunc;
+            // document.body.appendChild(element);
+            let headElement = document.getElementsByTagName('head')[0];
+            headElement.appendChild(element);
+        }
+
+        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
+            if (index == scriptFileNames.length) {
+                allScriptLoaded();
+                return;
+            }
+
+            let jsRootPath = "./";
+            // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
+            let reloadSuffix = "20200513";
+            let scriptFileName = scriptFileNames[index];
+            let src = jsRootPath + scriptFileName + "?" + reloadSuffix;
+            const startTime = Date.now();
+            createScriptElement(src, x => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load ${src}`);
+                loadScripts(scriptFileNames, allScriptLoaded, ++index);
+            });
+        }
+
+        let g_scriptFileNames = [
+            "GlobalDefinitions.js",
+            "Utilities.js",
+            "Skill.js",
+            "Tile.js",
+            "Map.js",
+            "Structures.js",
+            "Table.js",
+            "Unit.js",
+            "DamageCalculator.js",
+            "TurnSetting.js",
+            "AudioManager.js",
+            "AetherRaidDefensePresets.js",
+            "AppData.js",
+            "SettingManager.js",
+            "Main_ImageProcessing.js",
+            "Main.js",
+        ];
     </script>
-
-
-    <script src="./SampleSkillInfos.js"></script>
-    <script src="./SampleHeroInfos.js"></script>
-
     <script>
+        g_scriptFileNames.push("SampleSkillInfos.js");
+        g_scriptFileNames.push("SampleHeroInfos.js");
+
         $(function () {
-            g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-                passiveSInfos);
-            g_app.registerHeroOptions(heroInfos);
-            initAetherRaidBoard(heroInfos);
+            const startTime = Date.now();
+            loadScripts(g_scriptFileNames, () => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load all scripts`);
+                loadLazyImages();
+                console.log("initializing application");
+                g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+                    passiveSInfos);
+                g_app.registerHeroOptions(heroInfos);
+                initAetherRaidBoard(heroInfos);
+                createDialogs();
+            });
         });
     </script>
 </body>

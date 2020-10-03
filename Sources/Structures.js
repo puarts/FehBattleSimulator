@@ -169,12 +169,14 @@ class StructureBase {
     }
 }
 
+/// 攻撃施設の基底クラスです。
 class OffenceStructureBase extends StructureBase {
     constructor(id) {
         super(id);
     }
 }
 
+/// 防衛施設の基底クラスです。
 class DefenceStructureBase extends StructureBase {
     constructor(id) {
         super(id);
@@ -257,6 +259,7 @@ class OfBoltTower extends OffenceStructureBase {
     }
 }
 
+/// 脱出の縄梯子を表すクラスです。
 class ExcapeLadder extends OffenceStructureBase {
     constructor(id) {
         super(id);
@@ -279,6 +282,7 @@ class ExcapeLadder extends OffenceStructureBase {
     }
 }
 
+/// エナジーの水瓶を表すクラスです。
 class AetherAmphorae extends DefenceStructureBase {
     constructor(id) {
         super(id);
@@ -299,7 +303,7 @@ class AetherAmphorae extends DefenceStructureBase {
         return false;
     }
 }
-
+/// エナジーの泉を表すクラスです。
 class AetherFountain extends DefenceStructureBase {
     constructor(id) {
         super(id);
@@ -703,6 +707,7 @@ class TileTypeStructureBase extends DefenceStructureBase {
     }
 }
 
+/// 罠の基底クラスです。
 class TrapBase extends TileTypeStructureBase {
     constructor(id) {
         super(id);
@@ -875,6 +880,7 @@ class BreakableWall extends DefenceStructureBase {
     }
 }
 
+/// ユニットが通行可能な配置物であるかどうかを判定します。
 function isMovableForUnit(structure) {
     if (structure == null) {
         return true;

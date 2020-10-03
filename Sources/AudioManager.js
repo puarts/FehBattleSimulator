@@ -58,13 +58,13 @@ class AudioManager {
     }
 
     setBgmRandom() {
-        let candidates = this.__getBgmCandidates();
+        let candidates = this.getBgmCandidates();
         let index = Math.floor(candidates.length * Math.random());
         this.currentBgmId = Number(candidates[index]);
         ++this._bgmSelectedCounts[this.currentBgmId];
     }
 
-    __getBgmCandidates() {
+    getBgmCandidates() {
         let candidates = [];
         let min = this.__findMinSelectedCount();
         for (let key in this._bgmSelectedCounts) {

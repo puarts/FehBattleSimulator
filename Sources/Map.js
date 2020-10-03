@@ -469,7 +469,7 @@ function getMapBackgroundImage(mapKind) {
     }
 }
 
-/// マップです。
+/// 戦闘マップを表すクラスです。
 class Map {
     constructor(id, mapKind, gameVersion) {
         this._gameVersion = 0;
@@ -543,6 +543,7 @@ class Map {
         // }
     }
 
+    /// すべてのタイルのスナップショットを作成します。スナップショットはNPCの動きの判定に使用します。
     createTileSnapshots() {
         for (let tile of this._tiles) {
             tile.createSnapshot();
