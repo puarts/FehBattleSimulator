@@ -6190,7 +6190,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.addAllSpur(5);
                     }
                     break;
-                case Weapon.Forukuvangu:
+                case Weapon.Vorufuberugu:
                     if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
                         targetUnit.addAllSpur(4);
                     }
