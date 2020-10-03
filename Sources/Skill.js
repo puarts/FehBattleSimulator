@@ -1570,7 +1570,9 @@ var PassiveC = {
     MilaNoHaguruma: 1352, // ミラの歯車
     InevitableDeath: 1420, // 死からは逃れられぬ
 
+    // 牽制
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
+    AtkResRein3: 1490, // 攻撃魔防の牽制3
     SpdDefRein3: 1485, // 速さ守備の牽制3
 };
 

@@ -8341,6 +8341,10 @@ class AetherRaidTacticsBoard {
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.spdSpur -= 4;
                                 break;
+                            case PassiveC.AtkResRein3:
+                                targetUnit.atkSpur -= 4;
+                                targetUnit.resSpur -= 4;
+                                break;
                             case PassiveC.SpdDefRein3:
                                 targetUnit.spdSpur -= 4;
                                 targetUnit.defSpur -= 4;
