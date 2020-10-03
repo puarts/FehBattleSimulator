@@ -1,21 +1,13 @@
 var searchData=
 [
-  ['backcurrentturn_459',['backCurrentTurn',['../class_aether_raid_tactics_board.html#aa98bf4cd46a063e6e1b521872c8d00ea',1,'AetherRaidTacticsBoard']]],
-  ['backtozeroturn_460',['backToZeroTurn',['../class_aether_raid_tactics_board.html#afda5f367b48f095ceb8ee4df3bf8f1bb',1,'AetherRaidTacticsBoard']]],
-  ['battileitemstostring_461',['battileItemsToString',['../class_app_data.html#a07f76c14d972bc647ce1c278f657a0d5',1,'AppData']]],
-  ['battlecontext_462',['BattleContext',['../class_battle_context.html',1,'']]],
-  ['beginaction_463',['beginAction',['../class_unit.html#ad2b73d4ded6d010236772bf71f62a0ee',1,'Unit']]],
-  ['begindurabilitytest_464',['beginDurabilityTest',['../class_aether_raid_tactics_board.html#ae8ad3848cdd9fe1ba76275474aa78d48',1,'AetherRaidTacticsBoard']]],
-  ['bgcolor_465',['bgColor',['../class_cell.html#ae674de459d01a1c11b759ebcdb048c35',1,'Cell::bgColor()'],['../class_cell.html#a042d8926a068abd911dc6dbce627aeee',1,'Cell::bgColor(value)']]],
-  ['bgmid_466',['BgmId',['../_audio_manager_8js.html#a20ab709bd005e90135878c3070c0a287',1,'AudioManager.js']]],
-  ['blessingtype_467',['BlessingType',['../_unit_8js.html#a20476b2c799b6645cb60d1a2ed54e498',1,'Unit.js']]],
-  ['bolttrap_468',['BoltTrap',['../class_bolt_trap.html',1,'']]],
-  ['booltoint_469',['boolToInt',['../_utilities_8js.html#a9f32e15f2f947e151a0f4bfe71b2e164',1,'Utilities.js']]],
-  ['bordercolor_470',['borderColor',['../class_cell.html#a3cba4b4d883d3a81d72e540eae90bb1f',1,'Cell::borderColor()'],['../class_cell.html#af1dce15958819a5692646072f5a40640',1,'Cell::borderColor(value)']]],
-  ['borderwidth_471',['borderWidth',['../class_cell.html#a3d8dda0614b319c2ba7de4fb633445ea',1,'Cell::borderWidth()'],['../class_cell.html#a579b4da239577406f9ae214a3c1a6186',1,'Cell::borderWidth(value)']]],
-  ['break_472',['break',['../class_breakable_wall.html#a366e10c7beeebf440f5e47b5bfb6a9ab',1,'BreakableWall']]],
-  ['breakableobjcountofcurrentmaptype_473',['breakableObjCountOfCurrentMapType',['../class_map.html#a8807394925f80d79a148810602742337',1,'Map']]],
-  ['breakablewall_474',['BreakableWall',['../class_breakable_wall.html',1,'']]],
-  ['breakablewallicontype_475',['BreakableWallIconType',['../_structures_8js.html#a2c411713d2d62173258bf9d0601be3eb',1,'Structures.js']]],
-  ['bufftotal_476',['buffTotal',['../class_unit.html#af547492d057712a5f7a9924f6d8a7c7f',1,'Unit']]]
+  ['calc_16',['calc',['../class_damage_calculator.html#aeb43349bbc92c43a1805597848367e51',1,'DamageCalculator']]],
+  ['calcdamage_17',['calcDamage',['../class_aether_raid_tactics_board.html#a39b7f198d0f375ea9ef1de5299665941',1,'AetherRaidTacticsBoard']]],
+  ['calchealamount_18',['calcHealAmount',['../_unit_8js.html#a7efd906e071cb5a0413a2da4ab310c1e',1,'Unit.js']]],
+  ['candisableattackorderswapskill_19',['canDisableAttackOrderSwapSkill',['../_unit_8js.html#a491960230d47623dce4b93c6e458dbea',1,'Unit.js']]],
+  ['canrallyforcibly_20',['canRallyForcibly',['../_skill_8js.html#a98b3236cfd95cc9d501a0448e0677331',1,'Skill.js']]],
+  ['cell_21',['Cell',['../class_cell.html',1,'']]],
+  ['command_22',['Command',['../class_command.html',1,'']]],
+  ['commandqueue_23',['CommandQueue',['../class_command_queue.html',1,'']]],
+  ['cookiewriter_24',['CookieWriter',['../class_cookie_writer.html',1,'']]],
+  ['createtilesnapshots_25',['createTileSnapshots',['../class_map.html#aa644e3120a5e2909ce80c7a79e0adfd1',1,'Map']]]
 ];

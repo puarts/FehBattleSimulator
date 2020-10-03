@@ -1,10 +1,9 @@
 var indexSectionsWithContent =
 {
-  0: "_abcdefghiklmnopqrstuvw",
+  0: "abcdefghikmoqstuw",
   1: "abcdefhikmoqstuw",
   2: "adgmstu",
-  3: "_abcdefghilmnoprstuw",
-  4: "abcdeghimnoprstuvw"
+  3: "cgisu"
 };
 
 var indexSectionNames =
@@ -12,8 +11,7 @@ var indexSectionNames =
   0: "all",
   1: "classes",
   2: "files",
-  3: "functions",
-  4: "variables"
+  3: "functions"
 };
 
 var indexSectionLabels =
@@ -21,7 +19,6 @@ var indexSectionLabels =
   0: "全て",
   1: "クラス",
   2: "ファイル",
-  3: "関数",
-  4: "変数"
+  3: "関数"
 };
 
