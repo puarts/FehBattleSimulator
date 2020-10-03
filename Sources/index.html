@@ -1937,7 +1937,9 @@
                         </tr>
                     </table>
                     <div>
-                        <span style="font-size:12px">×がついているスキルは未実装スキルです</span>
+                        <span style="font-size:12px">×がついているスキルは未実装スキルです
+                        (未実装数 {{g_appData.totalSkillCount-g_appData.totalImplementedSkillCount}})
+                        </span>
                         <br/>
                         <input type="button" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();" >
                         <input type="button" value="全て外す" @click="value.clearReservedSkills();value.clearSkills();" >
@@ -2238,6 +2240,7 @@
             "Main.js",
         ];
     </script>
+
     <script>
         g_scriptFileNames.push("SampleSkillInfos.js");
         g_scriptFileNames.push("SampleHeroInfos.js");

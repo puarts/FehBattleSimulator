@@ -473,6 +473,24 @@ class AppData {
         this.applyDebugMenuVisibility();
         this.updateTargetInfoTdStyle();
     }
+    get totalSkillCount() {
+        return this.weaponCount
+            + this.supportCount
+            + this.specialCount
+            + this.passiveACount
+            + this.passiveBCount
+            + this.passiveCCount
+            + this.passiveSCount;
+    }
+    get totalImplementedSkillCount() {
+        return this.weaponImplCount
+            + this.supportImplCount
+            + this.specialImplCount
+            + this.passiveAImplCount
+            + this.passiveBImplCount
+            + this.passiveCImplCount
+            + this.passiveSImplCount;
+    }
 
     initHeroInfos(heroInfos) {
         this.heroInfos = new HeroDataBase(heroInfos);
