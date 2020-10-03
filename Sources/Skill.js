@@ -788,6 +788,9 @@ const Weapon = {
     SpiritedSpearPlus: 1482, // 士気旺盛の槍+
     BlarfoxPlus: 1479, // ブラーフォックス+
     FlameLance: 1486, // フレイムランス
+
+    // プルメリア
+    FlowerOfPlenty: 1488 // 豊潤の花
 };
 
 const Support = {
@@ -806,6 +809,7 @@ const Support = {
     GrayWaves: 789, // ユラリユルレリ
     GentleDream: 1061, // やさしいゆめ
     WhimsicalDream: 1362, // しろいゆめ
+    SweetDreams: 1489, // あまいゆめ
     Play: 1135, // 奏でる
 
     RallyAttack: 418,
@@ -1569,7 +1573,9 @@ const PassiveC = {
     MilaNoHaguruma: 1352, // ミラの歯車
     InevitableDeath: 1420, // 死からは逃れられぬ
 
+    // 牽制
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
+    AtkResRein3: 1490, // 攻撃魔防の牽制3
     SpdDefRein3: 1485, // 速さ守備の牽制3
 };
 

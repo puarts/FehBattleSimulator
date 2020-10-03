@@ -7811,6 +7811,18 @@ class AetherRaidTacticsBoard {
         if (!calcPotentialDamage) {
             if (!ignoresSkillEffectFromAllies) {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (Math.abs(unit.posX - targetUnit.posX) <= 1 && Math.abs(unit.posY - targetUnit.posY) <= 2) {
+                        // 5×3マス以内にいる場合
+                        for (let skillId of unit.enumerateSkills()) {
+                            switch (skillId) {
+                                case Weapon.FlowerOfPlenty:
+                                    targetUnit.atkSpur += 3;
+                                    targetUnit.resSpur += 3;
+                                    break;
+                            }
+                        }
+                    }
+
                     if (Math.abs(unit.posX - targetUnit.posX) <= 3 && Math.abs(unit.posY - targetUnit.posY) <= 3) {
                         // 7×7マス以内にいる場合
                         for (let skillId of unit.enumerateSkills()) {
@@ -7878,6 +7890,10 @@ class AetherRaidTacticsBoard {
                             case PassiveC.AtkSpdRein3:
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.spdSpur -= 4;
+                                break;
+                            case PassiveC.AtkResRein3:
+                                targetUnit.atkSpur -= 4;
+                                targetUnit.resSpur -= 4;
                                 break;
                             case PassiveC.SpdDefRein3:
                                 targetUnit.spdSpur -= 4;
@@ -13835,6 +13851,12 @@ class AetherRaidTacticsBoard {
                             unit.applyAtkDebuff(-5);
                         }
                     }
+                }
+                break;
+            case Support.SweetDreams:
+                targetUnit.applyAllBuff(3);
+                for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                    unit.applyAllDebuff(-4);
                 }
                 break;
         }
