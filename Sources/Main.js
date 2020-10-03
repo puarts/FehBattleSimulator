@@ -3242,6 +3242,9 @@ class AetherRaidTacticsBoard {
             // this.writeDebugLogLine(atkUnit.getNameWithGroup() + "の位置を(" + tileToAttack.posX + ", " + tileToAttack.posY + ")に変更");
             tileToAttack.setUnit(atkUnit);
             this.__updateUnitSpur(atkUnit);
+            if (!calcPotentialDamage) {
+                this.updateAllUnitSpur(calcPotentialDamage);
+            }
         }
 
         if (calcPotentialDamage) {
