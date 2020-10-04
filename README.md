@@ -1,6 +1,9 @@
 # FehBattleSimulator
 
-## スキル実装の追加
+## 概要
+FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦渦の連戦、双界を越えてのバトルをシミュレートできるツールである[飛空城シミュレーター](https://puarts.com/?pid=1469)のソースコードです。
+
+## スキル実装の追加方法
 ### スキルの実装手順
 1. 追加スキルが SampleSkilInfos.js 内に存在しない場合、https://puarts.com/?pid=1469 のソースに定義されている weaponInfos 等の変数を SampleSkilInfos.js や SampleHeroInfos.js にコピーする
     - https://puarts.com/?pid=1469 にも存在しない場合はデータベースに登録されていないので puarts にデータベース登録を依頼する
