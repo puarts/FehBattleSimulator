@@ -1,7 +1,90 @@
 /// @file
 /// @brief シミュレーターの画像処理部分を切り出した実装です。
 
+function drawImage(canvas, imageData, scale) {
+    const tempCanvas = document.getElementById("tempCanvas");
+    let tempCtx = tempCanvas.getContext("2d");
+    tempCanvas.width = imageData.width;
+    tempCanvas.height = imageData.height;
+    tempCtx.putImageData(imageData, 0, 0);
+
+    let ctx = canvas.getContext("2d");
+    canvas.width = imageData.width * scale;
+    canvas.height = imageData.height * scale;
+    ctx.drawImage(tempCanvas, 0, 0,
+        imageData.width, imageData.height,
+        0, 0, canvas.width, canvas.height);
+}
+
+/// シミュレーターの画像処理の実装を持つクラスです。
 class ImageProcessor {
+    showOcrSettingSourceImage(files) {
+        let image = new Image();
+        let reader = new FileReader();
+        reader.onload = function (evt) {
+            image.onload = function () {
+                let scaledWidth = 200;
+                let scale = scaledWidth / image.width;
+                // scale = 1;
+                let imageData = null;
+                {
+                    const canvas = document.getElementById("ocrSettingSourceCanvas");
+                    {
+                        let ctx = canvas.getContext("2d");
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
+                        imageData = ctx.getImageData(0, 0, image.width, image.height);
+
+                        drawImage(canvas, imageData, scale);
+                    }
+                    if (g_app.cropper != null) {
+                        g_app.cropper.destroy();
+                    }
+                    let croppedHeight = canvas.width * (16.0 / 9.0);
+                    let croppedWidth = canvas.width;
+                    if (croppedHeight > canvas.height) {
+                        // 横幅が広すぎるケース
+                        croppedHeight = canvas.height;
+                        croppedWidth = canvas.height * (9.0 / 16.0);
+                    }
+                    g_app.cropper = new Cropper(canvas, {
+                        aspectRatio: 9 / 16,
+                        movable: false,
+                        scalable: false,
+                        zoomable: false,
+                        autoCrop: true,
+                        data: {
+                            height: canvas.height,
+                            // width: croppedWidth, // widthを設定すると画像が横長の時に中央でなくなる
+                            x: (canvas.width - croppedWidth) / 2,
+                            y: (canvas.height - croppedHeight) / 2,
+                        },
+                        crop: function (event) {
+                            g_appData.ocrCropX = event.detail.x / scale;
+                            g_appData.ocrCropY = event.detail.y / scale;
+                            const croppedCanvas = document.getElementById("ocrSettingCroppedCanvas");
+                            {
+                                let ctx = croppedCanvas.getContext("2d");
+                                croppedCanvas.width = croppedWidth;
+                                croppedCanvas.height = croppedHeight;
+                                ctx.drawImage(image,
+                                    event.detail.x / scale, event.detail.y / scale, event.detail.width / scale, event.detail.height / scale,
+                                    0, 0, croppedCanvas.width, croppedCanvas.height
+                                );
+                            }
+                        }
+                    });
+                }
+            }
+
+            image.src = evt.target.result;
+        }
+
+        let file = files[0]
+        reader.readAsDataURL(file);
+    }
+
     setUnitsByStatusImages(files) {
         let self = g_app;
         switch (Number(self.vm.ocrSettingTarget)) {
