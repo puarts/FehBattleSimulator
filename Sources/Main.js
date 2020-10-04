@@ -3241,15 +3241,13 @@ class AetherRaidTacticsBoard {
             // 攻撃ユニットの位置を一時的に変更
             // this.writeDebugLogLine(atkUnit.getNameWithGroup() + "の位置を(" + tileToAttack.posX + ", " + tileToAttack.posY + ")に変更");
             tileToAttack.setUnit(atkUnit);
-            this.__updateUnitSpur(atkUnit);
-            if (!calcPotentialDamage) {
-                this.updateAllUnitSpur(calcPotentialDamage);
-            }
         }
 
-        if (calcPotentialDamage) {
-            this.updateAllUnitSpur(true);
-        }
+        // 戦闘中強化、弱化の再計算。
+        // おそらく現状再計算が必要なのは攻撃ユニットと被攻撃ユニットだけだが、
+        // 周囲ユニットの戦闘中強化の影響を受けるスキルが出てきてもいいように全員分再計算しておく。
+        // 処理速度面でもし問題になるようなら必要最低限の更新に抑えるよう対応を考える。
+        this.updateAllUnitSpur(calcPotentialDamage);
 
         atkUnit.restHp = atkUnit.hp;
         defUnit.restHp = defUnit.hp;
