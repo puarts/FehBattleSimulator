@@ -2191,7 +2191,9 @@
             //     console.log("cv initialized!");
             // };
         }
+    </script>
 
+    <script>
         function createScriptElement(src, onloadFunc) {
             let element = document.createElement("script");
             element.type = "text/javascript";
@@ -2221,33 +2223,28 @@
             });
         }
 
-        let g_scriptFileNames = [
-            "GlobalDefinitions.js",
-            "Utilities.js",
-            "Skill.js",
-            "Tile.js",
-            "Map.js",
-            "Structures.js",
-            "Table.js",
-            "Unit.js",
-            "DamageCalculator.js",
-            "TurnSetting.js",
-            "AudioManager.js",
-            "AetherRaidDefensePresets.js",
-            "AppData.js",
-            "SettingManager.js",
-            "Main_ImageProcessing.js",
-            "Main.js",
-        ];
-    </script>
-
-    <script>
-        g_scriptFileNames.push("SampleSkillInfos.js");
-        g_scriptFileNames.push("SampleHeroInfos.js");
-
         $(function () {
             const startTime = Date.now();
-            loadScripts(g_scriptFileNames, () => {
+            loadScripts([
+                "GlobalDefinitions_Debug.js",
+                "Utilities.js",
+                "Skill.js",
+                "Tile.js",
+                "Map.js",
+                "Structures.js",
+                "Table.js",
+                "Unit.js",
+                "DamageCalculator.js",
+                "TurnSetting.js",
+                "AudioManager.js",
+                "AetherRaidDefensePresets.js",
+                "AppData.js",
+                "SettingManager.js",
+                "Main_ImageProcessing.js",
+                "Main.js",
+                "SampleSkillInfos.js",
+                "SampleHeroInfos.js",
+            ], () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 loadLazyImages();

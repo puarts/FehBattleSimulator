@@ -2,13 +2,19 @@
 SetLocal EnableDelayedExpansion
 set JSMIN=%~dp0..\..\..\PortableApplications\JSMin-master\jsmin.bat
 set destination=%~dp0..\AetherRaidTacticsBoard\Release2
-
-for %%n in (%~dp0Sources\*.js) do (
-    if not %%~nn==GlobalDefinitions (
-        xcopy /y %%n %destination%
-        echo commpressing %destination%\%%~nxn
-        %JSMIN% %destination%\%%~nxn
+set output_js=%destination%\FehBattleSimulator.js
+set filenames=GlobalDefinitions,Utilities,Skill,Tile,Map,Structures,Table,Unit,DamageCalculator,TurnSetting,AudioManager,AetherRaidDefensePresets,AppData,SettingManager,Main_ImageProcessing,Main
+if exist %output_js% del %output_js%
+break>%output_js%
+for %%n in (%filenames%) do (
+    if not exist %~dp0Sources\%%n.js (
+         echo %~dp0Sources\%%n.js was not found
+    ) else (
+        type %~dp0Sources\%%n.js>>%output_js%
     )
 )
+
+echo commpressing %output_js%
+%JSMIN% %output_js%
 
 pause
