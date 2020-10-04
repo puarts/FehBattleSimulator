@@ -1,0 +1,491 @@
+/// @file
+/// @brief シミュレーターのマウスやタッチイベントの実装です。
+
+const g_keyboardManager = new KeyboardManager();
+let g_draggingElemId = "";
+let g_dragoverTileHistory = new Queue(10);
+
+function selectItemById(id, add = false, toggle = false) {
+    if (toggle) {
+        g_app.selectItemToggle(id);
+    }
+    else {
+        g_app.selectItem(id, add);
+    }
+
+    // 選択アイテムのタイルを更新
+    syncSelectedTileColor();
+}
+
+function findParentTdElement(elem) {
+    let currentNode = elem;
+    while (currentNode != null && currentNode.nodeName != "TD") {
+        currentNode = currentNode.parentElement;
+    }
+    return currentNode;
+}
+
+function onItemSelected(event) {
+    console.log("onItemSelected");
+    let targetElem = event.target;
+    if (targetElem.id == undefined || targetElem.id == "") {
+        let tdElem = findParentTdElement(targetElem);
+        if (tdElem != null) {
+            // タイルが選択された
+            selectItemById(tdElem.id);
+        }
+    }
+    else {
+        if (g_keyboardManager.isShiftKeyPressing) {
+            selectItemById(targetElem.id, true, false);
+        }
+        else if (g_keyboardManager.isControlKeyPressing) {
+            selectItemById(targetElem.id, false, true);
+        }
+        else {
+            selectItemById(targetElem.id);
+        }
+    }
+}
+
+/***** ドラッグ開始時の処理 *****/
+function f_dragstart(event) {
+    //ドラッグするデータのid名をDataTransferオブジェクトにセット
+    event.dataTransfer.setData("text", event.target.id);
+    g_draggingElemId = event.target.id;
+    g_dragoverTileHistory.clear();
+}
+
+/***** ドラッグ要素がドロップ要素に重なっている間の処理 *****/
+function f_dragover(event) {
+    //dragoverイベントをキャンセルして、ドロップ先の要素がドロップを受け付けるようにする
+    let dropTargetId = event.currentTarget.id;
+    if (dropTargetId.includes('_')) {
+        let pos = getPositionFromCellId(dropTargetId);
+        dragoverImpl(pos[0], pos[1]);
+    }
+    event.preventDefault();
+}
+
+function table_dragend(event) {
+    let unit = g_app.findUnitById(g_draggingElemId);
+    if (unit != null) {
+        resetUnitAttackableRange(unit);
+    }
+}
+
+
+/***** ドロップ時の処理 *****/
+function f_drop(event) {
+    //ドラッグされたデータのid名をDataTransferオブジェクトから取得
+    let objId = event.dataTransfer.getData("text");
+    let dropTargetId = event.currentTarget.id;
+
+    dropEventImpl(objId, dropTargetId);
+
+    //エラー回避のため、ドロップ処理の最後にdropイベントをキャンセルしておく
+    event.preventDefault();
+}
+
+// タッチ開始イベント
+function touchStartEvent(event) {
+    let touch = event.changedTouches[0];
+
+    // タッチによる画面スクロールを止める
+    event.preventDefault();
+    console.log("touchstart");
+
+    onItemSelected(event);
+
+    g_draggingElemId = event.target.id;
+}
+
+// タッチ移動イベント
+function touchMoveEvent(event) {
+    let touch = event.changedTouches[0];
+    event.preventDefault();
+
+    // ドラッグ中のアイテムをカーソルの位置に追従
+    let draggedElem = event.target;
+
+    // テーブルの中はセルのルート要素がposition:relativeになってるので、staticに変更して絶対座標で移動できるようにする
+    if (draggedElem.parentElement != null) {
+        if (draggedElem.parentElement.className == "cell-root") {
+            draggedElem.parentElement.style.position = "static";
+        }
+        // console.log("touchmove: " + touch.pageX + ", " + touch.pageY);
+        draggedElem.style.position = "absolute";
+        draggedElem.style.top = (touch.pageY - draggedElem.offsetHeight / 2) + "px";
+        draggedElem.style.left = (touch.pageX - draggedElem.offsetWidth / 2) + "px";
+
+        let dropTargetId = findDropTargetElementId(touch, draggedElem);
+        if (dropTargetId != null) {
+            if (dropTargetId.includes('_')) {
+                let pos = getPositionFromCellId(dropTargetId);
+                dragoverImpl(pos[0], pos[1], draggedElem.id);
+            }
+        }
+    }
+}
+
+function findDropTargetElementId(touch, droppedElem) {
+    let dropTargetElems = document.elementsFromPoint(touch.pageX - window.pageXOffset, touch.pageY - window.pageYOffset);
+    if (dropTargetElems != null) {
+        for (let dropTargetElem of dropTargetElems) {
+            if (dropTargetElem.className == "droppable-elem") {
+                let dropTargetId = dropTargetElem.id;
+                return dropTargetId;
+            }
+        }
+    }
+    return null;
+}
+
+// タッチ終了イベント
+function touchEndEvent(event) {
+    let touch = event.changedTouches[0];
+
+    // event.preventDefault();
+
+    // ドラッグ中の操作のために変更していたスタイルを元に戻す
+    let droppedElem = event.target;
+    if (droppedElem.parentElement != null && droppedElem.parentElement.className == "cell-root") {
+        // セルからドラッグされた場合
+        droppedElem.parentElement.style.position = "relative";
+        droppedElem.style.position = "absolute";
+        droppedElem.style.top = "0";
+        droppedElem.style.left = "0";
+    }
+    else {
+        // コンテナからドラッグされた場合
+        droppedElem.style.position = "";
+        droppedElem.style.top = "";
+        droppedElem.style.left = "";
+    }
+
+    // console.log("touchend: " + touch.pageX + ", " + touch.pageY);
+    let dropTargetId = findDropTargetElementId(touch, droppedElem);
+    if (dropTargetId != null) {
+        console.log(`droppedElem.id=${droppedElem.id}, dropTargetId=${dropTargetId}`);
+        let trElem = document.getElementById(dropTargetId);
+        if (trElem != null && trElem.childElementCount > 0) {
+            let cellRoot = trElem.children[0];
+            cellRoot.appendChild(droppedElem);
+            dropEventImpl(droppedElem.id, dropTargetId);
+        }
+    }
+
+    let unit = g_app.findUnitById(g_draggingElemId);
+    if (unit != null) {
+        resetUnitAttackableRange(unit);
+    }
+}
+
+function findBestActionTile(targetTile, spaces) {
+    for (let i = g_dragoverTileHistory.length - 1; i >= 0; --i) {
+        let tile = g_dragoverTileHistory.data[i];
+        let distance = tile.calculateDistance(targetTile);
+        if (distance == spaces) {
+            return tile;
+        }
+    }
+
+    return null;
+}
+
+function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
+    try {
+        let elemId = "";
+        if (draggingElemId == null) {
+            elemId = g_draggingElemId;
+        }
+        else {
+            elemId = draggingElemId;
+        }
+        let unit = g_app.findUnitById(elemId);
+        if (unit != null) {
+            let targetTile = g_appData.map.getTile(overTilePx, overTilePy);
+            if (targetTile != null) {
+                dragoverImplForTargetTile(unit, targetTile);
+            }
+
+            if (g_appData.showMovableRangeWhenMovingUnit) {
+                const alpha = "a0";
+                for (let tile of unit.attackableTiles) {
+                    let color = "#feccc5";
+                    color = "#ff8888" + alpha;
+                    updateCellBgColor(tile.posX, tile.posY, color);
+                }
+                for (let tile of unit.movableTiles) {
+                    let color = "#cbd6ee";
+                    color = "#88aaff" + alpha;
+                    updateCellBgColor(tile.posX, tile.posY, color);
+                }
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function dragoverImplForTargetTile(unit, targetTile) {
+    g_app.clearDamageCalcSummary();
+
+    if (targetTile.isUnitPlacable()) {
+        if (g_dragoverTileHistory.lastValue != targetTile) {
+            g_dragoverTileHistory.enqueue(targetTile);
+        }
+    } else {
+        // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
+        let unitPlacedOnTargetTile = targetTile.placedUnit;
+        if (unitPlacedOnTargetTile != null && unit.groupId != unitPlacedOnTargetTile.groupId) {
+            let attackTile = findBestActionTile(targetTile, unit.attackRange);
+            g_app.showDamageCalcSummary(unit, unitPlacedOnTargetTile, attackTile);
+        }
+    }
+}
+
+function getBestActionTile(unit, targetTile, spaces) {
+    let moveTile = findBestActionTile(targetTile, spaces);
+    if (moveTile == null) {
+        // マウスオーバーした座標から決められなかった場合はユニットから一番近い攻撃可能なタイル
+        let minDist = unit.moveCount + 1;
+        for (let tile of g_appData.map.enumerateTilesInSpecifiedDistanceFrom(targetTile, spaces)) {
+            let distance = tile.calculateDistanceToUnit(unit);
+            if (tile.placedUnit != null && tile.placedUnit != unit) {
+                continue;
+            }
+
+            if (distance < minDist) {
+                minDist = distance;
+                moveTile = tile;
+            }
+        }
+    }
+
+    if (moveTile == null) {
+        return null;
+    }
+
+    return moveTile;
+}
+
+
+function moveToBestActionTile(unit, targetTile, spaces) {
+    let moveTile = getBestActionTile(unit, targetTile, spaces);
+    if (moveTile == null) {
+        return MoveResult.Failure;
+    }
+
+    g_app.__enqueueMoveCommand(unit, moveTile, true);
+    return MoveResult.Success;
+}
+
+function examinesCanBreak(unit, obj) {
+    if (!obj.isBreakable) { return false }
+
+    if (obj instanceof BreakableWall) {
+        return true;
+    }
+    switch (unit.groupId) {
+        case UnitGroupType.Ally:
+            if (obj instanceof DefenceStructureBase) {
+                return true;
+            }
+            return false;
+        case UnitGroupType.Enemy:
+            if (obj instanceof OffenceStructureBase) {
+                return true;
+            }
+            return false;
+    }
+}
+
+function resetUnitAttackableRange(unit) {
+    for (let tile of unit.attackableTiles) {
+        let cell = new Cell();
+        g_appData.map.setCellStyle(tile, cell);
+        updateCellBgColor(tile.posX, tile.posY, cell.bgColor);
+    }
+}
+
+function dropToUnitImpl(unit, dropTargetId) {
+    resetUnitAttackableRange(unit);
+    // 武器なしの場合があるので移動可能タイルもリセット
+    for (let tile of unit.movableTiles) {
+        let cell = new Cell();
+        g_appData.map.setCellStyle(tile, cell);
+        updateCellBgColor(tile.posX, tile.posY, cell.bgColor);
+    }
+
+    if (isMapTileId(dropTargetId)) {
+        // テーブルのセルにドロップされた
+        let xy = g_appData.map.getPosFromCellId(dropTargetId);
+        let x = Number(xy[0]);
+        let y = Number(xy[1]);
+
+        let targetTile = g_appData.map.getTile(x, y);
+
+        if (targetTile == unit.placedTile) {
+            return;
+        }
+
+        let unitPlacedOnTargetTile = targetTile.placedUnit;
+        let isActioned = false;
+        if (!g_appData.isSupportActivationDisabled && unitPlacedOnTargetTile != null && unit.groupId != unitPlacedOnTargetTile.groupId) {
+            g_app.writeSimpleLogLine("attack!");
+            // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
+            let tile = getBestActionTile(unit, targetTile, unit.attackRange);
+            if (tile != null) {
+                g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, tile);
+                g_appData.isEnemyActionTriggered = true;
+                unit.isEnemyActionTriggered = true;
+                isActioned = true;
+            }
+        }
+        else if (unitPlacedOnTargetTile != null) {
+            // ドロップ先が味方なら補助スキル発動
+            if (g_appData.isSupportActivationDisabled) {
+                // 入替え
+                g_appData.map.moveUnit(unit, x, y);
+                isActioned = true;
+            }
+            else {
+                let supportRange = getAssistRange(unit.support);
+                let tile = getBestActionTile(unit, targetTile, supportRange);
+                if (tile != null) {
+                    if (unit.supportInfo != null) {
+                        let canApplyAssist =
+                            unit.supportInfo.assistType != AssistType.Rally ||
+                            (unit.supportInfo.assistType == AssistType.Rally
+                                && (unit.canRallyForcibly() || g_app.__canBeBuffedAtLeastSpecifiedAmountByRally(unit, unitPlacedOnTargetTile, 1)));
+                        if (canApplyAssist) {
+                            g_app.__enqueueSupportCommand(unit, tile, unitPlacedOnTargetTile);
+                            isActioned = true;
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            if (targetTile.obj != null) {
+                let obj = targetTile.obj;
+                if (examinesCanBreak(unit, obj)) {
+                    // 壊せる壁や施設を破壊
+                    let tile = getBestActionTile(unit, targetTile, unit.attackRange);
+                    if (tile != null) {
+                        g_app.__enqueueBreakStructureCommand(unit, tile, obj);
+                        isActioned = true;
+                    }
+                }
+                else if (obj instanceof TrapBase) {
+                    g_app.__enqueueMoveCommand(unit, targetTile, true);
+                    isActioned = true;
+                }
+            }
+            else {
+                // 移動
+                if (!g_appData.isSupportActivationDisabled) {
+                    if (targetTile != unit.placedTile) {
+                        g_app.__enqueueMoveCommand(unit, targetTile, true, CommandType.Normal, true);
+                        isActioned = true;
+                    }
+                }
+                else {
+                    let moveResult = moveUnit(unit, targetTile, true);
+                    isActioned = moveResult != MoveResult.Failure;
+                }
+            }
+        }
+
+        g_app.executePerActionCommand();
+        if (isActioned) {
+            // g_app.deselectItem();
+        }
+    }
+    else if (dropTargetId == "trashArea") {
+        moveUnitToTrashBox(unit);
+    }
+
+    g_app.updateAllUnitSpur();
+    updateAllUi();
+}
+
+function dropEventImpl(objId, dropTargetId) {
+    // g_app.writeSimpleLogLine("dropEvent: dragObjId=" + objId + ", dropTargetId=" + dropTargetId);
+
+    g_app.clearDamageCalcSummary();
+    g_app.showItemInfo(objId);
+
+    // ユニットのドロップ処理
+    {
+        let unit = g_app.findUnitById(objId);
+        if (unit != null) {
+            dropToUnitImpl(unit, dropTargetId);
+        }
+    }
+
+    // 防衛施設のドロップ処理
+    {
+        let structure = g_appData.defenseStructureStorage.findById(objId);
+        if (structure != null) {
+            if (isMapTileId(dropTargetId)) {
+                // テーブルのセルにドロップされた
+                let xy = dropTargetId.split('_');
+                let x = xy[0];
+                let y = xy[1];
+                moveStructureToMap(structure, x - g_appData.map.cellOffsetX, y);
+            }
+            else if (dropTargetId == "trashArea") {
+                moveStructureToTrashBox(structure);
+            }
+            else {
+                moveStructureToDefenceStorage(structure);
+            }
+            // UI の更新
+            updateAllUi();
+        }
+    }
+
+    // 攻撃施設のドロップ処理
+    {
+        let structure = g_appData.offenceStructureStorage.findById(objId);
+        if (structure != null) {
+            if (isMapTileId(dropTargetId)) {
+                // テーブルのセルにドロップされた
+                let xy = dropTargetId.split('_');
+                let x = xy[0];
+                let y = xy[1];
+                moveStructureToMap(structure, x - g_appData.map.cellOffsetX, y);
+            }
+            else if (dropTargetId == "trashArea") {
+                moveStructureToTrashBox(structure);
+            }
+            else {
+                moveStructureToOffenceStorage(structure);
+            }
+            // UI の更新
+            updateAllUi();
+        }
+    }
+
+    // 壁のドロップ処理
+    {
+        let wall = g_appData.map.findWallOrBreakableWallById(objId);
+        if (wall != null) {
+            console.log("dropped breakable wall");
+            if (isMapTileId(dropTargetId)) {
+                // テーブルのセルにドロップされた
+                let xy = dropTargetId.split('_');
+                let x = xy[0];
+                let y = xy[1];
+                moveStructureToMap(wall, x - g_appData.map.cellOffsetX, y);
+            }
+            else if (dropTargetId == "trashArea") {
+                moveStructureToTrashBox(wall);
+            }
+            // UI の更新
+            updateAllUi();
+        }
+    }
+}

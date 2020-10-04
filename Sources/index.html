@@ -1315,9 +1315,9 @@
             <input type="button" value="おまかせ" class="buttonUi" style="width: 250"
                 @click="g_app.clearLog(); g_app.simulateAllyActionCustomized();"><br />
             <input type="button" value="おまかせ2" class="buttonUi" style="width: 250"
-                @click="g_app.__origAi_simulate2();"><br />
+                @click="g_app.origAi.__origAi_simulate2();"><br />
             <input type="button" value="おまかせ3" class="buttonUi" style="width: 250"
-                @click="g_app.__origAi_simulate3();"><br />
+                @click="g_app.origAi.__origAi_simulate3();"><br />
             <input type="button" value="生存するマスを調査" class="buttonUi" style="width: 250"
                 @click="examinesAliveTiles"><br />
             <input type="button" value="マスの情報表示をリセット" class="buttonUi" style="width: 250" @click="resetCellOverrides">
@@ -2241,6 +2241,8 @@
                 "AppData.js",
                 "SettingManager.js",
                 "Main_ImageProcessing.js",
+                "Main_OriginalAi.js",
+                "Main_MouseAndTouch.js",
                 "Main.js",
                 "SampleSkillInfos.js",
                 "SampleHeroInfos.js",
