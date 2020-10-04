@@ -1,5 +1,4 @@
 @echo off
-SetLocal EnableDelayedExpansion
 set JSMIN=%~dp0..\..\..\PortableApplications\JSMin-master\jsmin.bat
 set destination=%~dp0..\AetherRaidTacticsBoard\Release2
 set output_js=%destination%\FehBattleSimulator.js
@@ -8,13 +7,13 @@ if exist %output_js% del %output_js%
 break>%output_js%
 for %%n in (%filenames%) do (
     if not exist %~dp0Sources\%%n.js (
-         echo %~dp0Sources\%%n.js was not found
+        echo %~dp0Sources\%%n.js was not found
     ) else (
         type %~dp0Sources\%%n.js>>%output_js%
     )
 )
 
 echo commpressing %output_js%
-%JSMIN% %output_js%
+call %JSMIN% %output_js%
 
 pause
