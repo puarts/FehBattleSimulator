@@ -217,8 +217,6 @@ class DamageCalculator {
                 case PassiveB.BlackEagleRule:
                     if (!unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
                         unit.battleContext.damageReductionRatioOfFollowupAttack = 0.8;
-                    } else {
-                        unit.battleContext.damageReductionRatioOfFollowupAttack = 0;
                     }
                     break;
                 case PassiveB.SeikishiNoKago:
