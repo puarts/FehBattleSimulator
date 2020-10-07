@@ -1004,6 +1004,7 @@ const PassiveA = {
     DefResBond3: 775,
 
     JaryuNoUroko: 585, // 邪竜の鱗
+    Dragonscale: 1492, // 邪竜の大鱗
 
     // 密集
     AtkSpdForm3: 964,

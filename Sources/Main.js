@@ -4779,6 +4779,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.Dragonscale:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
                 case Weapon.FlameLance:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         enemyUnit.spdSpur -= 5;
