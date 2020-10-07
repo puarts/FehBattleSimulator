@@ -3159,11 +3159,14 @@ class AetherRaidTacticsBoard {
         if (unit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
             return true;
         }
-        if (unit.passiveB == PassiveB.SphiasSoul) {
-            return true;
-        }
-        if (unit.passiveB == PassiveB.KyusyuTaikei3) {
-            return true;
+
+        switch (unit.passiveB) {
+            case PassiveB.SphiasSoul:
+                return true;
+            case PassiveB.KyusyuTaikei3:
+                return unit.battleContext.initiatesCombat;
+            case PassiveB.DragonsIre3:
+                return enemyUnit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 50;
         }
 
         switch (unit.weapon) {
@@ -3556,6 +3559,11 @@ class AetherRaidTacticsBoard {
                     case PassiveB.QuickRiposte3:
                         if (defUnit.snapshot.restHpPercentage >= 70) {
                             // this.writeDebugLogLine("HP" + defUnit.snapshot.restHpPercentage + "%で切り返し発動、" + defUnit.getNameWithGroup() + "は絶対追撃");
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.DragonsIre3:
+                        if (defUnit.snapshot.restHpPercentage >= 50) {
                             ++followupAttackPriority;
                         }
                         break;

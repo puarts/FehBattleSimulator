@@ -1167,6 +1167,7 @@ const PassiveB = {
     QuickRiposte1: 1254, // 切り返し1
     QuickRiposte2: 1255, // 切り返し2
     QuickRiposte3: 599, // 切り返し3
+    DragonsIre3: 1493, // 竜の逆鱗3
     Vantage3: 596, // 待ち伏せ3
     Desperation3: 597, // 攻め立て3
     Cancel1: 1286,//キャンセル1
