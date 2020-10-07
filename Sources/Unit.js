@@ -525,6 +525,7 @@ class BattleContext {
         this.isDesperationActivated = false; // 攻め立て
         this.damageReductionRatioOfFirstAttack = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
+        this.damageReductionRatioOfFollowupAttack = 0;
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
         this.counterattackCount = 1;
