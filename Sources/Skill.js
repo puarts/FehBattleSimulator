@@ -790,7 +790,10 @@ const Weapon = {
     FlameLance: 1486, // フレイムランス
 
     // プルメリア
-    FlowerOfPlenty: 1488 // 豊潤の花
+    FlowerOfPlenty: 1488, // 豊潤の花
+
+    // 竜たちの収穫祭
+    MoonlessBreath: 1491, // 暁闇のブレス
 };
 
 const Support = {

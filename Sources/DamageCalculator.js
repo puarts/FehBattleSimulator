@@ -1534,6 +1534,10 @@ class DamageCalculator {
                                 healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.5);
                             }
                             break;
+                        case Weapon.MoonlessBreath:
+                            if (atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                                healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.3);
+                            }
                     }
 
                     if (atkUnit.passiveB == PassiveB.TaiyoNoUdewa) {
