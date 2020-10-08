@@ -1208,6 +1208,7 @@ const PassiveB = {
     WaryFighter3: 600, // 守備隊形3
     SpecialFighter3: 603,// 奥義隊形3
     CraftFighter3: 1483, // 抑止隊形3
+    SlickFighter3: 1497, // 正面隊形・自己3
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     MikiriHangeki3: 810, // 見切り・反撃不可効果3

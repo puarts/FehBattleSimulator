@@ -3528,6 +3528,11 @@ class AetherRaidTacticsBoard {
         if (!this.__canInvalidateAbsoluteFollowupAttack(atkUnit, defUnit)) {
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveB.SlickFighter3:
+                        if (defUnit.snapshot.restHpPercentage >= 25) {
+                            ++followupAttackPriority;
+                        }
+                        break;
                     case Weapon.Marute:
                         if (defUnit.isWeaponRefined) {
                             if (defUnit.snapshot.restHpPercentage >= 25) {
@@ -4787,6 +4792,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SlickFighter3:
+                    if (targetUnit.snapshot.restHpPercentage >= 25 && enemyUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    }
+                    break;
                 case Weapon.BlackfireBreathPlus:
                     if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         enemyUnit.atkSpur -= 5;
