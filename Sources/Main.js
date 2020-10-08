@@ -4787,6 +4787,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BlackfireBreathPlus:
+                    if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                        targetUnit.battleContext.invalidatesResBuff = true;
+                    }
+                    break;
                 case PassiveA.Dragonscale:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                         enemyUnit.atkSpur -= 6;

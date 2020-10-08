@@ -794,6 +794,7 @@ const Weapon = {
 
     // 竜たちの収穫祭
     MoonlessBreath: 1491, // 暁闇のブレス
+    BlackfireBreathPlus: 1496, // 黒夜のブレス+
 };
 
 const Support = {
