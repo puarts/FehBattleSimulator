@@ -1008,8 +1008,9 @@ const PassiveA = {
 
     // 密集
     AtkSpdForm3: 964,
-    SpdDefForm3: 992,
     AtkDefForm3: 1055,
+    AtkResForm3: 1495,
+    SpdDefForm3: 992,
     SpdResForm3: 1137,
 
     HeavyBlade1: 1256, // 剛剣1
