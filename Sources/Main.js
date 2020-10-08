@@ -4657,6 +4657,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FrostfireBreath:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        targetUnit.atkSpur += Math.floor((
+                            targetUnit.getDefBuffInCombat(enemyUnit) +
+                            targetUnit.getResBuffInCombat(enemyUnit)
+                        ) * 1.5);
+                    }
+                    break;
                 case Weapon.JoyfulVows:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                         targetUnit.atkSpur += 6;
