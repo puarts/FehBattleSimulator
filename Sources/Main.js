@@ -11902,9 +11902,11 @@ class AetherRaidTacticsBoard {
     __setBestTargetAndTiles(assistUnit, isPrecombat, isAssistableUnitFunc, acceptTileFunc = null) {
         switch (assistUnit.support) {
             case Support.RallyUpAtk:
+            // case Support.RallyUpSpd:
             case Support.RallyUpRes:
-            case Support.RallyUpResPlus:
             case Support.RallyUpAtkPlus:
+            case Support.RallyUpSpdPlus:
+            case Support.RallyUpResPlus:
                 {
                     this.writeLogLine(assistUnit.supportInfo.name + "の間接的な補助対象を選択");
                     this.__createAssistableUnitInfos(assistUnit, (targetUnit, tile) => true);
@@ -13087,9 +13089,11 @@ class AetherRaidTacticsBoard {
                 switch (supporterUnit.support) {
                     case Support.RallyUpAtk:
                     case Support.RallyUpAtkPlus:
+                    // case Support.RallyUpSpd:
+                    case Support.RallyUpSpdPlus:
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
-                        if (this.__applyRallyUp(supporterUnit, targetUnit)) { return true; } return false;
+                        return this.__applyRallyUp(supporterUnit, targetUnit);
                     case Support.HarshCommandPlus:
                         targetUnit.clearNegativeStatusEffects();
                         return this.__executeHarshCommand(targetUnit);

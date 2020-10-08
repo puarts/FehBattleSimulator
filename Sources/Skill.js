@@ -827,16 +827,22 @@ const Support = {
     RallySpdDef: 429,
     RallySpdRes: 430,
     RallyDefRes: 427,
+
+    // 大応援
     RallyUpAtk: 435,
     RallyUpAtkPlus: 436,
+    RallyUpRes: 1154,
+    RallyUpResPlus: 1153,
+    // RallyUpSpd: xxx, // 速さの大応援
+    RallyUpSpdPlus: 1499, // 速さの大応援+
+
+    // 2種応援
     RallyAtkDefPlus: 876,
     RallyAtkResPlus: 1066,
     RallySpdResPlus: 932,
     RallySpdDefPlus: 434,
     RallyAtkSpdPlus: 756,
     RallyDefResPlus: 1001,
-    RallyUpRes: 1154,
-    RallyUpResPlus: 1153,
 
     Physic: 437, // リブロー
     PhysicPlus: 438, // リブロー+
@@ -1677,6 +1683,8 @@ function isRallyUp(support) {
     switch (support) {
         case Support.RallyUpAtk:
         case Support.RallyUpAtkPlus:
+        // case Support.RallyUpSpd:
+        case Support.RallyUpSpdPlus:
         case Support.RallyUpRes:
         case Support.RallyUpResPlus:
             return true;
@@ -1705,6 +1713,8 @@ function getAtkBuffAmount(support) {
 function getSpdBuffAmount(support) {
     switch (support) {
         case Support.RallySpeed: return 4;
+        // case Support.RallyUpSpd: return 4;
+        case Support.RallyUpSpdPlus: return 6;
         case Support.RallyAtkSpd: return 3;
         case Support.RallySpdDef: return 3;
         case Support.RallySpdRes: return 3;
