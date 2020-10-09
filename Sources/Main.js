@@ -4805,6 +4805,28 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.JokersWild:
+                    {
+                        let atk = 0;
+                        let spd = 0;
+                        let def = 0;
+                        let res = 0;
+                        let foundUnit = false;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                            atk = Math.max(atk, unit.getAtkInPrecombat());
+                            spd = Math.max(spd, unit.getSpdInPrecombat());
+                            def = Math.max(def, unit.getDefInPrecombat());
+                            res = Math.max(res, unit.getResInPrecombat());
+                            foundUnit = true;
+                        }
+                        if (foundUnit) {
+                            targetUnit.atkSpur += atk - targetUnit.getAtkInPrecombat();
+                            targetUnit.spdSpur += spd - targetUnit.getSpdInPrecombat();
+                            targetUnit.defSpur += def - targetUnit.getDefInPrecombat();
+                            targetUnit.resSpur += res - targetUnit.getResInPrecombat();
+                        }
+                    }
+                    break;
                 case PassiveB.SlickFighter3:
                     if (targetUnit.snapshot.restHpPercentage >= 25 && enemyUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.invalidateAllOwnDebuffs();

@@ -794,6 +794,7 @@ const Weapon = {
 
     // 竜たちの収穫祭
     MoonlessBreath: 1491, // 暁闇のブレス
+    JokersWild: 1494, // 変身のカード
     BlackfireBreathPlus: 1496, // 黒夜のブレス+
     FrostfireBreath: 1498, // 蒼紅のブレス
 };
