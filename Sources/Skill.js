@@ -790,7 +790,12 @@ const Weapon = {
     FlameLance: 1486, // フレイムランス
 
     // プルメリア
-    FlowerOfPlenty: 1488 // 豊潤の花
+    FlowerOfPlenty: 1488, // 豊潤の花
+
+    // 竜たちの収穫祭
+    MoonlessBreath: 1491, // 暁闇のブレス
+    BlackfireBreathPlus: 1496, // 黒夜のブレス+
+    FrostfireBreath: 1498, // 蒼紅のブレス
 };
 
 const Support = {
@@ -822,16 +827,22 @@ const Support = {
     RallySpdDef: 429,
     RallySpdRes: 430,
     RallyDefRes: 427,
+
+    // 大応援
     RallyUpAtk: 435,
     RallyUpAtkPlus: 436,
+    RallyUpRes: 1154,
+    RallyUpResPlus: 1153,
+    // RallyUpSpd: xxx, // 速さの大応援
+    RallyUpSpdPlus: 1499, // 速さの大応援+
+
+    // 2種応援
     RallyAtkDefPlus: 876,
     RallyAtkResPlus: 1066,
     RallySpdResPlus: 932,
     RallySpdDefPlus: 434,
     RallyAtkSpdPlus: 756,
     RallyDefResPlus: 1001,
-    RallyUpRes: 1154,
-    RallyUpResPlus: 1153,
 
     Physic: 437, // リブロー
     PhysicPlus: 438, // リブロー+
@@ -1001,11 +1012,13 @@ const PassiveA = {
     DefResBond3: 775,
 
     JaryuNoUroko: 585, // 邪竜の鱗
+    Dragonscale: 1492, // 邪竜の大鱗
 
     // 密集
     AtkSpdForm3: 964,
-    SpdDefForm3: 992,
     AtkDefForm3: 1055,
+    AtkResForm3: 1495,
+    SpdDefForm3: 992,
     SpdResForm3: 1137,
 
     HeavyBlade1: 1256, // 剛剣1
@@ -1163,6 +1176,7 @@ const PassiveB = {
     QuickRiposte1: 1254, // 切り返し1
     QuickRiposte2: 1255, // 切り返し2
     QuickRiposte3: 599, // 切り返し3
+    DragonsIre3: 1493, // 竜の逆鱗3
     Vantage3: 596, // 待ち伏せ3
     Desperation3: 597, // 攻め立て3
     Cancel1: 1286,//キャンセル1
@@ -1201,6 +1215,7 @@ const PassiveB = {
     WaryFighter3: 600, // 守備隊形3
     SpecialFighter3: 603,// 奥義隊形3
     CraftFighter3: 1483, // 抑止隊形3
+    SlickFighter3: 1497, // 正面隊形・自己3
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     MikiriHangeki3: 810, // 見切り・反撃不可効果3
@@ -1668,6 +1683,8 @@ function isRallyUp(support) {
     switch (support) {
         case Support.RallyUpAtk:
         case Support.RallyUpAtkPlus:
+        // case Support.RallyUpSpd:
+        case Support.RallyUpSpdPlus:
         case Support.RallyUpRes:
         case Support.RallyUpResPlus:
             return true;
@@ -1696,6 +1713,8 @@ function getAtkBuffAmount(support) {
 function getSpdBuffAmount(support) {
     switch (support) {
         case Support.RallySpeed: return 4;
+        // case Support.RallyUpSpd: return 4;
+        case Support.RallyUpSpdPlus: return 6;
         case Support.RallyAtkSpd: return 3;
         case Support.RallySpdDef: return 3;
         case Support.RallySpdRes: return 3;

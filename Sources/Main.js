@@ -3159,11 +3159,14 @@ class AetherRaidTacticsBoard {
         if (unit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
             return true;
         }
-        if (unit.passiveB == PassiveB.SphiasSoul) {
-            return true;
-        }
-        if (unit.passiveB == PassiveB.KyusyuTaikei3) {
-            return true;
+
+        switch (unit.passiveB) {
+            case PassiveB.SphiasSoul:
+                return true;
+            case PassiveB.KyusyuTaikei3:
+                return unit.battleContext.initiatesCombat;
+            case PassiveB.DragonsIre3:
+                return enemyUnit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 50;
         }
 
         switch (unit.weapon) {
@@ -3525,6 +3528,11 @@ class AetherRaidTacticsBoard {
         if (!this.__canInvalidateAbsoluteFollowupAttack(atkUnit, defUnit)) {
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveB.SlickFighter3:
+                        if (defUnit.snapshot.restHpPercentage >= 25) {
+                            ++followupAttackPriority;
+                        }
+                        break;
                     case Weapon.Marute:
                         if (defUnit.isWeaponRefined) {
                             if (defUnit.snapshot.restHpPercentage >= 25) {
@@ -3556,6 +3564,11 @@ class AetherRaidTacticsBoard {
                     case PassiveB.QuickRiposte3:
                         if (defUnit.snapshot.restHpPercentage >= 70) {
                             // this.writeDebugLogLine("HP" + defUnit.snapshot.restHpPercentage + "%で切り返し発動、" + defUnit.getNameWithGroup() + "は絶対追撃");
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.DragonsIre3:
+                        if (defUnit.snapshot.restHpPercentage >= 50) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -4644,6 +4657,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FrostfireBreath:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        targetUnit.atkSpur += Math.floor((
+                            targetUnit.getDefBuffInCombat(enemyUnit) +
+                            targetUnit.getResBuffInCombat(enemyUnit)
+                        ) * 1.5);
+                    }
+                    break;
                 case Weapon.JoyfulVows:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                         targetUnit.atkSpur += 6;
@@ -4779,6 +4802,26 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SlickFighter3:
+                    if (targetUnit.snapshot.restHpPercentage >= 25 && enemyUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    }
+                    break;
+                case Weapon.BlackfireBreathPlus:
+                    if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                        targetUnit.battleContext.invalidatesResBuff = true;
+                    }
+                    break;
+                case PassiveA.Dragonscale:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
                 case Weapon.FlameLance:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         enemyUnit.spdSpur -= 5;
@@ -7626,6 +7669,13 @@ class AetherRaidTacticsBoard {
                             (unit, amount) => {
                                 unit.atkSpur += amount;
                                 unit.defSpur += amount;
+                            }, 1);
+                        break;
+                    case PassiveA.AtkResForm3:
+                        this.__applyFormSkill(targetUnit,
+                            (unit, amount) => {
+                                unit.atkSpur += amount;
+                                unit.resSpur += amount;
                             }, 1);
                         break;
                     case PassiveA.SpdDefForm3:
@@ -11852,9 +11902,11 @@ class AetherRaidTacticsBoard {
     __setBestTargetAndTiles(assistUnit, isPrecombat, isAssistableUnitFunc, acceptTileFunc = null) {
         switch (assistUnit.support) {
             case Support.RallyUpAtk:
+            // case Support.RallyUpSpd:
             case Support.RallyUpRes:
-            case Support.RallyUpResPlus:
             case Support.RallyUpAtkPlus:
+            case Support.RallyUpSpdPlus:
+            case Support.RallyUpResPlus:
                 {
                     this.writeLogLine(assistUnit.supportInfo.name + "の間接的な補助対象を選択");
                     this.__createAssistableUnitInfos(assistUnit, (targetUnit, tile) => true);
@@ -13037,9 +13089,11 @@ class AetherRaidTacticsBoard {
                 switch (supporterUnit.support) {
                     case Support.RallyUpAtk:
                     case Support.RallyUpAtkPlus:
+                    // case Support.RallyUpSpd:
+                    case Support.RallyUpSpdPlus:
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
-                        if (this.__applyRallyUp(supporterUnit, targetUnit)) { return true; } return false;
+                        return this.__applyRallyUp(supporterUnit, targetUnit);
                     case Support.HarshCommandPlus:
                         targetUnit.clearNegativeStatusEffects();
                         return this.__executeHarshCommand(targetUnit);
