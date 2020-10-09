@@ -45,7 +45,7 @@
     </script>
 </head>
 
-<body onload="openCvReady()">
+<body>
     <p style="text-align: center">
         <img src="https://puarts.com/blog/images/feh/20200224_AetherRaidSimulator.jpg" alt="飛空城シミュレーターの画像" />
     </p>
@@ -2182,15 +2182,6 @@
                 $("#importDialog").dialog('close');
             }
         }
-        function openCvReady() {
-            let endTime = Date.now();
-            let diffTime = endTime - g_startTime;
-            g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
-
-            // cv['onRuntimeInitialized'] = () => {
-            //     console.log("cv initialized!");
-            // };
-        }
     </script>
 
     <script>
@@ -2249,14 +2240,20 @@
             ], () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
-                loadLazyImages();
                 console.log("initializing application");
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos);
                 g_app.registerHeroOptions(heroInfos);
-                initAetherRaidBoard(heroInfos);
+
                 createDialogs();
+                loadLazyImages();
             });
+        });
+        window.addEventListener('load', (event) => {
+            let endTime = Date.now();
+            let diffTime = endTime - g_startTime;
+            g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
+            initAetherRaidBoard(heroInfos);
         });
     </script>
 </body>

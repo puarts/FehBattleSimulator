@@ -2159,6 +2159,9 @@ class AetherRaidTacticsBoard {
                 // this.__markUnsupportedSkills(heroInfo.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos]);
             }
         });
+        using(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
+            g_appData.initHeroInfos(heroInfos);
+        });
     }
     __isInheritableSkill(weaponType, moveType, skillInfo) {
         return isInheritableWeaponType(weaponType, skillInfo.inheritableWeaponTypes) && skillInfo.inheritableMoveTypes.includes(moveType);
@@ -13278,7 +13281,6 @@ const OwnerType = {
 };
 
 let g_trashArea = new StructureContainer('trashArea');
-let g_selectHeroInfos = [];
 let g_app = new AetherRaidTacticsBoard();
 
 function removeTouchEventFromDraggableElements() {
@@ -13764,13 +13766,6 @@ function importSettingsFromString(
 function initAetherRaidBoard(
     heroInfos
 ) {
-    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
-        g_appData.initHeroInfos(heroInfos);
-        for (let i = 0; i < g_appData.heroInfos.length; ++i) {
-            g_selectHeroInfos.push({ id: i, text: g_appData.heroInfos.get(i).name });
-        }
-    });
-
     using(new ScopedStopwatch(time => g_app.writeDebugLogLine("マップの初期化: " + time + " ms")), () => {
         createMap();
 
@@ -13784,4 +13779,3 @@ function initAetherRaidBoard(
         loadSettings();
     });
 }
-
