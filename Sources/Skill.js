@@ -2062,6 +2062,34 @@ function isPrecombatSpecial(special) {
     return isRangedAttackSpecial(special);
 }
 
+/// テレポート効果を持つスキルであるかどうかを判定します。
+function isTeleportationSkill(skillId) {
+    switch (skillId) {
+        case Weapon.FujinYumi:
+        case Weapon.Gurimowaru:
+        case Weapon.ApotheosisSpear:
+        case Weapon.AstralBreath:
+        case Weapon.Noatun:
+        case Weapon.HinokaNoKounagitou:
+        case Weapon.IzunNoKajitsu:
+        case PassiveB.TeniNoKona:
+        case PassiveB.Kyuen2:
+        case PassiveB.Kyuen3:
+        case PassiveB.Ridatsu3:
+        case PassiveB.KyokugiHiKo1:
+        case PassiveB.KyokugiHiKo2:
+        case PassiveB.KyokugiHiKo3:
+        case PassiveB.HentaiHiko1:
+        case PassiveB.HentaiHiko2:
+        case PassiveB.HentaiHiko3:
+        case PassiveC.SorakaranoSendo3:
+        case PassiveC.HikonoSendo3:
+            return true;
+        default:
+            return false;
+    }
+}
+
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,

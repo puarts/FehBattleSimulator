@@ -3514,6 +3514,19 @@ class Unit {
             this.specialCount = this.maxSpecialCount;
         }
     }
+
+    /// テレポート系スキルを所持していたり、状態が付与されていて、テレポートが可能な状態かどうかを判定します。
+    canTeleport() {
+        if (this.hasStatusEffect(StatusEffectType.AirOrders)) {
+            return true;
+        }
+        for (let skillId of this.enumerateSkills()) {
+            if (isTeleportationSkill(skillId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
