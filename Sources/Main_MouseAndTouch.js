@@ -358,7 +358,7 @@ function dropToUnitImpl(unit, dropTargetId) {
                         let canApplyAssist =
                             unit.supportInfo.assistType != AssistType.Rally ||
                             (unit.supportInfo.assistType == AssistType.Rally
-                                && (unit.canRallyForcibly() || g_app.__canBeBuffedAtLeastSpecifiedAmountByRally(unit, unitPlacedOnTargetTile, 1)));
+                                && (unit.canRallyForcibly() || unit.canRallyTo(unitPlacedOnTargetTile, 1)));
                         if (canApplyAssist) {
                             g_app.__enqueueSupportCommand(unit, tile, unitPlacedOnTargetTile);
                             isActioned = true;

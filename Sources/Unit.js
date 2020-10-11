@@ -1037,6 +1037,7 @@ class Unit {
         // 攻撃可能なタイル
         this.movableTiles = [];
         this.attackableTiles = [];
+        this.assistableTiles = [];
 
         // シリアライズする時に一時的に使用
         this.ownerType = 0;
@@ -3527,6 +3528,134 @@ class Unit {
         }
         return false;
     }
+
+    __canExecuteHarshCommand(targetUnit) {
+        if (!targetUnit.isDebuffed) {
+            return false;
+        }
+        if (targetUnit.atkDebuff < 0 && -targetUnit.atkDebuff > (targetUnit.atkBuff)) { return true; }
+        if (targetUnit.spdDebuff < 0 && -targetUnit.spdDebuff > (targetUnit.spdBuff)) { return true; }
+        if (targetUnit.defDebuff < 0 && -targetUnit.defDebuff > (targetUnit.defBuff)) { return true; }
+        if (targetUnit.resDebuff < 0 && -targetUnit.resDebuff > (targetUnit.resBuff)) { return true; }
+        return false;
+    }
+
+    /// 応援や一喝を実行可能かどうかを返します。
+    canRallyTo(targetUnit, buffAmountThreshold) {
+        let assistUnit = this;
+        switch (assistUnit.support) {
+            case Support.HarshCommandPlus:
+                if (targetUnit.hasNegativeStatusEffect()) {
+                    return true;
+                }
+                return this.__canExecuteHarshCommand(targetUnit);
+            case Support.HarshCommand:
+                return this.__canExecuteHarshCommand(targetUnit);
+            default:
+                if ((getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff) >= buffAmountThreshold) { return true; }
+                if ((getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff) >= buffAmountThreshold) { return true; }
+                if ((getDefBuffAmount(assistUnit.support) - targetUnit.defBuff) >= buffAmountThreshold) { return true; }
+                if ((getResBuffAmount(assistUnit.support) - targetUnit.resBuff) >= buffAmountThreshold) { return true; }
+                return false;
+        }
+    }
+
+    /// 実際に補助可能なユニットとタイルを列挙します。
+    *enumerateActuallyAssistableUnitAndTiles() {
+        for (let unit of this.enumerateAssistableUnits()) {
+            for (let tile of this.enumerateMovableTiles(false)) {
+                let dist = tile.calculateDistanceToUnit(unit);
+                if (dist == this.assistRange) {
+                    yield [unit, tile];
+                }
+            }
+        }
+    }
+
+    /// 実際に破壊可能な配置物とタイルを列挙します。
+    *enumerateActuallyBreakableStructureAndTiles() {
+        for (let structure of this.enumerateBreakableStructures()) {
+            for (let tile of this.enumerateMovableTiles(false)) {
+                let dist = tile.calculateDistance(structure.placedTile);
+                if (dist == this.attackRange) {
+                    yield [structure, tile];
+                }
+            }
+        }
+    }
+
+    /// 実際に攻撃可能なユニットとタイルを列挙します。
+    *enumerateActuallyAttackableUnitAndTiles() {
+        for (let unit of this.enumerateAttackableUnits()) {
+            for (let tile of this.enumerateMovableTiles(false)) {
+                let dist = tile.calculateDistanceToUnit(unit);
+                if (dist == this.attackRange) {
+                    yield [unit, tile];
+                }
+            }
+        }
+    }
+
+    /// 補助可能なユニットを列挙します。
+    *enumerateAssistableUnits() {
+        for (let tile of this.assistableTiles) {
+            let unit = tile.placedUnit;
+            if (unit != null && unit.groupId == this.groupId) {
+                if (unit.hasStatusEffect(StatusEffectType.Isolation)) {
+                    continue;
+                }
+
+                yield unit;
+            }
+        }
+    }
+
+    /// 攻撃可能なユニットを列挙します。
+    *enumerateAttackableUnits() {
+        for (let tile of this.attackableTiles) {
+            if (tile.placedUnit != null && tile.placedUnit.groupId != this.groupId) {
+                yield tile.placedUnit;
+            }
+        }
+    }
+
+    /// 攻撃可能な壊せる壁や施設を列挙します。
+    *enumerateBreakableStructures() {
+        for (let tile of this.attackableTiles) {
+            if (tile.obj != null && this.canBreak(tile.obj)) {
+                yield tile.obj;
+            }
+        }
+    }
+
+    /// 移動可能なマスを列挙します。
+    *enumerateMovableTiles(ignoresTileUnitPlaced = true) {
+        for (let tile of this.movableTiles) {
+            if (ignoresTileUnitPlaced || (tile.placedUnit == null || tile.placedUnit == this)) {
+                yield tile;
+            }
+        }
+    }
+
+    /// ユニットが破壊可能な配置物であるかどうかを判定します。
+    canBreak(structure) {
+        return structure instanceof BreakableWall
+            || (structure.isBreakable
+                && (
+                    (this.groupId == UnitGroupType.Ally && structure instanceof DefenceStructureBase)
+                    || (this.groupId == UnitGroupType.Enemy && structure instanceof OffenceStructureBase)
+                ));
+    }
+
+    /// 補助スキルの射程です。
+    get assistRange() {
+        return getAssistRange(this.support);
+    }
+
+    /// 補助スキルを所持していればtrue、そうでなければfalseを返します。
+    get hasSupport() {
+        return this.support != Support.None;
+    }
 }
 
 /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
@@ -3735,4 +3864,8 @@ function isAfflictor(attackUnit, lossesInCombat) {
         }
     }
     return false;
+}
+
+function canRefereshTo(targetUnit) {
+    return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
 }

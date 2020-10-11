@@ -3361,20 +3361,95 @@ class Map {
         }
     }
 
-    __setAttackableCell(unit) {
-        if (!unit.hasWeapon) {
+    __setAttackableAndAssistableTile(unit) {
+        if (!unit.hasWeapon && !unit.hasSupport) {
             return;
         }
 
         for (let neighborTile of this.enumerateMovableTiles(unit, false, true, false)) {
-            for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, unit.attackRange)) {
-                if (!unit.attackableTiles.includes(tile)) {
-                    unit.attackableTiles.push(tile);
+            if (unit.hasWeapon) {
+                for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, unit.attackRange)) {
+                    if (!unit.attackableTiles.includes(tile)) {
+                        unit.attackableTiles.push(tile);
+                    }
+                }
+            }
+            if (unit.hasSupport) {
+                for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, unit.assistRange)) {
+                    if (!unit.assistableTiles.includes(tile)) {
+                        unit.assistableTiles.push(tile);
+                    }
                 }
             }
         }
     }
 
+    /// タイルの状態を更新します。
+    updateTiles() {
+        // 各タイルの初期化
+        for (var y = 0; y < this._height; ++y) {
+            for (var x = 0; x < this._width; ++x) {
+                var index = y * this._width + x;
+                var tile = this._tiles[index];
+                tile.resetDangerLevel();
+                tile.closestDistanceToEnemy = -1;
+                tile.isMovableForAlly = false;
+                tile.isMovableForEnemy = false;
+                tile.isAttackableForAlly = false;
+                tile.isAttackableForEnemy = false;
+                tile.threateningEnemies = [];
+                tile.threateningAllies = [];
+            }
+        }
+
+        // 危険度等を更新
+        for (let unit of this._units) {
+            unit.movableTiles = [];
+            unit.attackableTiles = [];
+            unit.assistableTiles = [];
+            this.__setEnemyThreat(unit);
+            this.__setAttackableAndAssistableTile(unit);
+        }
+
+        for (let unit of this._units) {
+
+            // 敵の移動可能範囲、攻撃可能範囲を更新
+            if (unit.groupId == UnitGroupType.Enemy) {
+                for (let tile of this.enumerateMovableTiles(unit, this._ignoresUnits)) {
+                    if (unit.movableTiles.includes(tile)) {
+                        continue;
+                    }
+
+                    unit.movableTiles.push(tile);
+                    tile.isMovableForEnemy = true;
+                    if (unit.hasWeapon) {
+                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
+                            attackableTile.isAttackableForEnemy = true;
+                        }
+                    }
+                }
+            }
+
+            // 味方の移動可能範囲、攻撃可能範囲を更新
+            if (unit.groupId == UnitGroupType.Ally) {
+                for (let tile of this.enumerateMovableTiles(unit, this._ignoresUnits)) {
+                    if (unit.movableTiles.includes(tile)) {
+                        continue;
+                    }
+
+                    unit.movableTiles.push(tile);
+                    tile.isMovableForAlly = true;
+                    if (unit.hasWeapon) {
+                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
+                            attackableTile.isAttackableForAlly = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Map を Table に変換します。
     toTable() {
         let isMapHeaderEnabled = this.isHeaderEnabled;
         if (isMapHeaderEnabled) {
@@ -3404,21 +3479,9 @@ class Map {
         let cellWidth = this.cellWidth;
         let cellHeight = this.cellHeight;
         {
-            // マップセルの初期化
+            // テーブルセルの初期化
             for (var y = 0; y < this._height; ++y) {
                 for (var x = 0; x < this._width; ++x) {
-                    var index = y * this._width + x;
-                    var tile = this._tiles[index];
-                    tile.resetDangerLevel();
-                    tile.closestDistanceToEnemy = -1;
-                    tile.isMovableForAlly = false;
-                    tile.isMovableForEnemy = false;
-                    tile.isAttackableForAlly = false;
-                    tile.isAttackableForEnemy = false;
-                    tile.threateningEnemies = [];
-                    tile.threateningAllies = [];
-
-
                     var cell = table.getCell(x + this.cellOffsetX, y + this.cellOffsetY);
                     var fontColor = "#fff";
                     var tileText = this.getTileLabel(x, y);
@@ -3497,19 +3560,8 @@ class Map {
             }
         }
 
-
-        // 危険エリアの表示
-        for (var unitIndex = 0; unitIndex < this._units.length; ++unitIndex) {
-            var unit = this._units[unitIndex];
-            unit.movableTiles = [];
-            unit.attackableTiles = [];
-            this.__setEnemyThreat(unit);
-            this.__setAttackableCell(unit);
-        }
-
         // 各ユニットの処理
-        for (var unitIndex = 0; unitIndex < this._units.length; ++unitIndex) {
-            var unit = this._units[unitIndex];
+        for (let unit of this._units) {
             // console.log(unit);
             var tile = unit.placedTile;
             var cell = table.getCell(tile.posX + this.cellOffsetX, tile.posY + this.cellOffsetY);
@@ -3529,41 +3581,8 @@ class Map {
                     }
                     break;
             }
-
-            // 敵の移動可能範囲を表示
-            if (unit.groupId == UnitGroupType.Enemy) {
-                for (let tile of this.enumerateMovableTiles(unit, this._ignoresUnits)) {
-                    if (unit.movableTiles.includes(tile)) {
-                        continue;
-                    }
-
-                    unit.movableTiles.push(tile);
-                    tile.isMovableForEnemy = true;
-                    if (unit.hasWeapon) {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
-                            attackableTile.isAttackableForEnemy = true;
-                        }
-                    }
-                }
-            }
-
-            // 味方の移動可能範囲を表示
-            if (unit.groupId == UnitGroupType.Ally) {
-                for (let tile of this.enumerateMovableTiles(unit, this._ignoresUnits)) {
-                    if (unit.movableTiles.includes(tile)) {
-                        continue;
-                    }
-
-                    unit.movableTiles.push(tile);
-                    tile.isMovableForAlly = true;
-                    if (unit.hasWeapon) {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
-                            attackableTile.isAttackableForAlly = true;
-                        }
-                    }
-                }
-            }
         }
+
 
         const shadowCss = this.__getShadowCss();
         for (let y = 0; y < this._height; ++y) {
@@ -3615,10 +3634,6 @@ class Map {
                 cell.innerText = "<div class='cell-root' style='position:relative;width:" + thisCellWidth + "px;height:" + thisCellHeight + "px;'>" + cell.innerText + "</div>";
             }
         }
-
-        table.onDragOverEvent = "f_dragover(event)";
-        table.onDropEvent = "f_drop(event)";
-        table.onDragEndEvent = "table_dragend(event)";
 
         return table;
     }

@@ -3,6 +3,101 @@
 
 /// 自動攻略用AIの検証用クラスです。
 class OriginalAi {
+
+    executeRandomAction() {
+        let self = g_app;
+        let acitonPatternCount = 1;
+        using(new ScopedStopwatch(time => self.writeDebugLogLine("コマンド実行: " + time + " ms")), () => {
+            // self.disableAllLogs = true;
+            let commandQueue = new CommandQueue(100);
+            for (let unit of self.enumerateAllyUnitsOnMap()) {
+                if (unit.isActionDone) {
+                    continue;
+                }
+                using(new ScopedStopwatch(time => self.writeErrorLine(`■${unit.getNameWithGroup()}の評価: ` + time + " ms")), () => {
+                    let commandCandidates = this.__createAllExecutableCommandsForUnit(unit);
+                    // for (let commands of commandCandidates) {
+                    //     let command = commands[commands.length - 1];
+                    //     self.writeDebugLogLine(command.label);
+                    // }
+
+                    // acitonPatternCount *= commandCandidates.length;
+                    let commands = commandCandidates[0];
+                    for (let command of commands) {
+                        using(new ScopedStopwatch(time => self.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
+                            command.execute();
+                        });
+                        commandQueue.enqueue(command);
+                    }
+                    using(new ScopedStopwatch(time => self.writeErrorLine(`タイル更新: ` + time + " ms")), () => {
+                        g_appData.map.updateTiles();
+                    });
+                });
+            }
+            // self.__executeAllCommands(commandQueue, 0);
+            self.disableAllLogs = false;
+        });
+
+        // self.writeDebugLogLine(`acitonPatternCount = ${acitonPatternCount}`);
+        updateAllUi();
+    }
+
+    __createAllExecutableCommandsForUnit(targetUnit) {
+        let self = g_app;
+        let candidates = [];
+        using(new ScopedStopwatch(time => self.writeWarningLine(`コマンド作成トータル: ` + time + " ms")), () => {
+            // 攻撃
+            using(new ScopedStopwatch(time => self.writeWarningLine(`攻撃コマンド列挙: ` + time + " ms")), () => {
+                for (let unitAndTile of targetUnit.enumerateActuallyAttackableUnitAndTiles()) {
+                    let unit = unitAndTile[0];
+                    let tile = unitAndTile[1];
+                    let commands = self.__createAttackCommands(targetUnit, unit, tile);
+                    candidates.push(commands);
+                }
+            });
+
+            // 施設破壊
+            using(new ScopedStopwatch(time => self.writeWarningLine(`施設破壊コマンド列挙: ` + time + " ms")), () => {
+                for (let structureAndTile of targetUnit.enumerateActuallyBreakableStructureAndTiles()) {
+                    let structure = structureAndTile[0];
+                    let tile = structureAndTile[1];
+                    let commands = self.__createBreakStructureCommands(targetUnit, tile, structure);
+                    candidates.push(commands);
+                }
+            });
+
+            // 補助
+            using(new ScopedStopwatch(time => self.writeWarningLine(`補助コマンド列挙: ` + time + " ms")), () => {
+                for (let unitAndTile of targetUnit.enumerateActuallyAssistableUnitAndTiles()) {
+                    let unit = unitAndTile[0];
+                    let tile = unitAndTile[1];
+                    if (self.__canSupportTo(targetUnit, unit, tile)) {
+                        let commands = self.__createSupportCommands(targetUnit, tile, unit);
+                        candidates.push(commands);
+                    }
+                }
+            });
+
+            // 移動
+            using(new ScopedStopwatch(time => self.writeWarningLine(`移動コマンド列挙: ` + time + " ms")), () => {
+                for (let tile of targetUnit.enumerateMovableTiles(false)) {
+                    let command = self.__createMoveCommand(targetUnit, tile, true);
+                    candidates.push([command]);
+                }
+            });
+
+            // 比翼スキル使用
+            using(new ScopedStopwatch(time => self.writeWarningLine(`比翼スキルコマンド列挙: ` + time + " ms")), () => {
+                if (self.canActivateDuoSkillOrHarmonizedSkill(targetUnit)) {
+                    let command = self.__createDuoSkillCommand(targetUnit);
+                    candidates.push([command]);
+                }
+            });
+        });
+
+        return candidates;
+    }
+
     __origAi_simulate() {
         let self = g_app;
         let targetGroup = UnitGroupType.Ally;

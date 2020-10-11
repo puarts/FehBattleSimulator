@@ -1672,6 +1672,8 @@ function isFiresweepWeapon(weapon) {
 /// 補助スキルの射程を取得します。
 function getAssistRange(support) {
     switch (support) {
+        case Support.None:
+            return 0;
         case Support.Physic:
         case Support.PhysicPlus:
             return 2;

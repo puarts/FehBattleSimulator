@@ -136,6 +136,15 @@ class Tile {
         return !(this.type != TileType.Normal || this.obj instanceof BreakableWall || this.obj instanceof Wall);
     }
 
+    isAttackableBySpecifiedGroup(groupId) {
+        if (groupId == UnitGroupType.Ally) {
+            return this.isAttackableForAlly;
+        }
+        else {
+            return this.isAttackableForEnemy;
+        }
+    }
+
     isTreantenedBySpecifiedUnit(unit) {
         return this.threateningAllies.includes(unit) || this.threateningEnemies.includes(unit);
     }

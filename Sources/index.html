@@ -1312,6 +1312,8 @@
                 <label class="normal" for="limitsExamineRangeToNoTrapTiles">調査範囲を罠のないマスに制限</label>
                 <input id="limitsExamineRangeToNoTrapTiles" type="checkbox" v-model="limitsExamineRangeToNoTrapTiles" />
             </p>
+            <input type="button" value="ランダム行動" class="buttonUi" style="width: 250"
+                @click="g_app.clearLog(); g_app.origAi.executeRandomAction();"><br />
             <input type="button" value="おまかせ" class="buttonUi" style="width: 250"
                 @click="g_app.clearLog(); g_app.simulateAllyActionCustomized();"><br />
             <input type="button" value="おまかせ2" class="buttonUi" style="width: 250"
@@ -1548,7 +1550,7 @@
                                     @click="g_app.vm.healHpFull" v-bind:style="g_app.vm.debugMenuStyle">
                                 <input type="button" value='ステータス初期化' class="buttonUi"
                                     @click="g_app.__updateStatusBySkillsAndMerges(value);" v-bind:style="g_app.vm.debugMenuStyle">
-                                <input type="button" value="双界の敵ステータス設定..." style="width:140px" class="buttonUi" @click="$('#setupResonantBattleEnemyDialog').dialog('open');">
+                                <input v-if="g_appData.gameMode == GameMode.ResonantBattles" type="button" value="双界の敵ステータス設定..." style="width:140px" class="buttonUi" @click="$('#setupResonantBattleEnemyDialog').dialog('open');">
                             </td>
                         </tr>
                         <tr>
@@ -1566,7 +1568,7 @@
                             <th class='param'>
                                 戦闘中
                             </th>
-                            <th class='param' >
+                            <th class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles" >
                                 乗算
                             </th>
                             <th class='param' >
@@ -1592,7 +1594,7 @@
                             </td>
                             <td class='param'>
                             </td>
-                            <td class='param' >
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles">
                                 <input class='numericFloat' v-model="value.hpMult" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param' ><input class='numeric'
@@ -1628,7 +1630,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.atkSpur}}
                             </td>
-                            <td class='param' >
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles">
                                 <input class='numericFloat' v-model="value.atkMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param' ><input class='numeric'
@@ -1664,7 +1666,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.spdSpur}}
                             </td>
-                            <td class='param' >
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles" >
                                 <input class='numericFloat' v-model="value.spdMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param'><input class='numeric'
@@ -1700,7 +1702,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.defSpur}}
                             </td>
-                            <td class='param' >
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles">
                                 <input class='numericFloat' v-model="value.defMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param'><input class='numeric'
@@ -1737,7 +1739,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.resSpur}}
                             </td>
-                            <td class='param' >
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles" >
                                 <input class='numericFloat' v-model="value.resMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param'><input class='numeric'
@@ -1754,7 +1756,7 @@
                         <tr>
                             <td colspan="5">
                             </td>
-                            <td>
+                            <td v-if="g_appData.gameMode == GameMode.ResonantBattles">
                                 <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
                                     @click="value.resetStatusMult();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
                             </td>

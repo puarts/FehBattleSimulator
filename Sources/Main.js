@@ -50,6 +50,8 @@ const ModuleLoadState = {
 class AetherRaidTacticsBoard {
     constructor() {
         this.isTurnWideCommandQueueEnabled = false;
+        this.disableAllLogs = false;
+        this.isCommandLogEnabled = true;
         this.tempSerializedTurn = null;
         this.currentPatternIndex = 0; // 暫定処置用
 
@@ -2058,7 +2060,10 @@ class AetherRaidTacticsBoard {
     }
 
     writeSimpleLogLine(log) {
-        console.log(log);
+        if (this.disableAllLogs) {
+            return;
+        }
+
         this.vm.simpleLog += "<span style='font-size:10px;color:#000000'>" + log + '</span><br/>';
     }
 
@@ -2075,11 +2080,14 @@ class AetherRaidTacticsBoard {
     }
 
     writeLogLine(log) {
+        if (this.disableAllLogs) {
+            return;
+        }
         this.vm.damageCalcLog += "<span style='font-size:14px'>" + log + '</span><br/>';
     }
 
     writeDebugLogLine(log) {
-        if (this.vm.showDetailLog == false) {
+        if (this.disableAllLogs || this.vm.showDetailLog == false) {
             return;
         }
         this.vm.damageCalcLog += "<span style='font-size:10px;color:#666666;'>" + log + '</span><br/>';
@@ -9507,7 +9515,6 @@ class AetherRaidTacticsBoard {
             return;
         }
         let self = this;
-        console.trace("自ターン開始をエンキュー");
         this.__enqueueCommand("自ターン開始", function () {
             self.vm.currentTurnType = UnitGroupType.Ally;
             ++self.vm.currentTurn;
@@ -10293,35 +10300,6 @@ class AetherRaidTacticsBoard {
         });
     }
 
-    __canExecuteHarshCommand(targetUnit) {
-        if (!targetUnit.isDebuffed) {
-            return false;
-        }
-        if (targetUnit.atkDebuff < 0 && -targetUnit.atkDebuff > (targetUnit.atkBuff)) { return true; }
-        if (targetUnit.spdDebuff < 0 && -targetUnit.spdDebuff > (targetUnit.spdBuff)) { return true; }
-        if (targetUnit.defDebuff < 0 && -targetUnit.defDebuff > (targetUnit.defBuff)) { return true; }
-        if (targetUnit.resDebuff < 0 && -targetUnit.resDebuff > (targetUnit.resBuff)) { return true; }
-        return false;
-    }
-
-    __canBeBuffedAtLeastSpecifiedAmountByRally(assistUnit, targetUnit, amount) {
-        switch (assistUnit.support) {
-            case Support.HarshCommandPlus:
-                if (targetUnit.hasNegativeStatusEffect()) {
-                    return true;
-                }
-                return this.__canExecuteHarshCommand(targetUnit);
-            case Support.HarshCommand:
-                return this.__canExecuteHarshCommand(targetUnit);
-            default:
-                if ((getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff) >= amount) { return true; }
-                if ((getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff) >= amount) { return true; }
-                if ((getDefBuffAmount(assistUnit.support) - targetUnit.defBuff) >= amount) { return true; }
-                if ((getResBuffAmount(assistUnit.support) - targetUnit.resBuff) >= amount) { return true; }
-                return false;
-        }
-    }
-
     simulatePrecombatAssist(assistableUnits, enemyUnits, allyUnits) {
         // コンテキスト初期化
         this.__prepareActionContextForAssist(enemyUnits, allyUnits, true);
@@ -10429,7 +10407,7 @@ class AetherRaidTacticsBoard {
                 // todo: ちゃんと実装する
                 return !targetUnit.isActionDone
                     && targetUnit.actionContext.hasThreatensEnemyStatus
-                    && this.__canBeBuffedAtLeastSpecifiedAmountByRally(unit, targetUnit, 2);
+                    && unit.canRallyTo(targetUnit, 2);
             case AssistType.Heal:
                 if (unit.support == Support.Sacrifice) {
                     let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
@@ -10492,7 +10470,7 @@ class AetherRaidTacticsBoard {
                         return false;
                     }
                     // todo: ちゃんと実装する
-                    let canBeBuffedAtLeast2 = this.__canBeBuffedAtLeastSpecifiedAmountByRally(unit, targetUnit, 2);
+                    let canBeBuffedAtLeast2 = unit.canRallyTo(targetUnit, 2);
                     this.writeDebugLogLine(targetUnit.getNameWithGroup() + ": "
                         + "hasThreatensEnemyStatus=" + targetUnit.actionContext.hasThreatensEnemyStatus
                         + ", hasThreatenedByEnemyStatus=" + targetUnit.actionContext.hasThreatenedByEnemyStatus
@@ -11124,45 +11102,68 @@ class AetherRaidTacticsBoard {
         let serial = this.__convertUnitPerTurnStatusToSerialForSpecifiedGroupUnitsOnMap(groupId);
         let self = this;
         this.__enqueueCommand("ユニット全員の行動終了", function () {
-            self.writeLogLine("行動可能なユニットはいないので現在のフェーズ終了");
+            if (self.isCommandLogEnabled) {
+                self.writeLogLine("行動可能なユニットはいないので現在のフェーズ終了");
+            }
             self.__endAllUnitAction(groupId);
             updateAllUi();
         }, serial);
     }
 
     __enqueueEndActionCommand(unit) {
+        let self = this;
         let serial = this.__convertUnitPerTurnStatusToSerial(unit);
         this.__enqueueCommand(`行動終了(${unit.getNameWithGroup()})`, function () {
-            g_app.writeLogLine(unit.getNameWithGroup() + "は行動終了");
+            if (self.isCommandLogEnabled) {
+                g_app.writeLogLine(unit.getNameWithGroup() + "は行動終了");
+            }
             g_app.endUnitAction(unit);
         }, serial);
     }
 
-    __enqueueDuoSkillCommand(unit) {
+    __createDuoSkillCommand(unit) {
+        let self = this;
         let commandType = CommandType.Normal;
         let serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
-        this.__enqueueCommand(`比翼、双界スキル(${unit.getNameWithGroup()})`, function () {
-            g_app.writeLogLine(unit.getNameWithGroup() + "は比翼、双界スキルを実行");
+        return this.__createCommand(`比翼、双界スキル(${unit.getNameWithGroup()})`, function () {
+            if (self.isCommandLogEnabled) {
+                g_app.writeLogLine(unit.getNameWithGroup() + "は比翼、双界スキルを実行");
+            }
             g_app.__activateDuoOrHarmonizedSkill(unit);
         }, serial, commandType);
     }
 
+    __enqueueDuoSkillCommand(unit) {
+        let command = this.__createDuoSkillCommand(unit);
+        this.__enqueueCommandImpl(command);
+    }
 
     __enqueueSupportCommand(unit, tile, assistTargetUnit) {
+        let commands = this.__createSupportCommands(unit, tile, assistTargetUnit);
+        this.__enqueueCommandsImpl(commands);
+    }
+
+    __createSupportCommands(unit, tile, assistTargetUnit) {
+        let commands = [];
         if (unit.support < 0) {
-            return;
+            return commands;
         }
 
         let commandType = CommandType.Normal;
         if (unit.placedTile != tile) {
-            this.__enqueueMoveCommand(unit, tile, false, CommandType.Begin);
+            commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
             commandType = CommandType.End;
         }
 
+        commands.push(this.__createSupportCommand(unit, tile, assistTargetUnit, commandType));
+        return commands;
+    }
+
+    __createSupportCommand(unit, tile, assistTargetUnit, commandType = CommandType.Normal) {
         let serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
         let self = this;
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
-        this.__enqueueCommand(`${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()})`, function () {
+        let command = this.__createCommand(`${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
             if (unit.isActionDone) {
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
@@ -11184,32 +11185,43 @@ class AetherRaidTacticsBoard {
                     self.audioManager.playSoundEffectImmediately(SoundEffectId.Rally);
                     break;
             }
-            self.writeLogLine(
-                unit.getNameWithGroup() + "は"
-                + assistTargetUnit.getNameWithGroup()
-                + "に" + skillName + "を実行");
+            if (self.isCommandLogEnabled) {
+                self.writeLogLine(
+                    unit.getNameWithGroup() + "は"
+                    + assistTargetUnit.getNameWithGroup()
+                    + "に" + skillName + "を実行");
+            }
             self.applySupportSkill(unit, assistTargetUnit);
         }, serial, commandType);
+        return command;
     }
 
-    __enqueueBreakStructureCommand(unit, moveTile, obj) {
+    __createBreakStructureCommands(unit, moveTile, obj) {
+        let commands = [];
         let commandType = CommandType.Normal;
         if (unit.placedTile != moveTile) {
-            this.__enqueueMoveCommand(unit, moveTile, false, CommandType.Begin);
+            commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
             commandType = CommandType.End;
         }
 
+        commands.push(this.__createBreakStructureCommand(unit, moveTile, obj, commandType));
+        return commands;
+    }
+
+    __createBreakStructureCommand(unit, moveTile, obj, commandType = CommandType.Normal) {
         let serial = this.__convertUnitPerTurnStatusToSerial(unit) + ElemDelimiter +
             this.__convertStructurePerTurnStatusToSerial(obj);
         let self = this;
-        this.__enqueueCommand(obj.name + `破壊(${unit.getNameWithGroup()})`, function () {
+        let command = this.__createCommand(obj.name + `破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`, function () {
             if (unit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
                 return;
             }
 
             self.audioManager.playSoundEffectImmediately(SoundEffectId.Break);
-            g_app.writeLogLine(unit.getNameWithGroup() + "はオブジェクトを破壊");
+            if (self.isCommandLogEnabled) {
+                g_app.writeLogLine(unit.getNameWithGroup() + "はオブジェクトを破壊");
+            }
             if (obj instanceof BreakableWall) {
                 obj.break();
                 if (obj.isBroken) {
@@ -11221,16 +11233,22 @@ class AetherRaidTacticsBoard {
             }
             g_app.endUnitAction(unit);
         }, serial, commandType);
+        return command;
     }
 
-    __enqueueMoveCommand(unit, tileToMove, endAction = false, commandType = CommandType.Normal, enableSoundEffect = false) {
+    __enqueueBreakStructureCommand(unit, moveTile, obj) {
+        let commands = this.__createBreakStructureCommands(unit, moveTile, obj);
+        this.__enqueueCommandsImpl(commands);
+    }
+
+    __createMoveCommand(unit, tileToMove, endAction = false, commandType = CommandType.Normal, enableSoundEffect = false) {
         // 移動
         let self = this;
         let metaData = new Object();
         metaData.tileToMove = tileToMove;
         metaData.unit = unit;
-        this.__enqueueCommand(
-            `移動(${unit.getNameWithGroup()})`,
+        let command = this.__createCommand(
+            `移動(${unit.getNameWithGroup()} [${tileToMove.posX},${tileToMove.posY}])`,
             function () {
                 if (enableSoundEffect) {
                     self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
@@ -11243,11 +11261,15 @@ class AetherRaidTacticsBoard {
                     && unit.groupId == UnitGroupType.Enemy && isThief(unit) && tileToMove.posY == 0
                 ) {
                     // 双界のシーフが出口に辿り着いた
-                    self.writeLogLine(unit.getNameWithGroup() + "は出口に到着");
+                    if (self.isCommandLogEnabled) {
+                        self.writeLogLine(unit.getNameWithGroup() + "は出口に到着");
+                    }
                     moveUnitToTrashBox(unit);
                 }
                 else {
-                    self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
+                    if (self.isCommandLogEnabled) {
+                        self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
+                    }
                     moveUnit(unit, tileToMove, unit.groupId == UnitGroupType.Ally);
                 }
 
@@ -11260,18 +11282,18 @@ class AetherRaidTacticsBoard {
             commandType,
             metaData
         );
+        return command;
     }
 
-    __enqueueAttackCommand(attackerUnit, targetUnit, tile) {
-        let commandType = CommandType.Normal;
-        if (attackerUnit.placedTile != tile) {
-            this.__enqueueMoveCommand(attackerUnit, tile, false, CommandType.Begin);
-            commandType = CommandType.End;
-        }
+    __enqueueMoveCommand(unit, tileToMove, endAction = false, commandType = CommandType.Normal, enableSoundEffect = false) {
+        let command = this.__createMoveCommand(unit, tileToMove, endAction, commandType, enableSoundEffect);
+        this.__enqueueCommandImpl(command);
+    }
 
+    __createAttackCommand(attackerUnit, targetUnit, tile, commandType = CommandType.Normal) {
         let serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         let self = this;
-        this.__enqueueCommand(`攻撃(${attackerUnit.getNameWithGroup()}→${targetUnit.getNameWithGroup()})`, function () {
+        let command = this.__createCommand(`攻撃(${attackerUnit.getNameWithGroup()}→${targetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
             if (attackerUnit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
                 return;
@@ -11285,10 +11307,29 @@ class AetherRaidTacticsBoard {
             }
             self.updateDamageCalculation(attackerUnit, targetUnit, tile);
         }, serial, commandType);
+        return command;
     }
 
-    __enqueueCommand(label, func, serializedDataForUndo = null, commandType = CommandType.Normal, metaData = null) {
+    __createAttackCommands(attackerUnit, targetUnit, tile) {
+        let commands = [];
+        let commandType = CommandType.Normal;
+        if (attackerUnit.placedTile != tile) {
+            commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
+            commandType = CommandType.End;
+        }
+
+        commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, commandType));
+        return commands;
+    }
+
+    __enqueueAttackCommand(attackerUnit, targetUnit, tile) {
+        let commands = this.__createAttackCommands(attackerUnit, targetUnit, tile);
+        this.__enqueueCommandsImpl(commands);
+    }
+
+    __createCommand(label, func, serializedDataForUndo = null, commandType = CommandType.Normal, metaData = null) {
         let serializedTurn = null;
+        let self = this;
         if (this.vm.isCommandUndoable) {
             if (serializedDataForUndo != null) {
                 serializedTurn = serializedDataForUndo;
@@ -11300,15 +11341,16 @@ class AetherRaidTacticsBoard {
         let command = new Command(
             label,
             function (input) {
-                // g_app.clearSimpleLog();
-                g_app.writeSimpleLogLine("「" + input[0] + "」を実行");
-                console.log(input);
+                if (self.isCommandLogEnabled) {
+                    self.writeSimpleLogLine("「" + input[0] + "」を実行");
+                }
                 input[1]();
             },
             function (input) {
                 if (input[1] != null) {
-                    // g_app.clearSimpleLog();
-                    g_app.writeSimpleLogLine("「" + input[0] + "」を元に戻す");
+                    if (self.isCommandLogEnabled) {
+                        self.writeSimpleLogLine("「" + input[0] + "」を元に戻す");
+                    }
                     importPerTurnSetting(input[1]);
                 }
             },
@@ -11317,9 +11359,26 @@ class AetherRaidTacticsBoard {
             commandType
         );
         command.metaData = metaData;
+        return command;
+    }
+
+    __enqueueCommand(label, func, serializedDataForUndo = null, commandType = CommandType.Normal, metaData = null) {
+        let command = this.__createCommand(label, func, serializedDataForUndo, commandType, metaData);
+        this.__enqueueCommandImpl(command);
+    }
+
+    __enqueueCommandImpl(command) {
         this.commandQueuePerAction.enqueue(command);
         if (this.isTurnWideCommandQueueEnabled) {
             this.commandQueue.enqueue(command);
+        }
+    }
+    __enqueueCommandsImpl(commands) {
+        for (let command of commands) {
+            this.commandQueuePerAction.enqueue(command);
+            if (this.isTurnWideCommandQueueEnabled) {
+                this.commandQueue.enqueue(command);
+            }
         }
     }
 
@@ -11827,39 +11886,26 @@ class AetherRaidTacticsBoard {
     }
 
     __createAssistableUnitInfos(assistUnit, isAssistableUnitFunc, acceptTileFunc = null) {
-        let assistRange = getAssistRange(assistUnit.support);
-        for (let tile of g_appData.map.enumerateMovableTiles(assistUnit, false, false)) {
+        for (let unitAndTile of assistUnit.enumerateActuallyAssistableUnitAndTiles()) {
+            let unit = unitAndTile[0];
+            let tile = unitAndTile[1];
             if (acceptTileFunc != null && !acceptTileFunc(tile)) {
                 continue;
             }
             // this.writeDebugLogLine(tile.positionToString() + "から補助可能な敵がいるか評価");
-            for (let unit of this.enumerateUnitsInTheSameGroup(assistUnit)) {
-                if (!unit.isOnMap) {
-                    continue;
-                }
-                if (unit.hasStatusEffect(StatusEffectType.Isolation)) {
-                    continue;
-                }
 
-                let dist = calcDistance(tile.posX, tile.posY, unit.posX, unit.posY);
-                // this.writeDebugLogLine(tile.positionToString() + "から" + unit.getNameWithGroup() + "への距離=" + dist);
-                if (dist != assistRange) {
-                    continue;
-                }
-
-                if (!isAssistableUnitFunc(unit, tile)) {
-                    // this.writeDebugLogLine(tile.positionToString() + "から" + unit.getNameWithGroup() + "に補助不可");
-                    continue;
-                }
-
-                // this.writeDebugLogLine(tile.positionToString() + "から" + unit.getNameWithGroup() + "に補助可能");
-                let info = assistUnit.actionContext.findAssistableUnitInfo(unit);
-                if (info == null) {
-                    info = new AssistableUnitInfo(unit);
-                    assistUnit.actionContext.assistableUnitInfos.push(info);
-                }
-                info.assistableTiles.push(tile);
+            if (!isAssistableUnitFunc(unit, tile)) {
+                // this.writeDebugLogLine(tile.positionToString() + "から" + unit.getNameWithGroup() + "に補助不可");
+                continue;
             }
+
+            // this.writeDebugLogLine(tile.positionToString() + "から" + unit.getNameWithGroup() + "に補助可能");
+            let info = assistUnit.actionContext.findAssistableUnitInfo(unit);
+            if (info == null) {
+                info = new AssistableUnitInfo(unit);
+                assistUnit.actionContext.assistableUnitInfos.push(info);
+            }
+            info.assistableTiles.push(tile);
         }
     }
 
@@ -13039,9 +13085,14 @@ class AetherRaidTacticsBoard {
         supporterUnit.setSpecialCountToMax();
     }
 
-    applySupportSkill(supporterUnit, targetUnit) {
+    applySupportSkill(supporterUnit, targetUnit, supportTile = null) {
         if (supporterUnit.supportInfo == null) {
             return false;
+        }
+
+        if (supportTile != null && supporterUnit.placedTile != supportTile) {
+            // 移動
+
         }
 
         if (this.__applySupportSkill(supporterUnit, targetUnit)) {
@@ -13091,6 +13142,68 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
+    __canSupportTo(supporterUnit, targetUnit, tile) {
+        if (supporterUnit.supportInfo == null) {
+            return false;
+        }
+
+        switch (supporterUnit.supportInfo.assistType) {
+            case AssistType.Refresh:
+                return canRefereshTo(targetUnit);
+            case AssistType.Rally:
+                return supporterUnit.canRallyForcibly() || supporterUnit.canRallyTo(targetUnit, 1);
+            case AssistType.Heal:
+                switch (supporterUnit.support) {
+                    case Support.Sacrifice:
+                        return targetUnit.isDebuffed || Math.min(targetUnit.currentDamage, supporterUnit.hp - 1) > 0;
+                    default:
+                        return targetUnit.currentDamage >= 1;
+                }
+            case AssistType.Restore:
+                return targetUnit.hasNegativeStatusEffect()
+                    || (targetUnit.currentDamage >= 1);
+            case AssistType.DonorHeal:
+                {
+                    let result = this.__getUserLossHpAndTargetHaelHpForDonorHeal(supporterUnit, targetUnit);
+                    return result.targetHealHp > 0;
+                }
+            case AssistType.Move:
+                {
+                    let result = this.__findTileAfterMovementAssist(supporterUnit, targetUnit, tile);
+                    return result.success;
+                }
+            default:
+                this.writeErrorLine("戦闘前補助が未実装のスキル: " + supporterUnit.supportInfo.name);
+                return false;
+        }
+    }
+
+    __findTileAfterMovementAssist(unit, target, tile) {
+        if (!unit.hasSupport) {
+            return new MovementAssistResult(false, null, null);
+        }
+
+        switch (unit.support) {
+            case Support.ToChangeFate:
+            case Support.Reposition:
+                return this.__findTileAfterReposition(unit, target, tile);
+            case Support.Smite:
+                return this.__findTileAfterSmite(unit, target, tile);
+            case Support.Shove:
+                return this.__findTileAfterShove(unit, target, tile);
+            case Support.Drawback:
+                return this.__findTileAfterDrawback(unit, target, tile);
+            case Support.Swap:
+            case Support.FutureVision:
+                return this.__findTileAfterSwap(unit, target, tile);
+            case Support.Pivot:
+                return this.__findTileAfterPivot(unit, target, tile);
+            default:
+                this.writeErrorLine(`unknown support ${unit.supportInfo.name}`);
+                return new MovementAssistResult(false, null, null);
+        }
+    }
+
     __applySupportSkill(supporterUnit, targetUnit) {
         switch (supporterUnit.supportInfo.assistType) {
             case AssistType.Refresh:
@@ -13127,44 +13240,27 @@ class AetherRaidTacticsBoard {
                     default:
                         if (this.__applyRally(supporterUnit, targetUnit)) { return true; } return false;
                 }
-        }
-
-        switch (supporterUnit.support) {
-            case Support.ToChangeFate:
-            case Support.Reposition:
+            case AssistType.Move:
                 return this.__applyMovementAssist(supporterUnit, targetUnit,
-                    (unit, target, tile) => this.__findTileAfterReposition(unit, target, tile));
-            case Support.Smite:
-                return this.__applyMovementAssist(supporterUnit, targetUnit,
-                    (unit, target, tile) => this.__findTileAfterSmite(unit, target, tile));
-            case Support.Shove:
-                return this.__applyMovementAssist(supporterUnit, targetUnit,
-                    (unit, target, tile) => this.__findTileAfterShove(unit, target, tile));
-            case Support.Drawback:
-                return this.__applyMovementAssist(supporterUnit, targetUnit,
-                    (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile));
-            case Support.Swap:
-            case Support.FutureVision:
-                return this.__applyMovementAssist(supporterUnit, targetUnit,
-                    (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile));
-            case Support.Pivot:
-                return this.__applyMovementAssist(supporterUnit, targetUnit,
-                    (unit, target, tile) => this.__findTileAfterPivot(unit, target, tile));
-            case Support.ReciprocalAid:
-                {
-                    let tmpHp = supporterUnit.hp;
-                    supporterUnit.setHpInValidRange(targetUnit.hp);
-                    targetUnit.setHpInValidRange(tmpHp);
-                    return true;
+                    (unit, target, tile) => this.__findTileAfterMovementAssist(unit, target, tile));
+            case AssistType.DonorHeal:
+                switch (supporterUnit.support) {
+                    case Support.ReciprocalAid:
+                        {
+                            let tmpHp = supporterUnit.hp;
+                            supporterUnit.setHpInValidRange(targetUnit.hp);
+                            targetUnit.setHpInValidRange(tmpHp);
+                            return true;
+                        }
+                    case Support.ArdentSacrifice:
+                        {
+                            supporterUnit.takeDamage(10, true);
+                            targetUnit.heal(10);
+                            return true;
+                        }
+                    default:
+                        return false;
                 }
-            case Support.ArdentSacrifice:
-                {
-                    supporterUnit.takeDamage(10, true);
-                    targetUnit.heal(10);
-                    return true;
-                }
-            default:
-                return false;
         }
     }
 
@@ -13473,7 +13569,11 @@ function syncSelectedTileColor() {
 }
 
 function updateMapUi() {
+    g_appData.map.updateTiles();
     let table = g_appData.map.toTable();
+    table.onDragOverEvent = "f_dragover(event)";
+    table.onDropEvent = "f_drop(event)";
+    table.onDragEndEvent = "table_dragend(event)";
     let tableElem = table.updateTableElement();
     let mapArea = document.getElementById('mapArea');
     if (mapArea.childElementCount == 0) {
