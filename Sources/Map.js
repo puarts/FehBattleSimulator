@@ -500,7 +500,6 @@ class Map {
         this._showEnemyAttackRange = false;
         this._showAllyAttackRange = false;
         this._showClosestDistanceToEnemy = false;
-        this._ignoresUnits = false;
         this._table = null;
         this.cellOffsetX = 0;
         this.cellOffsetY = 0;
@@ -637,17 +636,6 @@ class Map {
     }
     set showAllyAttackRange(value) {
         return this._showAllyAttackRange = value;
-    }
-
-    get ignoresBreakableWallAndUnits() {
-        return this._ignoresUnits;
-    }
-    set ignoresBreakableWallAndUnits(value) {
-        this._ignoresUnits = value;
-    }
-
-    switchIgnoresUnits() {
-        this._ignoresUnits = !this._ignoresUnits;
     }
 
     get breakableObjCountOfCurrentMapType() {
@@ -2991,11 +2979,198 @@ class Map {
         }
     }
 
-    * enumerateMovableTilesImpl(
+    *__enumerateTeleportTiles(
+        unit
+    ) {
+        if (unit.hasStatusEffect(StatusEffectType.AirOrders)) {
+            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                    yield tile;
+                }
+            }
+        }
+
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.FujinYumi:
+                    if (unit.isWeaponSpecialRefined) {
+                        if (unit.hpPercentage >= 50) {
+                            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.Gurimowaru:
+                case PassiveB.TeniNoKona:
+                case Weapon.ApotheosisSpear:
+                    {
+                        let threshold = 50;
+                        if (skillId == PassiveB.TeniNoKona) {
+                            threshold = 80;
+                        }
+                        else if (skillId == Weapon.ApotheosisSpear) {
+                            threshold = 0;
+                        }
+                        if (unit.hpPercentage >= threshold) {
+                            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case PassiveB.Kyuen2:
+                case PassiveB.Kyuen3:
+                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                        let thoreshold = 50;
+                        if (skillId == PassiveB.Kyuen2) {
+                            thoreshold = 40;
+                        }
+                        if (ally.hpPercentage <= thoreshold) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.AstralBreath:
+                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                        if (unit.partnerHeroIndex == ally.heroIndex) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.Noatun:
+                    {
+                        let threshold = 50;
+                        if (!unit.isWeaponRefined) {
+                            threshold = 40;
+                        }
+
+                        if (unit.hpPercentage <= threshold) {
+                            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+
+                        if (unit.isWeaponSpecialRefined) {
+                            if (unit.hpPercentage >= 50) {
+                                for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                        yield tile;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case PassiveB.Ridatsu3:
+                    {
+                        let threshold = 50;
+                        if (unit.hpPercentage <= threshold) {
+                            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                    }
+                    break;
+
+                case PassiveB.KyokugiHiKo1:
+                case PassiveB.KyokugiHiKo2:
+                case PassiveB.KyokugiHiKo3:
+                    {
+                        if (skillId == PassiveB.KyokugiHiKo3
+                            || (skillId == PassiveB.KyokugiHiKo2 && unit.hpPercentage >= 50)
+                            || (skillId == PassiveB.KyokugiHiKo1 && unit.isFullHp)
+                        ) {
+                            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                                if (ally.moveType == MoveType.Armor
+                                    || ally.moveType == MoveType.Infantry
+                                    || ally.moveType == MoveType.Cavalry) {
+                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                        yield tile;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case PassiveB.HentaiHiko1:
+                case PassiveB.HentaiHiko2:
+                case PassiveB.HentaiHiko3:
+                    if (skillId == PassiveB.HentaiHiko3
+                        || (skillId == PassiveB.HentaiHiko2 && unit.hpPercentage >= 50)
+                        || (skillId == PassiveB.HentaiHiko1 && unit.isFullHp)
+                    ) {
+                        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                            if (ally.moveType == MoveType.Flying) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+
+        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+            for (let skillId of ally.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.HinokaNoKounagitou:
+                        if (ally.isWeaponSpecialRefined) {
+                            if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Flying) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                        break;
+                    case Weapon.IzunNoKajitsu:
+                        if (ally.hpPercentage >= 50) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                yield tile;
+                            }
+                        }
+                        break;
+                    case PassiveC.SorakaranoSendo3:
+                        // 空からの先導
+                        if (unit.moveType == MoveType.Armor
+                            || unit.moveType == MoveType.Infantry) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                yield tile;
+                            }
+                        }
+                        break;
+                    case PassiveC.HikonoSendo3:
+                        if (unit.moveType == MoveType.Flying) {
+                            // 飛行の先導
+                            if (ally.hasPassiveSkill(PassiveC.HikonoSendo3)) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
+    *__enumerateAllMovableTilesImpl(
         unit,
         moveCount,
         ignoresUnits,
-        includesUnitPlacedTile = true,
         ignoresTeleportTile = false,
         unitPlacedTile = null
     ) {
@@ -3004,303 +3179,37 @@ class Map {
             startTile = unitPlacedTile;
         }
 
-        const enumerated = {};
-        for (let neighborTile of startTile.getMovableNeighborTiles(unit, moveCount, ignoresUnits)) {
-            if (neighborTile.positionToString() in enumerated) {
-                continue;
-            }
-            enumerated[neighborTile.positionToString()] = neighborTile;
-            if (!includesUnitPlacedTile
-                && neighborTile.placedUnit != unit
-                && !neighborTile.isUnitPlacable()) {
-                continue;
-            }
-            yield neighborTile;
+        for (let tile of startTile.getMovableNeighborTiles(unit, moveCount, ignoresUnits)) {
+            yield tile;
         }
 
         if (!ignoresTeleportTile) {
-            if (unit.hasStatusEffect(StatusEffectType.AirOrders)) {
-                for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                        if (tile.positionToString() in enumerated) {
-                            continue;
-                        }
-                        enumerated[tile.positionToString()] = tile;
-                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                            continue;
-                        }
-                        yield tile;
-                    }
-                }
+            for (let tile of this.__enumerateTeleportTiles(unit)) {
+                yield tile;
             }
+        }
+    }
 
-            for (let skillId of unit.enumerateSkills()) {
-                switch (skillId) {
-                    case Weapon.FujinYumi:
-                        if (unit.isWeaponSpecialRefined) {
-                            if (unit.hpPercentage >= 50) {
-                                for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                        if (tile.positionToString() in enumerated) {
-                                            continue;
-                                        }
-                                        enumerated[tile.positionToString()] = tile;
-                                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                            continue;
-                                        }
-                                        yield tile;
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case Weapon.Gurimowaru:
-                    case PassiveB.TeniNoKona:
-                    case Weapon.ApotheosisSpear:
-                        {
-                            let threshold = 50;
-                            if (skillId == PassiveB.TeniNoKona) {
-                                threshold = 80;
-                            }
-                            else if (skillId == Weapon.ApotheosisSpear) {
-                                threshold = 0;
-                            }
-                            if (unit.hpPercentage >= threshold) {
-                                for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                        if (tile.positionToString() in enumerated) {
-                                            continue;
-                                        }
-                                        enumerated[tile.positionToString()] = tile;
-                                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                            continue;
-                                        }
-                                        yield tile;
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case PassiveB.Kyuen2:
-                    case PassiveB.Kyuen3:
-                        for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                            let thoreshold = 50;
-                            if (skillId == PassiveB.Kyuen2) {
-                                thoreshold = 40;
-                            }
-                            if (ally.hpPercentage <= thoreshold) {
-                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                    if (tile.positionToString() in enumerated) {
-                                        continue;
-                                    }
-                                    enumerated[tile.positionToString()] = tile;
-                                    if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                        continue;
-                                    }
-                                    yield tile;
-                                }
-                            }
-                        }
-                        break;
-                    case Weapon.AstralBreath:
-                        for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                            if (unit.partnerHeroIndex == ally.heroIndex) {
-                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                    if (tile.positionToString() in enumerated) {
-                                        continue;
-                                    }
-                                    enumerated[tile.positionToString()] = tile;
-                                    if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                        continue;
-                                    }
-                                    yield tile;
-                                }
-                            }
-                        }
-                        break;
-                    case Weapon.Noatun:
-                        {
-                            let threshold = 50;
-                            if (!unit.isWeaponRefined) {
-                                threshold = 40;
-                            }
-
-                            if (unit.hpPercentage <= threshold) {
-                                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                        if (tile.positionToString() in enumerated) {
-                                            continue;
-                                        }
-                                        enumerated[tile.positionToString()] = tile;
-                                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                            continue;
-                                        }
-                                        yield tile;
-                                    }
-                                }
-                            }
-
-                            if (unit.isWeaponSpecialRefined) {
-                                if (unit.hpPercentage >= 50) {
-                                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                                        for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                            if (tile.positionToString() in enumerated) {
-                                                continue;
-                                            }
-                                            enumerated[tile.positionToString()] = tile;
-                                            if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                                continue;
-                                            }
-                                            yield tile;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case PassiveB.Ridatsu3:
-                        {
-                            let threshold = 50;
-                            if (unit.hpPercentage <= threshold) {
-                                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                        if (tile.positionToString() in enumerated) {
-                                            continue;
-                                        }
-                                        enumerated[tile.positionToString()] = tile;
-                                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                            continue;
-                                        }
-                                        yield tile;
-                                    }
-                                }
-                            }
-                        }
-                        break;
-
-                    case PassiveB.KyokugiHiKo1:
-                    case PassiveB.KyokugiHiKo2:
-                    case PassiveB.KyokugiHiKo3:
-                        {
-                            if (skillId == PassiveB.KyokugiHiKo3
-                                || (skillId == PassiveB.KyokugiHiKo2 && unit.hpPercentage >= 50)
-                                || (skillId == PassiveB.KyokugiHiKo1 && unit.isFullHp)
-                            ) {
-                                for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                                    if (ally.moveType == MoveType.Armor
-                                        || ally.moveType == MoveType.Infantry
-                                        || ally.moveType == MoveType.Cavalry) {
-                                        for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                            if (tile.positionToString() in enumerated) {
-                                                continue;
-                                            }
-                                            enumerated[tile.positionToString()] = tile;
-                                            if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                                continue;
-                                            }
-                                            yield tile;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case PassiveB.HentaiHiko1:
-                    case PassiveB.HentaiHiko2:
-                    case PassiveB.HentaiHiko3:
-                        if (skillId == PassiveB.HentaiHiko3
-                            || (skillId == PassiveB.HentaiHiko2 && unit.hpPercentage >= 50)
-                            || (skillId == PassiveB.HentaiHiko1 && unit.isFullHp)
-                        ) {
-                            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                                if (ally.moveType == MoveType.Flying) {
-                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                        if (tile.positionToString() in enumerated) {
-                                            continue;
-                                        }
-                                        enumerated[tile.positionToString()] = tile;
-                                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                            continue;
-                                        }
-                                        yield tile;
-                                    }
-                                }
-                            }
-                        }
-
-                        break;
-                }
+    * enumerateMovableTilesImpl(
+        unit,
+        moveCount,
+        ignoresUnits,
+        includesUnitPlacedTile = true,
+        ignoresTeleportTile = false,
+        unitPlacedTile = null
+    ) {
+        const enumerated = {};
+        for (let tile of this.__enumerateAllMovableTilesImpl(unit, moveCount, ignoresUnits, ignoresTeleportTile, unitPlacedTile)) {
+            if (tile.positionToString() in enumerated) {
+                continue;
             }
-
-            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                for (let skillId of ally.enumerateSkills()) {
-                    switch (skillId) {
-                        case Weapon.HinokaNoKounagitou:
-                            if (ally.isWeaponSpecialRefined) {
-                                if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Flying) {
-                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                        if (tile.positionToString() in enumerated) {
-                                            continue;
-                                        }
-                                        enumerated[tile.positionToString()] = tile;
-                                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                            continue;
-                                        }
-                                        yield tile;
-                                    }
-                                }
-                            }
-                            break;
-                        case Weapon.IzunNoKajitsu:
-                            if (ally.hpPercentage >= 50) {
-                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                    if (tile.positionToString() in enumerated) {
-                                        continue;
-                                    }
-                                    enumerated[tile.positionToString()] = tile;
-                                    if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                        continue;
-                                    }
-                                    yield tile;
-                                }
-                            }
-                            break;
-                        case PassiveC.SorakaranoSendo3:
-                            // 空からの先導
-                            if (unit.moveType == MoveType.Armor
-                                || unit.moveType == MoveType.Infantry) {
-                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                    if (tile.positionToString() in enumerated) {
-                                        continue;
-                                    }
-                                    enumerated[tile.positionToString()] = tile;
-                                    if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                        continue;
-                                    }
-                                    yield tile;
-                                }
-                            }
-                            break;
-                        case PassiveC.HikonoSendo3:
-                            if (unit.moveType == MoveType.Flying) {
-                                // 飛行の先導
-                                if (ally.hasPassiveSkill(PassiveC.HikonoSendo3)) {
-                                    for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                                        if (tile.positionToString() in enumerated) {
-                                            continue;
-                                        }
-                                        enumerated[tile.positionToString()] = tile;
-                                        if (!includesUnitPlacedTile && !tile.isUnitPlacable()) {
-                                            continue;
-                                        }
-                                        yield tile;
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                }
+            enumerated[tile.positionToString()] = tile;
+            if (!includesUnitPlacedTile
+                && tile.placedUnit != unit
+                && !tile.isUnitPlacable()) {
+                continue;
             }
+            yield tile;
         }
     }
 
@@ -3361,90 +3270,79 @@ class Map {
         }
     }
 
-    __setAttackableAndAssistableTile(unit) {
-        if (!unit.hasWeapon && !unit.hasSupport) {
-            return;
-        }
+    updateMovableAndAttackableTilesForUnit(unit) {
+        unit.movableTiles = [];
+        unit.attackableTiles = [];
+        unit.assistableTiles = [];
 
-        for (let neighborTile of this.enumerateMovableTiles(unit, false, true, false)) {
+        // ユニットの移動可能範囲、攻撃可能範囲を更新
+        for (let tile of this.enumerateMovableTiles(unit, false)) {
+            if (unit.movableTiles.includes(tile)) {
+                continue;
+            }
+
+            unit.movableTiles.push(tile);
             if (unit.hasWeapon) {
-                for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, unit.attackRange)) {
-                    if (!unit.attackableTiles.includes(tile)) {
-                        unit.attackableTiles.push(tile);
+                for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
+                    if (!unit.attackableTiles.includes(attackableTile)) {
+                        unit.attackableTiles.push(attackableTile);
                     }
                 }
             }
             if (unit.hasSupport) {
-                for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, unit.assistRange)) {
-                    if (!unit.assistableTiles.includes(tile)) {
-                        unit.assistableTiles.push(tile);
+                for (let assistableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.assistRange)) {
+                    if (!unit.assistableTiles.includes(assistableTile)) {
+                        unit.assistableTiles.push(assistableTile);
                     }
                 }
             }
         }
     }
 
+    updateMovableAndAttackableTilesForAllUnits() {
+        for (let unit of this._units) {
+            this.updateMovableAndAttackableTilesForUnit(unit);
+        }
+    }
+
     /// タイルの状態を更新します。
-    updateTiles() {
+    updateTiles(updatesEnemyThreat = true) {
+        this.updateMovableAndAttackableTilesForAllUnits();
+
         // 各タイルの初期化
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var index = y * this._width + x;
-                var tile = this._tiles[index];
-                tile.resetDangerLevel();
-                tile.closestDistanceToEnemy = -1;
-                tile.isMovableForAlly = false;
-                tile.isMovableForEnemy = false;
-                tile.isAttackableForAlly = false;
-                tile.isAttackableForEnemy = false;
-                tile.threateningEnemies = [];
-                tile.threateningAllies = [];
+        for (let tile of this._tiles) {
+            tile.resetDangerLevel();
+            tile.closestDistanceToEnemy = -1;
+            tile.isMovableForAlly = false;
+            tile.isMovableForEnemy = false;
+            tile.isAttackableForAlly = false;
+            tile.isAttackableForEnemy = false;
+            tile.threateningEnemies = [];
+            tile.threateningAllies = [];
+        }
+
+        for (let unit of this._units) {
+            if (unit.groupId == UnitGroupType.Enemy) {
+                for (let tile of unit.movableTiles) {
+                    tile.isMovableForEnemy = true;
+                }
+                for (let tile of unit.attackableTiles) {
+                    tile.isAttackableForEnemy = true;
+                }
+            } else {
+                for (let tile of unit.movableTiles) {
+                    tile.isMovableForAlly = true;
+                }
+                for (let tile of unit.attackableTiles) {
+                    tile.isAttackableForAlly = true;
+                }
             }
         }
 
         // 危険度等を更新
-        for (let unit of this._units) {
-            unit.movableTiles = [];
-            unit.attackableTiles = [];
-            unit.assistableTiles = [];
-            this.__setEnemyThreat(unit);
-            this.__setAttackableAndAssistableTile(unit);
-        }
-
-        for (let unit of this._units) {
-
-            // 敵の移動可能範囲、攻撃可能範囲を更新
-            if (unit.groupId == UnitGroupType.Enemy) {
-                for (let tile of this.enumerateMovableTiles(unit, this._ignoresUnits)) {
-                    if (unit.movableTiles.includes(tile)) {
-                        continue;
-                    }
-
-                    unit.movableTiles.push(tile);
-                    tile.isMovableForEnemy = true;
-                    if (unit.hasWeapon) {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
-                            attackableTile.isAttackableForEnemy = true;
-                        }
-                    }
-                }
-            }
-
-            // 味方の移動可能範囲、攻撃可能範囲を更新
-            if (unit.groupId == UnitGroupType.Ally) {
-                for (let tile of this.enumerateMovableTiles(unit, this._ignoresUnits)) {
-                    if (unit.movableTiles.includes(tile)) {
-                        continue;
-                    }
-
-                    unit.movableTiles.push(tile);
-                    tile.isMovableForAlly = true;
-                    if (unit.hasWeapon) {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
-                            attackableTile.isAttackableForAlly = true;
-                        }
-                    }
-                }
+        if (updatesEnemyThreat) {
+            for (let unit of this._units) {
+                this.__setEnemyThreat(unit);
             }
         }
     }

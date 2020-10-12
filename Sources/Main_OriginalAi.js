@@ -5,17 +5,19 @@
 class OriginalAi {
 
     executeRandomAction() {
-        let self = g_app;
+        let app = g_app;
+        let self = this;
         let acitonPatternCount = 1;
-        using(new ScopedStopwatch(time => self.writeDebugLogLine("コマンド実行: " + time + " ms")), () => {
+        using(new ScopedStopwatch(time => app.writeDebugLogLine("コマンド実行: " + time + " ms")), () => {
             // self.disableAllLogs = true;
+            app.vm.isCommandUndoable = false;
             let commandQueue = new CommandQueue(100);
-            for (let unit of self.enumerateAllyUnitsOnMap()) {
+            for (let unit of app.enumerateAllyUnitsOnMap()) {
                 if (unit.isActionDone) {
                     continue;
                 }
-                using(new ScopedStopwatch(time => self.writeErrorLine(`■${unit.getNameWithGroup()}の評価: ` + time + " ms")), () => {
-                    let commandCandidates = this.__createAllExecutableCommandsForUnit(unit);
+                using(new ScopedStopwatch(time => app.writeErrorLine(`■${unit.getNameWithGroup()}の評価: ` + time + " ms")), () => {
+                    let commandCandidates = self.__createAllExecutableCommandsForUnit(unit);
                     // for (let commands of commandCandidates) {
                     //     let command = commands[commands.length - 1];
                     //     self.writeDebugLogLine(command.label);
@@ -24,18 +26,25 @@ class OriginalAi {
                     // acitonPatternCount *= commandCandidates.length;
                     let commands = commandCandidates[0];
                     for (let command of commands) {
-                        using(new ScopedStopwatch(time => self.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
+                        using(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
                             command.execute();
                         });
                         commandQueue.enqueue(command);
                     }
-                    using(new ScopedStopwatch(time => self.writeErrorLine(`タイル更新: ` + time + " ms")), () => {
-                        g_appData.map.updateTiles();
+                    using(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
+                        // todo: ブロック破壊したりしたら、そのブロックが移動範囲にあるユニットを全員更新しないといけない
+                        // あと、移動前後で敵の移動範囲に影響する可能性あるので、それも更新が必要
+                        // あと、そもそもテレポートスキルがあったらその人たちも更新が必要
+                        // g_appData.map.updateMovableAndAttackableTilesForUnit(unit);
+                        // for (let i = 0; i < 200; ++i) {
+                        g_appData.map.updateMovableAndAttackableTilesForAllUnits();
+                        // }
                     });
                 });
             }
             // self.__executeAllCommands(commandQueue, 0);
-            self.disableAllLogs = false;
+            app.disableAllLogs = false;
+            app.vm.isCommandUndoable = true;
         });
 
         // self.writeDebugLogLine(`acitonPatternCount = ${acitonPatternCount}`);

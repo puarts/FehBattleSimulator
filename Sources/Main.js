@@ -11099,7 +11099,10 @@ class AetherRaidTacticsBoard {
     }
 
     __enqueueEndAllUnitActionCommand(groupId) {
-        let serial = this.__convertUnitPerTurnStatusToSerialForSpecifiedGroupUnitsOnMap(groupId);
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertUnitPerTurnStatusToSerialForSpecifiedGroupUnitsOnMap(groupId);
+        }
         let self = this;
         this.__enqueueCommand("ユニット全員の行動終了", function () {
             if (self.isCommandLogEnabled) {
@@ -11112,7 +11115,10 @@ class AetherRaidTacticsBoard {
 
     __enqueueEndActionCommand(unit) {
         let self = this;
-        let serial = this.__convertUnitPerTurnStatusToSerial(unit);
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertUnitPerTurnStatusToSerial(unit);
+        }
         this.__enqueueCommand(`行動終了(${unit.getNameWithGroup()})`, function () {
             if (self.isCommandLogEnabled) {
                 g_app.writeLogLine(unit.getNameWithGroup() + "は行動終了");
@@ -11124,7 +11130,10 @@ class AetherRaidTacticsBoard {
     __createDuoSkillCommand(unit) {
         let self = this;
         let commandType = CommandType.Normal;
-        let serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
+        }
         return this.__createCommand(`比翼、双界スキル(${unit.getNameWithGroup()})`, function () {
             if (self.isCommandLogEnabled) {
                 g_app.writeLogLine(unit.getNameWithGroup() + "は比翼、双界スキルを実行");
@@ -11160,7 +11169,10 @@ class AetherRaidTacticsBoard {
     }
 
     __createSupportCommand(unit, tile, assistTargetUnit, commandType = CommandType.Normal) {
-        let serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
+        }
         let self = this;
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
         let command = this.__createCommand(`${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
@@ -11209,8 +11221,11 @@ class AetherRaidTacticsBoard {
     }
 
     __createBreakStructureCommand(unit, moveTile, obj, commandType = CommandType.Normal) {
-        let serial = this.__convertUnitPerTurnStatusToSerial(unit) + ElemDelimiter +
-            this.__convertStructurePerTurnStatusToSerial(obj);
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertUnitPerTurnStatusToSerial(unit) + ElemDelimiter +
+                this.__convertStructurePerTurnStatusToSerial(obj);
+        }
         let self = this;
         let command = this.__createCommand(obj.name + `破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`, function () {
             if (unit.isActionDone) {
@@ -11247,6 +11262,10 @@ class AetherRaidTacticsBoard {
         let metaData = new Object();
         metaData.tileToMove = tileToMove;
         metaData.unit = unit;
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
+        }
         let command = this.__createCommand(
             `移動(${unit.getNameWithGroup()} [${tileToMove.posX},${tileToMove.posY}])`,
             function () {
@@ -11278,7 +11297,7 @@ class AetherRaidTacticsBoard {
                     self.endUnitAction(unit);
                 }
             },
-            this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal(),
+            serial,
             commandType,
             metaData
         );
@@ -11291,7 +11310,10 @@ class AetherRaidTacticsBoard {
     }
 
     __createAttackCommand(attackerUnit, targetUnit, tile, commandType = CommandType.Normal) {
-        let serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
+        }
         let self = this;
         let command = this.__createCommand(`攻撃(${attackerUnit.getNameWithGroup()}→${targetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
             if (attackerUnit.isActionDone) {

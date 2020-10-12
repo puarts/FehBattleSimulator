@@ -174,7 +174,6 @@ class Tile {
         return this.type == TileType.DefensiveTile || this.type == TileType.DefensiveTrench || this.type == TileType.DefensiveForest;
     }
 
-
     positionToString() {
         return "(" + this.posX + ", " + this.posY + ")";
     }
@@ -514,20 +513,34 @@ class Tile {
         return closestDistance;
     }
 
-    getAttackableNeighborTiles(unit, maxDepth,) {
-        var result = [];
-        this.getNeighborTilesImpl(result, unit, maxDepth, true, false, true);
-        return result;
-    }
     getMovableNeighborTiles(unit, maxDepth, ignoresUnits = false, ignoreWeightsExceptCanNotReach = false) {
-        var result = [];
+        let result = [];
         result.push(this);
-        this.getNeighborTilesImpl(result, unit, maxDepth, false, ignoreWeightsExceptCanNotReach, ignoresUnits);
+        let tracedDepthDict = {};
+        tracedDepthDict[this.id] = -1;
+        this.getNeighborTilesImpl(result, unit, maxDepth, false, ignoreWeightsExceptCanNotReach, ignoresUnits, tracedDepthDict);
         return result;
     }
-    getNeighborTilesImpl(result, unit, maxDepth, ignoreWeights, ignoreWeightsExceptCanNotReach, ignoresUnits, currentDepth = 0) {
-        for (var neighborIndex = 0; neighborIndex < this._neighbors.length; ++neighborIndex) {
-            var neighborTile = this._neighbors[neighborIndex];
+    getNeighborTilesImpl(
+        result,
+        unit,
+        maxDepth,
+        ignoreWeights,
+        ignoreWeightsExceptCanNotReach,
+        ignoresUnits,
+        tracedDepthDict,
+        currentDepth = 0
+    ) {
+        for (let neighborTile of this._neighbors) {
+            let key = neighborTile.id;
+            let hasKey = key in tracedDepthDict;
+            if (hasKey) {
+                let oldDepth = tracedDepthDict[key];
+                if (oldDepth <= currentDepth) {
+                    continue;
+                }
+            }
+
             var weight = 1;
             if (ignoreWeights == false) {
                 weight = neighborTile.getMoveWeight(unit, ignoresUnits, false);
@@ -545,17 +558,26 @@ class Tile {
                 }
             }
 
+            if (weight == CanNotReachTile) {
+                tracedDepthDict[key] = -1;
+            }
+
             var nextDepth = currentDepth + weight;
             if (nextDepth > maxDepth) {
                 continue;
             }
 
-            result.push(neighborTile);
+            tracedDepthDict[key] = currentDepth;
+            if (!hasKey) {
+                result.push(neighborTile);
+            }
             if (isObstructTile) {
                 continue;
             }
 
-            neighborTile.getNeighborTilesImpl(result, unit, maxDepth, ignoreWeights, ignoreWeightsExceptCanNotReach, ignoresUnits, nextDepth);
+            neighborTile.getNeighborTilesImpl(
+                result, unit, maxDepth, ignoreWeights, ignoreWeightsExceptCanNotReach, ignoresUnits,
+                tracedDepthDict, nextDepth);
         }
     }
 
