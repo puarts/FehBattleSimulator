@@ -4,44 +4,79 @@
 /// 自動攻略用AIの検証用クラスです。
 class OriginalAi {
 
+    __createBranchesFromCurrentState(currentNode) {
+        let app = g_app;
+        let self = this;
+        for (let unit of app.enumerateAllyUnitsOnMap()) {
+            if (unit.isActionDone) {
+                continue;
+            }
+            using(new ScopedStopwatch(time => app.writeErrorLine(`■${unit.getNameWithGroup()}の評価: ` + time + " ms")), () => {
+                let commandCandidates = self.__createAllExecutableCommandsForUnit(unit);
+                for (let commands of commandCandidates) {
+                    if (commands.length == 0) {
+                        continue;
+                    }
+
+                    let node = new TreeNode(commands);
+                    currentNode.branches.push(node);
+
+                    // 実行
+                    // let serializedTurn = exportPerTurnSettingAsString();
+                    for (let i = 0; i < commands.length; ++i) {
+                        let command = commands[i];
+                        using(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
+                            command.execute();
+                        });
+                    }
+                    using(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
+                        g_appData.map.updateMovableAndAttackableTilesForAllUnits();
+                    });
+
+                    // 次のブランチを作成
+                    self.__createBranchesFromCurrentState(node);
+
+                    // 状態を復元
+                    for (let i = commands.length - 1; i >= 0; --i) {
+                        let command = commands[i];
+                        using(new ScopedStopwatch(time => app.writeErrorLine(`undo ${command.label}: ` + time + " ms")), () => {
+                            command.undo();
+                        });
+                    }
+
+                    // importPerTurnSetting(serializedTurn);
+                    break;
+                }
+            });
+            break;
+        }
+    }
+
     executeRandomAction() {
         let app = g_app;
         let self = this;
         let acitonPatternCount = 1;
         using(new ScopedStopwatch(time => app.writeDebugLogLine("コマンド実行: " + time + " ms")), () => {
             // self.disableAllLogs = true;
-            app.vm.isCommandUndoable = false;
+            app.vm.isCommandUndoable = true;
             let commandQueue = new CommandQueue(100);
-            for (let unit of app.enumerateAllyUnitsOnMap()) {
-                if (unit.isActionDone) {
-                    continue;
-                }
-                using(new ScopedStopwatch(time => app.writeErrorLine(`■${unit.getNameWithGroup()}の評価: ` + time + " ms")), () => {
-                    let commandCandidates = self.__createAllExecutableCommandsForUnit(unit);
-                    // for (let commands of commandCandidates) {
-                    //     let command = commands[commands.length - 1];
-                    //     self.writeDebugLogLine(command.label);
-                    // }
+            let rootNode = new TreeNode([]);
+            let currentNode = rootNode;
+            self.__createBranchesFromCurrentState(currentNode);
 
-                    // acitonPatternCount *= commandCandidates.length;
-                    let commands = commandCandidates[0];
-                    for (let command of commands) {
-                        using(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
-                            command.execute();
-                        });
-                        commandQueue.enqueue(command);
-                    }
-                    using(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
-                        // todo: ブロック破壊したりしたら、そのブロックが移動範囲にあるユニットを全員更新しないといけない
-                        // あと、移動前後で敵の移動範囲に影響する可能性あるので、それも更新が必要
-                        // あと、そもそもテレポートスキルがあったらその人たちも更新が必要
-                        // g_appData.map.updateMovableAndAttackableTilesForUnit(unit);
-                        // for (let i = 0; i < 200; ++i) {
-                        g_appData.map.updateMovableAndAttackableTilesForAllUnits();
-                        // }
-                    });
-                });
-            }
+            // for (let node of currentNode.branches) {
+            //     for (let command of node.item) {
+            //         using(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
+            //             command.execute();
+            //         });
+            //         commandQueue.enqueue(command);
+            //     }
+            //     using(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
+            //         g_appData.map.updateMovableAndAttackableTilesForAllUnits();
+            //     });
+            //     self.__createBranchesFromCurrentState(node);
+            // }
+
             // self.__executeAllCommands(commandQueue, 0);
             app.disableAllLogs = false;
             app.vm.isCommandUndoable = true;

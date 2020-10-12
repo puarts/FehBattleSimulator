@@ -1,6 +1,12 @@
 /// @file
 /// @brief ユーティリティークラス、関数等の定義です。
 
+class TreeNode {
+    constructor(item) {
+        this.item = item;
+        this.branches = [];
+    }
+}
 
 /// スタックを表すコンテナクラスです。
 class Stack {
@@ -311,7 +317,8 @@ const CommandType = {
 
 /// Undo、Redoが可能なコマンドです。
 class Command {
-    constructor(label, doFunc, undoFunc, doUserData = null, undoUserData = null, type = CommandType.Normal) {
+    constructor(id, label, doFunc, undoFunc, doUserData = null, undoUserData = null, type = CommandType.Normal) {
+        this.id = id;
         this.label = label;
         this.doFunc = doFunc;
         this.undoFunc = undoFunc;

@@ -11134,7 +11134,7 @@ class AetherRaidTacticsBoard {
         if (this.vm.isCommandUndoable) {
             serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
         }
-        return this.__createCommand(`比翼、双界スキル(${unit.getNameWithGroup()})`, function () {
+        return this.__createCommand(`${unit.id}-d`, `比翼、双界スキル(${unit.getNameWithGroup()})`, function () {
             if (self.isCommandLogEnabled) {
                 g_app.writeLogLine(unit.getNameWithGroup() + "は比翼、双界スキルを実行");
             }
@@ -11175,7 +11175,7 @@ class AetherRaidTacticsBoard {
         }
         let self = this;
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
-        let command = this.__createCommand(`${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
+        let command = this.__createCommand(`${unit.id}-s-${assistTargetUnit.id}-${tile.id}`, `${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
             if (unit.isActionDone) {
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
@@ -11227,27 +11227,29 @@ class AetherRaidTacticsBoard {
                 this.__convertStructurePerTurnStatusToSerial(obj);
         }
         let self = this;
-        let command = this.__createCommand(obj.name + `破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`, function () {
-            if (unit.isActionDone) {
-                // 移動時にトラップ発動した場合は行動終了している
-                return;
-            }
+        let command = this.__createCommand(`${unit.id}-b-${obj.id}-${moveTile.id}`,
+            obj.name + `破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
+            function () {
+                if (unit.isActionDone) {
+                    // 移動時にトラップ発動した場合は行動終了している
+                    return;
+                }
 
-            self.audioManager.playSoundEffectImmediately(SoundEffectId.Break);
-            if (self.isCommandLogEnabled) {
-                g_app.writeLogLine(unit.getNameWithGroup() + "はオブジェクトを破壊");
-            }
-            if (obj instanceof BreakableWall) {
-                obj.break();
-                if (obj.isBroken) {
+                self.audioManager.playSoundEffectImmediately(SoundEffectId.Break);
+                if (self.isCommandLogEnabled) {
+                    g_app.writeLogLine(unit.getNameWithGroup() + "はオブジェクトを破壊");
+                }
+                if (obj instanceof BreakableWall) {
+                    obj.break();
+                    if (obj.isBroken) {
+                        moveStructureToTrashBox(obj);
+                    }
+                }
+                else {
                     moveStructureToTrashBox(obj);
                 }
-            }
-            else {
-                moveStructureToTrashBox(obj);
-            }
-            g_app.endUnitAction(unit);
-        }, serial, commandType);
+                g_app.endUnitAction(unit);
+            }, serial, commandType);
         return command;
     }
 
@@ -11267,6 +11269,7 @@ class AetherRaidTacticsBoard {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let command = this.__createCommand(
+            `${unit.id}-m-${tileToMove.id}`,
             `移動(${unit.getNameWithGroup()} [${tileToMove.posX},${tileToMove.posY}])`,
             function () {
                 if (enableSoundEffect) {
@@ -11315,20 +11318,22 @@ class AetherRaidTacticsBoard {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let self = this;
-        let command = this.__createCommand(`攻撃(${attackerUnit.getNameWithGroup()}→${targetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
-            if (attackerUnit.isActionDone) {
-                // 移動時にトラップ発動した場合は行動終了している
-                return;
-            }
+        let command = this.__createCommand(
+            `${attackerUnit.id}-a-${targetUnit.id}-${tile.id}`,
+            `攻撃(${attackerUnit.getNameWithGroup()}→${targetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
+                if (attackerUnit.isActionDone) {
+                    // 移動時にトラップ発動した場合は行動終了している
+                    return;
+                }
 
-            if (attackerUnit.weaponInfo.attackCount == 2) {
-                self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
-            }
-            else {
-                self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
-            }
-            self.updateDamageCalculation(attackerUnit, targetUnit, tile);
-        }, serial, commandType);
+                if (attackerUnit.weaponInfo.attackCount == 2) {
+                    self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
+                }
+                else {
+                    self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
+                }
+                self.updateDamageCalculation(attackerUnit, targetUnit, tile);
+            }, serial, commandType);
         return command;
     }
 
@@ -11349,7 +11354,7 @@ class AetherRaidTacticsBoard {
         this.__enqueueCommandsImpl(commands);
     }
 
-    __createCommand(label, func, serializedDataForUndo = null, commandType = CommandType.Normal, metaData = null) {
+    __createCommand(id, label, func, serializedDataForUndo = null, commandType = CommandType.Normal, metaData = null) {
         let serializedTurn = null;
         let self = this;
         if (this.vm.isCommandUndoable) {
@@ -11361,6 +11366,7 @@ class AetherRaidTacticsBoard {
             }
         }
         let command = new Command(
+            id,
             label,
             function (input) {
                 if (self.isCommandLogEnabled) {
@@ -11373,7 +11379,7 @@ class AetherRaidTacticsBoard {
                     if (self.isCommandLogEnabled) {
                         self.writeSimpleLogLine("「" + input[0] + "」を元に戻す");
                     }
-                    importPerTurnSetting(input[1]);
+                    importPerTurnSetting(input[1], false);
                 }
             },
             [label, func],
@@ -11385,7 +11391,7 @@ class AetherRaidTacticsBoard {
     }
 
     __enqueueCommand(label, func, serializedDataForUndo = null, commandType = CommandType.Normal, metaData = null) {
-        let command = this.__createCommand(label, func, serializedDataForUndo, commandType, metaData);
+        let command = this.__createCommand("", label, func, serializedDataForUndo, commandType, metaData);
         this.__enqueueCommandImpl(command);
     }
 
@@ -13798,6 +13804,7 @@ function loadSettingsFromDict(
     loadsDefenceSettings = true,
     loadsMapSettings = false,
     clearsAllFirst = true,
+    updatesChaseTarget = true,
 ) {
     g_app.settings.loadSettingsFromDict(settingDict,
         loadsAllySettings,
@@ -13807,7 +13814,9 @@ function loadSettingsFromDict(
         loadsMapSettings,
         clearsAllFirst);
     g_app.updateAllUnitSpur();
-    __updateChaseTargetTilesForAllUnits();
+    if (updatesChaseTarget) {
+        __updateChaseTargetTilesForAllUnits();
+    }
 }
 
 function saveSettings() {
@@ -13838,12 +13847,12 @@ function exportPerTurnSettingAsString(
     return turnSetting.perTurnStatusToString();
 }
 
-function importPerTurnSetting(perTurnSettingAsString) {
+function importPerTurnSetting(perTurnSettingAsString, updatesChaseTarget = true) {
     let currentTurn = g_appData.currentTurn;
     let turnSetting = new TurnSetting(currentTurn);
     let dict = {};
     dict[turnSetting.serialId] = perTurnSettingAsString;
-    loadSettingsFromDict(dict, true, true, true, true, false, false);
+    loadSettingsFromDict(dict, true, true, true, true, false, false, updatesChaseTarget);
 }
 
 function importSettingsFromString(
