@@ -3393,6 +3393,8 @@ class Map {
                         cell.bgColor = "transparent";
                     }
                     else {
+                        let index = y * this._width + x;
+                        let tile = this._tiles[index];
                         cell.bgColor = tileTypeToColor(tile.type);
                         cell.borderStyle = "solid";
                     }
