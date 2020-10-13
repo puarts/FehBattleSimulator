@@ -4813,6 +4813,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PaleBreathPlus:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+                    }
+                    break;
                 case Weapon.JokersWild:
                     {
                         let atk = 0;
