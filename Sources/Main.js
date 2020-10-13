@@ -5307,6 +5307,19 @@ class AetherRaidTacticsBoard {
                     if (isWeaponTypeTome(enemyUnit.weaponType)) {
                         targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
                     }
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.defSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.defSpur += 5;
+                                targetUnit.battleContext.followupAttackPriority++;
+                            }
+                        }
+                    }
                     break;
                 case Weapon.FukenFalcion:
                     if (targetUnit.snapshot.restHpPercentage < 100) {
