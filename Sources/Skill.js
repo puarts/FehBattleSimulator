@@ -797,6 +797,7 @@ const Weapon = {
     JokersWild: 1494, // 変身のカード
     BlackfireBreathPlus: 1496, // 黒夜のブレス+
     FrostfireBreath: 1498, // 蒼紅のブレス
+    PaleBreathPlus: 1500, // 灰明のブレス+
 };
 
 const Support = {
