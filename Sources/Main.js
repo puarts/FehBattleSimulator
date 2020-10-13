@@ -3771,6 +3771,7 @@ class AetherRaidTacticsBoard {
                     atkUnit.atkSpur += defUnit.getBuffTotalInCombat(atkUnit);
                     break;
                 case Weapon.Faraflame:
+                case Weapon.GunshinNoSyo:
                 case Weapon.MitteiNoAnki:
                 case Weapon.AokarasuNoSyo:
                     if (atkUnit.isWeaponSpecialRefined) {
@@ -8373,13 +8374,6 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
-            case Weapon.GunshinNoSyo:
-                this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => unit.snapshot.getEvalResInPrecombat() < skillOwner.snapshot.getEvalResInPrecombat(),
-                    unit => {
-                        unit.applyAtkDebuff(-4); unit.applyResDebuff(-4);
-                    });
-                break;
             case PassiveC.MilaNoHaguruma:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => unit.snapshot.getDefInPrecombat() < skillOwner.snapshot.getDefInPrecombat(),
@@ -8805,6 +8799,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.Faraflame:
+            case Weapon.GunshinNoSyo:
                 if (skillOwner.isWeaponRefined) {
                     if (skillOwner.isWeaponSpecialRefined) {
                         for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
