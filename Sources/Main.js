@@ -3770,6 +3770,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.SyukuseiNoAnkiPlus:
                     atkUnit.atkSpur += defUnit.getBuffTotalInCombat(atkUnit);
                     break;
+                case Weapon.Faraflame:
                 case Weapon.MitteiNoAnki:
                 case Weapon.AokarasuNoSyo:
                     if (atkUnit.isWeaponSpecialRefined) {
@@ -8804,10 +8805,23 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.Faraflame:
-                this.__applyPolySkill(skillOwner, unit => {
-                    unit.applyAtkDebuff(-4);
-                    unit.applyResDebuff(-4);
-                });
+                if (skillOwner.isWeaponRefined) {
+                    if (skillOwner.isWeaponSpecialRefined) {
+                        for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
+                            if (!unit.isOnMap) { continue; }
+                            if (skillOwner.posX - 1 <= unit.posX && unit.posX <= skillOwner.posX + 1 ||
+                                skillOwner.posY - 1 <= unit.posY && unit.posY <= skillOwner.posY + 1) {
+                                unit.applyAtkDebuff(-5);
+                                unit.applyResDebuff(-5);
+                            }
+                        }
+                    }
+                } else {
+                    this.__applyPolySkill(skillOwner, unit => {
+                        unit.applyAtkDebuff(-4);
+                        unit.applyResDebuff(-4);
+                    });
+                }
                 break;
             case Weapon.KatarinaNoSyo:
                 if (skillOwner.isWeaponSpecialRefined) {
