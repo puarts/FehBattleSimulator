@@ -798,6 +798,9 @@ const Weapon = {
     BlackfireBreathPlus: 1496, // 黒夜のブレス+
     FrostfireBreath: 1498, // 蒼紅のブレス
     PaleBreathPlus: 1500, // 灰明のブレス+
+
+    // 2020年10月錬成
+    ObsessiveCurse: 1502, // 執念の呪
 };
 
 const Support = {

@@ -4185,6 +4185,14 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ObsessiveCurse:
+                    if (!attackUnit.isWeaponSpecialRefined) break;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        this.writeLogLine(`${unit.getNameWithGroup()}は${attackUnit.weaponInfo.name}により7ダメージ、反撃不可の状態異常付与`);
+                        unit.reserveTakeDamage(7);
+                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    }
+                    break;
                 case Weapon.Buryunhirude:
                     if (!attackUnit.isWeaponRefined) {
                         attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
@@ -7382,6 +7390,10 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.ObsessiveCurse:
+                                targetUnit.spdSpur -= 5;
+                                targetUnit.resSpur -= 5;
+                                break;
                             case PassiveC.AtkSpdRein3:
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.spdSpur -= 4;
