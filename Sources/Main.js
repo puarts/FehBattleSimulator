@@ -3984,6 +3984,10 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EffiesLance:
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        attackUnit.isOneTimeActionActivatedForWeapon = true;
+                    }
                 case Weapon.OukeNoKen:
                     if (attackUnit.isWeaponSpecialRefined) {
                         if (attackUnit.snapshot.restHpPercentage >= 25) {
@@ -4823,6 +4827,19 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EffiesLance:
+                    if (targetUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 6;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                            targetUnit.battleContext.invalidatesAtkBuff = true;
+                            targetUnit.battleContext.invalidatesDefBuff = true;
+                        }
+                    }
+                    break;
                 case Weapon.PaleBreathPlus:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
