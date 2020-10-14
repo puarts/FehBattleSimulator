@@ -8843,14 +8843,12 @@ class AetherRaidTacticsBoard {
             case Weapon.Faraflame:
             case Weapon.GunshinNoSyo:
                 if (skillOwner.isWeaponRefined) {
-                    if (skillOwner.isWeaponSpecialRefined) {
-                        for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
-                            if (!unit.isOnMap) { continue; }
-                            if (skillOwner.posX - 1 <= unit.posX && unit.posX <= skillOwner.posX + 1 ||
-                                skillOwner.posY - 1 <= unit.posY && unit.posY <= skillOwner.posY + 1) {
-                                unit.applyAtkDebuff(-5);
-                                unit.applyResDebuff(-5);
-                            }
+                    for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
+                        if (!unit.isOnMap) { continue; }
+                        if (skillOwner.posX - 1 <= unit.posX && unit.posX <= skillOwner.posX + 1 ||
+                            skillOwner.posY - 1 <= unit.posY && unit.posY <= skillOwner.posY + 1) {
+                            unit.applyAtkDebuff(-5);
+                            unit.applyResDebuff(-5);
                         }
                     }
                 } else {
