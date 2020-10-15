@@ -3770,6 +3770,8 @@ class AetherRaidTacticsBoard {
                 case Weapon.SyukuseiNoAnkiPlus:
                     atkUnit.atkSpur += defUnit.getBuffTotalInCombat(atkUnit);
                     break;
+                case Weapon.Faraflame:
+                case Weapon.GunshinNoSyo:
                 case Weapon.MitteiNoAnki:
                 case Weapon.AokarasuNoSyo:
                     if (atkUnit.isWeaponSpecialRefined) {
@@ -3982,6 +3984,10 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EffiesLance:
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        attackUnit.isOneTimeActionActivatedForWeapon = true;
+                    }
                 case Weapon.OukeNoKen:
                     if (attackUnit.isWeaponSpecialRefined) {
                         if (attackUnit.snapshot.restHpPercentage >= 25) {
@@ -4183,6 +4189,14 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ObsessiveCurse:
+                    if (!attackUnit.isWeaponSpecialRefined) break;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        this.writeLogLine(`${unit.getNameWithGroup()}は${attackUnit.weaponInfo.name}により7ダメージ、反撃不可の状態異常付与`);
+                        unit.reserveTakeDamage(7);
+                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    }
+                    break;
                 case Weapon.Buryunhirude:
                     if (!attackUnit.isWeaponRefined) {
                         attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
@@ -4813,6 +4827,19 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EffiesLance:
+                    if (targetUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 6;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                            targetUnit.battleContext.invalidatesAtkBuff = true;
+                            targetUnit.battleContext.invalidatesDefBuff = true;
+                        }
+                    }
+                    break;
                 case Weapon.PaleBreathPlus:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
@@ -5279,6 +5306,19 @@ class AetherRaidTacticsBoard {
                 case Weapon.SeikenThirufingu:
                     if (isWeaponTypeTome(enemyUnit.weaponType)) {
                         targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
+                    }
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.defSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.defSpur += 5;
+                                targetUnit.battleContext.followupAttackPriority++;
+                            }
+                        }
                     }
                     break;
                 case Weapon.FukenFalcion:
@@ -7380,6 +7420,10 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.ObsessiveCurse:
+                                targetUnit.spdSpur -= 5;
+                                targetUnit.resSpur -= 5;
+                                break;
                             case PassiveC.AtkSpdRein3:
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.spdSpur -= 4;
@@ -8372,13 +8416,6 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
-            case Weapon.GunshinNoSyo:
-                this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => unit.snapshot.getEvalResInPrecombat() < skillOwner.snapshot.getEvalResInPrecombat(),
-                    unit => {
-                        unit.applyAtkDebuff(-4); unit.applyResDebuff(-4);
-                    });
-                break;
             case PassiveC.MilaNoHaguruma:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => unit.snapshot.getDefInPrecombat() < skillOwner.snapshot.getDefInPrecombat(),
@@ -8804,10 +8841,22 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.Faraflame:
-                this.__applyPolySkill(skillOwner, unit => {
-                    unit.applyAtkDebuff(-4);
-                    unit.applyResDebuff(-4);
-                });
+            case Weapon.GunshinNoSyo:
+                if (skillOwner.isWeaponRefined) {
+                    for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
+                        if (!unit.isOnMap) { continue; }
+                        if (skillOwner.posX - 1 <= unit.posX && unit.posX <= skillOwner.posX + 1 ||
+                            skillOwner.posY - 1 <= unit.posY && unit.posY <= skillOwner.posY + 1) {
+                            unit.applyAtkDebuff(-5);
+                            unit.applyResDebuff(-5);
+                        }
+                    }
+                } else {
+                    this.__applyPolySkill(skillOwner, unit => {
+                        unit.applyAtkDebuff(-4);
+                        unit.applyResDebuff(-4);
+                    });
+                }
                 break;
             case Weapon.KatarinaNoSyo:
                 if (skillOwner.isWeaponSpecialRefined) {
