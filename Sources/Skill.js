@@ -802,6 +802,9 @@ const Weapon = {
     // 2020年10月錬成
     ObsessiveCurse: 1502, // 執念の呪
     EffiesLance: 1503, // エルフィの大槍
+
+    // 女神の僕たる者たち
+    Thunderbrand: 1504, // 雷霆
 };
 
 const Support = {

@@ -3181,6 +3181,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.Thunderbrand:
+                if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                    return true;
+                }
+                break;
             case Weapon.CourtlyFanPlus:
                 return unit.battleContext.initiatesCombat;
             case Weapon.Garumu:
@@ -4827,6 +4832,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Thunderbrand:
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                        targetUnit.battleContext.invalidate
+                    }
+                    break;
                 case Weapon.EffiesLance:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 6;
