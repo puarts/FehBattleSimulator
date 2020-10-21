@@ -12116,7 +12116,7 @@ class AetherRaidTacticsBoard {
     __setBestTargetAndTiles(assistUnit, isPrecombat, isAssistableUnitFunc, acceptTileFunc = null) {
         switch (assistUnit.support) {
             case Support.RallyUpAtk:
-            // case Support.RallyUpSpd:
+            case Support.RallyUpSpd:
             case Support.RallyUpRes:
             case Support.RallyUpAtkPlus:
             case Support.RallyUpSpdPlus:
@@ -13386,7 +13386,7 @@ class AetherRaidTacticsBoard {
                 switch (supporterUnit.support) {
                     case Support.RallyUpAtk:
                     case Support.RallyUpAtkPlus:
-                    // case Support.RallyUpSpd:
+                    case Support.RallyUpSpd:
                     case Support.RallyUpSpdPlus:
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
