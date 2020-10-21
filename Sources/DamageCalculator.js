@@ -1430,6 +1430,18 @@ class DamageCalculator {
                     break;
             }
 
+            // カドゥケウスの杖など周囲のキャラによるダメージ軽減
+            if (!atkUnit.canDisableEnemySpursFromAlly()) {
+                for (let unit of g_app.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                    for (let skillId of unit.enumerateSkills()) {
+                        switch (skillId) {
+                            case Weapon.CaduceusStaff:
+                                damageReductionRatio *= 0.7;
+                        }
+                    }
+                }
+            }
+
             let isDefenderSpecialActivated = false;
             if (activatesDefenderSpecial) {
                 let attackRange = atkUnit.getActualAttackRange(defUnit);

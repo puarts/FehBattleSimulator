@@ -805,6 +805,7 @@ const Weapon = {
 
     // 女神の僕たる者たち
     Thunderbrand: 1504, // 雷霆
+    CaduceusStaff: 1505, // カドゥケウスの杖
 };
 
 const Support = {
