@@ -239,7 +239,7 @@ class AetherRaidTacticsBoard {
                     //         this.attackTargetUnitIndex = this.currentItemIndex;
                     //     }
                     // }
-                    // g_app.__showStatusToAttackerInfo();
+                    // g_appData.__showStatusToAttackerInfo();
                     // updateAllUi();
                 },
                 heroIndexChanged: function (e) {
@@ -253,7 +253,7 @@ class AetherRaidTacticsBoard {
                 },
                 buffChanged: function () {
                     if (g_app == null) { return; }
-                    g_app.__showStatusToAttackerInfo();
+                    g_appData.__showStatusToAttackerInfo();
                     updateAllUi();
                 },
                 moveCountChanged: function () {
@@ -294,7 +294,7 @@ class AetherRaidTacticsBoard {
                 },
                 hpChanged: function () {
                     if (g_app == null) { return; }
-                    g_app.__showStatusToAttackerInfo();
+                    g_appData.__showStatusToAttackerInfo();
                     updateAllUi();
                 },
                 passiveAChanged: function () {
@@ -433,7 +433,7 @@ class AetherRaidTacticsBoard {
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
                     unit.hp = unit.maxHpWithSkills;
-                    g_app.__showStatusToAttackerInfo();
+                    g_appData.__showStatusToAttackerInfo();
                     updateAllUi();
                 },
                 healHpFullForAllUnits: function () {
@@ -441,7 +441,7 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.units) {
                         unit.resetAllState();
                     }
-                    g_app.__showStatusToAttackerInfo();
+                    g_appData.__showStatusToAttackerInfo();
                     updateAllUi();
                 },
                 debugMenuEnabledChanged: function () {
@@ -10561,12 +10561,39 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile) {
+        // 双界だと行動制限が解除されていないと使用しないっぽい
+        if (!g_appData.examinesEnemyActionTriggered(unit)) {
+            return false;
+        }
+
+        let canBeMovedIntoLessEnemyThreat = this.__canBeMovedIntoLessEnemyThreat(unit, targetUnit, tile);
+        this.writeDebugLogLine(
+            "対象=" + targetUnit.getNameWithGroup() + " " + tile.positionToString() + ": "
+            + "targetUnit.isActionDone=" + targetUnit.isActionDone + ", "
+            + "canBeMovedIntoLessEnemyThreat=" + canBeMovedIntoLessEnemyThreat + ", "
+            + "hasThreatensEnemyStatus=" + targetUnit.actionContext.hasThreatensEnemyStatus + ", "
+            + "hasThreatenedByEnemyStatus=" + targetUnit.actionContext.hasThreatenedByEnemyStatus
+        );
+        return targetUnit.isActionDone
+            && (targetUnit.actionContext.hasThreatensEnemyStatus || targetUnit.actionContext.hasThreatenedByEnemyStatus)
+            && canBeMovedIntoLessEnemyThreat;
+    }
+
     __canBeActivatedPostcombatAssist(unit, targetUnit, tile) {
         switch (unit.supportInfo.assistType) {
             case AssistType.Refresh:
                 return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
             case AssistType.Heal:
-                return !targetUnit.isFullHp;
+                if (!targetUnit.isFullHp) {
+                    return true;
+                }
+                if (unit.support == Support.RescuePlus
+                    || unit.support == Support.Rescue
+                ) {
+                    return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
+                }
+                return false;
             case AssistType.Restore:
                 return (targetUnit.isDebuffed || targetUnit.hasNegativeStatusEffect()) || !targetUnit.isFullHp;
             case AssistType.Rally:
@@ -10585,24 +10612,7 @@ class AetherRaidTacticsBoard {
                         && canBeBuffedAtLeast2;
                 }
             case AssistType.Move:
-                {
-                    // 双界だと行動制限が解除されていないと使用しないっぽい
-                    if (!g_appData.examinesEnemyActionTriggered(unit)) {
-                        return false;
-                    }
-
-                    let canBeMovedIntoLessEnemyThreat = this.__canBeMovedIntoLessEnemyThreat(unit, targetUnit, tile);
-                    this.writeDebugLogLine(
-                        "対象=" + targetUnit.getNameWithGroup() + " " + tile.positionToString() + ": "
-                        + "targetUnit.isActionDone=" + targetUnit.isActionDone + ", "
-                        + "canBeMovedIntoLessEnemyThreat=" + canBeMovedIntoLessEnemyThreat + ", "
-                        + "hasThreatensEnemyStatus=" + targetUnit.actionContext.hasThreatensEnemyStatus + ", "
-                        + "hasThreatenedByEnemyStatus=" + targetUnit.actionContext.hasThreatenedByEnemyStatus
-                    );
-                    return targetUnit.isActionDone
-                        && (targetUnit.actionContext.hasThreatensEnemyStatus || targetUnit.actionContext.hasThreatenedByEnemyStatus)
-                        && canBeMovedIntoLessEnemyThreat;
-                }
+                return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
             case AssistType.DonorHeal:
                 {
                     // 双界だと行動制限が解除されていないと使用しないっぽい
@@ -12996,6 +13006,8 @@ class AetherRaidTacticsBoard {
     __calcTargetUnitTileThreatAfterMoveAssist(unit, targetUnit, assistTile) {
         let result = null;
         switch (unit.support) {
+            case Support.RescuePlus:
+            case Support.Rescue:
             case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
             case Support.ToChangeFate:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
@@ -13206,7 +13218,9 @@ class AetherRaidTacticsBoard {
                         break;
                 }
             }
-            else {
+            else if (supporterUnit.support != Support.RescuePlus
+                && supporterUnit.support != Support.Rescue
+            ) {
                 supporterUnit.reduceSpecialCount(1);
             }
         }
@@ -13327,6 +13341,8 @@ class AetherRaidTacticsBoard {
                 return this.__findTileAfterSmite(unit, target, tile);
             case Support.Shove:
                 return this.__findTileAfterShove(unit, target, tile);
+            case Support.RescuePlus:
+            case Support.Rescue:
             case Support.Drawback:
                 return this.__findTileAfterDrawback(unit, target, tile);
             case Support.Swap:
@@ -13355,7 +13371,14 @@ class AetherRaidTacticsBoard {
                     return healAmount > 0 || this.__executeHarshCommand(targetUnit);
                 }
                 else {
-                    return this.__applyHeal(supporterUnit, targetUnit);
+                    let isActivated = this.__applyHeal(supporterUnit, targetUnit);
+                    switch (supporterUnit.support) {
+                        case Support.RescuePlus:
+                        case Support.Rescue:
+                            isActivated |= this.__applyMovementAssist(supporterUnit, targetUnit,
+                                (unit, target, tile) => this.__findTileAfterMovementAssist(unit, target, tile));
+                    }
+                    return isActivated;
                 }
             case AssistType.Restore:
                 return this.__applyHeal(supporterUnit, targetUnit);

@@ -878,6 +878,9 @@ const Support = {
     Martyr: 444, // セインツ
     MartyrPlus: 445, // セインツ+
     Restore: 448, // レスト
+
+    RescuePlus: 1506, // レスキュー+
+    Rescue: 1512, // レスキュー
 };
 
 const AssistType = {
@@ -1792,6 +1795,8 @@ function getPrecombatHealThreshold(support) {
         case Support.RecoverPlus:
         case Support.Restore:
         case Support.RestorePlus:
+        case Support.Rescue:
+        case Support.RescuePlus:
         case Support.Mend:
             return 10;
         default:
