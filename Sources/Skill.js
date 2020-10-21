@@ -1581,7 +1581,9 @@ const PassiveC = {
     VisionOfArcadia: 933, // 理想郷となるように
     OstiasPulse: 753, // オスティアの鼓動
 
-    RouseAtkDef3: 948, // 攻撃守備の奮起3
+    // 奮起
+    RouseAtkSpd3: 1510,
+    RouseAtkDef3: 948,
     RouseDefRes3: 1036,
     RouseSpdRes3: 1127,
     RouseSpdDef3: 1157,

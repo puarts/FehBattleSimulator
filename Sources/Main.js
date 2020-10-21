@@ -9212,6 +9212,8 @@ class AetherRaidTacticsBoard {
                         x => { x.applyAtkBuff(6); });
                 }
                 break;
+            case PassiveC.RouseAtkSpd3:
+                if (this.__isSolo(skillOwner)) { skillOwner.applyAtkBuff(6); skillOwner.applySpdBuff(6); } break;
             case PassiveC.RouseAtkDef3:
                 if (this.__isSolo(skillOwner)) { skillOwner.applyAtkBuff(6); skillOwner.applyDefBuff(6); } break;
             case PassiveC.RouseAtkRes3:
