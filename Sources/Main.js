@@ -13156,6 +13156,9 @@ class AetherRaidTacticsBoard {
                     case Special.WindfireBalmPlus:
                         this.__applyBalmSkill(supporterUnit, x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
                         break;
+                    case Special.DelugeBalmPlus:
+                        this.__applyBalmSkill(supporterUnit, x => { x.applySpdBuff(6); x.applyResBuff(6); });
+                        break;
                     case Special.DaichiSeisuiNoSyukuhuku:
                         this.__applyBalmSkill(supporterUnit, x => { x.applyDefBuff(4); x.applyResBuff(4); });
                         break;

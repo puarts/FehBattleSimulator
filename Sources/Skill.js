@@ -958,6 +958,7 @@ const Special = {
     KindledFireBalm: 498, // 業火の祝福
     WindfireBalmPlus: 505, // 業火疾風の祝福+
     WindfireBalm: 504, // 業火疾風の祝福
+    DelugeBalmPlus: 1507, // 疾風静水の祝福+
     DaichiSeisuiNoSyukuhuku: 506, // 大地静水の祝福
     DaichiSeisuiNoSyukuhukuPlus: 507, // 大地静水の祝福+
     GokaDaichiNoSyukuhukuPlus: 797, // 業火大地の祝福+
