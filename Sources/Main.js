@@ -4832,6 +4832,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SpearOfAssal:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                        targetUnit.battleContext.invalidatesSpdBuff = true;
+                    }
+                    break;
                 case Weapon.Thunderbrand:
                     if (enemyUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
@@ -8142,6 +8152,10 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.SpearOfAssal:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                        break;
                     case Weapon.DanielMadeBow:
                         targetUnit.atkSpur += 5;
                         break;
