@@ -4841,8 +4841,6 @@ class AetherRaidTacticsBoard {
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                        targetUnit.atkSpur += 4;
-                        targetUnit.spdSpur += 4;
                         targetUnit.battleContext.invalidatesAtkBuff = true;
                         targetUnit.battleContext.invalidatesSpdBuff = true;
                     }
@@ -7926,6 +7924,10 @@ class AetherRaidTacticsBoard {
     __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
+                case Weapon.SpearOfAssal:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                    break;
                 case PassiveC.JointDriveAtk:
                     targetUnit.atkSpur += 4;
                     break;
