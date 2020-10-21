@@ -312,6 +312,11 @@ class DamageCalculator {
 
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.Thunderbrand:
+                        if (defUnit.snapshot.restHpPercentage >= 50) {
+                            atkUnit.battleContext.isDesperationActivated = true;
+                        }
+                        break;
                     case Weapon.TalreganAxe:
                         atkUnit.battleContext.isDesperationActivated = true;
                         break;
@@ -1344,7 +1349,7 @@ class DamageCalculator {
 
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount == 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount == 0;
-            let damageReductionRatio = 1.0;
+            let damageReductionRatio = 1.0 - defUnit.battleContext.damageReductionRatio;
             let damageReductionValue = 0;
 
             switch (defUnit.weapon) {

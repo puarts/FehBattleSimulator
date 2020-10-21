@@ -2962,6 +2962,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.SurvivalistBow:
+                if (this.__isSolo(atkUnit) && defUnit.snapshot.restHpPercentage >= 80) {
+                    return true;
+                }
+                break;
             case Weapon.Nizuheggu:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (isWeaponTypeTome(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
@@ -3181,6 +3186,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.Thunderbrand:
+                if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                    return true;
+                }
+                break;
             case Weapon.CourtlyFanPlus:
                 return unit.battleContext.initiatesCombat;
             case Weapon.Garumu:
@@ -4827,6 +4837,20 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SpearOfAssal:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                        targetUnit.battleContext.invalidatesSpdBuff = true;
+                    }
+                    break;
+                case Weapon.Thunderbrand:
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
                 case Weapon.EffiesLance:
                     if (targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 6;
@@ -6974,6 +6998,13 @@ class AetherRaidTacticsBoard {
             for (let skillId of allyUnit.enumerateSkills()) {
                 if (!calcPotentialDamage) {
                     switch (skillId) {
+                        case Weapon.CaduceusStaff:
+                            {
+                                let damageRatio = 1.0 - unit.battleContext.damageReductionRatio;
+                                damageRatio *= (1.0 - 0.3);
+                                unit.battleContext.damageReductionRatio = (1.0 - damageRatio);
+                            }
+                            break;
                         case Weapon.Flykoogeru:
                             if (unit.getDefInPrecombat() > allyUnit.getDefInPrecombat()) {
                                 unit.atkSpur += 4;
@@ -7780,6 +7811,10 @@ class AetherRaidTacticsBoard {
         if (this.__isSolo(targetUnit) || calcPotentialDamage) {
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.SurvivalistBow:
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        break;
                     case Weapon.DoubleBow:
                         targetUnit.addAllSpur(5);
                         break;
@@ -7888,6 +7923,10 @@ class AetherRaidTacticsBoard {
     __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
+                case Weapon.SpearOfAssal:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                    break;
                 case PassiveC.JointDriveAtk:
                     targetUnit.atkSpur += 4;
                     break;
@@ -8130,6 +8169,10 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.SpearOfAssal:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                        break;
                     case Weapon.DanielMadeBow:
                         targetUnit.atkSpur += 5;
                         break;
@@ -9177,6 +9220,8 @@ class AetherRaidTacticsBoard {
                         x => { x.applyAtkBuff(6); });
                 }
                 break;
+            case PassiveC.RouseAtkSpd3:
+                if (this.__isSolo(skillOwner)) { skillOwner.applyAtkBuff(6); skillOwner.applySpdBuff(6); } break;
             case PassiveC.RouseAtkDef3:
                 if (this.__isSolo(skillOwner)) { skillOwner.applyAtkBuff(6); skillOwner.applyDefBuff(6); } break;
             case PassiveC.RouseAtkRes3:
@@ -13143,6 +13188,9 @@ class AetherRaidTacticsBoard {
                         break;
                     case Special.WindfireBalmPlus:
                         this.__applyBalmSkill(supporterUnit, x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
+                        break;
+                    case Special.DelugeBalmPlus:
+                        this.__applyBalmSkill(supporterUnit, x => { x.applySpdBuff(6); x.applyResBuff(6); });
                         break;
                     case Special.DaichiSeisuiNoSyukuhuku:
                         this.__applyBalmSkill(supporterUnit, x => { x.applyDefBuff(4); x.applyResBuff(4); });

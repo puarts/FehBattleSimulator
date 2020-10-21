@@ -802,6 +802,12 @@ const Weapon = {
     // 2020年10月錬成
     ObsessiveCurse: 1502, // 執念の呪
     EffiesLance: 1503, // エルフィの大槍
+
+    // 女神の僕たる者たち
+    Thunderbrand: 1504, // 雷霆
+    CaduceusStaff: 1505, // カドゥケウスの杖
+    SpearOfAssal: 1508, // アッサルの槍
+    SurvivalistBow: 1509, // 生存本能の弓
 };
 
 const Support = {
@@ -954,6 +960,7 @@ const Special = {
     KindledFireBalm: 498, // 業火の祝福
     WindfireBalmPlus: 505, // 業火疾風の祝福+
     WindfireBalm: 504, // 業火疾風の祝福
+    DelugeBalmPlus: 1507, // 疾風静水の祝福+
     DaichiSeisuiNoSyukuhuku: 506, // 大地静水の祝福
     DaichiSeisuiNoSyukuhukuPlus: 507, // 大地静水の祝福+
     GokaDaichiNoSyukuhukuPlus: 797, // 業火大地の祝福+
@@ -1574,7 +1581,9 @@ const PassiveC = {
     VisionOfArcadia: 933, // 理想郷となるように
     OstiasPulse: 753, // オスティアの鼓動
 
-    RouseAtkDef3: 948, // 攻撃守備の奮起3
+    // 奮起
+    RouseAtkSpd3: 1510,
+    RouseAtkDef3: 948,
     RouseDefRes3: 1036,
     RouseSpdRes3: 1127,
     RouseSpdDef3: 1157,

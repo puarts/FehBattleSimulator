@@ -511,6 +511,9 @@ class BattleContext {
 
         // 追撃優先度
         this.followupAttackPriority = 0;
+
+        // 戦闘中常に有効になるダメージ軽減率
+        this.damageReductionRatio = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -569,6 +572,7 @@ class BattleContext {
         this.initiatesCombat = false;
         this.isThereAnyUnitIn2Spaces = false;
         this.followupAttackPriority = 0;
+        this.damageReductionRatio = 0;
     }
 
     invalidateAllBuffs() {
