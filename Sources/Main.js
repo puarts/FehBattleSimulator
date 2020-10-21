@@ -4849,7 +4849,6 @@ class AetherRaidTacticsBoard {
                     if (enemyUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
-                        targetUnit.battleContext.invalidate
                     }
                     break;
                 case Weapon.EffiesLance:
