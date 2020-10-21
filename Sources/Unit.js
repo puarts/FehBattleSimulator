@@ -588,6 +588,12 @@ class BattleContext {
         this.invalidatesOwnDefDebuff = true;
         this.invalidatesOwnResDebuff = true;
     }
+
+    multDamageReductionRatio(damageReductionRatio) {
+        let damageRatio = 1.0 - this.damageReductionRatio;
+        damageRatio *= (1.0 - damageReductionRatio);
+        this.damageReductionRatio = Math.trunc((1.0 - damageRatio) * 100 + 0.5) * 0.01;
+    }
 }
 
 /// 攻撃可能なユニット情報です。

@@ -1247,6 +1247,8 @@ class DamageCalculator {
                 break;
         }
 
+        totalDamage = Math.trunc(totalDamage * (1.0 - defUnit.battleContext.damageReductionRatio));
+
         return totalDamage;
     }
 
@@ -1657,7 +1659,7 @@ class DamageCalculator {
         let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
         var currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
-            this.writeDebugLog("ダメージ軽減" + Math.trunc(damageReductionRatio * 100) + "%");
+            this.writeDebugLog("ダメージ軽減" + damageReductionRatio * 100 + "%");
             this.writeDebugLog("ダメージ-" + damageReductionValue);
             this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
         }

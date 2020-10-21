@@ -808,6 +808,8 @@ const Weapon = {
     CaduceusStaff: 1505, // カドゥケウスの杖
     SpearOfAssal: 1508, // アッサルの槍
     SurvivalistBow: 1509, // 生存本能の弓
+
+    DarkCreatorS: 1511, // 天帝の闇剣
 };
 
 const Support = {

@@ -2478,6 +2478,24 @@ class AetherRaidTacticsBoard {
 
     /// 戦闘ダメージを計算し、計算結果に基づき、ユニットの状態を更新します。戦闘後に発動するスキルの効果も反映されます。
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
+        // 攻撃対象以外の戦闘前の範囲奥義ダメージ
+        if (atkUnit.battleContext.isSpecialActivated && isRangedAttackSpecial(atkUnit.special)) {
+            // 範囲攻撃ダメージを周囲の敵に反映
+            for (let tile of g_appData.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+                if (tile.placedUnit != null
+                    && tile.placedUnit != defUnit
+                    && tile.placedUnit.groupId == defUnit.groupId
+                ) {
+                    let targetUnit = tile.placedUnit;
+                    let damage = this.damageCalc.calcPrecombatDamage(atkUnit, targetUnit);
+                    this.writeLogLine(
+                        atkUnit.specialInfo.name + "により" +
+                        targetUnit.getNameWithGroup() + "に" + damage + "ダメージ");
+                    targetUnit.takeDamage(damage, true);
+                }
+            }
+        }
+
         // 攻撃
         let result = this.calcDamage(atkUnit, defUnit, tileToAttack);
 
@@ -2494,23 +2512,6 @@ class AetherRaidTacticsBoard {
         // 戦闘後のダメージ、回復の合計を反映させないといけないので予約HPとして計算
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.initReservedHp();
-        }
-
-        if (atkUnit.battleContext.isSpecialActivated && isRangedAttackSpecial(atkUnit.special)) {
-            // 範囲攻撃ダメージを周囲の敵に反映
-            for (let tile of g_appData.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
-                if (tile.placedUnit != null
-                    && tile.placedUnit != defUnit
-                    && tile.placedUnit.groupId == defUnit.groupId
-                ) {
-                    let targetUnit = tile.placedUnit;
-                    let damage = this.damageCalc.calcPrecombatDamage(atkUnit, targetUnit);
-                    this.writeLogLine(
-                        atkUnit.specialInfo.name + "により" +
-                        targetUnit.getNameWithGroup() + "に" + damage + "ダメージ");
-                    targetUnit.reserveTakeDamage(damage);
-                }
-            }
         }
 
         // 戦闘後発動のスキル効果
@@ -2671,6 +2672,10 @@ class AetherRaidTacticsBoard {
         defUnit.restHp = defUnit.hp;
         atkUnit.tmpSpecialCount = atkUnit.specialCount;
         defUnit.tmpSpecialCount = defUnit.specialCount;
+
+        // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
+        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
         // 戦闘前ダメージ計算
         this.damageCalc.clearLog();
@@ -3994,10 +3999,14 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DarkCreatorS:
+                    attackUnit.isOneTimeActionActivatedForWeapon = true;
+                    break;
                 case Weapon.EffiesLance:
                     if (attackUnit.isWeaponSpecialRefined) {
                         attackUnit.isOneTimeActionActivatedForWeapon = true;
                     }
+                    break;
                 case Weapon.OukeNoKen:
                     if (attackUnit.isWeaponSpecialRefined) {
                         if (attackUnit.snapshot.restHpPercentage >= 25) {
@@ -4819,6 +4828,20 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __applySkillEffectForPrecombatAndCombat(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.DarkCreatorS:
+                    if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
+                        let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
+                        let damageReductionRatio = Math.min(count * 15, 45) * 0.01;
+                        targetUnit.battleContext.multDamageReductionRatio(damageReductionRatio);
+                    }
+                    break;
+            }
+        }
+    }
+
     __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
         if (targetUnit.hasStatusEffect(StatusEffectType.ResonantShield)) {
             targetUnit.defSpur += 4;
@@ -4837,10 +4860,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DarkCreatorS:
+                    if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
+                        let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
+                        let buff = Math.min(count * 2, 6);
+                        targetUnit.atkSpur += buff;
+                        targetUnit.defSpur += buff;
+                    }
+                    break;
                 case Weapon.SpearOfAssal:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
                         targetUnit.battleContext.invalidatesAtkBuff = true;
                         targetUnit.battleContext.invalidatesSpdBuff = true;
                     }
@@ -4868,7 +4899,7 @@ class AetherRaidTacticsBoard {
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
@@ -4925,7 +4956,9 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.TalreganAxe:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat
+                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces)
+                    ) {
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
                     }
@@ -4997,7 +5030,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveA.AtkDefUnity:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                         let atkDebuff = targetUnit.getAtkDebuffInCombat();
@@ -5016,7 +5049,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.WindParthia:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.initiatesCombat
-                        || targetUnit.battleContext.isThereAnyUnitIn2Spaces
+                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces)
                     ) {
                         targetUnit.addAllSpur(5);
                     }
@@ -5067,7 +5100,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.ShirokiChiNoNaginata:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                             targetUnit.atkSpur += 5;
                             targetUnit.defSpur += 5;
                             targetUnit.battleContext.invalidateAllOwnDebuffs();
@@ -5149,14 +5182,17 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.ShinenNoBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (targetUnit.snapshot.restHpPercentage >= 25 && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        if (!calcPotentialDamage
+                            && targetUnit.snapshot.restHpPercentage >= 25
+                            && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
+                        ) {
                             targetUnit.addAllSpur(5);
                         }
                     }
                     break;
                 case Weapon.StalwartSword:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                             targetUnit.atkSpur += 5;
                             targetUnit.defSpur += 5;
                             targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
@@ -5264,32 +5300,32 @@ class AetherRaidTacticsBoard {
                     this.damageCalc.writeDebugLog(`お大尽の弓により${targetUnit.getNameWithGroup()}の攻撃+7、${enemyUnit.getNameWithGroup()}の攻撃-7`);
                     break;
                 case PassiveA.AtkSpdBond4:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
                         targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
                     }
                     break;
                 case PassiveA.AtkDefBond4:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
                         targetUnit.battleContext.invalidatesOwnDefDebuff = true;
                     }
                     break;
                 case PassiveA.AtkResBond4:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
                         targetUnit.battleContext.invalidatesOwnResDebuff = true;
                     }
                     break;
                 case Weapon.OgonNoFolkPlus:
                 case Weapon.NinjinhuNoSosyokuPlus:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
                         targetUnit.battleContext.invalidatesOwnDefDebuff = true;
                     }
                     break;
                 case Weapon.VezuruNoYoran:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.battleContext.invalidateAllOwnDebuffs();
                     }
                     break;
@@ -5360,7 +5396,9 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.OukeNoKen:
                     if (targetUnit.isWeaponRefined) {
-                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        if (targetUnit.battleContext.initiatesCombat
+                            || (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
+                        ) {
                             targetUnit.battleContext.increaseCooldownCountForAttack = true;
                         }
                         if (targetUnit.isWeaponSpecialRefined) {
@@ -5369,7 +5407,7 @@ class AetherRaidTacticsBoard {
                             }
                         }
                     }
-                    else if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    else if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.battleContext.increaseCooldownCountForAttack = true;
                     }
                     break;
@@ -5432,7 +5470,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.KiriNoBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
+                        if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
                             x.weaponType == WeaponType.Sword || isWeaponTypeBreath(x.weaponType))
                         ) {
                             targetUnit.atkSpur += 5;
@@ -5676,7 +5714,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.GeneiBattleAxe:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.defSpur += 6;
                         targetUnit.resSpur += 6;
                     }
@@ -5865,7 +5903,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Sekuvaveku:
-                    if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.addAllSpur(4);
                     }
                     break;
@@ -5979,7 +6017,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.HarukazeNoBreath:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
+                    if ((!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
                         || targetUnit.isBuffed
                     ) {
                         targetUnit.battleContext.invalidateAllOwnDebuffs();
@@ -6013,7 +6051,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Ifingr:
-                    if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.addAllSpur(4);
                     }
                     break;
@@ -7000,9 +7038,7 @@ class AetherRaidTacticsBoard {
                     switch (skillId) {
                         case Weapon.CaduceusStaff:
                             {
-                                let damageRatio = 1.0 - unit.battleContext.damageReductionRatio;
-                                damageRatio *= (1.0 - 0.3);
-                                unit.battleContext.damageReductionRatio = (1.0 - damageRatio);
+                                unit.battleContext.multDamageReductionRatio(0.3);
                             }
                             break;
                         case Weapon.Flykoogeru:
