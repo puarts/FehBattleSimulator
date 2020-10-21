@@ -2962,6 +2962,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.SurvivalistBow:
+                if (this.__isSolo(atkUnit) && defUnit.snapshot.restHpPercentage >= 80) {
+                    return true;
+                }
+                break;
             case Weapon.Nizuheggu:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (isWeaponTypeTome(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
@@ -7802,6 +7807,10 @@ class AetherRaidTacticsBoard {
         if (this.__isSolo(targetUnit) || calcPotentialDamage) {
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.SurvivalistBow:
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        break;
                     case Weapon.DoubleBow:
                         targetUnit.addAllSpur(5);
                         break;

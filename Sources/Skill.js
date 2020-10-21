@@ -807,6 +807,7 @@ const Weapon = {
     Thunderbrand: 1504, // 雷霆
     CaduceusStaff: 1505, // カドゥケウスの杖
     SpearOfAssal: 1508, // アッサルの槍
+    SurvivalistBow: 1509, // 生存本能の弓
 };
 
 const Support = {
