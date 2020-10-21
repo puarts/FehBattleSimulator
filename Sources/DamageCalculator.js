@@ -1349,7 +1349,7 @@ class DamageCalculator {
 
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount == 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount == 0;
-            let damageReductionRatio = 1.0;
+            let damageReductionRatio = 1.0 - defUnit.battleContext.damageReductionRatio;
             let damageReductionValue = 0;
 
             switch (defUnit.weapon) {
@@ -1428,18 +1428,6 @@ class DamageCalculator {
                         }
                     }
                     break;
-            }
-
-            // カドゥケウスの杖など周囲のキャラによるダメージ軽減
-            if (!atkUnit.canDisableEnemySpursFromAlly()) {
-                for (let unit of g_app.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
-                    for (let skillId of unit.enumerateSkills()) {
-                        switch (skillId) {
-                            case Weapon.CaduceusStaff:
-                                damageReductionRatio *= 0.7;
-                        }
-                    }
-                }
             }
 
             let isDefenderSpecialActivated = false;

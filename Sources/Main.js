@@ -7001,6 +7001,13 @@ class AetherRaidTacticsBoard {
             for (let skillId of allyUnit.enumerateSkills()) {
                 if (!calcPotentialDamage) {
                     switch (skillId) {
+                        case Weapon.CaduceusStaff:
+                            {
+                                let damageRatio = 1.0 - unit.battleContext.damageReductionRatio;
+                                damageRatio *= (1.0 - 0.3);
+                                unit.battleContext.damageReductionRatio = (1.0 - damageRatio);
+                            }
+                            break;
                         case Weapon.Flykoogeru:
                             if (unit.getDefInPrecombat() > allyUnit.getDefInPrecombat()) {
                                 unit.atkSpur += 4;
