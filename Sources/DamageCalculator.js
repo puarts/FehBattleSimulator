@@ -1397,6 +1397,7 @@ class DamageCalculator {
             }
 
             switch (defUnit.passiveB) {
+                case PassiveB.Spurn3:
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.KaihiTatakikomi3:
                     {
