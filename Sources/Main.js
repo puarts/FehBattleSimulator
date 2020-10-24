@@ -10431,14 +10431,31 @@ class AetherRaidTacticsBoard {
                     + ", hasThreatenedByEnemyStatus=" + unit.actionContext.hasThreatenedByEnemyStatus
                 );
 
-                if (triggersAction && unit.groupId == UnitGroupType.Enemy && unit.actionContext.hasThreatensEnemyStatus) {
+                if (triggersAction && unit.groupId == UnitGroupType.Enemy) {
                     if (!g_appData.examinesEnemyActionTriggered(unit)) {
-                        unit.isEnemyActionTriggered = true;
-                        this.vm.isEnemyActionTriggered = true;
+                        let isTriggered = this.__examinesCanTriggerAction(unit);
+                        unit.isEnemyActionTriggered = isTriggered;
+                        this.vm.isEnemyActionTriggered = isTriggered;
                     }
                 }
             }
         });
+    }
+
+    __examinesCanTriggerAction(unit) {
+        if (unit.actionContext.hasThreatensEnemyStatus) {
+            return true;
+        }
+
+        // 敵ユニットを無視した移動範囲内に敵がいたら、敵は動き出す
+        for (let tile of g_appData.map.enumerateMovableTiles(unit, true)) {
+            if (tile.placedUnit != null
+                && tile.placedUnit.groupId != unit.groupId
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     simulatePrecombatAssist(assistableUnits, enemyUnits, allyUnits) {
