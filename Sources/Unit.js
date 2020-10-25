@@ -3610,6 +3610,7 @@ class Unit {
     *enumerateAssistableUnits() {
         for (let tile of this.assistableTiles) {
             let unit = tile.placedUnit;
+            if (unit === this) continue;
             if (unit != null && unit.groupId == this.groupId) {
                 if (unit.hasStatusEffect(StatusEffectType.Isolation)) {
                     continue;
