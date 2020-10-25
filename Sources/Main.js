@@ -5030,7 +5030,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveA.AtkDefUnity:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                         let atkDebuff = targetUnit.getAtkDebuffInCombat();
