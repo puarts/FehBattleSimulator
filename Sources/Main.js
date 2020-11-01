@@ -4123,7 +4123,6 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveB.Atrocity:
-                    this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の無惨発動");
                     if (attackTargetUnit.snapshot.restHpPercentage >= 50) {
                         this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の無惨発動");
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
