@@ -4122,6 +4122,16 @@ class AetherRaidTacticsBoard {
                         unit.specialCount += 1;
                     }
                     break;
+                case PassiveB.Atrocity:
+                    if (attackTargetUnit.snapshot.restHpPercentage >= 50) {
+                        this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の無惨発動");
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
+                            unit.specialCount += 1;
+                            unit.applyAllDebuff(-5);
+                        }
+                    }
+                    break;
                 case PassiveC.AtkSmoke1: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-3)); break;
                 case PassiveC.AtkSmoke2: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-5)); break;
                 case PassiveC.AtkSmoke3: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-7)); break;
@@ -4860,6 +4870,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Areadbhar:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
                 case Weapon.DarkCreatorS:
                     if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
                         let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
@@ -8495,6 +8510,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case PassiveC.OddTempest3:
+                if (this.isOddTurn) {
+                    skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
             case PassiveC.MilaNoHaguruma:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => unit.snapshot.getDefInPrecombat() < skillOwner.snapshot.getDefInPrecombat(),

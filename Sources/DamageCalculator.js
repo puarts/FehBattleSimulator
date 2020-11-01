@@ -560,6 +560,11 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {
+                case PassiveB.Atrocity:
+                    if (defUnit.snapshot.restHpPercentage >= 50) {
+                        fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat() * 0.25);
+                    }
+                    break;
                 case PassiveA.HeavyBlade4:
                     if (this.__getAtk(atkUnit, defUnit, isPrecombat) > this.__getAtk(defUnit, atkUnit, isPrecombat)) {
                         fixedAddDamage += 5;
@@ -1174,6 +1179,13 @@ class DamageCalculator {
         totalDamage += rangedSpecialDamage + addDamage + specialAddDamage;
 
         switch (defUnit.weapon) {
+            case Weapon.Areadbhar:
+                let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                    let percentage = Math.min(diff * 4, 40);
+                    totalDamage = Math.trunc(totalDamage * (1.0 - (percentage / 100.0)));
+                }
+                break;
             case Weapon.GiltGoblet:
                 if (atkUnit.snapshot.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
                     totalDamage = Math.trunc(totalDamage * 0.5);
@@ -1355,6 +1367,14 @@ class DamageCalculator {
             let damageReductionValue = 0;
 
             switch (defUnit.weapon) {
+                case Weapon.Areadbhar:
+                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                    if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                        let percentage = Math.min(diff * 4, 40);
+                        damageReductionRatio *= 1.0 - percentage / 100.0;
+                        this.writeDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
+                    }
+                    break;
                 case Weapon.GiltGoblet:
                     if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
                         isWeaponTypeTome(atkUnit.weaponType)) {

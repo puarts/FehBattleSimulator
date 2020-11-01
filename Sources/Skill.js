@@ -810,6 +810,9 @@ const Weapon = {
     SurvivalistBow: 1509, // 生存本能の弓
 
     DarkCreatorS: 1511, // 天帝の闇剣
+
+    // 2020年10月末伝承ディミトリ
+    Areadbhar: 1513, // アラドヴァル
 };
 
 const Support = {
@@ -1400,6 +1403,8 @@ const PassiveB = {
 
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王
+
+    Atrocity: 1514, // 無惨
 };
 
 const PassiveC = {
@@ -1612,6 +1617,8 @@ const PassiveC = {
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     SpdDefRein3: 1485, // 速さ守備の牽制3
+
+    OddTempest3: 1515, // 迅雷風烈・奇数3
 };
 
 const PassiveS = {
