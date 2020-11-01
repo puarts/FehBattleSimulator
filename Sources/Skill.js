@@ -1617,6 +1617,8 @@ const PassiveC = {
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     SpdDefRein3: 1485, // 速さ守備の牽制3
+
+    OddTempest3: 1515, // 迅雷風烈・奇数3
 };
 
 const PassiveS = {

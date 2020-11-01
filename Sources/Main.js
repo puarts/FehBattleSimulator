@@ -8511,6 +8511,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case PassiveC.OddTempest3:
+                if (this.isOddTurn) {
+                    skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
             case PassiveC.MilaNoHaguruma:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => unit.snapshot.getDefInPrecombat() < skillOwner.snapshot.getDefInPrecombat(),
