@@ -1403,6 +1403,8 @@ const PassiveB = {
 
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王
+
+    Atrocity: 1514, // 無惨
 };
 
 const PassiveC = {

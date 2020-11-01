@@ -560,6 +560,11 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {
+                case PassiveB.Atrocity:
+                    if (defUnit.snapshot.restHpPercentage >= 50) {
+                        fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat() * 0.25);
+                    }
+                    break;
                 case PassiveA.HeavyBlade4:
                     if (this.__getAtk(atkUnit, defUnit, isPrecombat) > this.__getAtk(defUnit, atkUnit, isPrecombat)) {
                         fixedAddDamage += 5;

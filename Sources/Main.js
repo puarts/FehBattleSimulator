@@ -4122,6 +4122,17 @@ class AetherRaidTacticsBoard {
                         unit.specialCount += 1;
                     }
                     break;
+                case PassiveB.Atrocity:
+                    this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の無惨発動");
+                    if (attackTargetUnit.snapshot.restHpPercentage >= 50) {
+                        this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の無惨発動");
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
+                            unit.specialCount += 1;
+                            unit.applyAllDebuff(-5);
+                        }
+                    }
+                    break;
                 case PassiveC.AtkSmoke1: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-3)); break;
                 case PassiveC.AtkSmoke2: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-5)); break;
                 case PassiveC.AtkSmoke3: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-7)); break;
