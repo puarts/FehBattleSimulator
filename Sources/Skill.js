@@ -810,6 +810,9 @@ const Weapon = {
     SurvivalistBow: 1509, // 生存本能の弓
 
     DarkCreatorS: 1511, // 天帝の闇剣
+
+    // 2020年10月末伝承ディミトリ
+    Areadbhar: 1513, // アラドヴァル
 };
 
 const Support = {

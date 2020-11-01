@@ -4860,6 +4860,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Areadbhar:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
                 case Weapon.DarkCreatorS:
                     if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
                         let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
