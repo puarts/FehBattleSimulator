@@ -7502,6 +7502,9 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.DanielMadeBow:
+                                targetUnit.atkSpur -= 5;
+                                break;
                             case Weapon.ObsessiveCurse:
                                 targetUnit.spdSpur -= 5;
                                 targetUnit.resSpur -= 5;
