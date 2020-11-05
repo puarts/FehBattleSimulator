@@ -4766,6 +4766,21 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     }
                     break;
+                case Weapon.SetsunasYumi:
+                    {
+                        if (enemyUnit.isRangedWeaponType()) {
+                            targetUnit.addAllSpur(4);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.LevinDagger:
                     if (enemyUnit.hasNegativeStatusEffect()
                     ) {
@@ -5156,21 +5171,6 @@ class AetherRaidTacticsBoard {
                             targetUnit.atkSpur += 5;
                             targetUnit.defSpur += 5;
                             targetUnit.battleContext.invalidateAllOwnDebuffs();
-                        }
-                    }
-                    break;
-                case Weapon.SetsunasYumi:
-                    {
-                        if (enemyUnit.isRangedWeaponType()) {
-                            targetUnit.addAllSpur(4);
-                        }
-                        if (targetUnit.isWeaponSpecialRefined) {
-                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                                targetUnit.atkSpur += 5;
-                                targetUnit.spdSpur += 5;
-                                targetUnit.battleContext.invalidatesAtkBuff = true;
-                                targetUnit.battleContext.invalidatesSpdBuff = true;
-                            }
                         }
                     }
                     break;
