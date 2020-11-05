@@ -4240,6 +4240,7 @@ class AetherRaidTacticsBoard {
                 case PassiveC.Jagan:
                 case Weapon.GravityPlus:
                 case Weapon.Sangurizuru:
+                case Weapon.ElisesStaff:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
                         unit.addStatusEffect(StatusEffectType.Gravity);
                     }
@@ -6432,6 +6433,11 @@ class AetherRaidTacticsBoard {
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(defUnit, 2)) {
             switch (unit.weapon) {
+                case Weapon.ElisesStaff:
+                    if (unit.isWeaponSpecialRefined) {
+                        defUnit.addAllSpur(-4);
+                    }
+                    break;
                 case Weapon.RaisenNoSyo:
                     if (unit.isWeaponSpecialRefined) {
                         defUnit.spdSpur -= 5;

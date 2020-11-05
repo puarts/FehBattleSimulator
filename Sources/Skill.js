@@ -162,8 +162,8 @@ const Weapon = {
     FearPlus: 342, // フィアー+
     Slow: 336,
     SlowPlus: 343, // スロウ+
-    Gravity: 335, // グラヴィティ
-    GravityPlus: 344, // グラヴィティ+
+    Gravity: 335, // グラビティ
+    GravityPlus: 344, // グラビティ+
     Sekku: 353, // セック
     ButosaiNoSensu: 367,
     ButosaiNoSensuPlus: 368, // 舞踏祭の扇子
