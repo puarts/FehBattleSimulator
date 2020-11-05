@@ -14,6 +14,7 @@ const AetherRaidDefensePreset = {
     PresetDark20200627: 7,
     PresetAnima20200816: 8,
     PresetAnima20200826: 9,
+    PresetAnima20201105: 10,
 };
 
 /// 飛空城防衛プリセットを表すクラスです。
@@ -38,6 +39,11 @@ class AetherRaidDefensePresetInfo {
 }
 
 const AetherRaidDefensePresetOptions_AnimaSeason = [
+    new AetherRaidDefensePresetInfo(
+        AetherRaidDefensePreset.PresetAnima20201105,
+        "[廃墟]U字",
+        "C4VwTgdg7glgJgUwLwFsCGAHJAmAPgBlwEYDjTC9CiAuECGYAfQXySIDYBmYgFgFZcPItwC0JPuzx8AHAE5cAdk7jOPXHlHjiAkmNx7C8wnt0lC58vpLdCPQgLUknZZ/gB07Am859a9JghEONLS6rIKVoLS3HzYEex8akpO+ApqGpF48qaRxmaZuZYWejaC9rjczlVk7j5ePn4MzNhIPHG4srKhejzsERLyndn4I7h8nJqRBhWCM9Pz+dMWxTm25XjV1bV8I7t7+zZufL50TQicrbIbRMeRveLY2Teesnz92KEZ03hqeaQLc3yy3+1lIdjGLkhWzcvyOjQCPGCAi4giIP3YoT4RDUfFkSWUY2x6kBxCoIMKixIaiWRUipXBDlImxq3i8x3hzD4SFioWE7CcnEkggxY2wAlxagxJC4nj0cqBU1WhT0AhpwPlYPK+WZZg8XgS1AAzkwLr5jYxETRzVyrUwFGwjUxpEgFI7GLIXW6bg7zRxuV77bbGERnWamEQPUHsKwo0Eoy0g4L/ebOPawxa4262j6mDwLjQANygSCMVjoLBkvIclhIWw1XD82nAiyUQrNpm0jX4atBQiVUhYptDr4K9ujxUEastCj1oRD9sj+cd9WrasXMn5fhL4GL9sWcdd6uIusWBTjvfEvBq2kH1enAJcyukTihC874nX4G33Ju9czHhZrWELdtaQHmG69r7m6zoziBTAejO2Beo+ZBIb67BAekAaYRUXowWQnBeghELptGQECGhTDYL2EKEea2DTgOv4YX2k4ppBMyURmQFUsQWaMWojhZn+M6FkAA=="
+    ),
     new AetherRaidDefensePresetInfo(
         AetherRaidDefensePreset.PresetAnima20190826,
         "[忘れられた]フラッシュヒールトラップ飛行パ",
