@@ -3500,6 +3500,18 @@ class Unit {
                 this.defWithSkills += weaponInfo.def;
                 this.resWithSkills += weaponInfo.res;
             }
+
+            switch (this.weapon) {
+                case Weapon.MasyouNoYari:
+                    if (this.isWeaponRefined) {
+                        // 武器錬成なしの時に攻速は+2されてる
+                        this.atkWithSkills += 1;
+                        this.spdWithSkills += 1;
+                        this.defWithSkills += 3;
+                        this.resWithSkills += 3;
+                    }
+                    break;
+            }
         }
     }
 

@@ -4060,6 +4060,12 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.MasyouNoYari:
+                    if (attackUnit.isWeaponRefined) {
+                        attackUnit.reserveTakeDamage(6, true);
+                    } else {
+                        attackUnit.reserveTakeDamage(4, true);
+                    }
+                    break;
                 case Weapon.DevilAxe:
                     attackUnit.reserveTakeDamage(4, true);
                     break;
@@ -5448,9 +5454,24 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Seini:
-                    if (enemyUnit.moveType == MoveType.Armor || enemyUnit.moveType == MoveType.Cavalry) {
+                    if (targetUnit.isWeaponRefined) {
                         if (enemyUnit.isRangedWeaponType()) {
                             targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                        }
+
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 50) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.resSpur += 5;
+                                targetUnit.battleContext.followupAttackPriority++;
+                            }
+                        }
+                    }
+                    else {
+                        if (enemyUnit.moveType == MoveType.Armor || enemyUnit.moveType == MoveType.Cavalry) {
+                            if (enemyUnit.isRangedWeaponType()) {
+                                targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                            }
                         }
                     }
                     break;
@@ -6302,6 +6323,18 @@ class AetherRaidTacticsBoard {
                         let spurAmount = this.__calcKojosenSpurAmount();
                         targetUnit.spdSpur += spurAmount;
                         targetUnit.resSpur += spurAmount;
+                    }
+                    break;
+                case Weapon.MasyouNoYari:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage < 100
+                            || enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                            targetUnit.defSpur += 5;
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
                     }
                     break;
             }
