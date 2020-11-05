@@ -4717,6 +4717,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EternalBreath:
+                    {
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                enemyUnit.atkSpur -= 4;
+                                enemyUnit.refSpur -= 4;
+                                targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.FrostfireBreath:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                         targetUnit.atkSpur += 6;
@@ -4839,6 +4850,25 @@ class AetherRaidTacticsBoard {
                         targetUnit.addAllSpur(4);
                     }
 
+                    break;
+                case Weapon.RuneAxe:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                    break;
+                case Weapon.MasyouNoYari:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage < 100
+                            || enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                            targetUnit.defSpur += 5;
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
                     break;
             }
         }
@@ -5252,13 +5282,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     }
                     break;
-                case Weapon.RuneAxe:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (enemyUnit.hasNegativeStatusEffect()) {
-                            targetUnit.addAllSpur(4);
-                        }
-                    }
-                    break;
+
                 case Weapon.KarenNoYumi:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 50) {
@@ -6323,18 +6347,6 @@ class AetherRaidTacticsBoard {
                         let spurAmount = this.__calcKojosenSpurAmount();
                         targetUnit.spdSpur += spurAmount;
                         targetUnit.resSpur += spurAmount;
-                    }
-                    break;
-                case Weapon.MasyouNoYari:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (targetUnit.snapshot.restHpPercentage < 100
-                            || enemyUnit.hasNegativeStatusEffect()
-                        ) {
-                            targetUnit.atkSpur += 5;
-                            targetUnit.spdSpur += 5;
-                            targetUnit.defSpur += 5;
-                            targetUnit.battleContext.reducesCooldownCount = true;
-                        }
                     }
                     break;
             }
@@ -9444,6 +9456,18 @@ class AetherRaidTacticsBoard {
                         unit.moveCount = 2;
                         this.writeLogLine(skillOwner.getNameWithGroup() + "は重装の行軍により移動値+1");
                         skillOwner.moveCount = 2;
+                    }
+                }
+                break;
+            case Weapon.EternalBreath:
+                {
+                    let isAllyAvailable = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
+                        unit.applyAllBuff(5);
+                        isAllyAvailable = true;
+                    }
+                    if (isAllyAvailable) {
+                        skillOwner.applyAllBuff(5);
                     }
                 }
                 break;

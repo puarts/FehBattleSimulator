@@ -803,6 +803,10 @@ const Weapon = {
     ObsessiveCurse: 1502, // 執念の呪
     EffiesLance: 1503, // エルフィの大槍
 
+    // 2020年11月錬成
+    EternalBreath: 1516, // 悠久のブレス
+    ElisesStaff: 1517, // エリーゼの幼杖
+
     // 女神の僕たる者たち
     Thunderbrand: 1504, // 雷霆
     CaduceusStaff: 1505, // カドゥケウスの杖
