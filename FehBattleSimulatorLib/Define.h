@@ -12,3 +12,6 @@
 #define FEHBATTLESIMULATORLIB_API __declspec(dllimport)
 #endif
 
+#define MAX_MAP_WIDTH (8)
+#define MAX_MAP_HEIGHT (10)
+#define MAX_TILE_COUNT (MAX_MAP_WIDTH*MAX_MAP_HEIGHT)

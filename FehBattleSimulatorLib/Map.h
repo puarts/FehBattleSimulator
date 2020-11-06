@@ -3,8 +3,7 @@
 #include "Define.h"
 #include "Tile.h"
 
-#define MAX_MAP_WIDTH 8
-#define MAX_MAP_HEIGHT 10
+
 
 namespace FehBattleSimulatorLib {
 
@@ -25,7 +24,7 @@ namespace FehBattleSimulatorLib {
             return &_tiles[y * MAX_MAP_WIDTH + x];
         }
 
-        Tile _tiles[MAX_MAP_HEIGHT * MAX_MAP_WIDTH];
+        Tile _tiles[MAX_TILE_COUNT];
         int _width;
         int _height;
     };

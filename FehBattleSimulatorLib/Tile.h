@@ -2,6 +2,7 @@
 
 #include "Define.h"
 #include "Unit.h"
+#include <vector>
 
 namespace FehBattleSimulatorLib {
 
@@ -35,6 +36,9 @@ namespace FehBattleSimulatorLib {
         void SetPos(int x, int y);
         void AddNeighbor(Tile* tile);
         void SetUnit(Unit* unit);
+        int GetId()const;
+        std::vector<Tile*>* GetMovableNeighborTiles(const Unit* unit,
+            int maxDepth, bool ignoresUnits = false, bool ignoreWeightsExceptCanNotReach = false);
 
     private:
         class Impl;
