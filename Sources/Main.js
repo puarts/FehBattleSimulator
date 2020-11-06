@@ -1841,7 +1841,13 @@ class AetherRaidTacticsBoard {
             return;
         }
         this.writeLogLine(`テスト対象: ${targetUnit.getNameWithGroup()}、敵: ${enemyUnit.getNameWithGroup()}`);
+
+        // 元の状態を保存
+        let serializedTurn = exportSettingsAsString();
+
         this.__durabilityTest_simulate(targetUnit, enemyUnit);
+
+        importSettingsFromString(serializedTurn);
     }
 
     get isAutoChangeDetailEnabled() {
@@ -9966,8 +9972,10 @@ class AetherRaidTacticsBoard {
             targetUnit.heal(99);
             enemyUnit.heal(99);
             let tmpWinCount = 0;
+            let attackerUnit = this.vm.isAllyUnitOffence ? targetUnit : enemyUnit;
+            let deffenceUnit = this.vm.isAllyUnitOffence ? enemyUnit : targetUnit;
             for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
-                let combatResult = this.calcDamage(enemyUnit, targetUnit, null, this.vm.durabilityTestCalcPotentialDamage);
+                let combatResult = this.calcDamage(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
                 targetUnit.hp = targetUnit.restHp;
                 targetUnit.specialCount = targetUnit.tmpSpecialCount;
                 if (enemyUnit.restHp == 0) {

@@ -253,6 +253,7 @@ class AppData {
         this.durabilityTestDefaultSpecial = Special.None;
         this.durabilityTestCalcPotentialDamage = false;
         this.durabilityTestBattleCount = 1;
+        this.isAllyUnitOffence = false;
 
         this.aetherRaidDefensePreset = 0;
         this.aetherRaidDefensePresetDescription = "";

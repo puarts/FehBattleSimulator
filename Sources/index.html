@@ -742,7 +742,7 @@
                                         @click="$('#aetherRaidDefensePresetDialog').dialog('open');">
                                     <input v-if="gameMode==GameMode.ResonantBattles" type="button" value="アイテム..."
                                         style="width:140px" class="buttonUi" @click="$('#itemDialog').dialog('open');">
-                                    <input v-if="gameMode==GameMode.AetherRaid" type="button" value="耐久テスト..."
+                                    <input v-if="gameMode==GameMode.AetherRaid" type="button" value="耐久/殲滅力テスト..."
                                         style="width:140px" class="buttonUi"
                                         @click="$('#durabilityTestDialog').dialog('open');">
                                     <input type="button" value="マップ編集..." style="width:140px" class="buttonUi"
@@ -1135,8 +1135,12 @@
         </div>
         <div id="durabilityTestDialog" style="text-align: left;">
             <p style="font-size:12px">
-                テスト対象とリリース済みの全英雄との戦闘結果からテスト対象の耐久力を評価します。
+                テスト対象とリリース済みの全英雄との戦闘結果からテスト対象の耐久力や殲滅力を評価します。
                 敵の凸数などは選択した敵ユニットのものを採用します。スキルは初期スキル、武器錬成は特殊錬成で評価します。初期スキルに奥義がない場合はデフォルト奥義を装備します。
+            </p>
+            <p>
+                <label for="isAllyUnitOffence">先制攻撃で評価(殲滅力を評価)</label>
+                <input id="isAllyUnitOffence" type="checkbox" v-model="isAllyUnitOffence">
             </p>
             <p>
                 <label>テスト対象</label>
@@ -2124,7 +2128,7 @@
                     },
                 ]
             });
-            createDialog($("#durabilityTestDialog"), "耐久テスト", 490, 700);
+            createDialog($("#durabilityTestDialog"), "耐久/殲滅力テスト", 490, 700);
             createDialog($("#aetherRaidDefensePresetDialog"), "模擬戦相手の設定");
             createDialog($("#itemDialog"), "アイテム");
             createDialog($("#editMapDialog"), "マップ編集");
