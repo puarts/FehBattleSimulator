@@ -1848,6 +1848,7 @@ class AetherRaidTacticsBoard {
         this.__durabilityTest_simulate(targetUnit, enemyUnit);
 
         importSettingsFromString(serializedTurn);
+        updateAllUi();
     }
 
     get isAutoChangeDetailEnabled() {
@@ -9936,6 +9937,7 @@ class AetherRaidTacticsBoard {
         let drawCount = 0;
         let loseCount = 0;
         let grantedBlessing = enemyUnit.grantedBlessing;
+        let originalHp = targetUnit.hp;
 
         let loseEnemyNames = [];
         for (let i = 0; i < g_appData.heroInfos.length; ++i) {
@@ -9969,11 +9971,16 @@ class AetherRaidTacticsBoard {
             enemyUnit.resetMaxSpecialCount();
 
 
-            targetUnit.heal(99);
+            if (this.vm.durabilityTestHealsHpFull) {
+                targetUnit.heal(99);
+            }
+            else {
+                targetUnit.heal(originalHp);
+            }
             enemyUnit.heal(99);
             let tmpWinCount = 0;
-            let attackerUnit = this.vm.isAllyUnitOffence ? targetUnit : enemyUnit;
-            let deffenceUnit = this.vm.isAllyUnitOffence ? enemyUnit : targetUnit;
+            let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
+            let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
             for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
                 let combatResult = this.calcDamage(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
                 targetUnit.hp = targetUnit.restHp;

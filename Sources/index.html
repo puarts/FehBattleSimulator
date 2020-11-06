@@ -1139,8 +1139,8 @@
                 敵の凸数などは選択した敵ユニットのものを採用します。スキルは初期スキル、武器錬成は特殊錬成で評価します。初期スキルに奥義がない場合はデフォルト奥義を装備します。
             </p>
             <p>
-                <label for="isAllyUnitOffence">先制攻撃で評価(殲滅力を評価)</label>
-                <input id="isAllyUnitOffence" type="checkbox" v-model="isAllyUnitOffence">
+                <label for="durabilityTestIsAllyUnitOffence">先制攻撃で評価(殲滅力を評価)</label>
+                <input id="durabilityTestIsAllyUnitOffence" type="checkbox" v-model="durabilityTestIsAllyUnitOffence">
             </p>
             <p>
                 <label>テスト対象</label>
@@ -1158,6 +1158,9 @@
                 </select>
             <fieldset>
                 <legend>詳細設定</legend>
+                <label for="durabilityTestHealsHpFull">フルHPで評価</label>
+                <input id="durabilityTestHealsHpFull" type="checkbox" v-model="durabilityTestHealsHpFull">
+                <br />
                 <label for="durabilityTestBattleCount">連戦回数</label>
                 <input id="durabilityTestBattleCount" min="1" max="10" type="number"
                     v-model="durabilityTestBattleCount">
