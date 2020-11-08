@@ -105,9 +105,6 @@ class AetherRaidTacticsBoard {
                 backgroundImageEnabledChanged: function () {
                     updateMapUi();
                 },
-                aetherRaidDefensePresetChanged: function () {
-
-                },
                 gameModeChanged: function () {
                     // g_appData.clearReservedSkillsForAllUnits();
                     g_appData.setPropertiesForCurrentGameMode();
