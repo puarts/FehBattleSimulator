@@ -1587,6 +1587,7 @@ const PassiveC = {
     SpdOpening3: 815, // 速さの開放3
     DefOpening3: 885,
     ResOpening3: 827,
+    SpdDefGap3: 1522, // 速さ守備の大開放3
     SpdResGap3: 1034, // 速さ魔防の大開放3
     AtkResGap3: 1006,
     DefResGap3: 1070,

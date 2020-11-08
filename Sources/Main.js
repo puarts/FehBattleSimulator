@@ -8875,6 +8875,12 @@ class AetherRaidTacticsBoard {
             case PassiveC.ResOpening3:
                 this.__applyOpeningSkill(skillOwner, x => x.snapshot.getResInPrecombat(), x => x.applyResBuff(6));
                 break;
+            case PassiveC.SpdDefGap3:
+                this.__applyOpeningSkill(skillOwner,
+                    x => this.__getStatusEvalUnit(x).getSpdInPrecombat() + this.__getStatusEvalUnit(x).getDefInPrecombat(),
+                    x => { x.applySpdBuff(5); x.applyDefBuff(5); }
+                );
+                break;
             case PassiveC.SpdResGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getSpdInPrecombat() + this.__getStatusEvalUnit(x).getResInPrecombat(),
