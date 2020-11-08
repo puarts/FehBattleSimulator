@@ -78,9 +78,10 @@ const MapType = {
     // 戦渦の連戦
     TempestTrials_KojoNoTakaraSagashi: MapType_TempestTrialsOffset + 0,
     TempestTrials_ButosaiNoKyodai: MapType_TempestTrialsOffset + 1,
+    TempestTrials_ShinmaiNinjaNoHatsuNinmu: MapType_TempestTrialsOffset + 2,
 };
 const DefaultResonantBattleMap = MapType.ResonantBattles_8;
-const DefaultTempestTrialsMap = MapType.TempestTrials_ButosaiNoKyodai;
+const DefaultTempestTrialsMap = MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu;
 const AetherRaidMapImageFiles = [
     { id: MapType.Haikyo, fileName: "Haikyo.png" },
     { id: MapType.Harukaze, fileName: "Harukaze.png" },
@@ -151,6 +152,7 @@ const ResonantBattlesMapKindOptions = [
 const TempestTrialsMapKindOptions = [
     { label: "皇女の宝探し(2020/8/8～)", value: MapType.TempestTrials_KojoNoTakaraSagashi },
     { label: "舞踏祭の兄妹(2020/9/8～)", value: MapType.TempestTrials_ButosaiNoKyodai },
+    { label: "新米忍者の初任務(2020/11/07～)", value: MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu },
 ];
 
 const ArenaMapKindOptions = [
@@ -699,6 +701,7 @@ class Map {
             case MapType.ResonantBattles_8: return 3;
             case MapType.TempestTrials_KojoNoTakaraSagashi: return 1;
             case MapType.TempestTrials_ButosaiNoKyodai: return 0;
+            case MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu: return 0;
             default:
                 return 0;
         }
@@ -2005,6 +2008,25 @@ class Map {
                 if (withUnits) {
                     this.__placeAllyUnitsByPosYX([[0, 2], [0, 3], [1, 2], [1, 3]]);
                     this.__placeElemyUnitsByPosYX([[3, 0], [3, 5], [5, 0], [5, 5], [7, 2]]);
+                }
+                break;
+            case MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu:
+                this.__placeWallsByPosYX([
+                    [2, 2], [2, 3],
+                    [3, 2], [3, 3],
+                    [6, 0], [6, 1],
+                    [6, 4], [6, 5],
+                ]);
+
+                this.__setTileTypesByPosYX([
+                    [1, 5],
+                    [4, 0],
+                    [4, 4],
+                ], TileType.Flier);
+
+                if (withUnits) {
+                    this.__placeAllyUnitsByPosYX([[6, 2], [6, 3], [7, 2], [7, 3]]);
+                    this.__placeElemyUnitsByPosYX([[0, 0], [0, 2], [1, 4], [2, 1], [2, 5]]);
                 }
                 break;
             default:

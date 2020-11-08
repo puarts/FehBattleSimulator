@@ -1071,6 +1071,31 @@ class AetherRaidTacticsBoard {
         let units = [];
         let enemyInfos = [];
         switch (this.vm.mapKind) {
+            case MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu:
+                {
+                    {
+                        // ボス
+                        let unit = g_appData.findEnemyUnitBySlotOrder(1);
+                        this.__setUnitForTempestTrials(unit, 588);
+                        // unit.isBonusChar = true;
+                        unit.hpMult = 1.5;
+                        unit.atkAdd = 0;
+                        unit.spdAdd = 0;
+                        unit.defAdd = 0;
+                        unit.resAdd = 0;
+                        unit.special = Special.None;
+                        unit.reservedSpecial = NotReserved;
+                    }
+
+                    enemyInfos = [
+                        [[MoveType.Cavalry, 2]],
+                        [null],
+                        [[MoveType.Flying, 1]],
+                        [[MoveType.Armor, 1]],
+                        [[MoveType.Infantry, 2]],
+                    ];
+                }
+                break;
             case MapType.TempestTrials_ButosaiNoKyodai:
                 {
                     {

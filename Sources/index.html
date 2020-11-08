@@ -1571,7 +1571,7 @@
                             <th class='param'>
                                 戦闘中
                             </th>
-                            <th class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles" >
+                            <th class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials" >
                                 乗算
                             </th>
                             <th class='param' >
@@ -1597,7 +1597,7 @@
                             </td>
                             <td class='param'>
                             </td>
-                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles">
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
                                 <input class='numericFloat' v-model="value.hpMult" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param' ><input class='numeric'
@@ -1633,7 +1633,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.atkSpur}}
                             </td>
-                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles">
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
                                 <input class='numericFloat' v-model="value.atkMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param' ><input class='numeric'
@@ -1669,7 +1669,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.spdSpur}}
                             </td>
-                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles" >
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials" >
                                 <input class='numericFloat' v-model="value.spdMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param'><input class='numeric'
@@ -1705,7 +1705,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.defSpur}}
                             </td>
-                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles">
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
                                 <input class='numericFloat' v-model="value.defMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param'><input class='numeric'
@@ -1742,7 +1742,7 @@
                                     type="number" min="0" max="99" step="1" readonly="readonly"> -->
                                 {{value.resSpur}}
                             </td>
-                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles" >
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials" >
                                 <input class='numericFloat' v-model="value.resMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
                             </td>
                             <td class='param'><input class='numeric'
@@ -1759,7 +1759,7 @@
                         <tr>
                             <td colspan="5">
                             </td>
-                            <td v-if="g_appData.gameMode == GameMode.ResonantBattles">
+                            <td v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
                                 <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
                                     @click="value.resetStatusMult();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
                             </td>
