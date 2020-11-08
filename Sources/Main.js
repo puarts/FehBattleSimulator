@@ -3782,6 +3782,9 @@ class AetherRaidTacticsBoard {
                 case Weapon.TharjasHex:
                     atkUnit.atkSpur += atkUnit.getBuffTotalInCombat(defUnit);
                     break;
+                case Weapon.TwinStarAxe:
+                    atkUnit.atkSpur += Math.trunc(atkUnit.getBuffTotalInCombat(defUnit) / 2);
+                    break;
                 case Weapon.AkatsukiNoHikari:
                     if (defUnit.atkDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.atkDebuffTotal; }
                     if (defUnit.spdDebuffTotal < 0) { atkUnit.spdSpur += -defUnit.spdDebuffTotal; }
@@ -7571,6 +7574,10 @@ class AetherRaidTacticsBoard {
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.spdSpur -= 4;
                                 break;
+                            case PassiveC.AtkDefRein3:
+                                targetUnit.atkSpur -= 4;
+                                targetUnit.defSpur -= 4;
+                                break;
                             case PassiveC.AtkResRein3:
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.resSpur -= 4;
@@ -8868,6 +8875,12 @@ class AetherRaidTacticsBoard {
             case PassiveC.ResOpening3:
                 this.__applyOpeningSkill(skillOwner, x => x.snapshot.getResInPrecombat(), x => x.applyResBuff(6));
                 break;
+            case PassiveC.SpdDefGap3:
+                this.__applyOpeningSkill(skillOwner,
+                    x => this.__getStatusEvalUnit(x).getSpdInPrecombat() + this.__getStatusEvalUnit(x).getDefInPrecombat(),
+                    x => { x.applySpdBuff(5); x.applyDefBuff(5); }
+                );
+                break;
             case PassiveC.SpdResGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getSpdInPrecombat() + this.__getStatusEvalUnit(x).getResInPrecombat(),
@@ -9388,6 +9401,10 @@ class AetherRaidTacticsBoard {
                         unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
                 }
                 break;
+            case PassiveB.ChillAtkDef2:
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getAtkInPrecombat() + unit.snapshot.getDefInPrecombat() },
+                    unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); }); break;
             case PassiveB.ChillAtkRes2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return unit.snapshot.getAtkInPrecombat() + unit.snapshot.getResInPrecombat() },
