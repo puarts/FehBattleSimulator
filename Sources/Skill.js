@@ -817,6 +817,9 @@ const Weapon = {
 
     // 2020年10月末伝承ディミトリ
     Areadbhar: 1513, // アラドヴァル
+
+    // 平常心の極意
+    TwinStarAxe: 1518, // 業火の双斧
 };
 
 const Support = {

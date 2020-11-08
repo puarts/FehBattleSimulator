@@ -3782,6 +3782,9 @@ class AetherRaidTacticsBoard {
                 case Weapon.TharjasHex:
                     atkUnit.atkSpur += atkUnit.getBuffTotalInCombat(defUnit);
                     break;
+                case Weapon.TwinStarAxe:
+                    atkUnit.atkSpur += Math.trunc(atkUnit.getBuffTotalInCombat(defUnit) / 2);
+                    break;
                 case Weapon.AkatsukiNoHikari:
                     if (defUnit.atkDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.atkDebuffTotal; }
                     if (defUnit.spdDebuffTotal < 0) { atkUnit.spdSpur += -defUnit.spdDebuffTotal; }
