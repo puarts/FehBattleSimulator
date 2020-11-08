@@ -9401,6 +9401,10 @@ class AetherRaidTacticsBoard {
                         unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
                 }
                 break;
+            case PassiveB.ChillAtkDef2:
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getAtkInPrecombat() + unit.snapshot.getDefInPrecombat() },
+                    unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); }); break;
             case PassiveB.ChillAtkRes2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return unit.snapshot.getAtkInPrecombat() + unit.snapshot.getResInPrecombat() },
