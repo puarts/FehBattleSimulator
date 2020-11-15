@@ -32,6 +32,9 @@ const Hero = {
     GreenThief: 550,
     SummerByleth: 540,
     PirateVeronica: 555,
+    DuoSigurd: 566,
+    HaloweenTiki: 577,
+    DuoLyn: 588,
 };
 
 function isThiefIndex(heroIndex) {
@@ -1293,11 +1296,12 @@ class Unit {
     }
 
     get maxHpWithSkills() {
-        return Math.floor(Number(this._maxHpWithSkills) * Number(this.hpMult) + Number(this.hpAdd));
+        let result = Math.floor(Number(this._maxHpWithSkills) * Number(this.hpMult) + Number(this.hpAdd));
+        return Math.min(result, 99);
     }
 
     set maxHpWithSkillsWithoutAdd(value) {
-        return this._maxHpWithSkills = value;
+        this._maxHpWithSkills = Math.min(value, 99);
     }
 
     get maxHpWithSkillsWithoutAdd() {
@@ -1305,7 +1309,7 @@ class Unit {
     }
 
     set maxHpWithSkills(value) {
-        this._maxHpWithSkills = value;
+        this._maxHpWithSkills = Math.min(value, 99);
         if (this.hp > this.maxHpWithSkills) {
             this.hp = this.maxHpWithSkills;
         }
@@ -1777,6 +1781,7 @@ class Unit {
             && (
                 this.heroIndex == Hero.SummerMia
                 || this.heroIndex == Hero.PirateVeronica
+                || this.heroIndex == Hero.HaloweenTiki
             );
     }
 
@@ -1791,6 +1796,8 @@ class Unit {
                 || this.heroIndex == Hero.YoungPalla
                 || this.heroIndex == Hero.BridalMicaiah
                 || this.heroIndex == Hero.SummerByleth
+                || this.heroIndex == Hero.DuoSigurd
+                || this.heroIndex == Hero.DuoLyn
             );
     }
 

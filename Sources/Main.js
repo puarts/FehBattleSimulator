@@ -689,6 +689,16 @@ class AetherRaidTacticsBoard {
         return this.vm.audioManager;
     }
 
+    __canActivateDuoSigurdSkill(duoUnit) {
+        for (let targetUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 1, false)) {
+            let result = this.__findTileAfterReposition(duoUnit, targetUnit, duoUnit.placedTile);
+            if (result.success) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     canActivateDuoSkillOrHarmonizedSkill(duoUnit) {
         if (!duoUnit.isDuoHero && !duoUnit.isHarmonicHero) {
             return false;
@@ -696,6 +706,19 @@ class AetherRaidTacticsBoard {
 
         if (duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn) {
             return false;
+        }
+
+        switch (duoUnit.heroIndex) {
+            case Hero.DuoLyn:
+                if (!duoUnit.isActionDone) {
+                    return false;
+                }
+                break;
+            case Hero.DuoSigurd:
+                if (!this.__canActivateDuoSigurdSkill(duoUnit)) {
+                    return false;
+                }
+                break;
         }
 
         if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoHero || x.isHarmonicHero)) {
@@ -732,8 +755,14 @@ class AetherRaidTacticsBoard {
     __areSameOrigin(unit, targetOrigins) {
         let origins = unit.heroInfo.origin.split('|');
         for (let origin of origins) {
+            let isMonsyoNoNazo = origin.indexOf("紋章の謎") >= 0;
             for (let targetOrigin of targetOrigins) {
-                if (origin == targetOrigin) {
+                if (isMonsyoNoNazo) {
+                    if (targetOrigin.indexOf("紋章の謎") >= 0) {
+                        return true;
+                    }
+                }
+                else if (origin == targetOrigin) {
                     return true;
                 }
             }
@@ -746,6 +775,45 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoLyn:
+                {
+                    duoUnit.isActionDone = false;
+                }
+                break;
+            case Hero.HaloweenTiki:
+                {
+                    let targetOrigins = duoUnit.heroInfo.origin.split('|');
+                    let highestHpUnits = [];
+                    let heigestHp = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                        if (this.__areSameOrigin(unit, targetOrigins)) {
+                            unit.addStatusEffect(StatusEffectType.ResonantBlades);
+                            if (unit.isActionDone) {
+                                if (unit.hp > heigestHp) {
+                                    highestHpUnits = [unit];
+                                }
+                                else if (unit.hp == highestHp) {
+                                    highestHpUnits.push(unit);
+                                }
+                            }
+                        }
+                    }
+
+                    if (highestHpUnits.length == 1) {
+                        for (let unit of highestHpUnits) {
+                            unit.isActionDone = false;
+                        }
+                    }
+                }
+                break;
+            case Hero.DuoSigurd:
+                {
+                    for (let targetUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 1, false)) {
+                        this.__applyMovementAssist(duoUnit, targetUnit,
+                            (unit, target, tile) => this.__findTileAfterReposition(unit, target, tile));
+                    }
+                }
+                break;
             case Hero.PirateVeronica:
                 {
                     let targetOrigins = duoUnit.heroInfo.origin.split('|');
@@ -9627,7 +9695,9 @@ class AetherRaidTacticsBoard {
 
             // 比翼や双界スキル発動カウントリセット
             unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
-            if (unit.heroIndex == Hero.YoungPalla) {
+            if (unit.heroIndex == Hero.YoungPalla
+                || unit.heroIndex == Hero.DuoSigurd
+            ) {
                 if (this.isOddTurn) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
                 }
@@ -10014,7 +10084,7 @@ class AetherRaidTacticsBoard {
                 targetUnit.heal(99);
             }
             else {
-                targetUnit.heal(originalHp);
+                targetUnit.hp = originalHp;
             }
             enemyUnit.heal(99);
             let tmpWinCount = 0;
@@ -10042,7 +10112,7 @@ class AetherRaidTacticsBoard {
                 combatResultText = "引き分け";
                 ++drawCount;
             }
-            this.writeLogLine(`${targetUnit.getNameWithGroup()}(HP${targetUnit.restHp})vs${enemyUnit.getNameWithGroup()}(HP${enemyUnit.restHp})→${combatResultText}`);
+            this.writeLogLine(`${targetUnit.getNameWithGroup()}(HP${originalHp}→${targetUnit.restHp})vs${enemyUnit.getNameWithGroup()}(HP${enemyUnit.hp}→${enemyUnit.restHp})→${combatResultText}`);
         }
         let totalCount = winCount + loseCount + drawCount;
         this.clearDurabilityTestLog();
