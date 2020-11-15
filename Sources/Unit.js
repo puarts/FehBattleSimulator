@@ -3,6 +3,14 @@
  * @brief Unit クラスやそれに関連する関数や変数定義です。
  */
 
+const UnitRarity = {
+    Star1: 1,
+    Star2: 2,
+    Star3: 3,
+    Star4: 4,
+    Star5: 5,
+};
+
 const SeasonType = {
     None: -1,
     Light: 0,
@@ -296,7 +304,7 @@ function groupIdToString(groupId) {
     }
 }
 
-// 成長量から成長値を計算します。
+/// ☆5の成長量から成長値を計算します。
 function getGrowthRateOfStar5(growthAmount) {
     switch (growthAmount) {
         case 8: return 0.2;
@@ -343,6 +351,18 @@ function getAssetStatus(growthValue) {
     }
 }
 
+/// 値が同じ場合の優先度を取得します。
+function __getStatusRankValue(statusType) {
+    switch (statusType) {
+        case StatusType.Hp: return 4;
+        case StatusType.Atk: return 3;
+        case StatusType.Spd: return 2;
+        case StatusType.Def: return 1;
+        case StatusType.Res: return 0;
+    }
+}
+
+
 /// 英雄情報です。ユニットの初期化に使用します。
 class HeroInfo {
     constructor(name, icon, moveType, weaponType, attackRange,
@@ -381,11 +401,31 @@ class HeroInfo {
         this.passiveA = passiveA;
         this.passiveB = passiveB;
         this.passiveC = passiveC;
-        this.hpLv1 = hpLv1;
-        this.atkLv1 = atkLv1;
-        this.spdLv1 = spdLv1;
-        this.defLv1 = defLv1;
-        this.resLv1 = resLv1;
+        this.hpLv1 = Number(hpLv1);
+        this.atkLv1 = Number(atkLv1);
+        this.spdLv1 = Number(spdLv1);
+        this.defLv1 = Number(defLv1);
+        this.resLv1 = Number(resLv1);
+        this.hpLv1ForStar4 = 0;
+        this.hpLv1ForStar3 = 0;
+        this.hpLv1ForStar2 = 0;
+        this.hpLv1ForStar1 = 0;
+        this.atkLv1ForStar4 = 0;
+        this.atkLv1ForStar3 = 0;
+        this.atkLv1ForStar2 = 0;
+        this.atkLv1ForStar1 = 0;
+        this.spdLv1ForStar4 = 0;
+        this.spdLv1ForStar3 = 0;
+        this.spdLv1ForStar2 = 0;
+        this.spdLv1ForStar1 = 0;
+        this.defLv1ForStar4 = 0;
+        this.defLv1ForStar3 = 0;
+        this.defLv1ForStar2 = 0;
+        this.defLv1ForStar1 = 0;
+        this.resLv1ForStar4 = 0;
+        this.resLv1ForStar3 = 0;
+        this.resLv1ForStar2 = 0;
+        this.resLv1ForStar1 = 0;
 
         this.hpIncrement = Number(hpVar.split('/')[1]);
         this.hpDecrement = Number(hpVar.split('/')[0]);
@@ -414,6 +454,8 @@ class HeroInfo {
         this.isResplendent = resplendent;
         this.origin = origin;
         this.howToGet = howToGet;
+
+        this.__updateLv1Statuses();
     }
 
     get name() {
@@ -442,6 +484,139 @@ class HeroInfo {
     }
     get res() {
         return this._res;
+    }
+
+    getHpLv1(rarity) {
+        switch (rarity) {
+            case UnitRarity.Star1: return this.hpLv1ForStar1;
+            case UnitRarity.Star2: return this.hpLv1ForStar2;
+            case UnitRarity.Star3: return this.hpLv1ForStar3;
+            case UnitRarity.Star4: return this.hpLv1ForStar4;
+            case UnitRarity.Star5: return this.hpLv1;
+        }
+    }
+    getAtkLv1(rarity) {
+        switch (rarity) {
+            case UnitRarity.Star1: return this.atkLv1ForStar1;
+            case UnitRarity.Star2: return this.atkLv1ForStar2;
+            case UnitRarity.Star3: return this.atkLv1ForStar3;
+            case UnitRarity.Star4: return this.atkLv1ForStar4;
+            case UnitRarity.Star5: return this.atkLv1;
+        }
+    }
+    getSpdLv1(rarity) {
+        switch (rarity) {
+            case UnitRarity.Star1: return this.spdLv1ForStar1;
+            case UnitRarity.Star2: return this.spdLv1ForStar2;
+            case UnitRarity.Star3: return this.spdLv1ForStar3;
+            case UnitRarity.Star4: return this.spdLv1ForStar4;
+            case UnitRarity.Star5: return this.spdLv1;
+        }
+    }
+    getDefLv1(rarity) {
+        switch (rarity) {
+            case UnitRarity.Star1: return this.defLv1ForStar1;
+            case UnitRarity.Star2: return this.defLv1ForStar2;
+            case UnitRarity.Star3: return this.defLv1ForStar3;
+            case UnitRarity.Star4: return this.defLv1ForStar4;
+            case UnitRarity.Star5: return this.defLv1;
+        }
+    }
+    getResLv1(rarity) {
+        switch (rarity) {
+            case UnitRarity.Star1: return this.resLv1ForStar1;
+            case UnitRarity.Star2: return this.resLv1ForStar2;
+            case UnitRarity.Star3: return this.resLv1ForStar3;
+            case UnitRarity.Star4: return this.resLv1ForStar4;
+            case UnitRarity.Star5: return this.resLv1;
+        }
+    }
+
+    __updateLv1Statuses() {
+        // ★5のLV1ステータスから他のレアリティのLV1ステータスを以下のロジックから逆算して推定
+        // (正しく推定できない場合もあるかもしれない)
+        // ☆2になると、HP以外の最も高い2つのステータスが1つずつ増加します
+        // ☆3になると、HPと残りの2つのHP以外のステータスが1つずつ増加します
+        // ☆4になると、HP以外の最も高い2つのステータスが1つずつ増加します
+        // ☆5になると、HPと残りの2つのHP以外のステータスが1つずつ増加します
+
+        this.hpLv1ForStar4 = this.hpLv1 - 1;
+        this.hpLv1ForStar3 = this.hpLv1ForStar4;
+        this.hpLv1ForStar2 = this.hpLv1ForStar3 - 1;
+        this.hpLv1ForStar1 = this.hpLv1ForStar2;
+
+        var statusList = [
+            { type: StatusType.Atk, value: this.atkLv1 },
+            { type: StatusType.Spd, value: this.spdLv1 },
+            { type: StatusType.Def, value: this.defLv1 },
+            { type: StatusType.Res, value: this.resLv1 },
+        ];
+
+        statusList.sort((a, b) => {
+            let bPriority = b.value + __getStatusRankValue(b.type) * 0.1;
+            let aPriority = a.value + __getStatusRankValue(a.type) * 0.1;
+            return bPriority - aPriority;
+        });
+
+        let lowerStatuses = [statusList[2], statusList[3]];
+        let heigherStatuses = [statusList[0], statusList[1]];
+
+        for (let status of lowerStatuses) {
+            switch (status.type) {
+                case StatusType.Atk:
+                    this.atkLv1ForStar4 = this.atkLv1 - 1;
+                    this.atkLv1ForStar3 = this.atkLv1ForStar4;
+                    this.atkLv1ForStar2 = this.atkLv1ForStar3 - 1;
+                    this.atkLv1ForStar1 = this.atkLv1ForStar2;
+                    break;
+                case StatusType.Spd:
+                    this.spdLv1ForStar4 = this.spdLv1 - 1;
+                    this.spdLv1ForStar3 = this.spdLv1ForStar4;
+                    this.spdLv1ForStar2 = this.spdLv1ForStar3 - 1;
+                    this.spdLv1ForStar1 = this.spdLv1ForStar2;
+                    break;
+                case StatusType.Def:
+                    this.defLv1ForStar4 = this.defLv1 - 1;
+                    this.defLv1ForStar3 = this.defLv1ForStar4;
+                    this.defLv1ForStar2 = this.defLv1ForStar3 - 1;
+                    this.defLv1ForStar1 = this.defLv1ForStar2;
+                    break;
+                case StatusType.Res:
+                    this.resLv1ForStar4 = this.resLv1 - 1;
+                    this.resLv1ForStar3 = this.resLv1ForStar4;
+                    this.resLv1ForStar2 = this.resLv1ForStar3 - 1;
+                    this.resLv1ForStar1 = this.resLv1ForStar2;
+                    break;
+            }
+        }
+        for (let status of heigherStatuses) {
+            switch (status.type) {
+                case StatusType.Atk:
+                    this.atkLv1ForStar4 = this.atkLv1;
+                    this.atkLv1ForStar3 = this.atkLv1ForStar4 - 1;
+                    this.atkLv1ForStar2 = this.atkLv1ForStar3;
+                    this.atkLv1ForStar1 = this.atkLv1ForStar2 - 1;
+                    break;
+                case StatusType.Spd:
+                    this.spdLv1ForStar4 = this.spdLv1;
+                    this.spdLv1ForStar3 = this.spdLv1ForStar4 - 1;
+                    this.spdLv1ForStar2 = this.spdLv1ForStar3;
+                    this.spdLv1ForStar1 = this.spdLv1ForStar2 - 1;
+                    break;
+                case StatusType.Def:
+                    this.defLv1ForStar4 = this.defLv1;
+                    this.defLv1ForStar3 = this.defLv1ForStar4 - 1;
+                    this.defLv1ForStar2 = this.defLv1ForStar3;
+                    this.defLv1ForStar1 = this.defLv1ForStar2 - 1;
+                    break;
+                case StatusType.Res:
+                    this.resLv1ForStar4 = this.resLv1;
+                    this.resLv1ForStar3 = this.resLv1ForStar4 - 1;
+                    this.resLv1ForStar2 = this.resLv1ForStar3;
+                    this.resLv1ForStar1 = this.resLv1ForStar2 - 1;
+                    break;
+            }
+        }
     }
 }
 
@@ -896,7 +1071,7 @@ class Unit {
         this.heroInfo = null;
 
         this.level = 40;
-        this.rarity = 5;
+        this.rarity = UnitRarity.Star5;
 
         this.battleContext = new BattleContext();
         this.actionContext = new ActionContext();
@@ -3069,11 +3244,11 @@ class Unit {
             }
         }
 
-        this.hpLv1 = this.heroInfo.hpLv1 + hpLv1IvChange;
-        this.atkLv1 = this.heroInfo.atkLv1 + atkLv1IvChange;
-        this.spdLv1 = this.heroInfo.spdLv1 + spdLv1IvChange;
-        this.defLv1 = this.heroInfo.defLv1 + defLv1IvChange;
-        this.resLv1 = this.heroInfo.resLv1 + resLv1IvChange;
+        this.hpLv1 = this.heroInfo.getHpLv1(this.rarity) + hpLv1IvChange;
+        this.atkLv1 = this.heroInfo.getAtkLv1(this.rarity) + atkLv1IvChange;
+        this.spdLv1 = this.heroInfo.getSpdLv1(this.rarity) + spdLv1IvChange;
+        this.defLv1 = this.heroInfo.getDefLv1(this.rarity) + defLv1IvChange;
+        this.resLv1 = this.heroInfo.getResLv1(this.rarity) + resLv1IvChange;
 
         this.__updateGrowth(updatesPureGrowthRate);
     }
@@ -3439,6 +3614,7 @@ class Unit {
         }
     }
 
+    /// データベースの英雄情報からユニットを初期化します。
     initByHeroInfo(heroInfo) {
         let isHeroInfoChanged = this.heroInf != heroInfo;
         if (!isHeroInfoChanged) {

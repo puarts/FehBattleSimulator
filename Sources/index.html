@@ -1440,7 +1440,13 @@
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
                                 <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.heroIndex}})</span>
                                 <br/>
-                                ☆{{value.rarity}} <label class="normal" for="merge">LV.</label>
+                                ★
+                                <select v-model="value.rarity" @change="g_app.vm.ivChanged">
+                                    <option v-for="item in UnitRarity" v-bind:value="item">
+                                        {{ item}}
+                                    </option>
+                                </select>
+                                <label class="normal" for="merge">LV.</label>
                                 <input name="level" type="number" v-model="value.level"
                                     min="1" max="99" class="numeric" @input="g_app.vm.mergeChanged" />
                                 +<input name="merge" type="number" v-model="value.merge"
@@ -1993,6 +1999,59 @@
                         movementOrder={{value.movementOrder}}
                         <br/>
                         chaseTargetTile={{value.chaseTargetTileToString()}}
+
+                        <span v-if="value.heroInfo != null">
+                            <table>
+                                <tr>
+                                    <th></th>
+                                    <th>HP</th>
+                                    <th>攻</th>
+                                    <th>速</th>
+                                    <th>守</th>
+                                    <th>魔</th>
+                                </tr>
+                                <tr>
+                                    <th>★5</th>
+                                    <td>{{value.heroInfo.hpLv1}}</td>
+                                    <td>{{value.heroInfo.atkLv1}}</td>
+                                    <td>{{value.heroInfo.spdLv1}}</td>
+                                    <td>{{value.heroInfo.defLv1}}</td>
+                                    <td>{{value.heroInfo.resLv1}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★4</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar4}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★3</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar3}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★2</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar2}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★1</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar1}}</td>
+                                </tr>
+                            </table>
+                        </span>
                     </span>
                 </td>
             </tr>
