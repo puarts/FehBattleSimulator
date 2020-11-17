@@ -3720,6 +3720,9 @@ class AetherRaidTacticsBoard {
         if (!this.__canInvalidateInvalidationOfFollowupAttack(defUnit, atkUnit)) {
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.InstantLancePlus:
+                        --followupAttackPriority;
+                        break;
                     case Weapon.Rifia:
                         if (atkUnit.snapshot.restHpPercentage >= 50) {
                             --followupAttackPriority;
@@ -6564,6 +6567,10 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.InstantLancePlus:
+                    atkUnit.atkSpur += 4;
+                    atkUnit.defSpur += 4;
+                    break;
                 case Weapon.CourtlyFanPlus:
                     atkUnit.atkSpur += 5;
                     atkUnit.spdSpur += 5;

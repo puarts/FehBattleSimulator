@@ -820,6 +820,9 @@ const Weapon = {
 
     // 平常心の極意
     TwinStarAxe: 1518, // 業火の双斧
+
+    // ベルンの王女
+    InstantLancePlus: 1528, // 瞬撃の槍+
 };
 
 const Support = {
