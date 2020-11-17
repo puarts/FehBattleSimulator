@@ -1401,6 +1401,7 @@ const PassiveB = {
     ShingunSoshi3: 593, // 進軍阻止3
     Surinuke3: 592, // すり抜け3
     Tenmakoku3: 1139, // 天馬行空3
+    WyvernFlight3: 1529, // 飛竜行空3
     KodoNoHukanGusu3: 1136, // 鼓動の封緘・偶数3
     OddPulseTie3: 1321, // 鼓動の封緘・奇数3
 
