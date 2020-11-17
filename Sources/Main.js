@@ -5025,6 +5025,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TigerRoarAxe:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.addAllSpur(5);
+                        if (enemyUnit.snapshot.restHpPercentage === 100) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
                 case Weapon.Areadbhar:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);

@@ -823,6 +823,7 @@ const Weapon = {
 
     // ベルンの王女
     InstantLancePlus: 1528, // 瞬撃の槍+
+    TigerRoarAxe: 1526, // 虎の剛斧
 };
 
 const Support = {
