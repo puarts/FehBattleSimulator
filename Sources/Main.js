@@ -7064,6 +7064,13 @@ class AetherRaidTacticsBoard {
                         defUnit.battleContext.invalidateAllBuffs();
                     }
                     break;
+                case PassiveA.CloseDef4:
+                    if (atkUnit.isMeleeWeaponType()) {
+                        defUnit.defSpur += 8;
+                        defUnit.resSpur += 8;
+                        defUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
                 case Weapon.EnkyoriBougyoNoYumiPlus:
                 case PassiveA.DistantDef3:
                     if (atkUnit.isRangedWeaponType()) {

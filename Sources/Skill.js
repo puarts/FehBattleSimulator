@@ -1017,9 +1017,10 @@ const PassiveA = {
     Fury2: 1301,
     Fury3: 526, // 獅子奮迅3
     Fury4: 825,
-    DistantDef4: 875, // 遠距離防御4
     DistantDef3: 564, // 遠距離防御3
+    DistantDef4: 875, // 遠距離防御4
     CloseDef3: 563, // 近距離防御3
+    CloseDef4: 1527, // 近距離防御4
 
     AtkSpdBond1: 1325,
     AtkSpdBond2: 1326,
