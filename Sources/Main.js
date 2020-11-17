@@ -4102,6 +4102,12 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Aureola:
+                    attackUnit.reserveHeal(7);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
+                        unit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.DarkCreatorS:
                     attackUnit.isOneTimeActionActivatedForWeapon = true;
                     break;
@@ -5025,6 +5031,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Aureola:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidatesReferenceLowerMit = true;
+                    }
+                    break;
                 case Weapon.TigerRoarAxe:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
