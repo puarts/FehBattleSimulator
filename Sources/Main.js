@@ -3720,6 +3720,9 @@ class AetherRaidTacticsBoard {
         if (!this.__canInvalidateInvalidationOfFollowupAttack(defUnit, atkUnit)) {
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.InstantLancePlus:
+                        --followupAttackPriority;
+                        break;
                     case Weapon.Rifia:
                         if (atkUnit.snapshot.restHpPercentage >= 50) {
                             --followupAttackPriority;
@@ -4099,6 +4102,12 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Aureola:
+                    attackUnit.reserveHeal(7);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
+                        unit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.DarkCreatorS:
                     attackUnit.isOneTimeActionActivatedForWeapon = true;
                     break;
@@ -5022,6 +5031,24 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Aureola:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidatesReferenceLowerMit = true;
+                    }
+                    break;
+                case Weapon.TigerRoarAxe:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.addAllSpur(5);
+                        if (enemyUnit.snapshot.restHpPercentage === 100) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
                 case Weapon.Areadbhar:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
@@ -5915,6 +5942,14 @@ class AetherRaidTacticsBoard {
                         enemyUnit.defSpur -= amount;
                     }
                     break;
+                case PassiveB.WyvernFlight3:
+                    if (targetUnit.getEvalSpdInPrecombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
+                        let resDiff = targetUnit.getEvalDefInPrecombat() - enemyUnit.getEvalDefInPrecombat();
+                        let amount = Math.max(0, Math.min(7, Math.floor(resDiff * 0.5)));
+                        enemyUnit.atkSpur -= amount;
+                        enemyUnit.defSpur -= amount;
+                    }
+                    break;
                 case Weapon.AsameiNoTanken:
                     if (!enemyUnit.snapshot.isRestHpFull) {
                         targetUnit.atkSpur += 5;
@@ -6564,6 +6599,10 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.InstantLancePlus:
+                    atkUnit.atkSpur += 4;
+                    atkUnit.defSpur += 4;
+                    break;
                 case Weapon.CourtlyFanPlus:
                     atkUnit.atkSpur += 5;
                     atkUnit.spdSpur += 5;
@@ -7034,6 +7073,13 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveA.DistantDef4:
                     if (atkUnit.isRangedWeaponType()) {
+                        defUnit.defSpur += 8;
+                        defUnit.resSpur += 8;
+                        defUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
+                case PassiveA.CloseDef4:
+                    if (atkUnit.isMeleeWeaponType()) {
                         defUnit.defSpur += 8;
                         defUnit.resSpur += 8;
                         defUnit.battleContext.invalidateAllBuffs();

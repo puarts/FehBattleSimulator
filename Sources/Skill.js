@@ -820,6 +820,11 @@ const Weapon = {
 
     // 平常心の極意
     TwinStarAxe: 1518, // 業火の双斧
+
+    // ベルンの王女
+    InstantLancePlus: 1528, // 瞬撃の槍+
+    TigerRoarAxe: 1526, // 虎の剛斧
+    Aureola: 1530, // アーリアル
 };
 
 const Support = {
@@ -1013,9 +1018,10 @@ const PassiveA = {
     Fury2: 1301,
     Fury3: 526, // 獅子奮迅3
     Fury4: 825,
-    DistantDef4: 875, // 遠距離防御4
     DistantDef3: 564, // 遠距離防御3
+    DistantDef4: 875, // 遠距離防御4
     CloseDef3: 563, // 近距離防御3
+    CloseDef4: 1527, // 近距離防御4
 
     AtkSpdBond1: 1325,
     AtkSpdBond2: 1326,
@@ -1398,6 +1404,7 @@ const PassiveB = {
     ShingunSoshi3: 593, // 進軍阻止3
     Surinuke3: 592, // すり抜け3
     Tenmakoku3: 1139, // 天馬行空3
+    WyvernFlight3: 1529, // 飛竜行空3
     KodoNoHukanGusu3: 1136, // 鼓動の封緘・偶数3
     OddPulseTie3: 1321, // 鼓動の封緘・奇数3
 
