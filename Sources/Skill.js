@@ -48,6 +48,42 @@ const WeaponType = {
     All: 30,
 };
 
+function getWeaponTypeOrder(weaponType) {
+    let weaponTypes = [
+        WeaponType.Sword,
+        WeaponType.RedTome,
+        WeaponType.RedBreath,
+        WeaponType.RedBeast,
+        WeaponType.RedBow,
+        WeaponType.RedDagger,
+        WeaponType.Lance,
+        WeaponType.BlueTome,
+        WeaponType.BlueBreath,
+        WeaponType.BlueBeast,
+        WeaponType.BlueBow,
+        WeaponType.BlueDagger,
+        WeaponType.Axe,
+        WeaponType.GreenTome,
+        WeaponType.GreenBreath,
+        WeaponType.GreenBeast,
+        WeaponType.GreenBow,
+        WeaponType.GreenDagger,
+        WeaponType.Staff,
+        WeaponType.ColorlessTome,
+        WeaponType.ColorlessBreath,
+        WeaponType.ColorlessBeast,
+        WeaponType.ColorlessBow,
+        WeaponType.ColorlessDagger,
+    ];
+    let i = 0;
+    for (let type of weaponTypes) {
+        if (type == weaponType) {
+            return i;
+        }
+        ++i;
+    }
+    return -1;
+}
 
 const WeaponRefinementType =
 {

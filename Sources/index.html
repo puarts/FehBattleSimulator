@@ -1182,9 +1182,9 @@
             <p>
                 <input type="button" value="テスト開始" @click="g_app.beginDurabilityTest();">
             </p>
-            <p>
-                <textarea rows="10" cols="43" readonly="true" v-model="durabilityTestLog"></textarea>
-            </p>
+            <div v-html="durabilityTestLog"
+                style="min-height: 50px; padding: 10px; border: 1px solid #ddd;background-color: #fff;">
+            </div>
         </div>
         <div id="aetherRaidDefensePresetDialog">
             <p>模擬戦する防衛を選択してください。</p>
@@ -2247,6 +2247,7 @@
             }
         }
     </script>
+
 
     <script>
         function createScriptElement(src, onloadFunc) {

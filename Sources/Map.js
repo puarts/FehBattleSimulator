@@ -5,6 +5,8 @@ const MapType_ArenaOffset = 50;
 const MapType_ResonantBattlesOffset = MapType_ArenaOffset + 100;
 const MapType_TempestTrialsOffset = MapType_ResonantBattlesOffset + 1000;
 const MapType = {
+    None: -1,
+
     // 飛空城
     Izumi: 0,
     Hyosetsu: 1,
@@ -602,6 +604,10 @@ class Map {
         this.setMapSize(8, 10);
     }
 
+    setMapSizeToPawnsOfLoki() {
+        this.setMapSize(4, 5);
+    }
+
     resetOverriddenTiles() {
         for (let tile of this._tiles) {
             tile.resetOverriddenCell();
@@ -728,6 +734,8 @@ class Map {
             }
         }
         switch (this._type) {
+            case MapType.None:
+                break;
             case MapType.Izumi: // 泉の城
                 {
                     this.setTileType(0, 4, TileType.Flier);

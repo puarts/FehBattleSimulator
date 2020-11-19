@@ -395,6 +395,7 @@ class HeroInfo {
         this._moveType = moveType;
         this._attackRange = attackRange;
         this.weapon = weapon;
+        this.weaponTypeValue = stringToWeaponType(weaponType);
         this.weaponType = weaponType;
         this.support = support;
         this.special = special;
@@ -456,6 +457,21 @@ class HeroInfo {
         this.howToGet = howToGet;
 
         this.__updateLv1Statuses();
+    }
+
+    get detailPageUrl() {
+        return "https://puarts.com/?fehhero=" + this.id;
+    }
+
+    get iconUrl() {
+        return g_siteRootPath + "blog/images/FehHeroThumbs/" + this.icon;
+    }
+
+    getIconImgTag(size) {
+        return `<img id='${this.id}' src='${this.iconUrl}' width='${size}px' />`;
+    }
+    getIconImgTagWithAnchor(size) {
+        return `<a href='${this.detailPageUrl}' target='_blank'><img id='${this.id}' src='${this.iconUrl}' width='${size}px' /></a>`;
     }
 
     get name() {
@@ -1065,7 +1081,6 @@ class Unit {
         this._posY = 0;
         this._attackRange = attackRange;
         this._placedTile = null;
-        this._icon = icon;
         this._moveCount = 1;
         this.moveCountAtBeginningOfTurn = 1;
         this.heroInfo = null;
@@ -1180,8 +1195,6 @@ class Unit {
 
         this.isTransformed = false; // 化身
         this.isResplendent = false; // 神装化
-
-        this.detailPageUrl = "";
 
         this.isEnemyActionTriggered = false; // 敵AIが行動開始したかどうか
 
@@ -2778,11 +2791,10 @@ class Unit {
     }
 
     get icon() {
-        return this._icon;
-    }
-
-    set icon(value) {
-        this._icon = value;
+        if (this.heroInfo == null) {
+            return "";
+        }
+        return this.heroInfo.iconUrl;
     }
 
     get attackRange() {
@@ -3614,6 +3626,13 @@ class Unit {
         }
     }
 
+    get detailPageUrl() {
+        if (this.heroInfo == null) {
+            return "";
+        }
+        return this.heroInfo.detailPageUrl;
+    }
+
     /// データベースの英雄情報からユニットを初期化します。
     initByHeroInfo(heroInfo) {
         let isHeroInfoChanged = this.heroInf != heroInfo;
@@ -3628,8 +3647,6 @@ class Unit {
         }
 
         this.name = heroInfo.name;
-        this.icon = g_siteRootPath + "blog/images/FehHeroThumbs/" + heroInfo.icon;
-        this.detailPageUrl = "https://puarts.com/?fehhero=" + heroInfo.id;
 
         this.weaponType = stringToWeaponType(heroInfo.weaponType);
         this.attackRange = heroInfo.attackRange;

@@ -123,6 +123,8 @@ class AetherRaidTacticsBoard {
                         case GameMode.TempestTrials:
                             this.mapKind = DefaultTempestTrialsMap;
                             break;
+                        case GameMode.PawnsOfLoki:
+                            this.mapKind = -1;
                         default:
                             break;
                     }
@@ -159,6 +161,9 @@ class AetherRaidTacticsBoard {
                             self.__setUnitsForResonantBattles();
                             break;
                         case GameMode.TempestTrials:
+                            resetPlacement();
+                            break;
+                        case GameMode.PawnsOfLoki:
                             resetPlacement();
                             break;
                     }
@@ -10094,7 +10099,9 @@ class AetherRaidTacticsBoard {
         let grantedBlessing = enemyUnit.grantedBlessing;
         let originalHp = targetUnit.hp;
 
-        let loseEnemyNames = [];
+        let loseEnemies = [];
+        let drawEnemies = [];
+        let winEnemies = [];
         for (let i = 0; i < g_appData.heroInfos.length; ++i) {
             let heroInfo = g_appData.heroInfos.get(i);
 
@@ -10148,18 +10155,21 @@ class AetherRaidTacticsBoard {
             if (targetUnit.restHp == 0) {
                 combatResultText = "敗北";
                 ++loseCount;
-                loseEnemyNames.push(heroInfo.name);
+                loseEnemies.push(heroInfo);
             }
             else if (tmpWinCount == this.vm.durabilityTestBattleCount) {
                 combatResultText = "勝利";
                 ++winCount;
+                winEnemies.push(heroInfo);
             }
             else {
                 combatResultText = "引き分け";
                 ++drawCount;
+                drawEnemies.push(heroInfo);
             }
             this.writeLogLine(`${targetUnit.getNameWithGroup()}(HP${originalHp}→${targetUnit.restHp})vs${enemyUnit.getNameWithGroup()}(HP${enemyUnit.hp}→${enemyUnit.restHp})→${combatResultText}`);
         }
+
         let totalCount = winCount + loseCount + drawCount;
         this.clearDurabilityTestLog();
         this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${Math.trunc(winCount / totalCount * 100)}%)`);
@@ -10168,11 +10178,32 @@ class AetherRaidTacticsBoard {
         this.writeDurabilityTestLogLine(`勝率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 0)}%`);
         this.writeDurabilityTestLogLine(`生存率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 2)}%`);
         this.writeDurabilityTestLogLine(`戦闘結果スコア: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 1)} / 100`);
-        this.writeDurabilityTestLogLine("");
-        this.writeDurabilityTestLogLine("敗北した相手:");
-        for (let name of loseEnemyNames) {
-            this.writeDurabilityTestLogLine(name);
+
+        const iconSize = 40;
+
+        loseEnemies.sort((a, b) => getWeaponTypeOrder(a.weaponTypeValue) - getWeaponTypeOrder(b.weaponTypeValue));
+        drawEnemies.sort((a, b) => getWeaponTypeOrder(a.weaponTypeValue) - getWeaponTypeOrder(b.weaponTypeValue));
+        winEnemies.sort((a, b) => getWeaponTypeOrder(a.weaponTypeValue) - getWeaponTypeOrder(b.weaponTypeValue));
+
+        this.writeDurabilityTestLogLine("<details>");
+        this.writeDurabilityTestLogLine("<summary>敗北した相手</summary>");
+        for (let iconTag of loseEnemies) {
+            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
         }
+        this.writeDurabilityTestLogLine("</details>");
+        this.writeDurabilityTestLogLine("<details>");
+        this.writeDurabilityTestLogLine("<summary>引き分けの相手</summary>");
+        for (let iconTag of drawEnemies) {
+            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
+        }
+        this.writeDurabilityTestLogLine("</details>");
+        this.writeDurabilityTestLogLine("<details>");
+        this.writeDurabilityTestLogLine("<summary>勝利した相手</summary>");
+        for (let iconTag of winEnemies) {
+            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
+        }
+        this.writeDurabilityTestLogLine("</details>");
+
         updateAllUi();
     }
 
@@ -10192,8 +10223,11 @@ class AetherRaidTacticsBoard {
     clearDurabilityTestLog() {
         this.vm.durabilityTestLog = "";
     }
+    writeDurabilityTestLog(message) {
+        this.vm.durabilityTestLog += message;
+    }
     writeDurabilityTestLogLine(message) {
-        this.vm.durabilityTestLog += message + "\n";
+        this.writeDurabilityTestLog(message + "<br/>");
     }
 
     removeDefenceStructuresNoEffectForEnemyMovement() {
@@ -14135,6 +14169,9 @@ function resetPlacementOfUnits() {
     {
         let posX = 0;
         let posY = 1;
+        if (g_appData.gameMode == GameMode.PawnsOfLoki) {
+            posY = 0;
+        }
         for (let unit of g_app.enumerateEnemyUnits()) {
             moveUnitToMap(unit, posX, posY);
             ++posX;
@@ -14147,14 +14184,28 @@ function resetPlacementOfUnits() {
 
     {
         let posX = 0;
-        let posY = 6;
+        let posY = g_app.map.height - 2;
+        let maxCount = 100;
+        if (g_appData.gameMode == GameMode.PawnsOfLoki) {
+            posY = g_app.map.height - 1;
+            maxCount = 8;
+        }
+
+        let count = 0;
         for (let unit of g_app.enumerateAllyUnits()) {
-            moveUnitToMap(unit, posX, posY);
-            ++posX;
-            if (posX == g_app.map.width) {
-                posX = 0;
-                --posY;
+            if (count >= maxCount) {
+                moveUnitToTrashBox(unit);
             }
+            else {
+                moveUnitToMap(unit, posX, posY);
+                ++posX;
+                if (posX == g_app.map.width) {
+                    posX = 0;
+                    --posY;
+                }
+            }
+
+            ++count;
         }
     }
 }
@@ -14174,6 +14225,9 @@ function resetPlacement() {
             resetPlacementForArena();
             break;
         case GameMode.TempestTrials:
+            resetPlacementForArena();
+            break;
+        case GameMode.PawnsOfLoki:
             resetPlacementForArena();
             break;
     }

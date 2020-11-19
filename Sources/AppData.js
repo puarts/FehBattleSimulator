@@ -119,6 +119,7 @@ const GameMode = {
     AllegianceBattles: 2,
     ResonantBattles: 3,
     TempestTrials: 4,
+    PawnsOfLoki: 5,
 };
 
 // 選択モード
@@ -132,7 +133,7 @@ const SelectModeOptions = [
 ];
 
 const MaxEnemyUnitCount = 12;
-const MaxAllyUnitCount = 8;
+const MaxAllyUnitCount = 8 + 4 + 5;
 
 /// シミュレーターの持つデータです。
 class AppData {
@@ -146,6 +147,7 @@ class AppData {
             // { label: "フレンドダブル", value: GameMode.AllegianceBattles },
             { label: "双界を越えて", value: GameMode.ResonantBattles },
             { label: "戦渦の連戦", value: GameMode.TempestTrials },
+            { label: "ロキの盤上遊戯", value: GameMode.PawnsOfLoki },
         ];
         this.mapKind = MapType.Izumi;
         this.mapKindOptions = [
@@ -248,7 +250,7 @@ class AppData {
 
         this.durabilityTestAllyUnitId = "";
         this.durabilityTestEnemyUnitId = "";
-        this.durabilityTestLog = "";
+        this.durabilityTestLog = "結果がここに表示されます";
         this.durabilityTestChargesSpecialCount = false;
         this.durabilityTestDefaultSpecial = Special.None;
         this.durabilityTestCalcPotentialDamage = false;
@@ -1062,6 +1064,7 @@ class AppData {
                 return unit.isEnemyActionTriggered;
             case GameMode.Arena:
             case GameMode.TempestTrials:
+            case GameMode.PawnsOfLoki:
             default:
                 return true;
         }
@@ -1164,6 +1167,9 @@ class AppData {
             case GameMode.ResonantBattles: return 20;
             case GameMode.Arena: return 20;
             case GameMode.TempestTrials: return 20;
+            case GameMode.PawnsOfLoki:
+                // todo: 本当は盤位で最大値が決まる。盤位1は9ターン、盤位4は10ターンだったが法則は不明
+                return 20;
         }
     }
 
@@ -1384,6 +1390,10 @@ class AppData {
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToNormal();
                 break;
+            case GameMode.PawnsOfLoki:
+                this.map.isBackgroundImageEnabled = false;
+                this.hideAetherRaidManu();
+                this.map.setMapSizeToPawnsOfLoki();
             default:
                 break;
         }
@@ -1661,6 +1671,7 @@ class AppData {
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 12;
             case GameMode.TempestTrials: return 6;
+            case GameMode.PawnsOfLoki: return 8;
         }
     }
     getAllyCount() {
@@ -1669,6 +1680,7 @@ class AppData {
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 4;
             case GameMode.TempestTrials: return 4;
+            case GameMode.PawnsOfLoki: return 8 + 4 + 5; // 戦闘枠+補助枠+ショップ
         }
     }
 
