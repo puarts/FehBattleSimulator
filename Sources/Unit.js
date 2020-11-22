@@ -380,7 +380,8 @@ class HeroInfo {
         id,
         resplendent,
         origin,
-        howToGet
+        howToGet,
+        releaseDate
     ) {
         this.id = id;
         this.seasonType = seasonType;
@@ -455,8 +456,36 @@ class HeroInfo {
         this.isResplendent = resplendent;
         this.origin = origin;
         this.howToGet = howToGet;
+        this.releaseDate = releaseDate;
+        this.releaseDateAsNumber = dateStrToNumber(releaseDate);
+
+        // 偶像スキルシミュレーター用
+        this.weaponOptionsForHallOfForms = [];
+        this.supportOptionsForHallOfForms = [];
+        this.specialOptionsForHallOfForms = [];
+        this.passiveAOptionsForHallOfForms = [];
+        this.passiveBOptionsForHallOfForms = [];
+        this.passiveCOptionsForHallOfForms = [];
+        this.passiveSOptionsForHallOfForms = [];
 
         this.__updateLv1Statuses();
+    }
+
+    hasSkillInInitialSkill(skillId) {
+        for (let id of this.weapons) {
+            if (id == skillId) {
+                return true;
+            }
+        }
+        for (let id of this.supports) {
+            if (id == skillId) {
+                return true;
+            }
+        }
+        return this.special == skillId
+            || this.passiveA == skillId
+            || this.passiveB == skillId
+            || this.passiveC == skillId;
     }
 
     get detailPageUrl() {
@@ -1460,6 +1489,13 @@ class Unit {
         this.passiveB = -1;
         this.passiveC = -1;
         this.passiveS = -1;
+        this.weaponInfo = null;
+        this.supportInfo = null;
+        this.specialInfo = null;
+        this.passiveAInfo = null;
+        this.passiveBInfo = null;
+        this.passiveCInfo = null;
+        this.passiveSInfo = null;
     }
 
     resetStatusAdd() {

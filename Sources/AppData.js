@@ -239,7 +239,17 @@ class AppData {
             { id: SeasonType.Anima, text: "理" },
         ];
 
+        // 偶像の天楼のスキルシミュレーター用
+        this.hallOfFormsSkillSimWeapon = Weapon.None;
+        this.hallOfFormsSkillSimSupport = Support.None;
+        this.hallOfFormsSkillSimSpecial = Special.None;
+        this.hallOfFormsSkillSimPassiveA = PassiveA.None;
+        this.hallOfFormsSkillSimPassiveB = PassiveB.None;
+        this.hallOfFormsSkillSimPassiveC = PassiveC.None;
+        this.hallOfFormsSkillSimPassiveS = PassiveS.None;
+
         // その他の設定
+
         this.rbEnemySettingInputHp = 0;
         this.rbEnemySettingInputAtk = 0;
         this.rbEnemySettingInputSpd = 0;
@@ -463,6 +473,7 @@ class AppData {
         this.passiveCInfos = [];
         this.passiveSInfos = [];
         this.skillIdToInfoDict = {};
+        this.skillNameToInfoDict = {};
 
         {
             // 生成順を変えるとIDが変わってしまうので注意
@@ -503,6 +514,7 @@ class AppData {
     __registerInfosToDict(skillInfos) {
         for (let info of skillInfos) {
             this.skillIdToInfoDict[info.id] = info;
+            this.skillNameToInfoDict[info.name] = info;
         }
     }
 
@@ -535,45 +547,52 @@ class AppData {
         __registerPassiveSOptions(this.passiveSOptions, passiveCs);
     }
     __updateUnitSkillInfo(unit) {
-        unit.weaponInfo = this.__findSkillInfoByDict(unit.weapon);
-        unit.supportInfo = this.__findSkillInfoByDict(unit.support);
-        unit.specialInfo = this.__findSkillInfoByDict(unit.special);
-        unit.passiveAInfo = this.__findSkillInfoByDict(unit.passiveA);
-        unit.passiveBInfo = this.__findSkillInfoByDict(unit.passiveB);
-        unit.passiveCInfo = this.__findSkillInfoByDict(unit.passiveC);
-        unit.passiveSInfo = this.__findSkillInfoByDict(unit.passiveS);
+        unit.weaponInfo = this.findSkillInfoByDict(unit.weapon);
+        unit.supportInfo = this.findSkillInfoByDict(unit.support);
+        unit.specialInfo = this.findSkillInfoByDict(unit.special);
+        unit.passiveAInfo = this.findSkillInfoByDict(unit.passiveA);
+        unit.passiveBInfo = this.findSkillInfoByDict(unit.passiveB);
+        unit.passiveCInfo = this.findSkillInfoByDict(unit.passiveC);
+        unit.passiveSInfo = this.findSkillInfoByDict(unit.passiveS);
     }
 
-    __findSkillInfoByDict(id) {
+    findSkillInfoByDict(id) {
         return this.skillIdToInfoDict[id];
+    }
+    findSkillInfoByName(name) {
+        let result = this.skillNameToInfoDict[name];
+        if (result) {
+            return result;
+        }
+        return null;
     }
 
     __findWeaponInfo(id) {
-        return this.__findSkillInfoByDict(id);
+        return this.findSkillInfoByDict(id);
     }
 
     __findSupportInfo(id) {
-        return this.__findSkillInfoByDict(id);
+        return this.findSkillInfoByDict(id);
     }
 
     __findSpecialInfo(id) {
-        return this.__findSkillInfoByDict(id);
+        return this.findSkillInfoByDict(id);
     }
 
     __findPassiveAInfo(id) {
-        return this.__findSkillInfoByDict(id);
+        return this.findSkillInfoByDict(id);
     }
     __findPassiveBInfo(id) {
-        return this.__findSkillInfoByDict(id);
+        return this.findSkillInfoByDict(id);
     }
     __findPassiveCInfo(id) {
-        return this.__findSkillInfoByDict(id);
+        return this.findSkillInfoByDict(id);
     }
     __findPassiveSInfo(id) {
-        return this.__findSkillInfoByDict(id);
+        return this.findSkillInfoByDict(id);
     }
     __updateStatusByPassiveA(unit, skillId) {
-        let skillInfo = this.__findSkillInfoByDict(skillId);
+        let skillInfo = this.findSkillInfoByDict(skillId);
         if (skillInfo == null) {
             return;
         }

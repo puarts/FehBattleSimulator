@@ -14071,13 +14071,17 @@ function syncSelectedTileColor() {
 }
 
 function updateMapUi() {
+    let mapArea = document.getElementById('mapArea');
+    if (mapArea == null) {
+        return;
+    }
+
     g_appData.map.updateTiles();
     let table = g_appData.map.toTable();
     table.onDragOverEvent = "f_dragover(event)";
     table.onDropEvent = "f_drop(event)";
     table.onDragEndEvent = "table_dragend(event)";
     let tableElem = table.updateTableElement();
-    let mapArea = document.getElementById('mapArea');
     if (mapArea.childElementCount == 0) {
         mapArea.appendChild(tableElem);
     }

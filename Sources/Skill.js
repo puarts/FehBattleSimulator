@@ -2228,5 +2228,8 @@ class SkillInfo {
 
         this.type = SkillType.Weapon;
         this.weaponRefinementOptions = [];
+
+        // 英雄情報から必要に応じて設定する
+        this.releaseDateAsNumber = 0;
     }
 }

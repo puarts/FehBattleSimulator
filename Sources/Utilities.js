@@ -291,7 +291,11 @@ class StructureContainer {
     }
 
     updateUi() {
-        document.getElementById(this._uiId).innerHTML = this.toHtml();
+        let elem = document.getElementById(this._uiId);
+        if (elem == null) {
+            return;
+        }
+        elem.innerHTML = this.toHtml();
     }
 }
 
@@ -375,11 +379,12 @@ class CommandQueue {
         command.execute();
         this.redoStack.clear();
         this.undoStack.push(command);
-        console.log("current undo stack ----");
-        for (let command of this.undoStack.data) {
-            console.log(`${command.label}: ${command.type}`);
+    }
+
+    executeAll() {
+        while (this.queue.length > 0) {
+            this.execute();
         }
-        console.log("----");
     }
 
     undoAll() {
@@ -1153,3 +1158,8 @@ Vue.component('select2', {
         $(this.$el).off().select2('destroy')
     },
 });
+
+function dateStrToNumber(dateStr) {
+    let numStr = dateStr.replace(/-/g, "");
+    return Number(numStr);
+}
