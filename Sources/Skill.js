@@ -864,6 +864,7 @@ const Weapon = {
 
     // 2020年11月末 フレイヤ・スカビオサ
     NightmareHorn: 1539, // 悪夢の女王の角
+    FlowerOfSorrow: 1536, // 不幸の花
 };
 
 const Support = {

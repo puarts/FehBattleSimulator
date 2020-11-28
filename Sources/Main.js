@@ -7705,6 +7705,13 @@ class AetherRaidTacticsBoard {
 
             // 周囲の敵から受ける戦闘中弱化
             {
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                    if (this.__isInCloss(unit, targetUnit)) {
+                        // 十字方向
+                        this.__addSpurInCross(targetUnit, unit.weapon, calcPotentialDamage);
+                    }
+                }
+
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
@@ -8165,6 +8172,10 @@ class AetherRaidTacticsBoard {
                 case Weapon.FlowerOfJoy:
                     targetUnit.atkSpur += 3;
                     targetUnit.spdSpur += 3;
+                    break;
+                case Weapon.FlowerOfSorrow:
+                    targetUnit.defSpur -= 4;
+                    targetUnit.resSpur -= 4;
                     break;
             }
         }
