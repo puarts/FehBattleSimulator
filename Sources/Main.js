@@ -4109,8 +4109,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Aureola:
-                    attackUnit.reserveHeal(7);
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
                         unit.reserveHeal(7);
                     }
                     break;
@@ -5965,8 +5964,8 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.WyvernFlight3:
                     if (targetUnit.getEvalSpdInPrecombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
-                        let resDiff = targetUnit.getEvalDefInPrecombat() - enemyUnit.getEvalDefInPrecombat();
-                        let amount = Math.max(0, Math.min(7, Math.floor(resDiff * 0.5)));
+                        let defDiff = targetUnit.getEvalDefInPrecombat() - enemyUnit.getEvalDefInPrecombat();
+                        let amount = Math.max(0, Math.min(7, Math.floor(defDiff * 0.5)));
                         enemyUnit.atkSpur -= amount;
                         enemyUnit.defSpur -= amount;
                     }
