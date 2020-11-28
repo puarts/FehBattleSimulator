@@ -884,6 +884,7 @@ const Support = {
     GentleDream: 1061, // やさしいゆめ
     WhimsicalDream: 1362, // しろいゆめ
     SweetDreams: 1489, // あまいゆめ
+    FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
 
     RallyAttack: 418,

@@ -13304,6 +13304,9 @@ class AetherRaidTacticsBoard {
                     unit.applyAllDebuff(-4);
                 }
                 break;
+            case Support.FrightfulDream:
+                this.__applyRuse(skillOwnerUnit, targetUnit, unit => unit.applyAllDebuff(-3));
+                break;
         }
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
