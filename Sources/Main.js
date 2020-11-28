@@ -3782,6 +3782,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
                 case Weapon.NewFoxkitFang:
@@ -6589,6 +6590,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
                 case Weapon.NewFoxkitFang:

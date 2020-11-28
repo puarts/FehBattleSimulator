@@ -861,6 +861,9 @@ const Weapon = {
     InstantLancePlus: 1528, // 瞬撃の槍+
     TigerRoarAxe: 1526, // 虎の剛斧
     Aureola: 1530, // アーリアル
+
+    // 2020年11月末 フレイヤ・スカビオサ
+    NightmareHorn: 1539, // 悪夢の女王の角
 };
 
 const Support = {

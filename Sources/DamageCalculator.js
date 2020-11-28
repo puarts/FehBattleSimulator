@@ -1214,6 +1214,7 @@ class DamageCalculator {
                     }
                 }
                 break;
+            case Weapon.NightmareHorn:
             case Weapon.NewBrazenCatFang:
                 {
                     let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
@@ -1400,6 +1401,7 @@ class DamageCalculator {
                         }
                     }
                     break;
+                case Weapon.NightmareHorn:
                 case Weapon.NewBrazenCatFang:
                     {
                         let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
@@ -1410,7 +1412,7 @@ class DamageCalculator {
                             }
 
                             damageReductionRatio *= 1.0 - percentage / 100.0;
-                            this.writeDebugLog("新年の戦猫の爪牙によりダメージ" + percentage + "%軽減");
+                            this.writeDebugLog(`武器スキル(${defUnit.weapon})によりダメージ${percentage}%軽減`);
                         }
                     }
                     break;
