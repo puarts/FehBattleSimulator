@@ -1459,6 +1459,8 @@ const PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
 
     Atrocity: 1514, // 無惨
+
+    BindingNecklace: 1540, // 束縛の首飾り
 };
 
 const PassiveC = {
