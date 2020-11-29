@@ -220,7 +220,9 @@ class DamageCalculator {
                     }
                     break;
                 case PassiveB.SeikishiNoKago:
-                    unit.battleContext.damageReductionRatioOfConsecutiveAttacks = 0.8;
+                    if (isRangedWeaponType(enemyUnit.weaponType)) {
+                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks = 0.8;
+                    }
                     break;
                 case PassiveS.RengekiBogyoKenYariOno3:
                     if (enemyUnit.weaponType == WeaponType.Sword
