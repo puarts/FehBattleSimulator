@@ -5065,7 +5065,9 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
                         targetUnit.addAllSpur(5);
                         if (enemyUnit.snapshot.restHpPercentage === 100) {
-                            targetUnit.battleContext.followupAttackPriority++;
+                            if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                                targetUnit.battleContext.followupAttackPriority++;
+                            }
                         }
                     }
                     break;
@@ -5206,7 +5208,9 @@ class AetherRaidTacticsBoard {
                         && targetUnit.snapshot.restHpPercentage >= 25
                     ) {
                         targetUnit.battleContext.reducesCooldownCount = true;
-                        ++targetUnit.battleContext.followupAttackPriority;
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            ++targetUnit.battleContext.followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.Garumu:
@@ -5569,7 +5573,9 @@ class AetherRaidTacticsBoard {
                             if (enemyUnit.snapshot.restHpPercentage >= 50) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.defSpur += 5;
-                                targetUnit.battleContext.followupAttackPriority++;
+                                if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                                    targetUnit.battleContext.followupAttackPriority++;
+                                }
                             }
                         }
                     }
@@ -5635,7 +5641,9 @@ class AetherRaidTacticsBoard {
                             if (targetUnit.snapshot.restHpPercentage >= 50) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.resSpur += 5;
-                                targetUnit.battleContext.followupAttackPriority++;
+                                if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                                    targetUnit.battleContext.followupAttackPriority++;
+                                }
                             }
                         }
                     }
