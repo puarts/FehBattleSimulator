@@ -10138,6 +10138,8 @@ class AetherRaidTacticsBoard {
         let grantedBlessing = enemyUnit.grantedBlessing;
         let originalHp = targetUnit.hp;
 
+        let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
+
         let loseEnemies = [];
         let drawEnemies = [];
         let winEnemies = [];
@@ -10179,6 +10181,7 @@ class AetherRaidTacticsBoard {
                 targetUnit.hp = originalHp;
             }
             enemyUnit.heal(99);
+            enemyUnit.specialCount = enemyUnit.maxSpecialCount - reducedEnemySpecialCount;
             let tmpWinCount = 0;
             let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
             let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
@@ -10195,6 +10198,10 @@ class AetherRaidTacticsBoard {
                 combatResultText = "敗北";
                 ++loseCount;
                 loseEnemies.push(heroInfo);
+
+                if (this.vm.durabilityTestLogDamageCalcDetailIfLose) {
+                    this.writeLogLine(this.damageCalc.log);
+                }
             }
             else if (tmpWinCount == this.vm.durabilityTestBattleCount) {
                 combatResultText = "勝利";
