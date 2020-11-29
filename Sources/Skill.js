@@ -861,6 +861,10 @@ const Weapon = {
     InstantLancePlus: 1528, // 瞬撃の槍+
     TigerRoarAxe: 1526, // 虎の剛斧
     Aureola: 1530, // アーリアル
+
+    // 2020年11月末 フレイヤ・スカビオサ
+    NightmareHorn: 1539, // 悪夢の女王の角
+    FlowerOfSorrow: 1536, // 不幸の花
 };
 
 const Support = {
@@ -880,6 +884,7 @@ const Support = {
     GentleDream: 1061, // やさしいゆめ
     WhimsicalDream: 1362, // しろいゆめ
     SweetDreams: 1489, // あまいゆめ
+    FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
 
     RallyAttack: 418,
@@ -1456,6 +1461,8 @@ const PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
 
     Atrocity: 1514, // 無惨
+
+    BindingNecklace: 1540, // 束縛の首飾り
 };
 
 const PassiveC = {
@@ -1670,6 +1677,7 @@ const PassiveC = {
     AtkDefRein3: 1519, // 攻撃守備の牽制3
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     SpdDefRein3: 1485, // 速さ守備の牽制3
+    SpdResRein3: 1538, // 速さ魔防の牽制3
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
 };

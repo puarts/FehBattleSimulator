@@ -3782,6 +3782,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
                 case Weapon.NewFoxkitFang:
@@ -4108,8 +4109,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Aureola:
-                    attackUnit.reserveHeal(7);
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
                         unit.reserveHeal(7);
                     }
                     break;
@@ -5036,6 +5036,21 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.BindingNecklace:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        targetUnit.addAllSpur(2);
+                        enemyUnit.addAllSpur(-2);
+
+                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
+                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
+                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+
+                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
+                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
+                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                    }
                 case Weapon.Aureola:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
@@ -5949,8 +5964,8 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.WyvernFlight3:
                     if (targetUnit.getEvalSpdInPrecombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
-                        let resDiff = targetUnit.getEvalDefInPrecombat() - enemyUnit.getEvalDefInPrecombat();
-                        let amount = Math.max(0, Math.min(7, Math.floor(resDiff * 0.5)));
+                        let defDiff = targetUnit.getEvalDefInPrecombat() - enemyUnit.getEvalDefInPrecombat();
+                        let amount = Math.max(0, Math.min(7, Math.floor(defDiff * 0.5)));
                         enemyUnit.atkSpur -= amount;
                         enemyUnit.defSpur -= amount;
                     }
@@ -6589,6 +6604,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
                 case Weapon.NewFoxkitFang:
@@ -7688,6 +7704,13 @@ class AetherRaidTacticsBoard {
 
             // 周囲の敵から受ける戦闘中弱化
             {
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                    if (this.__isInCloss(unit, targetUnit)) {
+                        // 十字方向
+                        this.__addSpurInCross(targetUnit, unit.weapon, calcPotentialDamage);
+                    }
+                }
+
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
@@ -7726,6 +7749,10 @@ class AetherRaidTacticsBoard {
                             case PassiveC.SpdDefRein3:
                                 targetUnit.spdSpur -= 4;
                                 targetUnit.defSpur -= 4;
+                                break;
+                            case PassiveC.SpdResRein3:
+                                targetUnit.spdSpur -= 4;
+                                targetUnit.resSpur -= 4;
                                 break;
                             case Weapon.YashiNoKiNoTsuePlus:
                                 targetUnit.atkSpur -= 5;
@@ -8148,6 +8175,10 @@ class AetherRaidTacticsBoard {
                 case Weapon.FlowerOfJoy:
                     targetUnit.atkSpur += 3;
                     targetUnit.spdSpur += 3;
+                    break;
+                case Weapon.FlowerOfSorrow:
+                    targetUnit.defSpur -= 4;
+                    targetUnit.resSpur -= 4;
                     break;
             }
         }
@@ -13275,6 +13306,9 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
                     unit.applyAllDebuff(-4);
                 }
+                break;
+            case Support.FrightfulDream:
+                this.__applyRuse(skillOwnerUnit, targetUnit, unit => unit.applyAllDebuff(-3));
                 break;
         }
 
