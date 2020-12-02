@@ -1924,6 +1924,66 @@ class AetherRaidTacticsBoard {
         moveUnit(this.vm.units[10], g_appData.map.getTile(4, 4), false);
     }
 
+    createDurabilityRanking() {
+        let targetUnit = g_appData.getDurabilityTestAlly();
+        if (targetUnit == null) {
+            this.writeErrorLine("耐久テスト対象のユニットが選択されていません");
+            return;
+        }
+        let enemyUnit = g_appData.getDurabilityTestEnemy();
+        if (enemyUnit == null) {
+            this.writeErrorLine("耐久テストに使用する敵ユニットが選択されていません");
+            return;
+        }
+        this.writeLogLine(`テスト対象: ${targetUnit.getNameWithGroup()}、敵: ${enemyUnit.getNameWithGroup()}`);
+
+        // 元の状態を保存
+        let serializedTurn = exportSettingsAsString();
+
+        let self = this;
+        let results = [];
+        this.damageCalc.isLogEnabled = false;
+        let durabilityTestLogEnabled = this.vm.durabilityTestIsLogEnabled;
+        this.vm.durabilityTestIsLogEnabled = false;
+        startProgressiveProcess(g_appData.heroInfos.length,
+            function (iter) {
+                let heroInfo = g_appData.heroInfos.get(iter);
+                self.__durabilityTest_initUnit(targetUnit, heroInfo);
+                let result = self.__durabilityTest_simulateImpl(targetUnit, enemyUnit);
+                results.push({ heroInfo: heroInfo, result: result });
+            },
+            function (iter, iterMax) {
+                $("#progress").progressbar({
+                    value: iter,
+                    max: iterMax,
+                });
+
+                let lastIndex = results.length - 1;
+                let winRate = results[lastIndex].result.winCount / g_appData.heroInfos.length;
+                let aliveRate = (results[lastIndex].result.winCount + results[lastIndex].result.drawCount) / g_appData.heroInfos.length;
+                self.writeSimpleLogLine(`${iter} / ${iterMax}: 勝率 ${winRate}, 生存率 ${aliveRate}`);
+            },
+            function () {
+                self.damageCalc.isLogEnabled = true;
+                self.vm.durabilityTestIsLogEnabled = durabilityTestLogEnabled;
+                results.sort((a, b) => {
+                    return b.result.winCount - a.result.winCount;
+                });
+                for (let i = 0; i < results.length; ++i) {
+                    let result = results[i];
+                    let totalCount = result.result.winCount + result.result.loseCount + result.result.drawCount;
+                    let winRate = result.result.winCount / totalCount;
+                    console.log(`${result.heroInfo.name}: ${winRate}`);
+                    self.writeDebugLogLine(`${result.heroInfo.name}: ${winRate}`);
+                }
+
+                importSettingsFromString(serializedTurn);
+                $("#progress").progressbar({ disabled: true });
+                updateAllUi();
+            });
+
+    }
+
     beginDurabilityTest() {
         let targetUnit = g_appData.getDurabilityTestAlly();
         if (targetUnit == null) {
@@ -5055,7 +5115,9 @@ class AetherRaidTacticsBoard {
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                        targetUnit.addAllSpur(5);
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                        targetUnit.resSpur += 5;
                         targetUnit.battleContext.invalidatesReferenceLowerMit = true;
                     }
                     break;
@@ -10132,91 +10194,15 @@ class AetherRaidTacticsBoard {
     }
 
     __durabilityTest_simulate(targetUnit, enemyUnit) {
-        let winCount = 0;
-        let drawCount = 0;
-        let loseCount = 0;
-        let grantedBlessing = enemyUnit.grantedBlessing;
-        let originalHp = targetUnit.hp;
-
-        let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
-
-        let loseEnemies = [];
-        let drawEnemies = [];
-        let winEnemies = [];
-        for (let i = 0; i < g_appData.heroInfos.length; ++i) {
-            let heroInfo = g_appData.heroInfos.get(i);
-
-            // 初期化
-            {
-                enemyUnit.initByHeroInfo(heroInfo);
-                enemyUnit.setGrantedBlessingIfPossible(grantedBlessing);
-                enemyUnit.initializeSkillsToDefault();
-                if (enemyUnit.weapon == Weapon.None) {
-                    continue;
-                }
-
-                enemyUnit.setMoveCountFromMoveType();
-                enemyUnit.isResplendent = enemyUnit.heroInfo.isResplendent;
-                enemyUnit.weaponRefinement = WeaponRefinementType.Special;
-                if (enemyUnit.special == Special.None) {
-                    enemyUnit.special = this.vm.durabilityTestDefaultSpecial;
-                }
-
-                g_appData.__updateUnitSkillInfo(enemyUnit);
-                let weaponRefinement = WeaponRefinementType.Special;
-                if (enemyUnit.weaponInfo.specialRefineHpAdd == 3) {
-                    weaponRefinement = WeaponRefinementType.Special_Hp3;
-                }
-                enemyUnit.weaponRefinement = weaponRefinement;
-            }
-
-            g_appData.__updateStatusBySkillsAndMerges(enemyUnit, false);
-            enemyUnit.resetMaxSpecialCount();
-
-
-            if (this.vm.durabilityTestHealsHpFull) {
-                targetUnit.heal(99);
-            }
-            else {
-                targetUnit.hp = originalHp;
-            }
-            enemyUnit.heal(99);
-            enemyUnit.specialCount = enemyUnit.maxSpecialCount - reducedEnemySpecialCount;
-            let tmpWinCount = 0;
-            let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
-            let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
-            for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
-                let combatResult = this.calcDamage(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
-                targetUnit.hp = targetUnit.restHp;
-                targetUnit.specialCount = targetUnit.tmpSpecialCount;
-                if (enemyUnit.restHp == 0) {
-                    ++tmpWinCount;
-                }
-            }
-            let combatResultText = "";
-            if (targetUnit.restHp == 0) {
-                combatResultText = "敗北";
-                ++loseCount;
-                loseEnemies.push(heroInfo);
-
-                if (this.vm.durabilityTestLogDamageCalcDetailIfLose) {
-                    this.writeLogLine(this.damageCalc.log);
-                }
-            }
-            else if (tmpWinCount == this.vm.durabilityTestBattleCount) {
-                combatResultText = "勝利";
-                ++winCount;
-                winEnemies.push(heroInfo);
-            }
-            else {
-                combatResultText = "引き分け";
-                ++drawCount;
-                drawEnemies.push(heroInfo);
-            }
-            this.writeLogLine(`${targetUnit.getNameWithGroup()}(HP${originalHp}→${targetUnit.restHp})vs${enemyUnit.getNameWithGroup()}(HP${enemyUnit.hp}→${enemyUnit.restHp})→${combatResultText}`);
-        }
-
+        let result = this.__durabilityTest_simulateImpl(targetUnit, enemyUnit);
+        let winCount = result.winCount;
+        let drawCount = result.drawCount;
+        let loseCount = result.loseCount;
         let totalCount = winCount + loseCount + drawCount;
+        let loseEnemies = result.loseEnemies;
+        let drawEnemies = result.drawEnemies;
+        let winEnemies = result.winEnemies;
+
         this.clearDurabilityTestLog();
         this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${Math.trunc(winCount / totalCount * 100)}%)`);
         this.writeDurabilityTestLogLine(`引き分け ${drawCount}/${totalCount}(${Math.trunc(drawCount / totalCount * 100)}%)`);
@@ -10250,6 +10236,119 @@ class AetherRaidTacticsBoard {
         }
         this.writeDurabilityTestLogLine("</details>");
 
+        updateAllUi();
+    }
+
+    __durabilityTest_initUnit(targetUnit, heroInfo) {
+        let reducedEnemySpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
+        let grantedBlessing = targetUnit.grantedBlessing;
+
+        // 初期化
+        {
+            targetUnit.initByHeroInfo(heroInfo);
+            targetUnit.setGrantedBlessingIfPossible(grantedBlessing);
+            targetUnit.initializeSkillsToDefault();
+
+            targetUnit.setMoveCountFromMoveType();
+            targetUnit.isResplendent = targetUnit.heroInfo.isResplendent;
+            targetUnit.weaponRefinement = WeaponRefinementType.Special;
+            if (targetUnit.special == Special.None) {
+                targetUnit.special = this.vm.durabilityTestDefaultSpecial;
+            }
+
+            g_appData.__updateUnitSkillInfo(targetUnit);
+            let weaponRefinement = WeaponRefinementType.Special;
+            if (targetUnit.weaponInfo != null
+                && targetUnit.weaponInfo.specialRefineHpAdd == 3
+            ) {
+                weaponRefinement = WeaponRefinementType.Special_Hp3;
+            }
+            targetUnit.weaponRefinement = weaponRefinement;
+        }
+
+        g_appData.__updateStatusBySkillsAndMerges(targetUnit, false);
+        targetUnit.resetMaxSpecialCount();
+        targetUnit.specialCount = targetUnit.maxSpecialCount - reducedEnemySpecialCount;
+        targetUnit.heal(99);
+    }
+    __durabilityTest_simulateImpl(targetUnit, enemyUnit) {
+        let winCount = 0;
+        let drawCount = 0;
+        let loseCount = 0;
+        let grantedBlessing = enemyUnit.grantedBlessing;
+        let originalHp = targetUnit.hp;
+
+        let loseEnemies = [];
+        let drawEnemies = [];
+        let winEnemies = [];
+        for (let i = 0; i < g_appData.heroInfos.length; ++i) {
+            let heroInfo = g_appData.heroInfos.get(i);
+            this.__durabilityTest_initUnit(enemyUnit, heroInfo);
+
+            if (this.vm.durabilityTestHealsHpFull) {
+                targetUnit.heal(99);
+            }
+            else {
+                targetUnit.hp = originalHp;
+            }
+
+            let tmpWinCount = 0;
+            let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
+            let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
+            for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
+                let combatResult = this.calcDamage(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
+                targetUnit.hp = targetUnit.restHp;
+                targetUnit.specialCount = targetUnit.tmpSpecialCount;
+                if (enemyUnit.restHp == 0) {
+                    ++tmpWinCount;
+                }
+            }
+            let combatResultText = "";
+            if (targetUnit.restHp == 0) {
+                combatResultText = "敗北";
+                ++loseCount;
+                loseEnemies.push(heroInfo);
+
+                if (this.vm.durabilityTestIsLogEnabled && this.vm.durabilityTestLogDamageCalcDetailIfLose) {
+                    this.writeLogLine(this.damageCalc.log);
+                }
+            }
+            else if (tmpWinCount == this.vm.durabilityTestBattleCount) {
+                combatResultText = "勝利";
+                ++winCount;
+                winEnemies.push(heroInfo);
+            }
+            else {
+                combatResultText = "引き分け";
+                ++drawCount;
+                drawEnemies.push(heroInfo);
+            }
+
+            if (this.vm.durabilityTestIsLogEnabled) {
+                this.writeLogLine(`${targetUnit.getNameWithGroup()}(HP${originalHp}→${targetUnit.restHp})vs${enemyUnit.getNameWithGroup()}(HP${enemyUnit.hp}→${enemyUnit.restHp})→${combatResultText}`);
+            }
+        }
+
+        let result = new Object();
+        result.winCount = winCount;
+        result.drawCount = drawCount;
+        result.loseCount = loseCount;
+        result.loseEnemies = loseEnemies;
+        result.winEnemies = winEnemies;
+        result.drawEnemies = drawEnemies;
+        return result;
+    }
+
+    setOneVsOneForDurabilityTest() {
+        for (let unit of this.enumerateAllUnitsOnMap()) {
+            if (unit.id == g_appData.durabilityTestAllyUnitId
+                || unit.id == g_appData.durabilityTestEnemyUnitId
+            ) {
+                continue;
+            }
+
+            moveUnitToTrashBox(unit);
+        }
         updateAllUi();
     }
 

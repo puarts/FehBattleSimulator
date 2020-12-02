@@ -268,6 +268,7 @@ class AppData {
         this.durabilityTestIsAllyUnitOffence = false;
         this.durabilityTestHealsHpFull = true;
         this.durabilityTestLogDamageCalcDetailIfLose = false;
+        this.durabilityTestIsLogEnabled = true;
 
         this.aetherRaidDefensePreset = 0;
         this.aetherRaidDefensePresetDescription = "";
@@ -309,6 +310,9 @@ class AppData {
         this.enemyUnits = [];
         this.allyUnits = [];
         this.updateEnemyAndAllyUnits();
+
+        this.durabilityTestAllyUnitId = this.allyUnits[0].id;
+        this.durabilityTestEnemyUnitId = this.enemyUnits[0].id;
 
         this.heroOptions = [
             { id: -1, text: "なし" },

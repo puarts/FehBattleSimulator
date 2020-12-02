@@ -1157,14 +1157,14 @@
                         {{ unit.getNameWithGroup() }}
                     </option>
                 </select>
-            <fieldset>
-                <legend>詳細設定</legend>
+            <details>
+                <summary>詳細設定</summary>
                 <label for="durabilityTestHealsHpFull">フルHPで評価</label>
-                <input id="durabilityTestHealsHpFull" type="checkbox" v-model="durabilityTestHealsHpFull">
+                <input id="durabilityTestHealsHpFull" type="checkbox" v-model="durabilityTestHealsHpFull" />
                 <br />
                 <label for="durabilityTestBattleCount">連戦回数</label>
                 <input id="durabilityTestBattleCount" min="1" max="10" type="number"
-                    v-model="durabilityTestBattleCount">
+                    v-model="durabilityTestBattleCount" />
                 <br />
                 <label>デフォルト奥義</label>
                 <select2 :options="specialOptions" v-model="durabilityTestDefaultSpecial" class="skill">
@@ -1172,20 +1172,24 @@
                 <br />
                 <label for="durabilityTestChargesSpecialCount">敵を奥義発動可能状態で評価</label>
                 <input id="durabilityTestChargesSpecialCount" type="checkbox"
-                    v-model="durabilityTestChargesSpecialCount">
+                    v-model="durabilityTestChargesSpecialCount" />
                 <br />
                 <label for="durabilityTestCalcPotentialDamage">潜在ダメージで評価</label>
                 <input id="durabilityTestCalcPotentialDamage" type="checkbox"
-                    v-model="durabilityTestCalcPotentialDamage">
+                    v-model="durabilityTestCalcPotentialDamage" />
+                <br />
+                <label for="durabilityTestIsLogEnabled">デバッグログ出力</label>
+                <input id="durabilityTestIsLogEnabled" type="checkbox" v-model="durabilityTestIsLogEnabled" />
                 <br />
                 <label for="durabilityTestLogDamageCalcDetailIfLose">敗北時の戦闘ログをデバッグログに出力</label>
                 <input id="durabilityTestLogDamageCalcDetailIfLose" type="checkbox"
-                    v-model="durabilityTestLogDamageCalcDetailIfLose">
-            </fieldset>
-
+                    v-model="durabilityTestLogDamageCalcDetailIfLose" />
+            </details>
             </p>
             <p>
+                <input type="button" value="1vs1の配置に設定" @click="g_app.setOneVsOneForDurabilityTest();">
                 <input type="button" value="テスト開始" @click="g_app.beginDurabilityTest();">
+                <input type="button" value="ランキング作成" @click="g_app.createDurabilityRanking();">
             </p>
             <div v-html="durabilityTestLog"
                 style="min-height: 50px; padding: 10px; border: 1px solid #ddd;background-color: #fff;">

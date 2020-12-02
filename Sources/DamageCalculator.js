@@ -47,6 +47,7 @@ class DamageCalculator {
     constructor() {
         this._log = "";
         this._simpleLog = "";
+        this.isLogEnabled = true;
     }
 
     get log() {
@@ -57,16 +58,28 @@ class DamageCalculator {
     }
 
     writeSimpleLog(log) {
+        if (!this.isLogEnabled) {
+            return;
+        }
         this._simpleLog += log + "<br/>";
     }
 
     writeLog(log) {
+        if (!this.isLogEnabled) {
+            return;
+        }
         this._log += log + "<br/>";
     }
     writeDebugLog(log) {
+        if (!this.isLogEnabled) {
+            return;
+        }
         this._log += "<span style='font-size:10px; color:#666666'>" + log + "</span><br/>";
     }
     writeRestHpLog(unit) {
+        if (!this.isLogEnabled) {
+            return;
+        }
         this.writeLog(unit.name + "の残りHP " + unit.restHp + "/" + unit.maxHpWithSkills);
     }
 
