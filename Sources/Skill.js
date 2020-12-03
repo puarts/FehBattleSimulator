@@ -2202,7 +2202,8 @@ class SkillInfo {
         canInherit,
         inheritableWeaponTypes,
         inheritableMoveTypes,
-        hasSpecialWeaponRefinement
+        hasSpecialWeaponRefinement,
+        hasStatusWeaponRefinement
     ) {
         this.id = id;
         this.detailPageUrl = "https://puarts.com/?fehskill=" + id;
@@ -2233,6 +2234,7 @@ class SkillInfo {
         this.inheritableWeaponTypes = inheritableWeaponTypes;
         this.inheritableMoveTypes = inheritableMoveTypes;
         this.hasSpecialWeaponRefinement = hasSpecialWeaponRefinement;
+        this.hasStatusWeaponRefinement = hasStatusWeaponRefinement;
 
         this.type = SkillType.Weapon;
         this.weaponRefinementOptions = [];

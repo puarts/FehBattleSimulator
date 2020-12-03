@@ -1842,7 +1842,7 @@
                                         {{ option.text }}
                                     </option>
                                 </select>                                
-                                <select v-model="value.weaponRefinement" @change="g_app.vm.passiveAChanged" v-else-if="value.weaponInfo != null">
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.passiveAChanged" v-else-if="value.weaponInfo != null&&value.weaponInfo.weaponRefinementOptions.length > 1">
                                     <option v-for="option in value.weaponInfo.weaponRefinementOptions" v-bind:value="option.id">
                                         {{ option.text }}
                                     </option>

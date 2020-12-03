@@ -2520,17 +2520,19 @@ class AetherRaidTacticsBoard {
                     continue;
                 }
 
-                if (isRangedWeaponType(info.weaponType)) {
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Atk1, text: "HP+2、攻撃+1" });
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Spd2, text: "HP+2、速さ+2" });
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Def3, text: "HP+2、守備+3" });
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Res3, text: "HP+2、魔防+3" });
-                }
-                else {
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Atk2, text: "HP+5、攻撃+2" });
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Spd3, text: "HP+5、速さ+3" });
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Def4, text: "HP+5、守備+4" });
-                    info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Res4, text: "HP+5、魔防+4" });
+                if (info.hasStatusWeaponRefinement) {
+                    if (isRangedWeaponType(info.weaponType)) {
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Atk1, text: "HP+2、攻撃+1" });
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Spd2, text: "HP+2、速さ+2" });
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Def3, text: "HP+2、守備+3" });
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp2_Res3, text: "HP+2、魔防+3" });
+                    }
+                    else {
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Atk2, text: "HP+5、攻撃+2" });
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Spd3, text: "HP+5、速さ+3" });
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Def4, text: "HP+5、守備+4" });
+                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Hp5_Res4, text: "HP+5、魔防+4" });
+                    }
                 }
             }
             for (let info of g_appData.supportInfos) {

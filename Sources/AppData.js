@@ -132,6 +132,27 @@ const SelectModeOptions = [
     { text: "地形編集", id: SelectMode.Tile },
 ];
 
+const PawnsOfLokiDifficality = {
+    Begginer: 0,
+    Intermediate: 1,
+    Advanced: 2,
+};
+
+const PawnsOfLokiDifficalityOptions = [
+    { text: "初級", id: PawnsOfLokiDifficality.Begginer },
+    { text: "中級", id: PawnsOfLokiDifficality.Intermediate },
+    { text: "上級", id: PawnsOfLokiDifficality.Advanced },
+];
+
+function getPawnsOfLokiDifficalityScore(difficality) {
+    switch (difficality) {
+        case PawnsOfLokiDifficality.Begginer: return 215;
+        case PawnsOfLokiDifficality.Intermediate: return 315;
+        case PawnsOfLokiDifficality.Advanced: return 415;
+        default: throw new Error("unexpected defficality");
+    }
+}
+
 const MaxEnemyUnitCount = 12;
 const MaxAllyUnitCount = 8 + 4 + 5;
 
@@ -247,6 +268,15 @@ class AppData {
         this.hallOfFormsSkillSimPassiveB = PassiveB.None;
         this.hallOfFormsSkillSimPassiveC = PassiveC.None;
         this.hallOfFormsSkillSimPassiveS = PassiveS.None;
+
+        // ロキの盤上遊戯の設定
+        this.pawnsOfLokiTotalScore = 0;
+        this.pawnsOfLokiDifficality = PawnsOfLokiDifficality.Advanced;
+        this.pawnsOfLokiMaxWeaponTypeBonusA = 0;
+        this.pawnsOfLokiMaxWeaponTypeBonusB = 0;
+        this.pawnsOfLokiMaxMoveTypeBonus = 0;
+        this.pawnsOfLokiMaxMoveTypePairBonus = 0;
+        this.pawnsOfLokiTurnCount = 10;
 
         // その他の設定
 
@@ -492,6 +522,9 @@ class AppData {
         this.registerTemplateImages();
         this.applyDebugMenuVisibility();
         this.updateTargetInfoTdStyle();
+    }
+    getPawnsOfLokiDifficalityScore() {
+        return getPawnsOfLokiDifficalityScore(this.pawnsOfLokiDifficality);
     }
     get totalSkillCount() {
         return this.weaponCount

@@ -1283,6 +1283,10 @@ class Unit {
         this.reservedPassiveS = NotReserved;
 
         this.chaseTargetTile = null;
+
+        // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
+        this.originalMerge = 0;
+        this.originalDragonflower = 0;
     }
 
     chaseTargetTileToString() {
