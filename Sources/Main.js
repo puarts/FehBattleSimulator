@@ -11236,7 +11236,7 @@ class AetherRaidTacticsBoard {
     }
 
     __isThereAllyThreatensEnemyStatus(unit) {
-        for (let allyUnit of this.enumerateUnitsInTheSameGroup(unit, false)) {
+        for (let allyUnit of this.enumerateUnitsInTheSameGroup(unit, true)) {
             if (allyUnit.actionContext.hasThreatensEnemyStatus) {
                 return true;
             }

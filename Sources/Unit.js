@@ -64,6 +64,11 @@ const MoveType = {
     Armor: 3,
 };
 
+const IvType = {
+    None: 0,
+    Asset: 1, // 得意
+    Flow: 2, // 不得意
+}
 
 const StatusType = {
     None: -1,
@@ -83,6 +88,18 @@ const IvStateOptions = [
     { id: StatusType.Res, text: "魔防" },
 ];
 
+function statusTypeToString(type) {
+    switch (type) {
+        case StatusType.Hp: return "HP";
+        case StatusType.Atk: return "攻撃";
+        case StatusType.Spd: return "速さ";
+        case StatusType.Def: return "守備";
+        case StatusType.Res: return "魔防";
+        case StatusType.None:
+        default:
+            return "-";
+    }
+}
 
 function nameToStatusType(statusName) {
     if (statusName == "HP") {
@@ -100,13 +117,7 @@ function nameToStatusType(statusName) {
     }
 }
 
-const ColorType = {
-    Unknown: -1,
-    Red: 0,
-    Blue: 1,
-    Green: 2,
-    Colorless: 3,
-};
+
 const UnitGroupType = {
     Ally: 0,
     Enemy: 1,
@@ -129,7 +140,7 @@ function summonerLevelToString(level) {
         case SummonerLevel.S: return "S";
         case SummonerLevel.None:
         default:
-            return "";
+            return "-";
     }
 }
 
@@ -325,6 +336,17 @@ function getGrowthRateOfStar5(growthAmount) {
         default:
             throw new Error("Invalid growth amount " + growthAmount);
     }
+}
+
+function calcAppliedGrowthRate(growthRate, rarity) {
+    // let rate = growthRate * (0.79 + (0.07 * this.rarity));
+    let rate = Math.floor(100 * growthRate * (0.79 + (0.07 * rarity))) * 0.01;
+    return rate;
+}
+
+function calcGrowthValue(growthRate, rarity, level) {
+    let rate = calcAppliedGrowthRate(growthRate, rarity);
+    return Math.floor((level - 1) * rate);
 }
 
 // 成長値から苦手ステータスのLv40の変動値を取得します。
@@ -529,6 +551,53 @@ class HeroInfo {
     }
     get res() {
         return this._res;
+    }
+
+    get hpGrowthValue() {
+        return this.hp - this.hpLv1;
+    }
+
+    get maxDragonflower() {
+        let releaseDate = this.releaseDateAsNumber;
+        if (releaseDate > 20200817) {
+            return 5;
+        }
+
+        switch (this._moveType) {
+            case MoveType.Infantry:
+                if (releaseDate < 20190101) {
+                    // リリース日で二分探索したところ、獣登場の2019年が境界だった
+                    return 15;
+                }
+                else {
+                    return 10;
+                }
+            case MoveType.Flying:
+            case MoveType.Armor:
+            case MoveType.Cavalry:
+            default:
+                return 10;
+        }
+    }
+
+    getHpGrowthRate() {
+        return getGrowthRateOfStar5(this.hpGrowthValue);
+    }
+
+    calcHpOfSpecifiedLevel(level, rarity = 5, ivType = IvType.None) {
+        let growthRate = this.getHpGrowthRate();
+        switch (ivType) {
+            case IvType.Asset:
+                growthRate += 0.05;
+                break;
+            case IvType.Flow:
+                growthRate -= 0.05;
+                break;
+            case IvType.None:
+            default:
+                break;
+        }
+        return this.getHpLv1(rarity) + calcGrowthValue(growthRate, rarity, level);
     }
 
     getHpLv1(rarity) {
@@ -1287,6 +1356,8 @@ class Unit {
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
         this.originalMerge = 0;
         this.originalDragonflower = 0;
+
+        this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
     }
 
     chaseTargetTileToString() {
@@ -1297,9 +1368,7 @@ class Unit {
     }
 
     __calcAppliedGrowthRate(growthRate) {
-        // let rate = growthRate * (0.79 + (0.07 * this.rarity));
-        let rate = Math.floor(100 * growthRate * (0.79 + (0.07 * this.rarity))) * 0.01;
-        return rate;
+        return calcAppliedGrowthRate(growthRate, this.rarity);
     }
 
     __calcGrowthValue(growthRate) {
@@ -2624,16 +2693,11 @@ class Unit {
     }
 
     get maxDragonflower() {
-        switch (this._moveType) {
-            case MoveType.Infantry:
-                // 第3世代以降を区別するには情報が足りない
-                return 15;
-            case MoveType.Flying:
-            case MoveType.Armor:
-            case MoveType.Cavalry:
-            default:
-                return 10;
+        if (this.heroInfo == null) {
+            return 0;
         }
+
+        return this.heroInfo.maxDragonflower;
     }
 
     get hpPercentage() {
@@ -2884,6 +2948,29 @@ class Unit {
     set placedTile(value) {
         this._placedTile = value;
     }
+
+    /// 装備中の武器名を取得します。
+    getWeaponName() {
+        if (this.weaponInfo == null) {
+            return "‐";
+        }
+        return this.weaponInfo.name;
+    }
+    /// 装備中のAスキル名を取得します。
+    getPassiveAName() {
+        if (this.passiveAInfo == null) {
+            return "‐";
+        }
+        return this.passiveAInfo.name;
+    }
+    /// 装備中の聖印名を取得します。
+    getPassiveSName() {
+        if (this.passiveSInfo == null) {
+            return "‐";
+        }
+        return this.passiveSInfo.name;
+    }
+
 
     getVisibleStatusTotal() {
         return this.getAtkInPrecombat()

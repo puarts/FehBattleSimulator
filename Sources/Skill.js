@@ -1,6 +1,14 @@
 /// @file
 /// @brief スキル情報の定義とそれに関連するクラス、関数等の定義です。
 
+const ColorType = {
+    Unknown: -1,
+    Red: 0,
+    Blue: 1,
+    Green: 2,
+    Colorless: 3,
+};
+
 const SkillType = {
     Weapon: 0,
     Support: 1,
@@ -101,6 +109,23 @@ const WeaponRefinementType =
     WrathfulStaff: 11, // 神罰の杖
     DazzlingStaff: 12, // 幻惑の杖
 };
+function weaponRefinementTypeToString(type) {
+    switch (type) {
+        case WeaponRefinementType.None: return "-";
+        case WeaponRefinementType.Hp5_Atk2: return "HP+5 攻撃+2";
+        case WeaponRefinementType.Hp5_Spd3: return "HP+5 速さ+3";
+        case WeaponRefinementType.Hp5_Def4: return "HP+5 守備+4";
+        case WeaponRefinementType.Hp5_Res4: return "HP+5 魔防+4";
+        case WeaponRefinementType.Hp2_Atk1: return "HP+2 攻撃+1";
+        case WeaponRefinementType.Hp2_Spd2: return "HP+2 速さ+2";
+        case WeaponRefinementType.Hp2_Def3: return "HP+2 守備+3";
+        case WeaponRefinementType.Hp2_Res3: return "HP+2 魔防+3";
+        case WeaponRefinementType.Special_Hp3: return "HP+3 特殊";
+        case WeaponRefinementType.Special: return "特殊";
+        case WeaponRefinementType.WrathfulStaff: return "神罰の杖";
+        case WeaponRefinementType.DazzlingStaff: return "幻惑の杖";
+    }
+}
 
 
 const EffectiveType = {
@@ -2063,6 +2088,37 @@ function isInheritableWeaponType(targetType, types) {
         }
     }
     return false;
+}
+
+function getColorFromWeaponType(weaponType) {
+    switch (weaponType) {
+        case WeaponType.Sword: return ColorType.Red;
+        case WeaponType.RedTome: return ColorType.Red;
+        case WeaponType.RedBreath: return ColorType.Red;
+        case WeaponType.RedBeast: return ColorType.Red;
+        case WeaponType.RedBow: return ColorType.Red;
+        case WeaponType.RedDagger: return ColorType.Red;
+        case WeaponType.Lance: return ColorType.Blue;
+        case WeaponType.BlueTome: return ColorType.Blue;
+        case WeaponType.BlueBreath: return ColorType.Blue;
+        case WeaponType.BlueBeast: return ColorType.Blue;
+        case WeaponType.BlueBow: return ColorType.Blue;
+        case WeaponType.BlueDagger: return ColorType.Blue;
+        case WeaponType.Axe: return ColorType.Green;
+        case WeaponType.GreenTome: return ColorType.Green;
+        case WeaponType.GreenBreath: return ColorType.Green;
+        case WeaponType.GreenBeast: return ColorType.Green;
+        case WeaponType.GreenBow: return ColorType.Green;
+        case WeaponType.GreenDagger: return ColorType.Green;
+        case WeaponType.Staff: return ColorType.Colorless;
+        case WeaponType.ColorlessTome: return ColorType.Colorless;
+        case WeaponType.ColorlessBreath: return ColorType.Colorless;
+        case WeaponType.ColorlessBeast: return ColorType.Colorless;
+        case WeaponType.ColorlessBow: return ColorType.Colorless;
+        case WeaponType.ColorlessDagger: return ColorType.Colorless;
+        default:
+            throw new Error("Unexpected weapon type");
+    }
 }
 
 function stringToWeaponType(input) {

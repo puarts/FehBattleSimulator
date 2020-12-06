@@ -277,6 +277,7 @@ class AppData {
         this.pawnsOfLokiMaxMoveTypeBonus = 0;
         this.pawnsOfLokiMaxMoveTypePairBonus = 0;
         this.pawnsOfLokiTurnCount = 10;
+        this.pawnsOfLokiWarFunds = 0;
 
         // その他の設定
 
