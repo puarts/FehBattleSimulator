@@ -2007,6 +2007,7 @@ class Unit {
         this.snapshot.spdWithSkills = this.spdWithSkills;
         this.snapshot.defWithSkills = this.defWithSkills;
         this.snapshot.resWithSkills = this.resWithSkills;
+        this.snapshot.weaponRefinement = this.weaponRefinement;
         this.snapshot.fromString(this.toString());
     }
     deleteSnapshot() {

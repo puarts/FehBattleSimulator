@@ -2241,6 +2241,13 @@ class AetherRaidTacticsBoard {
         this.writeSimpleLogLine(warnning);
     }
 
+    writeLog(log) {
+        if (this.disableAllLogs) {
+            return;
+        }
+        this.vm.damageCalcLog += log;
+    }
+
     writeLogLine(log) {
         if (this.disableAllLogs) {
             return;
