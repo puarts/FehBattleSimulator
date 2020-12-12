@@ -890,6 +890,9 @@ const Weapon = {
     // 2020年11月末 フレイヤ・スカビオサ
     NightmareHorn: 1539, // 悪夢の女王の角
     FlowerOfSorrow: 1536, // 不幸の花
+
+    // 第5部開幕記念 新英雄＆レギン
+    TomeOfStorms: 1545, // 万雷の書
 };
 
 const Support = {

@@ -3303,6 +3303,11 @@ class AetherRaidTacticsBoard {
             return true;
         }
         switch (unit.weapon) {
+            case Weapon.TomeOfStorms:
+                if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                    return true;
+                }
+                break;
             case Weapon.ShinenNoBreath:
                 if (unit.isWeaponSpecialRefined) {
                     if (unit.snapshot.restHpPercentage >= 25 && this.__isThereAllyInSpecifiedSpaces(unit, 2)) {
@@ -3355,6 +3360,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.TomeOfStorms:
+                if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                    return true;
+                }
+                break;
             case Weapon.Thunderbrand:
                 if (enemyUnit.snapshot.restHpPercentage >= 50) {
                     return true;
@@ -5098,6 +5108,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TomeOfStorms:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
                 case PassiveB.BindingNecklace:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         targetUnit.addAllSpur(2);
