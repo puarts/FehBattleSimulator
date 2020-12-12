@@ -5129,6 +5129,7 @@ class AetherRaidTacticsBoard {
                         enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
                         enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
                     }
+                    break;
                 case Weapon.Aureola:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
