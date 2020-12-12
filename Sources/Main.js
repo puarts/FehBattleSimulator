@@ -5105,6 +5105,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Lyngheior:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                    }
+                    break;
                 case PassiveB.BindingNecklace:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         targetUnit.addAllSpur(2);
