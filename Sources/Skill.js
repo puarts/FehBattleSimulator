@@ -1417,11 +1417,14 @@ const PassiveB = {
     DefFeint3: 653,
     ResFeint3: 829,
 
-    AtkSpdRuse3: 973, // 攻撃速さの大共謀3
+    // 大共謀
+    AtkSpdRuse3: 973,
+    AtkDefRuse3: 1141,
+    AtkResRuse3: 1546,
     DefResRuse3: 935,
     SpdResRuse3: 1004,
     SpdDefRuse3: 1105,
-    AtkDefRuse3: 1141,
+
     KillingIntent: 999, // 死んでほしいの
 
     PoisonStrike3: 604,
@@ -2197,10 +2200,11 @@ function canRallyForcibly(skill) {
         case PassiveB.DefFeint3:
         case PassiveB.ResFeint3:
         case PassiveB.AtkSpdRuse3:
+        case PassiveB.AtkDefRuse3:
+        case PassiveB.AtkResRuse3:
         case PassiveB.DefResRuse3:
         case PassiveB.SpdResRuse3:
         case PassiveB.SpdDefRuse3:
-        case PassiveB.AtkDefRuse3:
             return true;
         default:
             return false;

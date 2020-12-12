@@ -13559,13 +13559,17 @@ class AetherRaidTacticsBoard {
                     case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
                     case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
                     case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
+                    case PassiveB.AtkSpdRuse3:
+                        this.__applyRuse(supporterUnit, targetUnit,
+                            unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
+                        break;
                     case PassiveB.AtkDefRuse3:
                         this.__applyRuse(supporterUnit, targetUnit,
                             unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); });
                         break;
-                    case PassiveB.AtkSpdRuse3:
+                    case PassiveB.AtkResRuse3:
                         this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
+                            unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
                         break;
                     case PassiveB.DefResRuse3:
                         this.__applyRuse(supporterUnit, targetUnit,
