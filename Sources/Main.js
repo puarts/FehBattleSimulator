@@ -7786,7 +7786,7 @@ class AetherRaidTacticsBoard {
 
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
-                        this.__addSpurInCross(targetUnit, unit.weapon, calcPotentialDamage);
+                        this.__addSpurInCross(targetUnit, unit, calcPotentialDamage);
                     }
                 }
             }
@@ -7796,7 +7796,7 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
-                        this.__addSpurInCross(targetUnit, unit.weapon, calcPotentialDamage);
+                        this.__addSpurInCross(targetUnit, unit, calcPotentialDamage);
                     }
                 }
 
@@ -8258,16 +8258,20 @@ class AetherRaidTacticsBoard {
         buffFunc(targetUnit, spurAmount + addSpur);
     }
 
-    __addSpurInCross(targetUnit, skillId, calcPotentialDamage) {
+    __addSpurInCross(targetUnit, unit, calcPotentialDamage) {
         if (!calcPotentialDamage) {
-            switch (skillId) {
+            switch (unit.weapon) {
                 case Weapon.FlowerOfJoy:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.spdSpur += 3;
+                    if (targetUnit.groupId === unit.groupId) {
+                        targetUnit.atkSpur += 3;
+                        targetUnit.spdSpur += 3;
+                    }
                     break;
                 case Weapon.FlowerOfSorrow:
-                    targetUnit.defSpur -= 4;
-                    targetUnit.resSpur -= 4;
+                    if (targetUnit.groupId !== unit.groupId) {
+                        targetUnit.defSpur -= 4;
+                        targetUnit.resSpur -= 4;
+                    }
                     break;
             }
         }
