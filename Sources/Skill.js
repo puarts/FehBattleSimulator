@@ -895,6 +895,7 @@ const Weapon = {
     TomeOfStorms: 1545, // 万雷の書
     ObsidianLance: 1543, // 黒曜の槍
     Lyngheior: 1541, // リュングヘイズ
+    ReprisalAxePlus: 1547, // 反攻の斧+
 };
 
 const Support = {

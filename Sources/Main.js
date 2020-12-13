@@ -7277,6 +7277,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.HankoNoYari:
                 case Weapon.HankoNoYariPlus:
+                case Weapon.ReprisalAxePlus:
                 case PassiveA.KishinNoKamae3:
                     defUnit.atkSpur += 6;
                     break;
