@@ -892,6 +892,8 @@ const Weapon = {
     FlowerOfSorrow: 1536, // 不幸の花
 
     // 2020年12月第5部開幕記念
+    TomeOfStorms: 1545, // 万雷の書
+    ObsidianLance: 1543, // 黒曜の槍
     Lyngheior: 1541, // リュングヘイズ
 };
 
@@ -1017,6 +1019,7 @@ const Special = {
     Hoshikage: 463, // 星影
     Fukuryu: 464, // 伏竜
     BlueFrame: 473, // ブルーフレイム
+    SeidrShell: 1542, // 魔弾
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -1193,7 +1196,8 @@ const PassiveA = {
     MaboNoJosai3: 524, // 魔防の城塞3
     SyubiMaboNoJosai3: 525, // 守備魔防の城塞3
 
-    AtkSpdSolo3: 580, // 孤軍
+    // 孤軍
+    AtkSpdSolo3: 580,
     AtkResSolo3: 581,
     AtkDefSolo3: 777,
     DefResSolo3: 822,
@@ -1202,6 +1206,7 @@ const PassiveA = {
     AtkResSolo4: 1312,
     AtkSpdSolo4: 1316,
     AtkDefSolo4: 1428,
+    DefResSolo4: 1544,
 
     SvelNoTate: 565, // スヴェルの盾
     GuraniNoTate: 566, // グラ二の盾
@@ -1417,11 +1422,14 @@ const PassiveB = {
     DefFeint3: 653,
     ResFeint3: 829,
 
-    AtkSpdRuse3: 973, // 攻撃速さの大共謀3
+    // 大共謀
+    AtkSpdRuse3: 973,
+    AtkDefRuse3: 1141,
+    AtkResRuse3: 1546,
     DefResRuse3: 935,
     SpdResRuse3: 1004,
     SpdDefRuse3: 1105,
-    AtkDefRuse3: 1141,
+
     KillingIntent: 999, // 死んでほしいの
 
     PoisonStrike3: 604,
@@ -1979,6 +1987,7 @@ function isNormalAttackSpecial(special) {
         case Special.Hoshikage: // 星影
         case Special.Fukuryu: // 伏竜
         case Special.BlueFrame: // ブルーフレイム
+        case Special.SeidrShell: // 魔弾
         case Special.RighteousWind:
             return true;
         default:
@@ -2197,10 +2206,11 @@ function canRallyForcibly(skill) {
         case PassiveB.DefFeint3:
         case PassiveB.ResFeint3:
         case PassiveB.AtkSpdRuse3:
+        case PassiveB.AtkDefRuse3:
+        case PassiveB.AtkResRuse3:
         case PassiveB.DefResRuse3:
         case PassiveB.SpdResRuse3:
         case PassiveB.SpdDefRuse3:
-        case PassiveB.AtkDefRuse3:
             return true;
         default:
             return false;

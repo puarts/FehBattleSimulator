@@ -3313,6 +3313,11 @@ class AetherRaidTacticsBoard {
             return true;
         }
         switch (unit.weapon) {
+            case Weapon.TomeOfStorms:
+                if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                    return true;
+                }
+                break;
             case Weapon.ShinenNoBreath:
                 if (unit.isWeaponSpecialRefined) {
                     if (unit.snapshot.restHpPercentage >= 25 && this.__isThereAllyInSpecifiedSpaces(unit, 2)) {
@@ -3365,6 +3370,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.TomeOfStorms:
+                if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                    return true;
+                }
+                break;
             case Weapon.Thunderbrand:
                 if (enemyUnit.snapshot.restHpPercentage >= 50) {
                     return true;
@@ -5108,6 +5118,21 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ObsidianLance:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
+                case Weapon.TomeOfStorms:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
                 case Weapon.Lyngheior:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.atkSpur += 6;
@@ -5130,6 +5155,7 @@ class AetherRaidTacticsBoard {
                         enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
                         enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
                     }
+                    break;
                 case Weapon.Aureola:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
@@ -8222,6 +8248,9 @@ class AetherRaidTacticsBoard {
                     case PassiveA.DefResSolo3:
                         targetUnit.defSpur += 6; targetUnit.resSpur += 6;
                         break;
+                    case PassiveA.DefResSolo4:
+                        targetUnit.defSpur += 7; targetUnit.resSpur += 7;
+                        break;
                     case PassiveA.SpdDefSolo3:
                         targetUnit.spdSpur += 6; targetUnit.defSpur += 6;
                         break;
@@ -8839,6 +8868,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Special.SeidrShell:
+                if (this.vm.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(3);
+                }
+                break;
             case PassiveC.OddTempest3:
                 if (this.isOddTurn) {
                     skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
@@ -13636,13 +13670,17 @@ class AetherRaidTacticsBoard {
                     case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
                     case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
                     case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
+                    case PassiveB.AtkSpdRuse3:
+                        this.__applyRuse(supporterUnit, targetUnit,
+                            unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
+                        break;
                     case PassiveB.AtkDefRuse3:
                         this.__applyRuse(supporterUnit, targetUnit,
                             unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); });
                         break;
-                    case PassiveB.AtkSpdRuse3:
+                    case PassiveB.AtkResRuse3:
                         this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
+                            unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
                         break;
                     case PassiveB.DefResRuse3:
                         this.__applyRuse(supporterUnit, targetUnit,

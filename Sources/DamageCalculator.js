@@ -1077,6 +1077,19 @@ class DamageCalculator {
         damage += fixedAddDamage;
 
         var sufferRatio = (specialSuffer / 100.0);
+        switch (special) {
+            case Special.SeidrShell:
+                specialAddDamage = 15;
+                let invalidatesReferenceLowerMit =
+                    defUnit.battleContext.invalidatesReferenceLowerMit ||
+                    defUnit.passiveB === PassiveB.SeimeiNoGofu3 ||
+                    defUnit.passiveB === PassiveB.HikariToYamito;
+                if (!invalidatesReferenceLowerMit) {
+                    this.writeDebugLog("魔弾の守備魔防の低い方でダメージ計算");
+                    totalMit = Math.min(defUnit.getDefInCombat(atkUnit), defUnit.getResInCombat(atkUnit));
+                }
+                break;
+        }
         var specialFinalMit = Math.trunc((totalMit - Math.trunc(totalMit * sufferRatio)) + (totalMit * mitAdvRatio));
         var specialDamage = Math.trunc((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage + atkDamageAdd;
         if (specialDamage < 0) {
