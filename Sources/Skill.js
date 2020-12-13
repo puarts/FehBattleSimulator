@@ -1019,6 +1019,7 @@ const Special = {
     Hoshikage: 463, // 星影
     Fukuryu: 464, // 伏竜
     BlueFrame: 473, // ブルーフレイム
+    SeidrShell: 1542, // 魔弾
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -1986,6 +1987,7 @@ function isNormalAttackSpecial(special) {
         case Special.Hoshikage: // 星影
         case Special.Fukuryu: // 伏竜
         case Special.BlueFrame: // ブルーフレイム
+        case Special.SeidrShell: // 魔弾
         case Special.RighteousWind:
             return true;
         default:

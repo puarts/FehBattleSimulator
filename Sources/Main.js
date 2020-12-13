@@ -8868,6 +8868,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Special.SeidrShell:
+                if (this.vm.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(3);
+                }
+                break;
             case PassiveC.OddTempest3:
                 if (this.isOddTurn) {
                     skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
