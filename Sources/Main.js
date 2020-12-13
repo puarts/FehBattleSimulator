@@ -2799,6 +2799,9 @@ class AetherRaidTacticsBoard {
             }
         }
 
+        // 再移動の評価
+        atkUnit.activateCantoIfPossible();
+
         // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
         this.__goToNextPhaseIfAllActionDone(atkUnit.groupId);
     }
@@ -11868,6 +11871,9 @@ class AetherRaidTacticsBoard {
                     moveStructureToTrashBox(obj);
                 }
                 g_app.endUnitAction(unit);
+
+                // 再移動の評価
+                unit.activateCantoIfPossible();
             }, serial, commandType);
         return command;
     }
@@ -11918,6 +11924,8 @@ class AetherRaidTacticsBoard {
                 if (!unit.isActionDone && endAction) {
                     self.endUnitAction(unit);
                 }
+
+                unit.deactivateCanto();
             },
             serial,
             commandType,
@@ -13747,11 +13755,6 @@ class AetherRaidTacticsBoard {
             return false;
         }
 
-        if (supportTile != null && supporterUnit.placedTile != supportTile) {
-            // 移動
-
-        }
-
         if (this.__applySupportSkill(supporterUnit, targetUnit)) {
             if (!supporterUnit.isActionDone) {
                 // endUnitAction()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
@@ -13773,6 +13776,10 @@ class AetherRaidTacticsBoard {
                     }
                     break;
             }
+
+            // 再移動の評価
+            supporterUnit.activateCantoIfPossible();
+
             this.__goToNextPhaseIfAllActionDone(supporterUnit.groupId);
         }
 

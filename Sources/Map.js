@@ -2991,7 +2991,9 @@ class Map {
         unitPlacedTile = null
     ) {
         for (let tile of this.enumerateMovableTilesImpl(
-            unit, unit.moveCount, ignoresUnits, includesUnitPlacedTile, ignoresTeleportTile, unitPlacedTile)
+            unit,
+            unit.isCantoActivated() ? unit.moveCountForCanto : unit.moveCount,
+            ignoresUnits, includesUnitPlacedTile, ignoresTeleportTile, unitPlacedTile)
         ) {
             yield tile;
         }
@@ -3003,7 +3005,9 @@ class Map {
         unitPlacedTile = null
     ) {
         for (let tile of this.enumerateMovableTilesImpl(
-            unit, unit.moveCountAtBeginningOfTurn, ignoresUnits, includesUnitPlacedTile, ignoresTeleportTile, unitPlacedTile)
+            unit,
+            unit.isCantoActivated() ? unit.moveCountForCanto : unit.moveCountAtBeginningOfTurn,
+            ignoresUnits, includesUnitPlacedTile, ignoresTeleportTile, unitPlacedTile)
         ) {
             yield tile;
         }
@@ -3215,7 +3219,14 @@ class Map {
 
         if (!ignoresTeleportTile) {
             for (let tile of this.__enumerateTeleportTiles(unit)) {
-                yield tile;
+                if (unit.isCantoActivated()) {
+                    if (tile.calculateDistanceToUnit(unit) <= unit.moveCountForCanto) {
+                        yield tile;
+                    }
+                }
+                else {
+                    yield tile;
+                }
             }
         }
     }
