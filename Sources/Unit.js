@@ -1353,11 +1353,46 @@ class Unit {
 
         this.chaseTargetTile = null;
 
+        this.moveCountForCanto = 0; // 再移動の移動マス数
+        this.isCantoActivatedInCurrentTurn = false; // 現在ターンで再移動が1度でも発動したかどうか
+
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
         this.originalMerge = 0;
         this.originalDragonflower = 0;
 
         this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
+    }
+
+    /// 再移動が発動可能なら発動します。
+    activateCantoIfPossible() {
+        if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
+            return;
+        }
+
+        this.moveCountForCanto = 0;
+        for (let skillId of this.enumerateSkills()) {
+            // 同系統効果複数時、最大値適用
+            switch (skillId) {
+                case Weapon.Lyngheior:
+                    this.moveCountForCanto = Math.max(this.moveCountForCanto, 3);
+                    break;
+            }
+        }
+
+        if (this.moveCountForCanto > 0) {
+            this.isActionDone = false;
+            this.isCantoActivatedInCurrentTurn = true;
+        }
+    }
+
+    /// 再移動の発動を終了します。
+    deactivateCanto() {
+        this.moveCountForCanto = 0;
+    }
+
+    /// 再移動が発動しているとき、trueを返します。
+    isCantoActivated() {
+        return this.moveCountForCanto > 0;
     }
 
     chaseTargetTileToString() {
@@ -1716,6 +1751,8 @@ class Unit {
             + ValueDelimiter + this.perTurnStatusesToString()
             + ValueDelimiter + this.distanceFromClosestEnemy
             + ValueDelimiter + this.movementOrder
+            + ValueDelimiter + this.moveCountForCanto
+            + ValueDelimiter + boolToInt(this.isCantoActivatedInCurrentTurn)
             ;
     }
 
@@ -1798,6 +1835,8 @@ class Unit {
         if (splited[i] != undefined) { this.setPerTurnStatusesFromString(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.distanceFromClosestEnemy = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.movementOrder = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.moveCountForCanto = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
     }
 
 
@@ -2007,6 +2046,7 @@ class Unit {
         this.snapshot.spdWithSkills = this.spdWithSkills;
         this.snapshot.defWithSkills = this.defWithSkills;
         this.snapshot.resWithSkills = this.resWithSkills;
+        this.snapshot.weaponRefinement = this.weaponRefinement;
         this.snapshot.fromString(this.toString());
     }
     deleteSnapshot() {
@@ -2310,6 +2350,10 @@ class Unit {
     }
 
     getActualAttackRange(attackTargetUnit) {
+        if (this.isCantoActivated()) {
+            return 0;
+        }
+
         let dist = calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
         return dist;
     }
@@ -2400,6 +2444,7 @@ class Unit {
         this.isOneTimeActionActivatedForSupport = false;
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
+        this.isCantoActivatedInCurrentTurn = false;
     }
 
     isOnInitPos() {
@@ -2902,6 +2947,10 @@ class Unit {
     }
 
     get attackRange() {
+        if (this.isCantoActivated()) {
+            return 0;
+        }
+
         if (this.weapon == Weapon.None) {
             return 0;
         }

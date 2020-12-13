@@ -43,6 +43,9 @@ const OrnamentSettings = [
     { label: "赤い灯籠", icon: "AkaiToro.png" },
     { label: "年始のお祝いゲート", icon: "NenshiNoOiwaiGate.png" },
     { label: "3周年カップケーキ", icon: "AnniversaryCupCake.png" },
+    { label: "ニザヴェリルの歯車塊", icon: "NisavellirGear.png" },
+    { label: "ニザヴェリルの鏡", icon: "NisavellirMirror.png" },
+    { label: "グリンブルスティの像", icon: "GullinburstiStatue.png" },
 ];
 
 function findOrnamentTypeIndexByIcon(icon) {

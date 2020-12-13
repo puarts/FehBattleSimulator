@@ -891,9 +891,10 @@ const Weapon = {
     NightmareHorn: 1539, // 悪夢の女王の角
     FlowerOfSorrow: 1536, // 不幸の花
 
-    // 第5部開幕記念 新英雄＆レギン
+    // 2020年12月第5部開幕記念
     TomeOfStorms: 1545, // 万雷の書
     ObsidianLance: 1543, // 黒曜の槍
+    Lyngheior: 1541, // リュングヘイズ
 };
 
 const Support = {

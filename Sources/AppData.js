@@ -1726,7 +1726,7 @@ class AppData {
 
     getEnemyCount() {
         switch (this.gameMode) {
-            case GameMode.AetherRaid: return 6;
+            case GameMode.AetherRaid: return 7;
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 12;
             case GameMode.TempestTrials: return 6;
@@ -1735,7 +1735,7 @@ class AppData {
     }
     getAllyCount() {
         switch (this.gameMode) {
-            case GameMode.AetherRaid: return 5;
+            case GameMode.AetherRaid: return 6;
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 4;
             case GameMode.TempestTrials: return 4;
