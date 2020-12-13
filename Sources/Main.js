@@ -7813,7 +7813,12 @@ class AetherRaidTacticsBoard {
 
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
-                        this.__addSpurInCross(targetUnit, unit, calcPotentialDamage);
+                        switch (unit.weapon) {
+                            case Weapon.FlowerOfJoy:
+                                targetUnit.atkSpur += 3;
+                                targetUnit.spdSpur += 3;
+                                break;
+                        }
                     }
                 }
             }
@@ -7823,7 +7828,12 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
-                        this.__addSpurInCross(targetUnit, unit, calcPotentialDamage);
+                        switch (unit.weapon) {
+                            case Weapon.FlowerOfSorrow:
+                                targetUnit.defSpur -= 4;
+                                targetUnit.resSpur -= 4;
+                                break;
+                        }
                     }
                 }
 
@@ -8288,24 +8298,6 @@ class AetherRaidTacticsBoard {
         buffFunc(targetUnit, spurAmount + addSpur);
     }
 
-    __addSpurInCross(targetUnit, unit, calcPotentialDamage) {
-        if (!calcPotentialDamage) {
-            switch (unit.weapon) {
-                case Weapon.FlowerOfJoy:
-                    if (targetUnit.groupId === unit.groupId) {
-                        targetUnit.atkSpur += 3;
-                        targetUnit.spdSpur += 3;
-                    }
-                    break;
-                case Weapon.FlowerOfSorrow:
-                    if (targetUnit.groupId !== unit.groupId) {
-                        targetUnit.defSpur -= 4;
-                        targetUnit.resSpur -= 4;
-                    }
-                    break;
-            }
-        }
-    }
     __addSelfSpurInRange1(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
