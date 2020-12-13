@@ -8231,6 +8231,9 @@ class AetherRaidTacticsBoard {
                     case PassiveA.DefResSolo3:
                         targetUnit.defSpur += 6; targetUnit.resSpur += 6;
                         break;
+                    case PassiveA.DefResSolo4:
+                        targetUnit.defSpur += 7; targetUnit.resSpur += 7;
+                        break;
                     case PassiveA.SpdDefSolo3:
                         targetUnit.spdSpur += 6; targetUnit.defSpur += 6;
                         break;

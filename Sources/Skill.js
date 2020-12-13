@@ -1194,7 +1194,8 @@ const PassiveA = {
     MaboNoJosai3: 524, // 魔防の城塞3
     SyubiMaboNoJosai3: 525, // 守備魔防の城塞3
 
-    AtkSpdSolo3: 580, // 孤軍
+    // 孤軍
+    AtkSpdSolo3: 580,
     AtkResSolo3: 581,
     AtkDefSolo3: 777,
     DefResSolo3: 822,
@@ -1203,6 +1204,7 @@ const PassiveA = {
     AtkResSolo4: 1312,
     AtkSpdSolo4: 1316,
     AtkDefSolo4: 1428,
+    DefResSolo4: 1544,
 
     SvelNoTate: 565, // スヴェルの盾
     GuraniNoTate: 566, // グラ二の盾
