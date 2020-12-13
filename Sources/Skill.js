@@ -893,6 +893,7 @@ const Weapon = {
 
     // 第5部開幕記念 新英雄＆レギン
     TomeOfStorms: 1545, // 万雷の書
+    ObsidianLance: 1543, // 黒曜の槍
 };
 
 const Support = {

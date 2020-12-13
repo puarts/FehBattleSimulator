@@ -5108,6 +5108,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ObsidianLance:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
                 case Weapon.TomeOfStorms:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 5;
