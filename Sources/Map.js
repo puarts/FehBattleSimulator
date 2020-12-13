@@ -2992,7 +2992,7 @@ class Map {
     ) {
         for (let tile of this.enumerateMovableTilesImpl(
             unit,
-            unit.isCantoActivated() ? unit.moveCountForCanto : unit.moveCount,
+            unit.moveCount,
             ignoresUnits, includesUnitPlacedTile, ignoresTeleportTile, unitPlacedTile)
         ) {
             yield tile;
@@ -3006,7 +3006,7 @@ class Map {
     ) {
         for (let tile of this.enumerateMovableTilesImpl(
             unit,
-            unit.isCantoActivated() ? unit.moveCountForCanto : unit.moveCountAtBeginningOfTurn,
+            unit.moveCountAtBeginningOfTurn,
             ignoresUnits, includesUnitPlacedTile, ignoresTeleportTile, unitPlacedTile)
         ) {
             yield tile;

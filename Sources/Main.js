@@ -2800,7 +2800,7 @@ class AetherRaidTacticsBoard {
         }
 
         // 再移動の評価
-        atkUnit.activateCantoIfPossible();
+        this.__activateCantoIfPossible(atkUnit);
 
         // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
         this.__goToNextPhaseIfAllActionDone(atkUnit.groupId);
@@ -10646,6 +10646,11 @@ class AetherRaidTacticsBoard {
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
         );
 
+        this.writeLogLine("■再移動の計算----------");
+        if (this.simulateCanto(actionableUnits)) {
+            return false;
+        }
+
         this.writeLogLine("■戦闘前補助の計算------------");
         if (this.simulatePrecombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
@@ -10692,6 +10697,11 @@ class AetherRaidTacticsBoard {
             && unit.support != Support.None
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
         );
+
+        this.writeLogLine("■再移動の計算----------");
+        if (this.simulateCanto(actionableUnits)) {
+            return false;
+        }
 
         this.writeLogLine("■戦闘前補助の計算------------");
         if (this.simulatePrecombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
@@ -11618,6 +11628,63 @@ class AetherRaidTacticsBoard {
         return isActionActivated;
     }
 
+    __getCantoActivatedUnit(units) {
+        for (let unit of units) {
+            if (unit.isCantoActivated()) {
+                return unit;
+            }
+        }
+        return null;
+    }
+
+    simulateCanto(targetUnits) {
+        let targetUnit = this.__getCantoActivatedUnit(targetUnits);
+        if (targetUnit == null) {
+            this.writeDebugLogLine("再移動が発動しているユニットなし");
+            return false;
+        }
+
+        this.writeDebugLogLine(`${targetUnit.name}の再移動を評価`);
+
+        // 同時に複数ユニットが再移動可能になるシチュエーションはあり得ないので1人のみ処理
+        let movableTiles = this.__getMovableTiles(targetUnit);
+        if (movableTiles.length == 0) {
+            this.__enqueueMoveCommand(unit, unit.placedTile, true);
+            return true;
+        }
+
+        let targetTileContexts = [];
+        for (let tile of movableTiles) {
+            let context = new TilePriorityContext(tile, targetUnit);
+            context.calcPriorityToMoveByCanto(targetUnit, g_appData.map.width, g_appData.map.height);
+            targetTileContexts.push(context);
+        }
+
+        targetTileContexts.sort(function (a, b) {
+            return b.priorityToMove - a.priorityToMove;
+        });
+
+        this.writeDebugLogLine("移動先タイルを選択--------");
+        let order = 1;
+        for (let context of targetTileContexts) {
+            this.writeDebugLogLine(order + ": " + context.tile.positionToString()
+                + ", priorityToMove=" + context.priorityToMove
+                + ", enemyThreat=" + context.enemyThreat
+                + ", restMovementPower=" + context.restMovementPower
+                + ", isDefensiveTile=" + context.isDefensiveTile
+                + ", distanceFromDiagonal=" + context.distanceFromDiagonal
+                + ", isTeleportationRequired=" + context.isTeleportationRequired
+                + ", requiredMovementCount=" + context.requiredMovementCount
+                + ", tilePriority=" + context.tilePriority
+            );
+            ++order;
+        }
+
+        let bestTileToMove = targetTileContexts[0].tile;
+        this.__enqueueMoveCommand(targetUnit, bestTileToMove, true);
+        return true;
+    }
+
     __createTargetTileContexts(unit, movableTiles, pivotTiles) {
         let chaseTargetTile = unit.chaseTargetTile;
         let ignoresUnits = true;
@@ -11873,9 +11940,16 @@ class AetherRaidTacticsBoard {
                 g_app.endUnitAction(unit);
 
                 // 再移動の評価
-                unit.activateCantoIfPossible();
+                self.__activateCantoIfPossible(unit);
             }, serial, commandType);
         return command;
+    }
+
+    __activateCantoIfPossible(unit) {
+        if (unit.canActivateCanto()) {
+            this.writeDebugLogLine("再移動の発動");
+            unit.activateCantoIfPossible();
+        }
     }
 
     __enqueueBreakStructureCommand(unit, moveTile, obj) {
@@ -11900,32 +11974,30 @@ class AetherRaidTacticsBoard {
                 if (enableSoundEffect) {
                     self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
                 }
-                if (unit.placedTile == tileToMove) {
-                    return;
+                if (unit.placedTile != tileToMove) {
+                    if (self.vm.gameMode == GameMode.ResonantBattles
+                        && unit.groupId == UnitGroupType.Enemy && isThief(unit) && tileToMove.posY == 0
+                    ) {
+                        // 双界のシーフが出口に辿り着いた
+                        if (self.isCommandLogEnabled) {
+                            self.writeLogLine(unit.getNameWithGroup() + "は出口に到着");
+                        }
+                        moveUnitToTrashBox(unit);
+                    }
+                    else {
+                        if (self.isCommandLogEnabled) {
+                            self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
+                        }
+                        moveUnit(unit, tileToMove, unit.groupId == UnitGroupType.Ally);
+                    }
+
+                    self.updateSpurForSpecifiedGroupUnits(unit.groupId);
                 }
 
-                if (self.vm.gameMode == GameMode.ResonantBattles
-                    && unit.groupId == UnitGroupType.Enemy && isThief(unit) && tileToMove.posY == 0
-                ) {
-                    // 双界のシーフが出口に辿り着いた
-                    if (self.isCommandLogEnabled) {
-                        self.writeLogLine(unit.getNameWithGroup() + "は出口に到着");
-                    }
-                    moveUnitToTrashBox(unit);
-                }
-                else {
-                    if (self.isCommandLogEnabled) {
-                        self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
-                    }
-                    moveUnit(unit, tileToMove, unit.groupId == UnitGroupType.Ally);
-                }
-
-                self.updateSpurForSpecifiedGroupUnits(unit.groupId);
                 if (!unit.isActionDone && endAction) {
                     self.endUnitAction(unit);
+                    unit.deactivateCanto();
                 }
-
-                unit.deactivateCanto();
             },
             serial,
             commandType,
@@ -13778,7 +13850,7 @@ class AetherRaidTacticsBoard {
             }
 
             // 再移動の評価
-            supporterUnit.activateCantoIfPossible();
+            this.__activateCantoIfPossible(supporterUnit);
 
             this.__goToNextPhaseIfAllActionDone(supporterUnit.groupId);
         }

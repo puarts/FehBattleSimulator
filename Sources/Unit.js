@@ -1363,26 +1363,39 @@ class Unit {
         this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
     }
 
+    canActivateCanto() {
+        if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
+            return false;
+        }
+
+        return this.__calcMoveCountForCanto() > 0;
+    }
+
     /// 再移動が発動可能なら発動します。
     activateCantoIfPossible() {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return;
         }
 
-        this.moveCountForCanto = 0;
-        for (let skillId of this.enumerateSkills()) {
-            // 同系統効果複数時、最大値適用
-            switch (skillId) {
-                case Weapon.Lyngheior:
-                    this.moveCountForCanto = Math.max(this.moveCountForCanto, 3);
-                    break;
-            }
-        }
+        this.moveCountForCanto = this.__calcMoveCountForCanto();
 
         if (this.moveCountForCanto > 0) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
         }
+    }
+
+    __calcMoveCountForCanto() {
+        let moveCountForCanto = 0;
+        for (let skillId of this.enumerateSkills()) {
+            // 同系統効果複数時、最大値適用
+            switch (skillId) {
+                case Weapon.Lyngheior:
+                    moveCountForCanto = Math.max(moveCountForCanto, 3);
+                    break;
+            }
+        }
+        return moveCountForCanto;
     }
 
     /// 再移動の発動を終了します。
@@ -2841,6 +2854,9 @@ class Unit {
     }
 
     get moveCount() {
+        if (this.isCantoActivated()) {
+            return this.moveCountForCanto;
+        }
         if (this.hasStatusEffect(StatusEffectType.Gravity)) {
             return 1;
         }

@@ -656,7 +656,38 @@ class TilePriorityContext {
         this.isDefensiveTile = tile.isDefensiveTile;
         this.isTeleportationRequired = tile.examinesIsTeleportationRequiredForThisTile(unit);
         this.tileType = tile.type;
-        this.requiredMovementCount = tile.calculateUnitMovementCountToThisTile(unit);
+
+        // 教授の資料の movement required は移動力に関係ないただの距離のこと
+        this.requiredMovementCount = tile.calculateDistanceToUnit(unit);
+
+        // このマスに辿り着いた時の残りの移動力、ワープマスは0
+        this.restMovementPower = 0;
+        if (unit.hasStatusEffect(StatusEffectType.Gravity)) {
+            // 移動制限があるときは重装と同じく森や溝は無視する挙動だった
+            // todo: バグかもしれないのでゲーム側が修正されたら修正する
+            let originalMoveType = unit.moveType;
+            unit.moveType = MoveType.Armor;
+            let requiredMovementPower = tile.calculateUnitMovementCountToThisTile(
+                unit,
+                unit.placedTile,
+                unit.moveCount
+            );
+            if (requiredMovementPower != CanNotReachTile) {
+                this.restMovementPower = unit.getNormalMoveCount() - requiredMovementPower;
+            }
+            unit.moveType = originalMoveType;
+        }
+        else {
+            let requiredMovementPower = tile.calculateUnitMovementCountToThisTile(
+                unit,
+                unit.placedTile,
+                unit.moveCount
+            );
+            if (requiredMovementPower != CanNotReachTile) {
+                this.restMovementPower = unit.getNormalMoveCount() - requiredMovementPower;
+            }
+        }
+
         this.tilePriority = tile.tilePriority;
         this.distanceFromDiagonal = 0;
         this.isPivotRequired = false;
@@ -723,7 +754,7 @@ class TilePriorityContext {
                 defensiveTileWeight * 100000
                 - this.enemyThreat * 10000
                 + teleportationRequirementWeight * 5000
-                - requiredMovementCount * 50
+                - requiredMovementCount * 100
                 + this.tilePriority;
         }
         else {
@@ -739,7 +770,7 @@ class TilePriorityContext {
                 - this.enemyThreat * 110000
                 + teleportationRequirementWeight * 50000
                 + tileTypeWeight * 5000
-                - requiredMovementCount * 50
+                - requiredMovementCount * 100
                 + this.tilePriority;
         }
     }
@@ -765,8 +796,38 @@ class TilePriorityContext {
             defensiveTileWeight * 10000000
             - this.enemyThreat * 1000000
             + teleportationRequirementWeight * 500000
-            + tileTypeWeight * 1000
-            - requiredMovementCount * 50
+            + tileTypeWeight * 2000
+            - requiredMovementCount * 100
+            + this.tilePriority;
+    }
+
+    calcPriorityToMoveByCanto(moveUnit, mapWidth, mapHeight) {
+        let defensiveTileWeight = 0;
+        if (this.isDefensiveTile) { defensiveTileWeight = 1; }
+        let tileTypeWeight = this.__getTileTypePriority(moveUnit, this.tileType);
+
+        let pivotRequiredPriority = 0;
+        if (this.isPivotRequired) {
+            pivotRequiredPriority = 1;
+            this.isTeleportationRequired = false;
+        }
+
+        let teleportationRequirementWeight = 0;
+        let requiredMovementCount = this.requiredMovementCount;
+        if (this.isTeleportationRequired) {
+            teleportationRequirementWeight = 1;
+            requiredMovementCount = 0;
+        }
+
+        this.distanceFromDiagonal = this.__calcMinDiaglonalDist(moveUnit.placedTile, mapWidth, mapHeight);
+
+        this.priorityToMove =
+            - this.enemyThreat * 10000000
+            - this.restMovementPower * 1000000
+            + defensiveTileWeight * 100000
+            - this.distanceFromDiagonal * 5000
+            + teleportationRequirementWeight * 2500
+            - requiredMovementCount * 100
             + this.tilePriority;
     }
 
@@ -792,9 +853,9 @@ class TilePriorityContext {
             - this.enemyThreat * 1000000
             + teleportationRequirementWeight * 500000
             - pivotRequiredPriority * 100000
-            - this.distanceFromDiagonal * 5000
-            + tileTypeWeight * 1000
-            - requiredMovementCount * 50
+            - this.distanceFromDiagonal * 10000
+            + tileTypeWeight * 2000
+            - requiredMovementCount * 100
             + this.tilePriority;
     }
 
@@ -812,9 +873,9 @@ class TilePriorityContext {
         this.priorityToAttack =
             defensiveTileWeight * 1000000
             - this.enemyThreat * 100000
-            + teleportationRequirementWeight * 5000
-            + tileTypeWeight * 1000
-            - requiredMovementCount * 50
+            + teleportationRequirementWeight * 10000
+            + tileTypeWeight * 2000
+            - requiredMovementCount * 100
             + this.tilePriority;
     }
 
