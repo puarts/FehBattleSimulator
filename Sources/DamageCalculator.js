@@ -759,6 +759,12 @@ class DamageCalculator {
         return `魔防${unit.resWithSkills}、強化${unit.getResBuffInCombat(enemyUnit)}、弱化${unit.getResDebuffInCombat()}、戦闘中強化${unit.resSpur}`;
     }
 
+    __canInvalidateReferenceLowerMit(defUnit) {
+        return defUnit.battleContext.invalidatesReferenceLowerMit ||
+            defUnit.passiveB === PassiveB.SeimeiNoGofu3 ||
+            defUnit.passiveB === PassiveB.HikariToYamito;
+    }
+
     __calcCombatDamage(atkUnit, defUnit, context) {
         if (!this.__isDead(atkUnit)) {
             if (context.isCounterattack) {
@@ -811,15 +817,9 @@ class DamageCalculator {
         let totalMit = 0;
 
         let totalMitDefailLog = "";
-        if ((atkUnit.battleContext.refersMinOfDefOrRes
-            || (defUnit.attackRange == 2
-                && defUnit.battleContext.invalidatesReferenceLowerMit == false
-                && isWeaponTypeBreath(atkUnit.weaponType)))
-            && (
-                defUnit.passiveB != PassiveB.SeimeiNoGofu3
-                && defUnit.passiveB != PassiveB.HikariToYamito
-            )
-        ) {
+        let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
+            || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
+        if (refersLowerMit && !this.__canInvalidateReferenceLowerMit(defUnit)) {
             this.writeDebugLog("守備魔防の低い方でダメージ計算");
             var defInCombat = defUnit.getDefInCombat(atkUnit);
             var resInCombat = defUnit.getResInCombat(atkUnit);
@@ -860,6 +860,9 @@ class DamageCalculator {
             totalMit = defUnit.getResInCombat(atkUnit);
             totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
         }
+
+        let specialTotalMit = totalMit; // 攻撃側の奥義発動時の防御力
+        let specialTotalMitDefailLog = "";
 
         var fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         var fixedSpecialAddDamage = 0;
@@ -996,6 +999,21 @@ class DamageCalculator {
                     atkUnit.battleContext.reducedDamageBySpecial = 0;
                 }
                 break;
+            case Special.SeidrShell:
+                specialAddDamage = 15;
+                if (!this.__canInvalidateReferenceLowerMit(defUnit)) {
+                    this.writeDebugLog("魔弾の守備魔防の低い方でダメージ計算");
+                    let defInCombat = defUnit.getDefInCombat(atkUnit);
+                    let resInCombat = defUnit.getResInCombat(atkUnit);
+                    specialTotalMit = Math.min(defInCombat, resInCombat);
+                    if (resInCombat < defInCombat) {
+                        specialTotalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
+                    }
+                    else {
+                        specialTotalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -1067,6 +1085,9 @@ class DamageCalculator {
         finalAtk = finalAtk + Math.trunc(addAdjustAtk);
 
         this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDefailLog})`);
+        if (totalMit != specialTotalMit) {
+            this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDefailLog})`);
+        }
         var finalMit = Math.trunc(totalMit + totalMit * mitAdvRatio);
         this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
         var damage = Math.trunc((finalAtk - finalMit) * damageReduceRatio) + atkDamageAdd;
@@ -1077,20 +1098,8 @@ class DamageCalculator {
         damage += fixedAddDamage;
 
         var sufferRatio = (specialSuffer / 100.0);
-        switch (special) {
-            case Special.SeidrShell:
-                specialAddDamage = 15;
-                let invalidatesReferenceLowerMit =
-                    defUnit.battleContext.invalidatesReferenceLowerMit ||
-                    defUnit.passiveB === PassiveB.SeimeiNoGofu3 ||
-                    defUnit.passiveB === PassiveB.HikariToYamito;
-                if (!invalidatesReferenceLowerMit) {
-                    this.writeDebugLog("魔弾の守備魔防の低い方でダメージ計算");
-                    totalMit = Math.min(defUnit.getDefInCombat(atkUnit), defUnit.getResInCombat(atkUnit));
-                }
-                break;
-        }
-        var specialFinalMit = Math.trunc((totalMit - Math.trunc(totalMit * sufferRatio)) + (totalMit * mitAdvRatio));
+
+        var specialFinalMit = Math.trunc((specialTotalMit - Math.trunc(specialTotalMit * sufferRatio)) + (specialTotalMit * mitAdvRatio));
         var specialDamage = Math.trunc((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage + atkDamageAdd;
         if (specialDamage < 0) {
             specialDamage = 0;
