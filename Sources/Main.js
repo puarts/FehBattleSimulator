@@ -4928,6 +4928,31 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FukenFalcion:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.snapshot.restHpPercentage < 100
+                            || targetUnit.hasPositiveStatusEffect(enemyUnit)
+                        ) {
+                            targetUnit.addAllSpur(5);
+                        }
+
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.defSpur += 5;
+                                if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                                    --enemyUnit.battleContext.followupAttackPriority;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        if (targetUnit.snapshot.restHpPercentage < 100) {
+                            targetUnit.addAllSpur(5);
+                        }
+                    }
+                    break;
                 case Weapon.EternalBreath:
                     {
                         if (targetUnit.isWeaponSpecialRefined) {
@@ -5713,11 +5738,6 @@ class AetherRaidTacticsBoard {
                                 }
                             }
                         }
-                    }
-                    break;
-                case Weapon.FukenFalcion:
-                    if (targetUnit.snapshot.restHpPercentage < 100) {
-                        targetUnit.addAllSpur(5);
                     }
                     break;
                 case Weapon.HikariNoKen:
