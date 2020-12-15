@@ -5118,6 +5118,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PurifyingBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.invalidateAllOwnDebuffs();
+                        }
+                    }
+                    break;
                 case Weapon.ObsidianLance:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 6;
@@ -11977,7 +11985,7 @@ class AetherRaidTacticsBoard {
     }
 
     __activateCantoIfPossible(unit) {
-        if (unit.canActivateCanto()) {
+        if (this.vm.currentTurn <= 4 && unit.canActivateCanto()) {
             this.writeDebugLogLine("再移動の発動");
             unit.activateCantoIfPossible();
         }

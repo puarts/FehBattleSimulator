@@ -896,6 +896,9 @@ const Weapon = {
     ObsidianLance: 1543, // 黒曜の槍
     Lyngheior: 1541, // リュングヘイズ
     ReprisalAxePlus: 1547, // 反攻の斧+
+
+    // 2020年12月武器錬成
+    PurifyingBreath: 1567, // 天真のブレス
 };
 
 const Support = {
