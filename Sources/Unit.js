@@ -493,6 +493,15 @@ class HeroInfo {
         this.__updateLv1Statuses();
     }
 
+    canEquipRefreshSkill() {
+        for (let option of this.supportOptions) {
+            if (isRefreshSupportSkill(option.id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     hasSkillInInitialSkill(skillId) {
         for (let id of this.weapons) {
             if (id == skillId) {

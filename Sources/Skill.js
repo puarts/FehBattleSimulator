@@ -900,6 +900,7 @@ const Weapon = {
     // 2020年12月武器錬成
     PurifyingBreath: 1567, // 天真のブレス
     ElenasStaff: 1566, // エルナの杖
+    TomeOfFavors: 1565, // 寵愛の書
 };
 
 const Support = {
@@ -1994,6 +1995,23 @@ function isNormalAttackSpecial(special) {
         case Special.BlueFrame: // ブルーフレイム
         case Special.SeidrShell: // 魔弾
         case Special.RighteousWind:
+            return true;
+        default:
+            return false;
+    }
+}
+
+/// 再行動補助スキルかどうかを判定します。
+function isRefreshSupportSkill(skillId) {
+    switch (skillId) {
+        case Support.Sing:
+        case Support.Dance:
+        case Support.GrayWaves:
+        case Support.GentleDream:
+        case Support.WhimsicalDream:
+        case Support.SweetDreams:
+        case Support.FrightfulDream:
+        case Support.Play:
             return true;
         default:
             return false;

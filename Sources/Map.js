@@ -3026,6 +3026,19 @@ class Map {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TomeOfFavors:
+                    if (unit.isWeaponSpecialRefined) {
+                        for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                            if (isWeaponTypeBeast(ally.weaponType)
+                                && ally.heroInfo.canEquipRefreshSkill()
+                            ) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.FujinYumi:
                     if (unit.isWeaponSpecialRefined) {
                         if (unit.hpPercentage >= 50) {

@@ -4203,6 +4203,11 @@ class AetherRaidTacticsBoard {
                         attackUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
+                case Weapon.TomeOfFavors:
+                    if (!isWeaponTypeBeast(attackTargetUnit.weaponType)) {
+                        attackUnit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.OukeNoKen:
                     if (attackUnit.isWeaponSpecialRefined) {
                         if (attackUnit.snapshot.restHpPercentage >= 25) {
@@ -5127,6 +5132,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TomeOfFavors:
+                    if (!isWeaponTypeBeast(enemyUnit.weaponType)) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                    break;
                 case Weapon.PurifyingBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 50) {
