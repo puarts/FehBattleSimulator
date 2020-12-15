@@ -899,6 +899,7 @@ const Weapon = {
 
     // 2020年12月武器錬成
     PurifyingBreath: 1567, // 天真のブレス
+    ElenasStaff: 1566, // エルナの杖
 };
 
 const Support = {

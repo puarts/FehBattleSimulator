@@ -4452,6 +4452,15 @@ class AetherRaidTacticsBoard {
                 case Weapon.Slow:
                     attackTargetUnit.applySpdDebuff(-6);
                     break;
+                case Weapon.ElenasStaff:
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.applyAtkDebuff(-7);
+                        unit.applySpdDebuff(-7);
+                        if (attackUnit.isWeaponSpecialRefined) {
+                            unit.addStatusEffect(StatusEffectType.Panic);
+                        }
+                    }
+                    break;
                 case Weapon.FearPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.applyAtkDebuff(-7);
@@ -8936,6 +8945,16 @@ class AetherRaidTacticsBoard {
                         }
                         unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                         unit.takeDamage(5, true);
+                    }
+                }
+                break;
+            case Weapon.ElenasStaff:
+                for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+
+                    if (skillOwner.isWeaponSpecialRefined) {
+                        unit.addStatusEffect(StatusEffectType.Panic);
                     }
                 }
                 break;
