@@ -8623,6 +8623,11 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.TannenbatonPlus:
+                        targetUnit.defSpur += 2;
+                        targetUnit.resSpur += 2;
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                        break;
                     case Weapon.SpearOfAssal:
                         targetUnit.atkSpur += 4;
                         targetUnit.spdSpur += 4;

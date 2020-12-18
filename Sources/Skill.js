@@ -901,6 +901,9 @@ const Weapon = {
     PurifyingBreath: 1567, // 天真のブレス
     ElenasStaff: 1566, // エルナの杖
     TomeOfFavors: 1565, // 寵愛の書
+
+    // 聖なる夜の奇跡
+    TannenbatonPlus: 1568, // 聖樹の杖+
 };
 
 const Support = {
