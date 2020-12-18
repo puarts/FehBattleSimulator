@@ -471,14 +471,18 @@
                                                                                 </td> -->
                                                         <td class="ally" align="center"
                                                             v-bind:style="attackInfoTdStyle">
-                                                            {{attackerUnitIndex < 0 ? "－": units[attackerUnitIndex].heroInfo == null ? units[attackerUnitIndex].name: units[attackerUnitIndex].heroInfo.pureName}}
-                                                        </td>
-                                                        <!-- <td style="font-size:10px"></td> -->
+                                                            {{attackerUnitIndex < 0 ? "－" :
+                                                                units[attackerUnitIndex].heroInfo==null ?
+                                                                units[attackerUnitIndex].name:
+                                                                units[attackerUnitIndex].heroInfo.pureName}} </td>
+                                                                <!-- <td style="font-size:10px"></td> -->
                                                         <td class="enemy" align="center"
                                                             v-bind:style="attackInfoTdStyle">
-                                                            {{attackTargetUnitIndex < 0 ? "－" :units[attackTargetUnitIndex].heroInfo== null ?units[attackTargetUnitIndex].name: units[attackTargetUnitIndex].heroInfo.pureName}}
-                                                        </td>
-                                                        <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
+                                                            {{attackTargetUnitIndex < 0 ? "－"
+                                                                :units[attackTargetUnitIndex].heroInfo==null
+                                                                ?units[attackTargetUnitIndex].name:
+                                                                units[attackTargetUnitIndex].heroInfo.pureName}} </td>
+                                                                <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
                                                                                         v-bind:src="units[attackTargetUnitIndex].icon"></td> -->
                                                     </tr>
                                                     <tr class="attackInfo" style="height: 50px">
@@ -1252,13 +1256,15 @@
                         <td>壁:</td>
                         <td>{{map.countWallsOnMap()}}
                             <input type="button" value="＋" @click="addWallToMap">
-                            <input type="button" value="－" @click="removeWallFromMap"></td>
+                            <input type="button" value="－" @click="removeWallFromMap">
+                        </td>
                     </tr>
                     <tr>
                         <td>壊せる壁:</td>
                         <td>{{map.countBreakableWallsOnMap()}}
                             <input type="button" value="＋" @click="addBreakableWallToMap">
-                            <input type="button" value="－" @click="removeBreakableWallFromMap"></td>
+                            <input type="button" value="－" @click="removeBreakableWallFromMap">
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -1963,6 +1969,7 @@
                         <br/>
                         <input type="button" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();" >
                         <input type="button" value="全て外す" @click="value.clearReservedSkills();value.clearSkills();" >
+                        <input v-if="g_appData.isDebugMenuEnabled" type="button" value="未実装スキルをログ表示" @click="g_app.outputSkillsNotImplemented();" >
                     </div>
                     <div style="padding:5px">
                         <span v-if="(value.isDuoHero) && value.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">

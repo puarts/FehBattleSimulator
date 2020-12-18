@@ -154,7 +154,7 @@ function getPawnsOfLokiDifficalityScore(difficality) {
 }
 
 const MaxEnemyUnitCount = 12;
-const MaxAllyUnitCount = 8 + 4 + 5;
+const MaxAllyUnitCount = 20;
 
 /// シミュレーターの持つデータです。
 class AppData {
@@ -1093,6 +1093,10 @@ class AppData {
 
     updateEnemyAndAllyUnits() {
         let enemyCount = this.getEnemyCount();
+        let allyCount = this.getAllyCount();
+        this.updateEnemyAndAllyUnitCount(enemyCount, allyCount);
+    }
+    updateEnemyAndAllyUnitCount(enemyCount, allyCount) {
         this.enemyUnits = [];
         for (let i = 0; i < enemyCount; ++i) {
             let unit = this.units[i];
@@ -1100,7 +1104,7 @@ class AppData {
             this.enemyUnits.push(unit);
         }
         let allyOffset = MaxEnemyUnitCount;
-        let allyEnd = allyOffset + this.getAllyCount();
+        let allyEnd = allyOffset + allyCount;
         this.allyUnits = [];
         for (let i = allyOffset; i < allyEnd; ++i) {
             let unit = this.units[i];
@@ -1419,12 +1423,18 @@ class AppData {
         this.isWindSeason = intToBool(Number(splited[i])); ++i;
         this.isEarthSeason = intToBool(Number(splited[i])); ++i;
         if (Number.isInteger(Number(splited[i]))) { this.settingCompressMode = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.gameMode = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) {
+            let newValue = Number(splited[i]);
+            let isGameModeChanged = newValue != this.gameMode;
+            if (isGameModeChanged) {
+                this.gameMode = newValue;
+                this.setPropertiesForCurrentGameMode();
+                this.updateEnemyAndAllyUnits();
+            }
+
+            ++i;
+        }
         if (Number.isInteger(Number(splited[i]))) { this.resonantBattleInterval = Number(splited[i]); ++i; }
-
-
-        this.setPropertiesForCurrentGameMode();
-        this.updateEnemyAndAllyUnits();
     }
 
     setPropertiesForCurrentGameMode() {
@@ -1670,11 +1680,11 @@ class AppData {
     }
 
     enumerateAllyUnits() {
-        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, this.getAllyCount());
+        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, this.allyUnits.length);
     }
 
     enumerateEnemyUnits() {
-        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, this.getEnemyCount());
+        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, this.enemyUnits.length);
     }
 
     * enumerateUnitsInSpecifiedGroup(groupId) {
