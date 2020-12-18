@@ -1287,7 +1287,9 @@ const PassiveA = {
     AtkSpdKojosen3: 914,
     SpdResKojosen3: 925,
 
-    AtkDefUnity: 1450, // 攻撃守備の連帯 
+    // 連帯
+    AtkDefUnity: 1450, // 攻撃守備の連帯
+    AtkResUnity: 1575, // 攻撃魔防の連帯
 };
 
 const PassiveB = {

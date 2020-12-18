@@ -5447,6 +5447,21 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case PassiveA.AtkResUnity:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
+                        if (atkDebuff < 0) {
+                            targetUnit.atkSpur += -atkDebuff * 2;
+                        }
+                        let resDebuff = targetUnit.getResDebuffInCombat();
+                        if (resDebuff < 0) {
+                            targetUnit.resSpur += -resDebuff * 2;
+                        }
+                    }
+                    break;
                 case Weapon.MoonGradivus:
                     targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     break;
