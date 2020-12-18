@@ -2591,6 +2591,54 @@ class AetherRaidTacticsBoard {
             // self.__sortSkillOptionsAlphabetically(self.vm.passiveSOptions);
         });
     }
+    outputSkillsNotImplemented() {
+        let optionDict = {};
+        for (let option of this.__enumerateSkillOptionsNotImplemented()) {
+            optionDict[option.text] = option;
+        }
+        this.writeDebugLogLine("未実装スキル-----");
+        for (let text in optionDict) {
+            this.writeDebugLogLine(text);
+        }
+    }
+    *__enumerateSkillOptionsNotImplemented() {
+        let self = this;
+        for (let option of self.vm.weaponOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+        for (let option of self.vm.supportOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+        for (let option of self.vm.specialOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+        for (let option of self.vm.passiveAOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+        for (let option of self.vm.passiveBOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+        for (let option of self.vm.passiveCOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+        for (let option of self.vm.passiveSOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+    }
     __sortSkillOptionsAlphabetically(options) {
         options.sort(function (a, b) {
             if (a.id == -1) { return -1; }
