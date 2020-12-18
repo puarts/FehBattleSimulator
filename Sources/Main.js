@@ -5157,6 +5157,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Hrist:
+                    if (targetUnit.snapshot.restHpPercentage <= 99) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.TomeOfFavors:
                     if (!isWeaponTypeBeast(enemyUnit.weaponType)) {
                         targetUnit.atkSpur += 5;
@@ -8918,6 +8924,16 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.Hrist:
+                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
+                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
+                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
+                if (skillOwner.snapshot.restHpPercentage === 100 && skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.takeDamage(1, true);
+                    }
+                }
+                break;
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {

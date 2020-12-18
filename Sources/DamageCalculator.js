@@ -199,6 +199,11 @@ class DamageCalculator {
 
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
+            case Weapon.Hrist:
+                if (unit.snapshot.restHpPercentage <= 99) {
+                    unit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                }
+                break;
             case Weapon.CourtlyMaskPlus:
             case Weapon.CourtlyBowPlus:
             case Weapon.CourtlyCandlePlus:
