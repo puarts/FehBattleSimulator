@@ -906,6 +906,7 @@ const Weapon = {
     TannenbatonPlus: 1568, // 聖樹の杖+
     Hrist: 1571, // フリスト
     CandyCanePlus: 1572, // キャンディケイン+
+    ReindeerBowPlus: 1576, // トナカイの弓+
 };
 
 const Support = {
