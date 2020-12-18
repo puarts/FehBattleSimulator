@@ -1725,6 +1725,11 @@ const PassiveC = {
     SpdResRein3: 1538, // 速さ魔防の牽制3
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
+
+    // 快癒
+    OddRecovery1: 1580, // 快癒・奇数1
+    OddRecovery2: 1579, // 快癒・奇数2
+    OddRecovery3: 1570, // 快癒・奇数3
 };
 
 const PassiveS = {

@@ -8918,6 +8918,33 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case PassiveC.OddRecovery1:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.resetDebuffs();
+                        unit.clearNegativeStatusEffects();
+                        unit.heal(5);
+                    }
+                }
+                break;
+            case PassiveC.OddRecovery2:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.resetDebuffs();
+                        unit.clearNegativeStatusEffects();
+                        unit.heal(10);
+                    }
+                }
+                break;
+            case PassiveC.OddRecovery3:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.resetDebuffs();
+                        unit.clearNegativeStatusEffects();
+                        unit.heal(20);
+                    }
+                }
+                break;
             case Special.SeidrShell:
                 if (this.vm.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(3);
