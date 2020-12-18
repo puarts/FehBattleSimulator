@@ -5157,6 +5157,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CandyCanePlus:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
                 case Weapon.Hrist:
                     if (targetUnit.snapshot.restHpPercentage <= 99) {
                         targetUnit.atkSpur += 6;

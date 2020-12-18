@@ -905,6 +905,7 @@ const Weapon = {
     // 聖なる夜の奇跡
     TannenbatonPlus: 1568, // 聖樹の杖+
     Hrist: 1571, // フリスト
+    CandyCanePlus: 1572, // キャンディケイン+
 };
 
 const Support = {
