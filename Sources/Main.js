@@ -3673,6 +3673,11 @@ class AetherRaidTacticsBoard {
                             ++followupAttackPriority;
                         }
                         break;
+                    case PassiveB.EvenFollowUp3:
+                        if (this.vm.currentTurn % 2 === 0) {
+                            ++followupAttackPriority;
+                        }
+                        break;
                     case PassiveB.Sashitigae3:
                         if (atkUnit.snapshot.restHpPercentage <= 50 && this.__canCounterAttack(atkUnit, defUnit)) {
                             ++followupAttackPriority;
@@ -3851,6 +3856,11 @@ class AetherRaidTacticsBoard {
                         break;
                     case PassiveB.TsuigekiTaikeiKisu3:
                         if (this.vm.currentTurn % 2 == 1) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.EvenFollowUp3:
+                        if (this.vm.currentTurn % 2 === 0) {
                             --followupAttackPriority;
                         }
                         break;

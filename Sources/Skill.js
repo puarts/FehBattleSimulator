@@ -1472,6 +1472,8 @@ const PassiveB = {
     BeokuNoKago: 656, // ベオクの加護
 
     TsuigekiTaikeiKisu3: 1009, // 追撃隊形・奇数3
+    EvenFollowUp3: 1574, // 追撃隊形・偶数3
+
     HikariToYamito: 981, // 光と闇と
 
     GohoshiNoYorokobi1: 1252, // ご奉仕の喜び1
