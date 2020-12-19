@@ -2659,8 +2659,9 @@ class Unit {
         this.reservedHp = this.hp;
     }
 
-    applyReservedHp() {
+    applyReservedHp(leavesOneHp) {
         this.hp = this.reservedHp;
+        this.modifyHp(leavesOneHp);
     }
 
     reserveTakeDamage(damageAmount) {

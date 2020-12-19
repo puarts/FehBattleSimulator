@@ -2016,7 +2016,7 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    * enumerateAllUnitsOnMap(predicator) {
+    * enumerateAllUnitsOnMap(predicator = null) {
         for (let unit of this.vm.units) {
             if (unit.isOnMap) {
                 if (predicator == null || predicator(unit)) {
@@ -2781,8 +2781,7 @@ class AetherRaidTacticsBoard {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.modifySpecialCount();
             if (!unit.isDead) {
-                unit.applyReservedHp();
-                unit.modifyHp(true);
+                unit.applyReservedHp(true);
             }
         }
 
@@ -4320,25 +4319,25 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.MasyouNoYari:
                     if (attackUnit.isWeaponRefined) {
-                        attackUnit.reserveTakeDamage(6, true);
+                        attackUnit.reserveTakeDamage(6);
                     } else {
-                        attackUnit.reserveTakeDamage(4, true);
+                        attackUnit.reserveTakeDamage(4);
                     }
                     break;
                 case Weapon.DevilAxe:
-                    attackUnit.reserveTakeDamage(4, true);
+                    attackUnit.reserveTakeDamage(4);
                     break;
                 case Weapon.BatoruNoGofu:
                 case Weapon.HinataNoMoutou:
                     if (attackUnit.isWeaponSpecialRefined) {
-                        attackUnit.reserveTakeDamage(6, true);
+                        attackUnit.reserveTakeDamage(6);
                     }
                     break;
                 case PassiveA.Fury1:
-                    attackUnit.reserveTakeDamage(2, true);
+                    attackUnit.reserveTakeDamage(2);
                     break;
                 case PassiveA.Fury2:
-                    attackUnit.reserveTakeDamage(4, true);
+                    attackUnit.reserveTakeDamage(4);
                     break;
                 case Weapon.FurasukoPlus:
                 case Weapon.KabochaNoGyotoPlus:
@@ -4346,10 +4345,10 @@ class AetherRaidTacticsBoard {
                 case Weapon.RosokuNoYumiPlus:
                 case Weapon.Mistoruthin:
                 case PassiveA.Fury3:
-                    attackUnit.reserveTakeDamage(6, true);
+                    attackUnit.reserveTakeDamage(6);
                     break;
                 case PassiveA.Fury4:
-                    attackUnit.reserveTakeDamage(8, true);
+                    attackUnit.reserveTakeDamage(8);
                     break;
                 case PassiveA.AtkSpdPush3:
                 case PassiveA.AtkDefPush3:
@@ -4357,7 +4356,7 @@ class AetherRaidTacticsBoard {
                     this.writeDebugLogLine("渾身3を評価: 戦闘前のHP=" + attackUnit.battleContext.hpBeforeCombat);
                     if (attackUnit.battleContext.hpBeforeCombat == attackUnit.maxHpWithSkills) {
                         this.writeLogLine("渾身3による1ダメージ");
-                        attackUnit.reserveTakeDamage(1, true);
+                        attackUnit.reserveTakeDamage(1);
                     }
                     break;
                 case PassiveA.AtkSpdPush4:
@@ -4366,7 +4365,7 @@ class AetherRaidTacticsBoard {
                     this.writeDebugLogLine("渾身4を評価: 戦闘前のHP=" + attackUnit.battleContext.hpBeforeCombat);
                     if (attackUnit.battleContext.hpBeforeCombat >= Math.floor(attackUnit.maxHpWithSkills * 0.25)) {
                         this.writeLogLine("渾身4による5ダメージ");
-                        attackUnit.reserveTakeDamage(5, true);
+                        attackUnit.reserveTakeDamage(5);
                     }
                     break;
                 case PassiveB.OgiNoRasen3:
@@ -9009,12 +9008,9 @@ class AetherRaidTacticsBoard {
 
         switch (skillId) {
             case Weapon.Hrist:
-                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
-                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
-                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
-                if (skillOwner.snapshot.restHpPercentage === 100 && skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                if (skillOwner.snapshot.restHpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                        unit.takeDamage(1, true);
+                        unit.reserveTakeDamage(1);
                     }
                 }
                 break;
@@ -9023,7 +9019,7 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.resetDebuffs();
                         unit.clearNegativeStatusEffects();
-                        unit.heal(5);
+                        unit.reserveHeal(5);
                     }
                 }
                 break;
@@ -9032,7 +9028,7 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.resetDebuffs();
                         unit.clearNegativeStatusEffects();
-                        unit.heal(10);
+                        unit.reserveHeal(10);
                     }
                 }
                 break;
@@ -9041,7 +9037,7 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.resetDebuffs();
                         unit.clearNegativeStatusEffects();
-                        unit.heal(20);
+                        unit.reserveHeal(20);
                     }
                 }
                 break;
@@ -9092,10 +9088,10 @@ class AetherRaidTacticsBoard {
                 if (this.vm.currentTurn == 4) {
                     let count = 0;
                     for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
-                        unit.takeDamage(10, true);
+                        unit.reserveTakeDamage(10);
                         ++count;
                     }
-                    skillOwner.heal(count * 5);
+                    skillOwner.reserveHeal(count * 5);
                 }
                 break;
             case Weapon.Mafu:
@@ -9107,7 +9103,7 @@ class AetherRaidTacticsBoard {
                             continue;
                         }
                         unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                        unit.takeDamage(5, true);
+                        unit.reserveTakeDamage(5);
                     }
                 }
                 break;
@@ -9190,7 +9186,7 @@ class AetherRaidTacticsBoard {
                         skillOwner.posX, skillOwner.posY, groupId, 3, 99)
                     ) {
                         unit.addStatusEffect(StatusEffectType.Panic);
-                        unit.takeDamage(10, true);
+                        unit.reserveTakeDamage(10);
                     }
                 }
                 break;
@@ -9270,7 +9266,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case PassiveB.Recovering:
-                skillOwner.heal(10);
+                skillOwner.reserveHeal(10);
                 break;
             case Weapon.FalchionRefined:
             case Weapon.FalcionEchoes:
@@ -9278,27 +9274,27 @@ class AetherRaidTacticsBoard {
             case Weapon.KiriNoBreath:
             case PassiveB.Renewal1:
                 if ((this.vm.currentTurn + 1) % 4 == 0) {
-                    skillOwner.heal(10);
+                    skillOwner.reserveHeal(10);
                 }
                 break;
             case PassiveB.Renewal2:
                 if ((this.vm.currentTurn + 1) % 3 == 0) {
-                    skillOwner.heal(10);
+                    skillOwner.reserveHeal(10);
                 }
                 break;
             case PassiveB.Renewal3:
                 if ((this.vm.currentTurn + 1) % 2 == 0) {
-                    skillOwner.heal(10);
+                    skillOwner.reserveHeal(10);
                 }
                 break;
             case Weapon.TamagoNoTsuePlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, true)) {
-                    unit.heal(7);
+                    unit.reserveHeal(7);
                 }
                 break;
             case Weapon.ShirasagiNoTsubasa:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
-                    unit.heal(7);
+                    unit.reserveHeal(7);
                 }
                 break;
             case PassiveC.SeimeiNoKagayaki:
@@ -9316,7 +9312,7 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     for (let unit of targetUnits) {
-                        unit.heal(10);
+                        unit.reserveHeal(10);
                     }
                 }
                 break;
@@ -9401,7 +9397,7 @@ class AetherRaidTacticsBoard {
             case PassiveC.Upheaval:
                 if (this.vm.currentTurn == 1) {
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                        unit.takeDamage(7, true);
+                        unit.reserveTakeDamage(7);
                     }
                     if (this.vm.isAstraSeason) {
                         if (skillOwner.groupId == UnitGroupType.Enemy) {
@@ -9464,7 +9460,7 @@ class AetherRaidTacticsBoard {
                 break;
             case Weapon.Sinmara:
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                    unit.takeDamage(20, true);
+                    unit.reserveTakeDamage(20);
                 }
                 break;
             case PassiveC.SurtrsMenace:
@@ -9569,7 +9565,7 @@ class AetherRaidTacticsBoard {
             case PassiveB.SDrink:
                 if (this.vm.currentTurn == 1) {
                     skillOwner.reduceSpecialCount(1);
-                    skillOwner.heal(99);
+                    skillOwner.reserveHeal(99);
                 }
                 break;
             case PassiveS.OgiNoKodou:
@@ -10115,6 +10111,10 @@ class AetherRaidTacticsBoard {
             unit.createSnapshot();
         }
 
+        this.__initReservedHpForAllUnitsOnMap();
+
+        this.executeStructuresByUnitGroupType(group, false);
+
         for (let unit of targetUnits) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動スキルを適用..");
             for (let skillId of unit.enumerateSkills()) {
@@ -10122,7 +10122,8 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        this.executeStructuresByUnitGroupType(group);
+        // ターン開始時効果によるダメージや回復を反映
+        this.__applyReservedHpForAllUnitsOnMap(true);
 
         for (let unit of targetUnits) {
             unit.deleteSnapshot();
@@ -13152,7 +13153,11 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    executeStructuresByUnitGroupType(groupType) {
+    executeStructuresByUnitGroupType(groupType, appliesDamage) {
+        if (appliesDamage) {
+            this.__initReservedHpForAllUnitsOnMap();
+        }
+
         switch (groupType) {
             case UnitGroupType.Ally:
                 for (let st of this.offenceStructureStorage.enumerateAllObjs()) {
@@ -13167,7 +13172,7 @@ class AetherRaidTacticsBoard {
                         || st instanceof OfFlierSchool
                         || st instanceof OfCavalrySchool
                     ) {
-                        this.executeStructure(st);
+                        this.executeStructure(st, appliesDamage);
                     }
                     else if (st instanceof OfCatapult) {
                         if (this.vm.currentTurn == 1) {
@@ -13209,6 +13214,10 @@ class AetherRaidTacticsBoard {
                 }
                 break;
         }
+
+        if (appliesDamage) {
+            this.__applyReservedHpForAllUnitsOnMap(true);
+        }
     }
 
     * __enumerateDefenseStructuresOnMap() {
@@ -13222,31 +13231,46 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    executeStructure(structure) {
+    __initReservedHpForAllUnitsOnMap() {
+        for (let unit of this.enumerateAllUnitsOnMap()) {
+            unit.initReservedHp();
+        }
+    }
+    __applyReservedHpForAllUnitsOnMap(leavesOneHp) {
+        for (let unit of this.enumerateAllUnitsOnMap()) {
+            unit.applyReservedHp(leavesOneHp);
+        }
+    }
+
+    executeStructure(structure, appliesDamage = true) {
+        if (appliesDamage) {
+            this.__initReservedHpForAllUnitsOnMap();
+        }
+
         let px = structure.posX;
         let py = structure.posY;
         if (structure instanceof OfBoltTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 3, 99)) {
                 let damage = Number(structure.level) * 5 + 5;
-                unit.takeDamage(damage, true);
+                unit.reserveTakeDamage(damage);
             }
         }
         else if (structure instanceof DefBoltTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 3, 7)) {
                 let damage = Number(structure.level) * 5 + 5;
-                unit.takeDamage(damage, true);
+                unit.reserveTakeDamage(damage);
             }
         }
         else if (structure instanceof OfHealingTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 5, 5)) {
                 let healAmount = Number(structure.level) * 5 + 5;
-                unit.heal(healAmount);
+                unit.reserveHeal(healAmount);
             }
         }
         else if (structure instanceof DefHealingTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 5, 5)) {
                 let healAmount = Number(structure.level) * 5 + 5;
-                unit.heal(healAmount);
+                unit.reserveHeal(healAmount);
             }
         }
         else if (structure instanceof OfPanicManor) {
@@ -13292,11 +13316,11 @@ class AetherRaidTacticsBoard {
         else if (structure instanceof BoltTrap) {
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Enemy, 3)) {
                 let damage = Number(structure.level) * 10;
-                unit.takeDamage(damage, true);
+                unit.reserveTakeDamage(damage);
             }
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Ally, 3)) {
                 let damage = Number(structure.level) * 10;
-                unit.takeDamage(damage, true);
+                unit.reserveTakeDamage(damage);
             }
         }
         else if (structure instanceof HeavyTrap) {
@@ -13358,6 +13382,10 @@ class AetherRaidTacticsBoard {
         }
         else {
             this.writeLogLine("<span style='color:red'>" + structure.name + "は効果の発動に未対応です。</span>");
+        }
+
+        if (appliesDamage) {
+            this.__applyReservedHpForAllUnitsOnMap(true);
         }
     }
 
