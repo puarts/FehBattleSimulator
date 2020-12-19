@@ -279,6 +279,9 @@ class DamageCalculator {
             if (atkUnit.hasStatusEffect(StatusEffectType.Desperation)) {
                 atkUnit.battleContext.isDesperationActivated = true;
             }
+            if (defUnit.hasStatusEffect(StatusEffectType.Vantage)) {
+                defUnit.battleContext.isVantageActivated = true;
+            }
 
             // 攻撃順入替えスキル
             for (let skillId of defUnit.enumerateSkills()) {

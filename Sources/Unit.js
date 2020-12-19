@@ -43,6 +43,7 @@ const Hero = {
     DuoSigurd: 566,
     HaloweenTiki: 577,
     DuoLyn: 588,
+    DuoAltina: 609,
 };
 
 function isThiefIndex(heroIndex) {
@@ -206,6 +207,7 @@ const StatusEffectType = {
     ResonantBlades: 12, // 双界効果・刃
     Desperation: 13, // 攻め立て
     ResonantShield: 14, // 双界効果・盾
+    Vantage: 15, // 待ち伏せ
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -293,6 +295,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "Desperation.png";
         case StatusEffectType.ResonantShield:
             return g_imageRootPath + "StatusEffect_ResonantShield.png";
+        case StatusEffectType.Vantage:
+            return g_imageRootPath + "StatusEffect_Vantage.png";
         default: return "";
     }
 }
@@ -2157,6 +2161,7 @@ class Unit {
                 || this.heroIndex == Hero.SummerByleth
                 || this.heroIndex == Hero.DuoSigurd
                 || this.heroIndex == Hero.DuoLyn
+                || this.heroIndex == Hero.DuoAltina
             );
     }
 

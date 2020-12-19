@@ -775,11 +775,26 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
+    __addStatusEffectToSameOriginUnits(duoUnit, statusEffect) {
+        let targetOrigins = duoUnit.heroInfo.origin.split('|');
+        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+            if (this.__areSameOrigin(unit, targetOrigins)) {
+                unit.addStatusEffect(statusEffect);
+            }
+        }
+    }
+
     __activateDuoOrHarmonizedSkill(duoUnit) {
         if (!this.canActivateDuoSkillOrHarmonizedSkill(duoUnit)) {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoAltina:
+                {
+                    this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                    duoUnit.addStatusEffect(StatusEffectType.Vantage);
+                }
+                break;
             case Hero.DuoLyn:
                 {
                     duoUnit.isActionDone = false;
@@ -821,22 +836,12 @@ class AetherRaidTacticsBoard {
                 break;
             case Hero.PirateVeronica:
                 {
-                    let targetOrigins = duoUnit.heroInfo.origin.split('|');
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                        if (this.__areSameOrigin(unit, targetOrigins)) {
-                            unit.addStatusEffect(StatusEffectType.ResonantShield);
-                        }
-                    }
+                    this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
                 }
                 break;
             case Hero.SummerMia:
                 {
-                    let targetOrigins = duoUnit.heroInfo.origin.split('|');
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                        if (this.__areSameOrigin(unit, targetOrigins)) {
-                            unit.addStatusEffect(StatusEffectType.ResonantBlades);
-                        }
-                    }
+                    this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 }
                 break;
             case Hero.HaloweenHector:
