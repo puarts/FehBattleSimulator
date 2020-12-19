@@ -3721,6 +3721,11 @@ class AetherRaidTacticsBoard {
                             ++followupAttackPriority;
                         }
                         break;
+                    case PassiveB.EvenFollowUp3:
+                        if (this.vm.currentTurn % 2 === 0) {
+                            ++followupAttackPriority;
+                        }
+                        break;
                     case PassiveB.Sashitigae3:
                         if (atkUnit.snapshot.restHpPercentage <= 50 && this.__canCounterAttack(atkUnit, defUnit)) {
                             ++followupAttackPriority;
@@ -3899,6 +3904,11 @@ class AetherRaidTacticsBoard {
                         break;
                     case PassiveB.TsuigekiTaikeiKisu3:
                         if (this.vm.currentTurn % 2 == 1) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.EvenFollowUp3:
+                        if (this.vm.currentTurn % 2 === 0) {
                             --followupAttackPriority;
                         }
                         break;
@@ -5205,6 +5215,23 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ReindeerBowPlus:
+                case Weapon.CandyCanePlus:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
+                case Weapon.Hrist:
+                    if (targetUnit.snapshot.restHpPercentage <= 99) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.TomeOfFavors:
                     if (!isWeaponTypeBeast(enemyUnit.weaponType)) {
                         targetUnit.atkSpur += 5;
@@ -5466,6 +5493,21 @@ class AetherRaidTacticsBoard {
                         let defDebuff = targetUnit.getDefDebuffInCombat();
                         if (defDebuff < 0) {
                             targetUnit.defSpur += -defDebuff * 2;
+                        }
+                    }
+                    break;
+                case PassiveA.AtkResUnity:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
+                        if (atkDebuff < 0) {
+                            targetUnit.atkSpur += -atkDebuff * 2;
+                        }
+                        let resDebuff = targetUnit.getResDebuffInCombat();
+                        if (resDebuff < 0) {
+                            targetUnit.resSpur += -resDebuff * 2;
                         }
                     }
                     break;
@@ -8671,6 +8713,11 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.TannenbatonPlus:
+                        targetUnit.defSpur += 2;
+                        targetUnit.resSpur += 2;
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                        break;
                     case Weapon.SpearOfAssal:
                         targetUnit.atkSpur += 4;
                         targetUnit.spdSpur += 4;
@@ -8961,6 +9008,43 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.Hrist:
+                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
+                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
+                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
+                if (skillOwner.snapshot.restHpPercentage === 100 && skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.takeDamage(1, true);
+                    }
+                }
+                break;
+            case PassiveC.OddRecovery1:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.resetDebuffs();
+                        unit.clearNegativeStatusEffects();
+                        unit.heal(5);
+                    }
+                }
+                break;
+            case PassiveC.OddRecovery2:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.resetDebuffs();
+                        unit.clearNegativeStatusEffects();
+                        unit.heal(10);
+                    }
+                }
+                break;
+            case PassiveC.OddRecovery3:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.resetDebuffs();
+                        unit.clearNegativeStatusEffects();
+                        unit.heal(20);
+                    }
+                }
+                break;
             case Special.SeidrShell:
                 if (this.vm.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(3);

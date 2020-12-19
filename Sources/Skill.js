@@ -901,6 +901,12 @@ const Weapon = {
     PurifyingBreath: 1567, // 天真のブレス
     ElenasStaff: 1566, // エルナの杖
     TomeOfFavors: 1565, // 寵愛の書
+
+    // 聖なる夜の奇跡
+    TannenbatonPlus: 1568, // 聖樹の杖+
+    Hrist: 1571, // フリスト
+    CandyCanePlus: 1572, // キャンディケイン+
+    ReindeerBowPlus: 1576, // トナカイの弓+
 };
 
 const Support = {
@@ -1282,7 +1288,9 @@ const PassiveA = {
     AtkSpdKojosen3: 914,
     SpdResKojosen3: 925,
 
-    AtkDefUnity: 1450, // 攻撃守備の連帯 
+    // 連帯
+    AtkDefUnity: 1450, // 攻撃守備の連帯
+    AtkResUnity: 1575, // 攻撃魔防の連帯
 };
 
 const PassiveB = {
@@ -1467,6 +1475,8 @@ const PassiveB = {
     BeokuNoKago: 656, // ベオクの加護
 
     TsuigekiTaikeiKisu3: 1009, // 追撃隊形・奇数3
+    EvenFollowUp3: 1574, // 追撃隊形・偶数3
+
     HikariToYamito: 981, // 光と闇と
 
     GohoshiNoYorokobi1: 1252, // ご奉仕の喜び1
@@ -1722,6 +1732,11 @@ const PassiveC = {
     SpdResRein3: 1538, // 速さ魔防の牽制3
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
+
+    // 快癒
+    OddRecovery1: 1580, // 快癒・奇数1
+    OddRecovery2: 1579, // 快癒・奇数2
+    OddRecovery3: 1570, // 快癒・奇数3
 };
 
 const PassiveS = {
