@@ -366,7 +366,7 @@
                                 <label>ゲームモード:</label>
                             </td>
                             <td>
-                                <select v-model="gameMode" v-on:change="gameModeChanged">
+                                <select v-model="gameMode" v-on:change="gameModeChanged();loadLazyTemplateImages();">
                                     <option v-for="option in gameModeOptions" v-bind:value="option.value">
                                         {{ option.label }}
                                     </option>
@@ -1381,12 +1381,12 @@
             </span>
             <span v-for="imgFile in mapImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImage"
-                    v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
+                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName"
+                    class="lazyTemplateImageForAetherRaid" v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in arenaMapImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImage"
+                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImageForArena"
                     v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
             </span>
         </div>
@@ -2078,13 +2078,52 @@
         function showMjolnirsStrikeSettingDialog() {
             $('#mjolnirsStrikeSettingDialog').dialog('open');
         }
-        function showOcrSettingDialog() {
-            $('#ocrSettingDialog').dialog('open');
-            let lazyImages = [].slice.call(document.querySelectorAll("img.lazyTemplateImage"));
+        function setImageSrcFromDatasetSrc(lazyImages) {
             for (let lazyImage of lazyImages) {
-                lazyImage.src = lazyImage.dataset.src;
+                if (lazyImage.src != lazyImage.dataset.src) {
+                    lazyImage.src = lazyImage.dataset.src;
+                }
+            }
+        }
+        function setImageSrcToDummy(lazyImages) {
+            const dummyImageUrl = "https://puarts.com/images/dummy.png";
+            for (let lazyImage of lazyImages) {
+                if (lazyImage.src != dummyImageUrl) {
+                    lazyImage.src = dummyImageUrl;
+                }
+            }
+        }
+        let g_imageAnalysisDialogOpened = false;
+        function loadLazyTemplateImages() {
+            if (!g_imageAnalysisDialogOpened) {
+                return;
+            }
+            {
+                let lazyImages = [].slice.call(document.querySelectorAll("img.lazyTemplateImage"));
+                setImageSrcFromDatasetSrc(lazyImages);
             }
 
+            let lazyImagesForArena = [].slice.call(document.querySelectorAll("img.lazyTemplateImageForArena"));
+            let lazyImagesForAetherRaid = [].slice.call(document.querySelectorAll("img.lazyTemplateImageForAetherRaid"));
+            switch (g_appData.gameMode) {
+                case GameMode.Arena:
+                    {
+                        setImageSrcFromDatasetSrc(lazyImagesForArena);
+                        setImageSrcToDummy(lazyImagesForAetherRaid);
+                    }
+                    break;
+                case GameMode.AetherRaid:
+                    {
+                        setImageSrcFromDatasetSrc(lazyImagesForAetherRaid);
+                        setImageSrcToDummy(lazyImagesForArena);
+                    }
+                    break;
+            }
+        }
+        function showOcrSettingDialog() {
+            g_imageAnalysisDialogOpened = true;
+            $('#ocrSettingDialog').dialog('open');
+            loadLazyTemplateImages();
             g_app.loadImageAnalysisLibraries();
         }
         function showSettingDialog() {
