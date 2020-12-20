@@ -53,7 +53,8 @@
         飛空城や闘技場、双界を越えて、戦渦の連戦最終マップの戦闘をシミュレートできるツールです。キャラの動かし方を考えたり、敵の動きやダメージを確認することができます。飛空城や闘技場の攻略にお役立てください。
     </p>
     <p>
-        こちらのツールに関して何か不具合や不明点等ありましたらお気軽に<a href="https://twitter.com/puarts_FEH">ぷあーと@FEH</a>までどうぞ。
+        このツールの既知の不具合等は<a href="https://github.com/puarts/FehBattleSimulator/issues">こちら</a>で確認できます。
+        このツールに関して何か不具合や不明点等ありましたらお気軽に<a href="https://twitter.com/puarts_FEH">ぷあーと@FEH</a>までどうぞ。
     </p>
     <p style="color:red">
         注意：このツールはスマホも対応してますが、普段はPCからChromeのみでしか動作確認していません。また、開発の都合で予告なく動作しなくなる場合があります。
@@ -307,42 +308,6 @@
     <!-- 重要なところは予め接続 -->
     <link rel="preconnect" href="//cdnjs.cloudflare.com">
     <link rel="preconnect" href="//code.jquery.com">
-
-    <!-- jquery -->
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
-    <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-
-    <!-- select2 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-
-    <!-- jquery-ui -->
-    <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-
-    <!-- vue.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
-
-    <!-- sortable.js -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
-
-    <!-- vuedraggable.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script>
-
-    <!-- クッキー(実際は使ってないので消してもいいかも) -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->
-
-    <!-- 文字列圧縮 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
-
-    <!-- 画像解析 -->
-    <link rel="stylesheet" type="text/css" media="all"
-        href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css" />
-    <script defer type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
-
-    <!-- <script defer type="text/javascript" src="https://docs.opencv.org/4.2.0/opencv.js"></script> -->
 
     <div id="app">
         <table style="border-style: none;">
@@ -844,7 +809,10 @@
                     </div>
                     <div class="jquery" id="unitSettings">
                         <ul class="contents">
-                            <li v-for="unit in units">
+                            <li v-for="unit in enemyUnits">
+                                <unit-detail v-model="unit"></unit-detail>
+                            </li>
+                            <li v-for="unit in allyUnits">
                                 <unit-detail v-model="unit"></unit-detail>
                             </li>
                             <li v-for="structure in offenceStructureStorage.objs">
@@ -2136,38 +2104,6 @@
         function showImportDialog() {
             $('#importDialog').dialog('open');
         }
-    </script>
-    <script>
-        const delayTimeForUnitAndStructureComponent = 0;
-        Vue.component('unit-detail', function (resolve, reject) {
-            setTimeout(function () {
-                // resolve コールバックにコンポーネント定義を渡します
-                resolve({
-                    props: ['value'],
-                    template: "#unit-detail-template"
-                })
-            }, delayTimeForUnitAndStructureComponent)
-        });
-
-        Vue.component('structure-detail', function (resolve, reject) {
-            setTimeout(function () {
-                resolve({
-                    props: ['value'],
-                    template: "#structure-detail-template"
-                })
-            }, delayTimeForUnitAndStructureComponent)
-        });
-
-        Vue.component('tile-detail', function (resolve, reject) {
-            setTimeout(function () {
-                resolve({
-                    props: ['value'],
-                    template: "#tile-detail-template"
-                })
-            }, delayTimeForUnitAndStructureComponent)
-        });
-
-
         function createDialog(elem, title, width = 370, height = 500, positionOf = "#unitSettings") {
             elem.dialog({
                 autoOpen: false,
@@ -2306,6 +2242,48 @@
             }
         }
     </script>
+
+    <!-- jquery -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <!-- select2 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css"
+        media="print" onload="this.media='all'">
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+    <!-- jquery-ui -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css" media="print"
+        onload="this.media='all'">
+    <script async src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- vue.js -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+
+    <!-- sortable.js -->
+    <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+
+    <!-- vuedraggable.js -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script>
+
+    <!-- クッキー(実際は使ってないので消してもいいかも) -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->
+
+    <!-- 文字列圧縮 -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+
+    <!-- 画像解析 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css" media="print"
+        onload="this.media='all'">
+    <script async type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
+
+    <!-- <script defer type="text/javascript" src="https://docs.opencv.org/4.2.0/opencv.js"></script> -->
+
+
+
+
 
 
     <script>

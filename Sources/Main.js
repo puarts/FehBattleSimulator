@@ -1,6 +1,35 @@
 /// @file
 /// @brief シミュレーターのメインコードです。
 
+const delayTimeForUnitAndStructureComponent = 0;
+Vue.component('unit-detail', function (resolve, reject) {
+    setTimeout(function () {
+        // resolve コールバックにコンポーネント定義を渡します
+        resolve({
+            props: ['value'],
+            template: "#unit-detail-template"
+        })
+    }, delayTimeForUnitAndStructureComponent)
+});
+
+Vue.component('structure-detail', function (resolve, reject) {
+    setTimeout(function () {
+        resolve({
+            props: ['value'],
+            template: "#structure-detail-template"
+        })
+    }, delayTimeForUnitAndStructureComponent)
+});
+
+Vue.component('tile-detail', function (resolve, reject) {
+    setTimeout(function () {
+        resolve({
+            props: ['value'],
+            template: "#tile-detail-template"
+        })
+    }, delayTimeForUnitAndStructureComponent)
+});
+
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {
         let option = options[index];
@@ -9013,7 +9042,7 @@ class AetherRaidTacticsBoard {
 
         switch (skillId) {
             case Weapon.Hrist:
-                if (skillOwner.snapshot.restHpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                if (skillOwner.snapshot.hpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         unit.reserveTakeDamage(1);
                     }
@@ -14297,9 +14326,25 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    convertItemIndexToTabIndex(itemIndex) {
+        if (itemIndex < this.vm.enemyUnits.length) {
+            return itemIndex;
+        }
+
+        let enemyOffset = (MaxEnemyUnitCount - this.vm.enemyUnits.length);
+        if (itemIndex < (MaxEnemyUnitCount + this.vm.allyUnits.length)) {
+            return itemIndex - enemyOffset;
+        }
+
+        let allyOffset = (MaxAllyUnitCount - this.vm.allyUnits.length);
+        return itemIndex - (enemyOffset + allyOffset);
+    }
+
     selectItem(targetId, add = false) {
         this.showItemInfo(targetId);
-        changeCurrentUnitTab(this.vm.currentItemIndex);
+
+        let tabIndex = this.convertItemIndexToTabIndex(this.vm.currentItemIndex);
+        changeCurrentUnitTab(tabIndex);
         if (add) {
             g_appData.selectAddCurrentItem();
         } else {
