@@ -1,35 +1,6 @@
 /// @file
 /// @brief シミュレーターのメインコードです。
 
-const delayTimeForUnitAndStructureComponent = 0;
-Vue.component('unit-detail', function (resolve, reject) {
-    setTimeout(function () {
-        // resolve コールバックにコンポーネント定義を渡します
-        resolve({
-            props: ['value'],
-            template: "#unit-detail-template"
-        })
-    }, delayTimeForUnitAndStructureComponent)
-});
-
-Vue.component('structure-detail', function (resolve, reject) {
-    setTimeout(function () {
-        resolve({
-            props: ['value'],
-            template: "#structure-detail-template"
-        })
-    }, delayTimeForUnitAndStructureComponent)
-});
-
-Vue.component('tile-detail', function (resolve, reject) {
-    setTimeout(function () {
-        resolve({
-            props: ['value'],
-            template: "#tile-detail-template"
-        })
-    }, delayTimeForUnitAndStructureComponent)
-});
-
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {
         let option = options[index];
