@@ -1048,6 +1048,7 @@ const Special = {
     RisingLight: 490,
     RisingWind: 491,
     RisingThunder: 492,
+    GiftedMagic: 1582, // 天与の魔道
 
     NjorunsZeal: 1021, // ノヴァの聖戦士
     Galeforce: 496, // 疾風迅雷
@@ -1949,6 +1950,7 @@ function isRangedAttackSpecial(special) {
         case Special.RisingLight:
         case Special.RisingWind:
         case Special.RisingThunder:
+        case Special.GiftedMagic:
             return true;
         default:
             return false;

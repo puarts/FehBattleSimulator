@@ -2956,6 +2956,7 @@ class Map {
                 break;
             case Special.RisingWind:
             case Special.BlazingWind:
+            case Special.GiftedMagic:
                 yield targetTile;
                 yield this.getTile(targetTile.posX - 1, targetTile.posY);
                 yield this.getTile(targetTile.posX + 1, targetTile.posY);
