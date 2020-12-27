@@ -907,6 +907,9 @@ const Weapon = {
     Hrist: 1571, // フリスト
     CandyCanePlus: 1572, // キャンディケイン+
     ReindeerBowPlus: 1576, // トナカイの弓+
+
+    // 2020年12月末 伝承リリーナ
+    StudiedForblaze: 1581, // 業炎フォルブレイズ
 };
 
 const Support = {

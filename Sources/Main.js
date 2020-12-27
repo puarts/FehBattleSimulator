@@ -5219,6 +5219,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.StudiedForblaze:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.resSpur += 6;
+                    }
+                    break;
                 case Weapon.ReindeerBowPlus:
                 case Weapon.CandyCanePlus:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
@@ -9012,6 +9018,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.StudiedForblaze:
+                if (this.vm.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case Weapon.Hrist:
                 if (skillOwner.snapshot.hpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
