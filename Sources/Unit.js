@@ -4094,6 +4094,11 @@ class Unit {
 function canDisableAttackOrderSwapSkill(unit, restHpPercentage) {
     for (let skillId of unit.enumerateSkills()) {
         switch (skillId) {
+            case Weapon.StudiedForblaze:
+                if (restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
             case PassiveS.HardyBearing1:
                 if (restHpPercentage == 100) {
                     return true;

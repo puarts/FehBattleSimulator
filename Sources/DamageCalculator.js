@@ -1215,6 +1215,11 @@ class DamageCalculator {
                     rangedSpecialDamage = Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit);
                 }
                 break;
+            case Special.GiftedMagic:
+                {
+                    rangedSpecialDamage = Math.trunc(Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit) * 0.8);
+                }
+                break;
             default:
                 break;
         }
