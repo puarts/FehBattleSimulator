@@ -7937,8 +7937,11 @@ class AetherRaidTacticsBoard {
                         // 3マス以内で発動する戦闘中バフ
                         for (let skillId of unit.enumerateSkills()) {
                             switch (skillId) {
+                                case Weapon.FirstDreamBow:
+                                    targetUnit.atkSpur += 4;
+                                    break;
                                 case Weapon.Hlidskjalf:
-                                    {
+                                    if (unit.isWeaponSpecialRefined) {
                                         targetUnit.atkSpur += 3;
                                         targetUnit.spdSpur += 3;
                                     }
@@ -7988,6 +7991,9 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.FirstDreamBow:
+                                targetUnit.atkSpur -= 4;
+                                break;
                             case Weapon.Hlidskjalf:
                                 if (unit.isWeaponSpecialRefined) {
                                     targetUnit.defSpur -= 3;

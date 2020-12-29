@@ -910,6 +910,9 @@ const Weapon = {
 
     // 2020年12月末 伝承リリーナ
     StudiedForblaze: 1581, // 業炎フォルブレイズ
+
+    // 2021年正月超英雄
+    FirstDreamBow: 1583, // 甘い初夢の弓
 };
 
 const Support = {
