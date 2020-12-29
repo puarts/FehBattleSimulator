@@ -3297,6 +3297,13 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveA.CloseWard:
+                    if (atkUnit.weaponType === WeaponType.Staff ||
+                        isWeaponTypeBreath(atkUnit.weaponType) ||
+                        isWeaponTypeTome(atkUnit.weaponType)) {
+                        return true;
+                    }
+                    break;
             }
             switch (defUnit.weapon) {
                 case Weapon.DoubleBow:
@@ -7212,6 +7219,13 @@ class AetherRaidTacticsBoard {
                     if (!isPhysicalWeaponType(atkUnit.weaponType)) {
                         defUnit.atkSpur += 5;
                         defUnit.resSpur += 5;
+                    }
+                    break;
+                case PassiveA.CloseWard:
+                    if (!isPhysicalWeaponType(atkUnit.weaponType)) {
+                        defUnit.atkSpur += 5;
+                        defUnit.resSpur += 5;
+                        defUnit.battleContext.invalidatesReferenceLowerMit = true;
                     }
                     break;
                 case Weapon.KokyousyaNoYari:

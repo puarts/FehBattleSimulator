@@ -1253,6 +1253,7 @@ const PassiveA = {
     DartingBreath: 1310, // 飛燕の呼吸
 
     CloseFoil: 1181, // 金剛の反撃・近距離
+    CloseWard: 1584, // 明鏡の反撃・近距離
     DistantFoil: 1182, // 金剛の反撃・遠距離
     DistantWard: 1088, // 明鏡の反撃・遠距離
     KishinKongoNoSyungeki: 805, // 鬼神金剛の瞬撃
