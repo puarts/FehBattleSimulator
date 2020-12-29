@@ -503,6 +503,7 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RenewedFang:
                 case Weapon.JinroMusumeNoTsumekiba:
                 case Weapon.TrasenshiNoTsumekiba:
                 case Weapon.JinroOuNoTsumekiba:

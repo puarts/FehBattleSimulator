@@ -5226,6 +5226,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RenewedFang:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
+                        (u) =>
+                            targetUnit.partnerHeroIndex === u.heroIndex ||
+                            targetUnit.heroIndex === u.partnerHeroIndex)) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.spdSpur -= 6;
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                    }
+                    break;
                 case Weapon.StudiedForblaze:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.atkSpur += 6;
@@ -7547,6 +7557,12 @@ class AetherRaidTacticsBoard {
             for (let skillId of allyUnit.enumerateSkills()) {
                 if (!calcPotentialDamage) {
                     switch (skillId) {
+                        case Weapon.RenewedFang:
+                            if (unit.partnerHeroIndex === allyUnit.heroIndex ||
+                                unit.heroIndex === allyUnit.partnerHeroIndex) {
+                                unit.battleContext.increaseCooldownCountForBoth();
+                            }
+                            break;
                         case Weapon.CaduceusStaff:
                             {
                                 unit.battleContext.multDamageReductionRatio(0.3);

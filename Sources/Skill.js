@@ -913,6 +913,7 @@ const Weapon = {
 
     // 2021年正月超英雄
     FirstDreamBow: 1583, // 甘い初夢の弓
+    RenewedFang: 1585, // 賀正の人狼娘の爪牙
 };
 
 const Support = {
