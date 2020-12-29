@@ -916,6 +916,7 @@ const Weapon = {
     RenewedFang: 1585, // 賀正の人狼娘の爪牙
     RefreshedFang: 1586, // 賀正の妖狐王の爪牙
     BondOfTheAlfar: 1588, // 妖精姉妹の絆
+    ResolvedFang: 1590, // 賀正の人狼王の爪牙
 };
 
 const Support = {

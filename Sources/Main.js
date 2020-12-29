@@ -5227,6 +5227,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ResolvedFang:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.defSpur += 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                    break;
                 case Weapon.RefreshedFang:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.spdSpur += 5;
