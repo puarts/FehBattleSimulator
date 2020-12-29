@@ -734,6 +734,14 @@ class DamageCalculator {
                         (x, y) => x.getEvalSpdInCombat(y));
                 }
                 break;
+            case Weapon.RefreshedFang:
+                if (defUnit.snapshot.restHpPercentage >= 75) {
+                    fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
             default:
                 break;
         }

@@ -3933,6 +3933,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.RefreshedFang:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
@@ -5226,6 +5227,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RefreshedFang:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.spdSpur += 5;
+                        enemyUnit.spdSpur -= 5;
+                    }
+                    break;
                 case Weapon.RenewedFang:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
                         (u) =>
@@ -6884,6 +6891,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.RefreshedFang:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
