@@ -6386,12 +6386,6 @@ class AetherRaidTacticsBoard {
                             targetUnit.defSpur += 7;
                         }
                     }
-                    else {
-                        if (targetUnit.snapshot.restHpPercentage <= 50) {
-                            targetUnit.atkSpur += 5;
-                            targetUnit.defSpur += 5;
-                        }
-                    }
                     break;
                 case Weapon.KizokutekinaYumi:
                     if (targetUnit.isWeaponSpecialRefined) {
