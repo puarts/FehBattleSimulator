@@ -13702,16 +13702,34 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.AtkDefSnag3:
-                    this.__applyDebuffToEnemiesWithin4Spaces(unit, x => { x.applyAtkDebuff(-6); x.applyDefDebuff(-6); });
-                    this.__applyDebuffToEnemiesWithin4Spaces(targetUnit, x => { x.applyAtkDebuff(-6); x.applyDefDebuff(-6); });
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
                     break;
                 case PassiveB.SpdResSnag3:
-                    this.__applyDebuffToEnemiesWithin4Spaces(unit, x => { x.applySpdDebuff(-6); x.applyResDebuff(-6); });
-                    this.__applyDebuffToEnemiesWithin4Spaces(targetUnit, x => { x.applySpdDebuff(-6); x.applyResDebuff(-6); });
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyResDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyResDebuff(-6);
+                    }
                     break;
                 case PassiveB.SpdDefSnag3:
-                    this.__applyDebuffToEnemiesWithin4Spaces(unit, x => { x.applySpdDebuff(-6); x.applyDefDebuff(-6); });
-                    this.__applyDebuffToEnemiesWithin4Spaces(targetUnit, x => { x.applySpdDebuff(-6); x.applyDefDebuff(-6); });
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
                     break;
                 case Weapon.TrasenshiNoTsumekiba:
                     this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-4));
