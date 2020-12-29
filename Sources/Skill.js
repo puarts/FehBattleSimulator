@@ -910,6 +910,13 @@ const Weapon = {
 
     // 2020年12月末 伝承リリーナ
     StudiedForblaze: 1581, // 業炎フォルブレイズ
+
+    // 2021年正月超英雄
+    FirstDreamBow: 1583, // 甘い初夢の弓
+    RenewedFang: 1585, // 賀正の人狼娘の爪牙
+    RefreshedFang: 1586, // 賀正の妖狐王の爪牙
+    BondOfTheAlfar: 1588, // 妖精姉妹の絆
+    ResolvedFang: 1590, // 賀正の人狼王の爪牙
 };
 
 const Support = {
@@ -1250,6 +1257,7 @@ const PassiveA = {
     DartingBreath: 1310, // 飛燕の呼吸
 
     CloseFoil: 1181, // 金剛の反撃・近距離
+    CloseWard: 1584, // 明鏡の反撃・近距離
     DistantFoil: 1182, // 金剛の反撃・遠距離
     DistantWard: 1088, // 明鏡の反撃・遠距離
     KishinKongoNoSyungeki: 805, // 鬼神金剛の瞬撃
@@ -1373,6 +1381,7 @@ const PassiveB = {
     // 魅了
     AtkCantrip3: 1380, // 攻撃の魅了3
     DefCantrip3: 1471,
+    ResCantrip3: 1589,
 
     AtkSpdLink2: 1133, // 攻撃速さの連携2
     AtkSpdLink3: 648, // 攻撃速さの連携3
@@ -1507,6 +1516,7 @@ const PassiveB = {
 
     BeliefInLove: 1235, // 愛を信じますか?
     RagingStorm: 1303, // 狂嵐
+    AtkDefSnag3: 1587, // 攻撃守備の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
     HolyWarsEnd: 1376, // 最後の聖戦

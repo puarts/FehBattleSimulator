@@ -742,6 +742,9 @@ class AppData {
         // 化身によるステータス変化
         if (unit.isTransformed) {
             switch (unit.weapon) {
+                case Weapon.ResolvedFang:
+                case Weapon.RefreshedFang:
+                case Weapon.RenewedFang:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.TaguelFang:

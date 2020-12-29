@@ -3297,6 +3297,13 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveA.CloseWard:
+                    if (atkUnit.weaponType === WeaponType.Staff ||
+                        isWeaponTypeBreath(atkUnit.weaponType) ||
+                        isWeaponTypeTome(atkUnit.weaponType)) {
+                        return true;
+                    }
+                    break;
             }
             switch (defUnit.weapon) {
                 case Weapon.DoubleBow:
@@ -3926,6 +3933,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.RefreshedFang:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
@@ -5219,6 +5227,28 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ResolvedFang:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.defSpur += 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                    break;
+                case Weapon.RefreshedFang:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.spdSpur += 5;
+                        enemyUnit.spdSpur -= 5;
+                    }
+                    break;
+                case Weapon.RenewedFang:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
+                        (u) =>
+                            targetUnit.partnerHeroIndex === u.heroIndex ||
+                            targetUnit.heroIndex === u.partnerHeroIndex)) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.spdSpur -= 6;
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                    }
+                    break;
                 case Weapon.StudiedForblaze:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.atkSpur += 6;
@@ -6362,12 +6392,6 @@ class AetherRaidTacticsBoard {
                             targetUnit.defSpur += 7;
                         }
                     }
-                    else {
-                        if (targetUnit.snapshot.restHpPercentage <= 50) {
-                            targetUnit.atkSpur += 5;
-                            targetUnit.defSpur += 5;
-                        }
-                    }
                     break;
                 case Weapon.KizokutekinaYumi:
                     if (targetUnit.isWeaponSpecialRefined) {
@@ -6867,6 +6891,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.RefreshedFang:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
@@ -7214,6 +7239,13 @@ class AetherRaidTacticsBoard {
                         defUnit.resSpur += 5;
                     }
                     break;
+                case PassiveA.CloseWard:
+                    if (!isPhysicalWeaponType(atkUnit.weaponType)) {
+                        defUnit.atkSpur += 5;
+                        defUnit.resSpur += 5;
+                        defUnit.battleContext.invalidatesReferenceLowerMit = true;
+                    }
+                    break;
                 case Weapon.KokyousyaNoYari:
                     defUnit.atkSpur += 5;
                     defUnit.resSpur += 5;
@@ -7533,6 +7565,12 @@ class AetherRaidTacticsBoard {
             for (let skillId of allyUnit.enumerateSkills()) {
                 if (!calcPotentialDamage) {
                     switch (skillId) {
+                        case Weapon.RenewedFang:
+                            if (unit.partnerHeroIndex === allyUnit.heroIndex ||
+                                unit.heroIndex === allyUnit.partnerHeroIndex) {
+                                unit.battleContext.increaseCooldownCountForBoth();
+                            }
+                            break;
                         case Weapon.CaduceusStaff:
                             {
                                 unit.battleContext.multDamageReductionRatio(0.3);
@@ -7937,8 +7975,11 @@ class AetherRaidTacticsBoard {
                         // 3マス以内で発動する戦闘中バフ
                         for (let skillId of unit.enumerateSkills()) {
                             switch (skillId) {
+                                case Weapon.FirstDreamBow:
+                                    targetUnit.atkSpur += 4;
+                                    break;
                                 case Weapon.Hlidskjalf:
-                                    {
+                                    if (unit.isWeaponSpecialRefined) {
                                         targetUnit.atkSpur += 3;
                                         targetUnit.spdSpur += 3;
                                     }
@@ -7962,6 +8003,9 @@ class AetherRaidTacticsBoard {
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
                         switch (unit.weapon) {
+                            case Weapon.BondOfTheAlfar:
+                                targetUnit.atkSpur += 6;
+                                break;
                             case Weapon.FlowerOfJoy:
                                 targetUnit.atkSpur += 3;
                                 targetUnit.spdSpur += 3;
@@ -7988,6 +8032,9 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.FirstDreamBow:
+                                targetUnit.atkSpur -= 4;
+                                break;
                             case Weapon.Hlidskjalf:
                                 if (unit.isWeaponSpecialRefined) {
                                     targetUnit.defSpur -= 3;
@@ -13663,13 +13710,35 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.AtkDefSnag3:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
+                    break;
                 case PassiveB.SpdResSnag3:
-                    this.__applyDebuffToEnemiesWithin4Spaces(unit, x => { x.applySpdDebuff(-6); x.applyResDebuff(-6); });
-                    this.__applyDebuffToEnemiesWithin4Spaces(targetUnit, x => { x.applySpdDebuff(-6); x.applyResDebuff(-6); });
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyResDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyResDebuff(-6);
+                    }
                     break;
                 case PassiveB.SpdDefSnag3:
-                    this.__applyDebuffToEnemiesWithin4Spaces(unit, x => { x.applySpdDebuff(-6); x.applyDefDebuff(-6); });
-                    this.__applyDebuffToEnemiesWithin4Spaces(targetUnit, x => { x.applySpdDebuff(-6); x.applyDefDebuff(-6); });
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applySpdDebuff(-6);
+                        u.applyDefDebuff(-6);
+                    }
                     break;
                 case Weapon.TrasenshiNoTsumekiba:
                     this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-4));
@@ -13821,6 +13890,11 @@ class AetherRaidTacticsBoard {
                 case PassiveB.DefCantrip3:
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
                         unit.applyDefDebuff(-7);
+                    }
+                    break;
+                case PassiveB.ResCantrip3:
+                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
+                        unit.applyResDebuff(-7);
                     }
                     break;
             }

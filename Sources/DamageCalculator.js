@@ -503,6 +503,8 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ResolvedFang:
+                case Weapon.RenewedFang:
                 case Weapon.JinroMusumeNoTsumekiba:
                 case Weapon.TrasenshiNoTsumekiba:
                 case Weapon.JinroOuNoTsumekiba:
@@ -731,6 +733,22 @@ class DamageCalculator {
                         atkUnit, defUnit, isPrecombat,
                         x => x.getEvalSpdInPrecombat(),
                         (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
+            case Weapon.RefreshedFang:
+                if (defUnit.snapshot.restHpPercentage >= 75) {
+                    fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
+            case Weapon.ResolvedFang:
+                if (defUnit.snapshot.restHpPercentage >= 75) {
+                    fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalDefInPrecombat(),
+                        (x, y) => x.getEvalDefInCombat(y));
                 }
                 break;
             default:
