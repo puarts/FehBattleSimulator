@@ -13886,6 +13886,11 @@ class AetherRaidTacticsBoard {
                         unit.applyDefDebuff(-7);
                     }
                     break;
+                case PassiveB.ResCantrip3:
+                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
+                        unit.applyResDebuff(-7);
+                    }
+                    break;
             }
         }
 

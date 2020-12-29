@@ -1380,6 +1380,7 @@ const PassiveB = {
     // 魅了
     AtkCantrip3: 1380, // 攻撃の魅了3
     DefCantrip3: 1471,
+    ResCantrip3: 1589,
 
     AtkSpdLink2: 1133, // 攻撃速さの連携2
     AtkSpdLink3: 648, // 攻撃速さの連携3
