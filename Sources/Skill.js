@@ -915,6 +915,7 @@ const Weapon = {
     FirstDreamBow: 1583, // 甘い初夢の弓
     RenewedFang: 1585, // 賀正の人狼娘の爪牙
     RefreshedFang: 1586, // 賀正の妖狐王の爪牙
+    BondOfTheAlfar: 1588, // 妖精姉妹の絆
 };
 
 const Support = {

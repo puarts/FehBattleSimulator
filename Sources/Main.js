@@ -7997,6 +7997,9 @@ class AetherRaidTacticsBoard {
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
                         switch (unit.weapon) {
+                            case Weapon.BondOfTheAlfar:
+                                targetUnit.atkSpur += 6;
+                                break;
                             case Weapon.FlowerOfJoy:
                                 targetUnit.atkSpur += 3;
                                 targetUnit.spdSpur += 3;
