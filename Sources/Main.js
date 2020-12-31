@@ -789,6 +789,29 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoPeony:
+                {
+                    let highestHpUnits = [];
+                    let heigestHp = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 1, false)) {
+                        if (unit.isActionDone) {
+                            if (unit.hp > heigestHp) {
+                                highestHpUnits = [unit];
+                            }
+                            else if (unit.hp == highestHp) {
+                                highestHpUnits.push(unit);
+                            }
+                        }
+                    }
+
+                    if (highestHpUnits.length == 1) {
+                        for (let unit of highestHpUnits) {
+                            unit.isActionDone = false;
+                            unit.addStatusEffect(StatusEffectType.AirOrders);
+                        }
+                    }
+                }
+                break;
             case Hero.DuoAltina:
                 {
                     this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
@@ -805,10 +828,10 @@ class AetherRaidTacticsBoard {
                     let targetOrigins = duoUnit.heroInfo.origin.split('|');
                     let highestHpUnits = [];
                     let heigestHp = 0;
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
                         if (this.__areSameOrigin(unit, targetOrigins)) {
                             unit.addStatusEffect(StatusEffectType.ResonantBlades);
-                            if (unit.isActionDone) {
+                            if (unit != duoUnit && unit.isActionDone) {
                                 if (unit.hp > heigestHp) {
                                     highestHpUnits = [unit];
                                 }
