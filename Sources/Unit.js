@@ -2073,7 +2073,18 @@ class Unit {
         this.snapshot.defWithSkills = this.defWithSkills;
         this.snapshot.resWithSkills = this.resWithSkills;
         this.snapshot.weaponRefinement = this.weaponRefinement;
+        this.snapshot.warFundsCost = this.warFundsCost;
+        this.snapshot.level = this.level;
+        this.snapshot.heroInfo = this.heroInfo;
+        this.snapshot.weaponInfo = this.weaponInfo;
+        this.snapshot.supportInfo = this.supportInfo;
+        this.snapshot.specialInfo = this.specialInfo;
+        this.snapshot.passiveAInfo = this.passiveAInfo;
+        this.snapshot.passiveBInfo = this.passiveBInfo;
+        this.snapshot.passiveCInfo = this.passiveCInfo;
+        this.snapshot.passiveSInfo = this.passiveSInfo;
         this.snapshot.fromString(this.toString());
+        return this.snapshot;
     }
     deleteSnapshot() {
         this.snapshot = null;

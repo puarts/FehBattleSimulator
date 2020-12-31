@@ -1737,6 +1737,14 @@ class AppData {
         }
     }
 
+    get totalComboBonus() {
+        return this.pawnsOfLokiMaxWeaponTypeBonusA
+            + this.pawnsOfLokiMaxWeaponTypeBonusB
+            + this.pawnsOfLokiMaxMoveTypeBonus
+            + this.pawnsOfLokiMaxMoveTypePairBonus;
+    }
+
+
     getEnemyCount() {
         switch (this.gameMode) {
             case GameMode.AetherRaid: return 7;

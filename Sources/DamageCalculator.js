@@ -1164,6 +1164,7 @@ class DamageCalculator {
     calcPreCombatDamage(atkUnit, defUnit) {
         this.writeDebugLog("戦闘前ダメージ計算..");
         if (isPrecombatSpecial(atkUnit.special) == false) {
+            this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を持たない`);
             return;
         }
 
@@ -1175,6 +1176,7 @@ class DamageCalculator {
         }
 
         if (!isSpecialActivated) {
+            this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を発動できない(発動カウント${atkUnit.tmpSpecialCount})`);
             return false;
         }
 

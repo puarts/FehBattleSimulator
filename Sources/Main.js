@@ -10574,6 +10574,7 @@ class AetherRaidTacticsBoard {
         targetUnit.resetMaxSpecialCount();
         targetUnit.specialCount = targetUnit.maxSpecialCount - reducedEnemySpecialCount;
         targetUnit.heal(99);
+        this.writeDebugLogLine(`${targetUnit.getNameWithGroup()}の奥義発動カウント${targetUnit.specialCount}`);
     }
     __durabilityTest_simulateImpl(targetUnit, enemyUnit) {
         let winCount = 0;
@@ -10581,6 +10582,7 @@ class AetherRaidTacticsBoard {
         let loseCount = 0;
         let grantedBlessing = enemyUnit.grantedBlessing;
         let originalHp = targetUnit.hp;
+        let originalSpecialCount = targetUnit.specialCount;
 
         let loseEnemies = [];
         let drawEnemies = [];
@@ -10589,6 +10591,7 @@ class AetherRaidTacticsBoard {
             let heroInfo = g_appData.heroInfos.get(i);
             this.__durabilityTest_initUnit(enemyUnit, heroInfo);
 
+            targetUnit.specialCount = originalSpecialCount;
             if (this.vm.durabilityTestHealsHpFull) {
                 targetUnit.heal(99);
             }
@@ -10607,6 +10610,7 @@ class AetherRaidTacticsBoard {
                     ++tmpWinCount;
                 }
             }
+
             let combatResultText = "";
             if (targetUnit.restHp == 0) {
                 combatResultText = "敗北";
