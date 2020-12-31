@@ -1953,7 +1953,7 @@ class AetherRaidTacticsBoard {
         startProgressiveProcess(g_appData.heroInfos.length,
             function (iter) {
                 let heroInfo = g_appData.heroInfos.get(iter);
-                self.__durabilityTest_initUnit(targetUnit, heroInfo);
+                self.__durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit);
                 let result = self.__durabilityTest_simulateImpl(targetUnit, enemyUnit);
                 results.push({ heroInfo: heroInfo, result: result });
             },
@@ -3003,44 +3003,11 @@ class AetherRaidTacticsBoard {
             this.__setWrathfulStaff(defUnit, atkUnit);
 
             // 特効
-            let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
-            if (atkWeaponInfo != null) {
-                this.__setEffectiveAttackEnabled(atkUnit, defUnit, atkWeaponInfo);
-            }
-            let defWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, defUnit.weapon);
-            if (defWeaponInfo != null) {
-                this.__setEffectiveAttackEnabled(defUnit, atkUnit, defWeaponInfo);
-            }
+            this.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
+            this.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
 
             // 武器内蔵の全距離反撃
-            switch (defUnit.weapon) {
-                case Weapon.Kurimuhirudo:
-                    if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.Amatsu:
-                case Weapon.Puji:
-                    if (defUnit.snapshot.restHpPercentage >= 50) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.ShishiouNoTsumekiba:
-                    if (defUnit.isTransformed) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.OgonNoTanken:
-                    if (defUnit.isSpecialCharged) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-            }
-            if (defWeaponInfo != null) {
-                if (defUnit.battleContext.canCounterattackToAllDistance == false) {
-                    defUnit.battleContext.canCounterattackToAllDistance = defWeaponInfo.canCounterattackToAllDistance;
-                }
-            }
+            defUnit.battleContext.canCounterattackToAllDistance = this.__canCounterAttackToAllDistance(defUnit);
         }
 
         // 戦闘中バフが決まった後に評価するスキル効果
@@ -3088,6 +3055,42 @@ class AetherRaidTacticsBoard {
         // 計算のために変更した紋章値をリセット
         this.updateAllUnitSpur();
         return result;
+    }
+
+    __canCounterAttackToAllDistance(defUnit) {
+        if (defUnit.weaponInfo == null) {
+            return false;
+        }
+
+        if (defUnit.weaponInfo.canCounterattackToAllDistance) {
+            return true;
+        }
+
+        switch (defUnit.weapon) {
+            case Weapon.Kurimuhirudo:
+                if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
+                    return true;
+                }
+                break;
+            case Weapon.Amatsu:
+            case Weapon.Puji:
+                if (defUnit.snapshot.restHpPercentage >= 50) {
+                    return true;
+                }
+                break;
+            case Weapon.ShishiouNoTsumekiba:
+                if (defUnit.isTransformed) {
+                    return true;
+                }
+                break;
+            case Weapon.OgonNoTanken:
+                if (defUnit.isSpecialCharged) {
+                    return true;
+                }
+                break;
+        }
+
+        return false;
     }
 
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
@@ -7664,9 +7667,13 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
-    __setEffectiveAttackEnabled(atkUnit, defUnit, atkWeaponInfo) {
+    __setEffectiveAttackEnabledIfPossible(atkUnit, defUnit) {
+        if (atkUnit.weaponInfo == null) {
+            return;
+        }
+
         atkUnit.battleContext.isEffectiveToOpponent = false;
-        for (let effective of atkWeaponInfo.effectives) {
+        for (let effective of atkUnit.weaponInfo.effectives) {
             if (this.__isEffectiveAttackEnabled(defUnit, effective)) {
                 atkUnit.battleContext.isEffectiveToOpponent = true;
                 return;
@@ -10508,9 +10515,9 @@ class AetherRaidTacticsBoard {
         let winEnemies = result.winEnemies;
 
         this.clearDurabilityTestLog();
-        this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${Math.trunc(winCount / totalCount * 100)}%)`);
-        this.writeDurabilityTestLogLine(`引き分け ${drawCount}/${totalCount}(${Math.trunc(drawCount / totalCount * 100)}%)`);
-        this.writeDurabilityTestLogLine(`敗北 ${loseCount}/${totalCount}(${Math.trunc(loseCount / totalCount * 100)}%)`);
+        this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${Math.trunc(winCount / totalCount * 1000) * 0.1}%)`);
+        this.writeDurabilityTestLogLine(`引き分け ${drawCount}/${totalCount}(${Math.trunc(drawCount / totalCount * 1000) * 0.1}%)`);
+        this.writeDurabilityTestLogLine(`敗北 ${loseCount}/${totalCount}(${Math.trunc(loseCount / totalCount * 1000) * 0.1}%)`);
         this.writeDurabilityTestLogLine(`勝率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 0)}%`);
         this.writeDurabilityTestLogLine(`生存率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 2)}%`);
         this.writeDurabilityTestLogLine(`戦闘結果スコア: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 1)} / 100`);
@@ -10543,7 +10550,7 @@ class AetherRaidTacticsBoard {
         updateAllUi();
     }
 
-    __durabilityTest_initUnit(targetUnit, heroInfo) {
+    __durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false) {
         let reducedEnemySpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
         let grantedBlessing = targetUnit.grantedBlessing;
 
@@ -10568,13 +10575,27 @@ class AetherRaidTacticsBoard {
                 weaponRefinement = WeaponRefinementType.Special_Hp3;
             }
             targetUnit.weaponRefinement = weaponRefinement;
+
+            if (equipsAllDistCounterIfImpossible) {
+                // 全距離反撃できない場合に遠距離反撃、近距離反撃を装備する
+                if (targetUnit.attackRange != enemyUnit.attackRange
+                    && !this.__canCounterAttackToAllDistance(targetUnit)
+                ) {
+                    if (targetUnit.isMeleeWeaponType()) {
+                        targetUnit.passiveA = PassiveA.DistantCounter;
+                    }
+                    else if (targetUnit.isRangedWeaponType()) {
+                        targetUnit.passiveA = PassiveA.CloseCounter;
+                    }
+                    g_appData.__updateUnitSkillInfo(targetUnit);
+                }
+            }
         }
 
         g_appData.__updateStatusBySkillsAndMerges(targetUnit, false);
         targetUnit.resetMaxSpecialCount();
         targetUnit.specialCount = targetUnit.maxSpecialCount - reducedEnemySpecialCount;
         targetUnit.heal(99);
-        this.writeDebugLogLine(`${targetUnit.getNameWithGroup()}の奥義発動カウント${targetUnit.specialCount}`);
     }
     __durabilityTest_simulateImpl(targetUnit, enemyUnit) {
         let winCount = 0;
@@ -10589,8 +10610,11 @@ class AetherRaidTacticsBoard {
         let winEnemies = [];
         for (let i = 0; i < g_appData.heroInfos.length; ++i) {
             let heroInfo = g_appData.heroInfos.get(i);
-            this.__durabilityTest_initUnit(enemyUnit, heroInfo);
 
+            // 敵の初期化
+            this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter);
+
+            // テスト対象のHPと奥義発動カウントをリセット
             targetUnit.specialCount = originalSpecialCount;
             if (this.vm.durabilityTestHealsHpFull) {
                 targetUnit.heal(99);
@@ -10636,6 +10660,9 @@ class AetherRaidTacticsBoard {
                 this.writeLogLine(`${targetUnit.getNameWithGroup()}(HP${originalHp}→${targetUnit.restHp})vs${enemyUnit.getNameWithGroup()}(HP${enemyUnit.hp}→${enemyUnit.restHp})→${combatResultText}`);
             }
         }
+
+        targetUnit.specialCount = originalSpecialCount;
+        targetUnit.hp = originalHp;
 
         let result = new Object();
         result.winCount = winCount;

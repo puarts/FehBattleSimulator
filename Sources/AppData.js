@@ -300,6 +300,7 @@ class AppData {
         this.durabilityTestHealsHpFull = true;
         this.durabilityTestLogDamageCalcDetailIfLose = false;
         this.durabilityTestIsLogEnabled = true;
+        this.durabilityTestEquipAllDistCounter = false;
 
         this.aetherRaidDefensePreset = 0;
         this.aetherRaidDefensePresetDescription = "";
