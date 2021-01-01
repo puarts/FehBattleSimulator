@@ -5772,7 +5772,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.AkaiRyukishiNoOno:
                     if (enemyUnit.snapshot.restHpPercentage == 100) {
                         targetUnit.addAllSpur(4);
-                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                        targetUnit.battleContext.reducesCooldownCount = true;
                     }
                     break;
                 case Weapon.WindsOfChange:
