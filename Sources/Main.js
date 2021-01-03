@@ -2034,6 +2034,28 @@ class AetherRaidTacticsBoard {
         updateAllUi();
     }
 
+    plotDamage() {
+        let targetUnit = g_appData.getDurabilityTestAlly();
+        if (targetUnit == null) {
+            this.writeErrorLine("耐久テスト対象のユニットが選択されていません");
+            return;
+        }
+        let enemyUnit = g_appData.getDurabilityTestEnemy();
+        if (enemyUnit == null) {
+            this.writeErrorLine("耐久テストに使用する敵ユニットが選択されていません");
+            return;
+        }
+        this.writeLogLine(`テスト対象: ${targetUnit.getNameWithGroup()}、敵: ${enemyUnit.getNameWithGroup()}`);
+
+        // 元の状態を保存
+        let serializedTurn = exportSettingsAsString();
+
+        this.__plotDamageImpl(targetUnit, enemyUnit);
+
+        importSettingsFromString(serializedTurn);
+        updateAllUi();
+    }
+
     get isAutoChangeDetailEnabled() {
         return this.vm.autoChangeDetail;
     }
@@ -2928,7 +2950,7 @@ class AetherRaidTacticsBoard {
 
         // 戦闘前ダメージ計算
         this.damageCalc.clearLog();
-        this.damageCalc.calcPreCombatDamage(atkUnit, defUnit);
+        let preCombatDamage = this.damageCalc.calcPreCombatDamage(atkUnit, defUnit);
 
         // 戦闘開始時の状態を保存
         atkUnit.createSnapshot();
@@ -3069,6 +3091,8 @@ class AetherRaidTacticsBoard {
         result.defUnit_spd = defUnit.getSpdInCombat(atkUnit);
         result.defUnit_def = defUnit.getDefInCombat(atkUnit);
         result.defUnit_res = defUnit.getResInCombat(atkUnit);
+
+        result.preCombatDamage = preCombatDamage;
 
         if (tileToAttack != null) {
             // ユニットの位置を元に戻す
@@ -7894,12 +7918,16 @@ class AetherRaidTacticsBoard {
         this.setDamageCalcSummary(
             atkUnit,
             defUnit,
-            this.__createDamageCalcSummaryHtml(atkUnit, result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
+            this.__createDamageCalcSummaryHtml(atkUnit,
+                result.preCombatDamage,
+                result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
                 result.atkUnit_atk,
                 result.atkUnit_spd,
                 result.atkUnit_def,
                 result.atkUnit_res),
-            this.__createDamageCalcSummaryHtml(defUnit, result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
+            this.__createDamageCalcSummaryHtml(defUnit,
+                result.preCombatDamage,
+                result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
                 result.defUnit_atk,
                 result.defUnit_spd,
                 result.defUnit_def,
@@ -7915,7 +7943,7 @@ class AetherRaidTacticsBoard {
         g_appData.__showStatusToAttackerInfo();
     }
 
-    __createDamageCalcSummaryHtml(unit, damage, attackCount,
+    __createDamageCalcSummaryHtml(unit, preCombatDamage, damage, attackCount,
         atk, spd, def, res
     ) {
         let html = "HP: " + unit.hp + " → ";
@@ -7927,7 +7955,11 @@ class AetherRaidTacticsBoard {
         }
 
         if (attackCount > 0) {
-            html += "攻撃: " + damage;
+            html += "攻撃: ";
+            if (preCombatDamage > 0) {
+                html += `${preCombatDamage}+`;
+            }
+            html += `${damage}`;
             if (attackCount > 1) {
                 html += "×" + attackCount;
             }
@@ -10525,6 +10557,56 @@ class AetherRaidTacticsBoard {
         for (let context of contexts) {
             yield context.unit;
         }
+    }
+
+    __plotDamageImpl(targetUnit, enemyUnit) {
+        let originalHp = targetUnit.hp;
+        let originalSpecialCount = targetUnit.specialCount;
+        enemyUnit.maxHpWithSkills = 99;
+        let originalEnemyHp = enemyUnit.hp;
+        let originalEnemySpecialCount = enemyUnit.specialCount;
+
+        this.clearDurabilityTestLog();
+        let tableHtml = "<table>";
+        tableHtml += "<tr><th>守備/魔防</th><th>ダメージ概要</th><th>合計ダメージ</th></tr>";
+        for (let i = 0; i < 12; ++i) {
+            let mit = 10 + i * 5;
+
+            // テスト対象のHPと奥義発動カウントをリセット
+            targetUnit.specialCount = originalSpecialCount;
+            if (this.vm.durabilityTestHealsHpFull) {
+                targetUnit.heal(99);
+                enemyUnit.heal(99);
+            }
+            else {
+                targetUnit.hp = originalHp;
+                enemyUnit.hp = originalEnemyHp;
+            }
+
+            enemyUnit.defWithSkills = mit;
+            enemyUnit.resWithSkills = mit;
+
+            let result = this.calcDamage(targetUnit, enemyUnit);
+            tableHtml += `<tr><th>${mit}</th>`;
+            tableHtml += `<td>`;
+            let damageSummary = `${result.preCombatDamage}+${result.atkUnit_normalAttackDamage}`;
+            if (result.atkUnit_totalAttackCount > 1) {
+                damageSummary += `×${result.atkUnit_totalAttackCount}`;
+            }
+            tableHtml += `${damageSummary}`;
+            tableHtml += "</td>";
+            tableHtml += `<td>`;
+            let totalDamage = result.preCombatDamage + result.atkUnit_normalAttackDamage * result.atkUnit_totalAttackCount;
+            tableHtml += `${totalDamage}`;
+            tableHtml += "</td>";
+            tableHtml += "</tr>";
+
+            if (this.vm.durabilityTestIsLogEnabled) {
+                this.writeLogLine(this.damageCalc.log);
+            }
+        }
+        tableHtml += "</table>";
+        this.writeDurabilityTestLog(tableHtml);
     }
 
     __durabilityTest_simulate(targetUnit, enemyUnit) {

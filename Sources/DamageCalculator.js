@@ -39,6 +39,8 @@ class DamageCalcResult {
         this.defUnit_actualTotalAttackCount = 0;
         this.atkUnit_normalAttackDamage = 0;
         this.defUnit_normalAttackDamage = 0;
+
+        this.preCombatDamage = 0;
     }
 }
 
@@ -1192,6 +1194,7 @@ class DamageCalculator {
 
         defUnit.restHp = defUnit.restHp - totalDamage;
         this.writeRestHpLog(defUnit);
+        return totalDamage;
     }
 
     calcPrecombatDamage(atkUnit, defUnit) {

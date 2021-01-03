@@ -1167,6 +1167,7 @@
                 <input type="button" value="1vs1の配置に設定" @click="g_app.setOneVsOneForDurabilityTest();">
                 <input type="button" value="テスト開始" @click="g_app.beginDurabilityTest();">
                 <input type="button" value="ランキング作成" @click="g_app.createDurabilityRanking();">
+                <input type="button" value="殲滅力ダメージプロット" @click="g_app.plotDamage()">
             </p>
             <div v-html="durabilityTestLog"
                 style="min-height: 50px; padding: 10px; border: 1px solid #ddd;background-color: #fff;">
