@@ -797,6 +797,7 @@ class AetherRaidTacticsBoard {
                         if (unit.isActionDone) {
                             if (unit.hp > heigestHp) {
                                 highestHpUnits = [unit];
+                                heigestHp = unit.hp;
                             }
                             else if (unit.hp == highestHp) {
                                 highestHpUnits.push(unit);
@@ -834,6 +835,7 @@ class AetherRaidTacticsBoard {
                             if (unit != duoUnit && unit.isActionDone) {
                                 if (unit.hp > heigestHp) {
                                     highestHpUnits = [unit];
+                                    heigestHp = unit.hp;
                                 }
                                 else if (unit.hp == highestHp) {
                                     highestHpUnits.push(unit);
@@ -1973,10 +1975,15 @@ class AetherRaidTacticsBoard {
         this.damageCalc.isLogEnabled = false;
         let durabilityTestLogEnabled = this.vm.durabilityTestIsLogEnabled;
         this.vm.durabilityTestIsLogEnabled = false;
+        let reducedTargetSpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
+
+        // let dummyHeroIndices = [1, 2, 3, 4, 5, targetUnit.heroIndex];
         startProgressiveProcess(g_appData.heroInfos.length,
+            // startProgressiveProcess(dummyHeroIndices.length,
             function (iter) {
                 let heroInfo = g_appData.heroInfos.get(iter);
-                self.__durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit);
+                // let heroInfo = g_appData.heroInfos.get(dummyHeroIndices[iter]);
+                self.__durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit, false, reducedTargetSpecialCount);
                 let result = self.__durabilityTest_simulateImpl(targetUnit, enemyUnit);
                 results.push({ heroInfo: heroInfo, result: result });
             },
@@ -10655,14 +10662,16 @@ class AetherRaidTacticsBoard {
         updateAllUi();
     }
 
-    __durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false) {
-        let reducedEnemySpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
+    __durabilityTest_initUnit(
+        targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0) {
+        // let reducedEnemySpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
+        let originalSpecialCount = targetUnit.specialCount;
         let grantedBlessing = targetUnit.grantedBlessing;
 
         // 初期化
         {
             targetUnit.initByHeroInfo(heroInfo);
-            targetUnit.setGrantedBlessingIfPossible(grantedBlessing);
+            targetUnit.grantedBlessing = grantedBlessing;
             targetUnit.initializeSkillsToDefault();
 
             targetUnit.setMoveCountFromMoveType();
@@ -10699,7 +10708,9 @@ class AetherRaidTacticsBoard {
 
         g_appData.__updateStatusBySkillsAndMerges(targetUnit, false);
         targetUnit.resetMaxSpecialCount();
-        targetUnit.specialCount = targetUnit.maxSpecialCount - reducedEnemySpecialCount;
+        // targetUnit.specialCount = targetUnit.maxSpecialCount - reducedEnemySpecialCount;
+        // targetUnit.specialCount = originalSpecialCount;
+        targetUnit.specialCount = targetUnit.maxSpecialCount - reducedSpecialCount;
         targetUnit.heal(99);
     }
     __durabilityTest_simulateImpl(targetUnit, enemyUnit) {
@@ -10709,6 +10720,9 @@ class AetherRaidTacticsBoard {
         let grantedBlessing = enemyUnit.grantedBlessing;
         let originalHp = targetUnit.hp;
         let originalSpecialCount = targetUnit.specialCount;
+        let originalEnemyHp = enemyUnit.hp;
+        let originalEnemySpecialCount = enemyUnit.specialCount;
+        let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
 
         let loseEnemies = [];
         let drawEnemies = [];
@@ -10717,7 +10731,7 @@ class AetherRaidTacticsBoard {
             let heroInfo = g_appData.heroInfos.get(i);
 
             // 敵の初期化
-            this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter);
+            this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount);
 
             // テスト対象のHPと奥義発動カウントをリセット
             targetUnit.specialCount = originalSpecialCount;
@@ -10726,6 +10740,20 @@ class AetherRaidTacticsBoard {
             }
             else {
                 targetUnit.hp = originalHp;
+            }
+
+            if (this.vm.durabilityTestAppliesSkillsForBeginningOfTurn) {
+                targetUnit.endAction();
+                targetUnit.beginAction();
+                for (let skillId of targetUnit.enumerateSkills()) {
+                    this.__applySkillForBeginningOfTurn(skillId, targetUnit);
+                }
+
+                enemyUnit.endAction();
+                enemyUnit.beginAction();
+                for (let skillId of enemyUnit.enumerateSkills()) {
+                    this.__applySkillForBeginningOfTurn(skillId, enemyUnit);
+                }
             }
 
             let tmpWinCount = 0;
@@ -10768,6 +10796,8 @@ class AetherRaidTacticsBoard {
 
         targetUnit.specialCount = originalSpecialCount;
         targetUnit.hp = originalHp;
+        enemyUnit.specialCount = originalEnemySpecialCount;
+        enemyUnit.hp = originalEnemyHp;
 
         let result = new Object();
         result.winCount = winCount;

@@ -301,6 +301,7 @@ class AppData {
         this.durabilityTestLogDamageCalcDetailIfLose = false;
         this.durabilityTestIsLogEnabled = true;
         this.durabilityTestEquipAllDistCounter = false;
+        this.durabilityTestAppliesSkillsForBeginningOfTurn = false;
 
         this.aetherRaidDefensePreset = 0;
         this.aetherRaidDefensePresetDescription = "";
