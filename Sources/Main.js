@@ -4576,6 +4576,14 @@ class AetherRaidTacticsBoard {
                 case Weapon.Gravity:
                     attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
                     break;
+                case Weapon.SpringtimeStaff:
+                    attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                            unit.reserveHeal(7);
+                        }
+                    }
+                    break;
                 case Weapon.SlowPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.applySpdDebuff(-7);
@@ -5284,6 +5292,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SpringtimeStaff:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat
+                            || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
+                        ) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.resSpur += 5;
+                        }
+                    }
+                    break;
                 case Weapon.ArdensBlade:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 50) {

@@ -920,6 +920,7 @@ const Weapon = {
 
     // 2021年1月武器錬成
     ArdensBlade: 1591, // アーダンの固剣
+    SpringtimeStaff: 1592, // 春陽の杖
 };
 
 const Support = {
