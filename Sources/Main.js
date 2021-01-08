@@ -5284,6 +5284,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArdensBlade:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.atkSpur += 4;
+                            targetUnit.defSpur += 6;
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
                 case Weapon.ResolvedFang:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.defSpur += 5;

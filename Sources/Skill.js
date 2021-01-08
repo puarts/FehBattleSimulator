@@ -917,6 +917,9 @@ const Weapon = {
     RefreshedFang: 1586, // 賀正の妖狐王の爪牙
     BondOfTheAlfar: 1588, // 妖精姉妹の絆
     ResolvedFang: 1590, // 賀正の人狼王の爪牙
+
+    // 2021年1月武器錬成
+    ArdensBlade: 1591, // アーダンの固剣
 };
 
 const Support = {
