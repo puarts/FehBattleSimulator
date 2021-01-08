@@ -5292,6 +5292,26 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Forusethi:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.initiatesCombat
+                            && targetUnit.snapshot.restHpPercentage >= 25
+                        ) {
+                            targetUnit.atkSpur += 4;
+                            targetUnit.spdSpur += 4;
+                        }
+
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 4;
+                                targetUnit.spdSpur += 4;
+                                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                                targetUnit.battleContext.invalidatesAtkBuff = true;
+                                targetUnit.battleContext.invalidatesSpdBuff = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.SpringtimeStaff:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat

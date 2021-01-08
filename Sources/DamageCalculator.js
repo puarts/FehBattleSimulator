@@ -352,6 +352,17 @@ class DamageCalculator {
                         }
                         break;
                     case Weapon.Forusethi:
+                        if (atkUnit.isWeaponRefined) {
+                            if (atkUnit.snapshot.restHpPercentage >= 25) {
+                                atkUnit.battleContext.isDesperationActivated = true;
+                            }
+                        }
+                        else {
+                            if (atkUnit.snapshot.restHpPercentage >= 50) {
+                                atkUnit.battleContext.isDesperationActivated = true;
+                            }
+                        }
+                        break;
                     case Weapon.YonkaiNoSaiki:
                     case Weapon.AnkokuNoKen:
                         if (atkUnit.snapshot.restHpPercentage >= 50) {
