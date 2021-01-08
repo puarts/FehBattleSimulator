@@ -7933,7 +7933,7 @@ class AetherRaidTacticsBoard {
                 result.atkUnit_def,
                 result.atkUnit_res),
             this.__createDamageCalcSummaryHtml(defUnit,
-                result.preCombatDamage,
+                -1,
                 result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
                 result.defUnit_atk,
                 result.defUnit_spd,
