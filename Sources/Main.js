@@ -9226,6 +9226,29 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.KiaStaff:
+                {
+                    let candidates = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 4, false));
+                    let negativeStatusCandidates = candidates.filter(unit => unit.hasNegativeStatusEffect());
+                    let targets = (negativeStatusCandidates.length === 0 ? candidates : negativeStatusCandidates)
+                        .reduce((a, c) => {
+                            if (a.length === 0) return [c];
+                            let accumHp = this.__getStatusEvalUnit(a[0]).hp;
+                            let currentHp = this.__getStatusEvalUnit(c).hp;
+                            if (accumHp === currentHp) {
+                                a.push(c);
+                            } else if (currentHp < accumHp) {
+                                a = [c];
+                            }
+                            return a;
+                        }, []);
+                    for (let target of targets) {
+                        target.applyAtkBuff(6);
+                        target.applySpdBuff(6);
+                        target.resetDebuffs();
+                    }
+                }
+                break;
             case Weapon.StudiedForblaze:
                 if (this.vm.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(1);

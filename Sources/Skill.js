@@ -925,6 +925,7 @@ const Weapon = {
     // 志を重ねて
     Grafcalibur: 1601, // グラフカリバー
     IndignantBow: 1603, // 義憤の強弓
+    KiaStaff: 1605, // キアの杖
 };
 
 const Support = {
