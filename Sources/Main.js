@@ -5292,6 +5292,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IndignantBow:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        targetUnit.atkSpur += 6;
+                        enemyUnit.atkSpur -= 6;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                    }
+                    break;
                 case Weapon.Grafcalibur:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
