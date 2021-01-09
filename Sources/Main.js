@@ -8148,6 +8148,13 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.SenhimeNoWakyu:
+                                if (unit.isWeaponSpecialRefined) {
+                                    targetUnit.atkSpur -= 4;
+                                    targetUnit.spdSpur -= 4;
+                                    targetUnit.defSpur -= 4;
+                                }
+                                break;
                             case Weapon.FirstDreamBow:
                                 targetUnit.atkSpur -= 4;
                                 break;
@@ -8640,6 +8647,12 @@ class AetherRaidTacticsBoard {
     __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
+                case Weapon.SenhimeNoWakyu:
+                    if (targetUnit.isWeaponRefined) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
                 case Weapon.SpearOfAssal:
                     targetUnit.atkSpur += 4;
                     targetUnit.spdSpur += 4;
@@ -8971,6 +8984,14 @@ class AetherRaidTacticsBoard {
                         targetUnit.resSpur += 2;
                         break;
                     case Weapon.SenhimeNoWakyu:
+                        if (allyUnit.isWeaponRefined) {
+                            targetUnit.atkSpur += 4;
+                            targetUnit.spdSpur += 4;
+                        }
+                        else {
+                            targetUnit.atkSpur += 3;
+                        }
+                        break;
                     case PassiveC.DriveAtk1:
                         targetUnit.atkSpur += 2;
                         break;
