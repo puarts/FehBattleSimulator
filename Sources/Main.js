@@ -9226,6 +9226,22 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.Petrify: {
+                if (this.vm.currentTurn < 1 || 5 < this.vm.currentTurn) break;
+                const statusFunctions = [
+                    x => this.__getStatusEvalUnit(x).hp,
+                    x => this.__getStatusEvalUnit(x).getAtkInPrecombat(),
+                    x => this.__getStatusEvalUnit(x).getSpdInPrecombat(),
+                    x => this.__getStatusEvalUnit(x).getDefInPrecombat(),
+                    x => this.__getStatusEvalUnit(x).getResInPrecombat(),
+                ];
+                for (let unit of this.__findMinStatusUnits(skillOwner.enemyGroupId, statusFunctions[this.vm.currentTurn - 1])) {
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Gravity);
+                }
+                break;
+            }
             case Weapon.KiaStaff:
                 {
                     let candidates = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 4, false));

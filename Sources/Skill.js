@@ -926,6 +926,7 @@ const Weapon = {
     Grafcalibur: 1601, // グラフカリバー
     IndignantBow: 1603, // 義憤の強弓
     KiaStaff: 1605, // キアの杖
+    Petrify: 1609, // ストーン
 };
 
 const Support = {
