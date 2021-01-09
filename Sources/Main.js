@@ -11674,6 +11674,8 @@ class AetherRaidTacticsBoard {
                 }
                 if (unit.support == Support.RescuePlus
                     || unit.support == Support.Rescue
+                    || unit.support == Support.ReturnPlus
+                    || unit.support == Support.Return
                 ) {
                     return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
                 }
@@ -14218,6 +14220,8 @@ class AetherRaidTacticsBoard {
             case Support.Rescue:
             case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
             case Support.ToChangeFate:
+            case Support.ReturnPlus:
+            case Support.Return:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
             case Support.FutureVision:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
@@ -14432,6 +14436,8 @@ class AetherRaidTacticsBoard {
             }
             else if (supporterUnit.support != Support.RescuePlus
                 && supporterUnit.support != Support.Rescue
+                && supporterUnit.support != Support.ReturnPlus
+                && supporterUnit.support != Support.Return
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }
@@ -14546,6 +14552,8 @@ class AetherRaidTacticsBoard {
 
         switch (unit.support) {
             case Support.ToChangeFate:
+            case Support.ReturnPlus:
+            case Support.Return:
             case Support.Reposition:
                 return this.__findTileAfterReposition(unit, target, tile);
             case Support.Smite:
@@ -14586,6 +14594,8 @@ class AetherRaidTacticsBoard {
                     switch (supporterUnit.support) {
                         case Support.RescuePlus:
                         case Support.Rescue:
+                        case Support.ReturnPlus:
+                        case Support.Return:
                             isActivated |= this.__applyMovementAssist(supporterUnit, targetUnit,
                                 (unit, target, tile) => this.__findTileAfterMovementAssist(unit, target, tile));
                     }
