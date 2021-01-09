@@ -4277,6 +4277,7 @@ function isDebufferTier2(attackUnit, targetUnit) {
             case PassiveB.SealDef3:
             case PassiveB.SealRes3:
             case PassiveB.SealAtkDef2:
+            case PassiveB.SealAtkRes2:
             case PassiveB.SealDefRes2:
             case PassiveB.SealSpdDef2:
                 return true;

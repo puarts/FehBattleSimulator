@@ -4376,6 +4376,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SealSpdRes1: attackTargetUnit.applySpdDebuff(-3); attackTargetUnit.applyResDebuff(-3); break;
                 case PassiveB.SealAtkSpd2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applySpdDebuff(-5); break;
                 case PassiveB.SealAtkDef2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applyDefDebuff(-5); break;
+                case PassiveB.SealAtkRes2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
                 case PassiveB.SealDefRes2: attackTargetUnit.applyDefDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
                 case PassiveB.SealSpdDef2: attackTargetUnit.applySpdDebuff(-5); attackTargetUnit.applyDefDebuff(-5); break;
                 case PassiveB.SealSpdRes2: attackTargetUnit.applySpdDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
@@ -4862,6 +4863,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SealDef3: unit.applyDefDebuff(-7); break;
                 case PassiveB.SealRes3: unit.applyResDebuff(-7); break;
                 case PassiveB.SealAtkDef2: unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); break;
+                case PassiveB.SealAtkRes2: unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); break;
                 case PassiveB.SealDefRes2: unit.applyDefDebuff(-5); unit.applyResDebuff(-5); break;
                 case PassiveB.SealSpdDef2: unit.applySpdDebuff(-5); unit.applyDefDebuff(-5); break;
             }
