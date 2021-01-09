@@ -5292,6 +5292,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Grafcalibur:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
                 case Weapon.Forusethi:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.battleContext.initiatesCombat
