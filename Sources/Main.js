@@ -4376,6 +4376,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SealSpdRes1: attackTargetUnit.applySpdDebuff(-3); attackTargetUnit.applyResDebuff(-3); break;
                 case PassiveB.SealAtkSpd2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applySpdDebuff(-5); break;
                 case PassiveB.SealAtkDef2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applyDefDebuff(-5); break;
+                case PassiveB.SealAtkRes2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
                 case PassiveB.SealDefRes2: attackTargetUnit.applyDefDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
                 case PassiveB.SealSpdDef2: attackTargetUnit.applySpdDebuff(-5); attackTargetUnit.applyDefDebuff(-5); break;
                 case PassiveB.SealSpdRes2: attackTargetUnit.applySpdDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
@@ -4862,6 +4863,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SealDef3: unit.applyDefDebuff(-7); break;
                 case PassiveB.SealRes3: unit.applyResDebuff(-7); break;
                 case PassiveB.SealAtkDef2: unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); break;
+                case PassiveB.SealAtkRes2: unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); break;
                 case PassiveB.SealDefRes2: unit.applyDefDebuff(-5); unit.applyResDebuff(-5); break;
                 case PassiveB.SealSpdDef2: unit.applySpdDebuff(-5); unit.applyDefDebuff(-5); break;
             }
@@ -5292,6 +5294,23 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IndignantBow:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        targetUnit.atkSpur += 6;
+                        enemyUnit.atkSpur -= 6;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                    }
+                    break;
+                case Weapon.Grafcalibur:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
                 case Weapon.Forusethi:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.battleContext.initiatesCombat
@@ -7612,6 +7631,11 @@ class AetherRaidTacticsBoard {
                     defUnit.defSpur += 6;
                     defUnit.battleContext.reducesCooldownCount = true;
                     break;
+                case PassiveA.SwiftStance3:
+                    defUnit.spdSpur += 6;
+                    defUnit.resSpur += 6;
+                    defUnit.battleContext.reducesCooldownCount = true;
+                    break;
                 case PassiveA.KishinKongoNoKamae3:
                     defUnit.atkSpur += 6;
                     defUnit.defSpur += 6;
@@ -9202,6 +9226,44 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.Petrify: {
+                if (this.vm.currentTurn < 1 || 5 < this.vm.currentTurn) break;
+                const statusFunctions = [
+                    x => this.__getStatusEvalUnit(x).hp,
+                    x => this.__getStatusEvalUnit(x).getAtkInPrecombat(),
+                    x => this.__getStatusEvalUnit(x).getSpdInPrecombat(),
+                    x => this.__getStatusEvalUnit(x).getDefInPrecombat(),
+                    x => this.__getStatusEvalUnit(x).getResInPrecombat(),
+                ];
+                for (let unit of this.__findMinStatusUnits(skillOwner.enemyGroupId, statusFunctions[this.vm.currentTurn - 1])) {
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Gravity);
+                }
+                break;
+            }
+            case Weapon.KiaStaff: {
+                let candidates = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 4, false));
+                let negativeStatusCandidates = candidates.filter(unit => unit.hasNegativeStatusEffect());
+                let targets = (negativeStatusCandidates.length === 0 ? candidates : negativeStatusCandidates)
+                    .reduce((a, c) => {
+                        if (a.length === 0) return [c];
+                        let accumHp = this.__getStatusEvalUnit(a[0]).hp;
+                        let currentHp = this.__getStatusEvalUnit(c).hp;
+                        if (accumHp === currentHp) {
+                            a.push(c);
+                        } else if (currentHp < accumHp) {
+                            a = [c];
+                        }
+                        return a;
+                    }, []);
+                for (let target of targets) {
+                    target.applyAtkBuff(6);
+                    target.applySpdBuff(6);
+                    target.resetDebuffs();
+                }
+                break;
+            }
             case Weapon.StudiedForblaze:
                 if (this.vm.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(1);
@@ -9590,6 +9652,7 @@ class AetherRaidTacticsBoard {
                 );
                 break;
             case PassiveC.SpdDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applySpdBuff(5); }); break;
+            case PassiveC.SpdResOath3: this.__applyOathSkill(skillOwner, x => { x.applyResBuff(5); x.applySpdBuff(5); }); break;
             case PassiveC.AtkSpdOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applySpdBuff(5); }); break;
             case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyDefBuff(5); }); break;
             case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyResBuff(5); }); break;
@@ -11626,6 +11689,8 @@ class AetherRaidTacticsBoard {
                 }
                 if (unit.support == Support.RescuePlus
                     || unit.support == Support.Rescue
+                    || unit.support == Support.ReturnPlus
+                    || unit.support == Support.Return
                 ) {
                     return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
                 }
@@ -14170,6 +14235,8 @@ class AetherRaidTacticsBoard {
             case Support.Rescue:
             case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
             case Support.ToChangeFate:
+            case Support.ReturnPlus:
+            case Support.Return:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
             case Support.FutureVision:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
@@ -14384,6 +14451,8 @@ class AetherRaidTacticsBoard {
             }
             else if (supporterUnit.support != Support.RescuePlus
                 && supporterUnit.support != Support.Rescue
+                && supporterUnit.support != Support.ReturnPlus
+                && supporterUnit.support != Support.Return
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }
@@ -14498,6 +14567,8 @@ class AetherRaidTacticsBoard {
 
         switch (unit.support) {
             case Support.ToChangeFate:
+            case Support.ReturnPlus:
+            case Support.Return:
             case Support.Reposition:
                 return this.__findTileAfterReposition(unit, target, tile);
             case Support.Smite:
@@ -14538,6 +14609,8 @@ class AetherRaidTacticsBoard {
                     switch (supporterUnit.support) {
                         case Support.RescuePlus:
                         case Support.Rescue:
+                        case Support.ReturnPlus:
+                        case Support.Return:
                             isActivated |= this.__applyMovementAssist(supporterUnit, targetUnit,
                                 (unit, target, tile) => this.__findTileAfterMovementAssist(unit, target, tile));
                     }

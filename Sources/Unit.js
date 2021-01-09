@@ -4227,11 +4227,13 @@ function calcHealAmount(assistUnit, targetUnit) {
         case Support.PhysicPlus:
         case Support.RestorePlus:
         case Support.RescuePlus:
+        case Support.ReturnPlus:
             healAmount = Math.floor(assistUnit.getAtkInPrecombat() * 0.5);
             if (healAmount < 8) { healAmount = 8; }
             break;
-        case Support.Rescue:
         case Support.Restore:
+        case Support.Rescue:
+        case Support.Return:
             healAmount = 8;
             break;
         case Support.RecoverPlus:
@@ -4277,6 +4279,7 @@ function isDebufferTier2(attackUnit, targetUnit) {
             case PassiveB.SealDef3:
             case PassiveB.SealRes3:
             case PassiveB.SealAtkDef2:
+            case PassiveB.SealAtkRes2:
             case PassiveB.SealDefRes2:
             case PassiveB.SealSpdDef2:
                 return true;

@@ -921,6 +921,12 @@ const Weapon = {
     // 2021年1月武器錬成
     ArdensBlade: 1591, // アーダンの固剣
     SpringtimeStaff: 1592, // 春陽の杖
+
+    // 志を重ねて
+    Grafcalibur: 1601, // グラフカリバー
+    IndignantBow: 1603, // 義憤の強弓
+    KiaStaff: 1605, // キアの杖
+    Petrify: 1609, // ストーン
 };
 
 const Support = {
@@ -995,6 +1001,8 @@ const Support = {
 
     RescuePlus: 1506, // レスキュー+
     Rescue: 1512, // レスキュー
+    ReturnPlus: 1606, // リターン+
+    Return: 1607, // リターン
 };
 
 const AssistType = {
@@ -1166,6 +1174,7 @@ const PassiveA = {
 
     AsherasChosen: 1044, // 女神の三雄
 
+    // 構え
     KishinNoKamae3: 539,
     HienNoKamae3: 540,
     KongoNoKamae3: 541,
@@ -1182,6 +1191,7 @@ const PassiveA = {
     MeikyoNoKamae4: 894,
     KishinMeikyoNoKamae3: 1057,
     HienKongoNoKamae3: 1095,
+    SwiftStance3: 1608,
     KishinKongoNoKamae3: 1174,
     KongoMeikyoNoKamae3: 1351,
     KishinHienNoKamae3: 1359,
@@ -1433,6 +1443,7 @@ const PassiveB = {
     SealAtkSpd2: 611, // 攻撃速さ封じ2
     SealAtkDef1: 1464,
     SealAtkDef2: 612,
+    SealAtkRes2: 1604, // 攻撃魔防封じ2
     SealDefRes1: 1467,
     SealDefRes2: 613,
     SealSpdDef1: 1465,
@@ -1698,11 +1709,13 @@ const PassiveC = {
     GroundOrders3: 911, // 先導の伝令・地3
     Upheaval: 823, // メガクェイク
 
+    // 信義
     AtkSpdOath3: 1077, // 攻撃速さの信義3
     AtkDefOath3: 1045,
     AtkResOath3: 982,
     DefResOath3: 1092,
     SpdDefOath3: 1233,
+    SpdResOath3: 1602,
 
     AtkOpening3: 779,
     SpdOpening3: 815, // 速さの開放3
@@ -1942,6 +1955,8 @@ function getPrecombatHealThreshold(support) {
         case Support.RestorePlus:
         case Support.Rescue:
         case Support.RescuePlus:
+        case Support.ReturnPlus:
+        case Support.Return:
         case Support.Mend:
             return 10;
         default:
