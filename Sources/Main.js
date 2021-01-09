@@ -7629,6 +7629,11 @@ class AetherRaidTacticsBoard {
                     defUnit.defSpur += 6;
                     defUnit.battleContext.reducesCooldownCount = true;
                     break;
+                case PassiveA.SwiftStance3:
+                    defUnit.spdSpur += 6;
+                    defUnit.resSpur += 6;
+                    defUnit.battleContext.reducesCooldownCount = true;
+                    break;
                 case PassiveA.KishinKongoNoKamae3:
                     defUnit.atkSpur += 6;
                     defUnit.defSpur += 6;

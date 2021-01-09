@@ -1170,6 +1170,7 @@ const PassiveA = {
 
     AsherasChosen: 1044, // 女神の三雄
 
+    // 構え
     KishinNoKamae3: 539,
     HienNoKamae3: 540,
     KongoNoKamae3: 541,
@@ -1186,6 +1187,7 @@ const PassiveA = {
     MeikyoNoKamae4: 894,
     KishinMeikyoNoKamae3: 1057,
     HienKongoNoKamae3: 1095,
+    SwiftStance3: 1608,
     KishinKongoNoKamae3: 1174,
     KongoMeikyoNoKamae3: 1351,
     KishinHienNoKamae3: 1359,
