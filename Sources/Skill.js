@@ -1701,11 +1701,13 @@ const PassiveC = {
     GroundOrders3: 911, // 先導の伝令・地3
     Upheaval: 823, // メガクェイク
 
+    // 信義
     AtkSpdOath3: 1077, // 攻撃速さの信義3
     AtkDefOath3: 1045,
     AtkResOath3: 982,
     DefResOath3: 1092,
     SpdDefOath3: 1233,
+    SpdResOath3: 1602,
 
     AtkOpening3: 779,
     SpdOpening3: 815, // 速さの開放3
