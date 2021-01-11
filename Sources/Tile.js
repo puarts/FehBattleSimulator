@@ -662,22 +662,7 @@ class TilePriorityContext {
 
         // このマスに辿り着いた時の残りの移動力、ワープマスは0
         this.restMovementPower = 0;
-        if (unit.hasStatusEffect(StatusEffectType.Gravity)) {
-            // 移動制限があるときは重装と同じく森や溝は無視する挙動だった
-            // todo: バグかもしれないのでゲーム側が修正されたら修正する
-            let originalMoveType = unit.moveType;
-            unit.moveType = MoveType.Armor;
-            let requiredMovementPower = tile.calculateUnitMovementCountToThisTile(
-                unit,
-                unit.placedTile,
-                unit.moveCount
-            );
-            if (requiredMovementPower != CanNotReachTile) {
-                this.restMovementPower = unit.getNormalMoveCount() - requiredMovementPower;
-            }
-            unit.moveType = originalMoveType;
-        }
-        else {
+        {
             let requiredMovementPower = tile.calculateUnitMovementCountToThisTile(
                 unit,
                 unit.placedTile,
