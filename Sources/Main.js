@@ -9261,6 +9261,7 @@ class AetherRaidTacticsBoard {
                     target.applyAtkBuff(6);
                     target.applySpdBuff(6);
                     target.resetDebuffs();
+                    target.clearNegativeStatusEffects();
                 }
                 break;
             }
@@ -13827,6 +13828,7 @@ class AetherRaidTacticsBoard {
         }
         return minUnits;
     }
+
     __findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnit = null) {
         let maxUnits = [];
         let maxValue = -1;
