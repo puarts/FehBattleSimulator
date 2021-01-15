@@ -14244,6 +14244,7 @@ class AetherRaidTacticsBoard {
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
             case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
             case Support.Shove: result = this.__findTileAfterShove(unit, targetUnit, assistTile); break;
+            case Support.Pivot: result = this.__findTileAfterPivot(unit, targetUnit, assistTile); break;
             default:
                 this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
                 return -1;
