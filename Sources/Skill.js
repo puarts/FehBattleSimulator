@@ -1958,6 +1958,8 @@ function getPrecombatHealThreshold(support) {
         case Support.ReturnPlus:
         case Support.Return:
         case Support.Mend:
+        case Support.Return:
+        case Support.ReturnPlus:
             return 10;
         default:
             return -1;
