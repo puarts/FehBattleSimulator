@@ -927,6 +927,8 @@ const Weapon = {
     IndignantBow: 1603, // 義憤の強弓
     KiaStaff: 1605, // キアの杖
     Petrify: 1609, // ストーン
+    // 熱砂の国の秘祭
+    PlegianTorchPlus: 1610, // ペレジアの燭台+
 };
 
 const Support = {
