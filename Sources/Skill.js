@@ -932,6 +932,7 @@ const Weapon = {
     PlegianTorchPlus: 1610, // ペレジアの燭台+
     FellFlambeau: 1612, // 仄暗き邪竜の松明
     PlegianBowPlus: 1614, // ペレジアの弓+
+    FellCandelabra: 1615, // 仄暗き邪痕の燭台
 };
 
 const Support = {

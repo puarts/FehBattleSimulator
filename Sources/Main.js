@@ -9254,6 +9254,20 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.FellCandelabra:
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getAtkInPrecombat() },
+                    unit => { unit.applyAtkDebuff(-6); });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getSpdInPrecombat() },
+                    unit => { unit.applySpdDebuff(-6); });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getDefInPrecombat() },
+                    unit => { unit.applyDefDebuff(-6); });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getResInPrecombat() },
+                    unit => { unit.applyResDebuff(-6); });
+                break;
             case Weapon.Petrify: {
                 if (this.vm.currentTurn < 1 || 5 < this.vm.currentTurn) break;
                 const statusFunctions = [
