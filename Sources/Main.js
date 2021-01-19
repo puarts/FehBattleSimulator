@@ -3962,12 +3962,9 @@ class AetherRaidTacticsBoard {
                         }
                         break;
                     case PassiveA.KishinKongoNoSyungeki:
-                        --followupAttackPriority;
-                        break;
                     case PassiveA.KishinMeikyoNoSyungeki:
-                        --followupAttackPriority;
-                        break;
                     case PassiveA.SteadyImpact:
+                    case PassiveA.SwiftImpact:
                         --followupAttackPriority;
                         break;
                     case PassiveB.TsuigekiTaikeiKisu3:
@@ -4175,6 +4172,34 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PlegianBowPlus:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                    }
+                    break;
+                case Weapon.FellFlambeau:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                        enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    }
+                    break;
+                case Weapon.PlegianTorchPlus:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    }
+                    break;
                 case PassiveA.Kyokazohuku3:
                 case Weapon.ShinkenFalcion:
                     this.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -7195,6 +7220,10 @@ class AetherRaidTacticsBoard {
                     atkUnit.spdSpur += 7;
                     atkUnit.defSpur += 10;
                     break;
+                case PassiveA.SwiftImpact:
+                    atkUnit.spdSpur += 7;
+                    atkUnit.resSpur += 10;
+                    break;
                 case PassiveA.KishinKongoNoSyungeki:
                     atkUnit.atkSpur += 6;
                     atkUnit.defSpur += 10;
@@ -9226,6 +9255,20 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.FellCandelabra:
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getAtkInPrecombat() },
+                    unit => { unit.applyAtkDebuff(-6); });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getSpdInPrecombat() },
+                    unit => { unit.applySpdDebuff(-6); });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getDefInPrecombat() },
+                    unit => { unit.applyDefDebuff(-6); });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getResInPrecombat() },
+                    unit => { unit.applyResDebuff(-6); });
+                break;
             case Weapon.Petrify: {
                 if (this.vm.currentTurn < 1 || 5 < this.vm.currentTurn) break;
                 const statusFunctions = [
@@ -10163,6 +10206,10 @@ class AetherRaidTacticsBoard {
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return unit.snapshot.getResInPrecombat() + unit.snapshot.getSpdInPrecombat() },
                     unit => { unit.applyResDebuff(-5); unit.applySpdDebuff(-5); }); break;
+            case PassiveB.ChillDefRes2:
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => { return unit.snapshot.getDefInPrecombat() + unit.snapshot.getResInPrecombat() },
+                    unit => { unit.applyDefDebuff(-5); unit.applyResDebuff(-5); }); break;
             case PassiveB.ChillAtk1:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return unit.snapshot.getAtkInPrecombat() },

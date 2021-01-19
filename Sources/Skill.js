@@ -927,6 +927,12 @@ const Weapon = {
     IndignantBow: 1603, // 義憤の強弓
     KiaStaff: 1605, // キアの杖
     Petrify: 1609, // ストーン
+
+    // 熱砂の国の秘祭
+    PlegianTorchPlus: 1610, // ペレジアの燭台+
+    FellFlambeau: 1612, // 仄暗き邪竜の松明
+    PlegianBowPlus: 1614, // ペレジアの弓+
+    FellCandelabra: 1615, // 仄暗き邪痕の燭台
 };
 
 const Support = {
@@ -1277,6 +1283,7 @@ const PassiveA = {
     KishinKongoNoSyungeki: 805, // 鬼神金剛の瞬撃
     KishinMeikyoNoSyungeki: 923, // 鬼神明鏡の瞬撃
     SteadyImpact: 1424, // 飛燕金剛の瞬撃
+    SwiftImpact: 1617, // 飛燕明鏡の瞬撃
 
     Kyokazohuku3: 849, // 強化増幅3
 
@@ -1358,6 +1365,7 @@ const PassiveB = {
     ChillAtkSpd2: 1239, // 攻撃速さの封印2
     ChillSpdDef2: 1319, // 速さ守備の封印2
     ChillSpdRes2: 1371, // 速さ魔防の封印2
+    ChillDefRes2: 1613, // 守備魔防の封印2
 
     BoldFighter3: 601, // 攻撃隊形3
     VengefulFighter3: 602, // 迎撃隊形3
