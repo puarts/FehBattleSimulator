@@ -931,6 +931,7 @@ const Weapon = {
     // 熱砂の国の秘祭
     PlegianTorchPlus: 1610, // ペレジアの燭台+
     FellFlambeau: 1612, // 仄暗き邪竜の松明
+    PlegianBowPlus: 1614, // ペレジアの弓+
 };
 
 const Support = {
