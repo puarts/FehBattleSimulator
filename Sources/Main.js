@@ -3962,12 +3962,9 @@ class AetherRaidTacticsBoard {
                         }
                         break;
                     case PassiveA.KishinKongoNoSyungeki:
-                        --followupAttackPriority;
-                        break;
                     case PassiveA.KishinMeikyoNoSyungeki:
-                        --followupAttackPriority;
-                        break;
                     case PassiveA.SteadyImpact:
+                    case PassiveA.SwiftImpact:
                         --followupAttackPriority;
                         break;
                     case PassiveB.TsuigekiTaikeiKisu3:
@@ -7222,6 +7219,10 @@ class AetherRaidTacticsBoard {
                 case PassiveA.SteadyImpact:
                     atkUnit.spdSpur += 7;
                     atkUnit.defSpur += 10;
+                    break;
+                case PassiveA.SwiftImpact:
+                    atkUnit.spdSpur += 7;
+                    atkUnit.resSpur += 10;
                     break;
                 case PassiveA.KishinKongoNoSyungeki:
                     atkUnit.atkSpur += 6;

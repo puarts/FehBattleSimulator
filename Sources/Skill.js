@@ -1283,6 +1283,7 @@ const PassiveA = {
     KishinKongoNoSyungeki: 805, // 鬼神金剛の瞬撃
     KishinMeikyoNoSyungeki: 923, // 鬼神明鏡の瞬撃
     SteadyImpact: 1424, // 飛燕金剛の瞬撃
+    SwiftImpact: 1617, // 飛燕明鏡の瞬撃
 
     Kyokazohuku3: 849, // 強化増幅3
 
