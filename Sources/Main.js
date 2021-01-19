@@ -4172,6 +4172,7 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PlegianAxePlus:
                 case Weapon.PlegianBowPlus:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 5;
