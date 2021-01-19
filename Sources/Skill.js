@@ -1362,6 +1362,7 @@ const PassiveB = {
     ChillAtkSpd2: 1239, // 攻撃速さの封印2
     ChillSpdDef2: 1319, // 速さ守備の封印2
     ChillSpdRes2: 1371, // 速さ魔防の封印2
+    ChillDefRes2: 1613, // 守備魔防の封印2
 
     BoldFighter3: 601, // 攻撃隊形3
     VengefulFighter3: 602, // 迎撃隊形3
