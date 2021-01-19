@@ -784,11 +784,43 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __refreshHighestHpUnitsInSameOrigin(duoUnit) {
+        let targetOrigins = duoUnit.heroInfo.origin.split('|');
+        let highestHpUnits = [];
+        let heigestHp = 0;
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
+            if (this.__areSameOrigin(unit, targetOrigins)) {
+                if (unit != duoUnit && unit.isActionDone) {
+                    if (unit.hp > heigestHp) {
+                        highestHpUnits = [unit];
+                        heigestHp = unit.hp;
+                    }
+                    else if (unit.hp == highestHp) {
+                        highestHpUnits.push(unit);
+                    }
+                }
+            }
+        }
+
+        if (highestHpUnits.length == 1) {
+            for (let unit of highestHpUnits) {
+                unit.isActionDone = false;
+            }
+        }
+    }
+
     __activateDuoOrHarmonizedSkill(duoUnit) {
         if (!this.canActivateDuoSkillOrHarmonizedSkill(duoUnit)) {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.PlegianDorothea:
+                {
+                    this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
+                    this.__refreshHighestHpUnitsInSameOrigin(duoUnit);
+
+                }
+                break;
             case Hero.DuoPeony:
                 {
                     let highestHpUnits = [];
@@ -826,29 +858,8 @@ class AetherRaidTacticsBoard {
                 break;
             case Hero.HaloweenTiki:
                 {
-                    let targetOrigins = duoUnit.heroInfo.origin.split('|');
-                    let highestHpUnits = [];
-                    let heigestHp = 0;
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
-                        if (this.__areSameOrigin(unit, targetOrigins)) {
-                            unit.addStatusEffect(StatusEffectType.ResonantBlades);
-                            if (unit != duoUnit && unit.isActionDone) {
-                                if (unit.hp > heigestHp) {
-                                    highestHpUnits = [unit];
-                                    heigestHp = unit.hp;
-                                }
-                                else if (unit.hp == highestHp) {
-                                    highestHpUnits.push(unit);
-                                }
-                            }
-                        }
-                    }
-
-                    if (highestHpUnits.length == 1) {
-                        for (let unit of highestHpUnits) {
-                            unit.isActionDone = false;
-                        }
-                    }
+                    this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                    this.__refreshHighestHpUnitsInSameOrigin(duoUnit);
                 }
                 break;
             case Hero.DuoSigurd:

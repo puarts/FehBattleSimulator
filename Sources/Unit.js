@@ -45,6 +45,7 @@ const Hero = {
     DuoLyn: 588,
     DuoAltina: 609,
     DuoPeony: 615,
+    PlegianDorothea: 625,
 };
 
 function isThiefIndex(heroIndex) {
@@ -2175,6 +2176,7 @@ class Unit {
                 || this.heroIndex == Hero.DuoLyn
                 || this.heroIndex == Hero.DuoAltina
                 || this.heroIndex == Hero.DuoPeony
+                || this.heroIndex == Hero.PlegianDorothea
             );
     }
 
@@ -2674,7 +2676,7 @@ class Unit {
     }
 
     initReservedHp() {
-        this.reservedHp = this.hp;
+        this.reservedHp = Number(this.hp);
     }
 
     applyReservedHp(leavesOneHp) {
