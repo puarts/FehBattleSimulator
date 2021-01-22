@@ -14695,6 +14695,7 @@ class AetherRaidTacticsBoard {
                     case Support.RallyUpSpdPlus:
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
+                        if (!this.__applyRally(supporterUnit, targetUnit)) { return false; }
                         return this.__applyRallyUp(supporterUnit, targetUnit);
                     case Support.HarshCommandPlus:
                         targetUnit.clearNegativeStatusEffects();
