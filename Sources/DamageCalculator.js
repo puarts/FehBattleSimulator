@@ -799,9 +799,14 @@ class DamageCalculator {
     }
 
     __canInvalidateReferenceLowerMit(defUnit) {
-        return defUnit.battleContext.invalidatesReferenceLowerMit ||
-            defUnit.passiveB === PassiveB.SeimeiNoGofu3 ||
-            defUnit.passiveB === PassiveB.HikariToYamito;
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch(skillId) {
+                case PassiveB.SeimeiNoGofu3:
+                case PassiveB.HikariToYamito:
+                    return true;
+            }
+        }
+        return defUnit.battleContext.invalidatesReferenceLowerMit;
     }
 
     __calcCombatDamage(atkUnit, defUnit, context) {
