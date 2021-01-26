@@ -1533,11 +1533,18 @@ class AppData {
     }
 
     get currentUnit() {
-        if (this.currentItemIndex < 0 || this.units.length <= this.currentItemIndex) {
+        if (this.currentItemIndex < 0) {
             return null;
         }
 
-        return this.units[this.currentItemIndex];
+        if (this.currentItemIndex < this.enemyUnits.length) {
+            return this.enemyUnits[this.currentItemIndex];
+        }
+
+        if (this.currentItemIndex < (MaxEnemyUnitCount + this.allyUnits.length)) {
+            return this.allyUnits[this.currentItemIndex - MaxEnemyUnitCount];
+        }
+        return null;
     }
 
     get currentStructure() {
@@ -1657,11 +1664,18 @@ class AppData {
 
     findItem(itemIndex) {
         let index = 0;
-        for (let i = 0; i < this.units.length; ++i, ++index) {
+        for (let i = 0; i < this.enemyUnits.length; ++i, ++index) {
             if (index == itemIndex) {
-                return this.units[i];
+                return this.enemyUnits[i];
             }
         }
+        index = MaxEnemyUnitCount;
+        for (let i = 0; i < this.allyUnits.length; ++i, ++index) {
+            if (index == itemIndex) {
+                return this.allyUnits[i];
+            }
+        }
+        index = MaxEnemyUnitCount + MaxAllyUnitCount;
         for (let i = 0; i < this.offenceStructureStorage.length; ++i, ++index) {
             if (index == itemIndex) {
                 return this.offenceStructureStorage.objs[i];
@@ -1824,6 +1838,7 @@ class AppData {
             }
         }
 
+        index = MaxEnemyUnitCount + MaxAllyUnitCount;
         for (let i = 0; i < this.offenceStructureStorage.length; ++i, ++index) {
             let st = this.offenceStructureStorage.objs[i];
             if (st.id == id) {

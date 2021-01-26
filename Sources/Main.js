@@ -14773,6 +14773,13 @@ class AetherRaidTacticsBoard {
         return itemIndex - (enemyOffset + allyOffset);
     }
 
+    logAllItemInfos() {
+        for (let item of g_appData.enumerateItems()) {
+            let index = g_appData.findIndexOfItem(item.id);
+            this.writeDebugLogLine(`${item.id}: index=${index}`);
+        }
+    }
+
     selectItem(targetId, add = false) {
         this.showItemInfo(targetId);
 
