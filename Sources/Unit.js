@@ -3455,6 +3455,10 @@ class Unit {
     }
 
     updateBaseStatus(updatesPureGrowthRate = true) {
+        if (this.heroInfo == null) {
+            throw new Error("heroInfo must not be null.");
+        }
+
         var hpLv1IvChange = 0;
         var atkLv1IvChange = 0;
         var spdLv1IvChange = 0;

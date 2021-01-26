@@ -276,8 +276,10 @@ class AppData {
         this.pawnsOfLokiMaxWeaponTypeBonusB = 0;
         this.pawnsOfLokiMaxMoveTypeBonus = 0;
         this.pawnsOfLokiMaxMoveTypePairBonus = 0;
-        this.pawnsOfLokiTurnCount = 10;
+        this.pawnsOfLokiTurnCount = 12;
         this.pawnsOfLokiWarFunds = 0;
+        this.pawnsOfLokiRank = 10;
+        this.pawnsOfLokiMaxComboPatternCount = 0;
 
         // その他の設定
 
@@ -526,6 +528,31 @@ class AppData {
         this.applyDebugMenuVisibility();
         this.updateTargetInfoTdStyle();
     }
+
+    setPawnsOfLokiTurnCountByRank() {
+        this.pawnsOfLokiTurnCount = this.__getPawnsOfLokiTurnCountOfRank();
+    }
+
+    __getPawnsOfLokiTurnCountOfRank() {
+        switch (this.pawnsOfLokiRank) {
+            case 1:
+            case 2: // 不明
+            case 3: // 不明
+                return 9;
+            case 4:
+            case 5:
+            case 6:
+                return 10;
+            case 7: // 不明
+            case 8:
+                return 11;
+            case 9:
+            case 10:
+                return 12;
+
+        }
+    }
+
     getPawnsOfLokiDifficalityScore() {
         return getPawnsOfLokiDifficalityScore(this.pawnsOfLokiDifficality);
     }
@@ -659,6 +686,9 @@ class AppData {
     }
     __updateStatusBySkillsAndMergeForAllHeroes(updatesPureGrowthRate = false) {
         for (let unit of this.enumerateUnits()) {
+            if (unit.heroInfo == null) {
+                this.initializeByHeroInfo(unit, unit.heroIndex);
+            }
             this.__updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate);
         }
     }
@@ -1780,12 +1810,20 @@ class AppData {
 
     findIndexOfItem(id) {
         let index = 0;
-        for (let i = 0; i < this.units.length; ++i, ++index) {
-            let unit = this.units[i];
+        for (let i = 0; i < this.enemyUnits.length; ++i, ++index) {
+            let unit = this.enemyUnits[i];
             if (unit.id == id) {
                 return index;
             }
         }
+        index = MaxEnemyUnitCount;
+        for (let i = 0; i < this.allyUnits.length; ++i, ++index) {
+            let unit = this.allyUnits[i];
+            if (unit.id == id) {
+                return index;
+            }
+        }
+
         for (let i = 0; i < this.offenceStructureStorage.length; ++i, ++index) {
             let st = this.offenceStructureStorage.objs[i];
             if (st.id == id) {
