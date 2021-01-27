@@ -520,6 +520,9 @@ class Map {
         this.changeMapKind(mapKind, gameVersion);
 
         this.sourceCode = "";
+
+        // 拡張枠のユニットかどうかを判定する関数
+        this.isExpansionUnitFunc = null;
     }
 
     perTurnStatusToString() {
@@ -3720,6 +3723,11 @@ class Map {
 
         if (!this.isIconOverlayDisabled) {
             var shadowCss = this.__getShadowCss();
+            if (this.isExpansionUnitFunc != null && this.isExpansionUnitFunc(unit)) {
+                cell.innerText += "<span style='position:absolute;bottom:0;right:0;'><img src='"
+                    + g_imageRootPath + "ExpansionUnit.png" + "' style='width:15px' ></span>";
+            }
+
             cell.innerText += "<span style='font-size:10px;color:" + color + ";position:absolute;bottom:0;left:0;" + shadowCss + ";'>"
                 + unit.hp + "</span>";
             if (unit.maxSpecialCount > 0) {

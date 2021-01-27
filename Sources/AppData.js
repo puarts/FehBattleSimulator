@@ -521,6 +521,17 @@ class AppData {
             this.offenceStructureStorage = new Storage(g_idGenerator.generate());
             this.createStructures();
             this.map = new Map(g_idGenerator.generate(), this.mapKind, this.gameVersion);
+            this.map.isExpansionUnitFunc = x => {
+                if (this.gameMode != GameMode.AetherRaid) {
+                    return false;
+                }
+
+                let lastSlotIndex = this.allyUnits.length - 1;
+                if (x.groupId == UnitGroupType.Enemy) {
+                    lastSlotIndex = this.enemyUnits.length - 1;
+                }
+                return x.slotOrder == lastSlotIndex;
+            };
         }
 
         this.addStructuresToSelectionOptions();

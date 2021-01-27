@@ -422,6 +422,7 @@ class AetherRaidTacticsBoard {
                     g_appData.updateAetherRaidDefensePresetDescription();
                 },
                 slotOrderChanged: function () {
+                    updateMapUi();
                 },
                 showDetailLogChanged: function () {
                 },
@@ -515,6 +516,7 @@ class AetherRaidTacticsBoard {
                         unit.slotOrder = slotOrder;
                         ++slotOrder;
                     }
+                    updateMapUi();
                 },
                 unitSelected: function (event) {
                     let name = event.item.name;
