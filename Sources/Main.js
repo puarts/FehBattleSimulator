@@ -4082,9 +4082,22 @@ class AetherRaidTacticsBoard {
         if (defUnit.defDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.defDebuffTotal; }
         if (defUnit.resDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.resDebuffTotal; }
     }
-    __applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit) {
-        for (let skillId of atkUnit.enumerateSkills()) {
+    __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BouryakuNoSenkyu:
+                    if (targetUnit.buffTotal + enemyUnit.debuffTotal >= 10) {
+                        enemyUnit.addAllSpur(-5);
+                    }
+                    break;
+                case Weapon.Niu:
+                    {
+                        let amount = Math.trunc(enemyUnit.getBuffTotalInCombat(targetUnit) * 0.5);
+                        if (amount > 0) {
+                            targetUnit.addAllSpur(amount);
+                        }
+                    }
+                    break;
                 case Weapon.Revatein:
                 case Weapon.Blarblade:
                 case Weapon.BlarbladePlus:
@@ -4096,69 +4109,84 @@ class AetherRaidTacticsBoard {
                 case Weapon.RaisenNoSyo:
                 case Weapon.OrdinNoKokusyo:
                 case Weapon.TharjasHex:
-                    atkUnit.atkSpur += atkUnit.getBuffTotalInCombat(defUnit);
+                    {
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
+                        if (buff > 0) {
+                            targetUnit.atkSpur += buff;
+                        }
+                    }
                     break;
                 case Weapon.TwinStarAxe:
-                    atkUnit.atkSpur += Math.trunc(atkUnit.getBuffTotalInCombat(defUnit) / 2);
+                    {
+                        let buff = Math.trunc(targetUnit.getBuffTotalInCombat(enemyUnit) / 2);
+                        if (buff > 0) {
+                            targetUnit.atkSpur += buff;
+                        }
+                    }
                     break;
                 case Weapon.AkatsukiNoHikari:
-                    if (defUnit.atkDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.atkDebuffTotal; }
-                    if (defUnit.spdDebuffTotal < 0) { atkUnit.spdSpur += -defUnit.spdDebuffTotal; }
-                    if (defUnit.defDebuffTotal < 0) { atkUnit.defSpur += -defUnit.defDebuffTotal; }
-                    if (defUnit.resDebuffTotal < 0) { atkUnit.resSpur += -defUnit.resDebuffTotal; }
+                    if (enemyUnit.atkDebuffTotal < 0) { targetUnit.atkSpur += -enemyUnit.atkDebuffTotal; }
+                    if (enemyUnit.spdDebuffTotal < 0) { targetUnit.spdSpur += -enemyUnit.spdDebuffTotal; }
+                    if (enemyUnit.defDebuffTotal < 0) { targetUnit.defSpur += -enemyUnit.defDebuffTotal; }
+                    if (enemyUnit.resDebuffTotal < 0) { targetUnit.resSpur += -enemyUnit.resDebuffTotal; }
                     break;
                 case Weapon.SyukuseiNoAnki:
                 case Weapon.SyukuseiNoAnkiPlus:
-                    atkUnit.atkSpur += defUnit.getBuffTotalInCombat(atkUnit);
+                    {
+                        let buff = enemyUnit.getBuffTotalInCombat(targetUnit);
+                        if (buff > 0) {
+                            targetUnit.atkSpur += buff;
+                        }
+                    }
                     break;
                 case Weapon.Faraflame:
                 case Weapon.GunshinNoSyo:
                 case Weapon.MitteiNoAnki:
                 case Weapon.AokarasuNoSyo:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        this.__applyDebuffBlade(atkUnit, defUnit);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        this.__applyDebuffBlade(targetUnit, enemyUnit);
                     }
                     break;
                 case Weapon.Blizard:
                 case Weapon.HaNoOugiPlus:
-                    this.__applyDebuffBlade(atkUnit, defUnit);
+                    this.__applyDebuffBlade(targetUnit, enemyUnit);
                     break;
                 case Weapon.SyugosyaNoRekkyu:
-                    if (atkUnit.getEvalSpdInPrecombat() > defUnit.getEvalSpdInPrecombat()
-                        || atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)
+                    if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
+                        || targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)
                     ) {
-                        defUnit.atkSpur -= 5;
-                        defUnit.spdSpur -= 5;
-                        defUnit.defSpur -= 5;
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.defSpur -= 5;
                     }
                     break;
                 case Weapon.SaizoNoBakuenshin:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.atkSpur += Math.abs(defUnit.atkDebuffTotal);
-                        atkUnit.spdSpur += Math.abs(defUnit.spdDebuffTotal);
-                        atkUnit.defSpur += Math.abs(defUnit.defDebuffTotal);
-                        atkUnit.resSpur += Math.abs(defUnit.resDebuffTotal);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += Math.abs(enemyUnit.atkDebuffTotal);
+                        targetUnit.spdSpur += Math.abs(enemyUnit.spdDebuffTotal);
+                        targetUnit.defSpur += Math.abs(enemyUnit.defDebuffTotal);
+                        targetUnit.resSpur += Math.abs(enemyUnit.resDebuffTotal);
                     }
                     break;
                 case Weapon.MeikiNoBreath:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.atkSpur += Math.abs(defUnit.atkDebuffTotal);
-                        atkUnit.spdSpur += Math.abs(defUnit.spdDebuffTotal);
-                        atkUnit.defSpur += Math.abs(defUnit.defDebuffTotal);
-                        atkUnit.resSpur += Math.abs(defUnit.resDebuffTotal);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += Math.abs(enemyUnit.atkDebuffTotal);
+                        targetUnit.spdSpur += Math.abs(enemyUnit.spdDebuffTotal);
+                        targetUnit.defSpur += Math.abs(enemyUnit.defDebuffTotal);
+                        targetUnit.resSpur += Math.abs(enemyUnit.resDebuffTotal);
                     }
                     break;
                 case Weapon.ChaosRagnell:
                     {
-                        let atkAdd = Math.abs(atkUnit.atkDebuffTotal) * 2;
-                        let spdAdd = Math.abs(atkUnit.spdDebuffTotal) * 2;
-                        let defAdd = Math.abs(atkUnit.defDebuffTotal) * 2;
-                        let resAdd = Math.abs(atkUnit.resDebuffTotal) * 2;
+                        let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
+                        let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
+                        let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
+                        let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
                         this.damageCalc.writeDebugLog(`混沌ラグネルにより攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
-                        atkUnit.atkSpur += atkAdd;
-                        atkUnit.spdSpur += spdAdd;
-                        atkUnit.defSpur += defAdd;
-                        atkUnit.resSpur += resAdd;
+                        targetUnit.atkSpur += atkAdd;
+                        targetUnit.spdSpur += spdAdd;
+                        targetUnit.defSpur += defAdd;
+                        targetUnit.resSpur += resAdd;
                     }
                     break;
             }
@@ -6062,12 +6090,6 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.increaseCooldownCountForAttack = true;
                     }
                     break;
-                case Weapon.Niu:
-                    if (enemyUnit.isBuffed && !enemyUnit.hasPanic) {
-                        let amount = Math.floor(enemyUnit.buffTotal * 0.5);
-                        targetUnit.addAllSpur(amount);
-                    }
-                    break;
                 case Weapon.Fensariru:
                     if (targetUnit.isWeaponRefined) {
                         targetUnit.battleContext.invalidateAllBuffs();
@@ -6249,11 +6271,6 @@ class AetherRaidTacticsBoard {
                     if (!enemyUnit.isBuffed) {
                         enemyUnit.atkSpur += 6;
                         enemyUnit.defSpur += 6;
-                    }
-                    break;
-                case Weapon.BouryakuNoSenkyu:
-                    if (targetUnit.buffTotal + enemyUnit.debuffTotal >= 10) {
-                        enemyUnit.addAllSpur(-5);
                     }
                     break;
                 case Weapon.Flykoogeru:
@@ -10408,6 +10425,7 @@ class AetherRaidTacticsBoard {
         let group = targetUnits[0].groupId;
         for (let unit of targetUnits) {
             unit.endAction();
+            unit.deactivateCanto();
             unit.beginAction();
             // console.log(unit.getNameWithGroup() + ": moveCount=" + unit.moveCount);
 
@@ -10432,6 +10450,7 @@ class AetherRaidTacticsBoard {
 
         for (let unit of enemyUnits) {
             unit.endAction();
+            unit.deactivateCanto();
         }
 
         for (let unit of this.enumerateAllUnitsOnMap()) {
