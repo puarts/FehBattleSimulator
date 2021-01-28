@@ -10595,8 +10595,26 @@ class AetherRaidTacticsBoard {
             self.vm.currentTurnType = UnitGroupType.Enemy;
             self.audioManager.playSoundEffect(SoundEffectId.EnemyPhase);
             self.__simulateBeginningOfTurn(self.__getOnMapEnemyUnitList());
+
+            // 拡張枠ユニットの行動終了
+            let expansionEnemyUnit = g_appData.getEnemyExpansionUnitOnMap();
+            if (expansionEnemyUnit != null) {
+                // todo: 敵が7体編成じゃない場合、正しく判定できてない
+                if (self.countEnemyUnitsOnMap() == g_appData.enemyUnits.length) {
+                    expansionEnemyUnit.endAction();
+                }
+            }
         });
     }
+
+    countEnemyUnitsOnMap() {
+        let count = 0;
+        for (let unit of this.enumerateEnemyUnitsOnMap()) {
+            ++count;
+        }
+        return count;
+    }
+
     simulateBeginningOfAllyTurn() {
         if (this.vm.currentTurn == this.vm.maxTurn) {
             return;

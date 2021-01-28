@@ -522,15 +522,7 @@ class AppData {
             this.createStructures();
             this.map = new Map(g_idGenerator.generate(), this.mapKind, this.gameVersion);
             this.map.isExpansionUnitFunc = x => {
-                if (this.gameMode != GameMode.AetherRaid) {
-                    return false;
-                }
-
-                let lastSlotIndex = this.allyUnits.length - 1;
-                if (x.groupId == UnitGroupType.Enemy) {
-                    lastSlotIndex = this.enemyUnits.length - 1;
-                }
-                return x.slotOrder == lastSlotIndex;
+                return this.isExpansionUnit(x);
             };
         }
 
@@ -538,6 +530,33 @@ class AppData {
         this.registerTemplateImages();
         this.applyDebugMenuVisibility();
         this.updateTargetInfoTdStyle();
+    }
+
+    getEnemyExpansionUnitOnMap() {
+        if (this.gameMode != GameMode.AetherRaid) {
+            return null;
+        }
+
+        let lastSlotIndex = this.enemyUnits.length - 1;
+        for (let unit of this.enemyUnits) {
+            if (unit.isOnMap && unit.slotOrder == lastSlotIndex) {
+                return unit;
+            }
+        }
+
+        return null;
+    }
+
+    isExpansionUnit(unit) {
+        if (this.gameMode != GameMode.AetherRaid) {
+            return false;
+        }
+
+        let lastSlotIndex = this.allyUnits.length - 1;
+        if (unit.groupId == UnitGroupType.Enemy) {
+            lastSlotIndex = this.enemyUnits.length - 1;
+        }
+        return unit.slotOrder == lastSlotIndex;
     }
 
     setPawnsOfLokiTurnCountByRank() {
