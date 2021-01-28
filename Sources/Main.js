@@ -5368,6 +5368,21 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AuroraBreath:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 6;
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            ++targetUnit.battleContext.followupAttackPriority;
+                        }
+                    }
+                    else {
+                        targetUnit.defSpur += 6;
+                        targetUnit.resSpur += 6;
+                        if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                            --enemyUnit.battleContext.followupAttackPriority;
+                        }
+                    }
+                    break;
                 case Weapon.IndignantBow:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                         targetUnit.atkSpur += 6;

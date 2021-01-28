@@ -934,6 +934,9 @@ const Weapon = {
     PlegianBowPlus: 1614, // ペレジアの弓+
     FellCandelabra: 1615, // 仄暗き邪痕の燭台
     PlegianAxePlus: 1618, // ペレジアの斧+
+
+    // 2021年1月 神階セイロス
+    AuroraBreath: 1620, // 極光のブレス
 };
 
 const Support = {
