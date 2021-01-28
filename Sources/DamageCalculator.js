@@ -800,7 +800,7 @@ class DamageCalculator {
 
     __canInvalidateReferenceLowerMit(defUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
-            switch(skillId) {
+            switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:
                 case PassiveB.HikariToYamito:
                     return true;
@@ -1290,6 +1290,7 @@ class DamageCalculator {
                     totalDamage = Math.trunc(totalDamage * 0.2);
                 }
                 break;
+            case PassiveB.DragonWall3:
             case Weapon.NewFoxkitFang:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -1476,6 +1477,7 @@ class DamageCalculator {
                         damageReductionRatio *= 0.5;
                     }
                     break;
+                case PassiveB.DragonWall3:
                 case Weapon.NewFoxkitFang:
                     {
                         let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
