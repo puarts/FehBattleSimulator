@@ -8175,7 +8175,7 @@ class AetherRaidTacticsBoard {
                                 case PassiveC.WingsOfLight:
                                     if (targetUnit.isMythicHero
                                         && this.vm.currentTurn <= 5
-                                        && this.__countUnit(targetUnit.groupId, x => x.isMythicHero) <= 3
+                                        && this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.isMythicHero) <= 3
                                     ) {
                                         targetUnit.addAllSpur(2 + this.vm.currentTurn);
                                     }
