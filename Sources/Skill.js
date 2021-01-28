@@ -1781,6 +1781,8 @@ const PassiveC = {
     OddRecovery1: 1580, // 快癒・奇数1
     OddRecovery2: 1579, // 快癒・奇数2
     OddRecovery3: 1570, // 快癒・奇数3
+
+    WingsOfLight: 1622, // 光輝く翼
 };
 
 const PassiveS = {

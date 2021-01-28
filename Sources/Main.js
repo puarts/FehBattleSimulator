@@ -8168,6 +8168,22 @@ class AetherRaidTacticsBoard {
         if (!calcPotentialDamage) {
             if (!ignoresSkillEffectFromAllies) {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    // 距離に関係ないもの
+                    {
+                        for (let skillId of unit.enumerateSkills()) {
+                            switch (skillId) {
+                                case PassiveC.WingsOfLight:
+                                    if (targetUnit.isMythicHero
+                                        && this.vm.currentTurn <= 5
+                                        && this.__countUnit(targetUnit.groupId, x => x.isMythicHero) <= 3
+                                    ) {
+                                        targetUnit.addAllSpur(2 + this.vm.currentTurn);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+
                     if (Math.abs(unit.posX - targetUnit.posX) <= 1 && Math.abs(unit.posY - targetUnit.posY) <= 2) {
                         // 5×3マス以内にいる場合
                         for (let skillId of unit.enumerateSkills()) {
