@@ -1758,7 +1758,15 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="5">
+                            <td>
+                            </td>
+                            <td class='param'>
+                                {{value.atkWithSkills+value.atkBuff+value.atkDebuff
+                                    +value.spdWithSkills+value.spdBuff+value.spdDebuff
+                                    +value.defWithSkills+value.defBuff+value.defDebuff
+                                    +value.resWithSkills+value.resBuff+value.resDebuff}}
+                            </td>
+                            <td colspan="3">
                             </td>
                             <td v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
                                 <input type="button" value='リセット' class="buttonUi" style="font-size:10px"

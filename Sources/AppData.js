@@ -743,7 +743,10 @@ class AppData {
                 if (!this.isBlessingEffectEnabled(unit, ally)) {
                     continue;
                 }
-                let heroInfo = this.heroInfos.get(ally.heroIndex);
+                let heroInfo = ally.heroInfo;
+                if (heroInfo == null) {
+                    continue;
+                }
                 unit.addBlessingEffect(heroInfo.blessingType);
             }
 

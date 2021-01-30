@@ -10428,33 +10428,6 @@ class AetherRaidTacticsBoard {
             allyUnits.push(unit);
         }
 
-        // ターンワイド状態の評価と保存
-        {
-            for (let unit of targetUnits) {
-                unit.clearPerTurnStatuses();
-
-                // すり抜け状態の更新
-                if (unit.canActivatePass()) {
-                    unit.addPerTurnStatus(PerTurnStatusType.Pass);
-                }
-
-                // 敵への距離を更新
-                this.__updateDistanceFromClosestEnemy(unit, enemyUnits);
-
-                // 移動数
-                unit.moveCountAtBeginningOfTurn = unit.moveCount;
-            }
-            this.__updateMovementOrders(targetUnits);
-        }
-
-        // 障害物リストの作成
-        this.map.createTileSnapshots();
-
-        // 脅威の評価
-        this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
-
-        this.__updateChaseTargetTiles(targetUnits);
-
         let group = targetUnits[0].groupId;
         for (let unit of targetUnits) {
             unit.endAction();
@@ -10513,6 +10486,30 @@ class AetherRaidTacticsBoard {
 
         // 化身によりステータス変化する
         g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+
+        // ターンワイド状態の評価と保存
+        {
+            for (let unit of targetUnits) {
+                unit.clearPerTurnStatuses();
+
+                // すり抜け状態の更新
+                if (unit.canActivatePass()) {
+                    unit.addPerTurnStatus(PerTurnStatusType.Pass);
+                }
+
+                // 敵への距離を更新
+                this.__updateDistanceFromClosestEnemy(unit, enemyUnits);
+            }
+            this.__updateMovementOrders(targetUnits);
+        }
+
+        // 障害物リストの作成
+        this.map.createTileSnapshots();
+
+        // 脅威の評価
+        this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
+
+        this.__updateChaseTargetTiles(targetUnits);
 
         // ターン開始時の移動値を記録
         for (let unit of this.enumerateAllUnitsOnMap(x => true)) {
@@ -11605,6 +11602,8 @@ class AetherRaidTacticsBoard {
             }
 
             for (let unit of allyUnits) {
+                this.writeDebugLogLine(`${unit.getNameWithGroup()}のターン開始時移動数:${unit.moveCountAtBeginningOfTurn}`);
+
                 this.writeDebugLogLine("敵の攻撃範囲に" + unit.getNameWithGroup() + "が含まれているか評価 --------");
                 unit.actionContext.hasThreatenedByEnemyStatus = this.__examinesIsUnitThreatenedByEnemy(unit, enemyUnits);
                 this.writeDebugLogLine(unit.getNameWithGroup() + "の攻撃範囲に敵が含まれているか評価 --------");
@@ -14404,53 +14403,57 @@ class AetherRaidTacticsBoard {
         }
 
         if (isBuffed) {
-            for (let skillId of supporterUnit.enumerateSkills()) {
-                switch (skillId) {
-                    case Weapon.Uchikudakumono:
-                        if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
-                            targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                        }
-                        break;
-                    case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
-                    case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
-                    case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
-                    case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
-                    case PassiveB.AtkSpdRuse3:
-                        this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
-                        break;
-                    case PassiveB.AtkDefRuse3:
-                        this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); });
-                        break;
-                    case PassiveB.AtkResRuse3:
-                        this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
-                        break;
-                    case PassiveB.DefResRuse3:
-                        this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyDefDebuff(-5); unit.applyResDebuff(-5); });
-                        break;
-                    case PassiveB.SpdResRuse3:
-                        this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyResDebuff(-5); unit.applySpdDebuff(-5); });
-                        break;
-                    case PassiveB.SpdDefRuse3:
-                        this.__applyRuse(supporterUnit, targetUnit,
-                            unit => { unit.applyDefDebuff(-5); unit.applySpdDebuff(-5); });
-                        break;
-                }
-            }
-            for (let skillId of targetUnit.enumerateSkills()) {
-                switch (skillId) {
-                    case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
-                    case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
-                    case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
-                    case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
-                }
-            }
+            this.__applySkillsAfterRally(supporterUnit, targetUnit);
         }
         return isBuffed;
+    }
+
+    __applySkillsAfterRally(supporterUnit, targetUnit) {
+        for (let skillId of supporterUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Uchikudakumono:
+                    if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
+                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                    break;
+                case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
+                case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
+                case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
+                case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
+                case PassiveB.AtkSpdRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
+                    break;
+                case PassiveB.AtkDefRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); });
+                    break;
+                case PassiveB.AtkResRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
+                    break;
+                case PassiveB.DefResRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyDefDebuff(-5); unit.applyResDebuff(-5); });
+                    break;
+                case PassiveB.SpdResRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyResDebuff(-5); unit.applySpdDebuff(-5); });
+                    break;
+                case PassiveB.SpdDefRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyDefDebuff(-5); unit.applySpdDebuff(-5); });
+                    break;
+            }
+        }
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
+                case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
+                case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
+                case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
+            }
+        }
     }
 
     __applyFeint(skillOwnerUnit, debuffFunc) {
@@ -14487,6 +14490,11 @@ class AetherRaidTacticsBoard {
             buffAmount = getResBuffAmount(supportId);
             if (unit.resBuff < buffAmount) { unit.resBuff = buffAmount; success = true; }
         }
+
+        if (success) {
+            this.__applySkillsAfterRally(supporterUnit, targetUnit);
+        }
+
         return success;
     }
 
@@ -14765,7 +14773,6 @@ class AetherRaidTacticsBoard {
                     case Support.RallyUpSpdPlus:
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
-                        if (!this.__applyRally(supporterUnit, targetUnit)) { return false; }
                         return this.__applyRallyUp(supporterUnit, targetUnit);
                     case Support.HarshCommandPlus:
                         targetUnit.clearNegativeStatusEffects();
