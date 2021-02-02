@@ -1004,19 +1004,9 @@
                     <input type="button" value="解析開始"
                         @click="const files = document.getElementById('ocrSettingFile').files;g_app.setUnitsByStatusImages(files);"><br />
                     <canvas id="croppedImage"></canvas>
-                    <canvas id="croppedImage0"></canvas>
-                    <canvas id="croppedImage1"></canvas>
-                    <canvas id="croppedImage2"></canvas>
-                    <canvas id="croppedImage3"></canvas>
-                    <canvas id="croppedImage4"></canvas>
-                    <canvas id="croppedImage5"></canvas>
+                    <canvas v-for="(unit,index) in g_appData.enemyUnits" v-bind:id="'croppedImage'+index" />
                     <canvas id="binarizedImage"></canvas>
-                    <canvas id="binarizedImage0"></canvas>
-                    <canvas id="binarizedImage1"></canvas>
-                    <canvas id="binarizedImage2"></canvas>
-                    <canvas id="binarizedImage3"></canvas>
-                    <canvas id="binarizedImage4"></canvas>
-                    <canvas id="binarizedImage5"></canvas>
+                    <canvas v-for="(unit,index) in g_appData.enemyUnits" v-bind:id="'binarizedImage'+index" />
                     <canvas id="templateMatchingOutputImage"></canvas>
                 </span>
             </div>
