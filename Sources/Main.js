@@ -9249,17 +9249,21 @@ class AetherRaidTacticsBoard {
     }
 
     __applyOpeningSkill(skillOwnerUnit, getValueFunc, buffFunc) {
-        let maxUnit = null;
+        let maxUnits = [];
         let maxVal = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit)) {
             let val = getValueFunc(unit);
             if (val > maxVal) {
                 maxVal = val;
-                maxUnit = unit;
+                maxUnits = [unit];
+            }
+            else if (val == maxVal) {
+                maxUnits.push(unit);
             }
         }
-        if (maxUnit != null) {
-            buffFunc(maxUnit);
+
+        for (let unit of maxUnits) {
+            buffFunc(unit);
         }
     }
 
