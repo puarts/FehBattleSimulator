@@ -321,8 +321,30 @@ function groupIdToString(groupId) {
     }
 }
 
-/// ☆5の成長量から成長値を計算します。
-function getGrowthRateOfStar5(growthAmount) {
+/// 純粋成長率(%)から★5成長値を取得します。
+function getGrowthAmountOfStar5FromPureGrowthRate(growthRateAsPercentage) {
+    switch (growthRateAsPercentage) {
+        case 20: return 8;
+        case 25: return 10;
+        case 30: return 13;
+        case 35: return 15;
+        case 40: return 17;
+        case 45: return 19;
+        case 50: return 22;
+        case 55: return 24;
+        case 60: return 26;
+        case 65: return 28;
+        case 70: return 30;
+        case 75: return 33;
+        case 80: return 35;
+        case 85: return 37;
+        case 90: return 39;
+        default: return -1;
+    }
+}
+
+/// ☆5の成長量から純粋成長率を計算します。
+function getGrowthRateOfStar5Impl(growthAmount) {
     switch (growthAmount) {
         case 8: return 0.2;
         case 10: return 0.25;
@@ -340,8 +362,15 @@ function getGrowthRateOfStar5(growthAmount) {
         case 37: return 0.85;
         case 39: return 0.90;
         default:
-            throw new Error("Invalid growth amount " + growthAmount);
+            return -1;
     }
+}
+function getGrowthRateOfStar5(growthAmount) {
+    let rate = getGrowthRateOfStar5Impl(growthAmount);
+    if (rate < 0) {
+        throw new Error("Invalid growth amount " + growthAmount);
+    }
+    return rate;
 }
 
 function calcAppliedGrowthRate(growthRate, rarity) {
@@ -414,11 +443,11 @@ class HeroInfo {
         this.id = id;
         this.seasonType = seasonType;
         this.blessingType = blessingType;
-        this._hp = hp;
-        this._atk = atk;
-        this._spd = spd;
-        this._def = def;
-        this._res = res;
+        this.hp = hp;
+        this.atk = atk;
+        this.spd = spd;
+        this.def = def;
+        this.res = res;
         this._name = name;
         this._icon = icon;
         this._moveType = moveType;
@@ -499,6 +528,26 @@ class HeroInfo {
         this.__updateLv1Statuses();
     }
 
+    get totalGrowthValue() {
+        return this.hpGrowthValue + this.atkGrowthValue + this.spdGrowthValue + this.defGrowthValue +
+            this.resGrowthValue;
+    }
+
+    getStatusTotalOfLv40() {
+        return Number(this.hp) +
+            Number(this.atk) +
+            Number(this.spd) +
+            Number(this.def) +
+            Number(this.res);
+    }
+    getStatusTotalOfLv1() {
+        return Number(this.hpLv1) +
+            Number(this.atkLv1) +
+            Number(this.spdLv1) +
+            Number(this.defLv1) +
+            Number(this.resLv1);
+    }
+
     canEquipRefreshSkill() {
         for (let option of this.supportOptions) {
             if (isRefreshSupportSkill(option.id)) {
@@ -552,24 +601,21 @@ class HeroInfo {
     get moveType() {
         return this._moveType;
     }
-    get hp() {
-        return this._hp;
-    }
-    get atk() {
-        return this._atk;
-    }
-    get spd() {
-        return this._spd;
-    }
-    get def() {
-        return this._def;
-    }
-    get res() {
-        return this._res;
-    }
 
     get hpGrowthValue() {
         return this.hp - this.hpLv1;
+    }
+    get atkGrowthValue() {
+        return this.atk - this.atkLv1;
+    }
+    get spdGrowthValue() {
+        return this.spd - this.spdLv1;
+    }
+    get defGrowthValue() {
+        return this.def - this.defLv1;
+    }
+    get resGrowthValue() {
+        return this.res - this.resLv1;
     }
 
     get maxDragonflower() {
@@ -3068,7 +3114,6 @@ class Unit {
         return this.passiveSInfo.name;
     }
 
-
     getVisibleStatusTotal() {
         return this.getAtkInPrecombat()
             + this.getSpdInPrecombat()
@@ -3554,6 +3599,16 @@ class Unit {
         this.resLvN = this.resLv1 + this.__calcGrowthValue(this.resGrowthRate);
     }
 
+    /// 入力した成長率に対して、得意ステータスの上昇値を取得します。
+    calcAssetStatusIncrement(growthRate) {
+        return this.__calcGrowthValue(growthRate + 0.05) - this.__calcGrowthValue(growthRate) + 1;
+    }
+
+    /// 入力した成長率に対して、不得意ステータスの減少値を取得します。
+    calcFlowStatusDecrement(growthRate) {
+        return this.__calcGrowthValue(growthRate - 0.05) - this.__calcGrowthValue(growthRate) - 1;
+    }
+
     updateStatusByMergeAndDragonFlower() {
         // todo: 本来はキャラ毎の個体値上昇値を参照
         var hpLv1IvChange = 0;
@@ -3705,6 +3760,14 @@ class Unit {
         return this.passiveAInfo.name.includes("死闘");
     }
 
+    get totalPureGrowthRate() {
+        return Number(this.hpGrowthRate)
+            + Number(this.atkGrowthRate)
+            + Number(this.spdGrowthRate)
+            + Number(this.defGrowthRate)
+            + Number(this.resGrowthRate);
+    }
+
     updateArenaScore(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
         if (this.heroIndex < 0) {
             this.weaponSp = 0;
@@ -3759,12 +3822,7 @@ class Unit {
             totalSp += this.passiveSInfo.sp;
         }
 
-        let rating =
-            this.heroInfo.hp +
-            this.heroInfo.atk +
-            this.heroInfo.spd +
-            this.heroInfo.def +
-            this.heroInfo.res;
+        let rating = this.heroInfo.getStatusTotalOfLv40();
 
         this.weaponSp = weaponSp;
         this.supportSp = supportSp;
@@ -3794,7 +3852,6 @@ class Unit {
         let score = this.__calcArenaScore(rating, totalSp, merge, 5);
         this.arenaScore = score;
     }
-
 
     __calcArenaScore(rating, totalSp, rebirthCount, rarity = 5) {
         let base = 150;
