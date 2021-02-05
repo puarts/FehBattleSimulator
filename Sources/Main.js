@@ -2791,13 +2791,70 @@ class AetherRaidTacticsBoard {
         // this.clearSimpleLog();
         this.writeSimpleLogLine(this.damageCalc.simpleLog);
         this.writeLogLine(this.damageCalc.log);
-        atkUnit.hp = atkUnit.restHp;
-        defUnit.hp = defUnit.restHp;
-        atkUnit.specialCount = atkUnit.tmpSpecialCount;
-        defUnit.specialCount = defUnit.tmpSpecialCount;
 
-        atkUnit.endAction();
+        // 戦闘の計算結果を反映させる
+        {
+            atkUnit.applyRestHpAndTemporarySpecialCount();
+            atkUnit.endAction();
 
+            defUnit.applyRestHpAndTemporarySpecialCount();
+
+            if (defUnit != result.defUnit) {
+                // 護り手で一時的に戦闘対象が入れ替わっているケース
+                result.defUnit.applyRestHpAndTemporarySpecialCount();
+            }
+        }
+
+        this.__applyPostCombatProcess(atkUnit, result.defUnit, result);
+
+        if (defUnit != result.defUnit) {
+            // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
+            let saverUnit = result.defUnit;
+            saverUnit.restoreOriginalTile();
+            this.updateAllUnitSpur();
+        }
+
+        // 戦闘後の移動系スキルを加味する必要があるので後段で評価
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.RagingStorm:
+                    if (!atkUnit.isOneTimeActionActivatedForPassiveB
+                        && !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)
+                        && atkUnit.isActionDone
+                    ) {
+                        this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
+                    }
+                    break;
+            }
+        }
+
+        // 再行動奥義
+        if (atkUnit.specialCount == 0
+            && !atkUnit.isOneTimeActionActivatedForSpecial
+            && atkUnit.isActionDone
+        ) {
+            switch (atkUnit.special) {
+                case Special.NjorunsZeal:
+                    this.__activateRefreshSpecial(atkUnit);
+                    atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                    break;
+                case Special.Galeforce:
+                    this.__activateRefreshSpecial(atkUnit);
+                    break;
+            }
+        }
+
+        // 再移動の評価
+        this.__activateCantoIfPossible(atkUnit);
+
+        // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
+        this.__goToNextPhaseIfAllActionDone(atkUnit.groupId);
+    }
+
+    /// 戦闘結果の評価や戦闘後発動のスキルなどを適用します。
+    __applyPostCombatProcess(atkUnit, defUnit, result) {
         // 戦闘後のダメージ、回復の合計を反映させないといけないので予約HPとして計算
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.initReservedHp();
@@ -2883,44 +2940,6 @@ class AetherRaidTacticsBoard {
             }
             moveUnitToTrashBox(defUnit);
         }
-
-        // 戦闘後の移動系スキルを加味する必要があるので後段で評価
-        for (let skillId of atkUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveB.RagingStorm:
-                    if (!atkUnit.isOneTimeActionActivatedForPassiveB
-                        && !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)
-                        && atkUnit.isActionDone
-                    ) {
-                        this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
-                        atkUnit.isActionDone = false;
-                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
-                    }
-                    break;
-            }
-        }
-
-        // 再行動奥義
-        if (atkUnit.specialCount == 0
-            && !atkUnit.isOneTimeActionActivatedForSpecial
-            && atkUnit.isActionDone
-        ) {
-            switch (atkUnit.special) {
-                case Special.NjorunsZeal:
-                    this.__activateRefreshSpecial(atkUnit);
-                    atkUnit.addStatusEffect(StatusEffectType.Gravity);
-                    break;
-                case Special.Galeforce:
-                    this.__activateRefreshSpecial(atkUnit);
-                    break;
-            }
-        }
-
-        // 再移動の評価
-        this.__activateCantoIfPossible(atkUnit);
-
-        // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
-        this.__goToNextPhaseIfAllActionDone(atkUnit.groupId);
     }
 
     __activateRefreshSpecial(atkUnit) {
@@ -2928,6 +2947,60 @@ class AetherRaidTacticsBoard {
         atkUnit.isOneTimeActionActivatedForSpecial = true;
         atkUnit.specialCount = atkUnit.maxSpecialCount;
         atkUnit.isActionDone = false;
+    }
+
+    __canActivateSaveSkill(atkUnit, unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveC.ArFarSave3:
+                    if (atkUnit.isRangedWeaponType()) {
+                        return true;
+                    }
+                    break;
+                case PassiveC.DrNearSave3:
+                    if (atkUnit.isMeleeWeaponType()) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+    __getSaverUnitIfPossible(atkUnit, defUnit) {
+        let saverUnit = null;
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false)) {
+            if (this.__canActivateSaveSkill(atkUnit, unit)) {
+                if (saverUnit != null) {
+                    // 複数発動可能な場合は発動しない
+                    return null;
+                }
+
+                saverUnit = unit;
+            }
+        }
+
+        return saverUnit;
+    }
+
+    /// 一時的に戦闘のダメージを計算します。
+    calcDamageTemporary(
+        atkUnit,
+        defUnit,
+        tileToAttack = null,
+        calcPotentialDamage = false
+    ) {
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        if (defUnit != result.defUnit) {
+            // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
+            let saverUnit = result.defUnit;
+            let tile = saverUnit.placedTile;
+            saverUnit.restoreOriginalTile();
+            this.updateAllUnitSpur();
+            tile.setUnit(defUnit);
+        }
+        return result;
     }
 
     /// 戦闘のダメージを計算します。
@@ -2939,11 +3012,11 @@ class AetherRaidTacticsBoard {
     ) {
 
         atkUnit.battleContext.clear();
-        defUnit.battleContext.clear();
         atkUnit.battleContext.hpBeforeCombat = atkUnit.hp;
-        defUnit.battleContext.hpBeforeCombat = defUnit.hp;
-
         atkUnit.battleContext.initiatesCombat = true;
+
+        defUnit.battleContext.clear();
+        defUnit.battleContext.hpBeforeCombat = defUnit.hp;
         defUnit.battleContext.initiatesCombat = false;
 
         let origTile = atkUnit.placedTile;
@@ -2959,10 +3032,8 @@ class AetherRaidTacticsBoard {
         // 処理速度面でもし問題になるようなら必要最低限の更新に抑えるよう対応を考える。
         this.updateAllUnitSpur(calcPotentialDamage);
 
-        atkUnit.restHp = atkUnit.hp;
-        defUnit.restHp = defUnit.hp;
-        atkUnit.tmpSpecialCount = atkUnit.specialCount;
-        defUnit.tmpSpecialCount = defUnit.specialCount;
+        atkUnit.saveCurrentHpAndSpecialCount();
+        defUnit.saveCurrentHpAndSpecialCount();
 
         // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
@@ -2976,6 +3047,44 @@ class AetherRaidTacticsBoard {
         atkUnit.createSnapshot();
         defUnit.createSnapshot();
 
+        let actualDefUnit = defUnit;
+        if (!calcPotentialDamage) {
+            let saverUnit = this.__getSaverUnitIfPossible(atkUnit, defUnit);
+            if (saverUnit != null) {
+                saverUnit.saveOriginalTile();
+
+                // Tile.placedUnit に本当は配置ユニットが設定されないといけないが、
+                // 1マスに複数ユニットが配置される状況は考慮していなかった。
+                // おそらく戦闘中だけの設定であれば不要だと思われるので一旦設定無視してる。
+                // todo: 必要になったら、Tile.placedUnit を複数設定できるよう対応する
+                saverUnit.placedTile = defUnit.placedTile;
+
+                saverUnit.battleContext.clear();
+                saverUnit.battleContext.hpBeforeCombat = defUnit.hp;
+                saverUnit.battleContext.initiatesCombat = false;
+                saverUnit.saveCurrentHpAndSpecialCount();
+                saverUnit.createSnapshot();
+
+                actualDefUnit = saverUnit;
+                this.updateAllUnitSpur(calcPotentialDamage);
+            }
+        }
+
+        let result = this.__calcDamageImpl(atkUnit, actualDefUnit);
+
+        result.preCombatDamage = preCombatDamage;
+
+        if (tileToAttack != null) {
+            // ユニットの位置を元に戻す
+            setUnitToTile(atkUnit, origTile);
+        }
+
+        // 計算のために変更した紋章値をリセット
+        this.updateAllUnitSpur();
+        return result;
+    }
+
+    __calcDamageImpl(atkUnit, defUnit, calcPotentialDamage) {
         this.__applyImpenetrableDark(atkUnit, defUnit, calcPotentialDamage);
         this.__applyImpenetrableDark(defUnit, atkUnit, calcPotentialDamage);
 
@@ -3111,16 +3220,6 @@ class AetherRaidTacticsBoard {
         result.defUnit_spd = defUnit.getSpdInCombat(atkUnit);
         result.defUnit_def = defUnit.getDefInCombat(atkUnit);
         result.defUnit_res = defUnit.getResInCombat(atkUnit);
-
-        result.preCombatDamage = preCombatDamage;
-
-        if (tileToAttack != null) {
-            // ユニットの位置を元に戻す
-            setUnitToTile(atkUnit, origTile);
-        }
-
-        // 計算のために変更した紋章値をリセット
-        this.updateAllUnitSpur();
         return result;
     }
 
@@ -8074,10 +8173,10 @@ class AetherRaidTacticsBoard {
     }
 
     showDamageCalcSummary(atkUnit, defUnit, attackTile) {
-        let result = this.calcDamage(atkUnit, defUnit, attackTile);
+        let result = this.calcDamageTemporary(atkUnit, defUnit, attackTile);
         this.setDamageCalcSummary(
             atkUnit,
-            defUnit,
+            result.defUnit,
             this.__createDamageCalcSummaryHtml(atkUnit,
                 result.preCombatDamage,
                 result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
@@ -8085,7 +8184,7 @@ class AetherRaidTacticsBoard {
                 result.atkUnit_spd,
                 result.atkUnit_def,
                 result.atkUnit_res),
-            this.__createDamageCalcSummaryHtml(defUnit,
+            this.__createDamageCalcSummaryHtml(result.defUnit,
                 -1,
                 result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
                 result.defUnit_atk,
@@ -10862,7 +10961,7 @@ class AetherRaidTacticsBoard {
             enemyUnit.defWithSkills = mit;
             enemyUnit.resWithSkills = mit;
 
-            let result = this.calcDamage(targetUnit, enemyUnit);
+            let result = this.calcDamageTemporary(targetUnit, enemyUnit);
             tableHtml += `<tr><th>${mit}</th>`;
             tableHtml += `<td>`;
             let damageSummary = `${result.preCombatDamage}+${result.atkUnit_normalAttackDamage}`;
@@ -11029,7 +11128,7 @@ class AetherRaidTacticsBoard {
             let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
             let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
             for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
-                let combatResult = this.calcDamage(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
+                let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
                 targetUnit.hp = targetUnit.restHp;
                 targetUnit.specialCount = targetUnit.tmpSpecialCount;
                 if (enemyUnit.restHp == 0) {
@@ -11719,7 +11818,7 @@ class AetherRaidTacticsBoard {
             // 攻撃範囲に敵がいる
             for (let attackableUnitInfo of unit.actionContext.attackableUnitInfos) {
 
-                let combatResult = this.calcDamage(unit,
+                let combatResult = this.calcDamageTemporary(unit,
                     attackableUnitInfo.targetUnit,
                     attackableUnitInfo.bestTileToAttack);
                 if (attackableUnitInfo.targetUnit.restHp == 0) {
@@ -12160,7 +12259,7 @@ class AetherRaidTacticsBoard {
 
                         // todo: 攻撃対象の陣営の紋章バフは無効にしないといけない。あと周囲の味方の数で発動する系は必ず発動させないといけない
                         // 防御系奥義によるダメージ軽減も無視しないといけない
-                        let combatResult = this.calcDamage(evalUnit, allyUnit, null, true);
+                        let combatResult = this.calcDamageTemporary(evalUnit, allyUnit, null, true);
                         if (this.vm.isPotentialDamageDetailEnabled) {
                             this.writeDebugLogLine("ダメージ計算ログ --------------------");
                             this.writeDebugLogLine(this.damageCalc.log);
@@ -13303,7 +13402,7 @@ class AetherRaidTacticsBoard {
             return;
         }
 
-        let result = this.calcDamage(attacker, target, tileToAttack);
+        let result = this.calcDamageTemporary(attacker, target, tileToAttack);
         this.writeDebugLogLine(this.damageCalc.log);
 
         let attackEvalContext = new AttackEvaluationContext();

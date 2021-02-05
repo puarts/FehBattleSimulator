@@ -41,6 +41,9 @@ class DamageCalcResult {
         this.defUnit_normalAttackDamage = 0;
 
         this.preCombatDamage = 0;
+
+        // 護り手ユニットかそうでないかを後で区別できるよう結果に戦ったユニットを記録しておく
+        this.defUnit = null;
     }
 }
 
@@ -97,6 +100,7 @@ class DamageCalculator {
         // 初期化
         var context = new DamageCalcContext();
         var result = new DamageCalcResult();
+        result.defUnit = defUnit;
 
         // 戦闘中ダメージ計算
         this.writeDebugLog("戦闘中ダメージ計算..");

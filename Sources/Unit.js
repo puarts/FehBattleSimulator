@@ -1422,6 +1422,27 @@ class Unit {
         this.originalDragonflower = 0;
 
         this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
+
+        this.originalTile = null; // 護り手のように一時的に移動する際に元の位置を記録しておく用
+    }
+
+    saveCurrentHpAndSpecialCount() {
+        this.restHp = this.hp;
+        this.tmpSpecialCount = this.specialCount;
+    }
+
+    applyRestHpAndTemporarySpecialCount() {
+        this.hp = this.restHp;
+        this.specialCount = this.tmpSpecialCount;
+    }
+
+    saveOriginalTile() {
+        this.originalTile = this.placedTile;
+    }
+
+    restoreOriginalTile() {
+        this.originalTile.setUnit(this);
+        this.originalTile = null;
     }
 
     canActivateCanto() {
