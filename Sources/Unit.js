@@ -3093,9 +3093,6 @@ class Unit {
     }
 
     get posX() {
-        if (this.placedTile != null) {
-            return this.placedTile.posX;
-        }
         return this._posX;
     }
     set posX(value) {
@@ -3103,9 +3100,6 @@ class Unit {
     }
 
     get posY() {
-        if (this.placedTile != null) {
-            return this.placedTile.posY;
-        }
         return this._posY;
     }
     set posY(value) {

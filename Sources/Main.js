@@ -2802,15 +2802,20 @@ class AetherRaidTacticsBoard {
             if (defUnit != result.defUnit) {
                 // 護り手で一時的に戦闘対象が入れ替わっているケース
                 result.defUnit.applyRestHpAndTemporarySpecialCount();
+
+                // 戦闘後スキル効果の対象外にしなければいけないので一旦マップ上から除外
+                defUnit.saveOriginalTile();
+                defUnit.placedTile = null;
             }
         }
 
-        this.__applyPostCombatProcess(atkUnit, result.defUnit, result);
+        this.__applyPostCombatProcess(atkUnit, result.defUnit, result, defUnit == result.defUnit);
 
         if (defUnit != result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
             saverUnit.restoreOriginalTile();
+            defUnit.restoreOriginalTile();
             this.updateAllUnitSpur();
         }
 
@@ -2854,7 +2859,7 @@ class AetherRaidTacticsBoard {
     }
 
     /// 戦闘結果の評価や戦闘後発動のスキルなどを適用します。
-    __applyPostCombatProcess(atkUnit, defUnit, result) {
+    __applyPostCombatProcess(atkUnit, defUnit, result, isMoveSkillEnabled) {
         // 戦闘後のダメージ、回復の合計を反映させないといけないので予約HPとして計算
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.initReservedHp();
@@ -2900,7 +2905,7 @@ class AetherRaidTacticsBoard {
         this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit, result.defUnit_actualTotalAttackCount);
 
         // 切り込みなどの移動系スキル
-        if (atkUnit.isAlive) {
+        if (isMoveSkillEnabled && atkUnit.isAlive) {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
         }
 
@@ -3058,6 +3063,7 @@ class AetherRaidTacticsBoard {
                 // おそらく戦闘中だけの設定であれば不要だと思われるので一旦設定無視してる。
                 // todo: 必要になったら、Tile.placedUnit を複数設定できるよう対応する
                 saverUnit.placedTile = defUnit.placedTile;
+                saverUnit.setPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
 
                 saverUnit.battleContext.clear();
                 saverUnit.battleContext.hpBeforeCombat = defUnit.hp;
