@@ -1766,6 +1766,10 @@ class DamageCalculator {
     }
 
     __heal(unit, healedHp) {
+        if (unit.hasStatusEffect(StatusEffectType.DeepWounds)) {
+            return;
+        }
+
         unit.restHp += healedHp;
         if (unit.restHp > unit.maxHpWithSkills) {
             unit.restHp = unit.maxHpWithSkills;

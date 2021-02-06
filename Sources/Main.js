@@ -915,11 +915,13 @@ class AetherRaidTacticsBoard {
                 break;
             case Hero.ValentineAlm:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 5, 5)) {
-                    unit.heal(30);
                     unit.clearNegativeStatusEffects();
                     unit.resetDebuffs();
                     unit.applyAtkBuff(6);
                     unit.applySpdBuff(6);
+
+                    // 回復不可状態でも回復できるので、状態異常治癒が先に行われてる
+                    unit.heal(30);
                 }
                 break;
             case Hero.SpringIdunn:
@@ -4624,6 +4626,11 @@ class AetherRaidTacticsBoard {
                 case Weapon.MakenMistoruthin:
                     if (attackUnit.battleContext.isSpecialActivated) {
                         attackUnit.specialCount -= 2;
+                    }
+                    break;
+                case PassiveC.FatalSmoke3:
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.addStatusEffect(StatusEffectType.DeepWounds);
                     }
                     break;
                 case PassiveC.PanicSmoke3:
@@ -11879,12 +11886,17 @@ class AetherRaidTacticsBoard {
                         return false;
                     }
                 }
-                return targetUnit.currentDamage >= getPrecombatHealThreshold(unit.support);
+                return (targetUnit.canHeal(getPrecombatHealThreshold(unit.support)));
             case AssistType.Restore:
                 return targetUnit.hasNegativeStatusEffect()
-                    || (targetUnit.currentDamage >= getPrecombatHealThreshold(unit.support));
+                    || (targetUnit.canHeal(getPrecombatHealThreshold(unit.support)));
             case AssistType.DonorHeal:
                 {
+                    if (targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)
+                    ) {
+                        return false;
+                    }
+
                     let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
                     let targetEnemyThreat = targetUnit.placedTile.getEnemyThreatFor(targetUnit.groupId);
                     if (assisterEnemyThreat > targetEnemyThreat) {
@@ -11943,7 +11955,7 @@ class AetherRaidTacticsBoard {
             case AssistType.Refresh:
                 return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
             case AssistType.Heal:
-                if (!targetUnit.isFullHp) {
+                if (targetUnit.canHeal()) {
                     return true;
                 }
                 if (unit.support == Support.RescuePlus
@@ -11955,7 +11967,7 @@ class AetherRaidTacticsBoard {
                 }
                 return false;
             case AssistType.Restore:
-                return (targetUnit.isDebuffed || targetUnit.hasNegativeStatusEffect()) || !targetUnit.isFullHp;
+                return (targetUnit.isDebuffed || targetUnit.hasNegativeStatusEffect()) || targetUnit.canHeal();
             case AssistType.Rally:
                 {
                     if (!targetUnit.actionContext.hasThreatensEnemyStatus && !g_appData.examinesEnemyActionTriggered(unit)) {
@@ -11977,6 +11989,10 @@ class AetherRaidTacticsBoard {
                 {
                     // 双界だと行動制限が解除されていないと使用しないっぽい
                     if (!g_appData.examinesEnemyActionTriggered(unit)) {
+                        return false;
+                    }
+
+                    if (targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)) {
                         return false;
                     }
 
@@ -14622,6 +14638,10 @@ class AetherRaidTacticsBoard {
     }
 
     __applyHeal(supporterUnit, targetUnit) {
+        if (!targetUnit.canHeal()) {
+            return false;
+        }
+
         let isActivated = false;
         if (!targetUnit.isFullHp) {
             let healAmount = calcHealAmount(supporterUnit, targetUnit);
@@ -14912,6 +14932,10 @@ class AetherRaidTacticsBoard {
                 switch (supporterUnit.support) {
                     case Support.ReciprocalAid:
                         {
+                            if (!this.__canApplyReciprocalAid(supporterUnit, targetUnit)) {
+                                return false;
+                            }
+
                             let tmpHp = supporterUnit.hp;
                             supporterUnit.setHpInValidRange(targetUnit.hp);
                             targetUnit.setHpInValidRange(tmpHp);
@@ -14919,6 +14943,10 @@ class AetherRaidTacticsBoard {
                         }
                     case Support.ArdentSacrifice:
                         {
+                            if (!targetUnit.canHeal()) {
+                                return false;
+                            }
+
                             supporterUnit.takeDamage(10, true);
                             targetUnit.heal(10);
                             return true;
@@ -14927,6 +14955,26 @@ class AetherRaidTacticsBoard {
                         return false;
                 }
         }
+    }
+
+    __canApplyReciprocalAid(supporterUnit, targetUnit) {
+        if (supporterUnit.hp == targetUnit.hp) {
+            return false;
+        }
+
+        if (supporterUnit.hp < targetUnit.hp
+            && supporterUnit.hasStatusEffect(StatusEffectType.DeepWounds)
+        ) {
+            return false;
+        }
+
+        if (supporterUnit.hp > targetUnit.hp
+            && targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     __endAllUnitAction(groupId) {

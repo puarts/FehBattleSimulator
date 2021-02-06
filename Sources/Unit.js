@@ -210,6 +210,7 @@ const StatusEffectType = {
     Desperation: 13, // 攻め立て
     ResonantShield: 14, // 双界効果・盾
     Vantage: 15, // 待ち伏せ
+    DeepWounds: 16, // 回復不可
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -259,6 +260,7 @@ function isNegativeStatusEffect(type) {
         case StatusEffectType.TriangleAdept:
         case StatusEffectType.Guard:
         case StatusEffectType.Isolation:
+        case StatusEffectType.DeepWounds:
             return true;
         default:
             return false;
@@ -299,6 +301,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_ResonantShield.png";
         case StatusEffectType.Vantage:
             return g_imageRootPath + "StatusEffect_Vantage.png";
+        case StatusEffectType.DeepWounds:
+            return g_imageRootPath + "StatusEffect_DeepWounds.png";
         default: return "";
     }
 }
@@ -1294,7 +1298,8 @@ class Unit {
         this.ivLowStat = StatusType.None;
 
         this.restHp = 1; // ダメージ計算で使うHP
-        this.reservedHp = 0;
+        this.reservedDamage = 0;
+        this.reservedHeal = 0;
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = '';
@@ -2748,20 +2753,25 @@ class Unit {
     }
 
     initReservedHp() {
-        this.reservedHp = Number(this.hp);
+        this.reservedDamage = 0;
+        this.reservedHeal = 0;
     }
 
     applyReservedHp(leavesOneHp) {
-        this.hp = this.reservedHp;
+        let healHp = this.reservedHeal;
+        if (this.hasStatusEffect(StatusEffectType.DeepWounds)) {
+            healHp = 0;
+        }
+        this.hp = Number(this.hp) - this.reservedDamage + healHp;
         this.modifyHp(leavesOneHp);
     }
 
     reserveTakeDamage(damageAmount) {
-        this.reservedHp = this.reservedHp - damageAmount;
+        this.reservedDamage = damageAmount;
     }
 
     reserveHeal(healAmount) {
-        this.reservedHp = this.reservedHp + healAmount;
+        this.reservedHeal = healAmount;
     }
 
     modifyHp(leavesOneHp = false) {
@@ -3703,6 +3713,14 @@ class Unit {
                 updateStatus(i);
             }
         }
+    }
+
+    canHeal(requiredHealAmount = 1) {
+        if (this.hasStatusEffect(StatusEffectType.DeepWounds)) {
+            return false;
+        }
+
+        return this.currentDamage >= requiredHealAmount;
     }
 
     *enumerateSkills() {
