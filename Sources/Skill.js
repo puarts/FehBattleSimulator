@@ -943,6 +943,7 @@ const Weapon = {
     UnityBloomsPlus: 1633, // 平和の花+
     AmityBloomsPlus: 1624, // 共感の花+
     Thjalfi: 1627, // シャールヴィ
+    PactBloomsPlus: 1626, // 約束の花+
 };
 
 const Support = {

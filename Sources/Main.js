@@ -5486,6 +5486,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.UnityBloomsPlus:
                 case Weapon.AmityBloomsPlus:
+                case Weapon.PactBloomsPlus:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);

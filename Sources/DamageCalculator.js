@@ -1690,6 +1690,7 @@ class DamageCalculator {
                 switch (atkUnit.weapon) {
                     case Weapon.UnityBloomsPlus:
                     case Weapon.AmityBloomsPlus:
+                    case Weapon.PactBloomsPlus:
                         if (atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
                             this.__heal(atkUnit, 4);
                         }
