@@ -5476,6 +5476,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.UnityBloomsPlus:
+                case Weapon.AmityBloomsPlus:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
