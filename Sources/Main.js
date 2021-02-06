@@ -816,6 +816,19 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoLif: {
+                let damage = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 3)) {
+                    damage += unit.maxHpWithSkills - unit.hp;
+                }
+                damage = Math.trunc(damage / 2);
+                for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(duoUnit, 3)) {
+                    unit.takeDamage(10 + Math.min(damage, 30));
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                }
+                break;
+            }
             case Hero.PlegianDorothea:
                 {
                     this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);

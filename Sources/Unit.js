@@ -46,6 +46,7 @@ const Hero = {
     DuoAltina: 609,
     DuoPeony: 615,
     PlegianDorothea: 625,
+    DuoLif: 631,
 };
 
 function isThiefIndex(heroIndex) {
@@ -2253,6 +2254,7 @@ class Unit {
                 || this.heroIndex == Hero.DuoAltina
                 || this.heroIndex == Hero.DuoPeony
                 || this.heroIndex == Hero.PlegianDorothea
+                || this.heroIndex == Hero.DuoLif
             );
     }
 
