@@ -9480,6 +9480,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Special.RadiantAether2:
+                if (this.vm.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                break;
             case Weapon.FellCandelabra:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return unit.snapshot.getAtkInPrecombat() },

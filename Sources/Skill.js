@@ -1066,6 +1066,7 @@ const Special = {
     HerosBlood: 1232, // 英雄の血脈
     KuroNoGekko: 471, // 黒の月光
     AoNoTenku: 472, // 蒼の天空
+    RadiantAether2: 1628, // 蒼の天空・承
     MayhemAether: 1309, // 暴の天空
     Hoshikage: 463, // 星影
     Fukuryu: 464, // 伏竜
@@ -2064,6 +2065,7 @@ function isNormalAttackSpecial(special) {
         case Special.HerosBlood:
         case Special.KuroNoGekko: // 黒の月光
         case Special.AoNoTenku: // 蒼の天空
+        case Special.RadiantAether2: // 蒼の天空・承
         case Special.MayhemAether: // 暴の天空
         case Special.Hoshikage: // 星影
         case Special.Fukuryu: // 伏竜

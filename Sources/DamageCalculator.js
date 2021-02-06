@@ -938,6 +938,7 @@ class DamageCalculator {
                 break;
             case Special.Aether:
             case Special.AoNoTenku:
+            case Special.RadiantAether2:
             case Special.MayhemAether:
                 // 天空
                 specialSuffer = 50;
@@ -1643,6 +1644,7 @@ class DamageCalculator {
                     switch (atkUnit.special) {
                         case Special.Aether:
                         case Special.AoNoTenku:
+                        case Special.RadiantAether2:
                         case Special.MayhemAether:
                         case Special.Taiyo:
                             healedHp = Math.trunc(actualDamage * 0.5);
