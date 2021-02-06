@@ -5476,6 +5476,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SpySongBow: {
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                    let partners = units.map(u => u.partnerHeroIndex);
+                    targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
+                    if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                        targetUnit.addAllSpur(6);
+                    }
+                    break;
+                }
                 case Weapon.Thjalfi:
                     if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.addAllSpur(6);

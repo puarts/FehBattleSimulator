@@ -944,6 +944,9 @@ const Weapon = {
     AmityBloomsPlus: 1624, // 共感の花+
     Thjalfi: 1627, // シャールヴィ
     PactBloomsPlus: 1626, // 約束の花+
+
+    // 2021年2月 武器錬成
+    SpySongBow: 1637, // 邪な曲弓
 };
 
 const Support = {

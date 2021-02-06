@@ -862,6 +862,9 @@ class BattleContext {
         // 2マス以内に味方がいるか
         this.isThereAnyUnitIn2Spaces = false;
 
+        // 3マス以内に支援を組んでいる味方の組み合わせがいるか
+        this.isThereAnyPartnerPairsIn3Spaces = false;
+
         // 追撃優先度
         this.followupAttackPriority = 0;
 
@@ -927,6 +930,7 @@ class BattleContext {
 
         this.initiatesCombat = false;
         this.isThereAnyUnitIn2Spaces = false;
+        this.isThereAnyPartnerPairsIn3Spaces = false;
         this.followupAttackPriority = 0;
         this.damageReductionRatio = 0;
 

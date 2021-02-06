@@ -632,6 +632,7 @@ class DamageCalculator {
             }
         }
         switch (atkUnit.weapon) {
+            case Weapon.SpySongBow:
             case Weapon.HikariNoKen:
             case Weapon.ShiningBow:
             case Weapon.ShiningBowPlus:
@@ -1702,6 +1703,11 @@ class DamageCalculator {
 
             {
                 switch (atkUnit.weapon) {
+                    case Weapon.SpySongBow:
+                        if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                            this.__heal(atkUnit, 5);
+                        }
+                        break;
                     case Weapon.UnityBloomsPlus:
                     case Weapon.AmityBloomsPlus:
                     case Weapon.PactBloomsPlus:
