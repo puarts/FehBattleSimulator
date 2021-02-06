@@ -8931,6 +8931,7 @@ class AetherRaidTacticsBoard {
     __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
+                case Weapon.GigaExcalibur:
                 case Weapon.SenhimeNoWakyu:
                     if (targetUnit.isWeaponRefined) {
                         targetUnit.atkSpur += 4;
@@ -9183,6 +9184,12 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.GigaExcalibur:
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            targetUnit.atkSpur += 4;
+                            targetUnit.spdSpur += 4;
+                        }
+                        break;
                     case Weapon.TannenbatonPlus:
                         targetUnit.defSpur += 2;
                         targetUnit.resSpur += 2;
