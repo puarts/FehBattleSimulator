@@ -5476,6 +5476,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Audhulma:
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
                 case Weapon.Meisterschwert:
                     if (!targetUnit.isWeaponSpecialRefined) break;
                     if (enemyUnit.snapshot.restHpPercentage >= 50) {

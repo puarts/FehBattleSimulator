@@ -947,6 +947,7 @@ const Weapon = {
 
     // 2021年2月 武器錬成
     SpySongBow: 1637, // 邪な曲弓
+    Audhulma: 39, // アウドムラ
 };
 
 const Support = {
