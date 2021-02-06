@@ -2809,6 +2809,7 @@ class AetherRaidTacticsBoard {
             }
         }
 
+        // 戦闘後発動のスキル等を評価
         this.__applyPostCombatProcess(atkUnit, result.defUnit, result, defUnit == result.defUnit);
 
         if (defUnit != result.defUnit) {
@@ -3067,7 +3068,8 @@ class AetherRaidTacticsBoard {
 
                 saverUnit.battleContext.clear();
                 saverUnit.battleContext.hpBeforeCombat = defUnit.hp;
-                saverUnit.battleContext.initiatesCombat = false;
+                saverUnit.battleContext.initiatesCombat = defUnit.battleContext.initiatesCombat;
+                saverUnit.battleContext.isSaviorActivated = true;
                 saverUnit.saveCurrentHpAndSpecialCount();
                 saverUnit.createSnapshot();
 
@@ -5473,6 +5475,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.ArFarSave3:
+                    if (targetUnit.battleContext.isSaviorActivated) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.resSpur += 4;
+                    }
+                    break;
+                case PassiveC.DrNearSave3:
+                    if (targetUnit.battleContext.isSaviorActivated) {
+                        targetUnit.defSpur += 4;
+                        targetUnit.resSpur += 4;
+                    }
+                    break;
                 case Weapon.AuroraBreath:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.atkSpur += 6;

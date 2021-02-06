@@ -867,6 +867,9 @@ class BattleContext {
 
         // 戦闘中常に有効になるダメージ軽減率
         this.damageReductionRatio = 0;
+
+        // 護り手が発動しているかどうか
+        this.isSaviorActivated = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -926,6 +929,8 @@ class BattleContext {
         this.isThereAnyUnitIn2Spaces = false;
         this.followupAttackPriority = 0;
         this.damageReductionRatio = 0;
+
+        this.isSaviorActivated = false;
     }
 
     invalidateAllBuffs() {
