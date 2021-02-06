@@ -5485,6 +5485,7 @@ class AetherRaidTacticsBoard {
             switch (skillId) {
                 case Weapon.Thjalfi:
                     if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
                         targetUnit.addAllSpur(6);
                         if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
                             targetUnit.battleContext.followupAttackPriority++;
@@ -14556,7 +14557,15 @@ class AetherRaidTacticsBoard {
                 this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
                 return -1;
         }
+
+
         if (!result.success) {
+            return -1;
+        }
+
+        let canPlace = result.assistUnitTileAfterAssist.isMovableTileForUnit(unit)
+            && result.targetUnitTileAfterAssist.isMovableTileForUnit(targetUnit);
+        if (!canPlace) {
             return -1;
         }
 
@@ -14671,12 +14680,9 @@ class AetherRaidTacticsBoard {
     }
 
     __applyHeal(supporterUnit, targetUnit) {
-        if (!targetUnit.canHeal()) {
-            return false;
-        }
-
         let isActivated = false;
-        if (!targetUnit.isFullHp) {
+
+        if (targetUnit.canHeal()) {
             let healAmount = calcHealAmount(supporterUnit, targetUnit);
             if (supporterUnit.specialCount == 0) {
                 switch (supporterUnit.special) {

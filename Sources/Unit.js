@@ -812,6 +812,7 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttack = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
+        this.reductionRatioOfDamageReductionRatioExceptSpecial = 0; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
         this.counterattackCount = 1;

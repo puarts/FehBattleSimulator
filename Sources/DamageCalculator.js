@@ -203,36 +203,47 @@ class DamageCalculator {
         }
     }
 
+    __multiplyDamageReductionRatio(sourceRatio, ratio, enemyUnit) {
+        let modifiedRatio = this.__calcDamageReductionRatio(ratio, enemyUnit);
+        return 1 - (1 - sourceRatio) * (1 - modifiedRatio);
+    }
+
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
             case Weapon.LoyalistAxe:
                 if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) &&
                     enemyUnit.battleContext.canFollowupAttack) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack = 0.75;
+                    unit.battleContext.damageReductionRatioOfFirstAttack =
+                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.75, enemyUnit);
                 }
                 break;
             case Weapon.Hrist:
                 if (unit.snapshot.restHpPercentage <= 99) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                    unit.battleContext.damageReductionRatioOfFirstAttack =
+                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.3, enemyUnit);
                 }
                 break;
             case Weapon.CourtlyMaskPlus:
             case Weapon.CourtlyBowPlus:
             case Weapon.CourtlyCandlePlus:
                 if (unit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
+                    unit.battleContext.damageReductionRatioOfFirstAttack =
+                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.5, enemyUnit);
                 }
                 break;
             case Weapon.SummerStrikers:
                 if (unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack = 0.75;
+                    unit.battleContext.damageReductionRatioOfFirstAttack =
+                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.75, enemyUnit);
                 }
                 break;
             case Weapon.Urvan:
                 {
-                    unit.battleContext.damageReductionRatioOfConsecutiveAttacks = 0.8;
+                    unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
+                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
                     if (unit.isWeaponSpecialRefined) {
-                        unit.battleContext.damageReductionRatioOfFirstAttack = 0.4;
+                        unit.battleContext.damageReductionRatioOfFirstAttack =
+                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.4, enemyUnit);
                     }
                 }
                 break;
@@ -246,12 +257,14 @@ class DamageCalculator {
             switch (skillId) {
                 case PassiveB.BlackEagleRule:
                     if (!unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
-                        unit.battleContext.damageReductionRatioOfFollowupAttack = 0.8;
+                        unit.battleContext.damageReductionRatioOfFollowupAttack =
+                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFollowupAttack, 0.8, enemyUnit);
                     }
                     break;
                 case PassiveB.SeikishiNoKago:
                     if (isRangedWeaponType(enemyUnit.weaponType)) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks = 0.8;
+                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
+                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
                     }
                     break;
                 case PassiveS.RengekiBogyoKenYariOno3:
@@ -259,20 +272,23 @@ class DamageCalculator {
                         || enemyUnit.weaponType == WeaponType.Lance
                         || enemyUnit.weaponType == WeaponType.Axe
                     ) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks = 0.8;
+                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
+                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
                     }
                     break;
                 case PassiveS.RengekiBogyoYumiAnki3:
                     if (isWeaponTypeBow(enemyUnit.weaponType)
                         || isWeaponTypeDagger(enemyUnit.weaponType)
                     ) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks = 0.8;
+                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
+                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
                     }
                     break;
                 case PassiveS.RengekiBogyoMado3:
                     if (isWeaponTypeTome(enemyUnit.weaponType)
                     ) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks = 0.8;
+                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
+                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
                     }
                     break;
             }
@@ -1443,15 +1459,110 @@ class DamageCalculator {
         return TriangleAdvantage.None;
     }
 
+    __getDamageReductionRatio(skillId, atkUnit, defUnit) {
+        switch (skillId) {
+            case Weapon.Areadbhar:
+                let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                    let percentage = Math.min(diff * 4, 40);
+                    this.writeDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
+                    return percentage / 100.0;
+                }
+                break;
+            case Weapon.GiltGoblet:
+                if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
+                    isWeaponTypeTome(atkUnit.weaponType)) {
+                    return 0.5;
+                }
+                break;
+            case Weapon.BloodTome:
+                if (isRangedWeaponType(atkUnit.weaponType)) {
+                    return 0.5;
+                }
+                break;
+            case PassiveB.DragonWall3:
+            case Weapon.NewFoxkitFang:
+                {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = resDiff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
 
-    __calcAttackTotalDamage(context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
-        invalidatesDamageReductionExceptSpecialOnSpecialActivation) {
-        var hasAtkUnitSpecial = atkUnit.maxSpecialCount != 0 && isNormalAttackSpecial(atkUnit.special);
-        var hasDefUnitSpecial = defUnit.maxSpecialCount != 0 && isDefenseSpecial(defUnit.special);
+                        this.writeDebugLog("新年の妖狐娘の爪牙によりダメージ" + percentage + "%軽減");
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case Weapon.NightmareHorn:
+            case Weapon.NewBrazenCatFang:
+                {
+                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
 
-        var atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
-        var defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
-        var totalDamage = 0;
+                        this.writeDebugLog(`武器スキル(${defUnit.weapon})によりダメージ${percentage}%軽減`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case PassiveB.Spurn3:
+            case PassiveB.KaihiIchigekiridatsu3:
+            case PassiveB.KaihiTatakikomi3:
+                {
+                    let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
+                    let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
+                    let diff = defUnitSpd - atkUnitSpd;
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.writeDebugLog(`回避スキルによりダメージ${percentage}%軽減(速さの差 ${defUnitSpd}-${atkUnitSpd}=${diff})`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case PassiveB.BlueLionRule:
+                {
+                    let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
+                    let atkUnitDef = atkUnit.getEvalDefInCombat(defUnit);
+                    let diff = defUnitDef - atkUnitDef;
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.writeDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+        }
+
+        return 0;
+    }
+
+    __calcDamageReductionRatio(damageReductionRatio, atkUnit) {
+        return damageReductionRatio - Math.trunc(damageReductionRatio * 100 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial) * 0.01;
+    }
+
+    __calcAttackTotalDamage(
+        context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
+        invalidatesDamageReductionExceptSpecialOnSpecialActivation
+    ) {
+        let hasAtkUnitSpecial = atkUnit.maxSpecialCount != 0 && isNormalAttackSpecial(atkUnit.special);
+        let hasDefUnitSpecial = defUnit.maxSpecialCount != 0 && isDefenseSpecial(defUnit.special);
+
+        let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
+        let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
+        let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
             if (isDefUnitAlreadyDead) {
@@ -1464,96 +1575,19 @@ class DamageCalculator {
 
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount == 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount == 0;
-            let damageReductionRatio = 1.0 - defUnit.battleContext.damageReductionRatio;
+            let damageReductionRatio = 1.0;
             let damageReductionValue = 0;
 
-            switch (defUnit.weapon) {
-                case Weapon.Areadbhar:
-                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                    if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
-                        let percentage = Math.min(diff * 4, 40);
-                        damageReductionRatio *= 1.0 - percentage / 100.0;
-                        this.writeDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
-                    }
-                    break;
-                case Weapon.GiltGoblet:
-                    if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
-                        isWeaponTypeTome(atkUnit.weaponType)) {
-                        damageReductionRatio *= 0.5;
-                    }
-                    break;
-                case Weapon.BloodTome:
-                    if (isRangedWeaponType(atkUnit.weaponType)) {
-                        damageReductionRatio *= 0.5;
-                    }
-                    break;
-                case PassiveB.DragonWall3:
-                case Weapon.NewFoxkitFang:
-                    {
-                        let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
-                        if (resDiff > 0) {
-                            let percentage = resDiff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - percentage / 100.0;
-                            this.writeDebugLog("新年の妖狐娘の爪牙によりダメージ" + percentage + "%軽減");
-                        }
-                    }
-                    break;
-                case Weapon.NightmareHorn:
-                case Weapon.NewBrazenCatFang:
-                    {
-                        let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - percentage / 100.0;
-                            this.writeDebugLog(`武器スキル(${defUnit.weapon})によりダメージ${percentage}%軽減`);
-                        }
-                    }
-                    break;
+            // 計算機の外側で設定されたダメージ軽減率
+            {
+                damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(defUnit.battleContext.damageReductionRatio, atkUnit);
             }
 
-            switch (defUnit.passiveB) {
-                case PassiveB.Spurn3:
-                case PassiveB.KaihiIchigekiridatsu3:
-                case PassiveB.KaihiTatakikomi3:
-                    {
-                        let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
-                        let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
-                        let diff = defUnitSpd - atkUnitSpd;
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - percentage / 100.0;
-                            this.writeDebugLog(`回避スキルによりダメージ${percentage}%軽減(速さの差 ${defUnitSpd}-${atkUnitSpd}=${diff})`);
-                        }
-                    }
-                    break;
-                case PassiveB.BlueLionRule:
-                    {
-                        let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
-                        let atkUnitDef = atkUnit.getEvalDefInCombat(defUnit);
-                        let diff = defUnitDef - atkUnitDef;
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - percentage / 100.0;
-                            this.writeDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
-                        }
-                    }
-                    break;
+            for (let skillId of defUnit.enumerateSkills()) {
+                let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
+                if (ratio > 0) {
+                    damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(ratio, atkUnit);
+                }
             }
 
             let isDefenderSpecialActivated = false;
@@ -1614,6 +1648,7 @@ class DamageCalculator {
                 }
 
                 if (context.isFollowupAttack) {
+                    // 追撃
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
                 }
             }
