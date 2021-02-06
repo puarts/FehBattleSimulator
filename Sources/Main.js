@@ -8792,6 +8792,13 @@ class AetherRaidTacticsBoard {
                                 unit.defSpur += amount;
                             }, 1);
                         break;
+                    case PassiveA.DefResForm3:
+                        this.__applyFormSkill(targetUnit,
+                            (unit, amount) => {
+                                unit.defSpur += amount;
+                                unit.resSpur += amount;
+                            }, 1);
+                        break;
                 }
             }
         }

@@ -1176,6 +1176,7 @@ const PassiveA = {
     AtkResForm3: 1495,
     SpdDefForm3: 992,
     SpdResForm3: 1137,
+    DefResForm3: 1630,
 
     HeavyBlade1: 1256, // 剛剣1
     HeavyBlade2: 1257, // 剛剣2
