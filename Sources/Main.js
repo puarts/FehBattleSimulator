@@ -4838,6 +4838,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Sekuvaveku:
+                case Weapon.Thjalfi:
                     if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
                         for (let unit of this.__findNearestAllies(attackUnit)) {
                             unit.reserveTakeDamage(20);
@@ -5482,6 +5483,31 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Thjalfi:
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(6);
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
+                case Weapon.UnityBloomsPlus:
+                case Weapon.AmityBloomsPlus:
+                case Weapon.PactBloomsPlus:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                    }
+                    break;
+                case Weapon.LoyalistAxe:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                    }
+                    break;
                 case PassiveC.ArFarSave3:
                     if (targetUnit.battleContext.isSaviorActivated) {
                         targetUnit.atkSpur += 4;
@@ -8781,6 +8807,13 @@ class AetherRaidTacticsBoard {
                             (unit, amount) => {
                                 unit.spdSpur += amount;
                                 unit.defSpur += amount;
+                            }, 1);
+                        break;
+                    case PassiveA.DefResForm3:
+                        this.__applyFormSkill(targetUnit,
+                            (unit, amount) => {
+                                unit.defSpur += amount;
+                                unit.resSpur += amount;
                             }, 1);
                         break;
                 }

@@ -937,6 +937,13 @@ const Weapon = {
 
     // 2021年1月 神階セイロス
     AuroraBreath: 1620, // 極光のブレス
+
+    // 王の愛は永遠に
+    LoyalistAxe: 1635, // 護国の堅斧
+    UnityBloomsPlus: 1633, // 平和の花+
+    AmityBloomsPlus: 1624, // 共感の花+
+    Thjalfi: 1627, // シャールヴィ
+    PactBloomsPlus: 1626, // 約束の花+
 };
 
 const Support = {
@@ -1171,6 +1178,7 @@ const PassiveA = {
     AtkResForm3: 1495,
     SpdDefForm3: 992,
     SpdResForm3: 1137,
+    DefResForm3: 1630,
 
     HeavyBlade1: 1256, // 剛剣1
     HeavyBlade2: 1257, // 剛剣2
