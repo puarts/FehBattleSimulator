@@ -942,6 +942,7 @@ const Weapon = {
     LoyalistAxe: 1635, // 護国の堅斧
     UnityBloomsPlus: 1633, // 平和の花+
     AmityBloomsPlus: 1624, // 共感の花+
+    Thjalfi: 1627, // シャールヴィ
 };
 
 const Support = {

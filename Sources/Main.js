@@ -4831,6 +4831,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Sekuvaveku:
+                case Weapon.Thjalfi:
                     if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
                         for (let unit of this.__findNearestAllies(attackUnit)) {
                             unit.reserveTakeDamage(20);
@@ -5475,6 +5476,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Thjalfi:
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(6);
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
                 case Weapon.UnityBloomsPlus:
                 case Weapon.AmityBloomsPlus:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
