@@ -1688,6 +1688,11 @@ class DamageCalculator {
 
             {
                 switch (atkUnit.weapon) {
+                    case Weapon.UnityBloomsPlus:
+                        if (atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                            this.__heal(atkUnit, 4);
+                        }
+                        break;
                     case Weapon.Garumu:
                         if (atkUnit.isWeaponSpecialRefined) {
                             if (atkUnit.snapshot.restHpPercentage >= 25) {

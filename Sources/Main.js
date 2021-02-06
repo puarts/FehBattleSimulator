@@ -5475,6 +5475,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.UnityBloomsPlus:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                    }
+                    break;
                 case Weapon.LoyalistAxe:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         enemyUnit.atkSpur -= 6;

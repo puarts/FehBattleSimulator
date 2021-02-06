@@ -940,6 +940,7 @@ const Weapon = {
 
     // 王の愛は永遠に
     LoyalistAxe: 1635, // 護国の堅斧
+    UnityBloomsPlus: 1633, // 平和の花+
 };
 
 const Support = {
