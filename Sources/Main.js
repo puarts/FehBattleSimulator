@@ -816,6 +816,19 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoLif: {
+                let damage = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 3)) {
+                    damage += unit.maxHpWithSkills - unit.hp;
+                }
+                damage = Math.trunc(damage / 2);
+                for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(duoUnit, 3)) {
+                    unit.takeDamage(10 + Math.min(damage, 30));
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                }
+                break;
+            }
             case Hero.PlegianDorothea:
                 {
                     this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
@@ -5483,6 +5496,35 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Audhulma:
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
+                case Weapon.Meisterschwert:
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 5;
+                        enemyUnit.atkSpur -= 5;
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                                --enemyUnit.battleContext.followupAttackPriority;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.SpySongBow: {
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                    let partners = units.map(u => u.partnerHeroIndex);
+                    targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
+                    if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                        targetUnit.addAllSpur(6);
+                    }
+                    break;
+                }
                 case Weapon.Thjalfi:
                     if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
@@ -8929,6 +8971,12 @@ class AetherRaidTacticsBoard {
     __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
+                case Weapon.GigaExcalibur:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
                 case Weapon.SenhimeNoWakyu:
                     if (targetUnit.isWeaponRefined) {
                         targetUnit.atkSpur += 4;
@@ -9181,6 +9229,12 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.GigaExcalibur:
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            targetUnit.atkSpur += 4;
+                            targetUnit.spdSpur += 4;
+                        }
+                        break;
                     case Weapon.TannenbatonPlus:
                         targetUnit.defSpur += 2;
                         targetUnit.resSpur += 2;
@@ -9488,6 +9542,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Special.RadiantAether2:
+                if (this.vm.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                break;
             case Weapon.FellCandelabra:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return unit.snapshot.getAtkInPrecombat() },

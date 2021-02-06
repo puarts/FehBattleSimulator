@@ -944,6 +944,10 @@ const Weapon = {
     AmityBloomsPlus: 1624, // 共感の花+
     Thjalfi: 1627, // シャールヴィ
     PactBloomsPlus: 1626, // 約束の花+
+
+    // 2021年2月 武器錬成
+    SpySongBow: 1637, // 邪な曲弓
+    Audhulma: 39, // アウドムラ
 };
 
 const Support = {
@@ -1066,6 +1070,7 @@ const Special = {
     HerosBlood: 1232, // 英雄の血脈
     KuroNoGekko: 471, // 黒の月光
     AoNoTenku: 472, // 蒼の天空
+    RadiantAether2: 1628, // 蒼の天空・承
     MayhemAether: 1309, // 暴の天空
     Hoshikage: 463, // 星影
     Fukuryu: 464, // 伏竜
@@ -1097,6 +1102,7 @@ const Special = {
     Seii: 478, // 聖衣
     Seikabuto: 476, // 聖兜
     KoriNoSeikyo: 480, // 氷の聖鏡
+    IceMirror2: 1629, // 氷の聖鏡・承
 
     ShippuNoSyukuhuku: 499, // 疾風の祝福
     DaichiNoSyukuhuku: 500, // 大地の祝福
@@ -2024,6 +2030,7 @@ function isDefenseSpecial(special) {
         case Special.Seii:  // 聖衣
         case Special.Seikabuto: // 聖兜
         case Special.KoriNoSeikyo:
+        case Special.IceMirror2:
         case Special.NegatingFang:
             return true;
         default:
@@ -2066,6 +2073,7 @@ function isNormalAttackSpecial(special) {
         case Special.HerosBlood:
         case Special.KuroNoGekko: // 黒の月光
         case Special.AoNoTenku: // 蒼の天空
+        case Special.RadiantAether2: // 蒼の天空・承
         case Special.MayhemAether: // 暴の天空
         case Special.Hoshikage: // 星影
         case Special.Fukuryu: // 伏竜

@@ -648,6 +648,7 @@ class DamageCalculator {
             }
         }
         switch (atkUnit.weapon) {
+            case Weapon.SpySongBow:
             case Weapon.HikariNoKen:
             case Weapon.ShiningBow:
             case Weapon.ShiningBowPlus:
@@ -761,10 +762,14 @@ class DamageCalculator {
             case Weapon.AkaiAhiruPlus:
             case Weapon.KenhimeNoKatana:
             case Weapon.GigaExcalibur:
-                fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(
-                    atkUnit, defUnit, isPrecombat,
-                    x => x.getEvalSpdInPrecombat(),
-                    (x, y) => x.getEvalSpdInCombat(y));
+                if (atkUnit.isWeaponRefined) {
+                    fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+                } else {
+                    fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
                 break;
             case Weapon.KieiWayuNoKen:
                 if (atkUnit.isWeaponSpecialRefined) {
@@ -954,6 +959,7 @@ class DamageCalculator {
                 break;
             case Special.Aether:
             case Special.AoNoTenku:
+            case Special.RadiantAether2:
             case Special.MayhemAether:
                 // 天空
                 specialSuffer = 50;
@@ -1060,6 +1066,12 @@ class DamageCalculator {
                 // 通常ダメージに加算
                 if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
                     fixedAddDamage += atkUnit.battleContext.reducedDamageBySpecial;
+                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                }
+                break;
+            case Special.IceMirror2:
+                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
+                    fixedAddDamage += Math.trunc(atkUnit.getResInCombat(defUnit) * 0.4);
                     atkUnit.battleContext.reducedDamageBySpecial = 0;
                 }
                 break;
@@ -1606,6 +1618,12 @@ class DamageCalculator {
                             isDefenderSpecialActivated = true;
                         }
                         break;
+                    case Special.IceMirror2:
+                        if (attackRange === 2) {
+                            damageReductionRatio *= 1.0 - 0.4;
+                            isDefenderSpecialActivated = true;
+                        }
+                        break;
                     case Special.Seitate:
                         if (attackRange == 2) {
                             damageReductionRatio *= 1.0 - 0.5;
@@ -1678,6 +1696,7 @@ class DamageCalculator {
                     switch (atkUnit.special) {
                         case Special.Aether:
                         case Special.AoNoTenku:
+                        case Special.RadiantAether2:
                         case Special.MayhemAether:
                         case Special.Taiyo:
                             healedHp = Math.trunc(actualDamage * 0.5);
@@ -1723,6 +1742,11 @@ class DamageCalculator {
 
             {
                 switch (atkUnit.weapon) {
+                    case Weapon.SpySongBow:
+                        if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                            this.__heal(atkUnit, 5);
+                        }
+                        break;
                     case Weapon.UnityBloomsPlus:
                     case Weapon.AmityBloomsPlus:
                     case Weapon.PactBloomsPlus:
@@ -1838,6 +1862,9 @@ class DamageCalculator {
             switch (defUnit.special) {
                 case Special.KoriNoSeikyo:
                     defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);
+                    break;
+                case Special.IceMirror2:
+                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.4);
                     break;
                 case Special.NegatingFang:
                     defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);
