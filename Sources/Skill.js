@@ -937,6 +937,9 @@ const Weapon = {
 
     // 2021年1月 神階セイロス
     AuroraBreath: 1620, // 極光のブレス
+
+    // 王の愛は永遠に
+    LoyalistAxe: 1635, // 護国の堅斧
 };
 
 const Support = {

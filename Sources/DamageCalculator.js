@@ -205,6 +205,12 @@ class DamageCalculator {
 
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
+            case Weapon.LoyalistAxe:
+                if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) &&
+                    enemyUnit.battleContext.canFollowupAttack) {
+                    unit.battleContext.damageReductionRatioOfFirstAttack = 0.75;
+                }
+                break;
             case Weapon.Hrist:
                 if (unit.snapshot.restHpPercentage <= 99) {
                     unit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
