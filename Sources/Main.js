@@ -5476,6 +5476,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Meisterschwert:
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 5;
+                        enemyUnit.atkSpur -= 5;
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                                --enemyUnit.battleContext.followupAttackPriority;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.SpySongBow: {
                     if (!targetUnit.isWeaponSpecialRefined) break;
                     let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
