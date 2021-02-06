@@ -13906,12 +13906,12 @@ class AetherRaidTacticsBoard {
                     }
                     else if (st instanceof OfCatapult) {
                         if (this.vm.currentTurn == 1) {
-                            this.executeStructure(st);
+                            this.executeStructure(st, appliesDamage);
                         }
                     }
                     else if (st instanceof OfBoltTower) {
                         if (this.vm.currentTurn == 3) {
-                            this.executeStructure(st);
+                            this.executeStructure(st, appliesDamage);
                         }
                     }
                 }
@@ -13929,16 +13929,16 @@ class AetherRaidTacticsBoard {
                         || st instanceof DefFlierSchool
                         || st instanceof DefCavalrySchool
                     ) {
-                        this.executeStructure(st);
+                        this.executeStructure(st, appliesDamage);
                     }
                     else if (st instanceof DefCatapult) {
                         if (this.vm.currentTurn == 1) {
-                            this.executeStructure(st);
+                            this.executeStructure(st, appliesDamage);
                         }
                     }
                     else if (st instanceof DefBoltTower) {
                         if (this.vm.currentTurn == 3) {
-                            this.executeStructure(st);
+                            this.executeStructure(st, appliesDamage);
                         }
                     }
                 }

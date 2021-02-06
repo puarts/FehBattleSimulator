@@ -2774,11 +2774,11 @@ class Unit {
     }
 
     reserveTakeDamage(damageAmount) {
-        this.reservedDamage = damageAmount;
+        this.reservedDamage += damageAmount;
     }
 
     reserveHeal(healAmount) {
-        this.reservedHeal = healAmount;
+        this.reservedHeal += healAmount;
     }
 
     modifyHp(leavesOneHp = false) {
