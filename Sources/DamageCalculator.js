@@ -1048,6 +1048,12 @@ class DamageCalculator {
                     atkUnit.battleContext.reducedDamageBySpecial = 0;
                 }
                 break;
+            case Special.IceMirror2:
+                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
+                    fixedAddDamage += Math.trunc(atkUnit.getResInCombat(defUnit) * 0.4);
+                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                }
+                break;
             case Special.NegatingFang:
                 if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
                     fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.3);
@@ -1573,6 +1579,12 @@ class DamageCalculator {
                             isDefenderSpecialActivated = true;
                         }
                         break;
+                    case Special.IceMirror2:
+                        if (attackRange === 2) {
+                            damageReductionRatio *= 1.0 - 0.4;
+                            isDefenderSpecialActivated = true;
+                        }
+                        break;
                     case Special.Seitate:
                         if (attackRange == 2) {
                             damageReductionRatio *= 1.0 - 0.5;
@@ -1801,6 +1813,9 @@ class DamageCalculator {
             switch (defUnit.special) {
                 case Special.KoriNoSeikyo:
                     defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);
+                    break;
+                case Special.IceMirror2:
+                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.4);
                     break;
                 case Special.NegatingFang:
                     defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);

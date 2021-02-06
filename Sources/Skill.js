@@ -1098,6 +1098,7 @@ const Special = {
     Seii: 478, // 聖衣
     Seikabuto: 476, // 聖兜
     KoriNoSeikyo: 480, // 氷の聖鏡
+    IceMirror2: 1629, // 氷の聖鏡・承
 
     ShippuNoSyukuhuku: 499, // 疾風の祝福
     DaichiNoSyukuhuku: 500, // 大地の祝福
@@ -2023,6 +2024,7 @@ function isDefenseSpecial(special) {
         case Special.Seii:  // 聖衣
         case Special.Seikabuto: // 聖兜
         case Special.KoriNoSeikyo:
+        case Special.IceMirror2:
         case Special.NegatingFang:
             return true;
         default:
