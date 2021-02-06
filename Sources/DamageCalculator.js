@@ -746,7 +746,7 @@ class DamageCalculator {
             case Weapon.AkaiAhiruPlus:
             case Weapon.KenhimeNoKatana:
             case Weapon.GigaExcalibur:
-                if (atkUnit.isWeaponSpecialRefined) {
+                if (atkUnit.isWeaponRefined) {
                     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
                 } else {
                     fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(

@@ -8964,6 +8964,11 @@ class AetherRaidTacticsBoard {
         if (!calcPotentialDamage) {
             switch (skillId) {
                 case Weapon.GigaExcalibur:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
                 case Weapon.SenhimeNoWakyu:
                     if (targetUnit.isWeaponRefined) {
                         targetUnit.atkSpur += 4;
