@@ -267,6 +267,7 @@ class AetherRaidTacticsBoard {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
+                    unit.weaponRefinement = WeaponRefinementType.None;
                     g_appData.__updateStatusBySkillsAndMerges(unit);
                     unit.resetMaxSpecialCount();
                     self.updateAllUnitSpur();
@@ -11062,7 +11063,7 @@ class AetherRaidTacticsBoard {
         let originalEnemySpecialCount = enemyUnit.specialCount;
 
         this.clearDurabilityTestLog();
-        let tableHtml = "<table>";
+        let tableHtml = "<table border='1'>";
         tableHtml += "<tr><th>守備/魔防</th><th>ダメージ概要</th><th>合計ダメージ</th></tr>";
         for (let i = 0; i < 12; ++i) {
             let mit = 10 + i * 5;

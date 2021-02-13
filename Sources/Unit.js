@@ -874,6 +874,9 @@ class BattleContext {
         // 追撃優先度
         this.followupAttackPriority = 0;
 
+        // 戦闘前の範囲奥義で有効になるダメージ軽減率
+        this.damageReductionRatioForPrecombat = 0;
+
         // 戦闘中常に有効になるダメージ軽減率
         this.damageReductionRatio = 0;
 
