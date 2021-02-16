@@ -1171,27 +1171,54 @@
         </div>
         <div id="aetherRaidDefensePresetDialog">
             <p>模擬戦する防衛を選択してください。</p>
-            <p>
-            <div v-if="isLightSeason == true">
-                <select v-model="aetherRaidDefensePreset" @change="aetherRaidDefensePresetChanged">
-                    <option v-for="option in AetherRaidDefensePresetOptions_DarkSeason" v-bind:value="option.id">
-                        {{ option.text }}
-                    </option>
-                </select>
-            </div>
-            <div v-else>
-                <select v-model="aetherRaidDefensePreset" @change="aetherRaidDefensePresetChanged">
-                    <option v-for="option in AetherRaidDefensePresetOptions_AnimaSeason" v-bind:value="option.id">
-                        {{ option.text }}
-                    </option>
-                </select>
-            </div>
-            </p>
-            <p v-html="aetherRaidDefensePresetDescription">
-            </p>
-            <p>
-                <input type="button" value="選択した防衛に設定" @click="g_app.setCurrentAetherRaidDefensePreset();">
-            </p>
+            <fieldset>
+                <legend>防衛マッププリセット</legend>
+                <p>
+                <div v-if="isLightSeason == true">
+                    <select v-model="aetherRaidDefensePreset" @change="aetherRaidDefensePresetChanged">
+                        <option v-for="option in AetherRaidDefensePresetOptions_DarkSeason" v-bind:value="option.id">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                <div v-else>
+                    <select v-model="aetherRaidDefensePreset" @change="aetherRaidDefensePresetChanged">
+                        <option v-for="option in AetherRaidDefensePresetOptions_AnimaSeason" v-bind:value="option.id">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                </p>
+                <p v-html="aetherRaidDefensePresetDescription">
+                </p>
+                <p>
+                    <input type="button" value="選択した防衛マップに設定" @click="g_app.setCurrentAetherRaidDefensePreset();">
+                </p>
+            </fieldset>
+            <fieldset>
+                <legend>攻撃編成プリセット</legend>
+                <p>
+                <div v-if="isLightSeason == true">
+                    <select v-model="aetherRaidOffensePresetIndex" @change="aetherRaidOffensePresetChanged">
+                        <option v-for="(option,index) in AetherRaidOffensePresetOptions_LightSeason"
+                            v-bind:value="index">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                <div v-else>
+                    <select v-model="aetherRaidOffensePresetIndex" @change="aetherRaidOffensePresetChanged">
+                        <option v-for="(option,index) in AetherRaidOffensePresetOptions_AstraSeason"
+                            v-bind:value="index">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                </p>
+                <p>
+                    <input type="button" value="選択した攻撃編成に設定" @click="g_app.setCurrentAetherRaidOffensePreset();">
+                </p>
+            </fieldset>
         </div>
         <div id="itemDialog">
             <p>使用するアイテムを選択してください。</p>

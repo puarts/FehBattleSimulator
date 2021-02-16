@@ -19,12 +19,13 @@ const AetherRaidDefensePreset = {
 
 /// 飛空城防衛プリセットを表すクラスです。
 class AetherRaidDefensePresetInfo {
-    constructor(id, title, setting, provider = "") {
+    constructor(id, title, setting, provider = "", season = SeasonType.None) {
         this.id = id;
         this.text = title;
         this.setting = setting;
         this.provider = provider;
         this.description = "";
+        this.season = season;
     }
 
     getProviderHtml() {
@@ -97,6 +98,32 @@ const AetherRaidDefensePresetOptions_DarkSeason = [
         "C4VwTgdg7glgJgUwLwFsCGAHJBOAPgRlwAZiCySBmU-ALhAhmAH0EikAWbQ-fAVm74AmXOwBswgBxFeubLxI8J7XLwDsosgFpC23Bpk7DpXSRO4zJS8aMl2JGcO5knteoxb4kEwhSq72qqq4EoIyvBJ4+ETRBETYElpGUSq4wrpmeKZOFqRWZoR2KS7OznQMzAiCSBSChNjYJKoRIqIJ6hqiFB0SMq0G5kYyCgMjWdapo7lT6YQK9tQlLmXuCBQcvBr1c6IFrbjtKtjKfXpSIzOxpGk2k7p+s1N5N4UOC8Wu5SzsHPjC2KrKdiCQHiYLSWTqAj4JR6LqJEbJfoXMZjZQ5Kwo0gvciLUpuCq8HAJQSiNG7II8QJQuJQmG8QQJIy6RHwsxswgydHTB62eZWd4EGgAZ2Ya14wuY31oIqYhOlzFUHAlTAkSHFMp4So1cuV+FEat1ivlTGhBo12CQxsEbCtnitVWNXUtyooivYyvYdpoAG5QJAmGx0FhhlllhU2CRHKR5I9Y1ZhNc41MeeMTGGPEhhg9eMoMUnKBMuXmU2M0-iWFV+VchvmpgnJnmq3nkenVpmJlYgbW8-Wi8nYy3ywhviGsRpG0neyXY9PB58EISJ+wEhOJ1R7t2cU9Ri727YPXvcBRlYuUkRlYr5sbVfHdZ4C+fte2qMa9e2fIb36ldTeJoJdRa8zqsw1rtsowFMLUX4QYIlYpMeMpOrY36IZeIjEB6ngbsyPpAA"
     ),
 ];
+
+let _offenseAstraPresetId = 0;
+const AetherRaidOffensePresetOptions_AstraSeason = [
+    new AetherRaidDefensePresetInfo(
+        _offenseAstraPresetId++,
+        "フレン&ブルーニャ",
+        "C4VwTgdg7glgJgUwLwgjYB9AhgBiQVgA4BGAH2Px33IDYcbzKB2UgTibJoGYvSbDq/agCZSOMeXHUAtGVml54xQrLjVE8ZpWlR4gCxSdfcibJmxAOj2WaALlTpsxJFxJtivPcWt7+pfMIMNPhkrBSkTDgs8jFmhnIJEsryiVpp2soG/hIM5nmW+NQ4Fvj2aJhYwkh6AZJ6ol68xDh6TS3W+KwMkQz4XKwZic2k1onJ6vKiyulKqSOG1rmmy8U1NmWOWFxIdGr4XiPCohT1bMIsrLU0NAN9vLHaw/djE6+kzxqfs9r6hrxL+VUJUsNQ2FT0BCYTT0hEI5BhAxSOCOkkC8NY4n43wewzUgySb2s0y++N+2UEy3yxV4xSYpQcFXw1RCdTIjRGNFEhA4bFY1gxAyYQqMWmGwymZBpP201HUM20unm2U4lJWVgKpQA3KBIBg8AzsHhxKIGJjTST5cdpfLjRI3nCimIwU4kFpzacbSTRBKLZ9FW9HZpnZVXSNjPoWJ70t7rb7/QTlRpg9txP8JHprFHPrwPlmpW8GIqcMGIYZ3YHfVpFcT5eoC+8kwasEy8eaoZWvUYayS6wmWJmnZqgA=",
+    ),
+    new AetherRaidDefensePresetInfo(
+        _offenseAstraPresetId++,
+        "伝エガ&リリス",
+        "C4VwTgdg7glgJgUwLwgjYB9AhgBiQVhwBYAfARjIA4BmEos2ogNkvJzIE4T9KuLLS+AOykATCRwSpkgLRkSchfNnz8DErUnLpOxeMlFJ+EuKblz8yxIB0xnLfwAuVOmxkk1SvI7r6pZqz4omZMaiQ+xkI4QkqximRG5oqKKlLxsZKZuvIpdImSZlZFNvh2ts5omFiiSERBbETi9LQJRC3EghxmUWb41FzJOZYGSUNp2noZOlmDUobcdCSFFiv2dTZMFa5Y1EhMOFr49HSi4mRH4hyiMRz1TExcfbSz8ZLPY7mf8u/T2VPzxloy2KylsNjqWyqRAIQhaREorDI8IGw1ObGC5CIHAKlFSswSUg+E2JC1yWRmYwMiWMwJWoM01iEThcVXwBHUDBwTV8XXRiOoOBaAtICSErH0hK0WlimlihFIjHM5L+uQB5lpxXsZi1TgA3KBIBg8CzsHhJKYpPguMqbVIJWTfubCeMSIFpJC3EgstqTo6/eJxA7bRKSXZ3Sbql7Fj6iDFbcGTFN44npaljNocB6dlGgXNSMnlbQfgWNM7UmYJZmI9DEjGwyWnakS9oSWZZVXKtg2dKfVE/bbvkm/S2XTF8xJHLqgA=",
+    ),
+];
+
+let _offenseLightPresetId = 0;
+const AetherRaidOffensePresetOptions_LightSeason = [
+    new AetherRaidDefensePresetInfo(
+        _offenseLightPresetId++,
+        "W伝承リーフ",
+        "C4VwTgdg7glgJgUwLwgjYB9AhgBiQZgEYA2AHwA5DzSAWQm246gVgCYzzidSB2H/XjgCcpALSExE8b1ICp80t2aLJK6dw0ru09bSWlWpMhJOlTOAHStll5swBcqdNkJIazYzmbVCOYhJomXiFuYnwyHj8jcm0FaWVDWNUkpIVNdNVdGn0JYzN88wsBS3dHNEwsViQ2BkJ8Zm46ARoeMjZlZiEROrZBHkyFZvydCRTVQ10MpKz9BjzTQv7LHjLnLHw3fG6cVka6sx2THcNiMN5WEWYaQzkDA/u40eTVAUmtNTS9UmUBeYL82yKCylJwVGibba7Wj7XysCRsfqdMinbY8ai3Qy+B4DD64hhvDIjFTZb4qP4LIE2YEOUHYZhIfwmbwKQjeCYSTj9EIiaQY96PXFJZQE95Exr6IkUwrFCw8BwAblAkAweFpuCQ3BOxKeU3emruIoyTyeYq0qwqrm4uWJIl1usM7L1TuNuIJ5uwVUaRmJDDtTodzz9LumOsU7vWGtk3tCob93AEr1jzpUJs+GnD4M0ZBjTr9CcDuYBRdN6bV9MTzyuhd1t0N/JTrtj9nlQA==",
+    ),
+
+
+];
+
 
 function findAetherRaidDefensePreset(id) {
     for (let option of AetherRaidDefensePresetOptions_DarkSeason) {

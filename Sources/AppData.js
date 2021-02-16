@@ -308,6 +308,7 @@ class AppData {
         this.aetherRaidDefensePreset = 0;
         this.aetherRaidDefensePresetDescription = "";
         this.resetCurrentAetherRaidDefensePreset();
+        this.aetherRaidOffensePresetIndex = 0;
 
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;

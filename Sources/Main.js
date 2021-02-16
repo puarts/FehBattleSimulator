@@ -422,6 +422,8 @@ class AetherRaidTacticsBoard {
                 aetherRaidDefensePresetChanged: function () {
                     g_appData.updateAetherRaidDefensePresetDescription();
                 },
+                aetherRaidOffensePresetChanged: function () {
+                },
                 slotOrderChanged: function () {
                     updateMapUi();
                 },
@@ -2285,6 +2287,19 @@ class AetherRaidTacticsBoard {
         g_appData.removeItem(itemType);
     }
 
+    setCurrentAetherRaidOffensePreset() {
+        this.writeDebugLogLine(`模擬戦の攻撃編成設定 ${this.vm.aetherRaidOffensePresetIndex} を適用`);
+        let setting = this.__findAetherRaidOffensePresetSetting(this.vm.aetherRaidOffensePresetIndex);
+        importSettingsFromString(
+            setting,
+            true,
+            false,
+            false,
+            false,
+            false);
+        updateAllUi();
+    }
+
     setCurrentAetherRaidDefensePreset() {
         this.writeDebugLogLine(`模擬戦の防衛設定 ${this.vm.aetherRaidDefensePreset} を適用`);
         let setting = this.__findAetherRaidDefensePresetSetting(this.vm.aetherRaidDefensePreset);
@@ -2306,6 +2321,29 @@ class AetherRaidTacticsBoard {
         }
         return preset.setting;
     }
+
+    __findAetherRaidOffensePresetSetting(index) {
+        let preset = null;
+        if (this.vm.isLightSeason) {
+            if (index < AetherRaidOffensePresetOptions_LightSeason.length) {
+                preset = AetherRaidOffensePresetOptions_LightSeason[index];
+            }
+            else {
+                preset = AetherRaidOffensePresetOptions_LightSeason[AetherRaidOffensePresetOptions_LightSeason.length - 1];
+            }
+        }
+        else {
+            if (index < AetherRaidOffensePresetOptions_SkySeason.length) {
+                preset = AetherRaidOffensePresetOptions_SkySeason[index];
+            }
+            else {
+                preset = AetherRaidOffensePresetOptions_SkySeason[AetherRaidOffensePresetOptions_LightSeason.length - 1];
+            }
+        }
+
+        return preset.setting;
+    }
+
 
     writeSimpleLogLine(log) {
         if (this.disableAllLogs) {
