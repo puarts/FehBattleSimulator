@@ -1309,6 +1309,11 @@ class Unit {
         this.restHp = 1; // ダメージ計算で使うHP
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+        this.reservedStatusEffects = [];
+        this.reservedAtkDebuff = 0;
+        this.reservedSpdDebuff = 0;
+        this.reservedDefDebuff = 0;
+        this.reservedResDebuff = 0;
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = '';
@@ -2362,6 +2367,14 @@ class Unit {
         return this.placedTile.calculateDistanceToUnit(unit);
     }
 
+    reserveToAddStatusEffect(statusEffect) {
+        this.reservedStatusEffects.push(statusEffect);
+    }
+
+    reserveToClearNegativeStatusEffects() {
+        this.reservedStatusEffects = this.__getPositiveStatusEffects(this.reservedStatusEffects);
+    }
+
     clearNegativeStatusEffects() {
         this.statusEffects = this.getPositiveStatusEffects();
     }
@@ -2415,14 +2428,18 @@ class Unit {
         return false;
     }
 
-    getPositiveStatusEffects() {
+    __getPositiveStatusEffects(statusEffects) {
         let result = [];
-        for (let effect of this.statusEffects) {
+        for (let effect of statusEffects) {
             if (isPositiveStatusEffect(effect)) {
                 result.push(effect);
             }
         }
         return result;
+    }
+
+    getPositiveStatusEffects() {
+        return this.__getPositiveStatusEffects(this.statusEffects);
     }
 
     getNegativeStatusEffects() {
@@ -2564,6 +2581,13 @@ class Unit {
         this.spdBuff = 0;
         this.defBuff = 0;
         this.resBuff = 0;
+    }
+
+    reserveToResetDebuffs() {
+        this.reservedAtkDebuff = 0;
+        this.reservedSpdDebuff = 0;
+        this.reservedDefDebuff = 0;
+        this.reservedResDebuff = 0;
     }
 
     resetDebuffs() {
@@ -2771,6 +2795,28 @@ class Unit {
     initReservedHp() {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+    }
+
+    initReservedStatusEffects() {
+        this.reservedStatusEffects = Array.from(this.statusEffects);
+    }
+
+    initReservedDebuffs() {
+        this.reservedAtkDebuff = this.atkDebuff;
+        this.reservedSpdDebuff = this.spdDebuff;
+        this.reservedDefDebuff = this.defDebuff;
+        this.reservedResDebuff = this.resDebuff;
+    }
+
+    applyReservedDebuffs() {
+        this.atkDebuff = this.reservedAtkDebuff;
+        this.spdDebuff = this.reservedSpdDebuff;
+        this.defDebuff = this.reservedDefDebuff;
+        this.resDebuff = this.reservedResDebuff;
+    }
+
+    applyReservedStatusEffects() {
+        this.statusEffects = this.reservedStatusEffects;
     }
 
     applyReservedHp(leavesOneHp) {

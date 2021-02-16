@@ -529,7 +529,7 @@ class AppData {
             this.createStructures();
             this.map = new Map(g_idGenerator.generate(), this.mapKind, this.gameVersion);
             this.map.isExpansionUnitFunc = x => {
-                return this.isExpansionUnit(x);
+                return this.isSpecialSlotUnit(x);
             };
         }
 
@@ -554,7 +554,7 @@ class AppData {
         return null;
     }
 
-    isExpansionUnit(unit) {
+    isSpecialSlotUnit(unit) {
         if (this.gameMode != GameMode.AetherRaid) {
             return false;
         }
@@ -1163,7 +1163,9 @@ class AppData {
 
     *enumerateCurrentSeasonDefenseMythicUnits(groupId) {
         for (let unit of this.enumerateUnitsInSpecifiedGroup(groupId)) {
-            if (unit.isDefenseMythicHero && this.examinesIsCurrentSeason(unit.providableBlessingSeason)) {
+            if (!this.isSpecialSlotUnit(unit)
+                && unit.isDefenseMythicHero
+                && this.examinesIsCurrentSeason(unit.providableBlessingSeason)) {
                 yield unit;
             }
         }
@@ -1172,7 +1174,8 @@ class AppData {
     __calcAetherRaidDefenseLiftLoss() {
         let liftLoss = -100;
         let defenseProviders = Array.from(this.enumerateCurrentSeasonDefenseMythicUnits(UnitGroupType.Enemy));
-        if (!defenseProviders.some(x => true)) {
+        let providerCount = defenseProviders.length;
+        if (providerCount == 0) {
             return liftLoss;
         }
 
@@ -1187,14 +1190,26 @@ class AppData {
         );
         liftLoss += totalMerge;
 
+        // 神階英雄数(最大2体)x祝福付与英雄数x5
+        if (providerCount > 2) {
+            providerCount = 2;
+        }
+
         let provider = defenseProviders[0];
+        let bressingEffectedUnitCount = 0;
         for (let unit of this.enemyUnits.filter(x => !defenseProviders.some(y => y == x))) {
+            if (this.isSpecialSlotUnit(unit)) {
+                continue;
+            }
+
             if (!this.isBlessingEffectEnabled(unit, provider)) {
                 continue;
             }
 
-            liftLoss += 10;
+            ++bressingEffectedUnitCount;
         }
+
+        liftLoss += providerCount * bressingEffectedUnitCount * 5;
 
         return liftLoss;
     }

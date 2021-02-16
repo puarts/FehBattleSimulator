@@ -519,6 +519,7 @@ class AetherRaidTacticsBoard {
                         unit.slotOrder = slotOrder;
                         ++slotOrder;
                     }
+                    g_appData.updateAetherRaidDefenseLiftLoss();
                     updateMapUi();
                 },
                 unitSelected: function (event) {
@@ -9612,7 +9613,7 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.__findMinStatusUnits(skillOwner.enemyGroupId, statusFunctions[this.vm.currentTurn - 1])) {
                     unit.applyAtkDebuff(-7);
                     unit.applySpdDebuff(-7);
-                    unit.addStatusEffect(StatusEffectType.Gravity);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
                 break;
             }
@@ -9634,8 +9635,11 @@ class AetherRaidTacticsBoard {
                 for (let target of targets) {
                     target.applyAtkBuff(6);
                     target.applySpdBuff(6);
-                    target.resetDebuffs();
-                    target.clearNegativeStatusEffects();
+                    target.reserveToResetDebuffs();
+
+                    // キアの杖の効果が重なると2回目の実行で対象が変化してしまうので予約する
+                    // todo: 他の場所も状態が変化するものはすべて予約にしないといけない
+                    target.reserveToClearNegativeStatusEffects();
                 }
                 break;
             }
@@ -9654,8 +9658,8 @@ class AetherRaidTacticsBoard {
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.resetDebuffs();
-                        unit.clearNegativeStatusEffects();
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
                         unit.reserveHeal(5);
                     }
                 }
@@ -9663,8 +9667,8 @@ class AetherRaidTacticsBoard {
             case PassiveC.OddRecovery2:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.resetDebuffs();
-                        unit.clearNegativeStatusEffects();
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
                         unit.reserveHeal(10);
                     }
                 }
@@ -9672,8 +9676,8 @@ class AetherRaidTacticsBoard {
             case PassiveC.OddRecovery3:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.resetDebuffs();
-                        unit.clearNegativeStatusEffects();
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
                         unit.reserveHeal(20);
                     }
                 }
@@ -9685,30 +9689,30 @@ class AetherRaidTacticsBoard {
                 break;
             case PassiveC.OddTempest3:
                 if (this.isOddTurn) {
-                    skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;
             case PassiveC.MilaNoHaguruma:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => unit.snapshot.getDefInPrecombat() < skillOwner.snapshot.getDefInPrecombat(),
-                    unit => unit.addStatusEffect(StatusEffectType.Isolation));
+                    unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
                 break;
             case Weapon.Gjallarbru:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => unit.snapshot.hp <= skillOwner.snapshot.hp - 3,
-                    unit => unit.addStatusEffect(StatusEffectType.Isolation));
+                    unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
                 break;
             case Weapon.SerujuNoKyoufu:
                 if (skillOwner.isWeaponSpecialRefined) {
                     this.__applySkillToEnemiesInCross(skillOwner,
                         unit => unit.snapshot.hp < skillOwner.snapshot.hp,
-                        unit => unit.addStatusEffect(StatusEffectType.Panic));
+                        unit => unit.reserveToAddStatusEffect(StatusEffectType.Panic));
                 }
                 break;
             case PassiveC.KyokoNoKisaku3:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => unit.snapshot.hp < skillOwner.snapshot.hp,
-                    unit => unit.addStatusEffect(StatusEffectType.Panic));
+                    unit => unit.reserveToAddStatusEffect(StatusEffectType.Panic));
                 break;
             case Weapon.Sekku:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(
@@ -9717,7 +9721,7 @@ class AetherRaidTacticsBoard {
                     if (unit.isRangedWeaponType()
                         && this.__getStatusEvalUnit(skillOwner).hp >= this.__getStatusEvalUnit(unit).hp + 3
                     ) {
-                        unit.addStatusEffect(StatusEffectType.Gravity);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                     }
                 }
                 break;
@@ -9739,7 +9743,7 @@ class AetherRaidTacticsBoard {
                         if (isWeaponTypeTome(unit.weaponType)) {
                             continue;
                         }
-                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                        unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                         unit.reserveTakeDamage(5);
                     }
                 }
@@ -9750,7 +9754,7 @@ class AetherRaidTacticsBoard {
                     unit.applySpdDebuff(-7);
 
                     if (skillOwner.isWeaponSpecialRefined) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                     }
                 }
                 break;
@@ -9822,7 +9826,7 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.enumerateUnitsWithinSpecifiedRange(
                         skillOwner.posX, skillOwner.posY, groupId, 3, 99)
                     ) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                         unit.reserveTakeDamage(10);
                     }
                 }
@@ -9899,7 +9903,7 @@ class AetherRaidTacticsBoard {
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat(),
                     skillOwner)
                 ) {
-                    unit.addStatusEffect(StatusEffectType.BonusDoubler);
+                    unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
                 }
                 break;
             case PassiveB.Recovering:
@@ -10056,7 +10060,7 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
                     switch (unit.moveType) {
                         case MoveType.Flying:
-                            unit.addStatusEffect(StatusEffectType.AirOrders);
+                            unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                             break;
                     }
                 }
@@ -10067,7 +10071,7 @@ class AetherRaidTacticsBoard {
                         case MoveType.Infantry:
                         case MoveType.Armor:
                         case MoveType.Cavalry:
-                            unit.addStatusEffect(StatusEffectType.AirOrders);
+                            unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                             break;
                     }
                 }
@@ -10076,7 +10080,7 @@ class AetherRaidTacticsBoard {
                 for (let otherUnit of this.enumerateUnitsInTheSameGroup(skillOwner, false)) {
                     if (!otherUnit.isOnMap) { continue; }
                     if (skillOwner.isNextTo(otherUnit)) {
-                        otherUnit.addStatusEffect(StatusEffectType.EffectiveAgainstDragons);
+                        otherUnit.reserveToAddStatusEffect(StatusEffectType.EffectiveAgainstDragons);
                     }
                 }
                 break;
@@ -10115,18 +10119,18 @@ class AetherRaidTacticsBoard {
                 break;
             case PassiveC.ArmoredStride3:
                 if (!this.__isThereAllyInSpecifiedSpaces(skillOwner, 1)) {
-                    skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;
             case PassiveS.ArmoredBoots:
                 if (this.__getStatusEvalUnit(skillOwner).isFullHp) {
-                    skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;
             case Weapon.FlowerHauteclere:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= 25) {
-                    skillOwner.addStatusEffect(StatusEffectType.MobilityIncreased);
-                    skillOwner.addStatusEffect(StatusEffectType.AirOrders);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                 }
                 break;
             case Weapon.Faraflame:
@@ -10252,7 +10256,7 @@ class AetherRaidTacticsBoard {
                         if (!(unit.snapshot.hp <= (skillOwner.snapshot.hp - 3))) { continue; }
                         unit.applyAtkDebuff(-4);
                         unit.applySpdDebuff(-4);
-                        unit.addStatusEffect(StatusEffectType.Guard);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                     }
                 }
                 else {
@@ -10262,7 +10266,7 @@ class AetherRaidTacticsBoard {
                         if (!(unit.snapshot.hp <= (skillOwner.snapshot.hp - 3))) { continue; }
                         unit.applyDefDebuff(-4);
                         unit.applyResDebuff(-4);
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                     }
                 }
                 break;
@@ -10270,7 +10274,7 @@ class AetherRaidTacticsBoard {
                 this.__applySabotageSkillImpl(
                     skillOwner,
                     unit => unit.snapshot.hp <= (skillOwner.snapshot.hp - 3),
-                    unit => { unit.applyAllDebuff(-3); unit.addStatusEffect(StatusEffectType.Panic); });
+                    unit => { unit.applyAllDebuff(-3); unit.reserveToAddStatusEffect(StatusEffectType.Panic); });
                 break;
             case Weapon.KokyousyaNoYari:
                 if (skillOwner.isWeaponSpecialRefined) {
@@ -10286,7 +10290,7 @@ class AetherRaidTacticsBoard {
                         if (unit.snapshot.hp <= (skillOwner.snapshot.hp - 1)) {
                             this.writeDebugLogLine(skillOwner.getNameWithGroup() + "はHP" + skillOwner.snapshot.hp + ", "
                                 + unit.getNameWithGroup() + "はHP" + unit.snapshot.hp + "で恐慌の惑乱適用");
-                            unit.addStatusEffect(StatusEffectType.Panic);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                         }
                     }
                 }
@@ -14002,11 +14006,15 @@ class AetherRaidTacticsBoard {
 
     __initReservedHpForAllUnitsOnMap() {
         for (let unit of this.enumerateAllUnitsOnMap()) {
+            unit.initReservedDebuffs();
+            unit.initReservedStatusEffects();
             unit.initReservedHp();
         }
     }
     __applyReservedHpForAllUnitsOnMap(leavesOneHp) {
         for (let unit of this.enumerateAllUnitsOnMap()) {
+            unit.applyReservedDebuffs();
+            unit.applyReservedStatusEffects();
             unit.applyReservedHp(leavesOneHp);
         }
     }
@@ -14045,28 +14053,28 @@ class AetherRaidTacticsBoard {
         else if (structure instanceof OfPanicManor) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 3, 99)) {
                 if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
-                    unit.addStatusEffect(StatusEffectType.Panic);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                 }
             }
         }
         else if (structure instanceof DefPanicManor) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 3, 7)) {
                 if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
-                    unit.addStatusEffect(StatusEffectType.Panic);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                 }
             }
         }
         else if (structure instanceof OfTacticsRoom) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 1, 99)) {
                 if (unit.isRangedWeaponType() && this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
-                    unit.addStatusEffect(StatusEffectType.Gravity);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
             }
         }
         else if (structure instanceof DefTacticsRoom) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 3, 7)) {
                 if (unit.isRangedWeaponType() && this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
-                    unit.addStatusEffect(StatusEffectType.Gravity);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
             }
         }
@@ -14096,14 +14104,14 @@ class AetherRaidTacticsBoard {
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Enemy, 2)) {
                 if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
                     this.writeLogLine(unit.getNameWithGroup() + "に重圧の罠の効果適用");
-                    unit.addStatusEffect(StatusEffectType.Gravity);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
             }
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Ally, 2)) {
                 console.log(unit.getNameWithGroup());
                 if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
                     this.writeLogLine(unit.getNameWithGroup() + "に重圧の罠の効果適用");
-                    unit.addStatusEffect(StatusEffectType.Gravity);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
             }
         }
