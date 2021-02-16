@@ -3858,13 +3858,22 @@ class Unit {
         }
     }
 
-    __hasDuelSkill() {
+    __hasDuel3Skill() {
         if (this.passiveAInfo == null) {
             return false;
         }
 
-        return this.passiveAInfo.name.includes("死闘");
+        return this.passiveAInfo.name.includes("死闘") && this.passiveAInfo.name.endsWith("3");
     }
+
+    __hasDuel4Skill() {
+        if (this.passiveAInfo == null) {
+            return false;
+        }
+
+        return this.passiveAInfo.name.includes("死闘") && this.passiveAInfo.name.endsWith("4");
+    }
+
 
     get totalPureGrowthRate() {
         return Number(this.hpGrowthRate)
@@ -3941,8 +3950,20 @@ class Unit {
         if (rating < this.heroInfo.duelScore) {
             rating = this.heroInfo.duelScore;
         }
-        if (rating < 170 && this.__hasDuelSkill()) {
+        if (rating < 170 && this.__hasDuel3Skill()) {
             rating = 170;
+        }
+        else if (this.__hasDuel4Skill()) {
+            if (this.isMythicHero || this.isLegendaryHero) {
+                if (rating < 175) {
+                    rating = 175;
+                }
+            }
+            else {
+                if (rating < 180) {
+                    rating = 180;
+                }
+            }
         }
 
         this.totalSp = totalSp;
