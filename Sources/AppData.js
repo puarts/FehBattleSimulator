@@ -187,13 +187,16 @@ class AppData {
 
         this.audioManager = new AudioManager();
 
+        // 査定
         this.arenaScore = 0;
         this.primeArenaScore = 0;
         this.arenaScoreForEnemy = 0;
         this.primeArenaScoreForEnemy = 0;
 
-        this.resonantBattleInterval = 1; // 双位
+        this.aetherRaidDefenseLiftLoss = 0; // 飛空城防衛失敗レート
 
+        // 双界
+        this.resonantBattleInterval = 1; // 双位
         this.resonantBattleItems = [];
 
         // シーズン設定
@@ -291,6 +294,7 @@ class AppData {
 
         this.selectMode = SelectMode.Normal;
 
+        // 耐久、殲滅力テスト
         this.durabilityTestAllyUnitId = "";
         this.durabilityTestEnemyUnitId = "";
         this.durabilityTestLog = "結果がここに表示されます";
@@ -305,11 +309,13 @@ class AppData {
         this.durabilityTestEquipAllDistCounter = false;
         this.durabilityTestAppliesSkillsForBeginningOfTurn = false;
 
+        // 飛空城防衛、攻撃プリセット
         this.aetherRaidDefensePreset = 0;
         this.aetherRaidDefensePresetDescription = "";
         this.resetCurrentAetherRaidDefensePreset();
         this.aetherRaidOffensePresetIndex = 0;
 
+        // その他
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
         this.currentTurn = 0;
@@ -880,9 +886,15 @@ class AppData {
             unit.resWithSkills += 2;
         }
 
-        if (this.gameMode == GameMode.Arena) {
-            this.updateArenaScore(unit);
+        switch (this.gameMode) {
+            case GameMode.Arena:
+                this.updateArenaScore(unit);
+                break;
+            case GameMode.AetherRaid:
+                this.updateAetherRaidDefenseLiftLoss(unit);
+                break;
         }
+
         this.__showStatusToAttackerInfo();
     }
 
@@ -1147,6 +1159,48 @@ class AppData {
 
     updateArenaScoreOfUnit(unit) {
         unit.updateArenaScore(this.mjolnirsStrikeMajorSeason, this.mjolnirsStrikeMinorSeason);
+    }
+
+    *enumerateCurrentSeasonDefenseMythicUnits(groupId) {
+        for (let unit of this.enumerateUnitsInSpecifiedGroup(groupId)) {
+            if (unit.isDefenseMythicHero && this.examinesIsCurrentSeason(unit.providableBlessingSeason)) {
+                yield unit;
+            }
+        }
+    }
+
+    __calcAetherRaidDefenseLiftLoss() {
+        let liftLoss = -100;
+        let defenseProviders = Array.from(this.enumerateCurrentSeasonDefenseMythicUnits(UnitGroupType.Enemy));
+        if (!defenseProviders.some(x => true)) {
+            return liftLoss;
+        }
+
+        let bonusMythicUnitAvailable = defenseProviders.some(x => x.isBonusChar);
+        if (bonusMythicUnitAvailable) {
+            liftLoss += 20;
+        }
+
+        let totalMerge = defenseProviders.reduce(
+            (accumulator, unit) => accumulator + Number(unit.merge),
+            0
+        );
+        liftLoss += totalMerge;
+
+        let provider = defenseProviders[0];
+        for (let unit of this.enemyUnits.filter(x => !defenseProviders.some(y => y == x))) {
+            if (!this.isBlessingEffectEnabled(unit, provider)) {
+                continue;
+            }
+
+            liftLoss += 10;
+        }
+
+        return liftLoss;
+    }
+
+    updateAetherRaidDefenseLiftLoss() {
+        this.aetherRaidDefenseLiftLoss = this.__calcAetherRaidDefenseLiftLoss();
     }
 
     updateArenaScoreOfParties() {

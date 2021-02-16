@@ -2075,6 +2075,12 @@ class Unit {
         return isMythicSeasonType(this.providableBlessingSeason);
     }
 
+    /// 防衛神階かどうかを取得します。
+    get isDefenseMythicHero() {
+        return this.providableBlessingSeason == SeasonType.Anima
+            || this.providableBlessingSeason == SeasonType.Dark;
+    }
+
     get debuffTotal() {
         return this.atkDebuffTotal + this.spdDebuffTotal + this.defDebuffTotal + this.resDebuffTotal;
     }

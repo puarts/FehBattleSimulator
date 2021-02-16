@@ -2333,11 +2333,11 @@ class AetherRaidTacticsBoard {
             }
         }
         else {
-            if (index < AetherRaidOffensePresetOptions_SkySeason.length) {
-                preset = AetherRaidOffensePresetOptions_SkySeason[index];
+            if (index < AetherRaidOffensePresetOptions_AstraSeason.length) {
+                preset = AetherRaidOffensePresetOptions_AstraSeason[index];
             }
             else {
-                preset = AetherRaidOffensePresetOptions_SkySeason[AetherRaidOffensePresetOptions_LightSeason.length - 1];
+                preset = AetherRaidOffensePresetOptions_AstraSeason[AetherRaidOffensePresetOptions_AstraSeason.length - 1];
             }
         }
 

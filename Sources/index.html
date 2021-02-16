@@ -749,9 +749,10 @@
                     </div> -->
                     <table border="0" style="border-width: 0px;border-color: #dddddd;margin: 5px;font-size:14px">
                         <tr>
-                            <td><span style="padding-right: 10px;">攻撃編成</span><span
-                                    v-if="g_appData.gameMode == GameMode.Arena"
-                                    style="font-size:12px"><br />査定:{{arenaScore}}({{primeArenaScore}})</span></td>
+                            <td><span style="padding-right: 10px;">攻撃編成</span>
+                                <span v-if="g_appData.gameMode == GameMode.Arena"
+                                    style="font-size:12px"><br />査定:{{arenaScore}}({{primeArenaScore}})</span>
+                            </td>
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
                                     <span v-for="unit in allyUnits" v-bind:class="unit.id" style="position:relative">
@@ -775,6 +776,8 @@
                                     v-if="g_appData.gameMode == GameMode.Arena"
                                     style="font-size:12px"><br />査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
                                 </span>
+                                <span v-else-if="g_appData.gameMode == GameMode.AetherRaid"
+                                    style="font-size:12px"><br />失敗レート:{{aetherRaidDefenseLiftLoss}}</span>
                             </td>
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected"
