@@ -2368,6 +2368,9 @@ class Unit {
     }
 
     reserveToAddStatusEffect(statusEffect) {
+        if (this.reservedStatusEffects.some(x => x == statusEffect)) {
+            return;
+        }
         this.reservedStatusEffects.push(statusEffect);
     }
 
@@ -2641,6 +2644,14 @@ class Unit {
         this.applyDefBuff(amount);
         this.applyResBuff(amount);
     }
+
+    reserveToApplyAllDebuff(amount) {
+        this.reserveToApplyAtkDebuff(amount);
+        this.reserveToApplySpdDebuff(amount);
+        this.reserveToApplyDefDebuff(amount);
+        this.reserveToApplyResDebuff(amount);
+    }
+
     applyAllDebuff(amount) {
         this.applyAtkDebuff(amount);
         this.applySpdDebuff(amount);
@@ -2726,6 +2737,38 @@ class Unit {
     applyResBuff(buffAmount) {
         if (this.resBuff < buffAmount) {
             this.resBuff = buffAmount;
+            return true;
+        }
+        return false;
+    }
+
+    reserveToApplyAtkDebuff(amount) {
+        if (this.reservedAtkDebuff > amount) {
+            this.reservedAtkDebuff = amount;
+            return true;
+        }
+        return false;
+    }
+
+    reserveToApplySpdDebuff(amount) {
+        if (this.reservedSpdDebuff > amount) {
+            this.reservedSpdDebuff = amount;
+            return true;
+        }
+        return false;
+    }
+
+    reserveToApplyDefDebuff(amount) {
+        if (this.reservedDefDebuff > amount) {
+            this.reservedDefDebuff = amount;
+            return true;
+        }
+        return false;
+    }
+
+    reserveToApplyResDebuff(amount) {
+        if (this.reservedResDebuff > amount) {
+            this.reservedResDebuff = amount;
             return true;
         }
         return false;
