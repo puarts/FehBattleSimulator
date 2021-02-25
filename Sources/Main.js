@@ -3604,6 +3604,11 @@ class AetherRaidTacticsBoard {
             return true;
         }
         switch (unit.weapon) {
+            case Weapon.Failnaught:
+                if (unit.snapshot.restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
             case Weapon.TomeOfStorms:
                 if (enemyUnit.snapshot.restHpPercentage >= 75) {
                     return true;
@@ -3661,6 +3666,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.Failnaught:
+                if (unit.snapshot.restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
             case Weapon.TomeOfStorms:
                 if (enemyUnit.snapshot.restHpPercentage >= 75) {
                     return true;
@@ -5625,6 +5635,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Failnaught:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
                 case Weapon.UnboundBlade:
                 case Weapon.UnboundBladePlus:
                     if (this.__isSolo(unit)) {

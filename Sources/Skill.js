@@ -954,6 +954,9 @@ const Weapon = {
     SparkingTome: 1641, // 慕炎の書
     UnboundBlade: 1640, // 孤絶の剣
     UnboundBladePlus: 1639, // 孤絶の剣+
+
+    // 2021年2月 伝承クロード
+    Failnaught: 1646, // フェイルノート
 };
 
 const Support = {
