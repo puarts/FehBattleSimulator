@@ -4249,6 +4249,105 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SparkingTome:
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        enemyUnit.resSpur -= 6;
+                        enemyUnit.spdSpur -= 6;
+
+                        let spdBuff = enemyUnit.getSpdBuffInCombat(targetUnit);
+                        if (spdBuff > 0) {
+                            enemyUnit.spdSpur -= spdBuff * 2;
+                        }
+                        let resBuff = enemyUnit.getResBuffInCombat(targetUnit);
+                        if (resBuff > 0) {
+                            enemyUnit.resSpur -= resBuff * 2;
+                        }
+                    }
+                    break;
+                case PassiveB.BindingNecklace:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        targetUnit.addAllSpur(2);
+                        enemyUnit.addAllSpur(-2);
+
+                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
+                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
+                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+
+                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
+                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
+                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                    }
+                    break;
+                case Weapon.FrostfireBreath:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        targetUnit.atkSpur += Math.floor((
+                            targetUnit.getDefBuffInCombat(enemyUnit) +
+                            targetUnit.getResBuffInCombat(enemyUnit)
+                        ) * 1.5);
+                    }
+                    break;
+                case PassiveA.AtkDefUnity:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
+                        if (atkDebuff < 0) {
+                            targetUnit.atkSpur += -atkDebuff * 2;
+                        }
+                        let defDebuff = targetUnit.getDefDebuffInCombat();
+                        if (defDebuff < 0) {
+                            targetUnit.defSpur += -defDebuff * 2;
+                        }
+                    }
+                    break;
+                case PassiveA.AtkResUnity:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
+                        if (atkDebuff < 0) {
+                            targetUnit.atkSpur += -atkDebuff * 2;
+                        }
+                        let resDebuff = targetUnit.getResDebuffInCombat();
+                        if (resDebuff < 0) {
+                            targetUnit.resSpur += -resDebuff * 2;
+                        }
+                    }
+                    break;
+                case Weapon.SneeringAxe:
+                    {
+                        let atkBuff = enemyUnit.getAtkBuffInCombat(targetUnit);
+                        if (atkBuff > 0) {
+                            enemyUnit.atkSpur -= atkBuff * 2;
+                        }
+                        let spdBuff = enemyUnit.getSpdBuffInCombat(targetUnit);
+                        if (spdBuff > 0) {
+                            enemyUnit.spdSpur -= spdBuff * 2;
+                        }
+                        let defBuff = enemyUnit.getDefBuffInCombat(targetUnit);
+                        if (defBuff > 0) {
+                            enemyUnit.defSpur -= defBuff * 2;
+                        }
+                        let resBuff = enemyUnit.getResBuffInCombat(targetUnit);
+                        if (resBuff > 0) {
+                            enemyUnit.resSpur -= resBuff * 2;
+                        }
+
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.BouryakuNoSenkyu:
                     if (targetUnit.buffTotal + enemyUnit.debuffTotal >= 10) {
                         enemyUnit.addAllSpur(-5);
@@ -5343,16 +5442,6 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
-                case Weapon.FrostfireBreath:
-                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                        targetUnit.atkSpur += 6;
-                        targetUnit.spdSpur += 6;
-                        targetUnit.atkSpur += Math.floor((
-                            targetUnit.getDefBuffInCombat(enemyUnit) +
-                            targetUnit.getResBuffInCombat(enemyUnit)
-                        ) * 1.5);
-                    }
-                    break;
                 case Weapon.JoyfulVows:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                         targetUnit.atkSpur += 6;
@@ -5536,6 +5625,24 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.UnboundBlade:
+                case Weapon.UnboundBladePlus:
+                    if (this.__isSolo(unit)) {
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                        targetUnit.battleContext.invalidatesDefBuff = true;
+                    }
+                    break;
+                case Weapon.SilesseFrost:
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+
+                        let partners = this.__getPartnersInSpecifiedRange(targetUnit, 2);
+                        if (partners.length > 0) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.Audhulma:
                     if (!targetUnit.isWeaponSpecialRefined) break;
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
@@ -5755,22 +5862,6 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
                     }
                     break;
-                case PassiveB.BindingNecklace:
-                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
-                        targetUnit.addAllSpur(2);
-                        enemyUnit.addAllSpur(-2);
-
-                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
-
-                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
-                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
-                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
-                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
-                    }
-                    break;
                 case Weapon.Aureola:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
@@ -5968,36 +6059,6 @@ class AetherRaidTacticsBoard {
                         enemyUnit.defSpur -= 6;
                     }
                     break;
-                case PassiveA.AtkDefUnity:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.defSpur += 5;
-                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
-                        if (atkDebuff < 0) {
-                            targetUnit.atkSpur += -atkDebuff * 2;
-                        }
-                        let defDebuff = targetUnit.getDefDebuffInCombat();
-                        if (defDebuff < 0) {
-                            targetUnit.defSpur += -defDebuff * 2;
-                        }
-                    }
-                    break;
-                case PassiveA.AtkResUnity:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.resSpur += 5;
-                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
-                        if (atkDebuff < 0) {
-                            targetUnit.atkSpur += -atkDebuff * 2;
-                        }
-                        let resDebuff = targetUnit.getResDebuffInCombat();
-                        if (resDebuff < 0) {
-                            targetUnit.resSpur += -resDebuff * 2;
-                        }
-                    }
-                    break;
                 case Weapon.MoonGradivus:
                     targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     break;
@@ -6059,34 +6120,6 @@ class AetherRaidTacticsBoard {
                             targetUnit.atkSpur += 5;
                             targetUnit.defSpur += 5;
                             targetUnit.battleContext.invalidateAllOwnDebuffs();
-                        }
-                    }
-                    break;
-                case Weapon.SneeringAxe:
-                    {
-                        let atkBuff = enemyUnit.getAtkBuffInCombat(targetUnit);
-                        if (atkBuff > 0) {
-                            enemyUnit.atkSpur -= atkBuff * 2;
-                        }
-                        let spdBuff = enemyUnit.getSpdBuffInCombat(targetUnit);
-                        if (spdBuff > 0) {
-                            enemyUnit.spdSpur -= spdBuff * 2;
-                        }
-                        let defBuff = enemyUnit.getDefBuffInCombat(targetUnit);
-                        if (defBuff > 0) {
-                            enemyUnit.defSpur -= defBuff * 2;
-                        }
-                        let resBuff = enemyUnit.getResBuffInCombat(targetUnit);
-                        if (resBuff > 0) {
-                            enemyUnit.resSpur -= resBuff * 2;
-                        }
-
-                        if (targetUnit.isWeaponSpecialRefined) {
-                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
-                                targetUnit.atkSpur += 5;
-                                targetUnit.spdSpur += 5;
-                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
-                            }
                         }
                     }
                     break;
@@ -8528,6 +8561,13 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.UnboundBlade:
+                            case Weapon.UnboundBladePlus:
+                                if (this.__isSolo(unit)) {
+                                    targetUnit.atkSpur -= 5;
+                                    targetUnit.defSpur -= 5;
+                                }
+                                break;
                             case Weapon.DanielMadeBow:
                                 targetUnit.atkSpur -= 5;
                                 break;

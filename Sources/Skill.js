@@ -948,6 +948,12 @@ const Weapon = {
     // 2021年2月 武器錬成
     SpySongBow: 1637, // 邪な曲弓
     Audhulma: 39, // アウドムラ
+
+    // 命が刻むもの
+    SilesseFrost: 1644, // シレジアの水晶
+    SparkingTome: 1641, // 慕炎の書
+    UnboundBlade: 1640, // 孤絶の剣
+    UnboundBladePlus: 1639, // 孤絶の剣+
 };
 
 const Support = {

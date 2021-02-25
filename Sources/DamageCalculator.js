@@ -1596,18 +1596,45 @@ class DamageCalculator {
             let damageReductionRatio = 1.0;
             let damageReductionValue = 0;
 
-            // 計算機の外側で設定されたダメージ軽減率
+            // 奥義以外のダメージ軽減
             {
-                damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(defUnit.battleContext.damageReductionRatio, atkUnit);
-            }
 
-            for (let skillId of defUnit.enumerateSkills()) {
-                let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
-                if (ratio > 0) {
-                    damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(ratio, atkUnit);
+                // 計算機の外側で設定されたダメージ軽減率
+                {
+                    damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(defUnit.battleContext.damageReductionRatio, atkUnit);
+                }
+
+                for (let skillId of defUnit.enumerateSkills()) {
+                    let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
+                    if (ratio > 0) {
+                        damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(ratio, atkUnit);
+                    }
+                }
+
+                {
+                    if (context.isFirstAttack(atkUnit)) {
+                        // 初回攻撃
+                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttack;
+                    } else if (context.isConsecutiveAttack(atkUnit)) {
+                        // 連続した攻撃
+                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfConsecutiveAttacks;
+                    }
+
+                    if (context.isFollowupAttack) {
+                        // 追撃
+                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
+                    }
                 }
             }
 
+            let invalidatesDamageReductionExceptSpecial =
+                activatesAttackerSpecial && invalidatesDamageReductionExceptSpecialOnSpecialActivation;
+            if (invalidatesDamageReductionExceptSpecial) {
+                this.writeDebugLog("奥義以外のダメージ軽減を無効化");
+                damageReductionRatio = 1.0;
+            }
+
+            // 奥義によるダメージ軽減
             let isDefenderSpecialActivated = false;
             if (activatesDefenderSpecial) {
                 let attackRange = atkUnit.getActualAttackRange(defUnit);
@@ -1657,27 +1684,6 @@ class DamageCalculator {
                     }
                     this.__restoreMaxSpecialCount(defUnit);
                 }
-            }
-
-
-            var invalidatesDamageReductionExceptSpecial =
-                activatesAttackerSpecial && invalidatesDamageReductionExceptSpecialOnSpecialActivation;
-            if (invalidatesDamageReductionExceptSpecial == false) {
-                if (context.isFirstAttack(atkUnit)) {
-                    // 初回攻撃
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttack;
-                } else if (context.isConsecutiveAttack(atkUnit)) {
-                    // 連続した攻撃
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfConsecutiveAttacks;
-                }
-
-                if (context.isFollowupAttack) {
-                    // 追撃
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
-                }
-            }
-            else {
-                this.writeDebugLog("奥義以外のダメージ軽減を無効化");
             }
 
             damageReductionRatio = 1.0 - damageReductionRatio;
