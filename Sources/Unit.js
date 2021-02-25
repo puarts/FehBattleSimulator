@@ -212,6 +212,7 @@ const StatusEffectType = {
     ResonantShield: 14, // 双界効果・盾
     Vantage: 15, // 待ち伏せ
     DeepWounds: 16, // 回復不可
+    FallenStar: 17, // 落星
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -1393,6 +1394,7 @@ class Unit {
         this.isOneTimeActionActivatedForSupport = false;
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
+        this.isOneTimeActionActivatedForFallenStar = false;
 
         // 比翼スキルを使用したか
         this.duoOrHarmonizedSkillActivationCount = 0;
@@ -1872,6 +1874,7 @@ class Unit {
             + ValueDelimiter + this.movementOrder
             + ValueDelimiter + this.moveCountForCanto
             + ValueDelimiter + boolToInt(this.isCantoActivatedInCurrentTurn)
+            + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
             ;
     }
 
@@ -1956,6 +1959,7 @@ class Unit {
         if (Number.isInteger(Number(splited[i]))) { this.movementOrder = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.moveCountForCanto = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
     }
 
 
@@ -2606,6 +2610,7 @@ class Unit {
         this.isOneTimeActionActivatedForSupport = false;
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
+        this.isOneTimeActionActivatedForFallenStar = false;
         this.isCantoActivatedInCurrentTurn = false;
     }
 

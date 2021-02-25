@@ -4639,9 +4639,10 @@ class AetherRaidTacticsBoard {
 
 
     __applySkillEffectAfterCombatForUnit(attackUnit, attackTargetUnit) {
-        if (attackTargetUnit.hasStatusEffect(StatusEffectType.ResonantShield)) {
-            attackTargetUnit.isOneTimeActionActivatedForShieldEffect = true;
-        }
+        // 最初の戦闘のみで発動する状態効果は、状態が付与されていない戦闘も最初の戦闘にカウントするので
+        // 強制的にtrueにする
+        attackTargetUnit.isOneTimeActionActivatedForShieldEffect = true;
+        attackTargetUnit.isOneTimeActionActivatedForFallenStar = true;
 
         for (let skillId of attackTargetUnit.enumerateSkills()) {
             switch (skillId) {
@@ -4914,6 +4915,14 @@ class AetherRaidTacticsBoard {
                 case Weapon.Buryunhirude:
                     if (!attackUnit.isWeaponRefined) {
                         attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                    break;
+                case PassiveB.FallenStar:
+                    if (attackUnit.battleContext.initiatesCombat) {
+                        attackUnit.addStatusEffect(StatusEffectType.FallenStar);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
                     }
                     break;
                 case PassiveC.Jagan:
@@ -5416,6 +5425,21 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AtkSpdCatch4:
+                    if (enemyUnit.snapshot.restHpPercentage == 100
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
+
+                        if (enemyUnit.snapshot.restHpPercentage == 100
+                            && enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.atkSpur += 2;
+                            targetUnit.spdSpur += 2;
+                        }
+                    }
+                    break;
                 case Weapon.FukenFalcion:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.snapshot.restHpPercentage < 100
@@ -5618,6 +5642,12 @@ class AetherRaidTacticsBoard {
     }
 
     __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (!targetUnit.isOneTimeActionActivatedForFallenStar
+            && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
+        ) {
+            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.8;
+        }
+
         if (targetUnit.hasStatusEffect(StatusEffectType.ResonantShield)) {
             targetUnit.defSpur += 4;
             targetUnit.resSpur += 4;
@@ -5635,6 +5665,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FallenStar:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.8;
+                    }
+                    break;
                 case Weapon.Failnaught:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);

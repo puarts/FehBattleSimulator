@@ -1351,6 +1351,9 @@ const PassiveA = {
     // 連帯
     AtkDefUnity: 1450, // 攻撃守備の連帯
     AtkResUnity: 1575, // 攻撃魔防の連帯
+
+    // 機先
+    AtkSpdCatch4: 1647, // 攻撃速さの機先4
 };
 
 const PassiveB = {
@@ -1580,6 +1583,8 @@ const PassiveB = {
     Atrocity: 1514, // 無惨
 
     BindingNecklace: 1540, // 束縛の首飾り
+
+    FallenStar: 1651, // 落星
 };
 
 const PassiveC = {
