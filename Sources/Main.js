@@ -4665,6 +4665,14 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FallenStar:
+                    if (attackUnit.battleContext.initiatesCombat) {
+                        attackUnit.addStatusEffect(StatusEffectType.FallenStar);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                    break;
                 case Weapon.Aureola:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
                         unit.reserveHeal(7);
@@ -4917,14 +4925,6 @@ class AetherRaidTacticsBoard {
                 case Weapon.Buryunhirude:
                     if (!attackUnit.isWeaponRefined) {
                         attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
-                    }
-                    break;
-                case PassiveB.FallenStar:
-                    if (attackUnit.battleContext.initiatesCombat) {
-                        attackUnit.addStatusEffect(StatusEffectType.FallenStar);
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
-                            unit.addStatusEffect(StatusEffectType.Gravity);
-                        }
                     }
                     break;
                 case PassiveC.Jagan:
