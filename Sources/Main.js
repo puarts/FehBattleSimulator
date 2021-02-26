@@ -10856,7 +10856,7 @@ class AetherRaidTacticsBoard {
                 }
 
                 // 敵への距離を更新
-                this.__updateDistanceFromClosestEnemy(unit, enemyUnits);
+                this.__updateDistanceFromClosestEnemy(unit);
             }
             this.__updateMovementOrders(targetUnits);
         }
@@ -13085,6 +13085,7 @@ class AetherRaidTacticsBoard {
                     self.endUnitAction(unit);
                     unit.deactivateCanto();
                 }
+                self.__updateDistanceFromClosestEnemy(unit);
             },
             serial,
             commandType,
