@@ -2870,7 +2870,9 @@ class AetherRaidTacticsBoard {
         if (defUnit != result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
-            saverUnit.restoreOriginalTile();
+            if (!saverUnit.isDead) {
+                saverUnit.restoreOriginalTile();
+            }
             defUnit.restoreOriginalTile();
             this.updateAllUnitSpur();
         }
@@ -3249,10 +3251,10 @@ class AetherRaidTacticsBoard {
 
         // 戦闘中バフが決まった後に評価するスキル効果
         {
-            this.__applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit);
-            this.__applySpurForUnitAfterCombatStatusFixed(defUnit, atkUnit);
+            this.__applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
+            this.__applySpurForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
 
-            this.__applySkillEffectAfterCombatStatusFixed(atkUnit, defUnit);
+            this.__applySkillEffectAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
             this.__applySkillEffectForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
             this.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
         }
@@ -4227,7 +4229,7 @@ class AetherRaidTacticsBoard {
             + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
     }
 
-    __applySkillEffectAfterCombatStatusFixed(atkUnit, defUnit) {
+    __applySkillEffectAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.BoldFighter3:
@@ -4256,7 +4258,7 @@ class AetherRaidTacticsBoard {
         if (defUnit.defDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.defDebuffTotal; }
         if (defUnit.resDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.resDebuffTotal; }
     }
-    __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit) {
+    __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.SparkingTome:
