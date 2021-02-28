@@ -2923,6 +2923,13 @@ class AetherRaidTacticsBoard {
             unit.initReservedHp();
         }
 
+        // 最初の戦闘のみで発動する状態効果は、状態が付与されていない戦闘も最初の戦闘にカウントするので
+        // 強制的にtrueにする
+        atkUnit.isOneTimeActionActivatedForShieldEffect = true;
+        atkUnit.isOneTimeActionActivatedForFallenStar = true;
+        defUnit.isOneTimeActionActivatedForShieldEffect = true;
+        defUnit.isOneTimeActionActivatedForFallenStar = true;
+
         // 戦闘後発動のスキル効果
         if (atkUnit.isAlive) {
             if (result.atkUnit_actualTotalAttackCount > 0) {
@@ -4641,11 +4648,6 @@ class AetherRaidTacticsBoard {
 
 
     __applySkillEffectAfterCombatForUnit(attackUnit, attackTargetUnit) {
-        // 最初の戦闘のみで発動する状態効果は、状態が付与されていない戦闘も最初の戦闘にカウントするので
-        // 強制的にtrueにする
-        attackTargetUnit.isOneTimeActionActivatedForShieldEffect = true;
-        attackTargetUnit.isOneTimeActionActivatedForFallenStar = true;
-
         for (let skillId of attackTargetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveS.GoeiNoGuzo:
