@@ -2984,7 +2984,11 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.hp == 0) {
             this.audioManager.playSoundEffect(SoundEffectId.Dead);
+
+            // マップからの除外と追跡対象の更新
+            let updateRequiredTile = atkUnit.placedTile;
             moveUnitToTrashBox(atkUnit);
+            this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
         }
         else if (defUnit.hp == 0) {
             this.audioManager.playSoundEffect(SoundEffectId.Dead);
@@ -3008,7 +3012,11 @@ class AetherRaidTacticsBoard {
                     g_appData.resonantBattleItems.push(ItemType.OugiNoYaiba);
                     break;
             }
+
+            // マップからの除外と追跡対象の更新
+            let updateRequiredTile = defUnit.placedTile;
             moveUnitToTrashBox(defUnit);
+            this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
         }
     }
 
@@ -12448,7 +12456,15 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    __updateChaseTargetTiles(targetUnits) {
+    /// 指定したタイルを追跡するユニットのみ、追跡対象タイルを更新します。
+    __updateChaseTargetTilesForSpecifiedTile(targetTile) {
+        let allUnitsOnMap = Array.from(this.enumerateAllUnitsOnMap());
+        this.__updateChaseTargetTiles(allUnitsOnMap, currentChaseTargetTile => {
+            return targetTile == currentChaseTargetTile;
+        });
+    }
+
+    __updateChaseTargetTiles(targetUnits, evaluatesTileFunc = null) {
         let enemyUnits = [];
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0])) {
             enemyUnits.push(unit);
@@ -12462,6 +12478,11 @@ class AetherRaidTacticsBoard {
         let self = this;
         using(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
             for (let evalUnit of targetUnits) {
+                if (evaluatesTileFunc != null
+                    && !evaluatesTileFunc(evalUnit.chaseTargetTile)
+                ) {
+                    continue;
+                }
                 self.__updateChaseTargetTile(evalUnit, enemyUnits, allyUnits);
             }
         });
@@ -12598,6 +12619,7 @@ class AetherRaidTacticsBoard {
             }
 
             let chaseTargetTile = unit.chaseTargetTile;
+            this.writeDebugLogLine(`追跡対象マス=(${chaseTargetTile.posX},${chaseTargetTile.posY})`);
 
             let movableTiles = this.__getMovableTiles(unit);
             if (movableTiles.length == 0) {
