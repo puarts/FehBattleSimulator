@@ -1986,6 +1986,10 @@ class AetherRaidTacticsBoard {
         moveUnit(this.vm.units[10], g_appData.map.getTile(4, 4), false);
     }
 
+    __writeUnitStatusToDebugLog(unit) {
+        this.writeDebugLogLine(`${unit.getNameWithGroup()}: hp=${unit.hp}, atk=${unit.atkWithSkills}, spd=${unit.spdWithSkills}, def=${unit.defWithSkills}, res=${unit.resWithSkills}`);
+    }
+
     createDurabilityRanking() {
         let targetUnit = g_appData.getDurabilityTestAlly();
         if (targetUnit == null) {
@@ -1997,6 +2001,7 @@ class AetherRaidTacticsBoard {
             this.writeErrorLine("耐久テストに使用する敵ユニットが選択されていません");
             return;
         }
+        this.writeLogLine(`テスト開始--------------------`);
         this.writeLogLine(`テスト対象: ${targetUnit.getNameWithGroup()}、敵: ${enemyUnit.getNameWithGroup()}`);
 
         // 元の状態を保存
@@ -2009,13 +2014,18 @@ class AetherRaidTacticsBoard {
         this.vm.durabilityTestIsLogEnabled = false;
         let reducedTargetSpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
 
-        // let dummyHeroIndices = [1, 2, 3, 4, 5, targetUnit.heroIndex];
+
+        const startTime = Date.now();
+
+        let dummyHeroIndices = [targetUnit.heroIndex];
         startProgressiveProcess(g_appData.heroInfos.length,
             // startProgressiveProcess(dummyHeroIndices.length,
             function (iter) {
                 let heroInfo = g_appData.heroInfos.get(iter);
                 // let heroInfo = g_appData.heroInfos.get(dummyHeroIndices[iter]);
                 self.__durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit, false, reducedTargetSpecialCount);
+                self.__writeUnitStatusToDebugLog(targetUnit);
+
                 let result = self.__durabilityTest_simulateImpl(targetUnit, enemyUnit);
                 results.push({ heroInfo: heroInfo, result: result });
             },
@@ -2043,10 +2053,16 @@ class AetherRaidTacticsBoard {
                     console.log(`${result.heroInfo.name}: ${winRate}`);
                     self.writeDebugLogLine(`${result.heroInfo.name}: ${winRate}`);
                 }
+                const endTime = Date.now();
+                var diffSec = (endTime - startTime) * 0.001;
+                self.writeLogLine(`テスト完了(${diffSec} sec)--------------------`);
 
+                let originalDisableAllLogs = self.disableAllLogs;
+                self.disableAllLogs = true;
                 importSettingsFromString(serializedTurn);
                 $("#progress").progressbar({ disabled: true });
                 updateAllUi();
+                self.disableAllLogs = originalDisableAllLogs;
             });
 
     }
@@ -3098,17 +3114,19 @@ class AetherRaidTacticsBoard {
         defUnit.battleContext.initiatesCombat = false;
 
         let origTile = atkUnit.placedTile;
+        let isUpdateSpurRequired = true; // 戦闘中強化をリセットするために必ず必要
         if (tileToAttack != null) {
             // 攻撃ユニットの位置を一時的に変更
             // this.writeDebugLogLine(atkUnit.getNameWithGroup() + "の位置を(" + tileToAttack.posX + ", " + tileToAttack.posY + ")に変更");
             tileToAttack.setUnit(atkUnit);
+
+            isUpdateSpurRequired = true;
         }
 
-        // 戦闘中強化、弱化の再計算。
-        // おそらく現状再計算が必要なのは攻撃ユニットと被攻撃ユニットだけだが、
-        // 周囲ユニットの戦闘中強化の影響を受けるスキルが出てきてもいいように全員分再計算しておく。
-        // 処理速度面でもし問題になるようなら必要最低限の更新に抑えるよう対応を考える。
-        this.updateAllUnitSpur(calcPotentialDamage);
+        if (isUpdateSpurRequired) {
+            this.__updateUnitSpur(atkUnit, calcPotentialDamage);
+            this.__updateUnitSpur(defUnit, calcPotentialDamage);
+        }
 
         atkUnit.saveCurrentHpAndSpecialCount();
         defUnit.saveCurrentHpAndSpecialCount();
@@ -3160,7 +3178,9 @@ class AetherRaidTacticsBoard {
         }
 
         // 計算のために変更した紋章値をリセット
-        this.updateAllUnitSpur();
+        if (isUpdateSpurRequired) {
+            this.updateAllUnitSpur();
+        }
         return result;
     }
 
@@ -5689,7 +5709,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.UnboundBlade:
                 case Weapon.UnboundBladePlus:
-                    if (this.__isSolo(unit)) {
+                    if (this.__isSolo(targetUnit)) {
                         targetUnit.battleContext.invalidatesAtkBuff = true;
                         targetUnit.battleContext.invalidatesDefBuff = true;
                     }
@@ -8331,8 +8351,7 @@ class AetherRaidTacticsBoard {
     }
 
     * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
-        for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit)) {
-            if (!unit.isOnMap) { continue; }
+        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, withTargetUnit)) {
             let dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);
             if (dist <= spaces) {
                 yield unit;
@@ -9562,8 +9581,7 @@ class AetherRaidTacticsBoard {
     }
 
     __isNextToOtherUnits(unit) {
-        for (let otherUnit of this.enumerateUnitsInTheSameGroup(unit, false)) {
-            if (!otherUnit.isOnMap) { continue; }
+        for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
             if (!unit.isNextTo(otherUnit)) { continue; }
             return true;
         }
@@ -9580,13 +9598,13 @@ class AetherRaidTacticsBoard {
     __applySabotageSkill(skillOwnerUnit, debuffFunc) {
         this.__applySabotageSkillImpl(
             skillOwnerUnit,
-            unit => unit.snapshot.getEvalResInPrecombat() <= (skillOwnerUnit.snapshot.getEvalResInPrecombat() - 3),
+            unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat() - 3),
             debuffFunc);
     }
     __applyPolySkill(skillOwnerUnit, debuffFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroup(skillOwnerUnit)) {
             if (this.__isInCloss(skillOwnerUnit, unit)
-                && unit.snapshot.getEvalResInPrecombat() < skillOwnerUnit.snapshot.getEvalResInPrecombat()
+                && this.__getStatusEvalUnit(unit).getEvalResInPrecombat() < this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat()
             ) {
                 debuffFunc(unit);
             }
@@ -9673,6 +9691,17 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __applyDebuffForHighestStatus(unit, amount) {
+        for (let status of this.__getStatusEvalUnit(unit).getHighestStatuses()) {
+            switch (status) {
+                case StatusType.Atk: unit.reserveToApplyAtkDebuff(amount); break;
+                case StatusType.Spd: unit.reserveToApplySpdDebuff(amount); break;
+                case StatusType.Def: unit.reserveToApplyDefDebuff(amount); break;
+                case StatusType.Res: unit.reserveToApplyResDebuff(amount); break;
+            }
+        }
+    }
+
     __applySkillForBeginningOfTurn(skillId, skillOwner) {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
@@ -9691,16 +9720,16 @@ class AetherRaidTacticsBoard {
                 break;
             case Weapon.FellCandelabra:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getAtkInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-6); });
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getSpdInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                     unit => { unit.reserveToApplySpdDebuff(-6); });
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getDefInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-6); });
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getResInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
                     unit => { unit.reserveToApplyResDebuff(-6); });
                 break;
             case Weapon.Petrify: {
@@ -9751,7 +9780,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.Hrist:
-                if (skillOwner.snapshot.hpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                if (this.__getStatusEvalUnit(skillOwner).hpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         unit.reserveTakeDamage(1);
                     }
@@ -9796,24 +9825,24 @@ class AetherRaidTacticsBoard {
                 break;
             case PassiveC.MilaNoHaguruma:
                 this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => unit.snapshot.getDefInPrecombat() < skillOwner.snapshot.getDefInPrecombat(),
+                    unit => this.__getStatusEvalUnit(unit).getDefInPrecombat() < this.__getStatusEvalUnit(skillOwner).getDefInPrecombat(),
                     unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
                 break;
             case Weapon.Gjallarbru:
                 this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => unit.snapshot.hp <= skillOwner.snapshot.hp - 3,
+                    unit => this.__getStatusEvalUnit(unit).hp <= this.__getStatusEvalUnit(skillOwner).hp - 3,
                     unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
                 break;
             case Weapon.SerujuNoKyoufu:
                 if (skillOwner.isWeaponSpecialRefined) {
                     this.__applySkillToEnemiesInCross(skillOwner,
-                        unit => unit.snapshot.hp < skillOwner.snapshot.hp,
+                        unit => this.__getStatusEvalUnit(unit).hp < this.__getStatusEvalUnit(skillOwner).hp,
                         unit => unit.reserveToAddStatusEffect(StatusEffectType.Panic));
                 }
                 break;
             case PassiveC.KyokoNoKisaku3:
                 this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => unit.snapshot.hp < skillOwner.snapshot.hp,
+                    unit => this.__getStatusEvalUnit(unit).hp < this.__getStatusEvalUnit(skillOwner).hp,
                     unit => unit.reserveToAddStatusEffect(StatusEffectType.Panic));
                 break;
             case Weapon.Sekku:
@@ -10045,7 +10074,7 @@ class AetherRaidTacticsBoard {
                     let targetUnits = [];
                     let maxDamage = 0;
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
-                        let damage = unit.snapshot.currentDamage;
+                        let damage = this.__getStatusEvalUnit(unit).currentDamage;
                         if (damage > maxDamage) {
                             maxDamage = damage;
                             targetUnits = [unit];
@@ -10060,7 +10089,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case PassiveC.HajimariNoKodo3:
-                if (skillOwner.snapshot.isSpecialCountMax) {
+                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                     this.writeDebugLogLine(skillOwner.getNameWithGroup() + "は始まりの鼓動3発動");
                     skillOwner.reduceSpecialCount(1);
                 }
@@ -10085,16 +10114,16 @@ class AetherRaidTacticsBoard {
                     x => { x.applyAtkBuff(5); x.applyDefBuff(5); });
                 break;
             case PassiveC.AtkOpening3:
-                this.__applyOpeningSkill(skillOwner, x => x.snapshot.getAtkInPrecombat(), x => x.applyAtkBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getAtkInPrecombat(), x => x.applyAtkBuff(6));
                 break;
             case PassiveC.SpdOpening3:
-                this.__applyOpeningSkill(skillOwner, x => x.snapshot.getSpdInPrecombat(), x => x.applySpdBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getSpdInPrecombat(), x => x.applySpdBuff(6));
                 break;
             case PassiveC.DefOpening3:
-                this.__applyOpeningSkill(skillOwner, x => x.snapshot.getDefInPrecombat(), x => x.applyDefBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getDefInPrecombat(), x => x.applyDefBuff(6));
                 break;
             case PassiveC.ResOpening3:
-                this.__applyOpeningSkill(skillOwner, x => x.snapshot.getResInPrecombat(), x => x.applyResBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getResInPrecombat(), x => x.applyResBuff(6));
                 break;
             case PassiveC.SpdDefGap3:
                 this.__applyOpeningSkill(skillOwner,
@@ -10179,7 +10208,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case PassiveC.DivineFang:
-                for (let otherUnit of this.enumerateUnitsInTheSameGroup(skillOwner, false)) {
+                for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
                     if (!otherUnit.isOnMap) { continue; }
                     if (skillOwner.isNextTo(otherUnit)) {
                         otherUnit.reserveToAddStatusEffect(StatusEffectType.EffectiveAgainstDragons);
@@ -10193,7 +10222,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case PassiveC.WithEveryone:
-                for (let otherUnit of this.enumerateUnitsInTheSameGroup(skillOwner, false)) {
+                for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
                     if (!otherUnit.isOnMap) { continue; }
                     if (!skillOwner.isNextTo(otherUnit)) { continue; }
                     skillOwner.applyDefBuff(5);
@@ -10269,8 +10298,8 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
                     if (!unit.isOnMap) { continue; }
                     if (skillOwner.posX - 1 <= unit.posX && unit.posX <= skillOwner.posX + 1) {
-                        if (unit.snapshot.getEvalResInPrecombat() <= (skillOwner.snapshot.getEvalResInPrecombat() - 3)) {
-                            unit.applyDebuffForHighestStatus(-5, true);
+                        if (this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwner).getEvalResInPrecombat() - 3)) {
+                            this.__applyDebuffForHighestStatus(unit, -5);
                         }
                     }
                 }
@@ -10284,7 +10313,7 @@ class AetherRaidTacticsBoard {
             case Weapon.Missiletainn:
                 if (this.vm.currentTurn == 1) {
                     let reduceCount = 0;
-                    for (let unit of this.enumerateUnitsInTheSameGroup(skillOwner, true)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
                         if (isWeaponTypeTome(unit.weaponType)) {
                             ++reduceCount;
                         }
@@ -10295,10 +10324,10 @@ class AetherRaidTacticsBoard {
             case PassiveC.HokoNoKodo3:
                 if (this.vm.currentTurn == 1) {
                     // なぜか skillOwner の snapshot が for の中でだけ null になる
-                    let skillOwnerHp = skillOwner.snapshot.hp;
-                    for (let unit of this.enumerateUnitsInTheSameGroup(skillOwner)) {
+                    let skillOwnerHp = this.__getStatusEvalUnit(skillOwner).hp;
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
                         if (unit.moveType == MoveType.Infantry
-                            && unit.snapshot.hp < skillOwnerHp
+                            && this.__getStatusEvalUnit(unit).hp < skillOwnerHp
                         ) {
                             this.writeDebugLogLine(skillOwner.getNameWithGroup() + "の歩行の鼓動3により" + unit.getNameWithGroup() + "の奥義発動カウント-1");
                             unit.reduceSpecialCount(1);
@@ -10355,7 +10384,7 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
                         if (!unit.isOnMap) { continue; }
                         if (this.__isNextToOtherUnits(unit)) { continue; }
-                        if (!(unit.snapshot.hp <= (skillOwner.snapshot.hp - 3))) { continue; }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) { continue; }
                         unit.reserveToApplyAtkDebuff(-4);
                         unit.reserveToApplySpdDebuff(-4);
                         unit.reserveToAddStatusEffect(StatusEffectType.Guard);
@@ -10365,7 +10394,7 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
                         if (!unit.isOnMap) { continue; }
                         if (!this.__isNextToOtherUnits(unit)) { continue; }
-                        if (!(unit.snapshot.hp <= (skillOwner.snapshot.hp - 3))) { continue; }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) { continue; }
                         unit.reserveToApplyDefDebuff(-4);
                         unit.reserveToApplyResDebuff(-4);
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
@@ -10375,7 +10404,7 @@ class AetherRaidTacticsBoard {
             case Weapon.AversasNight:
                 this.__applySabotageSkillImpl(
                     skillOwner,
-                    unit => unit.snapshot.hp <= (skillOwner.snapshot.hp - 3),
+                    unit => this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3),
                     unit => { unit.reserveToApplyAllDebuff(-3); unit.reserveToAddStatusEffect(StatusEffectType.Panic); });
                 break;
             case Weapon.KokyousyaNoYari:
@@ -10389,9 +10418,9 @@ class AetherRaidTacticsBoard {
                     for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
                         if (!unit.isOnMap) { continue; }
                         if (!this.__isNextToOtherUnits(unit)) { continue; }
-                        if (unit.snapshot.hp <= (skillOwner.snapshot.hp - 1)) {
-                            this.writeDebugLogLine(skillOwner.getNameWithGroup() + "はHP" + skillOwner.snapshot.hp + ", "
-                                + unit.getNameWithGroup() + "はHP" + unit.snapshot.hp + "で恐慌の惑乱適用");
+                        if (this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 1)) {
+                            this.writeDebugLogLine(skillOwner.getNameWithGroup() + "はHP" + this.__getStatusEvalUnit(skillOwner).hp + ", "
+                                + unit.getNameWithGroup() + "はHP" + this.__getStatusEvalUnit(unit).hp + "で恐慌の惑乱適用");
                             unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                         }
                     }
@@ -10605,105 +10634,105 @@ class AetherRaidTacticsBoard {
             case Weapon.FuginNoMaran:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
                     this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                        unit => { return unit.snapshot.getResInPrecombat() },
+                        unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
                         unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyDefDebuff(-5); });
                 }
                 break;
             case Weapon.RosenshiNoKofu:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
                     this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                        unit => { return unit.snapshot.getSpdInPrecombat() },
+                        unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                         unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyDefDebuff(-5); });
                 }
                 break;
             case Weapon.MuninNoMaran:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
                     this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                        unit => { return unit.snapshot.getSpdInPrecombat() },
+                        unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                         unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyResDebuff(-5); });
                 }
                 break;
             case PassiveB.ChillAtkDef2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getAtkInPrecombat() + unit.snapshot.getDefInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() + this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyDefDebuff(-5); }); break;
             case PassiveB.ChillAtkRes2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getAtkInPrecombat() + unit.snapshot.getResInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() + this.__getStatusEvalUnit(unit).getResInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyResDebuff(-5); }); break;
             case PassiveB.ChillAtkSpd2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getAtkInPrecombat() + unit.snapshot.getSpdInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() + this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplySpdDebuff(-5); }); break;
             case PassiveB.ChillSpdDef2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getDefInPrecombat() + unit.snapshot.getSpdInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() + this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-5); unit.reserveToApplySpdDebuff(-5); }); break;
             case PassiveB.ChillSpdRes2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getResInPrecombat() + unit.snapshot.getSpdInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() + this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                     unit => { unit.reserveToApplyResDebuff(-5); unit.reserveToApplySpdDebuff(-5); }); break;
             case PassiveB.ChillDefRes2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getDefInPrecombat() + unit.snapshot.getResInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() + this.__getStatusEvalUnit(unit).getResInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-5); unit.reserveToApplyResDebuff(-5); }); break;
             case PassiveB.ChillAtk1:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getAtkInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-3); }); break;
             case PassiveB.ChillAtk2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getAtkInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-5); }); break;
             case Weapon.SyungeiNoKenPlus:
             case Weapon.WindsBrand:
             case PassiveB.ChillAtk3:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getAtkInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-7); }); break;
             case PassiveB.ChillSpd1:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getSpdInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                     unit => { unit.reserveToApplySpdDebuff(-3); }); break;
             case PassiveB.ChillSpd2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getSpdInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                     unit => { unit.reserveToApplySpdDebuff(-5); }); break;
             case Weapon.TekiyaPlus:
             case PassiveB.ChillSpd3:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getSpdInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
                     unit => { unit.reserveToApplySpdDebuff(-7); }); break;
             case PassiveB.ChillDef1:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getDefInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-3); }); break;
             case PassiveB.ChillDef2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getDefInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-5); }); break;
             case Weapon.WagasaPlus:
             case Weapon.GinNoHokyu:
             case PassiveB.ChillDef3:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getDefInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-7); }); break;
             case PassiveB.ChillRes1:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getResInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
                     unit => { unit.reserveToApplyResDebuff(-3); }); break;
             case PassiveB.ChillRes2:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getResInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
                     unit => { unit.reserveToApplyResDebuff(-5); }); break;
             case Weapon.Forblaze:
             case PassiveB.ChillRes3:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getResInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
                     unit => { unit.reserveToApplyResDebuff(-7); }); break;
             case Weapon.KumadePlus:
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                    unit => { return unit.snapshot.getDefInPrecombat() },
+                    unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplySpdDebuff(-5); }); break;
             case PassiveC.ArmorMarch3:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
@@ -10731,7 +10760,7 @@ class AetherRaidTacticsBoard {
     }
 
     __isNextToOtherUnitsExcept(unit, exceptCondition) {
-        for (let otherUnit of this.enumerateUnitsInTheSameGroup(unit, false)) {
+        for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
             if (!otherUnit.isOnMap) { continue; }
             if (!exceptCondition(otherUnit)
                 && unit.isNextTo(otherUnit)
@@ -11296,10 +11325,14 @@ class AetherRaidTacticsBoard {
     }
 
     __durabilityTest_initUnit(
-        targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0) {
+        targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0
+    ) {
         // let reducedEnemySpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
         let originalSpecialCount = targetUnit.specialCount;
         let grantedBlessing = targetUnit.grantedBlessing;
+
+        // 全シーズンを有効にする
+        g_appData.setAllSeasonEnabled();
 
         // 初期化
         {
@@ -11346,6 +11379,26 @@ class AetherRaidTacticsBoard {
         targetUnit.specialCount = targetUnit.maxSpecialCount - reducedSpecialCount;
         targetUnit.heal(99);
     }
+
+    __forceToApplySkillsForBeginningOfTurn(targetUnit) {
+        let originalDisableAllLogs = this.disableAllLogs;
+        this.disableAllLogs = true;
+
+        targetUnit.endAction();
+        targetUnit.beginAction();
+
+        this.__initReservedHpForAllUnitsOnMap();
+
+        for (let skillId of targetUnit.enumerateSkills()) {
+            this.__applySkillForBeginningOfTurn(skillId, targetUnit);
+        }
+
+        // ターン開始時効果によるダメージや回復を反映
+        this.__applyReservedHpForAllUnitsOnMap(true);
+
+        this.disableAllLogs = originalDisableAllLogs;
+    }
+
     __durabilityTest_simulateImpl(targetUnit, enemyUnit) {
         let winCount = 0;
         let drawCount = 0;
@@ -11360,46 +11413,48 @@ class AetherRaidTacticsBoard {
         let loseEnemies = [];
         let drawEnemies = [];
         let winEnemies = [];
+        let elapsedMillisecToApplySkillsForBeginningOfTurn = 0;
+        let elapsedMillisecForCombat = 0;
+        let elapsedMillisecForInitUnit = 0;
         for (let i = 0; i < g_appData.heroInfos.length; ++i) {
             let heroInfo = g_appData.heroInfos.get(i);
 
             // 敵の初期化
-            this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount);
+            using(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {
+                this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount);
+                this.__updateUnitSpur(targetUnit, this.vm.durabilityTestCalcPotentialDamage);
+                this.__updateUnitSpur(enemyUnit, this.vm.durabilityTestCalcPotentialDamage);
 
-            // テスト対象のHPと奥義発動カウントをリセット
-            targetUnit.specialCount = originalSpecialCount;
-            if (this.vm.durabilityTestHealsHpFull) {
-                targetUnit.heal(99);
-            }
-            else {
-                targetUnit.hp = originalHp;
-            }
+                // テスト対象のHPと奥義発動カウントをリセット
+                targetUnit.specialCount = originalSpecialCount;
+                if (this.vm.durabilityTestHealsHpFull) {
+                    targetUnit.heal(99);
+                }
+                else {
+                    targetUnit.hp = originalHp;
+                }
+            });
 
             if (this.vm.durabilityTestAppliesSkillsForBeginningOfTurn) {
-                targetUnit.endAction();
-                targetUnit.beginAction();
-                for (let skillId of targetUnit.enumerateSkills()) {
-                    this.__applySkillForBeginningOfTurn(skillId, targetUnit);
-                }
-
-                enemyUnit.endAction();
-                enemyUnit.beginAction();
-                for (let skillId of enemyUnit.enumerateSkills()) {
-                    this.__applySkillForBeginningOfTurn(skillId, enemyUnit);
-                }
+                using(new ScopedStopwatch(time => elapsedMillisecToApplySkillsForBeginningOfTurn += time), () => {
+                    this.__forceToApplySkillsForBeginningOfTurn(targetUnit);
+                    this.__forceToApplySkillsForBeginningOfTurn(enemyUnit);
+                });
             }
 
             let tmpWinCount = 0;
             let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
             let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
-            for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
-                let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
-                targetUnit.hp = targetUnit.restHp;
-                targetUnit.specialCount = targetUnit.tmpSpecialCount;
-                if (enemyUnit.restHp == 0) {
-                    ++tmpWinCount;
+            using(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
+                for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
+                    let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
+                    targetUnit.hp = targetUnit.restHp;
+                    targetUnit.specialCount = targetUnit.tmpSpecialCount;
+                    if (enemyUnit.restHp == 0) {
+                        ++tmpWinCount;
+                    }
                 }
-            }
+            });
 
             let combatResultText = "";
             if (targetUnit.restHp == 0) {
@@ -11426,6 +11481,10 @@ class AetherRaidTacticsBoard {
                 this.writeLogLine(`${targetUnit.getNameWithGroup()}(HP${originalHp}→${targetUnit.restHp})vs${enemyUnit.getNameWithGroup()}(HP${enemyUnit.hp}→${enemyUnit.restHp})→${combatResultText}`);
             }
         }
+
+        this.writeDebugLogLine(`ユニット初期化: ${elapsedMillisecForInitUnit} ms`);
+        this.writeDebugLogLine(`ターン開始時スキル適用: ${elapsedMillisecToApplySkillsForBeginningOfTurn} ms`);
+        this.writeDebugLogLine(`戦闘評価: ${elapsedMillisecForCombat} ms`);
 
         targetUnit.specialCount = originalSpecialCount;
         targetUnit.hp = originalHp;
@@ -12360,7 +12419,7 @@ class AetherRaidTacticsBoard {
     }
 
     __isThereAllyThreatensEnemyStatus(unit) {
-        for (let allyUnit of this.enumerateUnitsInTheSameGroup(unit, true)) {
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(unit, true)) {
             if (allyUnit.actionContext.hasThreatensEnemyStatus) {
                 return true;
             }
@@ -14121,19 +14180,27 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __initReservedHp(unit) {
+        unit.initReservedDebuffs();
+        unit.initReservedStatusEffects();
+        unit.initReservedHp();
+    }
+
     __initReservedHpForAllUnitsOnMap() {
         for (let unit of this.enumerateAllUnitsOnMap()) {
-            unit.initReservedDebuffs();
-            unit.initReservedStatusEffects();
-            unit.initReservedHp();
+            this.__initReservedHp(unit);
         }
     }
     __applyReservedHpForAllUnitsOnMap(leavesOneHp) {
         for (let unit of this.enumerateAllUnitsOnMap()) {
-            unit.applyReservedDebuffs();
-            unit.applyReservedStatusEffects();
-            unit.applyReservedHp(leavesOneHp);
+            this.__applyReservedHp(unit, leavesOneHp);
         }
+    }
+
+    __applyReservedHp(unit, leavesOneHp) {
+        unit.applyReservedDebuffs();
+        unit.applyReservedStatusEffects();
+        unit.applyReservedHp(leavesOneHp);
     }
 
     executeStructure(structure, appliesDamage = true) {
@@ -14651,7 +14718,7 @@ class AetherRaidTacticsBoard {
                 break;
             case Support.GentleDream:
                 {
-                    for (let unit of this.enumerateUnitsInTheSameGroup(skillOwnerUnit, false)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit, false)) {
                         if (unit.posX == skillOwnerUnit.posX
                             || unit.posX == targetUnit.posX
                             || unit.posY == skillOwnerUnit.posY

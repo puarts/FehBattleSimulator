@@ -539,6 +539,15 @@ class AppData {
         this.updateTargetInfoTdStyle();
     }
 
+    setAllSeasonEnabled() {
+        this.isLightSeason = true;
+        this.isAstraSeason = true;
+        this.isFireSeason = true;
+        this.isEarthSeason = true;
+        this.isWindSeason = true;
+        this.isWaterSeason = true;
+    }
+
     getEnemyExpansionUnitOnMap() {
         if (this.gameMode != GameMode.AetherRaid) {
             return null;

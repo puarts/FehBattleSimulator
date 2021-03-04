@@ -305,6 +305,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Vantage.png";
         case StatusEffectType.DeepWounds:
             return g_imageRootPath + "StatusEffect_DeepWounds.png";
+        case StatusEffectType.FallenStar:
+            return g_imageRootPath + "StatusEffect_FallenStar.png";
         default: return "";
     }
 }
@@ -2247,10 +2249,11 @@ class Unit {
         }
     }
     addAllSpur(amount) {
-        this.atkSpur += amount;
-        this.spdSpur += amount;
-        this.defSpur += amount;
-        this.resSpur += amount;
+        let amountNum = Number(amount);
+        this.atkSpur += amountNum;
+        this.spdSpur += amountNum;
+        this.defSpur += amountNum;
+        this.resSpur += amountNum;
     }
 
     get isHarmonicHero() {
@@ -2664,23 +2667,9 @@ class Unit {
         this.applyResDebuff(amount);
     }
 
-    applyDebuffForHighestStatus(amount, fromSnapshot = false) {
-        for (let status of this.__getHighestStatuses(fromSnapshot)) {
-            switch (status) {
-                case StatusType.Atk: this.applyAtkDebuff(amount); break;
-                case StatusType.Spd: this.applySpdDebuff(amount); break;
-                case StatusType.Def: this.applyDefDebuff(amount); break;
-                case StatusType.Res: this.applyResDebuff(amount); break;
-            }
-        }
-    }
-
-    __getHighestStatuses(fromSnapshot = false) {
+    getHighestStatuses() {
         let maxStatuses = [StatusType.Atk];
         let unit = this;
-        if (fromSnapshot) {
-            unit = this.snapshot;
-        }
         let maxValue = unit.getAtkInPrecombat() - 15; // 攻撃は-15して比較
         {
             let value = unit.getSpdInPrecombat();
