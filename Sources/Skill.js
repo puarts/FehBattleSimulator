@@ -963,6 +963,7 @@ const Weapon = {
     SteadfastAxePlus: 1665, // 護衛の斧+
     SteadfastAxe: 1666, // 護衛の斧
     IcyFimbulvetr: 1668, // 氷槍フィンブル
+    BansheeTheta: 1670, // バンシーθ
 };
 
 const Support = {

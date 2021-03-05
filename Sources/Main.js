@@ -9886,6 +9886,18 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.BansheeTheta:
+                if (this.vm.currentTurn === 3
+                    || this.vm.currentTurn === 4
+                ) {
+                    for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                        unit.reserveToApplyAllDebuff(-6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                        unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    }
+                }
+                break;
             case Special.RadiantAether2:
                 if (this.vm.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(2);
