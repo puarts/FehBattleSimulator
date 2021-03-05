@@ -268,7 +268,7 @@ const Weapon = {
     NewBrazenCatFang: 1089, // 新年の戦猫の爪牙
     AkaiAhiruPlus: 816,//赤いアヒル
     KenhimeNoKatana: 58,//剣姫の刀
-    GigaExcalibur: 331, //ギガエクスカリバー
+    GigaExcalibur: 331, //ギガスカリバー
 
     GunshiNoFusho: 782, // 軍師の風書
     GunshiNoRaisyo: 781, // 軍師の雷書
@@ -957,6 +957,9 @@ const Weapon = {
 
     // 2021年2月 伝承クロード
     Failnaught: 1646, // フェイルノート
+
+    // フォドラの花種
+    Luin: 1664, // ルーン
 };
 
 const Support = {

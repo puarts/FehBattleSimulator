@@ -885,6 +885,12 @@ class BattleContext {
 
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
+
+        // 攻撃時の追加ダメージ
+        this.additionalDamage = 0;
+
+        // 敵は反撃不可
+        this.invalidatesCounterattack = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -947,6 +953,8 @@ class BattleContext {
         this.damageReductionRatio = 0;
 
         this.isSaviorActivated = false;
+
+        this.additionalDamage = 0;
     }
 
     invalidateAllBuffs() {

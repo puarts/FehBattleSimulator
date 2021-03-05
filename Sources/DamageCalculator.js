@@ -617,10 +617,12 @@ class DamageCalculator {
         }
     }
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
-        var fixedAddDamage = 0;
+        let fixedAddDamage = 0;
         if (atkUnit.hasStatusEffect(StatusEffectType.TotalPenaltyDamage)) {
             fixedAddDamage += -defUnit.debuffTotal;
         }
+
+        fixedAddDamage += atkUnit.battleContext.additionalDamage;
 
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {

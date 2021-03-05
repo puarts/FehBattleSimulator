@@ -3461,6 +3461,10 @@ class AetherRaidTacticsBoard {
             return true;
         }
 
+        if (atkUnit.battleContext.invalidatesCounterattack) {
+            return true;
+        }
+
         switch (atkUnit.weapon) {
             case Weapon.SurvivalistBow:
                 if (this.__isSolo(atkUnit) && defUnit.snapshot.restHpPercentage >= 80) {
@@ -4521,6 +4525,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Luin:
+                    if (targetUnit.battleContext.initiatesCombat
+                        || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
+                    ) {
+                        targetUnit.battleContext.additionalDamage = Math.trunc(targetUnit.getEvalSpdInCombat() * 0.2);
+                        targetUnit.battleContext.invalidatesCounterattack = true;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.PlegianAxePlus:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 5;
