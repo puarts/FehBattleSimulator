@@ -828,11 +828,11 @@ class BattleContext {
         // 戦闘中に奥義が発動されたかどうか
         this.isSpecialActivated = false;
 
-        // 発動カウント変動量を+1
+        // 自身の奥義発動カウント変動量を+1
         this.increaseCooldownCountForAttack = false;
         this.increaseCooldownCountForDefense = false;
 
-        // 発動カウント変動量を-1
+        // 敵の奥義発動カウント変動量を-1
         this.reducesCooldownCount = false;
 
         // // 自身の発動カウント変動量-1を無効
@@ -876,6 +876,8 @@ class BattleContext {
 
         // 追撃優先度
         this.followupAttackPriority = 0;
+        this.followupAttackPriorityIncrement = 0;
+        this.followupAttackPriorityDecrement = 0;
 
         // 戦闘前の範囲奥義で有効になるダメージ軽減率
         this.damageReductionRatioForPrecombat = 0;
@@ -894,6 +896,9 @@ class BattleContext {
 
         // 自分の攻撃でダメージを与えた時のHP回復量
         this.healedHpByAttack = 0;
+
+        // 追撃不可を無効
+        this.invalidatesInvalidationOfFollowupAttack = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -960,6 +965,7 @@ class BattleContext {
         this.additionalDamage = 0;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
+        this.invalidatesInvalidationOfFollowupAttack = false;
     }
 
     invalidateAllBuffs() {
@@ -4192,6 +4198,13 @@ class Unit {
         let specialCountMax = this.specialInfo.specialCount;
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
+            switch (this.weapon) {
+                case Weapon.SyunsenAiraNoKen:
+                    if (this.isWeaponRefined) {
+                        specialCountMax -= 1;
+                    }
+                    break;
+            }
         }
 
         this.maxSpecialCount = specialCountMax;

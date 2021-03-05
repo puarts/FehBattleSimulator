@@ -3055,6 +3055,23 @@ class Map {
                     }
                     break;
                 case Weapon.Gurimowaru:
+                    if (unit.isWeaponRefined) {
+                        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                    else {
+                        if (unit.hpPercentage >= 50) {
+                            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case PassiveB.TeniNoKona:
                 case Weapon.ApotheosisSpear:
                     {

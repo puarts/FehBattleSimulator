@@ -784,6 +784,11 @@ class AppData {
             this.__updateStatusByPassiveA(unit, unit.passiveS);
         }
         switch (unit.weapon) {
+            case Weapon.SyunsenAiraNoKen:
+                if (unit.isWeaponRefined) {
+                    unit.atkWithSkills += 3;
+                }
+                break;
             case Weapon.Mistoruthin:
                 if (unit.isWeaponSpecialRefined) {
                     unit.atkWithSkills += 3;

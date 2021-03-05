@@ -3456,8 +3456,16 @@ class AetherRaidTacticsBoard {
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SyunsenAiraNoKen:
+                    if (targetUnit.isWeaponRefined) {
+                        defUnit.battleContext.increaseCooldownCountForAttack = false;
+                        defUnit.battleContext.increaseCooldownCountForDefense = false;
+                        defUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Weapon.TenteiNoKen:
-                    defUnit.battleContext.increaseCooldownCount = false;
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
                     defUnit.battleContext.reducesCooldownCount = false;
                     break;
             }
@@ -3730,6 +3738,10 @@ class AetherRaidTacticsBoard {
             return true;
         }
 
+        if (unit.battleContext.invalidatesInvalidationOfFollowupAttack) {
+            return true;
+        }
+
         switch (unit.passiveB) {
             case PassiveB.SphiasSoul:
                 return true;
@@ -3798,6 +3810,8 @@ class AetherRaidTacticsBoard {
     __getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
         let followupAttackPriority = atkUnit.battleContext.followupAttackPriority;
         if (!this.__canInvalidateAbsoluteFollowupAttack(defUnit, atkUnit)) {
+            followupAttackPriority += atkUnit.battleContext.followupAttackPriorityIncrement;
+
             if (this.__canActivateBreakerSkill(atkUnit, defUnit)) {
                 ++followupAttackPriority;
             }
@@ -3899,6 +3913,8 @@ class AetherRaidTacticsBoard {
         }
 
         if (!this.__canInvalidateInvalidationOfFollowupAttack(atkUnit, defUnit)) {
+            followupAttackPriority += atkUnit.battleContext.followupAttackPriorityDecrement;
+
             if (defUnit.hasStatusEffect(StatusEffectType.ResonantShield) && defUnit.isOneTimeActionActivatedForShieldEffect == false) {
                 --followupAttackPriority;
             }
@@ -4741,6 +4757,13 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Ivarudhi:
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        if (attackTargetUnit.snapshot.restHpPercentage >= 75) {
+                            attackUnit.reserveHeal(7);
+                        }
+                    }
+                    break;
                 case PassiveB.FallenStar:
                     if (attackUnit.battleContext.initiatesCombat) {
                         attackUnit.addStatusEffect(StatusEffectType.FallenStar);
@@ -5743,6 +5766,37 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TallHammer:
+                    if (targetUnit.isWeaponRefined) {
+                        // 周囲1マスにいない時の強化は別の処理で行っているため、ここでは除外
+                        if (!this.__isSolo(targetUnit) && targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.spdSpur += 6;
+                            if (targetUnit.isWeaponSpecialRefined) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    else {
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.spdSpur += 6;
+                        }
+                    }
+                    break;
+                case Weapon.Nagurufaru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 50) {
+                            enemyUnit.atkSpur -= 4;
+                            enemyUnit.resSpur -= 4;
+                        }
+                        if (!targetUnit.battleContext.initiatesCombat
+                            && targetUnit.snapshot.restHpPercentage >= 70
+                        ) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        }
+                    }
+                    break;
                 case Weapon.IcyFimbulvetr:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         enemyUnit.atkSpur -= 6;
@@ -6584,9 +6638,25 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Ivarudhi:
-                    if (enemyUnit.snapshot.restHpPercentage == 100) {
-                        targetUnit.atkSpur += 3;
-                        targetUnit.spdSpur += 3;
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.atkSpur += 3;
+                            targetUnit.spdSpur += 3;
+                            targetUnit.resSpur += 3;
+                        }
+
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                enemyUnit.atkSpur -= 5;
+                                enemyUnit.resSpur -= 5;
+                            }
+                        }
+                    }
+                    else {
+                        if (enemyUnit.snapshot.restHpPercentage == 100) {
+                            targetUnit.atkSpur += 3;
+                            targetUnit.spdSpur += 3;
+                        }
                     }
                     break;
                 case Weapon.Arrow:
@@ -6943,7 +7013,17 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.SyunsenAiraNoKen:
-                    this.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.addAllSpur(4);
+                                targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.2;
+                            }
+                        }
+                    }
+                    else {
+                        this.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                    }
                     break;
                 case Weapon.WingSword:
                 case Weapon.Romfire:
@@ -7782,7 +7862,6 @@ class AetherRaidTacticsBoard {
                         atkUnit.spdSpur += 6;
                     }
                     break;
-                case Weapon.TallHammer:
                 case PassiveA.HienNoIchigeki1: atkUnit.spdSpur += 2; break;
                 case PassiveA.HienNoIchigeki2: atkUnit.spdSpur += 4; break;
                 case PassiveA.HienNoIchigeki3: atkUnit.spdSpur += 6; break;
@@ -8696,6 +8775,13 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     for (let skillId of unit.enumerateSkills()) {
                         switch (skillId) {
+                            case Weapon.Gurimowaru:
+                                if (targetUnit.isWeaponSpecialRefined) {
+                                    targetUnit.atkSpur -= 4;
+                                    targetUnit.spdSpur -= 4;
+                                    targetUnit.resSpur -= 4;
+                                }
+                                break;
                             case Weapon.SenhimeNoWakyu:
                                 if (unit.isWeaponSpecialRefined) {
                                     targetUnit.atkSpur -= 4;
@@ -9104,6 +9190,15 @@ class AetherRaidTacticsBoard {
         if (this.__isSolo(targetUnit) || calcPotentialDamage) {
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.TallHammer:
+                        if (targetUnit.isWeaponRefined) {
+                            targetUnit.spdSpur += 6;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                        break;
                     case Weapon.SurvivalistBow:
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
@@ -9215,6 +9310,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.spdSpur += 4;
                     }
                     break;
+                case Weapon.Gurimowaru:
                 case Weapon.SenhimeNoWakyu:
                     if (targetUnit.isWeaponRefined) {
                         targetUnit.atkSpur += 4;
