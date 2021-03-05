@@ -5711,6 +5711,22 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IcyFimbulvetr:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3,
+                            x => x.moveType == MoveType.Cavalry || x.moveType == MoveType.Flying)
+                        ) {
+                            if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                                targetUnit.battleContext.followupAttackPriority++;
+                            }
+
+                            targetUnit.battleContext.healedHpByAttack = 5;
+                        }
+                    }
+                    break;
                 case Weapon.SteadfastAxePlus:
                 case Weapon.SteadfastAxe:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {

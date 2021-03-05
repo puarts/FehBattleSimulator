@@ -891,6 +891,9 @@ class BattleContext {
 
         // 敵は反撃不可
         this.invalidatesCounterattack = false;
+
+        // 自分の攻撃でダメージを与えた時のHP回復量
+        this.healedHpByAttack = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -955,6 +958,8 @@ class BattleContext {
         this.isSaviorActivated = false;
 
         this.additionalDamage = 0;
+        this.invalidatesCounterattack = false;
+        this.healedHpByAttack = 0;
     }
 
     invalidateAllBuffs() {

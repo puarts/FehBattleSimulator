@@ -1701,12 +1701,12 @@ class DamageCalculator {
 
                 // 回復
                 {
-                    var actualDamage = currentDamage;
+                    let actualDamage = currentDamage;
                     if (defUnit.restHp < currentDamage) {
                         actualDamage = defUnit.restHp;
                     }
 
-                    var healedHp = 0;
+                    let healedHp = 0;
                     switch (atkUnit.special) {
                         case Special.Aether:
                         case Special.AoNoTenku:
@@ -1755,58 +1755,10 @@ class DamageCalculator {
             }
 
             {
-                switch (atkUnit.weapon) {
-                    case Weapon.SpySongBow:
-                        if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
-                            this.__heal(atkUnit, 5);
-                        }
-                        break;
-                    case Weapon.UnityBloomsPlus:
-                    case Weapon.AmityBloomsPlus:
-                    case Weapon.PactBloomsPlus:
-                        if (atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                            this.__heal(atkUnit, 4);
-                        }
-                        break;
-                    case Weapon.Garumu:
-                        if (atkUnit.isWeaponSpecialRefined) {
-                            if (atkUnit.snapshot.restHpPercentage >= 25) {
-                                this.__heal(atkUnit, 7);
-                            }
-                        }
-                        break;
-                    case Weapon.HokenSophia:
-                        if (atkUnit.isWeaponSpecialRefined) {
-                            if (!atkUnit.snapshot.isRestHpFull || !defUnit.snapshot.isRestHpFull) {
-                                this.__heal(atkUnit, 7);
-                            }
-                        }
-                        break;
-                    case Weapon.VirtuousTyrfing:
-                        if (!atkUnit.battleContext.initiatesCombat
-                            || atkUnit.snapshot.restHpPercentage <= 99
-                        ) {
-                            this.__heal(atkUnit, 7);
-                        }
-                        break;
-                    case Weapon.SeirinNoKenPlus:
-                    case Weapon.FuyumatsuriNoStickPlus:
-                    case Weapon.ChisanaSeijuPlus:
-                        this.__heal(atkUnit, 5);
-                        break;
-                    case Weapon.RuneAxe:
-                        this.__heal(atkUnit, 7);
-                        break;
-                    case Weapon.Taiyo:
-                        this.__heal(atkUnit, 10);
-                        break;
-                    case Weapon.Absorb:
-                    case Weapon.AbsorbPlus:
-                        {
-                            let healAmount = Math.trunc(currentDamage * 0.5);
-                            this.__heal(atkUnit, healAmount);
-                        }
-                        break;
+                let healHpAmount = this.__getHealAmountByAttack(atkUnit, defUnit, currentDamage);
+                if (healHpAmount > 0) {
+                    this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${healHpAmount}回復`);
+                    this.__heal(atkUnit, healHpAmount);
                 }
             }
 
@@ -1833,6 +1785,63 @@ class DamageCalculator {
         }
 
         return totalDamage;
+    }
+
+    __getHealAmountByAttack(atkUnit, defUnit, currentDamage) {
+        let healedHp = atkUnit.battleContext.healedHpByAttack;
+        switch (atkUnit.weapon) {
+            case Weapon.SpySongBow:
+                if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                    healedHp += 5;
+                }
+                break;
+            case Weapon.UnityBloomsPlus:
+            case Weapon.AmityBloomsPlus:
+            case Weapon.PactBloomsPlus:
+                if (atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    healedHp += 4;
+                }
+                break;
+            case Weapon.Garumu:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.snapshot.restHpPercentage >= 25) {
+                        healedHp += 7;
+                    }
+                }
+                break;
+            case Weapon.HokenSophia:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (!atkUnit.snapshot.isRestHpFull || !defUnit.snapshot.isRestHpFull) {
+                        healedHp += 7;
+                    }
+                }
+                break;
+            case Weapon.VirtuousTyrfing:
+                if (!atkUnit.battleContext.initiatesCombat
+                    || atkUnit.snapshot.restHpPercentage <= 99
+                ) {
+                    healedHp += 7;
+                }
+                break;
+            case Weapon.SeirinNoKenPlus:
+            case Weapon.FuyumatsuriNoStickPlus:
+            case Weapon.ChisanaSeijuPlus:
+                healedHp += 5;
+                break;
+            case Weapon.RuneAxe:
+                healedHp += 7;
+                break;
+            case Weapon.Taiyo:
+                healedHp += 10;
+                break;
+            case Weapon.Absorb:
+            case Weapon.AbsorbPlus:
+                {
+                    healedHp += Math.trunc(currentDamage * 0.5);
+                }
+                break;
+        }
+        return healedHp;
     }
 
     __canActivateMiracle(unit, atkUnit) {

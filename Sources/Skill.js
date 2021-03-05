@@ -962,6 +962,7 @@ const Weapon = {
     Luin: 1664, // ルーン
     SteadfastAxePlus: 1665, // 護衛の斧+
     SteadfastAxe: 1666, // 護衛の斧
+    IcyFimbulvetr: 1668, // 氷槍フィンブル
 };
 
 const Support = {
