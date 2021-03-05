@@ -5710,6 +5710,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SteadfastAxePlus:
+                case Weapon.SteadfastAxe:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+                    }
+                    break;
                 case PassiveB.FallenStar:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.8;
