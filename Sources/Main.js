@@ -3051,6 +3051,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveC.AdNearSave3:
                 case PassiveC.DrNearSave3:
                     if (atkUnit.isMeleeWeaponType()) {
                         return true;
@@ -5800,6 +5801,12 @@ class AetherRaidTacticsBoard {
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         enemyUnit.atkSpur -= 6;
                         enemyUnit.defSpur -= 6;
+                    }
+                    break;
+                case PassiveC.AdNearSave3:
+                    if (targetUnit.battleContext.isSaviorActivated) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
                     }
                     break;
                 case PassiveC.ArFarSave3:
