@@ -675,6 +675,10 @@ class AetherRaidTacticsBoard {
         }
         unit.support = this.__findMaxSpSkillId(unit.support, unit.heroInfo.supportOptions, [g_appData.supportInfos]);
         unit.special = this.__findMaxSpSkillId(unit.special, unit.heroInfo.specialOptions, [g_appData.specialInfos]);
+        unit.passiveA = this.__findEquipableMaxDuelSkill(unit);
+        if (unit.passiveA < 0) {
+            unit.passiveA = this.__findMaxSpSkillId(unit.passiveA, unit.heroInfo.passiveAOptions, [g_appData.passiveAInfos]);
+        }
         unit.passiveA = this.__findMaxSpSkillId(unit.passiveA, unit.heroInfo.passiveAOptions, [g_appData.passiveAInfos]);
         unit.passiveB = this.__findMaxSpSkillId(unit.passiveB, unit.heroInfo.passiveBOptions, [g_appData.passiveBInfos]);
         unit.passiveC = this.__findMaxSpSkillId(unit.passiveC, unit.heroInfo.passiveCOptions, [g_appData.passiveCInfos]);
@@ -687,6 +691,34 @@ class AetherRaidTacticsBoard {
         this.updateAllUnitSpur();
         g_appData.updateArenaScore(unit);
         updateAllUi();
+    }
+
+    __findEquipableMaxDuelSkill(unit) {
+        if (unit.heroInfo == null) {
+            return -1;
+        }
+        let duelSkillId = -1;
+        for (let option of unit.heroInfo.passiveAOptions) {
+            if (option.id < 0) {
+                continue;
+            }
+
+            let skillId = option.id;
+            let info = this.__findSkillInfoFromArrays([g_appData.passiveAInfos], skillId);
+            if (info == null) {
+                console.error(`${option.text}(${skillId}) was not found`);
+                continue;
+            }
+
+            if (info.isDuel3()) {
+                duelSkillId = skillId;
+            }
+            if (info.isDuel4()) {
+                return skillId;
+            }
+        }
+
+        return duelSkillId;
     }
 
     updateArenaScoreForAllUnits() {

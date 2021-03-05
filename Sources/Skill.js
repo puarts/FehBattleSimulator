@@ -1247,6 +1247,9 @@ const PassiveA = {
     MidoriNoShitoHiko3: 864,
     AkaNoShitoHoko3: 929,
     AoNoShitoHoko3: 985,
+    BDuelFlying4: 1645,
+    RDuelInfantry4: 1642,
+    BDuelInfantry4: 1669,
 
     HP1: 1115,
     HP2: 1116,
@@ -2439,5 +2442,14 @@ class SkillInfo {
 
         // 英雄情報から必要に応じて設定する
         this.releaseDateAsNumber = 0;
+    }
+
+    isDuel4() {
+        return this.name.includes("死闘")
+            && this.name.endsWith("4");
+    }
+    isDuel3() {
+        return this.name.includes("死闘")
+            && this.name.endsWith("3");
     }
 }

@@ -3913,7 +3913,7 @@ class Unit {
             return false;
         }
 
-        return this.passiveAInfo.name.includes("死闘") && this.passiveAInfo.name.endsWith("3");
+        return this.passiveAInfo.isDuel3();
     }
 
     __hasDuel4Skill() {
@@ -3921,7 +3921,7 @@ class Unit {
             return false;
         }
 
-        return this.passiveAInfo.name.includes("死闘") && this.passiveAInfo.name.endsWith("4");
+        return this.passiveAInfo.isDuel4();
     }
 
 
