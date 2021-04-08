@@ -964,6 +964,8 @@ const Weapon = {
     SteadfastAxe: 1666, // 護衛の斧
     IcyFimbulvetr: 1668, // 氷槍フィンブル
     BansheeTheta: 1670, // バンシーθ
+
+    Skinfaxi: 1679, // スキンファクシ
 };
 
 const Support = {
@@ -2377,6 +2379,16 @@ function isTeleportationSkill(skillId) {
         case PassiveB.HentaiHiko3:
         case PassiveC.SorakaranoSendo3:
         case PassiveC.HikonoSendo3:
+            return true;
+        default:
+            return false;
+    }
+}
+
+/// 天駆の道の効果を持つスキルかどうか
+function hasPathfinderEffect(skillId) {
+    switch (skillId) {
+        case Weapon.Skinfaxi:
             return true;
         default:
             return false;

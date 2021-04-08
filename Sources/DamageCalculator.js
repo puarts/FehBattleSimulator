@@ -1743,7 +1743,7 @@ class DamageCalculator {
                         healedHp += Math.trunc(actualDamage * 0.3);
                     }
 
-                    this.__heal(atkUnit, healedHp);
+                    this.__heal(atkUnit, healedHp, defUnit);
                 }
             }
             else {
@@ -1758,7 +1758,7 @@ class DamageCalculator {
                 let healHpAmount = this.__getHealAmountByAttack(atkUnit, defUnit, currentDamage);
                 if (healHpAmount > 0) {
                     this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${healHpAmount}回復`);
-                    this.__heal(atkUnit, healHpAmount);
+                    this.__heal(atkUnit, healHpAmount, defUnit);
                 }
             }
 
@@ -1860,7 +1860,10 @@ class DamageCalculator {
         return false;
     }
 
-    __heal(unit, healedHp) {
+    __heal(unit, healedHp, enemyUnit) {
+        if (enemyUnit.battleContext.invalidatesHeal) {
+            return;
+        }
         if (unit.hasStatusEffect(StatusEffectType.DeepWounds)) {
             return;
         }

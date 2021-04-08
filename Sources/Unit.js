@@ -844,6 +844,9 @@ class BattleContext {
         // 守備魔防の低い方を参照を無効化
         this.invalidatesReferenceLowerMit = false;
 
+        // 回復を無効化
+        this.invalidatesHeal = false;
+
         // 強化無効
         this.invalidatesAtkBuff = false;
         this.invalidatesSpdBuff = false;
@@ -966,6 +969,7 @@ class BattleContext {
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
+        this.invalidatesHeal = false;
     }
 
     invalidateAllBuffs() {
@@ -2922,6 +2926,10 @@ class Unit {
     }
 
     heal(healAmount) {
+        if (this.hasStatusEffect(StatusEffectType.DeepWounds)) {
+            return 0;
+        }
+
         let damage = this.maxHpWithSkills - this.hp;
         let hp = this.hp + healAmount;
         if (hp > this.maxHpWithSkills) {
@@ -3244,6 +3252,39 @@ class Unit {
     }
     set placedTile(value) {
         this._placedTile = value;
+    }
+
+    applyAtkUnity() {
+        let targetUnit = this;
+        targetUnit.atkSpur += 5;
+        let debuff = targetUnit.getAtkDebuffInCombat();
+        if (debuff < 0) {
+            targetUnit.atkSpur += -debuff * 2;
+        }
+    }
+    applySpdUnity() {
+        let targetUnit = this;
+        targetUnit.spdSpur += 5;
+        let debuff = targetUnit.getSpdDebuffInCombat();
+        if (debuff < 0) {
+            targetUnit.spdSpur += -debuff * 2;
+        }
+    }
+    applyDefUnity() {
+        let targetUnit = this;
+        targetUnit.defSpur += 5;
+        let debuff = targetUnit.getDefDebuffInCombat();
+        if (debuff < 0) {
+            targetUnit.defSpur += -debuff * 2;
+        }
+    }
+    applyResUnity() {
+        let targetUnit = this;
+        targetUnit.resSpur += 5;
+        let debuff = targetUnit.getResDebuffInCombat();
+        if (debuff < 0) {
+            targetUnit.resSpur += -debuff * 2;
+        }
     }
 
     /// 装備中の武器名を取得します。
@@ -4353,6 +4394,16 @@ class Unit {
     /// 補助スキルを所持していればtrue、そうでなければfalseを返します。
     get hasSupport() {
         return this.support != Support.None;
+    }
+
+    /// 天駆の道の効果を持つか
+    hasPathfinderEffect() {
+        for (let skillId of this.enumerateSkills()) {
+            if (hasPathfinderEffect(skillId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -3017,9 +3017,14 @@ class AetherRaidTacticsBoard {
         }
         this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit, result.defUnit_actualTotalAttackCount);
 
-        // 切り込みなどの移動系スキル
-        if (isMoveSkillEnabled && atkUnit.isAlive) {
-            this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
+        // 不治の幻煙による回復無効化
+        {
+            if (atkUnit.battleContext.invalidatesHeal) {
+                defUnit.reservedHeal = 0;
+            }
+            if (defUnit.battleContext.invalidatesHeal) {
+                atkUnit.reservedHeal = 0;
+            }
         }
 
         // 奥義カウントやHP変動の加減値をここで確定
@@ -3028,6 +3033,11 @@ class AetherRaidTacticsBoard {
             if (!unit.isDead) {
                 unit.applyReservedHp(true);
             }
+        }
+
+        // 切り込みなどの移動系スキル
+        if (isMoveSkillEnabled && atkUnit.isAlive) {
+            this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
         }
 
         if (atkUnit.hp == 0) {
@@ -4349,6 +4359,14 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Skinfaxi:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.applyAtkUnity();
+                        targetUnit.applySpdUnity();
+                        targetUnit.applyDefUnity();
+                        targetUnit.applyResUnity();
+                    }
+                    break;
                 case Weapon.SparkingTome:
                     if (enemyUnit.snapshot.restHpPercentage >= 50) {
                         enemyUnit.resSpur -= 6;
@@ -4393,31 +4411,15 @@ class AetherRaidTacticsBoard {
                 case PassiveA.AtkDefUnity:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.defSpur += 5;
-                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
-                        if (atkDebuff < 0) {
-                            targetUnit.atkSpur += -atkDebuff * 2;
-                        }
-                        let defDebuff = targetUnit.getDefDebuffInCombat();
-                        if (defDebuff < 0) {
-                            targetUnit.defSpur += -defDebuff * 2;
-                        }
+                        targetUnit.applyAtkUnity();
+                        targetUnit.applyDefUnity();
                     }
                     break;
                 case PassiveA.AtkResUnity:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.resSpur += 5;
-                        let atkDebuff = targetUnit.getAtkDebuffInCombat();
-                        if (atkDebuff < 0) {
-                            targetUnit.atkSpur += -atkDebuff * 2;
-                        }
-                        let resDebuff = targetUnit.getResDebuffInCombat();
-                        if (resDebuff < 0) {
-                            targetUnit.resSpur += -resDebuff * 2;
-                        }
+                        targetUnit.applyAtkUnity();
+                        targetUnit.applyResUnity();
                     }
                     break;
                 case Weapon.SneeringAxe:
@@ -14378,6 +14380,10 @@ class AetherRaidTacticsBoard {
     }
     __applyReservedHpForAllUnitsOnMap(leavesOneHp) {
         for (let unit of this.enumerateAllUnitsOnMap()) {
+            if (unit.isDead) {
+                continue;
+            }
+
             this.__applyReservedHp(unit, leavesOneHp);
         }
     }

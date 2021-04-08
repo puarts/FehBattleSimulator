@@ -324,12 +324,26 @@ class Tile {
     }
 
     __getTileMoveWeight(unit) {
+        if (this.__canActivatePathfinder(unit)) {
+            return 0;
+        }
+
         if (this.__isForestType() && unit.moveType == MoveType.Infantry && unit.moveCount == 1) {
             // 歩行に1マス移動制限がかかっている場合は森地形のウェイトは通常地形と同じ
             return 1;
         }
 
         return this._moveWeights[unit.moveType];
+    }
+
+    /// 指定したユニットについて、このタイルで天駆の道が発動するか
+    __canActivatePathfinder(unit) {
+        if (this._placedUnit == null) {
+            return false;
+        }
+
+        return this._placedUnit.groupId == unit.groupId
+            && this._placedUnit.hasPathfinderEffect();
     }
 
     get obj() {
@@ -610,7 +624,7 @@ class Tile {
         }
 
         var weight = this.__getTileMoveWeight(unit);
-        if (weight != CanNotReachTile) {
+        if (weight != CanNotReachTile && weight != 0) {
             if (unit.weapon == Weapon.FujinYumi && unit.isWeaponRefined && unit.hpPercentage >= 50) {
                 weight = 1;
             }

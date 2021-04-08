@@ -16,6 +16,7 @@ const AetherRaidDefensePreset = {
     PresetAnima20200826: 9,
     PresetAnima20201105: 10,
     PresetAnima20210216: 11,
+    PresetAnima20210306: 12,
 };
 
 /// 飛空城防衛プリセットを表すクラスです。
@@ -41,6 +42,11 @@ class AetherRaidDefensePresetInfo {
 }
 
 const AetherRaidDefensePresetOptions_AnimaSeason = [
+    new AetherRaidDefensePresetInfo(
+        AetherRaidDefensePreset.PresetAnima20210306,
+        "[忘れられた]特別枠トラップ",
+        "C4VwTgdg7glgJgUwLwFsCGAHJAWAPgBlwEZjTDCAmA4gLhAhmAH0F8kKAOQogVgDYOubNgCcuHvh64RAdhJ8AzFV4yxPLtQW4AtCSKFBJXTpLcqhY3mPlqN41sLZCU86T1uCAOjz5PCnnQMzAhESIp6fBQyuDL8QgLE+PiG+mJE4TEy0YRaxnzipMbWJtT2JTYVJQ5CzrjV7g1eUr7YgYwsFGFRxJEWJNgJXFKx0by84pwlRf24ylOm5SVSxZV9i04FC43uvnzNnnttwQpI/PlE2DL52ERUoqP4FMqpuAKEb5olPnXzpQvGVBWtj+P0ctW+2zIfn2MiOLGwp0mRAUfD0KLucVSUkU+RERBIMnw+WmJX0BVyRn+VJBqxBxQ2Lg8kN2+0O9HaCB4OASqUIIkkiTxxGwEmILxEPAeMkEOVJfMKlJppMWtLKYM2TM1vmyngC7OCfBwHD0RFUuA4V3iggt2PwEQUeH43wpiWkCsW2RKxIWqpI1QZP0hOwOMJoAGdmCcAhGmAiiOHmFz4zGOGEE0wREhYTH8UgOOneEhk8x0qcCzIiwXU9GS5ni0wKGx6xRQs3OvWFBW+OmFJma7HWzRmPgmGx8EOmERR0hx8wKNPZ0wFAuJ9gV4n16PJzOJ1PQov5/uJ8uj8w16emDxt4uR51F1O7xP550KMeGzuz+/F1fH8Olx/J3/A8gLfE5FzXMCJyvSC/wRe9YwA+c4LfZDP1Qy8EJvS8AKnLlgK5V9I2wwjY2w78yInEdDXg6inyYWiiIY0imKvJiRwreCOLoriiJ40i+KvLiAG5QEgad0Cwbg/jhVgZ1mYEeFcWlKi0RVlOoH06U08gZP3UFqB4ap1JsLRAW04EpMqElVhku8yGobAjIs5yqDM5zKnM6yLJksChAU4znK0ZZzI85yvIqGS4PkhZHPcuKqBdALPLU7z9RYPCPGcT0AsoeSgVpZKVVsGTqMDahUTigq8pC4FCvyggezkx10yilx0wyyh01TWp60zGx61zRxaBzDKtFaHNSuccs5JIV8c26n45trOScnTRsZvENa9Kkfsnia2Yew4gpxxjXsVoamMbiQF1jHjISgA="
+    ),
     new AetherRaidDefensePresetInfo(
         AetherRaidDefensePreset.PresetAnima20210216,
         "[忘れられた]リターントラップ",
