@@ -3108,6 +3108,12 @@ class AetherRaidTacticsBoard {
     __getSaverUnitIfPossible(atkUnit, defUnit) {
         let saverUnit = null;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false)) {
+            if (defUnit.placedTile == null
+                || !defUnit.placedTile.isMovableTileForUnit(unit)
+            ) {
+                continue;
+            }
+
             if (this.__canActivateSaveSkill(atkUnit, unit)) {
                 if (saverUnit != null) {
                     // 複数発動可能な場合は発動しない
