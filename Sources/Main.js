@@ -5774,6 +5774,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.LilacJadeBreath:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
                 case Weapon.TallHammer:
                     if (targetUnit.isWeaponRefined) {
                         // 周囲1マスにいない時の強化は別の処理で行っているため、ここでは除外

@@ -1309,6 +1309,11 @@ class DamageCalculator {
         let damageReductionRatio = 1.0 - defUnit.battleContext.damageReductionRatioForPrecombat;
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.LilacJadeBreath:
+                    if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
+                        damageReductionRatio *= 1.0 - 0.4;
+                    }
+                    break;
                 case Weapon.Areadbhar:
                     let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
                     if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
@@ -1481,6 +1486,11 @@ class DamageCalculator {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.LilacJadeBreath:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
+                    return 0.4;
+                }
+                break;
             case Weapon.Areadbhar:
                 let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
                 if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {

@@ -965,6 +965,9 @@ const Weapon = {
     IcyFimbulvetr: 1668, // 氷槍フィンブル
     BansheeTheta: 1670, // バンシーθ
 
+    // わがままな子兎
+    LilacJadeBreath: 1676, // 紫翠のブレス
+
     Skinfaxi: 1679, // スキンファクシ
 };
 
