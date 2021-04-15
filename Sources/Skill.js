@@ -968,6 +968,7 @@ const Weapon = {
     // わがままな子兎
     LilacJadeBreath: 1676, // 紫翠のブレス
     SpringyBowPlus: 1673, // 春兎の弓+
+    SpringyAxePlus: 1677, // 春兎の斧+
 
     Skinfaxi: 1679, // スキンファクシ
 };
