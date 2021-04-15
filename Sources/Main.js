@@ -5776,6 +5776,7 @@ class AetherRaidTacticsBoard {
             switch (skillId) {
                 case Weapon.SpringyBowPlus:
                 case Weapon.SpringyAxePlus:
+                case Weapon.SpringyLancePlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
