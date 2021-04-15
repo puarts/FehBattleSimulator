@@ -852,6 +852,12 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedMyrrh: {
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.FollowUpAttackMinus);
+                duoUnit.addStatusEffect(StatusEffectType.ShieldFlying);
+                break;
+            }
             case Hero.DuoLif: {
                 let damage = 0;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 3)) {
@@ -3930,6 +3936,10 @@ class AetherRaidTacticsBoard {
 
         if (!this.__canInvalidateInvalidationOfFollowupAttack(atkUnit, defUnit)) {
             followupAttackPriority += atkUnit.battleContext.followupAttackPriorityDecrement;
+
+            if (defUnit.hasStatusEffect(StatusEffectType.FollowUpAttackMinus)) {
+                --followupAttackPriority;
+            }
 
             if (defUnit.hasStatusEffect(StatusEffectType.ResonantShield) && defUnit.isOneTimeActionActivatedForShieldEffect == false) {
                 --followupAttackPriority;
@@ -8449,6 +8459,12 @@ class AetherRaidTacticsBoard {
     }
 
     isEffectiveAttackInvalidated(unit, effective) {
+        if (unit.hasStatusEffect(StatusEffectType.ShieldFlying)) {
+            if (effective === EffectiveType.Flying) {
+                return true;
+            }
+        }
+
         if (unit.hasStatusEffect(StatusEffectType.SieldDragonArmor)) {
             if (effective == EffectiveType.Armor
                 || effective == EffectiveType.Dragon
