@@ -573,6 +573,9 @@ class DamageCalculator {
                 case Weapon.DarkExcalibur:
                     fixedSpecialAddDamage += 10;
                     break;
+                case Weapon.Shamsir:
+                    fixedSpecialAddDamage += 7;
+                    break;
                 case Weapon.RunaNoEiken:
                 case Weapon.Otokureru:
                 case Weapon.MumeiNoIchimonNoKen:

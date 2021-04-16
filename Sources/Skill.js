@@ -971,6 +971,9 @@ const Weapon = {
     SpringyAxePlus: 1677, // 春兎の斧+
     SpringyLancePlus: 1674, // 春兎の槍+
 
+    // 2021年4月　武器錬成
+    Shamsir: 1682, // シャムシール
+
     Skinfaxi: 1679, // スキンファクシ
 };
 

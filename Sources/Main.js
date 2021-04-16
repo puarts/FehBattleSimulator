@@ -5784,6 +5784,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Shamsir:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                    }
+                    break;
                 case Weapon.SpringyBowPlus:
                 case Weapon.SpringyAxePlus:
                 case Weapon.SpringyLancePlus:
@@ -9925,6 +9933,14 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.Shamsir:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                        this.writeDebugLogLine(skillOwner.getNameWithGroup() + "はシャムシールを発動");
+                        skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Weapon.BansheeTheta:
                 if (this.vm.currentTurn === 3
                     || this.vm.currentTurn === 4
