@@ -14878,6 +14878,16 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.AtkSpdSnag3:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applySpdDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applySpdDebuff(-6);
+                    }
+                    break;
                 case PassiveB.AtkDefSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applyAtkDebuff(-6);
