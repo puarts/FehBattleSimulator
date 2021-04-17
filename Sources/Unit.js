@@ -909,6 +909,9 @@ class BattleContext {
 
         // 追撃不可を無効
         this.invalidatesInvalidationOfFollowupAttack = false;
+
+        // 絶対追撃を無効
+        this.invalidatesAbsoluteFollowupAttack = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -976,6 +979,7 @@ class BattleContext {
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
+        this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
     }
 

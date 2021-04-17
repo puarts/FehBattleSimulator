@@ -3722,6 +3722,11 @@ class AetherRaidTacticsBoard {
         if (unit.passiveB == PassiveB.SphiasSoul) {
             return true;
         }
+
+        if (unit.battleContext.invalidatesAbsoluteFollowupAttack) {
+            return true;
+        }
+
         switch (unit.weapon) {
             case Weapon.Failnaught:
                 if (unit.snapshot.restHpPercentage >= 25) {
@@ -5799,6 +5804,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SunTwinWing:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    }
+                    break;
                 case Weapon.SpringyBowPlus:
                 case Weapon.SpringyAxePlus:
                 case Weapon.SpringyLancePlus:
@@ -10065,6 +10078,11 @@ class AetherRaidTacticsBoard {
                 break;
             case PassiveC.OddTempest3:
                 if (this.isOddTurn) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
+            case PassiveC.EvenTempest3:
+                if (!this.isOddTurn) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;

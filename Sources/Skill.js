@@ -1604,6 +1604,8 @@ const PassiveB = {
     BindingNecklace: 1540, // 束縛の首飾り
 
     FallenStar: 1651, // 落星
+
+    SunTwinWing: 1680, // 双姫の陽翼
 };
 
 const PassiveC = {
@@ -1823,6 +1825,7 @@ const PassiveC = {
     SpdResRein3: 1538, // 速さ魔防の牽制3
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
+    EvenTempest3: 1681, // 迅雷風烈・偶数3
 
     // 快癒
     OddRecovery1: 1580, // 快癒・奇数1
