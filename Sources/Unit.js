@@ -311,11 +311,9 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.FallenStar:
             return g_imageRootPath + "StatusEffect_FallenStar.png";
         case StatusEffectType.FollowUpAttackMinus:
-            // @TODO: 画像追加
-            return g_imageRootPath + "StatusEffect_ResonantShield.png";
+            return g_imageRootPath + "StatusEffect_ShieldFlying.png";
         case StatusEffectType.ShieldFlying:
-            // @TODO: 画像追加
-            return g_imageRootPath + "StatusEffect_SieldDragonArmor.png";
+            return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
         default: return "";
     }
 }
