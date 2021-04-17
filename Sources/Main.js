@@ -2947,6 +2947,11 @@ class AetherRaidTacticsBoard {
             }
         }
 
+        // 戦闘済みであるフラグの有効化
+        {
+            g_appData.isCombatOccuredInCurrentTurn = true;
+        }
+
         // 再行動奥義
         if (atkUnit.specialCount == 0
             && !atkUnit.isOneTimeActionActivatedForSpecial
@@ -3260,8 +3265,8 @@ class AetherRaidTacticsBoard {
 
         // 武器情報等からの設定反映
         {
-            this.__setAttackCount(atkUnit);
-            this.__setAttackCount(defUnit);
+            this.__setAttackCount(atkUnit, defUnit);
+            this.__setAttackCount(defUnit, atkUnit);
 
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
@@ -3450,7 +3455,7 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
-    __setAttackCount(atkUnit) {
+    __setAttackCount(atkUnit, enemyUnit) {
         let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
         if (atkWeaponInfo != null) {
             atkUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
@@ -3462,6 +3467,16 @@ class AetherRaidTacticsBoard {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.GullinkambiEgg:
+                {
+                    if (atkUnit.battleContext.initiatesCombat
+                        && enemyUnit.snapshot.restHpPercentage >= 75
+                        && g_appData.isCombatOccuredInCurrentTurn
+                    ) {
+                        atkUnit.battleContext.attackCount = 2;
+                    }
+                }
+                break;
             case Weapon.RazuwarudoNoMaiken:
                 {
                     let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3, x =>
@@ -5797,6 +5812,12 @@ class AetherRaidTacticsBoard {
                 case Weapon.LilacJadeBreath:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                         targetUnit.addAllSpur(5);
+                    }
+                    break;
+                case Weapon.GullinkambiEgg:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
                     }
                     break;
                 case Weapon.TallHammer:
@@ -11035,6 +11056,8 @@ class AetherRaidTacticsBoard {
     }
 
     __simulateBeginningOfTurn(targetUnits) {
+        g_appData.isCombatOccuredInCurrentTurn = false;
+
         if (targetUnits.length == 0) {
             return;
         }
