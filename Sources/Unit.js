@@ -47,6 +47,7 @@ const Hero = {
     DuoPeony: 615,
     PlegianDorothea: 625,
     DuoLif: 631,
+    HarmonizedMyrrh: 648
 };
 
 function isThiefIndex(heroIndex) {
@@ -213,6 +214,8 @@ const StatusEffectType = {
     Vantage: 15, // 待ち伏せ
     DeepWounds: 16, // 回復不可
     FallenStar: 17, // 落星
+    ShieldFlying: 18, // 飛行特効無効
+    FollowUpAttackMinus: 19, // 追撃不可
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -307,6 +310,12 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_DeepWounds.png";
         case StatusEffectType.FallenStar:
             return g_imageRootPath + "StatusEffect_FallenStar.png";
+        case StatusEffectType.FollowUpAttackMinus:
+            // @TODO: 画像追加
+            return g_imageRootPath + "StatusEffect_ResonantShield.png";
+        case StatusEffectType.ShieldFlying:
+            // @TODO: 画像追加
+            return g_imageRootPath + "StatusEffect_SieldDragonArmor.png";
         default: return "";
     }
 }
@@ -2305,6 +2314,7 @@ class Unit {
                 || this.heroIndex == Hero.DuoPeony
                 || this.heroIndex == Hero.PlegianDorothea
                 || this.heroIndex == Hero.DuoLif
+                || this.heroIndex == Hero.HarmonizedMyrrh
             );
     }
 
