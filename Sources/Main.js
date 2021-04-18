@@ -7237,6 +7237,23 @@ class AetherRaidTacticsBoard {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                     }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                        let found = false;
+                        for (let unit of units) {
+                            if (unit.weaponType === WeaponType.Sword ||
+                                unit.weaponType === WeaponType.Lance ||
+                                unit.weaponType === WeaponType.Axe ||
+                                unit.moveType === MoveType.Cavalry
+                            ) {
+                                found = true;
+                            }
+                        }
+                        if (found) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.defSpur += 5;
+                        }
+                    }
                     break;
                 case Weapon.Ragnarok:
                     if (isWeaponSpecialRefined(targetUnit.weaponRefinement)) {
@@ -8800,6 +8817,12 @@ class AetherRaidTacticsBoard {
                         }
                     }
 
+                    if (this.__isNear(unit, targetUnit, 3)) {
+                        // 3マス以内で発動する戦闘中バフ
+                        // this.writeDebugLogLine(unit.getNameWithGroup() + "の3マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
+                        this.__addSpurInRange3(targetUnit, unit, calcPotentialDamage);
+                    }
+
                     if (this.__isNear(unit, targetUnit, 2)) {
                         // 2マス以内で発動する戦闘中バフ
                         // this.writeDebugLogLine(unit.getNameWithGroup() + "の2マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
@@ -9624,6 +9647,29 @@ class AetherRaidTacticsBoard {
                     break;
                 default:
                     break;
+            }
+        }
+    }
+
+    __addSpurInRange3(targetUnit, allyUnit, calcPotentialDamage) {
+        for (let skillId of allyUnit.enumerateSkills()) {
+            if (!calcPotentialDamage) {
+                switch (skillId) {
+                    case Weapon.GaeBolg:
+                        if (allyUnit.isWeaponRefined) {
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (targetUnit.weaponType === WeaponType.Sword ||
+                                    targetUnit.weaponType === WeaponType.Lance ||
+                                    targetUnit.weaponType === WeaponType.Axe ||
+                                    targetUnit.moveType === MoveType.Cavalry
+                                ) {
+                                    targetUnit.atkSpur += 5;
+                                    targetUnit.defSpur += 5;
+                                }
+                            }
+                        }
+                        break;
+                }
             }
         }
     }
