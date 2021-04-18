@@ -8924,6 +8924,8 @@ class AetherRaidTacticsBoard {
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.resSpur -= 4;
                                 break;
+                            case Weapon.ReinBow:
+                            case Weapon.ReinBowPlus:
                             case PassiveC.SpdDefRein3:
                                 targetUnit.spdSpur -= 4;
                                 targetUnit.defSpur -= 4;

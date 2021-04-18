@@ -974,6 +974,8 @@ const Weapon = {
 
     // 信頼という名の絆
     TomeOfReglay: 1689, // 銀の魔道軍将の書
+    ReinBow: 1687, // 牽制の弓
+    ReinBowPlus: 1686, // 牽制の弓+
 
     Skinfaxi: 1679, // スキンファクシ
 };
