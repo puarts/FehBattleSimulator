@@ -5787,6 +5787,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FlowerLance:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
                 case Weapon.GrimasTruth:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.isWeaponSpecialRefined) {

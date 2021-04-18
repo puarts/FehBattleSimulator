@@ -1535,6 +1535,9 @@ class Unit {
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
+                case Weapon.FlowerLance:
+                    moveCountForCanto = Math.max(moveCountForCanto, 2);
+                    break;
             }
         }
         return moveCountForCanto;

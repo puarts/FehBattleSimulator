@@ -3093,12 +3093,21 @@ class Map {
                     break;
                 case PassiveB.Kyuen2:
                 case PassiveB.Kyuen3:
+                case Weapon.FlowerLance:
                     for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                        let thoreshold = 50;
-                        if (skillId == PassiveB.Kyuen2) {
-                            thoreshold = 40;
+                        let threshold = 0;
+                        switch(skillId) {
+                            case PassiveB.Kyuen2:
+                                threshold = 40;
+                                break;
+                            case PassiveB.Kyuuen3:
+                                threshold = 50;
+                                break;
+                            case Weapon.FlowerLance:
+                                threshold = 80;
+                                break;
                         }
-                        if (ally.hpPercentage <= thoreshold) {
+                        if (ally.hpPercentage <= threshold) {
                             for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
                                 yield tile;
                             }
