@@ -1626,6 +1626,10 @@ const PassiveB = {
     FallenStar: 1651, // 落星
 
     SunTwinWing: 1680, // 双姫の陽翼
+
+    // 近影、遠影
+    SpdDefNearTrace3: 1695, // 速さ守備の近影3
+    SpdResFarTrace3: 1697, // 速さ魔防の遠影3
 };
 
 const PassiveC = {

@@ -5836,6 +5836,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SpdDefNearTrace3:
+                    enemyUnit.spdSpur -= 3;
+                    enemyUnit.defSpur -= 3;
+                    break;
+                case PassiveB.SpdResFarTrace3:
+                    enemyUnit.spdSpur -= 3;
+                    enemyUnit.resSpur -= 3;
+                    break;
                 case Weapon.BowOfFrelia:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.atkSpur += 6;
@@ -13398,10 +13406,8 @@ class AetherRaidTacticsBoard {
         }
 
         let commandType = CommandType.Normal;
-        if (unit.placedTile != tile) {
-            commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
-            commandType = CommandType.End;
-        }
+        commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
+        commandType = CommandType.End;
 
         commands.push(this.__createSupportCommand(unit, tile, assistTargetUnit, commandType));
         return commands;
@@ -13450,10 +13456,8 @@ class AetherRaidTacticsBoard {
     __createBreakStructureCommands(unit, moveTile, obj) {
         let commands = [];
         let commandType = CommandType.Normal;
-        if (unit.placedTile != moveTile) {
-            commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
-            commandType = CommandType.End;
-        }
+        commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
+        commandType = CommandType.End;
 
         commands.push(this.__createBreakStructureCommand(unit, moveTile, obj, commandType));
         return commands;
@@ -13496,10 +13500,56 @@ class AetherRaidTacticsBoard {
     }
 
     __activateCantoIfPossible(unit) {
-        if (this.vm.currentTurn <= 4 && unit.canActivateCanto()) {
+        if (this.__canActivateCanto(unit)) {
             this.writeDebugLogLine("再移動の発動");
-            unit.activateCantoIfPossible();
+            let count = this.__calcMoveCountForCanto(unit);
+            unit.activateCantoIfPossible(count);
         }
+    }
+
+    __canActivateCanto(unit) {
+        if (!unit.canActivateCanto()) {
+            return false;
+        }
+
+        if (this.__calcMoveCountForCanto(unit) == 0) {
+            return false;
+        }
+
+        // スキル毎の追加条件
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Lyngheior:
+                    if (this.vm.currentTurn <= 4) {
+                        return true;
+                    }
+                    break;
+                case PassiveB.SpdDefNearTrace3:
+                case PassiveB.SpdResFarTrace3:
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    __calcMoveCountForCanto(unit) {
+        let moveCountForCanto = 0;
+        for (let skillId of unit.enumerateSkills()) {
+            // 同系統効果複数時、最大値適用
+            switch (skillId) {
+                case Weapon.Lyngheior:
+                    moveCountForCanto = Math.max(moveCountForCanto, 3);
+                    break;
+                case PassiveB.SpdDefNearTrace3:
+                    moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
+                    break;
+                case PassiveB.SpdResFarTrace3:
+                    moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount);
+                    break;
+            }
+        }
+        return moveCountForCanto;
     }
 
     __enqueueBreakStructureCommand(unit, moveTile, obj) {
@@ -13524,6 +13574,20 @@ class AetherRaidTacticsBoard {
                 if (enableSoundEffect) {
                     self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
                 }
+
+                // 再移動で参照する残り移動量を更新
+                if (!unit.isCantoActivated()) {
+                    let moveDist = tileToMove.calculateUnitMovementCountToThisTile(
+                        unit,
+                        unit.placedTile,
+                        unit.moveCount,
+                        false);
+
+                    // ワープは0扱い
+                    let isWarp = moveDist == CanNotReachTile;
+                    unit.restMoveCount = isWarp ? 0 : unit.moveCount - moveDist;
+                }
+
                 if (unit.placedTile != tileToMove) {
                     if (self.vm.gameMode == GameMode.ResonantBattles
                         && unit.groupId == UnitGroupType.Enemy && isThief(unit) && tileToMove.posY == 0
@@ -13590,10 +13654,8 @@ class AetherRaidTacticsBoard {
     __createAttackCommands(attackerUnit, targetUnit, tile) {
         let commands = [];
         let commandType = CommandType.Normal;
-        if (attackerUnit.placedTile != tile) {
-            commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
-            commandType = CommandType.End;
-        }
+        commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
+        commandType = CommandType.End;
 
         commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, commandType));
         return commands;

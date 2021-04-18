@@ -1497,6 +1497,8 @@ class Unit {
         this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
 
         this.originalTile = null; // 護り手のように一時的に移動する際に元の位置を記録しておく用
+
+        this.restMoveCount = 0; // 再移動(残り)で参照する残り移動量
     }
 
     saveCurrentHpAndSpecialCount() {
@@ -1523,34 +1525,21 @@ class Unit {
             return false;
         }
 
-        return this.__calcMoveCountForCanto() > 0;
+        return true;
     }
 
     /// 再移動が発動可能なら発動します。
-    activateCantoIfPossible() {
+    activateCantoIfPossible(moveCountForCanto) {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return;
         }
 
-        this.moveCountForCanto = this.__calcMoveCountForCanto();
+        this.moveCountForCanto = moveCountForCanto;
 
         if (this.moveCountForCanto > 0) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
         }
-    }
-
-    __calcMoveCountForCanto() {
-        let moveCountForCanto = 0;
-        for (let skillId of this.enumerateSkills()) {
-            // 同系統効果複数時、最大値適用
-            switch (skillId) {
-                case Weapon.Lyngheior:
-                    moveCountForCanto = Math.max(moveCountForCanto, 3);
-                    break;
-            }
-        }
-        return moveCountForCanto;
     }
 
     /// 再移動の発動を終了します。
@@ -1922,6 +1911,7 @@ class Unit {
             + ValueDelimiter + this.moveCountForCanto
             + ValueDelimiter + boolToInt(this.isCantoActivatedInCurrentTurn)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
+            + ValueDelimiter + this.restMoveCount
             ;
     }
 
@@ -2007,6 +1997,7 @@ class Unit {
         if (Number.isInteger(Number(splited[i]))) { this.moveCountForCanto = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
     }
 
 
