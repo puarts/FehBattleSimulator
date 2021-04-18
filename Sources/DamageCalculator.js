@@ -1739,6 +1739,13 @@ class DamageCalculator {
                     }
 
                     switch (atkUnit.weapon) {
+                        case Weapon.KyoufuArmars:
+                            if (atkUnit.isWeaponSpecialRefined) {
+                                if (defUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage === 100) {
+                                    healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.3);
+                                }
+                            }
+                            break;
                         case Weapon.WindParthia:
                             if (atkUnit.battleContext.initiatesCombat
                                 || atkUnit.battleContext.isThereAnyUnitIn2Spaces
