@@ -5818,6 +5818,25 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HotshotLance:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        let buffAmount = 4;
+                        if (targetUnit.dragonflower == 3) {
+                            buffAmount = 5;
+                        }
+                        else if (targetUnit.dragonflower == 4) {
+                            buffAmount = 6;
+                        }
+                        else if (targetUnit.dragonflower == 5) {
+                            buffAmount = 7;
+                        }
+                        targetUnit.addAllSpur(buffAmount);
+
+                        if (targetUnit.dragonflower >= 3) {
+                            targetUnit.battleContext.invalidateAllBuffs();
+                        }
+                    }
+                    break;
                 case Weapon.TomeOfReglay:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 6;
