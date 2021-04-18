@@ -976,6 +976,7 @@ const Weapon = {
     TomeOfReglay: 1689, // 銀の魔道軍将の書
     ReinBow: 1687, // 牽制の弓
     ReinBowPlus: 1686, // 牽制の弓+
+    HotshotLance: 1684, // 凄腕の鋭槍
 
     Skinfaxi: 1679, // スキンファクシ
 };
