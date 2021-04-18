@@ -540,6 +540,8 @@ class DamageCalculator {
             fixedSpecialAddDamage += Math.trunc(defUnit.getDefInCombat(atkUnit) * 0.5);
         }
 
+        fixedSpecialAddDamage += atkUnit.battleContext.additionalDamageOfSpecial;
+
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.ResolvedFang:
@@ -724,6 +726,18 @@ class DamageCalculator {
                         value = defUnit.getDefInCombat(atkUnit);
                     }
                     fixedAddDamage += Math.trunc(value * 0.25);
+                }
+                break;
+            case Weapon.BladeOfRenais:
+                if (atkUnit.battleContext.initiatesCombat
+                    || atkUnit.battleContext.isThereAnyUnitIn2Spaces
+                ) {
+                    if (atkUnit.hasPositiveStatusEffect(defUnit)
+                        || atkUnit.hasNegativeStatusEffect()
+                    ) {
+                        let value = isPrecombat ? defUnit.getDefInPrecombat() : defUnit.getDefInCombat(atkUnit);
+                        fixedAddDamage += Math.trunc(0.2 * value);
+                    }
                 }
                 break;
             case Weapon.TenseiAngel:
@@ -946,7 +960,7 @@ class DamageCalculator {
 
         var fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         var fixedSpecialAddDamage = 0;
-        var invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+        let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         switch (special) {
             case Special.None:
                 break;
@@ -1469,14 +1483,18 @@ class DamageCalculator {
             }
         }
 
-        if (atkUnit.isAdvantageForColorless(defUnit)) {
+        if (atkUnit.battleContext.isAdvantageForColorless
+            || atkUnit.isAdvantageForColorless(defUnit)
+        ) {
             this.writeDebugLog(atkUnit.getNameWithGroup() + "は無属性に有利");
             if (defUnit.color == ColorType.Colorless) {
                 return TriangleAdvantage.Advantageous;
             }
         }
 
-        if (defUnit.isAdvantageForColorless(atkUnit)) {
+        if (defUnit.battleContext.isAdvantageForColorless
+            || defUnit.isAdvantageForColorless(atkUnit)
+        ) {
             this.writeDebugLog(defUnit.getNameWithGroup() + "は無属性に有利");
             if (atkUnit.color == ColorType.Colorless) {
                 return TriangleAdvantage.Disadvantageous;

@@ -311,11 +311,9 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.FallenStar:
             return g_imageRootPath + "StatusEffect_FallenStar.png";
         case StatusEffectType.FollowUpAttackMinus:
-            // @TODO: 画像追加
-            return g_imageRootPath + "StatusEffect_ResonantShield.png";
+            return g_imageRootPath + "StatusEffect_ShieldFlying.png";
         case StatusEffectType.ShieldFlying:
-            // @TODO: 画像追加
-            return g_imageRootPath + "StatusEffect_SieldDragonArmor.png";
+            return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
         default: return "";
     }
 }
@@ -903,6 +901,12 @@ class BattleContext {
         // 攻撃時の追加ダメージ
         this.additionalDamage = 0;
 
+        // 奥義発動時の追加ダメージ
+        this.additionalDamageOfSpecial = 0;
+
+        // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+
         // 敵は反撃不可
         this.invalidatesCounterattack = false;
 
@@ -911,6 +915,12 @@ class BattleContext {
 
         // 追撃不可を無効
         this.invalidatesInvalidationOfFollowupAttack = false;
+
+        // 絶対追撃を無効
+        this.invalidatesAbsoluteFollowupAttack = false;
+
+        // 無属性に対して有利
+        this.isAdvantageForColorless = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -978,7 +988,10 @@ class BattleContext {
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
+        this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
+        this.isAdvantageForColorless = false;
+        this.additionalDamageOfSpecial = 0;
     }
 
     invalidateAllBuffs() {
@@ -1484,6 +1497,8 @@ class Unit {
         this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
 
         this.originalTile = null; // 護り手のように一時的に移動する際に元の位置を記録しておく用
+
+        this.restMoveCount = 0; // 再移動(残り)で参照する残り移動量
     }
 
     saveCurrentHpAndSpecialCount() {
@@ -1510,16 +1525,16 @@ class Unit {
             return false;
         }
 
-        return this.__calcMoveCountForCanto() > 0;
+        return true;
     }
 
     /// 再移動が発動可能なら発動します。
-    activateCantoIfPossible() {
+    activateCantoIfPossible(moveCountForCanto) {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return;
         }
 
-        this.moveCountForCanto = this.__calcMoveCountForCanto();
+        this.moveCountForCanto = moveCountForCanto;
 
         if (this.moveCountForCanto > 0) {
             this.isActionDone = false;
@@ -1912,6 +1927,7 @@ class Unit {
             + ValueDelimiter + this.moveCountForCanto
             + ValueDelimiter + boolToInt(this.isCantoActivatedInCurrentTurn)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
+            + ValueDelimiter + this.restMoveCount
             ;
     }
 
@@ -1997,6 +2013,7 @@ class Unit {
         if (Number.isInteger(Number(splited[i]))) { this.moveCountForCanto = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
     }
 
 
@@ -4417,6 +4434,10 @@ class Unit {
             }
         }
         return false;
+    }
+
+    get isTome() {
+        return isWeaponTypeTome(this.weaponType);
     }
 }
 

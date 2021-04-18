@@ -970,6 +970,20 @@ const Weapon = {
     SpringyBowPlus: 1673, // 春兎の弓+
     SpringyAxePlus: 1677, // 春兎の斧+
     SpringyLancePlus: 1674, // 春兎の槍+
+    GullinkambiEgg: 1671, // グリンカムビの聖卵
+
+    // 信頼という名の絆
+    TomeOfReglay: 1689, // 銀の魔道軍将の書
+    ReinBow: 1687, // 牽制の弓
+    ReinBowPlus: 1686, // 牽制の弓+
+    HotshotLance: 1684, // 凄腕の鋭槍
+
+    // 幼き日の出会い
+    LanceOfFrelia: 1694, // フレリアの宝槍
+    StaffOfRausten: 1696, // ロストンの霊杖
+    TomeOfGrado: 1698, // グラドの史書
+    BladeOfRenais: 1699, // ルネスの礼剣
+    BowOfFrelia: 1700, // フレリアの玉弓
 
     // 2021年4月　武器錬成
     Shamsir: 1682, // シャムシール
@@ -1376,6 +1390,9 @@ const PassiveA = {
 
     // 機先
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
+
+    // 万全
+    AtkSpdIdeal4: 1688, // 攻撃速さの万全4
 };
 
 const PassiveB = {
@@ -1592,9 +1609,13 @@ const PassiveB = {
 
     BeliefInLove: 1235, // 愛を信じますか?
     RagingStorm: 1303, // 狂嵐
+
+    // 干渉
+    AtkSpdSnag3: 1685, // 攻撃速さの干渉3
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
+
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
     DiveBomb3: 1430, // 空からの急襲3
@@ -1607,6 +1628,12 @@ const PassiveB = {
     BindingNecklace: 1540, // 束縛の首飾り
 
     FallenStar: 1651, // 落星
+
+    SunTwinWing: 1680, // 双姫の陽翼
+
+    // 近影、遠影
+    SpdDefNearTrace3: 1695, // 速さ守備の近影3
+    SpdResFarTrace3: 1697, // 速さ魔防の遠影3
 };
 
 const PassiveC = {
@@ -1686,6 +1713,7 @@ const PassiveC = {
     ThreatenAtkRes3: 1068,
     ThreatenAtkDef2: 1487,
     ThreatenAtkDef3: 1124,
+    ThreatenAtkRes2: 1691,
 
     KodoNoGenen3: 909, // 鼓動の幻煙3
 
@@ -1826,6 +1854,7 @@ const PassiveC = {
     SpdResRein3: 1538, // 速さ魔防の牽制3
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
+    EvenTempest3: 1681, // 迅雷風烈・偶数3
 
     // 快癒
     OddRecovery1: 1580, // 快癒・奇数1

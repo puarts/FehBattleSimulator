@@ -3054,6 +3054,13 @@ class Map {
                         }
                     }
                     break;
+                case Weapon.LanceOfFrelia:
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                            yield tile;
+                        }
+                    }
+                    break;
                 case Weapon.Gurimowaru:
                     if (unit.isWeaponRefined) {
                         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
