@@ -978,6 +978,9 @@ const Weapon = {
     ReinBowPlus: 1686, // 牽制の弓+
     HotshotLance: 1684, // 凄腕の鋭槍
 
+    // 幼き日の出会い
+    LanceOfFrelia: 1694, // フレリアの宝槍
+
     Skinfaxi: 1679, // スキンファクシ
 };
 
@@ -1600,7 +1603,7 @@ const PassiveB = {
     RagingStorm: 1303, // 狂嵐
 
     // 干渉
-    AtkSpdSnag3: 1688, // 攻撃速さの干渉3
+    AtkSpdSnag3: 1685, // 攻撃速さの干渉3
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
