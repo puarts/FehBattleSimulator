@@ -5784,6 +5784,9 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.FatalSmoke3:
+                    targetUnit.battleContext.invalidatesHeal = true;
+                    break;
                 case Weapon.Shamsir:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
