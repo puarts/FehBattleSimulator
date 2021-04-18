@@ -4395,6 +4395,20 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AtkSpdIdeal4:
+                    if (targetUnit.snapshot.restHpPercentage == 100
+                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
+                    ) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
+                        if (targetUnit.snapshot.restHpPercentage == 100
+                            && targetUnit.hasPositiveStatusEffect(enemyUnit)
+                        ) {
+                            targetUnit.atkSpur += 2;
+                            targetUnit.spdSpur += 2;
+                        }
+                    }
+                    break;
                 case Weapon.Skinfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.applyAtkUnity();
