@@ -238,7 +238,7 @@ const Weapon = {
     WindsBrand: 327, // 深き印の風
     TemariPlus: 1084, // 手毬+
 
-    RauorbladePlus: 247, // 魔書ギムレー+
+    GrimasTruth: 247, // 魔書ギムレー+
 
     FuginNoMaran: 289, // フギンの魔卵
     GunshinNoSyo: 290, // 軍神の書

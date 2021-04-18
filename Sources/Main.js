@@ -5161,14 +5161,17 @@ class AetherRaidTacticsBoard {
                 case Weapon.RoroNoOnoPlus:
                     attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
                     break;
-                case Weapon.RauorbladePlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyAtkBuff(5);
-                        unit.applySpdBuff(5);
-                    }
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAtkDebuff(-5);
-                        unit.applySpdDebuff(-5);
+                case Weapon.GrimasTruth:
+                    if (attackUnit.isWeaponRefined) {
+                    } else {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                            unit.applyAtkBuff(5);
+                            unit.applySpdBuff(5);
+                        }
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.applyAtkDebuff(-5);
+                            unit.applySpdDebuff(-5);
+                        }
                     }
                     break;
                 case Weapon.DeathlyDagger:
@@ -5784,6 +5787,19 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GrimasTruth:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                enemyUnit.addAllSpur(-4);
+                                enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                                enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                                enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                                enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Shamsir:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
@@ -9933,6 +9949,21 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.GrimasTruth:
+                if (skillOwner.isWeaponRefined) {
+                    let enemies = this.__findNearestEnemies(skillOwner, 4);
+                    if (enemies.length > 0) {
+                        for (let unit of enemies) {
+                            unit.reserveToApplyAtkDebuff(-5);
+                            unit.reserveToApplySpdDebuff(-5);
+                            unit.reserveToApplyResDebuff(-5);
+                        }
+                        skillOwner.applyAtkBuff(5);
+                        skillOwner.applySpdBuff(5);
+                        skillOwner.applyResBuff(5);
+                    }
+                }
+                break;
             case Weapon.Shamsir:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
