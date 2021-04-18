@@ -540,6 +540,8 @@ class DamageCalculator {
             fixedSpecialAddDamage += Math.trunc(defUnit.getDefInCombat(atkUnit) * 0.5);
         }
 
+        fixedSpecialAddDamage += atkUnit.battleContext.additionalDamageOfSpecial;
+
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.ResolvedFang:
@@ -955,7 +957,7 @@ class DamageCalculator {
 
         var fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         var fixedSpecialAddDamage = 0;
-        var invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+        let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         switch (special) {
             case Special.None:
                 break;

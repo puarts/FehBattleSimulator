@@ -983,6 +983,7 @@ const Weapon = {
     StaffOfRausten: 1696, // ロストンの霊杖
     TomeOfGrado: 1698, // グラドの史書
     BladeOfRenais: 1699, // ルネスの礼剣
+    BowOfFrelia: 1700, // フレリアの玉弓
 
     Skinfaxi: 1679, // スキンファクシ
 };

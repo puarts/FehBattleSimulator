@@ -5836,6 +5836,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BowOfFrelia:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        targetUnit.battleContext.additionalDamageOfSpecial = 7;
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                    break;
                 case Weapon.TomeOfGrado:
                     if (!targetUnit.battleContext.initiatesCombat
                         || enemyUnit.snapshot.restHpPercentage == 100

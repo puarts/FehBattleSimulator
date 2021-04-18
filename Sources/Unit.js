@@ -901,6 +901,12 @@ class BattleContext {
         // 攻撃時の追加ダメージ
         this.additionalDamage = 0;
 
+        // 奥義発動時の追加ダメージ
+        this.additionalDamageOfSpecial = 0;
+
+        // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+
         // 敵は反撃不可
         this.invalidatesCounterattack = false;
 
@@ -985,6 +991,7 @@ class BattleContext {
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
         this.isAdvantageForColorless = false;
+        this.additionalDamageOfSpecial = 0;
     }
 
     invalidateAllBuffs() {
