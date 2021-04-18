@@ -5804,6 +5804,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TomeOfReglay:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.SunTwinWing:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         enemyUnit.spdSpur -= 5;
@@ -9959,6 +9965,13 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.TomeOfReglay:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    if (unit.isTome) {
+                        unit.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Weapon.BansheeTheta:
                 if (this.vm.currentTurn === 3
                     || this.vm.currentTurn === 4

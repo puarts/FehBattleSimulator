@@ -972,6 +972,9 @@ const Weapon = {
     SpringyLancePlus: 1674, // 春兎の槍+
     GullinkambiEgg: 1671, // グリンカムビの聖卵
 
+    // 信頼という名の絆
+    TomeOfReglay: 1689, // 銀の魔道軍将の書
+
     Skinfaxi: 1679, // スキンファクシ
 };
 

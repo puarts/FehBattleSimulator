@@ -4417,6 +4417,10 @@ class Unit {
         }
         return false;
     }
+
+    get isTome() {
+        return isWeaponTypeTome(this.weaponType);
+    }
 }
 
 /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
