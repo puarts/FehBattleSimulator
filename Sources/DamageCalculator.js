@@ -723,6 +723,18 @@ class DamageCalculator {
                     fixedAddDamage += Math.trunc(value * 0.25);
                 }
                 break;
+            case Weapon.BladeOfRenais:
+                if (atkUnit.battleContext.initiatesCombat
+                    || atkUnit.battleContext.isThereAnyUnitIn2Spaces
+                ) {
+                    if (atkUnit.hasPositiveStatusEffect(defUnit)
+                        || atkUnit.hasNegativeStatusEffect()
+                    ) {
+                        let value = isPrecombat ? defUnit.getDefInPrecombat() : defUnit.getDefInCombat(atkUnit);
+                        fixedAddDamage += Math.trunc(0.2 * value);
+                    }
+                }
+                break;
             case Weapon.TenseiAngel:
                 if (atkUnit.battleContext.initiatesCombat) {
                     let value = 0;
@@ -1466,14 +1478,18 @@ class DamageCalculator {
             }
         }
 
-        if (atkUnit.isAdvantageForColorless(defUnit)) {
+        if (atkUnit.battleContext.isAdvantageForColorless
+            || atkUnit.isAdvantageForColorless(defUnit)
+        ) {
             this.writeDebugLog(atkUnit.getNameWithGroup() + "は無属性に有利");
             if (defUnit.color == ColorType.Colorless) {
                 return TriangleAdvantage.Advantageous;
             }
         }
 
-        if (defUnit.isAdvantageForColorless(atkUnit)) {
+        if (defUnit.battleContext.isAdvantageForColorless
+            || defUnit.isAdvantageForColorless(atkUnit)
+        ) {
             this.writeDebugLog(defUnit.getNameWithGroup() + "は無属性に有利");
             if (atkUnit.color == ColorType.Colorless) {
                 return TriangleAdvantage.Disadvantageous;

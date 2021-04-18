@@ -4395,6 +4395,20 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BladeOfRenais:
+                    if (targetUnit.battleContext.initiatesCombat
+                        || targetUnit.battleContext.isThereAnyUnitIn2Spaces
+                    ) {
+                        targetUnit.addAllSpur(5);
+
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)
+                            || targetUnit.hasNegativeStatusEffect()
+                        ) {
+                            let value = Math.trunc(0.2 * enemyUnit.getDefInCombat(targetUnit));
+                            targetUnit.battleContext.healedHpByAttack = value;
+                        }
+                    }
+                    break;
                 case PassiveA.AtkSpdIdeal4:
                     if (targetUnit.snapshot.restHpPercentage == 100
                         || targetUnit.hasPositiveStatusEffect(enemyUnit)
@@ -5783,6 +5797,10 @@ class AetherRaidTacticsBoard {
     __applySkillEffectForPrecombatAndCombat(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BladeOfRenais:
+                    // 戦闘前奥義にも必要なのでここでフラグを立てておく
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |= this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    break;
                 case Weapon.DarkCreatorS:
                     if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
                         let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
@@ -5818,6 +5836,19 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TomeOfGrado:
+                    if (!targetUnit.battleContext.initiatesCombat
+                        || enemyUnit.snapshot.restHpPercentage == 100
+                    ) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnResDebuff = true;
+                        if (enemyUnit.attackRange == 2) {
+                            targetUnit.battleContext.isAdvantageForColorless = true;
+                        }
+                    }
+                    break;
                 case Weapon.StaffOfRausten:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.atkSpur += 6;

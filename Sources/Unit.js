@@ -912,6 +912,9 @@ class BattleContext {
 
         // 絶対追撃を無効
         this.invalidatesAbsoluteFollowupAttack = false;
+
+        // 無属性に対して有利
+        this.isAdvantageForColorless = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -981,6 +984,7 @@ class BattleContext {
         this.invalidatesInvalidationOfFollowupAttack = false;
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
+        this.isAdvantageForColorless = false;
     }
 
     invalidateAllBuffs() {
