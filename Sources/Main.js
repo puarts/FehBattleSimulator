@@ -5818,6 +5818,22 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.StaffOfRausten:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
+                case Weapon.LanceOfFrelia:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.defSpur += 10;
+                            targetUnit.resSpur += 10;
+                        }
+                    }
+                    break;
                 case Weapon.HotshotLance:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         let buffAmount = 4;
@@ -10000,6 +10016,12 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.StaffOfRausten:
+                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                    unit.reserveToApplyResDebuff(-6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }
+                break;
             case Weapon.TomeOfReglay:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                     if (unit.isTome) {

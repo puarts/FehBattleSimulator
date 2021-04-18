@@ -980,6 +980,7 @@ const Weapon = {
 
     // 幼き日の出会い
     LanceOfFrelia: 1694, // フレリアの宝槍
+    StaffOfRausten: 1696, // ロストンの霊杖
 
     Skinfaxi: 1679, // スキンファクシ
 };
