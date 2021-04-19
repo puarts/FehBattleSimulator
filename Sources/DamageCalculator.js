@@ -575,6 +575,9 @@ class DamageCalculator {
                 case Weapon.DarkExcalibur:
                     fixedSpecialAddDamage += 10;
                     break;
+                case Weapon.Shamsir:
+                    fixedSpecialAddDamage += 7;
+                    break;
                 case Weapon.RunaNoEiken:
                 case Weapon.Otokureru:
                 case Weapon.MumeiNoIchimonNoKen:
@@ -1754,6 +1757,13 @@ class DamageCalculator {
                     }
 
                     switch (atkUnit.weapon) {
+                        case Weapon.KyoufuArmars:
+                            if (atkUnit.isWeaponSpecialRefined) {
+                                if (defUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage === 100) {
+                                    healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.3);
+                                }
+                            }
+                            break;
                         case Weapon.WindParthia:
                             if (atkUnit.battleContext.initiatesCombat
                                 || atkUnit.battleContext.isThereAnyUnitIn2Spaces

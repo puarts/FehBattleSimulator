@@ -238,7 +238,7 @@ const Weapon = {
     WindsBrand: 327, // 深き印の風
     TemariPlus: 1084, // 手毬+
 
-    RauorbladePlus: 247, // 魔書ギムレー+
+    GrimasTruth: 247, // 魔書ギムレー+
 
     FuginNoMaran: 289, // フギンの魔卵
     GunshinNoSyo: 290, // 軍神の書
@@ -984,6 +984,10 @@ const Weapon = {
     TomeOfGrado: 1698, // グラドの史書
     BladeOfRenais: 1699, // ルネスの礼剣
     BowOfFrelia: 1700, // フレリアの玉弓
+
+    // 2021年4月　武器錬成
+    Shamsir: 1682, // シャムシール
+    FlowerLance: 1683, // スミアの花槍
 
     Skinfaxi: 1679, // スキンファクシ
 };
@@ -2395,6 +2399,7 @@ function isPrecombatSpecial(special) {
 /// テレポート効果を持つスキルであるかどうかを判定します。
 function isTeleportationSkill(skillId) {
     switch (skillId) {
+        case Weapon.FlowerLance:
         case Weapon.FujinYumi:
         case Weapon.Gurimowaru:
         case Weapon.ApotheosisSpear:

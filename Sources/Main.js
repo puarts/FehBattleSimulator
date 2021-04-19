@@ -5209,14 +5209,17 @@ class AetherRaidTacticsBoard {
                 case Weapon.RoroNoOnoPlus:
                     attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
                     break;
-                case Weapon.RauorbladePlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyAtkBuff(5);
-                        unit.applySpdBuff(5);
-                    }
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAtkDebuff(-5);
-                        unit.applySpdDebuff(-5);
+                case Weapon.GrimasTruth:
+                    if (attackUnit.isWeaponRefined) {
+                    } else {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                            unit.applyAtkBuff(5);
+                            unit.applySpdBuff(5);
+                        }
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.applyAtkDebuff(-5);
+                            unit.applySpdDebuff(-5);
+                        }
                     }
                     break;
                 case Weapon.DeathlyDagger:
@@ -5836,6 +5839,39 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.KyoufuArmars:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                        }
+                    }
+                    break;
+                case Weapon.FlowerLance:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
+                case Weapon.GrimasTruth:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                enemyUnit.addAllSpur(-4);
+                                enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                                enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                                enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                                enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.Shamsir:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
                 case PassiveB.SpdDefNearTrace3:
                     enemyUnit.spdSpur -= 3;
                     enemyUnit.defSpur -= 3;
@@ -7342,6 +7378,23 @@ class AetherRaidTacticsBoard {
                     ) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                        let found = false;
+                        for (let unit of units) {
+                            if (unit.weaponType === WeaponType.Sword ||
+                                unit.weaponType === WeaponType.Lance ||
+                                unit.weaponType === WeaponType.Axe ||
+                                unit.moveType === MoveType.Cavalry
+                            ) {
+                                found = true;
+                            }
+                        }
+                        if (found) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.defSpur += 5;
+                        }
                     }
                     break;
                 case Weapon.Ragnarok:
@@ -8906,6 +8959,12 @@ class AetherRaidTacticsBoard {
                         }
                     }
 
+                    if (this.__isNear(unit, targetUnit, 3)) {
+                        // 3マス以内で発動する戦闘中バフ
+                        // this.writeDebugLogLine(unit.getNameWithGroup() + "の3マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
+                        this.__addSpurInRange3(targetUnit, unit, calcPotentialDamage);
+                    }
+
                     if (this.__isNear(unit, targetUnit, 2)) {
                         // 2マス以内で発動する戦闘中バフ
                         // this.writeDebugLogLine(unit.getNameWithGroup() + "の2マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
@@ -9736,6 +9795,29 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __addSpurInRange3(targetUnit, allyUnit, calcPotentialDamage) {
+        for (let skillId of allyUnit.enumerateSkills()) {
+            if (!calcPotentialDamage) {
+                switch (skillId) {
+                    case Weapon.GaeBolg:
+                        if (allyUnit.isWeaponRefined) {
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (targetUnit.weaponType === WeaponType.Sword ||
+                                    targetUnit.weaponType === WeaponType.Lance ||
+                                    targetUnit.weaponType === WeaponType.Axe ||
+                                    targetUnit.moveType === MoveType.Cavalry
+                                ) {
+                                    targetUnit.atkSpur += 5;
+                                    targetUnit.defSpur += 5;
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
@@ -10063,6 +10145,26 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.GrimasTruth:
+                if (skillOwner.isWeaponRefined) {
+                    let enemies = this.__findNearestEnemies(skillOwner, 4);
+                    if (enemies.length > 0) {
+                        for (let unit of enemies) {
+                            unit.reserveToApplyAtkDebuff(-5);
+                            unit.reserveToApplySpdDebuff(-5);
+                            unit.reserveToApplyResDebuff(-5);
+                        }
+                        skillOwner.applyAtkBuff(5);
+                        skillOwner.applySpdBuff(5);
+                        skillOwner.applyResBuff(5);
+                    }
+                }
+                break;
+            case Weapon.Shamsir:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                        this.writeDebugLogLine(skillOwner.getNameWithGroup() + "はシャムシールを発動");
+                        skillOwner.reduceSpecialCount(1);
             case Weapon.StaffOfRausten:
                 for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
                     unit.reserveToApplyResDebuff(-6);

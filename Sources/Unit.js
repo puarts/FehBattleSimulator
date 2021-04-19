@@ -1542,6 +1542,22 @@ class Unit {
         }
     }
 
+    __calcMoveCountForCanto() {
+        let moveCountForCanto = 0;
+        for (let skillId of this.enumerateSkills()) {
+            // 同系統効果複数時、最大値適用
+            switch (skillId) {
+                case Weapon.Lyngheior:
+                    moveCountForCanto = Math.max(moveCountForCanto, 3);
+                    break;
+                case Weapon.FlowerLance:
+                    moveCountForCanto = Math.max(moveCountForCanto, 2);
+                    break;
+            }
+        }
+        return moveCountForCanto;
+    }
+
     /// 再移動の発動を終了します。
     deactivateCanto() {
         this.moveCountForCanto = 0;
