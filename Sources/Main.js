@@ -5839,6 +5839,9 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.FatalSmoke3:
+                    targetUnit.battleContext.invalidatesHeal = true;
+                    break;
                 case Weapon.KyoufuArmars:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
