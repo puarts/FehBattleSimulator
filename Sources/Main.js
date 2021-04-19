@@ -5875,6 +5875,8 @@ class AetherRaidTacticsBoard {
                             targetUnit.atkSpur += 5;
                             targetUnit.spdSpur += 5;
                         }
+                    }
+                    break;
                 case PassiveB.SpdDefNearTrace3:
                     enemyUnit.spdSpur -= 3;
                     enemyUnit.defSpur -= 3;
@@ -10168,6 +10170,9 @@ class AetherRaidTacticsBoard {
                     if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                         this.writeDebugLogLine(skillOwner.getNameWithGroup() + "はシャムシールを発動");
                         skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Weapon.StaffOfRausten:
                 for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
                     unit.reserveToApplyResDebuff(-6);
