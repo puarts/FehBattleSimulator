@@ -522,6 +522,8 @@ class AppData {
         this.skillIdToInfoDict = {};
         this.skillNameToInfoDict = {};
 
+        this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
+
         {
             // 生成順を変えるとIDが変わってしまうので注意
             this.defenseStructureStorage = new Storage(g_idGenerator.generate());
@@ -1538,6 +1540,7 @@ class AppData {
             + ValueDelimiter + boolToInt(this.isEnemyActionTriggered)
             + ValueDelimiter + this.currentTurn
             + ValueDelimiter + this.battileItemsToString()
+            + ValueDelimiter + boolToInt(this.isCombatOccuredInCurrentTurn)
             ;
     }
 
@@ -1562,6 +1565,7 @@ class AppData {
         this.isEnemyActionTriggered = intToBool(Number(splited[i])); ++i;
         if (Number.isInteger(Number(splited[i]))) { this.currentTurn = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.setBattleItemsFromString(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.isCombatOccuredInCurrentTurn = intToBool(Number(splited[i])); ++i; }
     }
 
     fromTurnWideStatusString(value) {

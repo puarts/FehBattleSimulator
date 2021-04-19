@@ -2947,6 +2947,11 @@ class AetherRaidTacticsBoard {
             }
         }
 
+        // 戦闘済みであるフラグの有効化
+        {
+            g_appData.isCombatOccuredInCurrentTurn = true;
+        }
+
         // 再行動奥義
         if (atkUnit.specialCount == 0
             && !atkUnit.isOneTimeActionActivatedForSpecial
@@ -3260,8 +3265,8 @@ class AetherRaidTacticsBoard {
 
         // 武器情報等からの設定反映
         {
-            this.__setAttackCount(atkUnit);
-            this.__setAttackCount(defUnit);
+            this.__setAttackCount(atkUnit, defUnit);
+            this.__setAttackCount(defUnit, atkUnit);
 
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
@@ -3450,7 +3455,7 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
-    __setAttackCount(atkUnit) {
+    __setAttackCount(atkUnit, enemyUnit) {
         let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
         if (atkWeaponInfo != null) {
             atkUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
@@ -3462,6 +3467,16 @@ class AetherRaidTacticsBoard {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.GullinkambiEgg:
+                {
+                    if (atkUnit.battleContext.initiatesCombat
+                        && enemyUnit.snapshot.restHpPercentage >= 75
+                        && g_appData.isCombatOccuredInCurrentTurn
+                    ) {
+                        atkUnit.battleContext.attackCount = 2;
+                    }
+                }
+                break;
             case Weapon.RazuwarudoNoMaiken:
                 {
                     let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3, x =>
@@ -3707,6 +3722,11 @@ class AetherRaidTacticsBoard {
         if (unit.passiveB == PassiveB.SphiasSoul) {
             return true;
         }
+
+        if (unit.battleContext.invalidatesAbsoluteFollowupAttack) {
+            return true;
+        }
+
         switch (unit.weapon) {
             case Weapon.Failnaught:
                 if (unit.snapshot.restHpPercentage >= 25) {
@@ -4375,6 +4395,34 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BladeOfRenais:
+                    if (targetUnit.battleContext.initiatesCombat
+                        || targetUnit.battleContext.isThereAnyUnitIn2Spaces
+                    ) {
+                        targetUnit.addAllSpur(5);
+
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)
+                            || targetUnit.hasNegativeStatusEffect()
+                        ) {
+                            let value = Math.trunc(0.2 * enemyUnit.getDefInCombat(targetUnit));
+                            targetUnit.battleContext.healedHpByAttack = value;
+                        }
+                    }
+                    break;
+                case PassiveA.AtkSpdIdeal4:
+                    if (targetUnit.snapshot.restHpPercentage == 100
+                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
+                    ) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
+                        if (targetUnit.snapshot.restHpPercentage == 100
+                            && targetUnit.hasPositiveStatusEffect(enemyUnit)
+                        ) {
+                            targetUnit.atkSpur += 2;
+                            targetUnit.spdSpur += 2;
+                        }
+                    }
+                    break;
                 case Weapon.Skinfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.applyAtkUnity();
@@ -5161,14 +5209,17 @@ class AetherRaidTacticsBoard {
                 case Weapon.RoroNoOnoPlus:
                     attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
                     break;
-                case Weapon.RauorbladePlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyAtkBuff(5);
-                        unit.applySpdBuff(5);
-                    }
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAtkDebuff(-5);
-                        unit.applySpdDebuff(-5);
+                case Weapon.GrimasTruth:
+                    if (attackUnit.isWeaponRefined) {
+                    } else {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                            unit.applyAtkBuff(5);
+                            unit.applySpdBuff(5);
+                        }
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.applyAtkDebuff(-5);
+                            unit.applySpdDebuff(-5);
+                        }
                     }
                     break;
                 case Weapon.DeathlyDagger:
@@ -5749,6 +5800,10 @@ class AetherRaidTacticsBoard {
     __applySkillEffectForPrecombatAndCombat(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BladeOfRenais:
+                    // 戦闘前奥義にも必要なのでここでフラグを立てておく
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |= this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    break;
                 case Weapon.DarkCreatorS:
                     if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
                         let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
@@ -5787,12 +5842,115 @@ class AetherRaidTacticsBoard {
                 case PassiveC.FatalSmoke3:
                     targetUnit.battleContext.invalidatesHeal = true;
                     break;
+                case Weapon.KyoufuArmars:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                        }
+                    }
+                    break;
+                case Weapon.FlowerLance:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
+                case Weapon.GrimasTruth:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                enemyUnit.addAllSpur(-4);
+                                enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                                enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                                enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                                enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Shamsir:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                             targetUnit.atkSpur += 5;
                             targetUnit.spdSpur += 5;
                         }
+                case PassiveB.SpdDefNearTrace3:
+                    enemyUnit.spdSpur -= 3;
+                    enemyUnit.defSpur -= 3;
+                    break;
+                case PassiveB.SpdResFarTrace3:
+                    enemyUnit.spdSpur -= 3;
+                    enemyUnit.resSpur -= 3;
+                    break;
+                case Weapon.BowOfFrelia:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        targetUnit.battleContext.additionalDamageOfSpecial = 7;
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                    break;
+                case Weapon.TomeOfGrado:
+                    if (!targetUnit.battleContext.initiatesCombat
+                        || enemyUnit.snapshot.restHpPercentage == 100
+                    ) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnResDebuff = true;
+                        if (enemyUnit.attackRange == 2) {
+                            targetUnit.battleContext.isAdvantageForColorless = true;
+                        }
+                    }
+                    break;
+                case Weapon.StaffOfRausten:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
+                case Weapon.LanceOfFrelia:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.defSpur += 10;
+                            targetUnit.resSpur += 10;
+                        }
+                    }
+                    break;
+                case Weapon.HotshotLance:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        let buffAmount = 4;
+                        if (targetUnit.dragonflower == 3) {
+                            buffAmount = 5;
+                        }
+                        else if (targetUnit.dragonflower == 4) {
+                            buffAmount = 6;
+                        }
+                        else if (targetUnit.dragonflower == 5) {
+                            buffAmount = 7;
+                        }
+                        targetUnit.addAllSpur(buffAmount);
+
+                        if (targetUnit.dragonflower >= 3) {
+                            targetUnit.battleContext.invalidateAllBuffs();
+                        }
+                    }
+                    break;
+                case Weapon.TomeOfReglay:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
+                case Weapon.SunTwinWing:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     }
                     break;
                 case Weapon.SpringyBowPlus:
@@ -5808,6 +5966,12 @@ class AetherRaidTacticsBoard {
                 case Weapon.LilacJadeBreath:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                         targetUnit.addAllSpur(5);
+                    }
+                    break;
+                case Weapon.GullinkambiEgg:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
                     }
                     break;
                 case Weapon.TallHammer:
@@ -7217,6 +7381,23 @@ class AetherRaidTacticsBoard {
                     ) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                        let found = false;
+                        for (let unit of units) {
+                            if (unit.weaponType === WeaponType.Sword ||
+                                unit.weaponType === WeaponType.Lance ||
+                                unit.weaponType === WeaponType.Axe ||
+                                unit.moveType === MoveType.Cavalry
+                            ) {
+                                found = true;
+                            }
+                        }
+                        if (found) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.defSpur += 5;
+                        }
                     }
                     break;
                 case Weapon.Ragnarok:
@@ -8781,6 +8962,12 @@ class AetherRaidTacticsBoard {
                         }
                     }
 
+                    if (this.__isNear(unit, targetUnit, 3)) {
+                        // 3マス以内で発動する戦闘中バフ
+                        // this.writeDebugLogLine(unit.getNameWithGroup() + "の3マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
+                        this.__addSpurInRange3(targetUnit, unit, calcPotentialDamage);
+                    }
+
                     if (this.__isNear(unit, targetUnit, 2)) {
                         // 2マス以内で発動する戦闘中バフ
                         // this.writeDebugLogLine(unit.getNameWithGroup() + "の2マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
@@ -8881,6 +9068,8 @@ class AetherRaidTacticsBoard {
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.resSpur -= 4;
                                 break;
+                            case Weapon.ReinBow:
+                            case Weapon.ReinBowPlus:
                             case PassiveC.SpdDefRein3:
                                 targetUnit.spdSpur -= 4;
                                 targetUnit.defSpur -= 4;
@@ -9609,6 +9798,29 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __addSpurInRange3(targetUnit, allyUnit, calcPotentialDamage) {
+        for (let skillId of allyUnit.enumerateSkills()) {
+            if (!calcPotentialDamage) {
+                switch (skillId) {
+                    case Weapon.GaeBolg:
+                        if (allyUnit.isWeaponRefined) {
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (targetUnit.weaponType === WeaponType.Sword ||
+                                    targetUnit.weaponType === WeaponType.Lance ||
+                                    targetUnit.weaponType === WeaponType.Axe ||
+                                    targetUnit.moveType === MoveType.Cavalry
+                                ) {
+                                    targetUnit.atkSpur += 5;
+                                    targetUnit.defSpur += 5;
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
@@ -9936,11 +10148,36 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.GrimasTruth:
+                if (skillOwner.isWeaponRefined) {
+                    let enemies = this.__findNearestEnemies(skillOwner, 4);
+                    if (enemies.length > 0) {
+                        for (let unit of enemies) {
+                            unit.reserveToApplyAtkDebuff(-5);
+                            unit.reserveToApplySpdDebuff(-5);
+                            unit.reserveToApplyResDebuff(-5);
+                        }
+                        skillOwner.applyAtkBuff(5);
+                        skillOwner.applySpdBuff(5);
+                        skillOwner.applyResBuff(5);
+                    }
+                }
+                break;
             case Weapon.Shamsir:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                         this.writeDebugLogLine(skillOwner.getNameWithGroup() + "はシャムシールを発動");
                         skillOwner.reduceSpecialCount(1);
+            case Weapon.StaffOfRausten:
+                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                    unit.reserveToApplyResDebuff(-6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }
+                break;
+            case Weapon.TomeOfReglay:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    if (unit.isTome) {
+                        unit.reduceSpecialCount(1);
                     }
                 }
                 break;
@@ -10063,6 +10300,11 @@ class AetherRaidTacticsBoard {
                 break;
             case PassiveC.OddTempest3:
                 if (this.isOddTurn) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
+            case PassiveC.EvenTempest3:
+                if (!this.isOddTurn) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;
@@ -10713,6 +10955,12 @@ class AetherRaidTacticsBoard {
                         x.reserveToApplyAtkDebuff(-5); x.reserveToApplyResDebuff(-5);
                     });
                 break;
+            case PassiveC.ThreatenAtkRes2:
+                this.__applyThreatenSkill(skillOwner,
+                    x => {
+                        x.reserveToApplyAtkDebuff(-4); x.reserveToApplyResDebuff(-4);
+                    });
+                break;
             case PassiveC.ThreatenAtkDef2:
                 this.__applyThreatenSkill(skillOwner,
                     x => {
@@ -11054,6 +11302,8 @@ class AetherRaidTacticsBoard {
     }
 
     __simulateBeginningOfTurn(targetUnits) {
+        g_appData.isCombatOccuredInCurrentTurn = false;
+
         if (targetUnits.length == 0) {
             return;
         }
@@ -13261,10 +13511,8 @@ class AetherRaidTacticsBoard {
         }
 
         let commandType = CommandType.Normal;
-        if (unit.placedTile != tile) {
-            commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
-            commandType = CommandType.End;
-        }
+        commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
+        commandType = CommandType.End;
 
         commands.push(this.__createSupportCommand(unit, tile, assistTargetUnit, commandType));
         return commands;
@@ -13313,10 +13561,8 @@ class AetherRaidTacticsBoard {
     __createBreakStructureCommands(unit, moveTile, obj) {
         let commands = [];
         let commandType = CommandType.Normal;
-        if (unit.placedTile != moveTile) {
-            commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
-            commandType = CommandType.End;
-        }
+        commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
+        commandType = CommandType.End;
 
         commands.push(this.__createBreakStructureCommand(unit, moveTile, obj, commandType));
         return commands;
@@ -13359,10 +13605,56 @@ class AetherRaidTacticsBoard {
     }
 
     __activateCantoIfPossible(unit) {
-        if (this.vm.currentTurn <= 4 && unit.canActivateCanto()) {
+        if (this.__canActivateCanto(unit)) {
             this.writeDebugLogLine("再移動の発動");
-            unit.activateCantoIfPossible();
+            let count = this.__calcMoveCountForCanto(unit);
+            unit.activateCantoIfPossible(count);
         }
+    }
+
+    __canActivateCanto(unit) {
+        if (!unit.canActivateCanto()) {
+            return false;
+        }
+
+        if (this.__calcMoveCountForCanto(unit) == 0) {
+            return false;
+        }
+
+        // スキル毎の追加条件
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Lyngheior:
+                    if (this.vm.currentTurn <= 4) {
+                        return true;
+                    }
+                    break;
+                case PassiveB.SpdDefNearTrace3:
+                case PassiveB.SpdResFarTrace3:
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    __calcMoveCountForCanto(unit) {
+        let moveCountForCanto = 0;
+        for (let skillId of unit.enumerateSkills()) {
+            // 同系統効果複数時、最大値適用
+            switch (skillId) {
+                case Weapon.Lyngheior:
+                    moveCountForCanto = Math.max(moveCountForCanto, 3);
+                    break;
+                case PassiveB.SpdDefNearTrace3:
+                    moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
+                    break;
+                case PassiveB.SpdResFarTrace3:
+                    moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount);
+                    break;
+            }
+        }
+        return moveCountForCanto;
     }
 
     __enqueueBreakStructureCommand(unit, moveTile, obj) {
@@ -13387,6 +13679,20 @@ class AetherRaidTacticsBoard {
                 if (enableSoundEffect) {
                     self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
                 }
+
+                // 再移動で参照する残り移動量を更新
+                if (!unit.isCantoActivated()) {
+                    let moveDist = tileToMove.calculateUnitMovementCountToThisTile(
+                        unit,
+                        unit.placedTile,
+                        unit.moveCount,
+                        false);
+
+                    // ワープは0扱い
+                    let isWarp = moveDist == CanNotReachTile;
+                    unit.restMoveCount = isWarp ? 0 : unit.moveCount - moveDist;
+                }
+
                 if (unit.placedTile != tileToMove) {
                     if (self.vm.gameMode == GameMode.ResonantBattles
                         && unit.groupId == UnitGroupType.Enemy && isThief(unit) && tileToMove.posY == 0
@@ -13453,10 +13759,8 @@ class AetherRaidTacticsBoard {
     __createAttackCommands(attackerUnit, targetUnit, tile) {
         let commands = [];
         let commandType = CommandType.Normal;
-        if (attackerUnit.placedTile != tile) {
-            commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
-            commandType = CommandType.End;
-        }
+        commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
+        commandType = CommandType.End;
 
         commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, commandType));
         return commands;
@@ -14856,6 +15160,16 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.AtkSpdSnag3:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applySpdDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applyAtkDebuff(-6);
+                        u.applySpdDebuff(-6);
+                    }
+                    break;
                 case PassiveB.AtkDefSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applyAtkDebuff(-6);
