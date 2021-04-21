@@ -3107,7 +3107,7 @@ class Map {
                             case PassiveB.Kyuen2:
                                 threshold = 40;
                                 break;
-                            case PassiveB.Kyuuen3:
+                            case PassiveB.Kyuen3:
                                 threshold = 50;
                                 break;
                             case Weapon.FlowerLance:
