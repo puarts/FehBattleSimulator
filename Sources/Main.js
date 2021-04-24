@@ -852,6 +852,11 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoEirika:
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, duoUnit.groupId, 3, 3)) {
+                    unit.addStatusEffect(StatusEffectType.Dodge);
+                }
+                break;
             case Hero.HarmonizedMyrrh: {
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.FollowUpAttackMinus);
@@ -11334,6 +11339,7 @@ class AetherRaidTacticsBoard {
             unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
             if (unit.heroIndex == Hero.YoungPalla
                 || unit.heroIndex == Hero.DuoSigurd
+                || unit.heroIndex == Hero.DuoEirika
             ) {
                 if (this.isOddTurn) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;

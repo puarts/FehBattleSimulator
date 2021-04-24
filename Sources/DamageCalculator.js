@@ -1385,15 +1385,8 @@ class DamageCalculator {
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.KaihiTatakikomi3:
                     {
-                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - (percentage / 100.0);
-                        }
+                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        damageReductionRatio *= 1.0 - ratio;
                     }
                     break;
                 case PassiveB.BlueLionRule:
@@ -1412,6 +1405,11 @@ class DamageCalculator {
             }
         }
 
+        if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
+            let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            damageReductionRatio *= 1.0 - ratio;
+        }
+
         damageReductionRatio = 1.0 - damageReductionRatio;
         let reducedDamage = Math.trunc(damage * damageReductionRatio);
         let currentDamage = Math.max(damage - reducedDamage, 0);
@@ -1421,6 +1419,19 @@ class DamageCalculator {
             this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
         }
         return currentDamage;
+    }
+
+    __getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
+        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+        if (diff > 0) {
+            let percentage = diff * 4;
+            if (percentage > 40) {
+                percentage = 40;
+            }
+
+            return percentage / 100.0;
+        }
+        return 0;
     }
 
     __calcAndSetCooldownCount(atkUnit, defUnit, atkUnitSkillIds, defUnitSkillIds) {
@@ -1505,6 +1516,23 @@ class DamageCalculator {
         return TriangleAdvantage.None;
     }
 
+    __getDodgeDamageReductionRatio(atkUnit, defUnit) {
+        let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
+        let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
+        let diff = defUnitSpd - atkUnitSpd;
+        if (diff > 0) {
+            let percentage = diff * 4;
+            if (percentage > 40) {
+                percentage = 40;
+            }
+
+            this.writeDebugLog(`回避スキルによりダメージ${percentage}%軽減(速さの差 ${defUnitSpd}-${atkUnitSpd}=${diff})`);
+            return percentage / 100.0;
+        }
+
+        return 0;
+    }
+
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
             case Weapon.LilacJadeBreath:
@@ -1564,21 +1592,7 @@ class DamageCalculator {
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
-                {
-                    let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
-                    let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
-                    let diff = defUnitSpd - atkUnitSpd;
-                    if (diff > 0) {
-                        let percentage = diff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
-
-                        this.writeDebugLog(`回避スキルによりダメージ${percentage}%軽減(速さの差 ${defUnitSpd}-${atkUnitSpd}=${diff})`);
-                        return percentage / 100.0;
-                    }
-                }
-                break;
+                return this.__getDodgeDamageReductionRatio(atkUnit, defUnit);
             case PassiveB.BlueLionRule:
                 {
                     let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
@@ -1639,6 +1653,13 @@ class DamageCalculator {
 
                 for (let skillId of defUnit.enumerateSkills()) {
                     let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
+                    if (ratio > 0) {
+                        damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(ratio, atkUnit);
+                    }
+                }
+
+                if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
+                    let ratio = this.__getDodgeDamageReductionRatio(atkUnit, defUnit);
                     if (ratio > 0) {
                         damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(ratio, atkUnit);
                     }
