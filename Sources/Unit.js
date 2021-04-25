@@ -1151,6 +1151,7 @@ class AssistableUnitInfo {
     }
 
     __calcRestoreTargetPriority(assistUnit) {
+        this.amountHealed = calcHealAmount(assistUnit, this.targetUnit);
         let nagativeEffectPriority = 0;
         let amountHealedPriority = 0;
         let visibleStatTotalPriority = 0;
