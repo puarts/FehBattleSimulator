@@ -13607,10 +13607,13 @@ class AetherRaidTacticsBoard {
                 else {
                     moveStructureToTrashBox(obj);
                 }
-                g_app.endUnitAction(unit);
+
+                unit.endAction();
 
                 // 再移動の評価
                 self.__activateCantoIfPossible(unit);
+
+                self.__goToNextPhaseIfAllActionDone(unit.groupId);
             }, serial, commandType);
         return command;
     }
@@ -15891,6 +15894,15 @@ class AetherRaidTacticsBoard {
     endUnitAction(unit) {
         unit.endAction();
         this.__goToNextPhaseIfAllActionDone(unit.groupId);
+    }
+
+    __endUnitActionOrActivateCanto(unit) {
+        unit.endAction();
+
+        // 再移動の評価
+        self.__activateCantoIfPossible(unit);
+
+        self.__goToNextPhaseIfAllActionDone(unit.groupId);
     }
 
     __goToNextPhaseIfAllActionDone(groupId) {
