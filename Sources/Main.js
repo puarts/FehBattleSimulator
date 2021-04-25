@@ -13608,12 +13608,7 @@ class AetherRaidTacticsBoard {
                     moveStructureToTrashBox(obj);
                 }
 
-                unit.endAction();
-
-                // 再移動の評価
-                self.__activateCantoIfPossible(unit);
-
-                self.__goToNextPhaseIfAllActionDone(unit.groupId);
+                self.__endUnitActionOrActivateCanto(unit);
             }, serial, commandType);
         return command;
     }
