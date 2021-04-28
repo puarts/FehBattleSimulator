@@ -5952,7 +5952,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.spdSpur += 6;
                     }
                     break;
-                case Weapon.SunTwinWing:
+                case PassiveB.SunTwinWing:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         enemyUnit.spdSpur -= 5;
                         enemyUnit.defSpur -= 5;
