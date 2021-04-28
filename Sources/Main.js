@@ -15895,9 +15895,9 @@ class AetherRaidTacticsBoard {
         unit.endAction();
 
         // 再移動の評価
-        self.__activateCantoIfPossible(unit);
+        this.__activateCantoIfPossible(unit);
 
-        self.__goToNextPhaseIfAllActionDone(unit.groupId);
+        this.__goToNextPhaseIfAllActionDone(unit.groupId);
     }
 
     __goToNextPhaseIfAllActionDone(groupId) {
