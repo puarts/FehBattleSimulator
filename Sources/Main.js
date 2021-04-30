@@ -5844,6 +5844,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HallowedTyrfing:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(5);
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                        if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.4;
+                        }
+                    }
+                    break;
                 case PassiveC.FatalSmoke3:
                     targetUnit.battleContext.invalidatesHeal = true;
                     break;

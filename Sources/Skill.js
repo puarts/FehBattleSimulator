@@ -990,6 +990,9 @@ const Weapon = {
     FlowerLance: 1683, // スミアの花槍
 
     Skinfaxi: 1679, // スキンファクシ
+
+    // 2021年4月 伝承シグルド
+    HallowedTyrfing: 1701, // 聖裁ティルフィング
 };
 
 const Support = {
