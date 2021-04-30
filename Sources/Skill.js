@@ -1165,6 +1165,8 @@ const Special = {
     RighteousWind: 1237, // 聖風
 
     NegatingFang: 1469, // 反竜穿
+
+    HolyKnightAura: 1702, // グランベルの聖騎士
 };
 
 const PassiveA = {
@@ -2121,6 +2123,7 @@ function isNormalAttackSpecial(special) {
         case Special.Ignis:
         case Special.Iceberg:
         case Special.Glacies:
+        case Special.HolyKnightAura:
         case Special.DraconicAura:
         case Special.DragonFang:
         case Special.Sirius: // 天狼

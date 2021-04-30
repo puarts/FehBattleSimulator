@@ -1023,6 +1023,10 @@ class DamageCalculator {
                 specialAddDamage = Math.trunc(totalRes * 0.8);
                 break;
             }
+            case Special.HolyKnightAura:
+                // グランベルの聖騎士
+                specialAddDamage = Math.trunc(totalAtk * 0.25);
+                break;
             case Special.Fukuryu:
             case Special.DraconicAura:
                 // 竜裂

@@ -5063,6 +5063,14 @@ class AetherRaidTacticsBoard {
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Special.HolyKnightAura:
+                    if (attackUnit.battleContext.isSpecialActivated) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
+                            unit.applyAtkBuff(6);
+                            unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                        }
+                    }
+                    break;
                 case Special.HerosBlood:
                 case Special.HonoNoMonsyo:
                     if (attackUnit.battleContext.isSpecialActivated) {
@@ -10166,6 +10174,9 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Special.HolyKnightAura:
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                break;
             case Weapon.GrimasTruth:
                 if (skillOwner.isWeaponRefined) {
                     let enemies = this.__findNearestEnemies(skillOwner, 4);
