@@ -1395,6 +1395,7 @@ const PassiveA = {
 
     // 機先
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
+    AtkDefCatch4: 1703, // 攻撃守備の機先4
 
     // 万全
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
