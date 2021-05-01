@@ -990,6 +990,9 @@ const Weapon = {
     FlowerLance: 1683, // スミアの花槍
 
     Skinfaxi: 1679, // スキンファクシ
+
+    // 2021年4月 伝承シグルド
+    HallowedTyrfing: 1701, // 聖裁ティルフィング
 };
 
 const Support = {
@@ -1162,6 +1165,8 @@ const Special = {
     RighteousWind: 1237, // 聖風
 
     NegatingFang: 1469, // 反竜穿
+
+    HolyKnightAura: 1702, // グランベルの聖騎士
 };
 
 const PassiveA = {
@@ -1390,6 +1395,7 @@ const PassiveA = {
 
     // 機先
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
+    AtkDefCatch4: 1703, // 攻撃守備の機先4
 
     // 万全
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
@@ -2118,6 +2124,7 @@ function isNormalAttackSpecial(special) {
         case Special.Ignis:
         case Special.Iceberg:
         case Special.Glacies:
+        case Special.HolyKnightAura:
         case Special.DraconicAura:
         case Special.DragonFang:
         case Special.Sirius: // 天狼

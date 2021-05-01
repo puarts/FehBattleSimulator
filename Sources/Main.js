@@ -5063,6 +5063,14 @@ class AetherRaidTacticsBoard {
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Special.HolyKnightAura:
+                    if (attackUnit.battleContext.isSpecialActivated) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
+                            unit.applyAtkBuff(6);
+                            unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                        }
+                    }
+                    break;
                 case Special.HerosBlood:
                 case Special.HonoNoMonsyo:
                     if (attackUnit.battleContext.isSpecialActivated) {
@@ -5615,6 +5623,21 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case PassiveA.AtkDefCatch4:
+                    if (enemyUnit.snapshot.restHpPercentage == 100
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.defSpur += 7;
+
+                        if (enemyUnit.snapshot.restHpPercentage == 100
+                            && enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.atkSpur += 2;
+                            targetUnit.defSpur += 2;
+                        }
+                    }
+                    break;
                 case Weapon.FukenFalcion:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.snapshot.restHpPercentage < 100
@@ -5844,6 +5867,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HallowedTyrfing:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(5);
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                        if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.4;
+                        }
+                    }
+                    break;
                 case PassiveC.FatalSmoke3:
                     targetUnit.battleContext.invalidatesHeal = true;
                     break;
@@ -10155,6 +10189,9 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Special.HolyKnightAura:
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                break;
             case Weapon.GrimasTruth:
                 if (skillOwner.isWeaponRefined) {
                     let enemies = this.__findNearestEnemies(skillOwner, 4);
