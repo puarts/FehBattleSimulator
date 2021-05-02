@@ -457,7 +457,11 @@ class HeroInfo {
         resplendent,
         origin,
         howToGet,
-        releaseDate
+        releaseDate,
+        specials,
+        passiveAs,
+        passiveBs,
+        passiveCs
     ) {
         this.id = id;
         this.seasonType = seasonType;
@@ -529,6 +533,10 @@ class HeroInfo {
         this.passiveSOptions = [];
         this.weapons = weapons;
         this.supports = supports;
+        this.specials = specials;
+        this.passiveAs = passiveAs;
+        this.passiveBs = passiveBs;
+        this.passiveCs = passiveCs;
         this.isResplendent = resplendent;
         this.origin = origin;
         this.howToGet = howToGet;

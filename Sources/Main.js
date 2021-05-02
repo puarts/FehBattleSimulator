@@ -2497,16 +2497,16 @@ class AetherRaidTacticsBoard {
                     x => (!x.canInherit && heroInfo.supports.includes(x.id))
                         || this.__isInheritableSkill(weaponType, moveType, x));
                 this.__registerInheritableSkills(heroInfo.specialOptions, this.vm.specialOptions, [g_appData.specialInfos],
-                    x => (!x.canInherit && heroInfo.special == x.id)
+                    x => (!x.canInherit && heroInfo.specials.includes(x.id))
                         || this.__isInheritableSkill(weaponType, moveType, x));
                 this.__registerInheritableSkills(heroInfo.passiveAOptions, this.vm.passiveAOptions, [g_appData.passiveAInfos],
-                    x => (!x.canInherit && heroInfo.passiveA == x.id)
+                    x => (!x.canInherit && heroInfo.passiveAs.includes(x.id))
                         || this.__isInheritableSkill(weaponType, moveType, x));
                 this.__registerInheritableSkills(heroInfo.passiveBOptions, this.vm.passiveBOptions, [g_appData.passiveBInfos],
-                    x => (!x.canInherit && heroInfo.passiveB == x.id)
+                    x => (!x.canInherit && heroInfo.passiveBs.includes(x.id))
                         || this.__isInheritableSkill(weaponType, moveType, x));
                 this.__registerInheritableSkills(heroInfo.passiveCOptions, this.vm.passiveCOptions, [g_appData.passiveCInfos],
-                    x => (!x.canInherit && heroInfo.passiveC == x.id)
+                    x => (!x.canInherit && heroInfo.passiveCs.includes(x.id))
                         || this.__isInheritableSkill(weaponType, moveType, x));
                 this.__registerInheritableSkills(heroInfo.passiveSOptions, this.vm.passiveSOptions, [g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
                     x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && this.__isInheritableSkill(weaponType, moveType, x));
