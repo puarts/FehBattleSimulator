@@ -1536,6 +1536,7 @@ const PassiveB = {
     SealSpdRes2: 1389, // 速さ魔防封じ2
 
     KoriNoHuin: 660, // 氷の封印
+    ChillingSeal2: 1692, // 氷の封印・承
     ToketsuNoHuin: 770, // 凍結の封印
 
     Ikari3: 637, // 怒り3
