@@ -631,6 +631,9 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {
+                case PassiveB.Bushido2:
+                    fixedAddDamage += 7;
+                    break;
                 case PassiveB.Atrocity:
                     if (defUnit.snapshot.restHpPercentage >= 50) {
                         fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat() * 0.25);
@@ -1385,6 +1388,7 @@ class DamageCalculator {
                         }
                     }
                     break;
+                case PassiveB.Bushido2:
                 case PassiveB.Spurn3:
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.KaihiTatakikomi3:
@@ -1593,6 +1597,7 @@ class DamageCalculator {
                     }
                 }
                 break;
+            case PassiveB.Bushido2:
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
