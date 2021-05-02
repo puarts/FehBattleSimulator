@@ -10548,6 +10548,18 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case PassiveB.ChillingSeal2:
+                for (let unit of this.__findMinStatusUnits(
+                    skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
+                    x => this.__getStatusEvalUnit(x).getDefInPrecombat())
+                    ) {
+                    unit.reserveToApplyAllDebuff(-7);
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        u.reserveToApplyAtkDebuff(-7);
+                        u.reserveToApplyResDebuff(-7);
+                    }
+                }
+                break;
             case PassiveC.VisionOfArcadia:
                 if (this.__isThereAnyAllyUnit(skillOwner, x => isWeaponTypeBreathOrBeast(x.weaponType))) {
                     for (let unit of this.__findMaxStatusUnits(

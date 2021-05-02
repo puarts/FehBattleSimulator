@@ -1536,6 +1536,7 @@ const PassiveB = {
     SealSpdRes2: 1389, // 速さ魔防封じ2
 
     KoriNoHuin: 660, // 氷の封印
+    ChillingSeal2: 1692, // 氷の封印・承
     ToketsuNoHuin: 770, // 凍結の封印
 
     Ikari3: 637, // 怒り3
@@ -1597,6 +1598,7 @@ const PassiveB = {
     SeikishiNoKago: 657, // 聖騎士の加護
     Shishirenzan: 665, // 獅子連斬
     Bushido: 664, // 武士道
+    Bushido2: 1693, // 武士道・承
     Recovering: 659, // リカバーリング
     TaiyoNoUdewa: 662, // 太陽の腕輪
     KyusyuTaikei3: 1072, // 急襲隊形3
