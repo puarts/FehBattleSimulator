@@ -439,14 +439,15 @@
                                                             {{attackerUnitIndex < 0 ? "－" :
                                                                 units[attackerUnitIndex].heroInfo==null ?
                                                                 units[attackerUnitIndex].name:
-                                                                units[attackerUnitIndex].heroInfo.pureName}} </td>
+                                                                units[attackerUnitIndex].heroInfo.pureNames[0]}} </td>
                                                                 <!-- <td style="font-size:10px"></td> -->
                                                         <td class="enemy" align="center"
                                                             v-bind:style="attackInfoTdStyle">
                                                             {{attackTargetUnitIndex < 0 ? "－"
                                                                 :units[attackTargetUnitIndex].heroInfo==null
                                                                 ?units[attackTargetUnitIndex].name:
-                                                                units[attackTargetUnitIndex].heroInfo.pureName}} </td>
+                                                                units[attackTargetUnitIndex].heroInfo.pureNames[0]}}
+                                                                </td>
                                                                 <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
                                                                                         v-bind:src="units[attackTargetUnitIndex].icon"></td> -->
                                                     </tr>
