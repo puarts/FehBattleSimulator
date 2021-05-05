@@ -449,7 +449,7 @@ class HeroInfo {
         seasonType,
         blessingType,
         epithet,
-        pureName,
+        pureNames,
         duelScore,
         weapons,
         supports,
@@ -521,7 +521,7 @@ class HeroInfo {
         this.resDecrement = Number(resVar.split('/')[0]);
 
         this.epithet = epithet;
-        this.pureName = pureName;
+        this.pureNames = pureNames;
         this.duelScore = duelScore;
 
         this.weaponOptions = [];

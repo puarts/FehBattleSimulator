@@ -1700,9 +1700,10 @@ class AetherRaidTacticsBoard {
             partialName,
             g_appData.heroInfos.data,
             info => {
-                let nameDiff = calcSimilarity(partialName, info.pureName);
+                let pureName = info.pureNames[0];
+                let nameDiff = calcSimilarity(partialName, pureName);
                 let epithetDiff = calcSimilarity(epithet, info.epithet);
-                // console.log(`${partialName} - ${info.pureName} = ${nameDiff}`);
+                // console.log(`${partialName} - ${pureName} = ${nameDiff}`);
                 // console.log(`${epithet} - ${info.epithet} = ${epithetDiff}`);
                 return nameDiff + epithetDiff;
             }
@@ -1710,7 +1711,7 @@ class AetherRaidTacticsBoard {
 
         if (result != null) {
             let replacedPartialName = adjustChars(partialName);
-            this.writeDebugLogLine(`${replacedPartialName}(${epithet}) is similar to ${result[0].pureName}(${result[0].epithet})(${result[1]})`);
+            this.writeDebugLogLine(`${replacedPartialName}(${epithet}) is similar to ${result[0].pureNames[0]}(${result[0].epithet})(${result[1]})`);
         }
         return result;
     }
@@ -10552,7 +10553,7 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.__findMinStatusUnits(
                     skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
                     x => this.__getStatusEvalUnit(x).getDefInPrecombat())
-                    ) {
+                ) {
                     unit.reserveToApplyAllDebuff(-7);
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
                         u.reserveToApplyAtkDebuff(-7);
