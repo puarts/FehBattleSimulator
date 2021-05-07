@@ -12606,6 +12606,10 @@ class AetherRaidTacticsBoard {
     }
 
     __examinesCanTriggerAction(unit) {
+        if (unit.isActionDone) {
+            return false;
+        }
+
         if (unit.actionContext.hasThreatensEnemyStatus) {
             return true;
         }
