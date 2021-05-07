@@ -2790,9 +2790,14 @@ class Map {
     }
 
     getNearestMovableTiles(
-        moveUnit, targetUnitTile, additionalEvalTiles, evalsAttackableTiles = false, movableTiles = null,
+        moveUnit,
+        targetUnitTile,
+        additionalEvalTiles,
+        evalsAttackableTiles = false,
+        movableTiles = null,
         ignoresUnits = true,
         isUnitIgnoredFunc = null,
+        isPathfinderEnabled = true,
     ) {
         let nearestTiles = [];
         let minDist = CanNotReachTile;
@@ -2800,7 +2805,8 @@ class Map {
             minDist = this.getMinDistToAttackableTile(moveUnit.placedTile, moveUnit, targetUnitTile);
         }
         else {
-            minDist = targetUnitTile.calculateUnitMovementCountToThisTile(moveUnit, moveUnit.placedTile, -1, ignoresUnits, isUnitIgnoredFunc);
+            minDist = targetUnitTile.calculateUnitMovementCountToThisTile(
+                moveUnit, moveUnit.placedTile, -1, ignoresUnits, isUnitIgnoredFunc, isPathfinderEnabled);
         }
         // console.log(moveUnit.getNameWithGroup() + "のもっとも近い移動可能なタイルを調査: 現在のマスからの距離=" + minDist);
         let evalTiles = [];
@@ -2828,7 +2834,8 @@ class Map {
             if (evalsAttackableTiles) {
                 dist = this.getMinDistToAttackableTile(movableTile, moveUnit, targetUnitTile);
             } else {
-                dist = targetUnitTile.calculateUnitMovementCountToThisTile(moveUnit, movableTile, -1, ignoresUnits, isUnitIgnoredFunc);
+                dist = targetUnitTile.calculateUnitMovementCountToThisTile(
+                    moveUnit, movableTile, -1, ignoresUnits, isUnitIgnoredFunc, isPathfinderEnabled);
             }
             if (dist < 0) {
                 continue;
@@ -3103,7 +3110,7 @@ class Map {
                 case Weapon.FlowerLance:
                     for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                         let threshold = 0;
-                        switch(skillId) {
+                        switch (skillId) {
                             case PassiveB.Kyuen2:
                                 threshold = 40;
                                 break;

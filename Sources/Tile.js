@@ -323,8 +323,8 @@ class Tile {
         return this._type == TileType.Forest || this._type == TileType.DefensiveForest;
     }
 
-    __getTileMoveWeight(unit) {
-        if (this.__canActivatePathfinder(unit)) {
+    __getTileMoveWeight(unit, isPathfinderEnabled = true) {
+        if (isPathfinderEnabled && this.__canActivatePathfinder(unit)) {
             return 0;
         }
 
@@ -423,7 +423,14 @@ class Tile {
         );
     }
 
-    calculateUnitMovementCountToThisTile(moveUnit, fromTile = null, inputMaxDepth = -1, ignoresUnits = true, isUnitIgnoredFunc = null) {
+    calculateUnitMovementCountToThisTile(
+        moveUnit,
+        fromTile = null,
+        inputMaxDepth = -1,
+        ignoresUnits = true,
+        isUnitIgnoredFunc = null,
+        isPathfinderEnabled = true, // 天駆の道を考慮するか否か
+    ) {
         if (fromTile == null) {
             fromTile = moveUnit.placedTile;
         }
@@ -454,7 +461,8 @@ class Tile {
             },
             ignoresUnits,
             ignoresBreakableWalls,
-            isUnitIgnoredFunc
+            isUnitIgnoredFunc,
+            isPathfinderEnabled
         );
     }
 
@@ -472,6 +480,7 @@ class Tile {
         ignoresUnits = true,
         ignoresBreakableWalls = true,
         isUnitIgnoredFunc = null,
+        isPathfinderEnabled = true,
         currentDepth = 0,
         currentDistance = 0,
         closestDistance = CanNotReachTile
@@ -484,7 +493,8 @@ class Tile {
             }
             alreadyTraced.push(neighborTile);
 
-            let weight = neighborTile.getMoveWeight(moveUnit, ignoresUnits, ignoresBreakableWalls, isUnitIgnoredFunc);
+            let weight = neighborTile.getMoveWeight(
+                moveUnit, ignoresUnits, ignoresBreakableWalls, isUnitIgnoredFunc, isPathfinderEnabled);
             if (weight >= CanNotReachTile) {
                 // 通行不可
                 continue;
@@ -516,7 +526,15 @@ class Tile {
 
             let nextAlreadyTraced = alreadyTraced.slice(0, alreadyTraced.length);
             let distance = neighborTile._calculateDistanceToClosestTile(
-                nextAlreadyTraced, moveUnit, maxDepth, isTargetTileFunc, sortNeighborsFunc, ignoresUnits, ignoresBreakableWalls, isUnitIgnoredFunc,
+                nextAlreadyTraced,
+                moveUnit,
+                maxDepth,
+                isTargetTileFunc,
+                sortNeighborsFunc,
+                ignoresUnits,
+                ignoresBreakableWalls,
+                isUnitIgnoredFunc,
+                isPathfinderEnabled,
                 currentDepth + 1, nextDistance, closestDistance);
 
             if (distance < closestDistance) {
@@ -596,7 +614,7 @@ class Tile {
     }
 
 
-    getMoveWeight(unit, ignoresUnits, ignoresBreakableWalls = false, isUnitIgnoredFunc = null) {
+    getMoveWeight(unit, ignoresUnits, ignoresBreakableWalls = false, isUnitIgnoredFunc = null, isPathfinderEnabled = true) {
         if (this._placedUnit != null && isUnitIgnoredFunc != null && !isUnitIgnoredFunc(this._placedUnit)) {
             // タイルのユニットを無視しないので障害物扱い
             return CanNotReachTile;
@@ -623,7 +641,7 @@ class Tile {
             }
         }
 
-        var weight = this.__getTileMoveWeight(unit);
+        var weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
         if (weight != CanNotReachTile && weight != 0) {
             if (unit.weapon == Weapon.FujinYumi && unit.isWeaponRefined && unit.hpPercentage >= 50) {
                 weight = 1;

@@ -13412,6 +13412,7 @@ class AetherRaidTacticsBoard {
     __createTargetTileContexts(unit, movableTiles, pivotTiles) {
         let chaseTargetTile = unit.chaseTargetTile;
         let ignoresUnits = true;
+        let isPathfinderEnabled = false; // 移動先のマスを選ぶときに天駆の道を考慮しない
         let targetTileContexts = [];
         for (let tile of g_appData.map.getNearestMovableTiles(
             unit, chaseTargetTile, pivotTiles, false, movableTiles, ignoresUnits, tileUnit => {
@@ -13422,7 +13423,7 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 return true;
-            })
+            }, isPathfinderEnabled)
         ) {
             let context = new TilePriorityContext(tile, unit);
             context.isPivotRequired = pivotTiles.includes(context.tile);
