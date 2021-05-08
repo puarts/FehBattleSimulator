@@ -1402,6 +1402,7 @@ const PassiveA = {
 
     // 万全
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
+    AtkDefIdeal4: 1705,
 };
 
 const PassiveB = {
@@ -1633,14 +1634,11 @@ const PassiveB = {
 
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王
-
     Atrocity: 1514, // 無惨
-
     BindingNecklace: 1540, // 束縛の首飾り
-
     FallenStar: 1651, // 落星
-
     SunTwinWing: 1680, // 双姫の陽翼
+    ArmoredWall: 1706, // 覇鎧障壁
 
     // 近影、遠影
     SpdDefNearTrace3: 1695, // 速さ守備の近影3

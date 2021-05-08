@@ -3002,10 +3002,8 @@ class AetherRaidTacticsBoard {
 
         // 最初の戦闘のみで発動する状態効果は、状態が付与されていない戦闘も最初の戦闘にカウントするので
         // 強制的にtrueにする
-        atkUnit.isOneTimeActionActivatedForShieldEffect = true;
-        atkUnit.isOneTimeActionActivatedForFallenStar = true;
-        defUnit.isOneTimeActionActivatedForShieldEffect = true;
-        defUnit.isOneTimeActionActivatedForFallenStar = true;
+        this.__setOnetimeActionFlag(atkUnit);
+        this.__setOnetimeActionFlag(defUnit);
 
         // 戦闘後発動のスキル効果
         if (atkUnit.isAlive) {
@@ -3024,16 +3022,6 @@ class AetherRaidTacticsBoard {
                 this.__applyAttackSkillEffectAfterCombat(defUnit, atkUnit);
             }
             this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit);
-
-            for (let skillId of defUnit.enumerateSkills()) {
-                switch (skillId) {
-                    case PassiveB.GuardBearing3:
-                        if (!defUnit.isOneTimeActionActivatedForPassiveB) {
-                            defUnit.isOneTimeActionActivatedForPassiveB = true;
-                        }
-                        break;
-                }
-            }
         }
 
         if (result.atkUnit_actualTotalAttackCount > 0) {
@@ -4442,6 +4430,20 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case PassiveA.AtkDefIdeal4:
+                    if (targetUnit.snapshot.restHpPercentage == 100
+                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
+                    ) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.defSpur += 7;
+                        if (targetUnit.snapshot.restHpPercentage == 100
+                            && targetUnit.hasPositiveStatusEffect(enemyUnit)
+                        ) {
+                            targetUnit.atkSpur += 2;
+                            targetUnit.defSpur += 2;
+                        }
+                    }
+                    break;
                 case Weapon.Skinfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.applyAtkUnity();
@@ -4821,9 +4823,22 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __setOnetimeActionFlag(unit) {
+        unit.isOneTimeActionActivatedForShieldEffect = true;
+        unit.isOneTimeActionActivatedForFallenStar = true;
 
-    __applySkillEffectAfterCombatForUnit(attackUnit, attackTargetUnit) {
-        for (let skillId of attackTargetUnit.enumerateSkills()) {
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.ArmoredWall:
+                case PassiveB.GuardBearing3:
+                    unit.isOneTimeActionActivatedForPassiveB = true;
+                    break;
+            }
+        }
+    }
+
+    __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
+        for (let skillId of enemyUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveS.GoeiNoGuzo:
                 case PassiveS.TozokuNoGuzoRakurai:
@@ -4832,123 +4847,128 @@ class AetherRaidTacticsBoard {
                 case PassiveS.TozokuNoGuzoKusuri:
                 case PassiveS.TozokuNoGuzoOugi:
                 case PassiveS.TozokuNoGuzoOdori:
-                    if (!attackTargetUnit.isAlive) {
-                        this.writeDebugLogLine(`${attackTargetUnit.passiveSInfo.name}発動、${attackUnit.getNameWithGroup()}のHP10回復、奥義カウント+1`);
-                        attackUnit.reserveHeal(10);
-                        attackUnit.specialCount += 1;
+                    if (!enemyUnit.isAlive) {
+                        this.writeDebugLogLine(`${enemyUnit.passiveSInfo.name}発動、${targetUnit.getNameWithGroup()}のHP10回復、奥義カウント+1`);
+                        targetUnit.reserveHeal(10);
+                        targetUnit.specialCount += 1;
                     }
                     break;
             }
         }
-        for (let skillId of attackUnit.enumerateSkills()) {
+        for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.ArmoredWall:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.Ivarudhi:
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        if (attackTargetUnit.snapshot.restHpPercentage >= 75) {
-                            attackUnit.reserveHeal(7);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.reserveHeal(7);
                         }
                     }
                     break;
                 case PassiveB.FallenStar:
-                    if (attackUnit.battleContext.initiatesCombat) {
-                        attackUnit.addStatusEffect(StatusEffectType.FallenStar);
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.addStatusEffect(StatusEffectType.FallenStar);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
                             unit.addStatusEffect(StatusEffectType.Gravity);
                         }
                     }
                     break;
                 case Weapon.Aureola:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
                         unit.reserveHeal(7);
                     }
                     break;
                 case Weapon.DarkCreatorS:
-                    attackUnit.isOneTimeActionActivatedForWeapon = true;
+                    targetUnit.isOneTimeActionActivatedForWeapon = true;
                     break;
                 case Weapon.EffiesLance:
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        attackUnit.isOneTimeActionActivatedForWeapon = true;
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
                 case Weapon.TomeOfFavors:
-                    if (!isWeaponTypeBeast(attackTargetUnit.weaponType)) {
-                        attackUnit.reserveHeal(7);
+                    if (!isWeaponTypeBeast(enemyUnit.weaponType)) {
+                        targetUnit.reserveHeal(7);
                     }
                     break;
                 case Weapon.OukeNoKen:
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        if (attackUnit.snapshot.restHpPercentage >= 25) {
-                            attackUnit.reserveHeal(7);
-                            attackUnit.specialCount -= 1;
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.reserveHeal(7);
+                            targetUnit.specialCount -= 1;
                         }
                     }
                     break;
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
                 case Weapon.HiddenThornsPlus:
-                    if (!attackUnit.isOneTimeActionActivatedForWeapon) {
-                        attackUnit.reserveHeal(7);
-                        attackUnit.isOneTimeActionActivatedForWeapon = true;
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                        targetUnit.reserveHeal(7);
+                        targetUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
                 case Weapon.StarpointLance:
-                    if (!attackUnit.isOneTimeActionActivatedForWeapon) {
-                        attackUnit.reserveHeal(10);
-                        attackUnit.isOneTimeActionActivatedForWeapon = true;
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                        targetUnit.reserveHeal(10);
+                        targetUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
-                case PassiveB.SealAtk1: attackTargetUnit.applyAtkDebuff(-3); break;
-                case PassiveB.SealAtk2: attackTargetUnit.applyAtkDebuff(-5); break;
-                case PassiveB.SealAtk3: attackTargetUnit.applyAtkDebuff(-7); break;
-                case PassiveB.SealSpd1: attackTargetUnit.applySpdDebuff(-3); break;
-                case PassiveB.SealSpd2: attackTargetUnit.applySpdDebuff(-5); break;
-                case PassiveB.SealSpd3: attackTargetUnit.applySpdDebuff(-7); break;
-                case PassiveB.SealDef1: attackTargetUnit.applyDefDebuff(-3); break;
-                case PassiveB.SealDef2: attackTargetUnit.applyDefDebuff(-5); break;
-                case PassiveB.SealDef3: attackTargetUnit.applyDefDebuff(-7); break;
-                case PassiveB.SealRes1: attackTargetUnit.applyResDebuff(-3); break;
-                case PassiveB.SealRes2: attackTargetUnit.applyResDebuff(-5); break;
-                case PassiveB.SealRes3: attackTargetUnit.applyResDebuff(-7); break;
-                case PassiveB.SealAtkSpd1: attackTargetUnit.applyAtkDebuff(-3); attackTargetUnit.applySpdDebuff(-3); break;
-                case PassiveB.SealAtkDef1: attackTargetUnit.applyAtkDebuff(-3); attackTargetUnit.applyDefDebuff(-3); break;
-                case PassiveB.SealDefRes1: attackTargetUnit.applyDefDebuff(-3); attackTargetUnit.applyResDebuff(-3); break;
-                case PassiveB.SealSpdDef1: attackTargetUnit.applySpdDebuff(-3); attackTargetUnit.applyDefDebuff(-3); break;
-                case PassiveB.SealSpdRes1: attackTargetUnit.applySpdDebuff(-3); attackTargetUnit.applyResDebuff(-3); break;
-                case PassiveB.SealAtkSpd2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applySpdDebuff(-5); break;
-                case PassiveB.SealAtkDef2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applyDefDebuff(-5); break;
-                case PassiveB.SealAtkRes2: attackTargetUnit.applyAtkDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
-                case PassiveB.SealDefRes2: attackTargetUnit.applyDefDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
-                case PassiveB.SealSpdDef2: attackTargetUnit.applySpdDebuff(-5); attackTargetUnit.applyDefDebuff(-5); break;
-                case PassiveB.SealSpdRes2: attackTargetUnit.applySpdDebuff(-5); attackTargetUnit.applyResDebuff(-5); break;
+                case PassiveB.SealAtk1: enemyUnit.applyAtkDebuff(-3); break;
+                case PassiveB.SealAtk2: enemyUnit.applyAtkDebuff(-5); break;
+                case PassiveB.SealAtk3: enemyUnit.applyAtkDebuff(-7); break;
+                case PassiveB.SealSpd1: enemyUnit.applySpdDebuff(-3); break;
+                case PassiveB.SealSpd2: enemyUnit.applySpdDebuff(-5); break;
+                case PassiveB.SealSpd3: enemyUnit.applySpdDebuff(-7); break;
+                case PassiveB.SealDef1: enemyUnit.applyDefDebuff(-3); break;
+                case PassiveB.SealDef2: enemyUnit.applyDefDebuff(-5); break;
+                case PassiveB.SealDef3: enemyUnit.applyDefDebuff(-7); break;
+                case PassiveB.SealRes1: enemyUnit.applyResDebuff(-3); break;
+                case PassiveB.SealRes2: enemyUnit.applyResDebuff(-5); break;
+                case PassiveB.SealRes3: enemyUnit.applyResDebuff(-7); break;
+                case PassiveB.SealAtkSpd1: enemyUnit.applyAtkDebuff(-3); enemyUnit.applySpdDebuff(-3); break;
+                case PassiveB.SealAtkDef1: enemyUnit.applyAtkDebuff(-3); enemyUnit.applyDefDebuff(-3); break;
+                case PassiveB.SealDefRes1: enemyUnit.applyDefDebuff(-3); enemyUnit.applyResDebuff(-3); break;
+                case PassiveB.SealSpdDef1: enemyUnit.applySpdDebuff(-3); enemyUnit.applyDefDebuff(-3); break;
+                case PassiveB.SealSpdRes1: enemyUnit.applySpdDebuff(-3); enemyUnit.applyResDebuff(-3); break;
+                case PassiveB.SealAtkSpd2: enemyUnit.applyAtkDebuff(-5); enemyUnit.applySpdDebuff(-5); break;
+                case PassiveB.SealAtkDef2: enemyUnit.applyAtkDebuff(-5); enemyUnit.applyDefDebuff(-5); break;
+                case PassiveB.SealAtkRes2: enemyUnit.applyAtkDebuff(-5); enemyUnit.applyResDebuff(-5); break;
+                case PassiveB.SealDefRes2: enemyUnit.applyDefDebuff(-5); enemyUnit.applyResDebuff(-5); break;
+                case PassiveB.SealSpdDef2: enemyUnit.applySpdDebuff(-5); enemyUnit.applyDefDebuff(-5); break;
+                case PassiveB.SealSpdRes2: enemyUnit.applySpdDebuff(-5); enemyUnit.applyResDebuff(-5); break;
                 case PassiveB.SeimeiNoGofu3:
-                    attackUnit.reserveHeal(6);
+                    targetUnit.reserveHeal(6);
                     break;
                 case Weapon.TaguelChildFang:
-                    if (attackUnit.hpPercentage <= 75) {
-                        attackUnit.specialCount -= 2;
+                    if (targetUnit.hpPercentage <= 75) {
+                        targetUnit.specialCount -= 2;
                     }
                     break;
                 case Weapon.MasyouNoYari:
-                    if (attackUnit.isWeaponRefined) {
-                        attackUnit.reserveTakeDamage(6);
+                    if (targetUnit.isWeaponRefined) {
+                        targetUnit.reserveTakeDamage(6);
                     } else {
-                        attackUnit.reserveTakeDamage(4);
+                        targetUnit.reserveTakeDamage(4);
                     }
                     break;
                 case Weapon.DevilAxe:
-                    attackUnit.reserveTakeDamage(4);
+                    targetUnit.reserveTakeDamage(4);
                     break;
                 case Weapon.BatoruNoGofu:
                 case Weapon.HinataNoMoutou:
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        attackUnit.reserveTakeDamage(6);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.reserveTakeDamage(6);
                     }
                     break;
                 case PassiveA.Fury1:
-                    attackUnit.reserveTakeDamage(2);
+                    targetUnit.reserveTakeDamage(2);
                     break;
                 case PassiveA.Fury2:
-                    attackUnit.reserveTakeDamage(4);
+                    targetUnit.reserveTakeDamage(4);
                     break;
                 case Weapon.FurasukoPlus:
                 case Weapon.KabochaNoGyotoPlus:
@@ -4956,74 +4976,74 @@ class AetherRaidTacticsBoard {
                 case Weapon.RosokuNoYumiPlus:
                 case Weapon.Mistoruthin:
                 case PassiveA.Fury3:
-                    attackUnit.reserveTakeDamage(6);
+                    targetUnit.reserveTakeDamage(6);
                     break;
                 case PassiveA.Fury4:
-                    attackUnit.reserveTakeDamage(8);
+                    targetUnit.reserveTakeDamage(8);
                     break;
                 case PassiveA.AtkSpdPush3:
                 case PassiveA.AtkDefPush3:
                 case PassiveA.AtkResPush3:
-                    this.writeDebugLogLine("渾身3を評価: 戦闘前のHP=" + attackUnit.battleContext.hpBeforeCombat);
-                    if (attackUnit.battleContext.hpBeforeCombat == attackUnit.maxHpWithSkills) {
+                    this.writeDebugLogLine("渾身3を評価: 戦闘前のHP=" + targetUnit.battleContext.hpBeforeCombat);
+                    if (targetUnit.battleContext.hpBeforeCombat == targetUnit.maxHpWithSkills) {
                         this.writeLogLine("渾身3による1ダメージ");
-                        attackUnit.reserveTakeDamage(1);
+                        targetUnit.reserveTakeDamage(1);
                     }
                     break;
                 case PassiveA.AtkSpdPush4:
                 case PassiveA.AtkResPush4:
                 case PassiveA.AtkDefPush4:
-                    this.writeDebugLogLine("渾身4を評価: 戦闘前のHP=" + attackUnit.battleContext.hpBeforeCombat);
-                    if (attackUnit.battleContext.hpBeforeCombat >= Math.floor(attackUnit.maxHpWithSkills * 0.25)) {
+                    this.writeDebugLogLine("渾身4を評価: 戦闘前のHP=" + targetUnit.battleContext.hpBeforeCombat);
+                    if (targetUnit.battleContext.hpBeforeCombat >= Math.floor(targetUnit.maxHpWithSkills * 0.25)) {
                         this.writeLogLine("渾身4による5ダメージ");
-                        attackUnit.reserveTakeDamage(5);
+                        targetUnit.reserveTakeDamage(5);
                     }
                     break;
                 case PassiveB.OgiNoRasen3:
                 case Weapon.MakenMistoruthin:
-                    if (attackUnit.battleContext.isSpecialActivated) {
-                        attackUnit.specialCount -= 2;
+                    if (targetUnit.battleContext.isSpecialActivated) {
+                        targetUnit.specialCount -= 2;
                     }
                     break;
                 case PassiveC.FatalSmoke3:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                         unit.addStatusEffect(StatusEffectType.DeepWounds);
                     }
                     break;
                 case PassiveC.PanicSmoke3:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                         unit.addStatusEffect(StatusEffectType.Panic);
                     }
                     break;
                 case PassiveC.KodoNoGenen3:
-                    this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の鼓動の幻煙3発動");
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    this.writeDebugLogLine(targetUnit.getNameWithGroup() + "の鼓動の幻煙3発動");
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                         this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
                         unit.specialCount += 1;
                     }
                     break;
                 case PassiveB.Atrocity:
-                    if (attackTargetUnit.snapshot.restHpPercentage >= 50) {
-                        this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の無惨発動");
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        this.writeDebugLogLine(targetUnit.getNameWithGroup() + "の無惨発動");
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                             this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
                             unit.specialCount += 1;
                             unit.applyAllDebuff(-5);
                         }
                     }
                     break;
-                case PassiveC.AtkSmoke1: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-3)); break;
-                case PassiveC.AtkSmoke2: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-5)); break;
-                case PassiveC.AtkSmoke3: this.__applySmokeSkill(attackTargetUnit, x => x.applyAtkDebuff(-7)); break;
-                case PassiveC.SpdSmoke1: this.__applySmokeSkill(attackTargetUnit, x => x.applySpdDebuff(-3)); break;
-                case PassiveC.SpdSmoke2: this.__applySmokeSkill(attackTargetUnit, x => x.applySpdDebuff(-5)); break;
-                case PassiveC.SpdSmoke3: this.__applySmokeSkill(attackTargetUnit, x => x.applySpdDebuff(-7)); break;
-                case PassiveC.DefSmoke1: this.__applySmokeSkill(attackTargetUnit, x => x.applyDefDebuff(-3)); break;
-                case PassiveC.DefSmoke2: this.__applySmokeSkill(attackTargetUnit, x => x.applyDefDebuff(-5)); break;
-                case PassiveC.DefSmoke3: this.__applySmokeSkill(attackTargetUnit, x => x.applyDefDebuff(-7)); break;
-                case PassiveC.ResSmoke1: this.__applySmokeSkill(attackTargetUnit, x => x.applyResDebuff(-3)); break;
-                case PassiveC.ResSmoke2: this.__applySmokeSkill(attackTargetUnit, x => x.applyResDebuff(-5)); break;
-                case PassiveC.ResSmoke3: this.__applySmokeSkill(attackTargetUnit, x => x.applyResDebuff(-7)); break;
+                case PassiveC.AtkSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-3)); break;
+                case PassiveC.AtkSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-5)); break;
+                case PassiveC.AtkSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-7)); break;
+                case PassiveC.SpdSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-3)); break;
+                case PassiveC.SpdSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-5)); break;
+                case PassiveC.SpdSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-7)); break;
+                case PassiveC.DefSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyDefDebuff(-3)); break;
+                case PassiveC.DefSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyDefDebuff(-5)); break;
+                case PassiveC.DefSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyDefDebuff(-7)); break;
+                case PassiveC.ResSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-3)); break;
+                case PassiveC.ResSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-5)); break;
+                case PassiveC.ResSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-7)); break;
             }
         }
     }
@@ -5881,8 +5901,19 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.ArmoredWall:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                        if (targetUnit.isTransformed
+                            && !targetUnit.isOneTimeActionActivatedForPassiveB
+                        ) {
+                            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.4;
+                        }
+                    }
+                    break;
                 case Weapon.TwinCrestPower:
-                    if (enemyUnit.snapshot.restHpPercentage >= 25) {
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
                         enemyUnit.atkSpur -= 6;
                         enemyUnit.defSpur -= 6;
                         targetUnit.battleContext.followupAttackPriority--;
