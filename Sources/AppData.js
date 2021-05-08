@@ -854,6 +854,7 @@ class AppData {
                 case Weapon.BridesFang:
                 case Weapon.GroomsWings:
                 case Weapon.SkyPirateClaw:
+                case Weapon.TwinCrestPower:
                     unit.atkWithSkills += 2;
                     break;
             }

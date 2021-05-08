@@ -2940,6 +2940,18 @@ class AetherRaidTacticsBoard {
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TwinCrestPower:
+                    if (atkUnit.snapshot.restHpPercentage >= 25) {
+                    }
+                    if (!atkUnit.isOneTimeActionActivatedForWeapon
+                        && atkUnit.snapshot.restHpPercentage >= 25
+                        && atkUnit.isActionDone
+                    ) {
+                        this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.weaponInfo.name + "により再行動");
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForWeapon = true;
+                    }
+                    break;
                 case PassiveB.RagingStorm:
                     if (!atkUnit.isOneTimeActionActivatedForPassiveB
                         && !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)
@@ -3410,6 +3422,7 @@ class AetherRaidTacticsBoard {
                     return true;
                 }
                 break;
+            case Weapon.TwinCrestPower:
             case Weapon.ShishiouNoTsumekiba:
                 if (defUnit.isTransformed) {
                     return true;
@@ -5868,6 +5881,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TwinCrestPower:
+                    if (enemyUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                        targetUnit.battleContext.followupAttackPriority--;
+                        if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                            enemyUnit.battleContext.followupAttackPriority--;
+                        }
+                    }
+                    break;
                 case Weapon.HallowedTyrfing:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.addAllSpur(5);

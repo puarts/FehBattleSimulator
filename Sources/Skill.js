@@ -993,6 +993,9 @@ const Weapon = {
 
     // 2021年4月 伝承シグルド
     HallowedTyrfing: 1701, // 聖裁ティルフィング
+
+    // 暴雨の中を歩む者
+    TwinCrestPower: 1704, // 双紋章の力
 };
 
 const Support = {
