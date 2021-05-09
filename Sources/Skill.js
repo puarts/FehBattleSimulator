@@ -1000,6 +1000,13 @@ const Weapon = {
     TomeOfDespair: 1709, // 破滅の邪書
     AxeOfDespair: 1707, // 絶望の邪斧
     BereftLance: 1713, // 虚ろな槍
+
+    // 2021年5月　武器錬成
+    Ragnell: 27, // ラグネル
+    Alondite: 35, // エタルド
+    Raijinto: 20, // 雷神刀
+    Siegfried: 25, // ジークフリート
+    Gradivus: 87, // グラディウス
 };
 
 const Support = {

@@ -273,6 +273,16 @@ class AetherRaidTacticsBoard {
                     self.updateAllUnitSpur();
                     g_appData.updateArenaScore(unit);
                 },
+                weaponOptionChanged: function () {
+                    console.log("weaponOptionChanged");
+                    if (g_app == null) { return; }
+                    let unit = g_app.__getCurrentUnit();
+                    if (unit == null) { return; }
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
+                    unit.resetMaxSpecialCount();
+                    g_app.updateAllUnitSpur();
+                    g_appData.updateArenaScore(unit);
+                },
                 supportChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
@@ -305,6 +315,7 @@ class AetherRaidTacticsBoard {
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
                     g_appData.__updateStatusBySkillsAndMerges(unit);
+                    unit.resetMaxSpecialCount();
                     g_app.updateAllUnitSpur();
                     g_appData.updateArenaScore(unit);
                 },
@@ -5944,6 +5955,45 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Gradivus:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.healedHpByAttack = 7;
+                        }
+                    }
+                    break;
+                case Weapon.Siegfried:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            enemyUnit.atkSpur -= 4;
+                            enemyUnit.defSpur -= 4;
+                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                                --enemyUnit.battleContext.followupAttackPriority;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.Raijinto:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                            targetUnit.addAllSpur(4)
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
+                case Weapon.Ragnell:
+                case Weapon.Alondite:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                    break;
                 case Weapon.BereftLance:
                     {
                         let allyCount = this.__countAlliesWithinSpecifiedSpaces(
