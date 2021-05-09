@@ -5923,6 +5923,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.MurderousLion:
+                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                        enemyUnit.spdSpur -= 3;
+                        enemyUnit.defSpur -= 3;
+                        targetUnit.battleContext.invalidatesCounterattack = true;
+                    }
+                    break;
                 case Weapon.AstraBlade:
                     targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
                     break;
@@ -13775,6 +13782,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.SpdDefNearTrace3:
                 case PassiveB.SpdResFarTrace3:
+                case PassiveB.MurderousLion:
                     return true;
             }
         }
@@ -13790,6 +13798,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
+                case PassiveB.MurderousLion:
                 case PassiveB.SpdDefNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
                     break;

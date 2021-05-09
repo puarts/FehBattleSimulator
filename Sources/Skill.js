@@ -1640,6 +1640,7 @@ const PassiveB = {
     FallenStar: 1651, // 落星
     SunTwinWing: 1680, // 双姫の陽翼
     ArmoredWall: 1706, // 覇鎧障壁
+    MurderousLion: 1712, // 蒼き殺人鬼
 
     // 近影、遠影
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
