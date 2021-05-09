@@ -1,0 +1,45 @@
+コピペ用(スキル効果=>実装コード)
+
+<錬成武器判定>
+if (targetUnit.isWeaponRefined) {}
+<特殊錬成武器判定>
+if (targetUnit.isWeaponSpecialRefined) {}
+
+自分から攻撃した時
+if (targetUnit.battleContext.initiatesCombat) {
+敵から攻撃された時
+if (enemyUnit.battleContext.initiatesCombat) {
+
+周囲2マス以内に味方がいる時
+targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+    targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+    this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {}
+
+戦闘中バフ(N)
+targetUnit.addAllSpur(N)
+targetUnit.atkSpur += N
+enemyUnit.atkSpur -= N
+
+戦闘開始時、自身(敵)のHPがN%以上なら
+targetUnit.snapshot.restHpPercentage >= N
+enemyUnit.snapshot.restHpPercentage >= N
+
+敵は追撃不可
+if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+    --enemyUnit.battleContext.followupAttackPriority;
+}
+
+敵の絶対追撃を無効
+targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+
+自身の追撃不可を無効
+targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+
+自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
+targetUnit.battleContext.healedHpByAttack = N
+
+奥義が発動しやすい(錬成武器)
+resetMaxSpecialCount() {
+    specialCountMax -= 1;
+}
