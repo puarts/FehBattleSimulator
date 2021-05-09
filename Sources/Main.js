@@ -2941,10 +2941,9 @@ class AetherRaidTacticsBoard {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.TwinCrestPower:
-                    if (atkUnit.snapshot.restHpPercentage >= 25) {
-                    }
                     if (!atkUnit.isOneTimeActionActivatedForWeapon
                         && atkUnit.snapshot.restHpPercentage >= 25
+                        && atkUnit.isTransformed
                         && atkUnit.isActionDone
                     ) {
                         this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.weaponInfo.name + "により再行動");
