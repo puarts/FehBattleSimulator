@@ -1003,6 +1003,7 @@ const Weapon = {
 
     // 2021年5月　武器錬成
     Ragnell: 27, // ラグネル
+    Alondite: 35, // エタルド
 };
 
 const Support = {

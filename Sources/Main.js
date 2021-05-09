@@ -5957,6 +5957,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Ragnell:
+                case Weapon.Alondite:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 25) {
                             targetUnit.addAllSpur(4);

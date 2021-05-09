@@ -4289,6 +4289,7 @@ class Unit {
             specialCountMax += this.weaponInfo.cooldownCount;
             switch (this.weapon) {
                 case Weapon.Ragnell:
+                case Weapon.Alondite:
                     if (this.isWeaponSpecialRefined) {
                         specialCountMax -= 1;
                     }
