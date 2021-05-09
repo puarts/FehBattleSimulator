@@ -5944,6 +5944,28 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BereftLance:
+                    {
+                        let allyCount = this.__countAlliesWithinSpecifiedSpaces(
+                            targetUnit, 2);
+                        let buffAmount = 0;
+                        if (allyCount == 0) {
+                            buffAmount = 6;
+                        }
+                        else if (allyCount == 1) {
+                            buffAmount = 4;
+                        }
+                        else if (allyCount == 2) {
+                            buffAmount = 2;
+                        }
+                        targetUnit.atkSpur += buffAmount;
+                        targetUnit.defSpur += buffAmount;
+
+                        if (allyCount <= 1) {
+                            targetUnit.battleContext.invalidateAllBuffs();
+                        }
+                    }
+                    break;
                 case Weapon.AxeOfDespair:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         enemyUnit.atkSpur -= 6;

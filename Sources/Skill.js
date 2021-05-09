@@ -999,6 +999,7 @@ const Weapon = {
     VengefulLance: 1711, // 復讐鬼の槍
     TomeOfDespair: 1709, // 破滅の邪書
     AxeOfDespair: 1707, // 絶望の邪斧
+    BereftLance: 1713, // 虚ろな槍
 };
 
 const Support = {
