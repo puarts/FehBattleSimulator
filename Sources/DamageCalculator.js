@@ -628,7 +628,8 @@ class DamageCalculator {
         }
 
         fixedAddDamage += atkUnit.battleContext.additionalDamage;
-        fixedAddDamage += this.__getAtkMinusDefAdditionalDamage(atkUnit, defUnit, atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage);
+        fixedAddDamage += this.__getAtkMinusDefAdditionalDamage(
+            atkUnit, defUnit, atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage, isPrecombat);
 
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {
@@ -807,7 +808,7 @@ class DamageCalculator {
         return fixedAddDamage;
     }
 
-    __getAtkMinusDefAdditionalDamage(atkUnit, defUnit, rate) {
+    __getAtkMinusDefAdditionalDamage(atkUnit, defUnit, rate, isPrecombat) {
         let atk = 0;
         let value = 0;
         if (isPrecombat) {

@@ -3372,7 +3372,8 @@ class AetherRaidTacticsBoard {
 
         // 追撃可能かどうかが条件として必要なスキル効果の適用
         {
-            this.__applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit);
+            this.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
+            this.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
         }
 
         // 効果を無効化するスキル
