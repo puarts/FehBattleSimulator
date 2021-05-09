@@ -5956,6 +5956,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Raijinto:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                            targetUnit.addAllSpur(4)
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
                 case Weapon.Ragnell:
                 case Weapon.Alondite:
                     if (targetUnit.isWeaponSpecialRefined) {
