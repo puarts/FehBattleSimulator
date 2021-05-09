@@ -5956,6 +5956,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Gradivus:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.healedHpByAttack = 7;
+                        }
+                    }
+                    break;
                 case Weapon.Siegfried:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.snapshot.restHpPercentage >= 75) {

@@ -1006,6 +1006,7 @@ const Weapon = {
     Alondite: 35, // エタルド
     Raijinto: 20, // 雷神刀
     Siegfried: 25, // ジークフリート
+    Gradivus: 87, // グラディウス
 };
 
 const Support = {
