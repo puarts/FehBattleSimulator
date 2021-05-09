@@ -1852,12 +1852,12 @@
                                 <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
                                     ({{value.weapon}}) {{value.heroInfo!=null?value.heroInfo.weaponOptions.length:0}}, {{g_appData.weaponImplCount}}/{{g_appData.weaponCount}}({{Math.floor(100*g_appData.weaponImplCount/g_appData.weaponCount, 2)}}%)
                                 </span>
-                                <select v-model="value.weaponRefinement" @change="g_app.vm.passiveAChanged" v-if="g_app.vm.enableAllSkillOptions">
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-if="g_app.vm.enableAllSkillOptions">
                                     <option v-for="option in g_appData.weaponRefinementOptions" v-bind:value="option.id">
                                         {{ option.text }}
                                     </option>
-                                </select>                                
-                                <select v-model="value.weaponRefinement" @change="g_app.vm.passiveAChanged" v-else-if="value.weaponInfo != null&&value.weaponInfo.weaponRefinementOptions.length > 1">
+                                </select>
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-else-if="value.weaponInfo != null&&value.weaponInfo.weaponRefinementOptions.length > 1">
                                     <option v-for="option in value.weaponInfo.weaponRefinementOptions" v-bind:value="option.id">
                                         {{ option.text }}
                                     </option>

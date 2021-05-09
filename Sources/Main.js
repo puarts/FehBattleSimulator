@@ -273,6 +273,16 @@ class AetherRaidTacticsBoard {
                     self.updateAllUnitSpur();
                     g_appData.updateArenaScore(unit);
                 },
+                weaponOptionChanged: function () {
+                    console.log("weaponOptionChanged");
+                    if (g_app == null) { return; }
+                    let unit = g_app.__getCurrentUnit();
+                    if (unit == null) { return; }
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
+                    unit.resetMaxSpecialCount();
+                    g_app.updateAllUnitSpur();
+                    g_appData.updateArenaScore(unit);
+                },
                 supportChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
@@ -305,6 +315,7 @@ class AetherRaidTacticsBoard {
                     let unit = g_app.__getCurrentUnit();
                     if (unit == null) { return; }
                     g_appData.__updateStatusBySkillsAndMerges(unit);
+                    unit.resetMaxSpecialCount();
                     g_app.updateAllUnitSpur();
                     g_appData.updateArenaScore(unit);
                 },
