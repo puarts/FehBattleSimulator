@@ -1005,6 +1005,7 @@ const Weapon = {
     Ragnell: 27, // ラグネル
     Alondite: 35, // エタルド
     Raijinto: 20, // 雷神刀
+    Siegfried: 25, // ジークフリート
 };
 
 const Support = {

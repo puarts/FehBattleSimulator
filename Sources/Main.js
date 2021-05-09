@@ -5956,6 +5956,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Siegfried:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            enemyUnit.atkSpur -= 4;
+                            enemyUnit.defSpur -= 4;
+                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                                --enemyUnit.battleContext.followupAttackPriority;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Raijinto:
                     if (targetUnit.isWeaponSpecialRefined) {
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces =
