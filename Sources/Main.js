@@ -4570,6 +4570,27 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case Weapon.AxeOfDespair:
+                case Weapon.TomeOfDespair:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
+                        let debuffTotal = targetUnit.debuffTotal;
+                        let buffDebuffTotal = buff - debuffTotal;
+                        if (buffDebuffTotal >= 5) {
+                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
+                                --enemyUnit.battleContext.followupAttackPriority;
+                            }
+
+                            if (buffDebuffTotal >= 10) {
+                                ++targetUnit.battleContext.followupAttackPriority;
+
+                                if (buffDebuffTotal >= 15) {
+                                    targetUnit.battleContext.reducesCooldownCount = true;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Revatein:
                 case Weapon.Blarblade:
                 case Weapon.BlarbladePlus:
@@ -5923,6 +5944,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AxeOfDespair:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                    }
+                    break;
+                case Weapon.TomeOfDespair:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+                    }
+                    break;
                 case PassiveB.MurderousLion:
                     if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         enemyUnit.spdSpur -= 3;

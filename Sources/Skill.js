@@ -997,6 +997,8 @@ const Weapon = {
     // 暴雨の中を歩む者
     TwinCrestPower: 1704, // 双紋章の力
     VengefulLance: 1711, // 復讐鬼の槍
+    TomeOfDespair: 1709, // 破滅の邪書
+    AxeOfDespair: 1707, // 絶望の邪斧
 };
 
 const Support = {
