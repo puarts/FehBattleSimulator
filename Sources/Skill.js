@@ -996,6 +996,7 @@ const Weapon = {
 
     // 暴雨の中を歩む者
     TwinCrestPower: 1704, // 双紋章の力
+    VengefulLance: 1711, // 復讐鬼の槍
 };
 
 const Support = {

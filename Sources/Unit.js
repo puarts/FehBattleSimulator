@@ -933,6 +933,9 @@ class BattleContext {
 
         // 無属性に対して有利
         this.isAdvantageForColorless = false;
+
+        // ダメージ加算する「攻撃-守備」の割合
+        this.rateOfAtkMinusDefForAdditionalDamage = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -1004,6 +1007,7 @@ class BattleContext {
         this.invalidatesHeal = false;
         this.isAdvantageForColorless = false;
         this.additionalDamageOfSpecial = 0;
+        this.rateOfAtkMinusDefForAdditionalDamage = 0;
     }
 
     invalidateAllBuffs() {

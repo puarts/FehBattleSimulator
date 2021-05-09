@@ -3360,12 +3360,6 @@ class AetherRaidTacticsBoard {
             this.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
         }
 
-        // 効果を無効化するスキル
-        {
-            this.__applyInvalidationSkillEffect(atkUnit, defUnit);
-            this.__applyInvalidationSkillEffect(defUnit, atkUnit);
-        }
-
         // 敵が反撃可能か判定
         defUnit.battleContext.canCounterattack = this.__canCounterAttack(atkUnit, defUnit);
         // this.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
@@ -3374,6 +3368,17 @@ class AetherRaidTacticsBoard {
         atkUnit.battleContext.canFollowupAttack = this.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
         if (defUnit.battleContext.canCounterattack) {
             defUnit.battleContext.canFollowupAttack = this.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
+        }
+
+        // 追撃可能かどうかが条件として必要なスキル効果の適用
+        {
+            this.__applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit);
+        }
+
+        // 効果を無効化するスキル
+        {
+            this.__applyInvalidationSkillEffect(atkUnit, defUnit);
+            this.__applyInvalidationSkillEffect(defUnit, atkUnit);
         }
 
         let result = this.damageCalc.calc(atkUnit, defUnit);
@@ -3387,6 +3392,23 @@ class AetherRaidTacticsBoard {
         result.defUnit_def = defUnit.getDefInCombat(atkUnit);
         result.defUnit_res = defUnit.getResInCombat(atkUnit);
         return result;
+    }
+
+    /// 追撃可能かどうかが条件として必要なスキル効果の適用
+    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.VengefulLance:
+                    {
+                        if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)
+                            && !targetUnit.battleContext.canFollowupAttack
+                        ) {
+                            targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
     __canCounterAttackToAllDistance(defUnit) {
@@ -5901,6 +5923,9 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AstraBlade:
+                    targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
+                    break;
                 case PassiveB.ArmoredWall:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.battleContext.increaseCooldownCountForBoth();
@@ -9548,6 +9573,7 @@ class AetherRaidTacticsBoard {
                         break;
                     case Weapon.ShirejiaNoKaze:
                     case Weapon.BrazenCatFang:
+                    case Weapon.VengefulLance:
                     case PassiveA.AtkSpdSolo3:
                         targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
                         break;

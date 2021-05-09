@@ -628,6 +628,7 @@ class DamageCalculator {
         }
 
         fixedAddDamage += atkUnit.battleContext.additionalDamage;
+        fixedAddDamage += this.__getAtkMinusDefAdditionalDamage(atkUnit, defUnit, atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage);
 
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {
@@ -755,24 +756,6 @@ class DamageCalculator {
                     fixedAddDamage += Math.trunc(value * 0.25);
                 }
                 break;
-            case Weapon.AstraBlade:
-                {
-                    let atk = 0;
-                    let value = 0;
-                    if (isPrecombat) {
-                        atk = atkUnit.getAtkInPrecombat();
-                        value = defUnit.getDefInPrecombat();
-                    }
-                    else {
-                        atk = atkUnit.getAtkInCombat(defUnit);
-                        value = defUnit.getDefInCombat(atkUnit);
-                    }
-
-                    if (atk > value) {
-                        fixedAddDamage += Math.trunc((atk - value) * 0.5);
-                    }
-                }
-                break;
             case Weapon.NewFoxkitFang:
                 fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(
                     atkUnit, defUnit, isPrecombat,
@@ -822,6 +805,24 @@ class DamageCalculator {
         }
 
         return fixedAddDamage;
+    }
+
+    __getAtkMinusDefAdditionalDamage(atkUnit, defUnit, rate) {
+        let atk = 0;
+        let value = 0;
+        if (isPrecombat) {
+            atk = atkUnit.getAtkInPrecombat();
+            value = defUnit.getDefInPrecombat();
+        }
+        else {
+            atk = atkUnit.getAtkInCombat(defUnit);
+            value = defUnit.getDefInCombat(atkUnit);
+        }
+
+        if (atk > value) {
+            return Math.trunc((atk - value) * rate);
+        }
+        return 0;
     }
 
     __calcAddDamageForDiffOf70Percent(atkUnit, defUnit, isPrecombat, getPrecombatFunc, getCombatFunc) {
