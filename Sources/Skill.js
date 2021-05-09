@@ -1000,6 +1000,9 @@ const Weapon = {
     TomeOfDespair: 1709, // 破滅の邪書
     AxeOfDespair: 1707, // 絶望の邪斧
     BereftLance: 1713, // 虚ろな槍
+
+    // 2021年5月　武器錬成
+    Ragnell: 27, // ラグネル
 };
 
 const Support = {

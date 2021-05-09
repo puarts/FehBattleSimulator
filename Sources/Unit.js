@@ -4288,6 +4288,11 @@ class Unit {
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
             switch (this.weapon) {
+                case Weapon.Ragnell:
+                    if (this.isWeaponSpecialRefined) {
+                        specialCountMax -= 1;
+                    }
+                    break;
                 case Weapon.SyunsenAiraNoKen:
                     if (this.isWeaponRefined) {
                         specialCountMax -= 1;

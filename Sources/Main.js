@@ -5956,6 +5956,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Ragnell:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                    break;
                 case Weapon.BereftLance:
                     {
                         let allyCount = this.__countAlliesWithinSpecifiedSpaces(
