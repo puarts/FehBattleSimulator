@@ -10266,6 +10266,18 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __applyMenace(skillOwner, buffFunc, debuffFunc) {
+        let found = false;
+        for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
+            found = true;
+            debuffFunc(unit);
+        }
+
+        if (found) {
+            buffFunc(skillOwner);
+        }
+    }
+
     __applySkillForBeginningOfTurn(skillId, skillOwner) {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
@@ -10277,6 +10289,28 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case PassiveC.AtkResMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyAtkBuff(-6);
+                        unit.applyResBuff(-6);
+                    },
+                    unit => {
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
+                    });
+                break;
+            case PassiveC.AtkDefMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyAtkBuff(-6);
+                        unit.applyDefBuff(-6);
+                    },
+                    unit => {
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplyDefDebuff(-6);
+                    });
+                break;
             case Special.HolyKnightAura:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;

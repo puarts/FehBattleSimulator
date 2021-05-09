@@ -1879,6 +1879,10 @@ const PassiveC = {
     AdNearSave3: 1667, // 鎧の護り手・近間3
 
     FatalSmoke3: 1631, // 不治の幻煙3
+
+    // 脅嚇
+    AtkDefMenace: 1708, // 攻撃守備の脅嚇
+    AtkResMenace: 1710, // 攻撃魔防の脅嚇
 };
 
 const PassiveS = {
