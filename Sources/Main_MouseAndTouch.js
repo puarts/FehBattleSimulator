@@ -1,9 +1,29 @@
 /// @file
 /// @brief シミュレーターのマウスやタッチイベントの実装です。
 
+class DoubleClickChecker {
+    constructor() {
+        this._firstClickTime = 0;
+        this._diffMillisec = 0;
+    }
+
+    notifyClick() {
+        let time = Date.now();
+        this._diffMillisec = time - this._firstClickTime;
+        this._firstClickTime = time;
+    }
+
+    isDoubleClicked() {
+        const threshold = 300;
+        return this._diffMillisec < threshold;
+    }
+}
+
 const g_keyboardManager = new KeyboardManager();
 let g_draggingElemId = "";
 let g_dragoverTileHistory = new Queue(10);
+
+let g_doubleClickChecker = new DoubleClickChecker();
 
 function selectItemById(id, add = false, toggle = false) {
     if (toggle) {
@@ -27,6 +47,8 @@ function findParentTdElement(elem) {
 
 function onItemSelected(event) {
     console.log("onItemSelected");
+    g_doubleClickChecker.notifyClick();
+
     let targetElem = event.target;
     if (targetElem.id == undefined || targetElem.id == "") {
         let tdElem = findParentTdElement(targetElem);
@@ -45,6 +67,13 @@ function onItemSelected(event) {
         else {
             selectItemById(targetElem.id);
         }
+    }
+
+    if (g_doubleClickChecker.isDoubleClicked()) {
+        for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit && !x.isActionDone)) {
+            g_app.executeEndActionCommand(unit);
+        }
+        updateAllUi();
     }
 }
 

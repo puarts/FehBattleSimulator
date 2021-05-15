@@ -12496,6 +12496,11 @@ class AetherRaidTacticsBoard {
         this.__executeAllCommands(this.commandQueuePerAction, intervalMilliseconds);
     }
 
+    executeEndActionCommand(unit) {
+        this.__enqueueEndActionCommand(unit);
+        this.__executeAllCommands(this.commandQueuePerAction, 0);
+    }
+    
     __simulateAllyActionCustomized() {
         let targetGroup = UnitGroupType.Ally;
         let enemyGroup = UnitGroupType.Enemy;
@@ -13767,7 +13772,9 @@ class AetherRaidTacticsBoard {
             if (self.isCommandLogEnabled) {
                 g_app.writeLogLine(unit.getNameWithGroup() + "は行動終了");
             }
+
             g_app.endUnitAction(unit);
+            unit.deactivateCanto();
         }, serial);
     }
 
