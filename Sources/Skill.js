@@ -1300,6 +1300,7 @@ const PassiveA = {
     BDuelFlying4: 1645,
     RDuelInfantry4: 1642,
     BDuelInfantry4: 1669,
+    CDuelCavalry4: 1717,
 
     HP1: 1115,
     HP2: 1116,
