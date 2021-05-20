@@ -1009,7 +1009,8 @@ const Weapon = {
     Gradivus: 87, // グラディウス
 
     // 愛と感謝の結婚式
-    RoseQuartsBow: 1714 // 透き通る玻璃の弓
+    RoseQuartsBow: 1714, // 透き通る玻璃の弓
+    ObservantStaffPlus: 1716, // 立会人の杖+
 };
 
 const Support = {

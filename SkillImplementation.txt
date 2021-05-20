@@ -36,6 +36,10 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+敵の強化の+を無効(強化無効)
+targetUnit.battleContext.invalidateAllBuffs();
+targetUnit.battleContext.invalidateAtkBuff = true;
+
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack = N
 
@@ -43,6 +47,12 @@ targetUnit.battleContext.healedHpByAttack = N
 resetMaxSpecialCount() {
     specialCountMax -= 1;
 }
+
+周囲3マス以内に支援を結んでいる味方の組み合わせ(自分は含まない)がいる時
+let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+let partners = units.map(u => u.partnerHeroIndex);
+targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
+if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 
 ダメージ+N(固定ダメージ)
 DamageCalculator.js

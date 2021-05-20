@@ -5955,6 +5955,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ObservantStaffPlus:
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                    let partners = units.map(u => u.partnerHeroIndex);
+                    targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
+                    if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                        targetUnit.addAllSpur(6);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
                 case Weapon.RoseQuartsBow:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
