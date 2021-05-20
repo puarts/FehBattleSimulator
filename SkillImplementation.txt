@@ -43,3 +43,12 @@ targetUnit.battleContext.healedHpByAttack = N
 resetMaxSpecialCount() {
     specialCountMax -= 1;
 }
+
+ダメージ+N(固定ダメージ)
+DamageCalculator.js
+__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+    // Nダメージ
+    fixedAddDamage += N;
+    // 速さの20%
+    fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+}

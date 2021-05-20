@@ -1007,6 +1007,9 @@ const Weapon = {
     Raijinto: 20, // 雷神刀
     Siegfried: 25, // ジークフリート
     Gradivus: 87, // グラディウス
+
+    // 愛と感謝の結婚式
+    RoseQuartsBow: 1714 // 透き通る玻璃の弓
 };
 
 const Support = {
