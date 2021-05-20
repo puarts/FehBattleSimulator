@@ -21,6 +21,21 @@ targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
 enemyUnit.atkSpur -= N
 
+周囲2マス以内の味方は、戦闘中、<ステ>+N
+__addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
+    for (let skillId of allyUnit.enumerateSkills()) {
+        if (!calcPotentialDamage) {
+            switch (skillId) {
+                case XXX.YYY:
+                    targetUnit.atkSpur += N;
+
+周囲2マス以内に味方がいる時、戦闘中、自身の<ステ>+N
+__addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
+    if (!calcPotentialDamage) {
+        switch (skillId) {
+            case XXX.YYY:
+                targetUnit.atkSpur += N;
+
 戦闘開始時、自身(敵)のHPがN%以上なら
 targetUnit.snapshot.restHpPercentage >= N
 enemyUnit.snapshot.restHpPercentage >= N

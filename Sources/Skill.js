@@ -1011,6 +1011,7 @@ const Weapon = {
     // 愛と感謝の結婚式
     RoseQuartsBow: 1714, // 透き通る玻璃の弓
     ObservantStaffPlus: 1716, // 立会人の杖+
+    LoveBouquetPlus: 1720, // 愛情のブーケ+
 };
 
 const Support = {
