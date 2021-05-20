@@ -6121,6 +6121,10 @@ class AetherRaidTacticsBoard {
                     enemyUnit.spdSpur -= 3;
                     enemyUnit.defSpur -= 3;
                     break;
+                case PassiveB.AtkDefFarTrace3:
+                    enemyUnit.atkSpur -= 3;
+                    enemyUnit.defSpur -= 3;
+                    break;
                 case PassiveB.SpdResFarTrace3:
                     enemyUnit.spdSpur -= 3;
                     enemyUnit.resSpur -= 3;
@@ -13936,6 +13940,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveB.SpdDefNearTrace3:
+                case PassiveB.AtkDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                 case PassiveB.MurderousLion:
                     return true;
@@ -13957,6 +13962,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SpdDefNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
                     break;
+                case PassiveB.AtkDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount);
                     break;
