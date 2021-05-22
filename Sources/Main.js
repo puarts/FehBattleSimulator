@@ -9823,6 +9823,10 @@ class AetherRaidTacticsBoard {
     __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
+                case Weapon.LoveCandelabraPlus:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.defSpur += 4;
+                    break;
                 case Weapon.LoveBouquetPlus:
                     targetUnit.atkSpur += 4;
                     targetUnit.resSpur += 4;
@@ -10109,6 +10113,10 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.LoveCandelabraPlus:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        break;
                     case Weapon.LoveBouquetPlus:
                         targetUnit.atkSpur += 4;
                         targetUnit.resSpur += 4;

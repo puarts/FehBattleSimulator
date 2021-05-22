@@ -1013,6 +1013,7 @@ const Weapon = {
     ObservantStaffPlus: 1716, // 立会人の杖+
     LoveBouquetPlus: 1720, // 愛情のブーケ+
     WeddingBellAxe: 1718, // 幸せの鐘の斧
+    LoveCandelabraPlus: 1721, // 結婚式の燭台+
 };
 
 const Support = {
