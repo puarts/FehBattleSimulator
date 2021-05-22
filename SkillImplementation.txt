@@ -45,6 +45,11 @@ __setAttackCount(atkUnit, enemyUnit) {
     atkUnit.battleContext.attackCount = 2;
 }
 
+絶対追撃
+if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+    targetUnit.battleContext.followupAttackPriority++;
+}
+
 敵は追撃不可
 if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
     --enemyUnit.battleContext.followupAttackPriority;
@@ -94,3 +99,17 @@ function statusEffectTypeToIconFilePath(value) {
 }
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
+
+比翼・双界英雄
+Unit.js
+const Hero = {
+    XXX: YYY,
+}
+    get isDuoHero() {
+                || this.heroIndex == Hero.XXX
+    }
+Main.js
+    __activateDuoOrHarmonizedSkill(duoUnit) {
+        // 同じ出典のキャラクターに付与
+        this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ZZZ);
+    }

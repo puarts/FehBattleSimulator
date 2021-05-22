@@ -49,6 +49,7 @@ const Hero = {
     DuoLif: 631,
     HarmonizedMyrrh: 648,
     DuoEirika: 659,
+    HarmonizedCatria: 670,
 };
 
 function isThiefIndex(heroIndex) {
@@ -219,6 +220,7 @@ const StatusEffectType = {
     FollowUpAttackMinus: 19, // 追撃不可
     Dodge: 20, // 回避
     TriangleAttack: 21, // トライアングルアタック
+    FollowUpAttackPlus: 22, // 絶対追撃
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -313,10 +315,14 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_DeepWounds.png";
         case StatusEffectType.FallenStar:
             return g_imageRootPath + "StatusEffect_FallenStar.png";
-        case StatusEffectType.FollowUpAttackMinus:
-            return g_imageRootPath + "StatusEffect_ShieldFlying.png";
-        case StatusEffectType.ShieldFlying:
+        case StatusEffectType.FollowUpAttackPlus:
+            // @TODO: 画像ファイルを用意する
+            // return g_imageRootPath + "StatusEffect_FollowUpAttackPlus.png";
             return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
+        case StatusEffectType.FollowUpAttackMinus:
+            return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
+        case StatusEffectType.ShieldFlying:
+            return g_imageRootPath + "StatusEffect_ShieldFlying.png";
         case StatusEffectType.Dodge:
             return g_imageRootPath + "StatusEffect_Dodge.png";
         case StatusEffectType.TriangleAttack:
@@ -2358,6 +2364,7 @@ class Unit {
                 || this.heroIndex == Hero.DuoLif
                 || this.heroIndex == Hero.HarmonizedMyrrh
                 || this.heroIndex == Hero.DuoEirika
+                || this.heroIndex == Hero.HarmonizedCatria
             );
     }
 

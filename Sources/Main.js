@@ -863,6 +863,11 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedCatria:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Desperation);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.FollowUpAttackPlus);
+                break;
             case Hero.DuoEirika:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, duoUnit.groupId, 3, 3)) {
                     unit.addStatusEffect(StatusEffectType.Dodge);
@@ -3910,6 +3915,11 @@ class AetherRaidTacticsBoard {
             if (this.__canActivateBreakerSkill(atkUnit, defUnit)) {
                 ++followupAttackPriority;
             }
+
+            if (atkUnit.hasStatusEffect(StatusEffectType.FollowUpAttackPlus)) {
+                ++followupAttackPriority;
+            }
+
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
                     case PassiveB.BlackEagleRule:
