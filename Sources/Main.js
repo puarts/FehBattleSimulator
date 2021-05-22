@@ -3506,6 +3506,19 @@ class AetherRaidTacticsBoard {
             atkUnit.battleContext.counterattackCount = 0;
         }
 
+        // Triangle Attack
+        if (atkUnit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+            let triangleAttackerCount = 0;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
+                if (unit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+                    triangleAttackerCount++;
+                }
+            }
+            if (atkUnit.battleContext.initiatesCombat && triangleAttackerCount >= 2) {
+                atkUnit.battleContext.attackCount = 2;
+            }
+        }
+
         switch (atkUnit.weapon) {
             case Weapon.GullinkambiEgg:
                 {
@@ -5964,6 +5977,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.invalidateAllBuffs();
                     }
                     break;
+                case Weapon.WeddingBellAxe:
                 case Weapon.RoseQuartsBow:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
@@ -10424,6 +10438,17 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.WeddingBellAxe:
+                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
+                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
+                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
+                if (skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+                        unit.reserveToAddStatusEffect(StatusEffectType.TriangleAttack);
+                    }
+                }
+                break;
             case PassiveC.AtkResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {

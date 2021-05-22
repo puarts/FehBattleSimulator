@@ -218,6 +218,7 @@ const StatusEffectType = {
     ShieldFlying: 18, // 飛行特効無効
     FollowUpAttackMinus: 19, // 追撃不可
     Dodge: 20, // 回避
+    TriangleAttack: 21, // トライアングルアタック
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -318,6 +319,10 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
         case StatusEffectType.Dodge:
             return g_imageRootPath + "StatusEffect_Dodge.png";
+        case StatusEffectType.TriangleAttack:
+            // @TODO: 画像ファイルを用意する
+            // return g_imageRootPath + "StatusEffect_TriangleAttack.png";
+            return g_imageRootPath + "StatusEffect_ResonantBlades.png";
         default: return "";
     }
 }

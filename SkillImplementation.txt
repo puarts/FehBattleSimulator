@@ -40,6 +40,11 @@ __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
 targetUnit.snapshot.restHpPercentage >= N
 enemyUnit.snapshot.restHpPercentage >= N
 
+2回攻撃
+__setAttackCount(atkUnit, enemyUnit) {
+    atkUnit.battleContext.attackCount = 2;
+}
+
 敵は追撃不可
 if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
     --enemyUnit.battleContext.followupAttackPriority;
@@ -77,3 +82,15 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // 速さの20%
     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
 }
+
+【XXX】の状態を付与
+Unit.js
+const StatusEffectType = {
+    XXX: YYY, // XXX
+}
+function statusEffectTypeToIconFilePath(value) {
+    case StatusEffectType.Dodge:
+    return g_imageRootPath + "XXX.png";
+}
+Main.js
+unit.reserveToAddStatusEffect(StatusEffectType.XXX);
