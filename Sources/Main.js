@@ -863,6 +863,11 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedCatria:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Desperation);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.FollowUpAttackPlus);
+                break;
             case Hero.DuoEirika:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, duoUnit.groupId, 3, 3)) {
                     unit.addStatusEffect(StatusEffectType.Dodge);
@@ -3506,6 +3511,19 @@ class AetherRaidTacticsBoard {
             atkUnit.battleContext.counterattackCount = 0;
         }
 
+        // Triangle Attack
+        if (atkUnit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+            let triangleAttackerCount = 0;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
+                if (unit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+                    triangleAttackerCount++;
+                }
+            }
+            if (atkUnit.battleContext.initiatesCombat && triangleAttackerCount >= 2) {
+                atkUnit.battleContext.attackCount = 2;
+            }
+        }
+
         switch (atkUnit.weapon) {
             case Weapon.GullinkambiEgg:
                 {
@@ -3897,6 +3915,11 @@ class AetherRaidTacticsBoard {
             if (this.__canActivateBreakerSkill(atkUnit, defUnit)) {
                 ++followupAttackPriority;
             }
+
+            if (atkUnit.hasStatusEffect(StatusEffectType.FollowUpAttackPlus)) {
+                ++followupAttackPriority;
+            }
+
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
                     case PassiveB.BlackEagleRule:
@@ -5955,6 +5978,25 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ObservantStaffPlus:
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                    let partners = units.map(u => u.partnerHeroIndex);
+                    targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
+                    if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                        targetUnit.addAllSpur(6);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
+                case Weapon.WeddingBellAxe:
+                case Weapon.RoseQuartsBow:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.Gradivus:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
@@ -6110,6 +6152,10 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.SpdDefNearTrace3:
                     enemyUnit.spdSpur -= 3;
+                    enemyUnit.defSpur -= 3;
+                    break;
+                case PassiveB.AtkDefFarTrace3:
+                    enemyUnit.atkSpur -= 3;
                     enemyUnit.defSpur -= 3;
                     break;
                 case PassiveB.SpdResFarTrace3:
@@ -9777,6 +9823,14 @@ class AetherRaidTacticsBoard {
     __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
         if (!calcPotentialDamage) {
             switch (skillId) {
+                case Weapon.LoveCandelabraPlus:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.defSpur += 4;
+                    break;
+                case Weapon.LoveBouquetPlus:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.resSpur += 4;
+                    break;
                 case Weapon.GigaExcalibur:
                     if (targetUnit.isWeaponSpecialRefined) {
                         targetUnit.atkSpur += 4;
@@ -10059,6 +10113,14 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case Weapon.LoveCandelabraPlus:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        break;
+                    case Weapon.LoveBouquetPlus:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.resSpur += 4;
+                        break;
                     case Weapon.GigaExcalibur:
                         if (targetUnit.isWeaponSpecialRefined) {
                             targetUnit.atkSpur += 4;
@@ -10394,6 +10456,17 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.WeddingBellAxe:
+                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
+                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
+                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
+                if (skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+                        unit.reserveToAddStatusEffect(StatusEffectType.TriangleAttack);
+                    }
+                }
+                break;
             case PassiveC.AtkResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
@@ -13927,6 +14000,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveB.SpdDefNearTrace3:
+                case PassiveB.AtkDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                 case PassiveB.MurderousLion:
                     return true;
@@ -13948,6 +14022,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SpdDefNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
                     break;
+                case PassiveB.AtkDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount);
                     break;

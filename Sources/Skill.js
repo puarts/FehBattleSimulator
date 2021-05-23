@@ -1007,6 +1007,13 @@ const Weapon = {
     Raijinto: 20, // 雷神刀
     Siegfried: 25, // ジークフリート
     Gradivus: 87, // グラディウス
+
+    // 愛と感謝の結婚式
+    RoseQuartsBow: 1714, // 透き通る玻璃の弓
+    ObservantStaffPlus: 1716, // 立会人の杖+
+    LoveBouquetPlus: 1720, // 愛情のブーケ+
+    WeddingBellAxe: 1718, // 幸せの鐘の斧
+    LoveCandelabraPlus: 1721, // 結婚式の燭台+
 };
 
 const Support = {
@@ -1296,6 +1303,7 @@ const PassiveA = {
     BDuelFlying4: 1645,
     RDuelInfantry4: 1642,
     BDuelInfantry4: 1669,
+    CDuelCavalry4: 1717,
 
     HP1: 1115,
     HP2: 1116,
@@ -1654,6 +1662,7 @@ const PassiveB = {
 
     // 近影、遠影
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
+    AtkDefFarTrace3: 1715, // 攻撃守備の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
 };
 

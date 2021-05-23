@@ -660,6 +660,11 @@ class DamageCalculator {
             }
         }
         switch (atkUnit.weapon) {
+            case Weapon.RoseQuartsBow:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+                }
+                break;
             case Weapon.SpySongBow:
             case Weapon.HikariNoKen:
             case Weapon.ShiningBow:

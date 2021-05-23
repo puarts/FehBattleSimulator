@@ -21,9 +21,34 @@ targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
 enemyUnit.atkSpur -= N
 
+周囲2マス以内の味方は、戦闘中、<ステ>+N
+__addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
+    for (let skillId of allyUnit.enumerateSkills()) {
+        if (!calcPotentialDamage) {
+            switch (skillId) {
+                case XXX.YYY:
+                    targetUnit.atkSpur += N;
+
+周囲2マス以内に味方がいる時、戦闘中、自身の<ステ>+N
+__addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
+    if (!calcPotentialDamage) {
+        switch (skillId) {
+            case XXX.YYY:
+                targetUnit.atkSpur += N;
+
 戦闘開始時、自身(敵)のHPがN%以上なら
 targetUnit.snapshot.restHpPercentage >= N
 enemyUnit.snapshot.restHpPercentage >= N
+
+2回攻撃
+__setAttackCount(atkUnit, enemyUnit) {
+    atkUnit.battleContext.attackCount = 2;
+}
+
+絶対追撃
+if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+    targetUnit.battleContext.followupAttackPriority++;
+}
 
 敵は追撃不可
 if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
@@ -36,6 +61,10 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+敵の強化の+を無効(強化無効)
+targetUnit.battleContext.invalidateAllBuffs();
+targetUnit.battleContext.invalidateAtkBuff = true;
+
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack = N
 
@@ -43,3 +72,44 @@ targetUnit.battleContext.healedHpByAttack = N
 resetMaxSpecialCount() {
     specialCountMax -= 1;
 }
+
+周囲3マス以内に支援を結んでいる味方の組み合わせ(自分は含まない)がいる時
+let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+let partners = units.map(u => u.partnerHeroIndex);
+targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
+if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
+
+ダメージ+N(固定ダメージ)
+DamageCalculator.js
+__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+    // Nダメージ
+    fixedAddDamage += N;
+    // 速さの20%
+    fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+}
+
+【XXX】の状態を付与
+Unit.js
+const StatusEffectType = {
+    XXX: YYY, // XXX
+}
+function statusEffectTypeToIconFilePath(value) {
+    case StatusEffectType.Dodge:
+    return g_imageRootPath + "XXX.png";
+}
+Main.js
+unit.reserveToAddStatusEffect(StatusEffectType.XXX);
+
+比翼・双界英雄
+Unit.js
+const Hero = {
+    XXX: YYY,
+}
+    get isDuoHero() {
+                || this.heroIndex == Hero.XXX
+    }
+Main.js
+    __activateDuoOrHarmonizedSkill(duoUnit) {
+        // 同じ出典のキャラクターに付与
+        this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ZZZ);
+    }
