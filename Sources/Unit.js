@@ -316,9 +316,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.FallenStar:
             return g_imageRootPath + "StatusEffect_FallenStar.png";
         case StatusEffectType.FollowUpAttackPlus:
-            // @TODO: 画像ファイルを用意する
-            // return g_imageRootPath + "StatusEffect_FollowUpAttackPlus.png";
-            return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
+            return g_imageRootPath + "StatusEffect_FollowUpAttackPlus.png";
         case StatusEffectType.FollowUpAttackMinus:
             return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
         case StatusEffectType.ShieldFlying:
@@ -326,9 +324,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.Dodge:
             return g_imageRootPath + "StatusEffect_Dodge.png";
         case StatusEffectType.TriangleAttack:
-            // @TODO: 画像ファイルを用意する
-            // return g_imageRootPath + "StatusEffect_TriangleAttack.png";
-            return g_imageRootPath + "StatusEffect_ResonantBlades.png";
+            return g_imageRootPath + "StatusEffect_TriangleAttack.png";
         default: return "";
     }
 }
