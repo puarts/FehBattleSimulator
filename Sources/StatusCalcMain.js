@@ -50,6 +50,12 @@ function updateStatus() {
         unit.defWithSkills += 2;
         unit.resWithSkills += 2;
     }
+
+    // 祝福効果
+    unit.__updateStatusByBlessing(unit.blessing1);
+    unit.__updateStatusByBlessing(unit.blessing2);
+    unit.__updateStatusByBlessing(unit.blessing3);
+    unit.__updateStatusByBlessing(unit.blessing4);
 }
 
 

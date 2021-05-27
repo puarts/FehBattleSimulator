@@ -116,6 +116,34 @@
                             <label class="normal" for="isResplendent">神装</label>
                         </span>
                     </p>
+                    <p>
+                        <label class="normal">祝福: </label>
+                        <select v-model="value.blessing1" @change="updateStatus()">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing2" @change="updateStatus()">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing3" @change="updateStatus()">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing4" @change="updateStatus()">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing5" @change="updateStatus()">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                    </p>
                 </td>
             </tr>
             <tr>
@@ -163,19 +191,19 @@
         document.write("<script type='text/javascript' src='" + jsRootPath + "GlobalDefinitions.js?" + reloadSuffix + "'><\/script>");
         document.write("<script type='text/javascript' src='" + jsRootPath + "Utilities.js?" + reloadSuffix + "'><\/script>");
         document.write("<script type='text/javascript' src='" + jsRootPath + "Skill.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Map.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Structures.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Table.js?" + reloadSuffix + "'><\/script>");
+        // document.write("<script type='text/javascript' src='" + jsRootPath + "Map.js?" + reloadSuffix + "'><\/script>");
+        // document.write("<script type='text/javascript' src='" + jsRootPath + "Structures.js?" + reloadSuffix + "'><\/script>");
+        // document.write("<script type='text/javascript' src='" + jsRootPath + "Table.js?" + reloadSuffix + "'><\/script>");
         document.write("<script type='text/javascript' src='" + jsRootPath + "Unit.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "DamageCalculator.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Settings.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "AudioManager.js?" + reloadSuffix + "'><\/script>");
+        // document.write("<script type='text/javascript' src='" + jsRootPath + "DamageCalculator.js?" + reloadSuffix + "'><\/script>");
+        // document.write("<script type='text/javascript' src='" + jsRootPath + "Settings.js?" + reloadSuffix + "'><\/script>");
+        // document.write("<script type='text/javascript' src='" + jsRootPath + "AudioManager.js?" + reloadSuffix + "'><\/script>");
         document.write("<script type='text/javascript' src='" + jsRootPath + "StatusCalcMain.js?" + reloadSuffix + "'><\/script>");
     </script>
 
     <script>
         $(function () {
-            let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '-4/3', '-3/3', '-4/3', '-3/3', '-3/3', 24, -1, 476, -1, 620, 689, SeasonType.None, BlessingType.None, 'リキア一の騎士', 'エリウッド', 0, [24, 33,], [], 82, true, '烈火の剣');
+            let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '0/0', '0/0', '0/0', '0/0', '0/0', 24, -1, 476, -1, 620, 689, SeasonType.None, BlessingType.None, 'リキア一の騎士', ['エリウッド',], 0, [24, 33,], [], 82, true, '烈火の剣', 'ガチャ', '2017-02-02', [476,], [], [620,], [689,]);
             let weaponInfo = new SkillInfo(24, 'デュランダル', 16, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 16, false, false, AssistType.None, false, 0, WeaponType.Sword, 400, false, [], [], true);
             init(heroInfo, [weaponInfo]);
         });

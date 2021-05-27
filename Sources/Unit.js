@@ -183,6 +183,19 @@ const BlessingType =
     Hp3: 8,
 };
 
+const BlessingTypeOptions = [
+    { id: BlessingType.None, text: "なし" },
+    { id: BlessingType.Hp5_Atk3, text: "HP+5 攻撃+3" },
+    { id: BlessingType.Hp5_Spd4, text: "HP+5 速さ+4" },
+    { id: BlessingType.Hp5_Def5, text: "HP+5 守備+5" },
+    { id: BlessingType.Hp5_Res5, text: "HP+5 魔防+5" },
+    { id: BlessingType.Hp3_Atk2, text: "HP+3 攻撃+2" },
+    { id: BlessingType.Hp3_Spd3, text: "HP+3 速さ+3" },
+    { id: BlessingType.Hp3_Def4, text: "HP+3 守備+4" },
+    { id: BlessingType.Hp3_Res4, text: "HP+3 魔防+4" },
+    { id: BlessingType.Hp3, text: "HP+3" },
+];
+
 const CombatResult = {
     Win: 2,
     Draw: 1,
@@ -1352,6 +1365,7 @@ class Unit {
         this.blessing3 = BlessingType.None;
         this.blessing4 = BlessingType.None;
         this.blessing5 = BlessingType.None;
+        this.blessing6 = BlessingType.None;
         this.grantedBlessing = SeasonType.None; // 付与された祝福
         this.providableBlessingSeason = SeasonType.None; // 付与できる祝福
         this.hpLv1 = 0;
@@ -1856,6 +1870,7 @@ class Unit {
         this.blessing3 = BlessingType.None;
         this.blessing4 = BlessingType.None;
         this.blessing5 = BlessingType.None;
+        this.blessing6 = BlessingType.None;
         if (this.blessingEffects.length > 0) {
             this.blessing1 = this.blessingEffects[0];
         }
@@ -1870,6 +1885,9 @@ class Unit {
         }
         if (this.blessingEffects.length > 4) {
             this.blessing5 = this.blessingEffects[4];
+        }
+        if (this.blessingEffects.length > 5) {
+            this.blessing6 = this.blessingEffects[5];
         }
     }
 
@@ -1915,6 +1933,7 @@ class Unit {
             + ValueDelimiter + this.resMult
             + ValueDelimiter + this.defGrowthRate
             + ValueDelimiter + this.resGrowthRate
+            + ValueDelimiter + this.blessing6
             ;
     }
 
@@ -2000,6 +2019,7 @@ class Unit {
         if (Number.isFinite(Number(splited[i]))) { this.resMult = Number(splited[i]); ++i; }
         if (Number.isFinite(Number(splited[i]))) { this.defGrowthRate = Number(splited[i]); ++i; }
         if (Number.isFinite(Number(splited[i]))) { this.resGrowthRate = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.blessing6 = Number(splited[i]); ++i; }
     }
 
     fromPerTurnStatusString(value) {
@@ -3718,6 +3738,7 @@ class Unit {
         this.__updateStatusByBlessing(this.blessing3);
         this.__updateStatusByBlessing(this.blessing4);
         this.__updateStatusByBlessing(this.blessing5);
+        this.__updateStatusByBlessing(this.blessing6);
     }
 
     __updateStatusByBlessing(blessing) {
