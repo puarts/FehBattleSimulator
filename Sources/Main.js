@@ -4486,6 +4486,20 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case Weapon.OrdersSentence:
+                    if (targetUnit.snapshot.restHpPercentage >= 25
+                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
+                    ) {
+                        targetUnit.addAllSpur(5);
+
+                        let maxBuff = 0;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                            maxBuff = Math.max(unit.buffTotal, maxBuff);
+                        }
+
+                        targetUnit.atkSpur += maxBuff;
+                    }
+                    break;
                 case PassiveA.AtkSpdIdeal4:
                     this.__applyIdealEffect(targetUnit, enemyUnit,
                         (unit, value) => {

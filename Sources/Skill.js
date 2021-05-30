@@ -1014,6 +1014,9 @@ const Weapon = {
     LoveBouquetPlus: 1720, // 愛情のブーケ+
     WeddingBellAxe: 1718, // 幸せの鐘の斧
     LoveCandelabraPlus: 1721, // 結婚式の燭台+
+
+    // 2021年5月 アスタルテ
+    OrdersSentence: 1722, // 正の裁き
 };
 
 const Support = {
