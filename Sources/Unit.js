@@ -234,6 +234,7 @@ const StatusEffectType = {
     Dodge: 20, // 回避
     TriangleAttack: 21, // トライアングルアタック
     FollowUpAttackPlus: 22, // 絶対追撃
+    NullPanic: 23, // 見切り・パニック
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -284,6 +285,7 @@ function isNegativeStatusEffect(type) {
         case StatusEffectType.Guard:
         case StatusEffectType.Isolation:
         case StatusEffectType.DeepWounds:
+        case StatusEffectType.NullPanic:
             return true;
         default:
             return false;
@@ -338,6 +340,9 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Dodge.png";
         case StatusEffectType.TriangleAttack:
             return g_imageRootPath + "StatusEffect_TriangleAttack.png";
+        case StatusEffectType.NullPanic:
+            // todo: アイコンを正しいものに置き換える
+            return g_imageRootPath + "StatusEffect_Undefined.png";
         default: return "";
     }
 }
@@ -2197,7 +2202,7 @@ class Unit {
             return 0;
         }
 
-        if (this.hasStatusEffect(StatusEffectType.Panic)) {
+        if (this.isPanicEnabled) {
             return this.atkDebuff - this.atkBuff;
         }
         return this.atkDebuff;
@@ -2207,7 +2212,7 @@ class Unit {
             return 0;
         }
 
-        if (this.hasStatusEffect(StatusEffectType.Panic)) {
+        if (this.isPanicEnabled) {
             return this.spdDebuff - this.spdBuff;
         }
         return this.spdDebuff;
@@ -2217,7 +2222,7 @@ class Unit {
             return 0;
         }
 
-        if (this.hasStatusEffect(StatusEffectType.Panic)) {
+        if (this.isPanicEnabled) {
             return this.defDebuff - this.defBuff;
         }
         return this.defDebuff;
@@ -2227,7 +2232,7 @@ class Unit {
             return 0;
         }
 
-        if (this.hasStatusEffect(StatusEffectType.Panic)) {
+        if (this.isPanicEnabled) {
             return this.resDebuff - this.resBuff;
         }
         return this.resDebuff;
@@ -2432,7 +2437,7 @@ class Unit {
     }
 
     get buffTotal() {
-        if (this.hasStatusEffect(StatusEffectType.Panic)) {
+        if (this.isPanicEnabled) {
             return 0;
         }
         return this.atkBuff + this.spdBuff + this.defBuff + this.resBuff;
@@ -2629,7 +2634,7 @@ class Unit {
     }
 
     get isBuffed() {
-        if (this.hasStatusEffect(StatusEffectType.Panic)) {
+        if (this.isPanicEnabled) {
             return false;
         }
         return this.atkBuff > 0 ||
@@ -3093,6 +3098,10 @@ class Unit {
         return this.hasStatusEffect(StatusEffectType.Panic);
     }
 
+    get isPanicEnabled() {
+        return !this.canNullPanic() && this.hasPanic;
+    }
+
     getNormalMoveCount() {
         switch (this.passiveS) {
             case PassiveS.GoeiNoGuzo:
@@ -3442,11 +3451,16 @@ class Unit {
     }
 
     __getBuffMultiply() {
-        if (this.hasStatusEffect(StatusEffectType.Panic)) {
+        if (!this.canNullPanic() && this.hasPanic) {
             return -1;
         }
         return 1;
     }
+
+    canNullPanic() {
+        return this.hasStatusEffect(StatusEffectType.NullPanic);
+    }
+
     getSpdInPrecombatWithoutDebuff() {
         return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply();
     }
@@ -4534,7 +4548,7 @@ function calcBuffAmount(assistUnit, targetUnit) {
     switch (assistUnit.support) {
         case Support.HarshCommand:
             {
-                if (!targetUnit.hasPanic) {
+                if (!targetUnit.isPanicEnabled) {
                     totalBuffAmount += targetUnit.atkDebuff;
                     totalBuffAmount += targetUnit.spdDebuff;
                     totalBuffAmount += targetUnit.defDebuff;

@@ -4455,6 +4455,20 @@ class AetherRaidTacticsBoard {
         if (defUnit.defDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.defDebuffTotal; }
         if (defUnit.resDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.resDebuffTotal; }
     }
+
+    __applyIdealEffect(targetUnit, enemyUnit, buffFunc) {
+        if (targetUnit.snapshot.restHpPercentage == 100
+            || targetUnit.hasPositiveStatusEffect(enemyUnit)
+        ) {
+            buffFunc(targetUnit, 7);
+            if (targetUnit.snapshot.restHpPercentage == 100
+                && targetUnit.hasPositiveStatusEffect(enemyUnit)
+            ) {
+                buffFunc(targetUnit, 2);
+            }
+        }
+    }
+
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
@@ -4473,32 +4487,22 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveA.AtkSpdIdeal4:
-                    if (targetUnit.snapshot.restHpPercentage == 100
-                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
-                    ) {
-                        targetUnit.atkSpur += 7;
-                        targetUnit.spdSpur += 7;
-                        if (targetUnit.snapshot.restHpPercentage == 100
-                            && targetUnit.hasPositiveStatusEffect(enemyUnit)
-                        ) {
-                            targetUnit.atkSpur += 2;
-                            targetUnit.spdSpur += 2;
-                        }
-                    }
+                    this.__applyIdealEffect(targetUnit, enemyUnit,
+                        (unit, value) => {
+                            unit.atkSpur += value; unit.spdSpur += value;
+                        });
                     break;
                 case PassiveA.AtkDefIdeal4:
-                    if (targetUnit.snapshot.restHpPercentage == 100
-                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
-                    ) {
-                        targetUnit.atkSpur += 7;
-                        targetUnit.defSpur += 7;
-                        if (targetUnit.snapshot.restHpPercentage == 100
-                            && targetUnit.hasPositiveStatusEffect(enemyUnit)
-                        ) {
-                            targetUnit.atkSpur += 2;
-                            targetUnit.defSpur += 2;
-                        }
-                    }
+                    this.__applyIdealEffect(targetUnit, enemyUnit,
+                        (unit, value) => {
+                            unit.atkSpur += value; unit.defSpur += value;
+                        });
+                    break;
+                case PassiveA.AtkResIdeal4:
+                    this.__applyIdealEffect(targetUnit, enemyUnit,
+                        (unit, value) => {
+                            unit.atkSpur += value; unit.resSpur += value;
+                        });
                     break;
                 case Weapon.Skinfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
@@ -11340,6 +11344,16 @@ class AetherRaidTacticsBoard {
             case PassiveC.AtkTactic1: this.__applyTacticSkill(skillOwner, x => { x.applyAtkBuff(2); }); break;
             case PassiveC.AtkTactic2: this.__applyTacticSkill(skillOwner, x => { x.applyAtkBuff(4); }); break;
             case PassiveC.AtkTactic3: this.__applyTacticSkill(skillOwner, x => { x.applyAtkBuff(6); }); break;
+            case PassiveC.OrdersRestraint:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    unit.applyAtkBuff(6);
+                    unit.applyResBuff(6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2)) {
+                }
+                break;
             case Weapon.ShinginNoSeiken:
                 if (skillOwner.isWeaponSpecialRefined) {
                     this.__applyTacticSkill(skillOwner, x => { x.applySpdBuff(6); });
@@ -12573,7 +12587,7 @@ class AetherRaidTacticsBoard {
         this.__enqueueEndActionCommand(unit);
         this.__executeAllCommands(this.commandQueuePerAction, 0);
     }
-    
+
     __simulateAllyActionCustomized() {
         let targetGroup = UnitGroupType.Ally;
         let enemyGroup = UnitGroupType.Enemy;
@@ -14977,10 +14991,10 @@ class AetherRaidTacticsBoard {
         return count;
     }
 
-    __countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator) {
+    __countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         let count = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
-            if (predicator(unit)) {
+            if (predicator != null && predicator(unit)) {
                 ++count;
             }
         }

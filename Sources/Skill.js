@@ -1422,6 +1422,7 @@ const PassiveA = {
     // 万全
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
     AtkDefIdeal4: 1705,
+    AtkResIdeal4: 1723,
 };
 
 const PassiveB = {
@@ -1810,25 +1811,12 @@ const PassiveC = {
     ResSmoke2: 1410,
     ResSmoke3: 730, // 魔防の紫煙3
 
-    SeimeiNoKagayaki: 773,
-
-    ChaosNamed: 868, // 我が名は混沌
-
     AtkPloy3: 722, // 攻撃の謀策3
     SpdPloy3: 723, // 速さの謀策3
     DefPloy3: 724, // 守備の謀策3
     ResPloy3: 725, // 魔防の謀策3
 
-    SurtrsMenace: 767, // 炎王の威嚇
-
     HajimariNoKodo3: 957,
-    WithEveryone: 754, // みんなと一緒に
-    SolitaryDream: 898, // ひとりぼっちのゆめ
-    DivineFang: 915, // 神竜王の牙
-    KyokoNoKisaku3: 726, // 恐慌の奇策3
-    AirOrders3: 819, // 先導の伝令・天3
-    GroundOrders3: 911, // 先導の伝令・地3
-    Upheaval: 823, // メガクェイク
 
     // 信義
     AtkSpdOath3: 1077, // 攻撃速さの信義3
@@ -1851,9 +1839,6 @@ const PassiveC = {
 
     PanicSmoke3: 1000, // 恐慌の幻煙3
 
-    VisionOfArcadia: 933, // 理想郷となるように
-    OstiasPulse: 753, // オスティアの鼓動
-
     // 奮起
     RouseAtkSpd3: 1510,
     RouseAtkDef3: 948,
@@ -1868,13 +1853,7 @@ const PassiveC = {
     HokoNoKokyu3: 921, // 歩行の呼吸3
     HokoNoMajin3: 961, // 歩行の魔刃3
 
-    Jagan: 811, // 邪眼
-    HitoNoKanouseiWo: 850, // 人の可能性を
-    ImpenetrableDark: 1178, // 見通せぬ深き暗闇
-
     ArmoredStride3: 1304, // 重装の遊撃3
-    MilaNoHaguruma: 1352, // ミラの歯車
-    InevitableDeath: 1420, // 死からは逃れられぬ
 
     // 牽制
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
@@ -1891,8 +1870,6 @@ const PassiveC = {
     OddRecovery2: 1579, // 快癒・奇数2
     OddRecovery3: 1570, // 快癒・奇数3
 
-    WingsOfLight: 1622, // 光輝く翼
-
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrNearSave3: 1636, // 盾の護り手・近間3
     AdNearSave3: 1667, // 鎧の護り手・近間3
@@ -1902,6 +1879,27 @@ const PassiveC = {
     // 脅嚇
     AtkDefMenace: 1708, // 攻撃守備の脅嚇
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
+
+    // 専用
+    SeimeiNoKagayaki: 773,
+    ChaosNamed: 868, // 我が名は混沌
+    SurtrsMenace: 767, // 炎王の威嚇
+    WithEveryone: 754, // みんなと一緒に
+    SolitaryDream: 898, // ひとりぼっちのゆめ
+    DivineFang: 915, // 神竜王の牙
+    KyokoNoKisaku3: 726, // 恐慌の奇策3
+    AirOrders3: 819, // 先導の伝令・天3
+    GroundOrders3: 911, // 先導の伝令・地3
+    Upheaval: 823, // メガクェイク
+    VisionOfArcadia: 933, // 理想郷となるように
+    OstiasPulse: 753, // オスティアの鼓動
+    Jagan: 811, // 邪眼
+    HitoNoKanouseiWo: 850, // 人の可能性を
+    ImpenetrableDark: 1178, // 見通せぬ深き暗闇
+    MilaNoHaguruma: 1352, // ミラの歯車
+    InevitableDeath: 1420, // 死からは逃れられぬ
+    WingsOfLight: 1622, // 光輝く翼
+    OrdersRestraint: 1724, // 束縛、秩序、安定
 };
 
 const PassiveS = {
