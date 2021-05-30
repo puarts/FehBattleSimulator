@@ -11351,7 +11351,10 @@ class AetherRaidTacticsBoard {
                     unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 }
 
-                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2)) {
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2) >= 3) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applyResBuff(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 }
                 break;
             case Weapon.ShinginNoSeiken:
