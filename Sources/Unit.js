@@ -341,8 +341,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.TriangleAttack:
             return g_imageRootPath + "StatusEffect_TriangleAttack.png";
         case StatusEffectType.NullPanic:
-            // todo: アイコンを正しいものに置き換える
-            return g_imageRootPath + "StatusEffect_Undefined.png";
+            return g_imageRootPath + "StatusEffect_NullPanic.png";
         default: return "";
     }
 }
