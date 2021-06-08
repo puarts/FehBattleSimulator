@@ -1017,6 +1017,9 @@ const Weapon = {
 
     // 2021年5月 アスタルテ
     OrdersSentence: 1722, // 正の裁き
+
+    // 第5部後半記念 新英雄＆ノート
+    Hrimfaxi: 1731, // フリムファクシ
 };
 
 const Support = {
@@ -2464,6 +2467,7 @@ function isTeleportationSkill(skillId) {
 /// 天駆の道の効果を持つスキルかどうか
 function hasPathfinderEffect(skillId) {
     switch (skillId) {
+        case Weapon.Hrimfaxi:
         case Weapon.Skinfaxi:
             return true;
         default:

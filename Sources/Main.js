@@ -4472,6 +4472,12 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Hrimfaxi:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        this.__applyBonusDoubler(targetUnit, enemyUnit);
+                    }
+                    break;
                 case Weapon.BladeOfRenais:
                     if (targetUnit.battleContext.initiatesCombat
                         || targetUnit.battleContext.isThereAnyUnitIn2Spaces
