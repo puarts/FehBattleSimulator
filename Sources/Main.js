@@ -3552,7 +3552,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.SyunsenAiraNoKen:
-                    if (targetUnit.isWeaponRefined) {
+                    if (atkUnit.isWeaponRefined) {
                         defUnit.battleContext.increaseCooldownCountForAttack = false;
                         defUnit.battleContext.increaseCooldownCountForDefense = false;
                         defUnit.battleContext.reducesCooldownCount = false;
