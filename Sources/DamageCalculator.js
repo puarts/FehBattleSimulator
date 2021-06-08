@@ -1395,6 +1395,12 @@ class DamageCalculator {
                         }
                     }
                     break;
+                case PassiveB.MoonTwinWing:
+                    if (defUnit.snapshot.restHpPercentage >= 25) {
+                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        damageReductionRatio *= 1.0 - ratio;
+                    }
+                    break;
                 case PassiveB.Bushido2:
                 case PassiveB.Spurn3:
                 case PassiveB.KaihiIchigekiridatsu3:
@@ -1602,6 +1608,11 @@ class DamageCalculator {
                         this.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
                         return percentage / 100.0;
                     }
+                }
+                break;
+            case PassiveB.MoonTwinWing:
+                if (defUnit.snapshot.restHpPercentage >= 25) {
+                    return this.__getDodgeDamageReductionRatio(atkUnit, defUnit);
                 }
                 break;
             case PassiveB.Bushido2:

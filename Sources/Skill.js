@@ -1664,6 +1664,7 @@ const PassiveB = {
     BindingNecklace: 1540, // 束縛の首飾り
     FallenStar: 1651, // 落星
     SunTwinWing: 1680, // 双姫の陽翼
+    MoonTwinWing: 1732, // 双姫の月翼
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
 
