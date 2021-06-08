@@ -1884,6 +1884,7 @@ const PassiveC = {
     FatalSmoke3: 1631, // 不治の幻煙3
 
     // 脅嚇
+    AtkSpdMenace: 1733, // 攻撃速さの脅嚇
     AtkDefMenace: 1708, // 攻撃守備の脅嚇
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
 

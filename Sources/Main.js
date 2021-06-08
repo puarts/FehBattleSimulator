@@ -10497,11 +10497,22 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case PassiveC.AtkSpdMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                    },
+                    unit => {
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplySpdDebuff(-6);
+                    });
+                break;
             case PassiveC.AtkResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(-6);
-                        unit.applyResBuff(-6);
+                        unit.applyAtkBuff(6);
+                        unit.applyResBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
@@ -10511,8 +10522,8 @@ class AetherRaidTacticsBoard {
             case PassiveC.AtkDefMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(-6);
-                        unit.applyDefBuff(-6);
+                        unit.applyAtkBuff(6);
+                        unit.applyDefBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
