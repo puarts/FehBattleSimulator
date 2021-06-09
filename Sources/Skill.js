@@ -1017,6 +1017,9 @@ const Weapon = {
 
     // 2021年5月 アスタルテ
     OrdersSentence: 1722, // 正の裁き
+
+    // 第5部後半記念 新英雄＆ノート
+    Hrimfaxi: 1731, // フリムファクシ
 };
 
 const Support = {
@@ -1661,6 +1664,7 @@ const PassiveB = {
     BindingNecklace: 1540, // 束縛の首飾り
     FallenStar: 1651, // 落星
     SunTwinWing: 1680, // 双姫の陽翼
+    MoonTwinWing: 1732, // 双姫の月翼
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
 
@@ -1880,6 +1884,7 @@ const PassiveC = {
     FatalSmoke3: 1631, // 不治の幻煙3
 
     // 脅嚇
+    AtkSpdMenace: 1733, // 攻撃速さの脅嚇
     AtkDefMenace: 1708, // 攻撃守備の脅嚇
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
 
@@ -2464,6 +2469,7 @@ function isTeleportationSkill(skillId) {
 /// 天駆の道の効果を持つスキルかどうか
 function hasPathfinderEffect(skillId) {
     switch (skillId) {
+        case Weapon.Hrimfaxi:
         case Weapon.Skinfaxi:
             return true;
         default:

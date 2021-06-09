@@ -61,6 +61,9 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
+__applyBonusDoubler(targetUnit, enemyUnit) {}
+
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
 targetUnit.battleContext.invalidateAtkBuff = true;
@@ -87,6 +90,9 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // 速さの20%
     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
 }
+
+天駆の道
+function hasPathfinderEffect(skillId) {}
 
 【XXX】の状態を付与
 Unit.js

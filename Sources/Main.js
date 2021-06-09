@@ -3552,7 +3552,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.SyunsenAiraNoKen:
-                    if (targetUnit.isWeaponRefined) {
+                    if (atkUnit.isWeaponRefined) {
                         defUnit.battleContext.increaseCooldownCountForAttack = false;
                         defUnit.battleContext.increaseCooldownCountForDefense = false;
                         defUnit.battleContext.reducesCooldownCount = false;
@@ -4472,6 +4472,12 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Hrimfaxi:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        this.__applyBonusDoubler(targetUnit, enemyUnit);
+                    }
+                    break;
                 case Weapon.BladeOfRenais:
                     if (targetUnit.battleContext.initiatesCombat
                         || targetUnit.battleContext.isThereAnyUnitIn2Spaces
@@ -6240,6 +6246,12 @@ class AetherRaidTacticsBoard {
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
+                    }
+                    break;
+                case PassiveB.MoonTwinWing:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.spdSpur -= 5;
                     }
                     break;
                 case PassiveB.SunTwinWing:
@@ -10485,11 +10497,22 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case PassiveC.AtkSpdMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                    },
+                    unit => {
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplySpdDebuff(-6);
+                    });
+                break;
             case PassiveC.AtkResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(-6);
-                        unit.applyResBuff(-6);
+                        unit.applyAtkBuff(6);
+                        unit.applyResBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
@@ -10499,8 +10522,8 @@ class AetherRaidTacticsBoard {
             case PassiveC.AtkDefMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(-6);
-                        unit.applyDefBuff(-6);
+                        unit.applyAtkBuff(6);
+                        unit.applyDefBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
