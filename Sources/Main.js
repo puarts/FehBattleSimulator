@@ -14598,7 +14598,14 @@ class AetherRaidTacticsBoard {
                 continue;
             }
 
+            let target = targetInfo.targetUnit;
+            let result = this.calcDamageTemporary(attacker, target, tile);
             let context = new TilePriorityContext(tile, attacker);
+            context.combatResult = this.__getCombatResult(attacker, target);
+            let targetDamage = (target.hp - target.restHp);
+            let attackerDamage = (attacker.hp - attacker.restHp);
+            context.damageRatio = targetDamage * 3 - attackerDamage;
+
             context.calcPriorityToAttack();
 
             tilePriorities.push(context);
@@ -14621,7 +14628,9 @@ class AetherRaidTacticsBoard {
             let tile = context.tile;
             this.writeDebugLogLine(order + ": " + tile.positionToString()
                 + ", priority=" + context.priorityToAttack
-                + "(isDefensiveTile=" + context.isDefensiveTile
+                + "(combatResult=" + context.combatResult
+                + ", damageRatio=" + context.damageRatio
+                + ", isDefensiveTile=" + context.isDefensiveTile
                 + ", enemyThreat=" + context.enemyThreat
                 + ", isTeleportationRequired=" + context.isTeleportationRequired
                 + ", tileType=" + context.tileType
@@ -14632,6 +14641,16 @@ class AetherRaidTacticsBoard {
         }
 
         return tilePriorities[0].tile;
+    }
+
+    __getCombatResult(attacker, target) {
+        if (target.restHp == 0) {
+            return CombatResult.Win;
+        } else if (attacker.restHp == 0) {
+            return CombatResult.Loss;
+        } else {
+            return CombatResult.Draw;
+        }
     }
 
     __evaluateBestAttackTarget(attacker, targetInfos) {
@@ -14729,13 +14748,7 @@ class AetherRaidTacticsBoard {
         this.writeDebugLogLine(this.damageCalc.log);
 
         let attackEvalContext = new AttackEvaluationContext();
-        if (target.restHp == 0) {
-            attackEvalContext.combatResult = CombatResult.Win;
-        } else if (attacker.restHp == 0) {
-            attackEvalContext.combatResult = CombatResult.Loss;
-        } else {
-            attackEvalContext.combatResult = CombatResult.Draw;
-        }
+        attackEvalContext.combatResult = this.__getCombatResult(attacker, target);
         let targetDamage = (target.hp - target.restHp);
         let attackerDamage = (attacker.hp - attacker.restHp);
         attackEvalContext.damageRatio = targetDamage * 3 - attackerDamage;

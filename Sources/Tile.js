@@ -709,6 +709,10 @@ class TilePriorityContext {
         this.distanceFromDiagonal = 0;
         this.isPivotRequired = false;
 
+        // 攻撃マスの決定に必要
+        this.combatResult = CombatResult.Draw;
+        this.damageRatio = 0;
+
         // ブロック破壊可能なタイル
         this.attackableTileContexts = [];
         this.bestTileToBreakBlock = null;
@@ -886,14 +890,25 @@ class TilePriorityContext {
             requiredMovementCount = 0;
         }
         let tileTypeWeight = this.__getTileTypePriority(this.unit, this.tileType);
+        let combatResultPriority = this.__getCombatResultPriority();
 
         this.priorityToAttack =
-            defensiveTileWeight * 1000000
-            - this.enemyThreat * 100000
+            combatResultPriority * 400000 * 3 * 500 // とりあえず最大500ダメージ想定
+            + this.damageRatio * 400000
+            + defensiveTileWeight * 200000
+            - this.enemyThreat * 20000
             + teleportationRequirementWeight * 10000
             + tileTypeWeight * 2000
             - requiredMovementCount * 100
-            + this.tilePriority;
+            - this.tilePriority;
+    }
+
+    __getCombatResultPriority() {
+        switch (this.combatResult) {
+            case CombatResult.Loss: return 0;
+            case CombatResult.Draw: return 1;
+            case CombatResult.Win: return 2;
+        }
     }
 
     __getTileTypePriority(unit, type) {
