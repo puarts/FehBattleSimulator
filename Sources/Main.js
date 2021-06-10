@@ -13057,11 +13057,10 @@ class AetherRaidTacticsBoard {
         if (unit.actionContext.attackableUnitInfos.length > 0) {
             // 攻撃範囲に敵がいる
             for (let attackableUnitInfo of unit.actionContext.attackableUnitInfos) {
-
-                let combatResult = this.calcDamageTemporary(unit,
-                    attackableUnitInfo.targetUnit,
-                    attackableUnitInfo.bestTileToAttack);
-                if (attackableUnitInfo.targetUnit.restHp == 0) {
+                let tile = attackableUnitInfo.bestTileToAttack;
+                this.__updateCombatResultOfAttackableTargetInfo(attackableUnitInfo, unit, tile);
+                let combatResult = attackableUnitInfo.combatResultDetails[tile.id];
+                if (attackableUnitInfo.combatResults[tile.id] == CombatResult.Win) {
                     this.writeDebugLogLine(unit.getNameWithGroup() + "は戦闘に勝利するので補助資格なし");
                     return true;
                 }
@@ -14518,7 +14517,8 @@ class AetherRaidTacticsBoard {
 
             // 攻撃可能なユニットからベストな攻撃相手を探す
             this.writeLogLine(unit.getNameWithGroup() + "の最適な攻撃対象を選択--------");
-            unit.actionContext.bestTargetToAttack = this.__evaluateBestAttackTarget(unit, unit.actionContext.attackableUnitInfos);
+            let bestAttackableUnitInfo = this.__evaluateBestAttackTarget(unit, unit.actionContext.attackableUnitInfos);
+            unit.actionContext.bestTargetToAttack = bestAttackableUnitInfo.targetUnit;
             this.writeLogLine(unit.actionContext.bestTargetToAttack.getNameWithGroup() + "が" + unit.getNameWithGroup() + "の攻撃対象");
 
             let target = unit.actionContext.bestTargetToAttack;
@@ -14532,18 +14532,20 @@ class AetherRaidTacticsBoard {
             if (targetInfo == null) {
                 targetInfo = {
                     target: unit.actionContext.bestTargetToAttack,
-                    attackers: []
+                    attackers: [],
+                    attackableUnitInfos: [],
                 };
                 attackTargetInfos.push(targetInfo);
             }
             targetInfo.attackers.push(unit);
+            targetInfo.attackableUnitInfos[unit] = bestAttackableUnitInfo;
         }
 
         // 最も優先度の高い攻撃者を決める
         for (let targetInfo of attackTargetInfos) {
             let target = targetInfo.target;
             this.writeLogLine(target.getNameWithGroup() + "への攻撃者を選択------------");
-            let bestAttacker = this.__evaluateBestAttacker(target, targetInfo.attackers);
+            let bestAttacker = this.__evaluateBestAttacker(target, targetInfo.attackers, targetInfo.attackableUnitInfos);
             this.writeLogLine("最適な攻撃者: " + bestAttacker.getNameWithGroup());
             target.actionContext.bestAttacker = bestAttacker;
         }
@@ -14599,13 +14601,11 @@ class AetherRaidTacticsBoard {
             }
 
             let target = targetInfo.targetUnit;
-            let result = this.calcDamageTemporary(attacker, target, tile);
-            let context = new TilePriorityContext(tile, attacker);
-            context.combatResult = this.__getCombatResult(attacker, target);
-            let targetDamage = (target.hp - target.restHp);
-            let attackerDamage = (attacker.hp - attacker.restHp);
-            context.damageRatio = targetDamage * 3 - attackerDamage;
+            this.__updateCombatResultOfAttackableTargetInfo(targetInfo, attacker, tile);
 
+            let context = new TilePriorityContext(tile, attacker);
+            context.combatResult = targetInfo.combatResults[tile.id];
+            context.damageRatio = targetInfo.damageRatios[tile.id];
             context.calcPriorityToAttack();
 
             tilePriorities.push(context);
@@ -14628,7 +14628,7 @@ class AetherRaidTacticsBoard {
             let tile = context.tile;
             this.writeDebugLogLine(order + ": " + tile.positionToString()
                 + ", priority=" + context.priorityToAttack
-                + "(combatResult=" + context.combatResult
+                + "(combatResult=" + combatResultToString(context.combatResult)
                 + ", damageRatio=" + context.damageRatio
                 + ", isDefensiveTile=" + context.isDefensiveTile
                 + ", enemyThreat=" + context.enemyThreat
@@ -14641,6 +14641,22 @@ class AetherRaidTacticsBoard {
         }
 
         return tilePriorities[0].tile;
+    }
+
+    __updateCombatResultOfAttackableTargetInfo(targetInfo, attacker, tile) {
+        if (!(tile.id in targetInfo.combatResults)) {
+            // まだ計算されてなければ計算
+            this.writeDebugLogLine(`calc combat result of tile ${tile.positionToString()}`);
+            let target = targetInfo.targetUnit;
+            let result = this.calcDamageTemporary(attacker, target, tile);
+            let combatResult = this.__getCombatResult(attacker, target);
+            let targetDamage = (target.hp - target.restHp);
+            let attackerDamage = (attacker.hp - attacker.restHp);
+            let damageRatio = targetDamage * 3 - attackerDamage;
+            targetInfo.combatResults[tile.id] = combatResult;
+            targetInfo.damageRatios[tile.id] = damageRatio;
+            targetInfo.combatResultDetails[tile.id] = result;
+        }
     }
 
     __getCombatResult(attacker, target) {
@@ -14660,7 +14676,7 @@ class AetherRaidTacticsBoard {
             if (attacker.actionContext.attackEvalContexts[target]) {
                 continue;
             }
-            this.__updateAttackEvalContext(attacker, target, targetInfo.bestTileToAttack);
+            this.__updateAttackEvalContext(attacker, targetInfo, targetInfo.bestTileToAttack);
         }
 
         targetInfos.sort(function (a, b) {
@@ -14690,10 +14706,10 @@ class AetherRaidTacticsBoard {
             this.writeWarningLine(`${attacker.getNameWithGroup()}の最適な攻撃対象はスロット順で変わる可能性があります。`);
         }
 
-        return targetInfos[0].targetUnit;
+        return targetInfos[0];
     }
 
-    __evaluateBestAttacker(target, attackers) {
+    __evaluateBestAttacker(target, attackers, attackableUnitInfos) {
         if (attackers.length == 1) {
             return attackers[0];
         }
@@ -14705,7 +14721,7 @@ class AetherRaidTacticsBoard {
             }
 
             let info = attacker.actionContext.findAttackableUnitInfo(target);
-            this.__updateAttackEvalContext(attacker, target, info.bestTileToAttack);
+            this.__updateAttackEvalContext(attacker, attackableUnitInfos[attacker], info.bestTileToAttack);
         }
 
         attackers.sort(function (a, b) {
@@ -14739,23 +14755,22 @@ class AetherRaidTacticsBoard {
         return attackers[0];
     }
 
-    __updateAttackEvalContext(attacker, target, tileToAttack) {
+    __updateAttackEvalContext(attacker, attackableUnitInfo, tileToAttack) {
         if (tileToAttack == null) {
             return;
         }
 
-        let result = this.calcDamageTemporary(attacker, target, tileToAttack);
+        let target = attackableUnitInfo.targetUnit;
+        this.__updateCombatResultOfAttackableTargetInfo(attackableUnitInfo, attacker, tileToAttack);
+
+        let result = attackableUnitInfo.combatResultDetails[tileToAttack.id];
         this.writeDebugLogLine(this.damageCalc.log);
 
         let attackEvalContext = new AttackEvaluationContext();
-        attackEvalContext.combatResult = this.__getCombatResult(attacker, target);
-        let targetDamage = (target.hp - target.restHp);
-        let attackerDamage = (attacker.hp - attacker.restHp);
-        attackEvalContext.damageRatio = targetDamage * 3 - attackerDamage;
+        attackEvalContext.combatResult = attackableUnitInfo.combatResults[tileToAttack.id];
+        attackEvalContext.damageRatio = attackableUnitInfo.damageRatios[tileToAttack.id];
         this.writeDebugLogLine(attacker.getNameWithGroup() + "が" + target.getNameWithGroup()
-            + "に与えるダメージ" + targetDamage
-            + ", 受けるダメージ" + attackerDamage
-            + ", ダメージ率" + attackEvalContext.damageRatio
+            + "に攻撃時のダメージ率" + attackEvalContext.damageRatio
         );
         attackEvalContext.isSpecialChargeIncreased = target.battleContext.isSpecialActivated;
 

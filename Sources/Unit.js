@@ -1061,10 +1061,13 @@ class AttackableUnitInfo {
         this.targetUnit = targetUnit;
         this.tiles = [];
         this.bestTileToAttack = null;
+        this.damageRatios = [];
+        this.combatResults = [];
+        this.combatResultDetails = [];
     }
 
     toString() {
-        var result = this.targetUnit.getNameWithGroup() + ": ";
+        let result = this.targetUnit.getNameWithGroup() + ": ";
         for (let tile of this.tiles) {
             result += "(" + tile.posX + "," + tile.posY + ")";
         }
