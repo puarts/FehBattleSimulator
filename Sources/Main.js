@@ -10579,6 +10579,17 @@ class AetherRaidTacticsBoard {
                         unit.reserveToApplyDefDebuff(-6);
                     });
                 break;
+            case PassiveC.DefResMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                    },
+                    unit => {
+                        unit.reserveToApplyDefDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
+                    });
+                break;
             case Special.HolyKnightAura:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;
