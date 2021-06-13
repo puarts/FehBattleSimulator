@@ -6022,6 +6022,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HolyGradivus:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
                 case Weapon.Ladyblade:
                     targetUnit.battleContext.refersMinOfDefOrRes = true;
                     break;

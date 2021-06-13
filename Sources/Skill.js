@@ -1021,6 +1021,7 @@ const Weapon = {
     // 第5部後半記念 新英雄＆ノート
     Hrimfaxi: 1731, // フリムファクシ
     Ladyblade: 1725, // レディソード
+    HolyGradivus: 1727, // 聖槍グラディウス
 };
 
 const Support = {
