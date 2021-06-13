@@ -1023,6 +1023,7 @@ const Weapon = {
     Ladyblade: 1725, // レディソード
     HolyGradivus: 1727, // 聖槍グラディウス
     GronnfoxPlus: 1729, // グルンフォックス+
+    BlarRabbitPlus: 1734, // ブラーラビット+
 };
 
 const Support = {

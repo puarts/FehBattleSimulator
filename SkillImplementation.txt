@@ -68,6 +68,9 @@ __applyBonusDoubler(targetUnit, enemyUnit) {}
 targetUnit.battleContext.invalidateAllBuffs();
 targetUnit.battleContext.invalidateAtkBuff = true;
 
+HP N回復
+targetUnit.reserveHeal(N);
+
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack = N
 
@@ -99,6 +102,9 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
 
 戦闘中に攻撃していれば
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
+
+上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
+targetUnit.isOneTimeActionActivatedForWeapon
 
 再移動(N)
 __canActivateCanto(unit) {}

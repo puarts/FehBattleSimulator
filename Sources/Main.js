@@ -5004,6 +5004,7 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case Weapon.BlarRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
                 case Weapon.HiddenThornsPlus:
@@ -6919,6 +6920,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.spdSpur += 5;
                     }
                     break;
+                case Weapon.BlarRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
                 case Weapon.HiddenThornsPlus:
