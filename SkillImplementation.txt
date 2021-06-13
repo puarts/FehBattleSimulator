@@ -91,6 +91,9 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
 }
 
+戦闘中に攻撃していれば
+__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
+
 天駆の道
 function hasPathfinderEffect(skillId) {}
 

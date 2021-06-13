@@ -5284,7 +5284,27 @@ class AetherRaidTacticsBoard {
                 case Weapon.Fear:
                     attackTargetUnit.applyAtkDebuff(-6);
                     break;
-                case Weapon.Pesyukado:
+                case Weapon.Pesyukado: {
+                    let amount = attackUnit.isWeaponRefined ? 5 : 4;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                        unit.applyAllBuff(amount);
+                    }
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.applyAllDebuff(amount);
+                    }
+                    if (!attackUnit.isWeaponSpecialRefined) break;
+                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                        this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の特殊錬成ペシュカド発動");
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
+                            unit.specialCount += 1;
+                        }
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                            unit.specialCount -= 1;
+                        }
+                    }
+                    break;
+                }
                 case Weapon.Hlidskjalf:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
                         unit.applyAllBuff(4);
@@ -6002,6 +6022,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Pesyukado:
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
                 case Weapon.ObservantStaffPlus:
                     let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
                     let partners = units.map(u => u.partnerHeroIndex);
