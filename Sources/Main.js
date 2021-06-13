@@ -4191,7 +4191,7 @@ class AetherRaidTacticsBoard {
                         }
                         break;
                     case Weapon.RohyouNoKnife:
-                        if (defUnit.isMeleeWeaponType() && this.__canCounterAttack(atkUnit, defUnit)) {
+                        if ((defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) && this.__canCounterAttack(atkUnit, defUnit)) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -6022,6 +6022,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RohyouNoKnife:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
                 case Weapon.Pesyukado:
                     if (!targetUnit.isWeaponSpecialRefined) break;
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
@@ -8280,7 +8292,7 @@ class AetherRaidTacticsBoard {
                     defUnit.addAllSpur(-4);
                     break;
                 case Weapon.RohyouNoKnife:
-                    if (defUnit.isMeleeWeaponType()) {
+                    if (defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) {
                         atkUnit.defSpur += 20;
                     }
                     break;
