@@ -85,6 +85,9 @@ let partners = units.map(u => u.partnerHeroIndex);
 targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
 if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 
+敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
+targetUnit.battleContext.refersMinOfDefOrRes = true;
+
 ダメージ+N(固定ダメージ)
 DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
@@ -96,6 +99,10 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
 
 戦闘中に攻撃していれば
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
+
+再移動(N)
+__canActivateCanto(unit) {}
+__calcMoveCountForCanto(unit) {}
 
 天駆の道
 function hasPathfinderEffect(skillId) {}

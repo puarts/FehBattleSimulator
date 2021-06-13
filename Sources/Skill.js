@@ -1020,6 +1020,7 @@ const Weapon = {
 
     // 第5部後半記念 新英雄＆ノート
     Hrimfaxi: 1731, // フリムファクシ
+    Ladyblade: 1725, // レディソード
 };
 
 const Support = {

@@ -6022,6 +6022,9 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Ladyblade:
+                    targetUnit.battleContext.refersMinOfDefOrRes = true;
+                    break;
                 case Weapon.RohyouNoKnife:
                     if (targetUnit.isWeaponSpecialRefined) {
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces =
@@ -14092,6 +14095,8 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.Ladyblade:
+                case Weapon.FlowerLance:
                 case PassiveB.SpdDefNearTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
@@ -14108,6 +14113,10 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.Ladyblade:
+                case Weapon.FlowerLance:
+                    moveCountForCanto = Math.max(moveCountForCanto, 2);
+                    break;
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
