@@ -8296,9 +8296,8 @@ class AetherRaidTacticsBoard {
                     atkUnit.atkSpur += 6;
                     break;
                 case Weapon.RauaFoxPlus:
-                    defUnit.addAllSpur(-4);
-                    break;
                 case Weapon.BlarfoxPlus:
+                case Weapon.GronnfoxPlus:
                     defUnit.addAllSpur(-4);
                     break;
                 case Weapon.RohyouNoKnife:
