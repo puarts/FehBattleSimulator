@@ -1020,6 +1020,10 @@ const Weapon = {
 
     // 第5部後半記念 新英雄＆ノート
     Hrimfaxi: 1731, // フリムファクシ
+    Ladyblade: 1725, // レディソード
+    HolyGradivus: 1727, // 聖槍グラディウス
+    GronnfoxPlus: 1729, // グルンフォックス+
+    BlarRabbitPlus: 1734, // ブラーラビット+
 };
 
 const Support = {
@@ -1887,6 +1891,7 @@ const PassiveC = {
     AtkSpdMenace: 1733, // 攻撃速さの脅嚇
     AtkDefMenace: 1708, // 攻撃守備の脅嚇
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
+    DefResMenace: 1728, // 守備魔防の脅嚇
 
     // 専用
     SeimeiNoKagayaki: 773,

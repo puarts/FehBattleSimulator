@@ -4191,7 +4191,7 @@ class AetherRaidTacticsBoard {
                         }
                         break;
                     case Weapon.RohyouNoKnife:
-                        if (defUnit.isMeleeWeaponType() && this.__canCounterAttack(atkUnit, defUnit)) {
+                        if ((defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) && this.__canCounterAttack(atkUnit, defUnit)) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -5004,6 +5004,7 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case Weapon.BlarRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
                 case Weapon.HiddenThornsPlus:
@@ -5284,7 +5285,27 @@ class AetherRaidTacticsBoard {
                 case Weapon.Fear:
                     attackTargetUnit.applyAtkDebuff(-6);
                     break;
-                case Weapon.Pesyukado:
+                case Weapon.Pesyukado: {
+                    let amount = attackUnit.isWeaponRefined ? 5 : 4;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                        unit.applyAllBuff(amount);
+                    }
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.applyAllDebuff(amount);
+                    }
+                    if (!attackUnit.isWeaponSpecialRefined) break;
+                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                        this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の特殊錬成ペシュカド発動");
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
+                            unit.specialCount += 1;
+                        }
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                            unit.specialCount -= 1;
+                        }
+                    }
+                    break;
+                }
                 case Weapon.Hlidskjalf:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
                         unit.applyAllBuff(4);
@@ -6002,6 +6023,35 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HolyGradivus:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
+                case Weapon.Ladyblade:
+                    targetUnit.battleContext.refersMinOfDefOrRes = true;
+                    break;
+                case Weapon.RohyouNoKnife:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
+                case Weapon.Pesyukado:
+                    if (!targetUnit.isWeaponSpecialRefined) break;
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
                 case Weapon.ObservantStaffPlus:
                     let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
                     let partners = units.map(u => u.partnerHeroIndex);
@@ -6870,6 +6920,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.spdSpur += 5;
                     }
                     break;
+                case Weapon.BlarRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
                 case Weapon.HiddenThornsPlus:
@@ -8247,13 +8298,12 @@ class AetherRaidTacticsBoard {
                     atkUnit.atkSpur += 6;
                     break;
                 case Weapon.RauaFoxPlus:
-                    defUnit.addAllSpur(-4);
-                    break;
                 case Weapon.BlarfoxPlus:
+                case Weapon.GronnfoxPlus:
                     defUnit.addAllSpur(-4);
                     break;
                 case Weapon.RohyouNoKnife:
-                    if (defUnit.isMeleeWeaponType()) {
+                    if (defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) {
                         atkUnit.defSpur += 20;
                     }
                     break;
@@ -10528,6 +10578,17 @@ class AetherRaidTacticsBoard {
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
                         unit.reserveToApplyDefDebuff(-6);
+                    });
+                break;
+            case PassiveC.DefResMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                    },
+                    unit => {
+                        unit.reserveToApplyDefDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
                     });
                 break;
             case Special.HolyKnightAura:
@@ -14052,6 +14113,8 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.Ladyblade:
+                case Weapon.FlowerLance:
                 case PassiveB.SpdDefNearTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
@@ -14068,6 +14131,10 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.Ladyblade:
+                case Weapon.FlowerLance:
+                    moveCountForCanto = Math.max(moveCountForCanto, 2);
+                    break;
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;

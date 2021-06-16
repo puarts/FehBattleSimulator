@@ -68,8 +68,14 @@ __applyBonusDoubler(targetUnit, enemyUnit) {}
 targetUnit.battleContext.invalidateAllBuffs();
 targetUnit.battleContext.invalidateAtkBuff = true;
 
+HP N回復
+targetUnit.reserveHeal(N);
+
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack = N
+
+敵の奥義カウント変動量-1
+targetUnit.battleContext.reducesCooldownCount = true;
 
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCount() {
@@ -82,6 +88,9 @@ let partners = units.map(u => u.partnerHeroIndex);
 targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
 if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 
+敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
+targetUnit.battleContext.refersMinOfDefOrRes = true;
+
 ダメージ+N(固定ダメージ)
 DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
@@ -90,6 +99,16 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // 速さの20%
     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
 }
+
+戦闘中に攻撃していれば
+__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
+
+上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
+targetUnit.isOneTimeActionActivatedForWeapon
+
+再移動(N)
+__canActivateCanto(unit) {}
+__calcMoveCountForCanto(unit) {}
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
