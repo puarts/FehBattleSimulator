@@ -6023,6 +6023,21 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MuninNoMaran:
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.addAllSpur(4);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                                targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                                this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                            if (targetUnit.battleContext.isThereAnyUnitIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                                targetUnit.addAllSpur(4);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.HolyGradivus:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
@@ -11611,10 +11626,24 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.MuninNoMaran:
-                if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
+                if (skillOwner.isWeaponRefined) {
                     this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                        unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
-                        unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyResDebuff(-5); });
+                        unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() },
+                        unit => { unit.reserveToApplyAtkDebuff(-7); });
+                    this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                        unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
+                        unit => { unit.reserveToApplyResDebuff(-7); });
+                    if (skillOwner.isWeaponSpecialRefined) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.reserveHeal(7);
+                        }
+                    }
+                } else {
+                    if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
+                        this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                            unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
+                            unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyResDebuff(-5); });
+                    }
                 }
                 break;
             case PassiveB.ChillAtkDef2:
