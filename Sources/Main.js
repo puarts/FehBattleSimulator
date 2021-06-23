@@ -5237,6 +5237,15 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Scadi:
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        if (attackUnit.snapshot.restHpPercentage >= 25) {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                                unit.reserveTakeDamage(7);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.ObsessiveCurse:
                     if (!attackUnit.isWeaponSpecialRefined) break;
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
@@ -6032,6 +6041,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Scadi:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                    }
+                    break;
                 case Weapon.KenhimeNoKatana:
                     if (targetUnit.isWeaponRefined) {
                         targetUnit.battleContext.isThereAnyUnitIn2Spaces =
@@ -10924,20 +10941,25 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
-            case Weapon.Scadi:
-                if (this.vm.currentTurn == 3) {
+            case Weapon.Scadi: {
+                let damageAmount = skillOwner.isWeaponRefined ? 7 : 10;
+                let turnCond = skillOwner.isWeaponRefined ?
+                    this.vm.currentTurn === 2 || this.vm.currentTurn === 3 :
+                    this.vm.currentTurn === 3;
+                if (turnCond) {
                     let groupId = UnitGroupType.Enemy;
                     if (skillOwner.groupId == UnitGroupType.Enemy) {
                         groupId = UnitGroupType.Ally;
                     }
                     for (let unit of this.enumerateUnitsWithinSpecifiedRange(
                         skillOwner.posX, skillOwner.posY, groupId, 3, 99)
-                    ) {
+                        ) {
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
-                        unit.reserveTakeDamage(10);
+                        unit.reserveTakeDamage(damageAmount);
                     }
                 }
                 break;
+            }
             case Weapon.Forukuvangu:
                 if (!skillOwner.isWeaponSpecialRefined) {
                     if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
