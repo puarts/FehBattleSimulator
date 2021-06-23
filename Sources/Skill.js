@@ -1103,6 +1103,8 @@ const Support = {
     Rescue: 1512, // レスキュー
     ReturnPlus: 1606, // リターン+
     Return: 1607, // リターン
+    NudgePlus: 1737, // プッシュ+
+    Nudge: 1738, // プッシュ
 };
 
 const AssistType = {
@@ -2106,6 +2108,8 @@ function getPrecombatHealThreshold(support) {
         case Support.Mend:
         case Support.Return:
         case Support.ReturnPlus:
+        case Support.Nudge:
+        case Support.NudgePlus:
             return 10;
         default:
             return -1;

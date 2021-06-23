@@ -4632,12 +4632,14 @@ function calcHealAmount(assistUnit, targetUnit) {
         case Support.RestorePlus:
         case Support.RescuePlus:
         case Support.ReturnPlus:
+        case Support.NudgePlus:
             healAmount = Math.floor(assistUnit.getAtkInPrecombat() * 0.5);
             if (healAmount < 8) { healAmount = 8; }
             break;
         case Support.Restore:
         case Support.Rescue:
         case Support.Return:
+        case Support.Nudge:
             healAmount = 8;
             break;
         case Support.RecoverPlus:

@@ -13324,6 +13324,8 @@ class AetherRaidTacticsBoard {
                     || unit.support == Support.Rescue
                     || unit.support == Support.ReturnPlus
                     || unit.support == Support.Return
+                    || unit.support == Support.NudgePlus
+                    || unit.support == Support.Nudge
                 ) {
                     return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
                 }
@@ -15985,6 +15987,8 @@ class AetherRaidTacticsBoard {
             case Support.FutureVision:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
             case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
+            case Support.NudgePlus:
+            case Support.Nudge:
             case Support.Shove: result = this.__findTileAfterShove(unit, targetUnit, assistTile); break;
             case Support.Pivot: result = this.__findTileAfterPivot(unit, targetUnit, assistTile); break;
             default:
@@ -16216,6 +16220,8 @@ class AetherRaidTacticsBoard {
                 && supporterUnit.support != Support.Rescue
                 && supporterUnit.support != Support.ReturnPlus
                 && supporterUnit.support != Support.Return
+                && supporterUnit.support != Support.NudgePlus
+                && supporterUnit.support != Support.Nudge
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }
@@ -16336,6 +16342,8 @@ class AetherRaidTacticsBoard {
                 return this.__findTileAfterReposition(unit, target, tile);
             case Support.Smite:
                 return this.__findTileAfterSmite(unit, target, tile);
+            case Support.NudgePlus:
+            case Support.Nudge:
             case Support.Shove:
                 return this.__findTileAfterShove(unit, target, tile);
             case Support.RescuePlus:
@@ -16374,6 +16382,8 @@ class AetherRaidTacticsBoard {
                         case Support.Rescue:
                         case Support.ReturnPlus:
                         case Support.Return:
+                        case Support.NudgePlus:
+                        case Support.Nudge:
                             isActivated |= this.__applyMovementAssist(supporterUnit, targetUnit,
                                 (unit, target, tile) => this.__findTileAfterMovementAssist(unit, target, tile));
                     }
