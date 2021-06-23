@@ -3786,6 +3786,15 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.KenhimeNoKatana:
+                if (unit.isWeaponRefined) {
+                    if (unit.isWeaponSpecialRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.Failnaught:
                 if (unit.snapshot.restHpPercentage >= 25) {
                     return true;
@@ -6023,6 +6032,24 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.KenhimeNoKatana:
+                    if (targetUnit.isWeaponRefined) {
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                        if (targetUnit.battleContext.isThereAnyUnitIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.spdSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.MuninNoMaran:
                     if (targetUnit.isWeaponRefined) {
                         if (enemyUnit.snapshot.restHpPercentage >= 75) {

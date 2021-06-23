@@ -768,10 +768,19 @@ class DamageCalculator {
                     x => x.getEvalResInPrecombat(),
                     (x, y) => x.getEvalResInCombat(y));
                 break;
+            case Weapon.KenhimeNoKatana:
+                if (atkUnit.isWeaponRefined) {
+                    fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.15);
+                } else {
+                    fixedAddDamage += this.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
             case Weapon.KarasuOuNoHashizume:
             case Weapon.NewBrazenCatFang:
             case Weapon.AkaiAhiruPlus:
-            case Weapon.KenhimeNoKatana:
             case Weapon.GigaExcalibur:
                 if (atkUnit.isWeaponRefined) {
                     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
