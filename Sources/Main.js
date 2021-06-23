@@ -4481,6 +4481,17 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineSeaSpear:
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
+                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
+                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+
+                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
+                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
+                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                    }
+                    break;
                 case Weapon.PeachyParfaitPlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
@@ -6048,6 +6059,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineSeaSpear:
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 3;
+                        targetUnit.spdSpur += 3;
+                        targetUnit.defSpur += 3;
+
+                        enemyUnit.atkSpur -= 3;
+                        enemyUnit.spdSpur -= 3;
+                        enemyUnit.defSpur -= 3;
+                    }
+                    break;
                 case Weapon.PeachyParfaitPlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.resSpur += 5;
