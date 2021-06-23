@@ -4481,6 +4481,7 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SunflowerBowPlus:
                 case Weapon.VictorfishPlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
@@ -6066,6 +6067,7 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SunflowerBowPlus:
                 case Weapon.VictorfishPlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.defSpur += 5;

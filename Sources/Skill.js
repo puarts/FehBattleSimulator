@@ -1030,6 +1030,7 @@ const Weapon = {
     PeachyParfaitPlus: 1744, // フローズンパフェ+
     DivineSeaSpear: 1747, // 漁神の恵槍
     VictorfishPlus: 1742, // カツオ+
+    SunflowerBowPlus: 1749, // 向日葵の弓+
 };
 
 const Support = {
