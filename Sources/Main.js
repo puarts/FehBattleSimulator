@@ -10811,6 +10811,33 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case PassiveC.EvenRecovery1:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reserveHeal(5);
+                    }
+                }
+                break;
+            case PassiveC.EvenRecovery2:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reserveHeal(10);
+                    }
+                }
+                break;
+            case PassiveC.EvenRecovery3:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reserveHeal(20);
+                    }
+                }
+                break;
             case Special.SeidrShell:
                 if (this.vm.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(3);
