@@ -4481,6 +4481,12 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PeachyParfaitPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.resSpur += Math.abs(enemyUnit.resDebuffTotal);
+                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    }
+                    break;
                 case Weapon.Hrimfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
@@ -6041,6 +6047,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PeachyParfaitPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.resSpur += 5;
+                        enemyUnit.resSpur -= 5;
+                    }
+                    break;
                 case Weapon.SunshadeStaff:
                     if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                         targetUnit.atkSpur += 6;

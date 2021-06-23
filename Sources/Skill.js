@@ -1027,6 +1027,7 @@ const Weapon = {
 
     // 極彩色の夏休み
     SunshadeStaff: 1736, // 夏陰の霊杖
+    PeachyParfaitPlus: 1744, // フローズンパフェ+
 };
 
 const Support = {
