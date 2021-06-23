@@ -4481,6 +4481,13 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VictorfishPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+
+                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                    }
+                    break;
                 case Weapon.DivineSeaSpear:
                     if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
@@ -6059,6 +6066,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VictorfishPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.defSpur += 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                    break;
                 case Weapon.DivineSeaSpear:
                     if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 3;

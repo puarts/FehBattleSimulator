@@ -1029,6 +1029,7 @@ const Weapon = {
     SunshadeStaff: 1736, // 夏陰の霊杖
     PeachyParfaitPlus: 1744, // フローズンパフェ+
     DivineSeaSpear: 1747, // 漁神の恵槍
+    VictorfishPlus: 1742, // カツオ+
 };
 
 const Support = {
