@@ -863,6 +863,17 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoHilda: {
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Isolation);
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 99, 3)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Isolation);
+                }
+                break;
+            }
             case Hero.HarmonizedCatria:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Desperation);
@@ -11981,6 +11992,7 @@ class AetherRaidTacticsBoard {
             else if (unit.heroIndex == Hero.SummerMia
                 || unit.heroIndex == Hero.SummerByleth
                 || unit.heroIndex == Hero.PirateVeronica
+                || unit.heroIndex == Hero.DuoHilda
             ) {
                 if (this.vm.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;

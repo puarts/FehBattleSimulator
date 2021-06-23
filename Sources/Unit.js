@@ -50,6 +50,7 @@ const Hero = {
     HarmonizedMyrrh: 648,
     DuoEirika: 659,
     HarmonizedCatria: 670,
+    DuoHilda: 682,
 };
 
 function isThiefIndex(heroIndex) {
@@ -2385,6 +2386,7 @@ class Unit {
                 || this.heroIndex == Hero.HarmonizedMyrrh
                 || this.heroIndex == Hero.DuoEirika
                 || this.heroIndex == Hero.HarmonizedCatria
+                || this.heroIndex == Hero.DuoHilda
             );
     }
 
