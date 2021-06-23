@@ -6041,6 +6041,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SunshadeStaff:
+                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.Scadi:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 25) {
@@ -8899,6 +8905,10 @@ class AetherRaidTacticsBoard {
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
             for (let skillId of allyUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.SunshadeStaff:
+                        defUnit.battleContext.increaseCooldownCountForDefense = true;
+                        defUnit.atkSpur += 6;
+                        break;
                     case Weapon.Geirusukeguru:
                         if (allyUnit.isWeaponSpecialRefined) {
                             if (defUnit.isPhysicalAttacker()) {

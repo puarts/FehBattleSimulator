@@ -1024,6 +1024,9 @@ const Weapon = {
     HolyGradivus: 1727, // 聖槍グラディウス
     GronnfoxPlus: 1729, // グルンフォックス+
     BlarRabbitPlus: 1734, // ブラーラビット+
+
+    // 極彩色の夏休み
+    SunshadeStaff: 1736, // 夏陰の霊杖
 };
 
 const Support = {
