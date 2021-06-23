@@ -4483,8 +4483,9 @@ class AetherRaidTacticsBoard {
             switch (skillId) {
                 case Weapon.PeachyParfaitPlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
-                        targetUnit.resSpur += Math.abs(enemyUnit.resDebuffTotal);
-                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+
+                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
                     }
                     break;
                 case Weapon.Hrimfaxi:
