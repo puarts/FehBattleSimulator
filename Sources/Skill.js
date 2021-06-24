@@ -1024,6 +1024,13 @@ const Weapon = {
     HolyGradivus: 1727, // 聖槍グラディウス
     GronnfoxPlus: 1729, // グルンフォックス+
     BlarRabbitPlus: 1734, // ブラーラビット+
+
+    // 極彩色の夏休み
+    SunshadeStaff: 1736, // 夏陰の霊杖
+    PeachyParfaitPlus: 1744, // フローズンパフェ+
+    DivineSeaSpear: 1747, // 漁神の恵槍
+    VictorfishPlus: 1742, // カツオ+
+    SunflowerBowPlus: 1749, // 向日葵の弓+
 };
 
 const Support = {
@@ -1100,6 +1107,8 @@ const Support = {
     Rescue: 1512, // レスキュー
     ReturnPlus: 1606, // リターン+
     Return: 1607, // リターン
+    NudgePlus: 1737, // プッシュ+
+    Nudge: 1738, // プッシュ
 };
 
 const AssistType = {
@@ -1675,6 +1684,7 @@ const PassiveB = {
     // 近影、遠影
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
     AtkDefFarTrace3: 1715, // 攻撃守備の遠影3
+    AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
 };
 
@@ -1880,6 +1890,9 @@ const PassiveC = {
     OddRecovery1: 1580, // 快癒・奇数1
     OddRecovery2: 1579, // 快癒・奇数2
     OddRecovery3: 1570, // 快癒・奇数3
+    EvenRecovery1: 1739, // 快癒・奇数1
+    EvenRecovery2: 1740, // 快癒・奇数2
+    EvenRecovery3: 1741, // 快癒・奇数3
 
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrNearSave3: 1636, // 盾の護り手・近間3
@@ -2103,6 +2116,8 @@ function getPrecombatHealThreshold(support) {
         case Support.Mend:
         case Support.Return:
         case Support.ReturnPlus:
+        case Support.Nudge:
+        case Support.NudgePlus:
             return 10;
         default:
             return -1;

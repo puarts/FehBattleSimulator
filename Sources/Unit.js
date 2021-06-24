@@ -50,6 +50,7 @@ const Hero = {
     HarmonizedMyrrh: 648,
     DuoEirika: 659,
     HarmonizedCatria: 670,
+    DuoHilda: 682,
 };
 
 function isThiefIndex(heroIndex) {
@@ -2388,6 +2389,7 @@ class Unit {
                 || this.heroIndex == Hero.HarmonizedMyrrh
                 || this.heroIndex == Hero.DuoEirika
                 || this.heroIndex == Hero.HarmonizedCatria
+                || this.heroIndex == Hero.DuoHilda
             );
     }
 
@@ -4635,12 +4637,14 @@ function calcHealAmount(assistUnit, targetUnit) {
         case Support.RestorePlus:
         case Support.RescuePlus:
         case Support.ReturnPlus:
+        case Support.NudgePlus:
             healAmount = Math.floor(assistUnit.getAtkInPrecombat() * 0.5);
             if (healAmount < 8) { healAmount = 8; }
             break;
         case Support.Restore:
         case Support.Rescue:
         case Support.Return:
+        case Support.Nudge:
             healAmount = 8;
             break;
         case Support.RecoverPlus:

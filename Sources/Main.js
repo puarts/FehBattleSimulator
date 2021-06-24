@@ -863,6 +863,17 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoHilda: {
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Isolation);
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 99, 3)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Isolation);
+                }
+                break;
+            }
             case Hero.HarmonizedCatria:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Desperation);
@@ -3786,6 +3797,15 @@ class AetherRaidTacticsBoard {
         }
 
         switch (unit.weapon) {
+            case Weapon.KenhimeNoKatana:
+                if (unit.isWeaponRefined) {
+                    if (unit.isWeaponSpecialRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.Failnaught:
                 if (unit.snapshot.restHpPercentage >= 25) {
                     return true;
@@ -4472,6 +4492,32 @@ class AetherRaidTacticsBoard {
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SunflowerBowPlus:
+                case Weapon.VictorfishPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+
+                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                    }
+                    break;
+                case Weapon.DivineSeaSpear:
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
+                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
+                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+
+                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
+                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
+                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                    }
+                    break;
+                case Weapon.PeachyParfaitPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+
+                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                    }
+                    break;
                 case Weapon.Hrimfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
@@ -5228,6 +5274,15 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Scadi:
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        if (attackUnit.snapshot.restHpPercentage >= 25) {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                                unit.reserveTakeDamage(7);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.ObsessiveCurse:
                     if (!attackUnit.isWeaponSpecialRefined) break;
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
@@ -6023,6 +6078,77 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SunflowerBowPlus:
+                case Weapon.VictorfishPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.defSpur += 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                    break;
+                case Weapon.DivineSeaSpear:
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 3;
+                        targetUnit.spdSpur += 3;
+                        targetUnit.defSpur += 3;
+
+                        enemyUnit.atkSpur -= 3;
+                        enemyUnit.spdSpur -= 3;
+                        enemyUnit.defSpur -= 3;
+                    }
+                    break;
+                case Weapon.PeachyParfaitPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.resSpur += 5;
+                        enemyUnit.resSpur -= 5;
+                    }
+                    break;
+                case Weapon.SunshadeStaff:
+                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
+                case Weapon.Scadi:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                    }
+                    break;
+                case Weapon.KenhimeNoKatana:
+                    if (targetUnit.isWeaponRefined) {
+                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                        if (targetUnit.battleContext.isThereAnyUnitIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.spdSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.MuninNoMaran:
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.addAllSpur(4);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+                                targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                                this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                            if (targetUnit.battleContext.isThereAnyUnitIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                                targetUnit.addAllSpur(4);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.HolyGradivus:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
@@ -6231,6 +6357,10 @@ class AetherRaidTacticsBoard {
                 case PassiveB.AtkDefFarTrace3:
                     enemyUnit.atkSpur -= 3;
                     enemyUnit.defSpur -= 3;
+                    break;
+                case PassiveB.AtkResFarTrace3:
+                    enemyUnit.atkSpur -= 3;
+                    enemyUnit.resSpur -= 3;
                     break;
                 case PassiveB.SpdResFarTrace3:
                     enemyUnit.spdSpur -= 3;
@@ -8840,6 +8970,10 @@ class AetherRaidTacticsBoard {
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
             for (let skillId of allyUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.SunshadeStaff:
+                        defUnit.battleContext.increaseCooldownCountForDefense = true;
+                        defUnit.atkSpur += 6;
+                        break;
                     case Weapon.Geirusukeguru:
                         if (allyUnit.isWeaponSpecialRefined) {
                             if (defUnit.isPhysicalAttacker()) {
@@ -10742,6 +10876,33 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case PassiveC.EvenRecovery1:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reserveHeal(5);
+                    }
+                }
+                break;
+            case PassiveC.EvenRecovery2:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reserveHeal(10);
+                    }
+                }
+                break;
+            case PassiveC.EvenRecovery3:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveToResetDebuffs();
+                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reserveHeal(20);
+                    }
+                }
+                break;
             case Special.SeidrShell:
                 if (this.vm.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(3);
@@ -10882,20 +11043,25 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
-            case Weapon.Scadi:
-                if (this.vm.currentTurn == 3) {
+            case Weapon.Scadi: {
+                let damageAmount = skillOwner.isWeaponRefined ? 7 : 10;
+                let turnCond = skillOwner.isWeaponRefined ?
+                    this.vm.currentTurn === 2 || this.vm.currentTurn === 3 :
+                    this.vm.currentTurn === 3;
+                if (turnCond) {
                     let groupId = UnitGroupType.Enemy;
                     if (skillOwner.groupId == UnitGroupType.Enemy) {
                         groupId = UnitGroupType.Ally;
                     }
                     for (let unit of this.enumerateUnitsWithinSpecifiedRange(
                         skillOwner.posX, skillOwner.posY, groupId, 3, 99)
-                    ) {
+                        ) {
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
-                        unit.reserveTakeDamage(10);
+                        unit.reserveTakeDamage(damageAmount);
                     }
                 }
                 break;
+            }
             case Weapon.Forukuvangu:
                 if (!skillOwner.isWeaponSpecialRefined) {
                     if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
@@ -11611,10 +11777,24 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.MuninNoMaran:
-                if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
+                if (skillOwner.isWeaponRefined) {
                     this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
-                        unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
-                        unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyResDebuff(-5); });
+                        unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() },
+                        unit => { unit.reserveToApplyAtkDebuff(-7); });
+                    this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                        unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
+                        unit => { unit.reserveToApplyResDebuff(-7); });
+                    if (skillOwner.isWeaponSpecialRefined) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.reserveHeal(7);
+                        }
+                    }
+                } else {
+                    if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
+                        this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                            unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
+                            unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyResDebuff(-5); });
+                    }
                 }
                 break;
             case PassiveB.ChillAtkDef2:
@@ -11812,6 +11992,7 @@ class AetherRaidTacticsBoard {
             else if (unit.heroIndex == Hero.SummerMia
                 || unit.heroIndex == Hero.SummerByleth
                 || unit.heroIndex == Hero.PirateVeronica
+                || unit.heroIndex == Hero.DuoHilda
             ) {
                 if (this.vm.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
@@ -13235,6 +13416,8 @@ class AetherRaidTacticsBoard {
                     || unit.support == Support.Rescue
                     || unit.support == Support.ReturnPlus
                     || unit.support == Support.Return
+                    || unit.support == Support.NudgePlus
+                    || unit.support == Support.Nudge
                 ) {
                     return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
                 }
@@ -14117,6 +14300,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.FlowerLance:
                 case PassiveB.SpdDefNearTrace3:
                 case PassiveB.AtkDefFarTrace3:
+                case PassiveB.AtkResFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                 case PassiveB.MurderousLion:
                     return true;
@@ -14143,6 +14327,7 @@ class AetherRaidTacticsBoard {
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
                     break;
                 case PassiveB.AtkDefFarTrace3:
+                case PassiveB.AtkResFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount);
                     break;
@@ -15925,6 +16110,8 @@ class AetherRaidTacticsBoard {
             case Support.FutureVision:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
             case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
+            case Support.NudgePlus:
+            case Support.Nudge:
             case Support.Shove: result = this.__findTileAfterShove(unit, targetUnit, assistTile); break;
             case Support.Pivot: result = this.__findTileAfterPivot(unit, targetUnit, assistTile); break;
             default:
@@ -16156,6 +16343,8 @@ class AetherRaidTacticsBoard {
                 && supporterUnit.support != Support.Rescue
                 && supporterUnit.support != Support.ReturnPlus
                 && supporterUnit.support != Support.Return
+                && supporterUnit.support != Support.NudgePlus
+                && supporterUnit.support != Support.Nudge
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }
@@ -16276,6 +16465,8 @@ class AetherRaidTacticsBoard {
                 return this.__findTileAfterReposition(unit, target, tile);
             case Support.Smite:
                 return this.__findTileAfterSmite(unit, target, tile);
+            case Support.NudgePlus:
+            case Support.Nudge:
             case Support.Shove:
                 return this.__findTileAfterShove(unit, target, tile);
             case Support.RescuePlus:
@@ -16314,6 +16505,8 @@ class AetherRaidTacticsBoard {
                         case Support.Rescue:
                         case Support.ReturnPlus:
                         case Support.Return:
+                        case Support.NudgePlus:
+                        case Support.Nudge:
                             isActivated |= this.__applyMovementAssist(supporterUnit, targetUnit,
                                 (unit, target, tile) => this.__findTileAfterMovementAssist(unit, target, tile));
                     }
