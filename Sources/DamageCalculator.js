@@ -1081,6 +1081,15 @@ class DamageCalculator {
                 }
                 break;
             }
+            case Special.SublimeHeaven:
+                if (isWeaponTypeBeast(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
+                    specialAddDamage = Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.5);
+                }
+                else {
+                    specialAddDamage = Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.25);
+                }
+                invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                break;
             case Special.RegnalAstra:
             case Special.ImperialAstra:
                 specialAddDamage = Math.trunc(totalSpd * 0.4);

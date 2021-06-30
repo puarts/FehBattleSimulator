@@ -3784,22 +3784,43 @@ class AetherRaidTacticsBoard {
         return enemyCount >= allyCount;
     }
 
-    __canInvalidateAbsoluteFollowupAttack(unit, enemyUnit) {
-        if (unit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
+    /// 敵の絶対追撃を無効化できるか調べます。
+    __canInvalidateAbsoluteFollowupAttack(targetUnit, enemyUnit) {
+        if (targetUnit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
             return true;
         }
-        if (unit.passiveB == PassiveB.SphiasSoul) {
-            return true;
-        }
-
-        if (unit.battleContext.invalidatesAbsoluteFollowupAttack) {
+        if (targetUnit.passiveB == PassiveB.SphiasSoul) {
             return true;
         }
 
-        switch (unit.weapon) {
+        if (targetUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
+            return true;
+        }
+
+        // 味方から受ける効果
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+            switch (allyUnit.weapon) {
+                case Weapon.ProfessorialText:
+                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+
+        switch (targetUnit.weapon) {
+            case Weapon.ProfessorialText:
+                if (targetUnit.battleContext.initiatesCombat
+                    || this.__isThereAnyUnitIn2Spaces(targetUnit)
+                ) {
+                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.KenhimeNoKatana:
-                if (unit.isWeaponRefined) {
-                    if (unit.isWeaponSpecialRefined) {
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.snapshot.restHpPercentage >= 75) {
                             return true;
                         }
@@ -3807,7 +3828,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.Failnaught:
-                if (unit.snapshot.restHpPercentage >= 25) {
+                if (targetUnit.snapshot.restHpPercentage >= 25) {
                     return true;
                 }
                 break;
@@ -3817,21 +3838,21 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.ShinenNoBreath:
-                if (unit.isWeaponSpecialRefined) {
-                    if (unit.snapshot.restHpPercentage >= 25 && this.__isThereAllyInSpecifiedSpaces(unit, 2)) {
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.snapshot.restHpPercentage >= 25 && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         return true;
                     }
                 }
                 break;
             case Weapon.SunsPercussors:
-                if (unit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
+                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
                     || enemyUnit.snapshot.restHpPercentage == 100
                 ) {
                     return true;
                 }
                 break;
             case Weapon.WindsOfChange:
-                if (unit.isBuffed || unit.snapshot.restHpPercentage >= 50) {
+                if (targetUnit.isBuffed || targetUnit.snapshot.restHpPercentage >= 50) {
                     return true;
                 }
                 break;
@@ -3840,12 +3861,12 @@ class AetherRaidTacticsBoard {
             case Weapon.TenteiNoKen:
                 return true;
             case Weapon.Ifingr:
-                if (this.__isThereAllyInSpecifiedSpaces(unit, 3)) {
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                     return true;
                 }
                 break;
             case Weapon.MaritaNoKen:
-                if (this.__isSolo(unit)) {
+                if (this.__isSolo(targetUnit)) {
                     return true;
                 }
                 break;
@@ -3853,28 +3874,48 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
-    /// 追撃不可を無効化できるかを調べます。
-    __canInvalidateInvalidationOfFollowupAttack(unit, enemyUnit) {
-        if (unit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
+    /// 自分の追撃不可を無効化できるかを調べます。
+    __canInvalidateInvalidationOfFollowupAttack(targetUnit, enemyUnit) {
+        if (targetUnit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
             return true;
         }
 
-        if (unit.battleContext.invalidatesInvalidationOfFollowupAttack) {
+        if (targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
             return true;
         }
 
-        switch (unit.passiveB) {
+        // 味方から受ける効果
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+            switch (allyUnit.weapon) {
+                case Weapon.ProfessorialText:
+                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+
+        switch (targetUnit.passiveB) {
             case PassiveB.SphiasSoul:
                 return true;
             case PassiveB.KyusyuTaikei3:
-                return unit.battleContext.initiatesCombat;
+                return targetUnit.battleContext.initiatesCombat;
             case PassiveB.DragonsIre3:
-                return enemyUnit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 50;
+                return enemyUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 50;
         }
 
-        switch (unit.weapon) {
+        switch (targetUnit.weapon) {
+            case Weapon.ProfessorialText:
+                if (targetUnit.battleContext.initiatesCombat
+                    || this.__isThereAnyUnitIn2Spaces(targetUnit)
+                ) {
+                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.Failnaught:
-                if (unit.snapshot.restHpPercentage >= 25) {
+                if (targetUnit.snapshot.restHpPercentage >= 25) {
                     return true;
                 }
                 break;
@@ -3889,23 +3930,23 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.CourtlyFanPlus:
-                return unit.battleContext.initiatesCombat;
+                return targetUnit.battleContext.initiatesCombat;
             case Weapon.Garumu:
-                if (unit.isWeaponRefined) {
-                    if (unit.hasPositiveStatusEffect()) {
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.hasPositiveStatusEffect()) {
                         return true;
                     }
                 }
                 break;
             case Weapon.SunsPercussors:
-                if (unit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
+                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
                     || enemyUnit.snapshot.restHpPercentage == 100
                 ) {
                     return true;
                 }
                 break;
             case Weapon.WindsOfChange:
-                if (unit.isBuffed || unit.snapshot.restHpPercentage >= 50) {
+                if (targetUnit.isBuffed || targetUnit.snapshot.restHpPercentage >= 50) {
                     return true;
                 }
                 break;
@@ -3914,12 +3955,12 @@ class AetherRaidTacticsBoard {
             case Weapon.TenteiNoKen:
                 return true;
             case Weapon.MaritaNoKen:
-                if (this.__isSolo(unit)) {
+                if (this.__isSolo(targetUnit)) {
                     return true;
                 }
                 break;
             case Weapon.TenmaNoNinjinPlus:
-                if (this.damageCalc.calcAttackerTriangleAdvantage(unit, enemyUnit) == TriangleAdvantage.Advantageous) {
+                if (this.damageCalc.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
                     return true;
                 }
                 break;

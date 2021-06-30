@@ -1210,6 +1210,8 @@ const Special = {
     NegatingFang: 1469, // 反竜穿
 
     HolyKnightAura: 1702, // グランベルの聖騎士
+
+    SublimeHeaven: 1752, // 覇天
 };
 
 const PassiveA = {
@@ -2210,6 +2212,7 @@ function isNormalAttackSpecial(special) {
         case Special.BlueFrame: // ブルーフレイム
         case Special.SeidrShell: // 魔弾
         case Special.RighteousWind:
+        case Special.SublimeHeaven:
             return true;
         default:
             return false;
