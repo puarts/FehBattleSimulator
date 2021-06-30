@@ -3853,6 +3853,7 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
+    /// 追撃不可を無効化できるかを調べます。
     __canInvalidateInvalidationOfFollowupAttack(unit, enemyUnit) {
         if (unit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
             return true;
@@ -6054,6 +6055,13 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __isThereAnyUnitIn2Spaces(targetUnit) {
+        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
+            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+        return targetUnit.battleContext.isThereAnyUnitIn2Spaces;
+    }
+
     __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
@@ -6078,6 +6086,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ProfessorialText:
+                    if (targetUnit.battleContext.initiatesCombat
+                        || this.__isThereAnyUnitIn2Spaces(targetUnit)
+                    ) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
                 case Weapon.SunflowerBowPlus:
                 case Weapon.VictorfishPlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
@@ -11055,7 +11070,7 @@ class AetherRaidTacticsBoard {
                     }
                     for (let unit of this.enumerateUnitsWithinSpecifiedRange(
                         skillOwner.posX, skillOwner.posY, groupId, 3, 99)
-                        ) {
+                    ) {
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                         unit.reserveTakeDamage(damageAmount);
                     }
@@ -13426,7 +13441,9 @@ class AetherRaidTacticsBoard {
                 return (targetUnit.isDebuffed || targetUnit.hasNegativeStatusEffect()) || targetUnit.canHeal();
             case AssistType.Rally:
                 {
-                    if (!targetUnit.actionContext.hasThreatensEnemyStatus && !g_appData.examinesEnemyActionTriggered(unit)) {
+                    if (!targetUnit.actionContext.hasThreatensEnemyStatus
+                        && !g_appData.examinesEnemyActionTriggered(unit)
+                    ) {
                         return false;
                     }
                     // todo: ちゃんと実装する

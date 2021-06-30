@@ -1031,6 +1031,9 @@ const Weapon = {
     DivineSeaSpear: 1747, // 漁神の恵槍
     VictorfishPlus: 1742, // カツオ+
     SunflowerBowPlus: 1749, // 向日葵の弓+
+
+    // 2021年6月 伝承ベレト
+    ProfessorialText: 1751, // 師の導きの書
 };
 
 const Support = {
