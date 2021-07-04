@@ -286,7 +286,6 @@ function isNegativeStatusEffect(type) {
         case StatusEffectType.Guard:
         case StatusEffectType.Isolation:
         case StatusEffectType.DeepWounds:
-        case StatusEffectType.NullPanic:
             return true;
         default:
             return false;
