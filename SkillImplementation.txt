@@ -96,6 +96,9 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
+戦闘中、最初に受けた攻撃のダメージを30%軽減
+targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+
 ダメージ+N(固定ダメージ)
 DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
