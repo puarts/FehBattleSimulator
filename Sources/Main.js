@@ -6141,6 +6141,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MaskingAxe:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                        }
+                    }
+                    break;
                 case Weapon.FuginNoMaran:
                     if (targetUnit.isWeaponRefined) {
                         if (enemyUnit.snapshot.restHpPercentage >= 75) {
@@ -11834,6 +11846,11 @@ class AetherRaidTacticsBoard {
                     this.__applyHoneSkill(skillOwner,
                         x => x.weaponType == WeaponType.Staff || isWeaponTypeTome(x.weaponType),
                         x => { x.applyAtkBuff(6); });
+                }
+                break;
+            case Weapon.MaskingAxe:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.__isSolo(skillOwner)) { skillOwner.applyAtkBuff(6); skillOwner.applyDefBuff(6); } break;
                 }
                 break;
             case PassiveC.RouseAtkSpd3:

@@ -1034,6 +1034,9 @@ const Weapon = {
 
     // 2021年6月 伝承ベレト
     ProfessorialText: 1751, // 師の導きの書
+
+    // 2021年7月 武器錬成
+    MaskingAxe: 1755, // 鉄面の斧
 };
 
 const Support = {
