@@ -6141,6 +6141,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.DragonSkin2:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(6);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
                 case PassiveA.LawsOfSacae2:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
                         targetUnit.addAllSpur(6);
