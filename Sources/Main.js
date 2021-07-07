@@ -6141,6 +6141,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.StoutTomahawk:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                            targetUnit.battleContext.invalidateAllBuffs();
+                        }
+                    }
+                    break;
                 case Weapon.Leiptr:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 25) {
