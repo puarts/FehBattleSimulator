@@ -61,6 +61,11 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+反撃不可
+__isCounterAttackDisabledImpl(atkUnit, defUnit) {
+    return true;
+}
+
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
 __applyBonusDoubler(targetUnit, enemyUnit) {}
 

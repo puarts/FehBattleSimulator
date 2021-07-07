@@ -1421,6 +1421,7 @@ const PassiveA = {
     SeimeiNoSeisui3: 573,
 
     SacaNoOkite: 586, // サカの掟
+    LawsOfSacae2: 1753, // サカの掟・承
     OstiasCounter: 587, // オスティアの反撃
 
     // 防城戦

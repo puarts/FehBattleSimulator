@@ -3653,6 +3653,20 @@ class AetherRaidTacticsBoard {
                 break;
         }
 
+        switch (atkUnit.passiveA) {
+            case PassiveA.LawsOfSacae2:
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(atkUnit)) {
+                    if (defUnit.isMeleeWeaponType()) {
+                        let atkUnitSpd = atkUnit.getSpdInCombat(defUnit);
+                        let defUnitSpd = defUnit.getSpdInCombat(atkUnit);
+                        if (atkUnitSpd >= defUnitSpd + 5) {
+                            return true;
+                        }
+                    }
+                }
+                break;
+        }
+
         // 反撃不可
         let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
         let passiveBInfo = this.__findSkillInfo(g_appData.passiveBInfos, atkUnit.passiveB);
@@ -6127,6 +6141,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.LawsOfSacae2:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(6);
+                    }
+                    break;
                 case Weapon.ProfessorialText:
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAnyUnitIn2Spaces(targetUnit)
