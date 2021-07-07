@@ -73,6 +73,10 @@ __applyBonusDoubler(targetUnit, enemyUnit) {}
 targetUnit.battleContext.invalidateAllBuffs();
 targetUnit.battleContext.invalidateAtkBuff = true;
 
+自身の弱化を無効(弱化無効)
+targetUnit.battleContext.invalidateAllOwnDebuffs();
+targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+
 HP N回復
 targetUnit.reserveHeal(N);
 

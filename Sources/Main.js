@@ -6141,6 +6141,18 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Leiptr:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.invalidateAllOwnDebuffs();
+                            if (enemyUnit.battleContext.initiatesCombat) {
+                                targetUnit.defSpur += 4;
+                                targetUnit.resSpur += 4;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.MaskingAxe:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 5;

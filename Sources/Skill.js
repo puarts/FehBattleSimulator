@@ -1037,6 +1037,7 @@ const Weapon = {
 
     // 2021年7月 武器錬成
     MaskingAxe: 1755, // 鉄面の斧
+    Leiptr: 102, // レイプト
 };
 
 const Support = {
