@@ -836,15 +836,14 @@ class AetherRaidTacticsBoard {
     __refreshHighestHpUnitsInSameOrigin(duoUnit) {
         let targetOrigins = duoUnit.heroInfo.origin.split('|');
         let highestHpUnits = [];
-        let heigestHp = 0;
+        let highestHp = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
             if (this.__areSameOrigin(unit, targetOrigins)) {
                 if (unit != duoUnit && unit.isActionDone) {
-                    if (unit.hp > heigestHp) {
+                    if (unit.hp > highestHp) {
                         highestHpUnits = [unit];
-                        heigestHp = unit.hp;
-                    }
-                    else if (unit.hp == highestHp) {
+                        highestHp = unit.hp;
+                    } else if (unit.hp == highestHp) {
                         highestHpUnits.push(unit);
                     }
                 }
@@ -903,6 +902,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             }
+            case Hero.HarmonizedCaeda:
             case Hero.PlegianDorothea:
                 {
                     this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
