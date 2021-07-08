@@ -6158,6 +6158,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TridentPlus:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    break;
                 case Weapon.RaydreamHorn:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
                         targetUnit.atkSpur += 6;
@@ -10860,6 +10866,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.TridentPlus:
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applyDefBuff(6);
+                }
             case Weapon.WeddingBellAxe:
                 skillOwner.battleContext.isThereAnyUnitIn2Spaces =
                     skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
