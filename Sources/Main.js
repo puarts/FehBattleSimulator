@@ -6141,6 +6141,23 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Blizard:
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            enemyUnit.spdSpur -= 4;
+                            enemyUnit.resSpur -= 4;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                enemyUnit.addAllSpur(-4);
+                                enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                                enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                                enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                                enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.StoutTomahawk:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
