@@ -10874,7 +10874,6 @@ class AetherRaidTacticsBoard {
             case Weapon.TridentPlus:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
                     skillOwner.applyAtkBuff(6);
-                    skillOwner.applyDefBuff(6);
                 }
             case Weapon.WeddingBellAxe:
                 skillOwner.battleContext.isThereAnyUnitIn2Spaces =
