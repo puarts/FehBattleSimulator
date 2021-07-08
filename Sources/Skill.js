@@ -1784,6 +1784,7 @@ const PassiveC = {
     ThreatenAtkDef2: 1487,
     ThreatenAtkDef3: 1124,
     ThreatenAtkRes2: 1691,
+    ThreatenSpdDef2: 1758,
 
     KodoNoGenen3: 909, // 鼓動の幻煙3
 
