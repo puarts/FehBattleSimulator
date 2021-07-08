@@ -3653,6 +3653,20 @@ class AetherRaidTacticsBoard {
                 break;
         }
 
+        switch (atkUnit.passiveA) {
+            case PassiveA.LawsOfSacae2:
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(atkUnit)) {
+                    if (defUnit.isMeleeWeaponType()) {
+                        let atkUnitSpd = atkUnit.getSpdInCombat(defUnit);
+                        let defUnitSpd = defUnit.getSpdInCombat(atkUnit);
+                        if (atkUnitSpd >= defUnitSpd + 5) {
+                            return true;
+                        }
+                    }
+                }
+                break;
+        }
+
         // 反撃不可
         let atkWeaponInfo = this.__findSkillInfo(g_appData.weaponInfos, atkUnit.weapon);
         let passiveBInfo = this.__findSkillInfo(g_appData.passiveBInfos, atkUnit.passiveB);
@@ -6127,6 +6141,73 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.StoutTomahawk:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                            targetUnit.battleContext.invalidateAllBuffs();
+                        }
+                    }
+                    break;
+                case Weapon.Leiptr:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.invalidateAllOwnDebuffs();
+                            if (enemyUnit.battleContext.initiatesCombat) {
+                                targetUnit.defSpur += 4;
+                                targetUnit.resSpur += 4;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.MaskingAxe:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                        }
+                    }
+                    break;
+                case Weapon.FuginNoMaran:
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.JaryuNoBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
+                case PassiveA.DragonSkin2:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(6);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                    break;
+                case PassiveA.LawsOfSacae2:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(6);
+                    }
+                    break;
                 case Weapon.ProfessorialText:
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAnyUnitIn2Spaces(targetUnit)
@@ -11788,6 +11869,11 @@ class AetherRaidTacticsBoard {
                         x => { x.applyAtkBuff(6); });
                 }
                 break;
+            case Weapon.MaskingAxe:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.__isSolo(skillOwner)) { skillOwner.applyAtkBuff(6); skillOwner.applyDefBuff(6); } break;
+                }
+                break;
             case PassiveC.RouseAtkSpd3:
                 if (this.__isSolo(skillOwner)) { skillOwner.applyAtkBuff(6); skillOwner.applySpdBuff(6); } break;
             case PassiveC.RouseAtkDef3:
@@ -11819,10 +11905,30 @@ class AetherRaidTacticsBoard {
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) { skillOwner.applyResBuff(7); }
                 break;
             case Weapon.FuginNoMaran:
-                if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
+                if (skillOwner.isWeaponRefined) {
+                    this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                        unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombat() },
+                        unit => { unit.reserveToApplyAtkDebuff(-7); });
+                    this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                        unit => { return this.__getStatusEvalUnit(unit).getSpdInPrecombat() },
+                        unit => { unit.reserveToApplySpdDebuff(-7); });
+                    this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                        unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
+                        unit => { unit.reserveToApplyDefDebuff(-7); });
                     this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                         unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
-                        unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplyDefDebuff(-5); });
+                        unit => { unit.reserveToApplyResDebuff(-7); });
+                } else {
+                    if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
+                        this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                            unit => {
+                                return this.__getStatusEvalUnit(unit).getResInPrecombat()
+                            },
+                            unit => {
+                                unit.reserveToApplyAtkDebuff(-5);
+                                unit.reserveToApplyDefDebuff(-5);
+                            });
+                    }
                 }
                 break;
             case Weapon.RosenshiNoKofu:

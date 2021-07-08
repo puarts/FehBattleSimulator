@@ -61,12 +61,21 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+反撃不可
+__isCounterAttackDisabledImpl(atkUnit, defUnit) {
+    return true;
+}
+
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
 __applyBonusDoubler(targetUnit, enemyUnit) {}
 
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
 targetUnit.battleContext.invalidateAtkBuff = true;
+
+自身の弱化を無効(弱化無効)
+targetUnit.battleContext.invalidateAllOwnDebuffs();
+targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
 
 HP N回復
 targetUnit.reserveHeal(N);
@@ -90,6 +99,9 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
+
+戦闘中、最初に受けた攻撃のダメージを30%軽減
+targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
 
 ダメージ+N(固定ダメージ)
 DamageCalculator.js

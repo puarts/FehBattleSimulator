@@ -1034,6 +1034,11 @@ const Weapon = {
 
     // 2021年6月 伝承ベレト
     ProfessorialText: 1751, // 師の導きの書
+
+    // 2021年7月 武器錬成
+    MaskingAxe: 1755, // 鉄面の斧
+    Leiptr: 102, // レイプト
+    StoutTomahawk: 147, // 剛斧トマホーク
 };
 
 const Support = {
@@ -1268,6 +1273,7 @@ const PassiveA = {
     DefResBond3: 775,
 
     JaryuNoUroko: 585, // 邪竜の鱗
+    DragonSkin2: 1754, // 邪竜の鱗・承
     Dragonscale: 1492, // 邪竜の大鱗
 
     // 密集
@@ -1421,6 +1427,7 @@ const PassiveA = {
     SeimeiNoSeisui3: 573,
 
     SacaNoOkite: 586, // サカの掟
+    LawsOfSacae2: 1753, // サカの掟・承
     OstiasCounter: 587, // オスティアの反撃
 
     // 防城戦
