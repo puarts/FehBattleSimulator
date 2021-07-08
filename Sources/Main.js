@@ -4448,6 +4448,7 @@ class AetherRaidTacticsBoard {
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
                 case Weapon.RefreshedFang:
+                case Weapon.RaydreamHorn:
                 case Weapon.BrightmareHorn:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
@@ -6142,6 +6143,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RaydreamHorn:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.atkSpur += 6;
+                        enemyUnit.atkSpur -= 6;
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
                 case Weapon.BrightmareHorn:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
@@ -8478,6 +8488,7 @@ class AetherRaidTacticsBoard {
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
                 case Weapon.RefreshedFang:
+                case Weapon.RaydreamHorn:
                 case Weapon.BrightmareHorn:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:

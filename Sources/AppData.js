@@ -833,6 +833,7 @@ class AppData {
                 case Weapon.ResolvedFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RenewedFang:
+                case Weapon.RaydreamHorn:
                 case Weapon.BrightmareHorn:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:

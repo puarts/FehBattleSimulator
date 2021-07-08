@@ -1042,6 +1042,7 @@ const Weapon = {
 
     // あなたに夏の夢を
     BrightmareHorn: 1759, // 夏夜の悪夢の角
+    RaydreamHorn: 1760, // 夏夜の夢の角
 };
 
 const Support = {
