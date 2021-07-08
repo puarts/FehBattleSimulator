@@ -6158,6 +6158,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DolphinDiveAxe:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
                 case Weapon.TridentPlus:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.atkSpur += 5;
@@ -14530,6 +14535,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                 case PassiveB.SpdDefNearTrace3:
@@ -14549,6 +14555,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);

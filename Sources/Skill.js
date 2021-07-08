@@ -1044,6 +1044,7 @@ const Weapon = {
     BrightmareHorn: 1759, // 夏夜の悪夢の角
     RaydreamHorn: 1760, // 夏夜の夢の角
     TridentPlus: 1756, // トライデント+
+    DolphinDiveAxe: 1762, // 波舞うイルカの斧
 };
 
 const Support = {
