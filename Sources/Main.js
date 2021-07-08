@@ -5907,6 +5907,21 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case PassiveA.DefResCatch4:
+                    if (enemyUnit.snapshot.restHpPercentage == 100
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.defSpur += 7;
+                        targetUnit.resSpur += 7;
+
+                        if (enemyUnit.snapshot.restHpPercentage == 100
+                            && enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.defSpur += 2;
+                            targetUnit.resSpur += 2;
+                        }
+                    }
+                    break;
                 case Weapon.FukenFalcion:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.snapshot.restHpPercentage < 100
