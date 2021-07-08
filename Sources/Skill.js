@@ -1039,6 +1039,9 @@ const Weapon = {
     MaskingAxe: 1755, // 鉄面の斧
     Leiptr: 102, // レイプト
     StoutTomahawk: 147, // 剛斧トマホーク
+
+    // あなたに夏の夢を
+    BrightmareHorn: 1759, // 夏夜の悪夢の角
 };
 
 const Support = {

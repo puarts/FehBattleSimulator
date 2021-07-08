@@ -4448,6 +4448,7 @@ class AetherRaidTacticsBoard {
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
                 case Weapon.RefreshedFang:
+                case Weapon.BrightmareHorn:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
@@ -6141,6 +6142,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BrightmareHorn:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
                 case Weapon.Blizard:
                     if (targetUnit.isWeaponRefined) {
                         if (enemyUnit.snapshot.restHpPercentage >= 75) {
@@ -8469,6 +8478,7 @@ class AetherRaidTacticsBoard {
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
                 case Weapon.RefreshedFang:
+                case Weapon.BrightmareHorn:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
