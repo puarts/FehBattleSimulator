@@ -6163,6 +6163,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.addAllSpur(5);
                     }
                     break;
+                case Weapon.ShellpointLancePlus:
                 case Weapon.TridentPlus:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.atkSpur += 5;
@@ -10871,10 +10872,16 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.ShellpointLancePlus:
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
+                    skillOwner.applyDefBuff(6);
+                }
+                break;
             case Weapon.TridentPlus:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
                     skillOwner.applyAtkBuff(6);
                 }
+                break;
             case Weapon.WeddingBellAxe:
                 skillOwner.battleContext.isThereAnyUnitIn2Spaces =
                     skillOwner.battleContext.isThereAnyUnitIn2Spaces ||

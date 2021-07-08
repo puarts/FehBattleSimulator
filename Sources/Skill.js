@@ -1045,6 +1045,7 @@ const Weapon = {
     RaydreamHorn: 1760, // 夏夜の夢の角
     TridentPlus: 1756, // トライデント+
     DolphinDiveAxe: 1762, // 波舞うイルカの斧
+    ShellpointLancePlus: 1764, // 巻貝の槍+
 };
 
 const Support = {
