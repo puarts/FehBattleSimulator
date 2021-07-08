@@ -1399,6 +1399,20 @@ class DamageCalculator {
                         }
                     }
                     break;
+                case Weapon.BrightmareHorn: {
+                    if (defUnit.snapshot.restHpPercentage >= 25) {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            damageReductionRatio *= 1.0 - (percentage / 100.0);
+                        }
+                    }
+                }
+                    break;
                 case Weapon.NightmareHorn:
                 case Weapon.NewBrazenCatFang:
                     {
@@ -1612,6 +1626,23 @@ class DamageCalculator {
                         return percentage / 100.0;
                     }
                 }
+                break;
+            case Weapon.BrightmareHorn: {
+                if (defUnit.snapshot.restHpPercentage >= 25) {
+                    {
+                        let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            this.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                            return percentage / 100.0;
+                        }
+                    }
+                }
+            }
                 break;
             case Weapon.NightmareHorn:
             case Weapon.NewBrazenCatFang:

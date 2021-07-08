@@ -836,15 +836,14 @@ class AetherRaidTacticsBoard {
     __refreshHighestHpUnitsInSameOrigin(duoUnit) {
         let targetOrigins = duoUnit.heroInfo.origin.split('|');
         let highestHpUnits = [];
-        let heigestHp = 0;
+        let highestHp = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
             if (this.__areSameOrigin(unit, targetOrigins)) {
                 if (unit != duoUnit && unit.isActionDone) {
-                    if (unit.hp > heigestHp) {
+                    if (unit.hp > highestHp) {
                         highestHpUnits = [unit];
-                        heigestHp = unit.hp;
-                    }
-                    else if (unit.hp == highestHp) {
+                        highestHp = unit.hp;
+                    } else if (unit.hp == highestHp) {
                         highestHpUnits.push(unit);
                     }
                 }
@@ -903,6 +902,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             }
+            case Hero.HarmonizedCaeda:
             case Hero.PlegianDorothea:
                 {
                     this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
@@ -4448,6 +4448,8 @@ class AetherRaidTacticsBoard {
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
                 case Weapon.RefreshedFang:
+                case Weapon.RaydreamHorn:
+                case Weapon.BrightmareHorn:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
@@ -5905,6 +5907,21 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case PassiveA.DefResCatch4:
+                    if (enemyUnit.snapshot.restHpPercentage == 100
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.defSpur += 7;
+                        targetUnit.resSpur += 7;
+
+                        if (enemyUnit.snapshot.restHpPercentage == 100
+                            && enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.defSpur += 2;
+                            targetUnit.resSpur += 2;
+                        }
+                    }
+                    break;
                 case Weapon.FukenFalcion:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.snapshot.restHpPercentage < 100
@@ -6141,6 +6158,52 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DolphinDiveAxe:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
+                case Weapon.ShellpointLancePlus:
+                case Weapon.TridentPlus:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    break;
+                case Weapon.RaydreamHorn:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.atkSpur += 6;
+                        enemyUnit.atkSpur -= 6;
+                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
+                            targetUnit.battleContext.followupAttackPriority++;
+                        }
+                    }
+                    break;
+                case Weapon.BrightmareHorn:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
+                case Weapon.Blizard:
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                            enemyUnit.spdSpur -= 4;
+                            enemyUnit.resSpur -= 4;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                enemyUnit.addAllSpur(-4);
+                                enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                                enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                                enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                                enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.StoutTomahawk:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
@@ -8452,6 +8515,8 @@ class AetherRaidTacticsBoard {
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
                 case Weapon.RefreshedFang:
+                case Weapon.RaydreamHorn:
+                case Weapon.BrightmareHorn:
                 case Weapon.NightmareHorn:
                 case Weapon.BrazenCatFang:
                 case Weapon.NewBrazenCatFang:
@@ -10807,6 +10872,16 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.ShellpointLancePlus:
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
+                    skillOwner.applyDefBuff(6);
+                }
+                break;
+            case Weapon.TridentPlus:
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
+                    skillOwner.applyAtkBuff(6);
+                }
+                break;
             case Weapon.WeddingBellAxe:
                 skillOwner.battleContext.isThereAnyUnitIn2Spaces =
                     skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
@@ -11723,6 +11798,12 @@ class AetherRaidTacticsBoard {
                 this.__applyThreatenSkill(skillOwner,
                     x => {
                         x.reserveToApplyAtkDebuff(-4); x.reserveToApplyResDebuff(-4);
+                    });
+                break;
+            case PassiveC.ThreatenSpdDef2:
+                this.__applyThreatenSkill(skillOwner,
+                    x => {
+                        x.reserveToApplySpdDebuff(-4); x.reserveToApplyDefDebuff(-4);
                     });
                 break;
             case PassiveC.ThreatenAtkDef2:
@@ -14460,6 +14541,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                 case PassiveB.SpdDefNearTrace3:
@@ -14479,6 +14561,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);

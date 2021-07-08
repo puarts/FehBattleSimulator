@@ -1039,6 +1039,13 @@ const Weapon = {
     MaskingAxe: 1755, // 鉄面の斧
     Leiptr: 102, // レイプト
     StoutTomahawk: 147, // 剛斧トマホーク
+
+    // あなたに夏の夢を
+    BrightmareHorn: 1759, // 夏夜の悪夢の角
+    RaydreamHorn: 1760, // 夏夜の夢の角
+    TridentPlus: 1756, // トライデント+
+    DolphinDiveAxe: 1762, // 波舞うイルカの斧
+    ShellpointLancePlus: 1764, // 巻貝の槍+
 };
 
 const Support = {
@@ -1449,6 +1456,7 @@ const PassiveA = {
     // 機先
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
     AtkDefCatch4: 1703, // 攻撃守備の機先4
+    DefResCatch4: 1761, // 守備魔防の機先4
 
     // 万全
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
@@ -1778,6 +1786,7 @@ const PassiveC = {
     ThreatenAtkDef2: 1487,
     ThreatenAtkDef3: 1124,
     ThreatenAtkRes2: 1691,
+    ThreatenSpdDef2: 1758,
 
     KodoNoGenen3: 909, // 鼓動の幻煙3
 
