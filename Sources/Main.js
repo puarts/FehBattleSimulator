@@ -5062,6 +5062,11 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FlowRefresh3:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.reserveHeal(10);
+                    }
+                    break;
                 case PassiveB.ArmoredWall:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);
@@ -6158,6 +6163,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FlowRefresh3:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                    break;
                 case Weapon.DolphinDiveAxe:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
                         targetUnit.addAllSpur(5);
