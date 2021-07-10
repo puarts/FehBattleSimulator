@@ -1706,6 +1706,9 @@ const PassiveB = {
     AtkDefFarTrace3: 1715, // 攻撃守備の遠影3
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
+
+    // 怒涛
+    FlowRefresh3: 1763, // 怒涛・再起3
 };
 
 const PassiveC = {
