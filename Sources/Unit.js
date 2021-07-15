@@ -961,6 +961,9 @@ class BattleContext {
 
         // ダメージ加算する「攻撃-守備」の割合
         this.rateOfAtkMinusDefForAdditionalDamage = 0;
+
+        // 奥義発動時に「敵の守備、魔防-〇%扱い」にするパーセンテージ
+        this.specialSufferPercentage = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -1033,6 +1036,7 @@ class BattleContext {
         this.isAdvantageForColorless = false;
         this.additionalDamageOfSpecial = 0;
         this.rateOfAtkMinusDefForAdditionalDamage = 0;
+        this.specialSufferPercentage = 0;
     }
 
     invalidateAllBuffs() {

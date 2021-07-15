@@ -3408,6 +3408,12 @@ class AetherRaidTacticsBoard {
             this.__applyInvalidationSkillEffect(defUnit, atkUnit);
         }
 
+        // 奥義
+        {
+            this.__applySpecialSkillEffect(atkUnit, defUnit);
+            this.__applySpecialSkillEffect(defUnit, atkUnit);
+        }
+
         let result = this.damageCalc.calc(atkUnit, defUnit);
         result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);
         result.atkUnit_spd = atkUnit.getSpdInCombat(defUnit);
@@ -3419,6 +3425,35 @@ class AetherRaidTacticsBoard {
         result.defUnit_def = defUnit.getDefInCombat(atkUnit);
         result.defUnit_res = defUnit.getResInCombat(atkUnit);
         return result;
+    }
+
+    __applySpecialSkillEffect(targetUnit, enemyUnit) {
+        switch (targetUnit.special) {
+            case Special.Kagetsuki:
+            case Special.Moonbow:
+                // 月虹
+                targetUnit.battleContext.specialSufferPercentage = 30;
+                break;
+            case Special.Luna:
+                // 月光
+                targetUnit.battleContext.specialSufferPercentage = 50;
+                break;
+            case Special.KuroNoGekko:
+                targetUnit.battleContext.specialSufferPercentage = 80;
+                break;
+            case Special.Aether:
+            case Special.AoNoTenku:
+            case Special.RadiantAether2:
+            case Special.MayhemAether:
+                // 天空
+                targetUnit.battleContext.specialSufferPercentage = 50;
+                break;
+            case Special.LunaFlash: {
+                // 月光閃
+                targetUnit.battleContext.specialSufferPercentage = 20;
+                break;
+            }
+        }
     }
 
     /// 追撃可能かどうかが条件として必要なスキル効果の適用

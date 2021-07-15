@@ -913,10 +913,7 @@ class DamageCalculator {
         }
 
         var atkCount = atkCountPerOneAttack;
-        var specialSuffer = 0;
         var specialMultDamage = 1;
-        // var specialSuffer = getInputValue("SpecialSuffer");
-        // var specialMultDamage = getInputValue("SupecialMultDamage");
         var specialAddDamage = 0;
         var reduceAtkHalf = atkUnit.weaponType == WeaponType.Staff;
         if (atkUnit.battleContext.wrathfulStaff) {
@@ -924,7 +921,6 @@ class DamageCalculator {
         }
 
         var effectiveAtk = atkUnit.battleContext.isEffectiveToOpponent;
-        var special = atkUnit.special;
 
         let mitHp = defUnit.restHp;
         let totalMit = 0;
@@ -980,31 +976,11 @@ class DamageCalculator {
         var fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         var fixedSpecialAddDamage = 0;
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
-        switch (special) {
+        switch (atkUnit.special) {
             case Special.None:
-                break;
-            case Special.Kagetsuki:
-            case Special.Moonbow:
-                // 月虹
-                specialSuffer = 30;
-                break;
-            case Special.Luna:
-                // 月光
-                specialSuffer = 50;
-                break;
-            case Special.KuroNoGekko:
-                specialSuffer = 80;
-                break;
-            case Special.Aether:
-            case Special.AoNoTenku:
-            case Special.RadiantAether2:
-            case Special.MayhemAether:
-                // 天空
-                specialSuffer = 50;
                 break;
             case Special.LunaFlash: {
                 // 月光閃
-                specialSuffer = 20;
                 fixedSpecialAddDamage = Math.trunc(totalSpd * 0.2);
                 break;
             }
@@ -1230,6 +1206,7 @@ class DamageCalculator {
         this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
         damage += fixedAddDamage;
 
+        var specialSuffer = atkUnit.battleContext.specialSufferPercentage;
         var sufferRatio = (specialSuffer / 100.0);
 
         var specialFinalMit = Math.trunc((specialTotalMit - Math.trunc(specialTotalMit * sufferRatio)) + (specialTotalMit * mitAdvRatio));
