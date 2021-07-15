@@ -898,9 +898,6 @@ class DamageCalculator {
             [defUnit.passiveA, defUnit.passiveS]);
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
-        var totalSpd = atkUnit.getSpdInCombat(defUnit);
-        var totalDef = atkUnit.getDefInCombat(defUnit);
-        var totalRes = atkUnit.getResInCombat(defUnit);
 
         let totalAtkDetailLog = this.__getAtkInCombatDetail(atkUnit, defUnit);
 
@@ -913,8 +910,8 @@ class DamageCalculator {
         }
 
         var atkCount = atkCountPerOneAttack;
-        var specialMultDamage = 1;
-        var specialAddDamage = 0;
+        let specialMultDamage = atkUnit.battleContext.specialMultDamage;
+        let specialAddDamage = atkUnit.battleContext.specialAddDamage;
         var reduceAtkHalf = atkUnit.weaponType == WeaponType.Staff;
         if (atkUnit.battleContext.wrathfulStaff) {
             reduceAtkHalf = false;
@@ -977,102 +974,6 @@ class DamageCalculator {
         var fixedSpecialAddDamage = 0;
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         switch (atkUnit.special) {
-            case Special.None:
-                break;
-            case Special.LunaFlash: {
-                // 月光閃
-                fixedSpecialAddDamage = Math.trunc(totalSpd * 0.2);
-                break;
-            }
-            case Special.Hoshikage:
-            case Special.Glimmer:
-                // 凶星
-                specialMultDamage = 1.5;
-                break;
-            case Special.Deadeye:
-                specialMultDamage = 2;
-                invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                break;
-            case Special.Astra: {
-                // 流星
-                specialMultDamage = 2.5;
-                break;
-            }
-            case Special.Hotarubi:
-            case Special.Bonfire:
-                // 緋炎
-                specialAddDamage = Math.trunc(totalDef * 0.5);
-                break;
-            case Special.Ignis: {
-                // 華炎
-                specialAddDamage = Math.trunc(totalDef * 0.8);
-                break;
-            }
-            case Special.Hyouten:
-            case Special.Iceberg:
-                // 氷蒼
-                specialAddDamage = Math.trunc(totalRes * 0.5);
-                break;
-            case Special.Glacies: {
-                // 氷華
-                specialAddDamage = Math.trunc(totalRes * 0.8);
-                break;
-            }
-            case Special.HolyKnightAura:
-                // グランベルの聖騎士
-                specialAddDamage = Math.trunc(totalAtk * 0.25);
-                break;
-            case Special.Fukuryu:
-            case Special.DraconicAura:
-                // 竜裂
-                specialAddDamage = Math.trunc(totalAtk * 0.3);
-                break;
-            case Special.DragonFang: {
-                // 竜穿
-                specialAddDamage = Math.trunc(totalAtk * 0.5);
-                break;
-            }
-            case Special.HonoNoMonsyo:
-            case Special.HerosBlood:
-                specialAddDamage = Math.trunc(totalSpd * 0.3);
-                break;
-            case Special.RighteousWind:
-            case Special.Sirius:
-                // 聖風
-                // 天狼
-                specialAddDamage = Math.trunc(totalSpd * 0.3);
-                break;
-            case Special.TwinBlades: // 双刃
-                {
-                    specialAddDamage = Math.trunc(totalRes * 0.4);
-                    invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                }
-                break;
-            case Special.RupturedSky: {
-                if (isWeaponTypeBeast(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
-                    specialAddDamage = Math.trunc(defUnit.getAtkInCombat(atkUnit) * 0.4);
-                }
-                else {
-                    specialAddDamage = Math.trunc(defUnit.getAtkInCombat(atkUnit) * 0.2);
-                }
-                break;
-            }
-            case Special.SublimeHeaven:
-                if (isWeaponTypeBeast(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
-                    specialAddDamage = Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.5);
-                }
-                else {
-                    specialAddDamage = Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.25);
-                }
-                invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                break;
-            case Special.RegnalAstra:
-            case Special.ImperialAstra:
-                specialAddDamage = Math.trunc(totalSpd * 0.4);
-                break;
-            case Special.OpenTheFuture:
-                specialAddDamage = Math.trunc(totalDef * 0.5);
-                break;
             case Special.Fukusyu:
                 specialAddDamage = Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * 0.5);
                 break;
@@ -1080,15 +981,7 @@ class DamageCalculator {
             case Special.Kessyu:
                 specialAddDamage = Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * 0.3);
                 break;
-            case Special.BlueFrame:
-                specialAddDamage = 10;
-                for (let tile of atkUnit.placedTile.neighbors) {
-                    if (tile.placedUnit != null && tile.placedUnit.groupId == atkUnit.groupId) {
-                        specialAddDamage += 15;
-                        break;
-                    }
-                }
-                break;
+
             case Special.KoriNoSeikyo:
                 // 通常ダメージに加算
                 if (atkUnit.battleContext.reducedDamageBySpecial > 0) {

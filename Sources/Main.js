@@ -3450,9 +3450,140 @@ class AetherRaidTacticsBoard {
                 break;
             case Special.LunaFlash: {
                 // 月光閃
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.2);
                 targetUnit.battleContext.specialSufferPercentage = 20;
                 break;
             }
+
+            case Special.Hoshikage:
+            case Special.Glimmer:
+                // 凶星
+                targetUnit.battleContext.specialMultDamage = 1.5;
+                break;
+            case Special.Deadeye:
+                targetUnit.battleContext.specialMultDamage = 2;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                break;
+            case Special.Astra: {
+                // 流星
+                targetUnit.battleContext.specialMultDamage = 2.5;
+                break;
+            }
+            case Special.Hotarubi:
+            case Special.Bonfire:
+                // 緋炎
+                {
+                    let totalDef = targetUnit.getDefInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
+                }
+                break;
+            case Special.Ignis:
+                // 華炎
+                {
+                    let totalDef = targetUnit.getDefInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.8);
+                }
+                break;
+            case Special.Hyouten:
+            case Special.Iceberg:
+                // 氷蒼
+                {
+                    let totalRes = targetUnit.getResInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.5);
+                }
+                break;
+            case Special.Glacies:
+                // 氷華
+                {
+                    let totalRes = targetUnit.getResInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.8);
+                }
+                break;
+            case Special.HolyKnightAura:
+                // グランベルの聖騎士
+                {
+                    let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.25);
+                }
+                break;
+            case Special.Fukuryu:
+            case Special.DraconicAura:
+                // 竜裂
+                {
+                    let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.3);
+                }
+                break;
+            case Special.DragonFang: {
+                // 竜穿
+                let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.5);
+                break;
+            }
+            case Special.HonoNoMonsyo:
+            case Special.HerosBlood:
+                {
+                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
+                }
+                break;
+            case Special.RighteousWind:
+            case Special.Sirius:
+                // 聖風
+                // 天狼
+                {
+                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
+                }
+                break;
+            case Special.TwinBlades: // 双刃
+                {
+                    let totalRes = targetUnit.getResInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                }
+                break;
+            case Special.RupturedSky: {
+                if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.4);
+                }
+                else {
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.2);
+                }
+                break;
+            }
+            case Special.SublimeHeaven:
+                if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.5);
+                }
+                else {
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.25);
+                }
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                break;
+            case Special.RegnalAstra:
+            case Special.ImperialAstra:
+                {
+                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.4);
+                }
+                break;
+            case Special.OpenTheFuture:
+                {
+                    let totalDef = targetUnit.getDefInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
+                }
+                break;
+            case Special.BlueFrame:
+                targetUnit.battleContext.specialAddDamage = 10;
+                for (let tile of targetUnit.placedTile.neighbors) {
+                    if (tile.placedUnit != null && tile.placedUnit.groupId == targetUnit.groupId) {
+                        targetUnit.battleContext.specialAddDamage += 15;
+                        break;
+                    }
+                }
+                break;
         }
     }
 
