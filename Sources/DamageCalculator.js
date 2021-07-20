@@ -363,6 +363,11 @@ class DamageCalculator {
 
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveB.Frenzy3:
+                        if (atkUnit.snapshot.restHpPercentage <= 50) {
+                            atkUnit.battleContext.isDesperationActivated = true;
+                        }
+                        break;
                     case Weapon.Thunderbrand:
                         if (defUnit.snapshot.restHpPercentage >= 50) {
                             atkUnit.battleContext.isDesperationActivated = true;
@@ -1309,6 +1314,7 @@ class DamageCalculator {
                     }
                     break;
                 case PassiveB.Bushido2:
+                case PassiveB.Frenzy3:
                 case PassiveB.Spurn3:
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.KaihiTatakikomi3:
@@ -1540,6 +1546,7 @@ class DamageCalculator {
                 }
                 break;
             case PassiveB.Bushido2:
+            case PassiveB.Frenzy3:
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
