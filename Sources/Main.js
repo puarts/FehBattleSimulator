@@ -5503,6 +5503,13 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FrostbiteBreath:
+                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                        }
+                    }
+                    break;
                 case Weapon.Scadi:
                     if (attackUnit.isWeaponSpecialRefined) {
                         if (attackUnit.snapshot.restHpPercentage >= 25) {
@@ -6329,6 +6336,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FrostbiteBreath:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        enemyUnit.addAllSpur(-5);
+                    }
+                    break;
                 case PassiveB.FlowRefresh3:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;

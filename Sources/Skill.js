@@ -1046,6 +1046,9 @@ const Weapon = {
     TridentPlus: 1756, // トライデント+
     DolphinDiveAxe: 1762, // 波舞うイルカの斧
     ShellpointLancePlus: 1764, // 巻貝の槍+
+
+    // 偽らざる明日へ＆ニフル
+    FrostbiteBreath: 1772, // 絶氷のブレス
 };
 
 const Support = {

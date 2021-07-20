@@ -4716,6 +4716,11 @@ function isDebufferTier2(attackUnit, targetUnit) {
 function isAfflictor(attackUnit, lossesInCombat) {
     for (let skillId of attackUnit.enumerateSkills()) {
         switch (skillId) {
+            case Weapon.FrostbiteBreath:
+                if (attackUnit.snapshot.restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
             case Weapon.Pain:
             case Weapon.PainPlus:
             case Weapon.Panic:
