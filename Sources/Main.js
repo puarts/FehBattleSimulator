@@ -8603,6 +8603,12 @@ class AetherRaidTacticsBoard {
                         targetUnit.resSpur += spurAmount;
                     }
                     break;
+                case PassiveA.AtkSpdBojosen4: {
+                    let spurAmount = this.__calcBojosen4SpurAmount();
+                    targetUnit.atkSpur += spurAmount;
+                    targetUnit.spdSpur += spurAmount;
+                }
+                    break;
             }
         }
     }
@@ -8638,6 +8644,18 @@ class AetherRaidTacticsBoard {
         }
         else {
             return 1;
+        }
+    }
+
+    __calcBojosen4SpurAmount() {
+        let count = this.__countDefenceStructuresOnMap();
+        this.damageCalc.writeDebugLog(`防城戦4に影響する施設数: ${count}`);
+        if (count >= 5) {
+            return 11;
+        } else if (count === 4) {
+            return 7;
+        } else {
+            return 3;
         }
     }
 
