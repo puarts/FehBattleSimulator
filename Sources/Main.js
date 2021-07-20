@@ -6316,7 +6316,7 @@ class AetherRaidTacticsBoard {
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
         ) {
-            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.8;
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.8);
         }
 
         if (targetUnit.hasStatusEffect(StatusEffectType.ResonantShield)) {
@@ -6336,6 +6336,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.DomainOfIce:
+                    if (this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
+                        targetUnit.spdSpur += 4;
+                        targetUnit.resSpur += 4;
+                    }
+                    break;
                 case Weapon.FrostbiteBreath:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         enemyUnit.addAllSpur(-5);
@@ -6435,7 +6442,7 @@ class AetherRaidTacticsBoard {
                             if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.spdSpur += 5;
-                                targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
                             }
                         }
                     }
@@ -6675,7 +6682,7 @@ class AetherRaidTacticsBoard {
                         if (targetUnit.isTransformed
                             && !targetUnit.isOneTimeActionActivatedForPassiveB
                         ) {
-                            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.4;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4);
                         }
                     }
                     break;
@@ -6696,7 +6703,7 @@ class AetherRaidTacticsBoard {
                             targetUnit.battleContext.followupAttackPriority++;
                         }
                         if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
-                            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.4;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4);
                         }
                     }
                     break;
@@ -6909,7 +6916,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.FallenStar:
                     if (targetUnit.battleContext.initiatesCombat) {
-                        targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.8;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.8);
                     }
                     break;
                 case Weapon.Failnaught:
@@ -7157,7 +7164,7 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
-                        targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
                     }
                     break;
                 case Weapon.Aureola:
@@ -7631,7 +7638,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.SeikenThirufingu:
                     if (isWeaponTypeTome(enemyUnit.weaponType)) {
-                        targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5);
                     }
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 50) {
@@ -7686,13 +7693,13 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.Buryunhirude:
                     if (isWeaponTypeTome(enemyUnit.weaponType)) {
-                        targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
                     }
                     break;
                 case Weapon.Seini:
                     if (targetUnit.isWeaponRefined) {
                         if (enemyUnit.isRangedWeaponType()) {
-                            targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
                         }
 
                         if (targetUnit.isWeaponSpecialRefined) {
@@ -7708,7 +7715,7 @@ class AetherRaidTacticsBoard {
                     else {
                         if (enemyUnit.moveType == MoveType.Armor || enemyUnit.moveType == MoveType.Cavalry) {
                             if (enemyUnit.isRangedWeaponType()) {
-                                targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
                             }
                         }
                     }
@@ -8103,7 +8110,7 @@ class AetherRaidTacticsBoard {
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (enemyUnit.snapshot.restHpPercentage >= 75) {
                                 targetUnit.addAllSpur(4);
-                                targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.2;
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2);
                             }
                         }
                     }
@@ -8851,7 +8858,7 @@ class AetherRaidTacticsBoard {
                     }
                     else {
                         if (isWeaponTypeTome(defUnit.weaponType)) {
-                            atkUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+                            atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
                         }
                         if (atkUnit.isWeaponSpecialRefined) {
                             if (defUnit.isRangedWeaponType()) {
@@ -8867,7 +8874,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.KageroNoGenwakushin:
                     if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
+                        atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5);
                     }
                     break;
                 case Weapon.KaigaraNoYari:
@@ -9040,7 +9047,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.GuardBearing3:
                     if (!defUnit.isOneTimeActionActivatedForPassiveB) {
-                        defUnit.battleContext.damageReductionRatioOfFirstAttack = 0.5;
+                        defUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5);
                     }
                     break;
                 case Weapon.VirtuousTyrfing:
@@ -9407,6 +9414,9 @@ class AetherRaidTacticsBoard {
             for (let skillId of allyUnit.enumerateSkills()) {
                 if (!calcPotentialDamage) {
                     switch (skillId) {
+                        case PassiveC.DomainOfIce:
+                            unit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
+                            break;
                         case Weapon.RenewedFang:
                             if (unit.partnerHeroIndex === allyUnit.heroIndex ||
                                 unit.heroIndex === allyUnit.partnerHeroIndex) {
@@ -10735,6 +10745,10 @@ class AetherRaidTacticsBoard {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
                 switch (skillId) {
+                    case PassiveC.DomainOfIce:
+                        targetUnit.spdSpur += 4;
+                        targetUnit.resSpur += 4;
+                        break;
                     case Weapon.LoveCandelabraPlus:
                         targetUnit.atkSpur += 4;
                         targetUnit.defSpur += 4;

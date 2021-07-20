@@ -1955,6 +1955,7 @@ const PassiveC = {
     InevitableDeath: 1420, // 死からは逃れられぬ
     WingsOfLight: 1622, // 光輝く翼
     OrdersRestraint: 1724, // 束縛、秩序、安定
+    DomainOfIce: 1774, // 絶氷結界
 };
 
 const PassiveS = {

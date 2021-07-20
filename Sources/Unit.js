@@ -1066,6 +1066,12 @@ class BattleContext {
         damageRatio *= (1.0 - damageReductionRatio);
         this.damageReductionRatio = Math.trunc((1.0 - damageRatio) * 100 + 0.5) * 0.01;
     }
+
+    multDamageReductionRatioOfFirstAttack(damageReductionRatio) {
+        let damageRatio = 1.0 - this.damageReductionRatioOfFirstAttack;
+        damageRatio *= (1.0 - damageReductionRatio);
+        this.damageReductionRatioOfFirstAttack = Math.trunc((1.0 - damageRatio) * 100 + 0.5) * 0.01;
+    }
 }
 
 /// 攻撃可能なユニット情報です。
