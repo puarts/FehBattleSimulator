@@ -660,6 +660,11 @@ class DamageCalculator {
             }
         }
         switch (atkUnit.weapon) {
+            case Weapon.FairFuryAxe:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    fixedAddDamage += Math.trunc(atkUnit.getEvalAtkInCombat() * 0.15);
+                }
+                break;
             case Weapon.RoseQuartsBow:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
                     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);

@@ -6582,6 +6582,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.invalidateAllBuffs();
                     }
                     break;
+                case Weapon.FairFuryAxe:
                 case Weapon.WeddingBellAxe:
                 case Weapon.RoseQuartsBow:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces =

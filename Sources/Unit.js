@@ -3490,6 +3490,10 @@ class Unit {
     getSpdInPrecombat() {
         return Math.min(99, this.getSpdInPrecombatWithoutDebuff() + Number(this.spdDebuff));
     }
+    getEvalAtkInCombat(enemyUnit = null) {
+        let val = this.getAtkInCombat(enemyUnit) + this.__getEvalAtkAdd();
+        return val;
+    }
     getEvalSpdInCombat(enemyUnit = null) {
         let val = this.getSpdInCombat(enemyUnit) + this.__getEvalSpdAdd();
         return val;
@@ -3497,6 +3501,9 @@ class Unit {
     getEvalSpdInPrecombat() {
         let val = this.getSpdInPrecombat() + this.__getEvalSpdAdd();
         return val;
+    }
+    __getEvalAtkAdd() {
+        return 0;
     }
     __getEvalSpdAdd() {
         switch (this.passiveS) {

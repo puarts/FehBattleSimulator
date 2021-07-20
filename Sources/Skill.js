@@ -1049,6 +1049,7 @@ const Weapon = {
 
     // 偽らざる明日へ＆ニフル
     FrostbiteBreath: 1772, // 絶氷のブレス
+    FairFuryAxe: 1767, // 荒ぶる女子力の斧
 };
 
 const Support = {
