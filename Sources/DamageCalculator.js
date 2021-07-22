@@ -665,6 +665,13 @@ class DamageCalculator {
             }
         }
         switch (atkUnit.weapon) {
+            case Weapon.Ginnungagap:
+                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                }
+                break;
             case Weapon.FairFuryAxe:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
                     fixedAddDamage += Math.trunc(atkUnit.getEvalAtkInCombat() * 0.15);
@@ -994,21 +1001,22 @@ class DamageCalculator {
 
             case Special.KoriNoSeikyo:
                 // 通常ダメージに加算
-                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
-                    fixedAddDamage += atkUnit.battleContext.reducedDamageBySpecial;
-                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
                 }
                 break;
             case Special.IceMirror2:
-                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
+                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                     fixedAddDamage += Math.trunc(atkUnit.getResInCombat(defUnit) * 0.4);
-                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
             case Special.NegatingFang:
-                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
+                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                     fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.3);
-                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
             case Special.SeidrShell:
@@ -1704,7 +1712,7 @@ class DamageCalculator {
             if (activatesAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
                 // 奥義発動
-                currentDamage = this.__calcUnitAttackDamage(defUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial);
+                currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 this.writeLog("奥義によるダメージ" + currentDamage);
                 this.writeSimpleLog(" " + atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>奥義ダメージ" + currentDamage);
                 this.__restoreMaxSpecialCount(atkUnit);
@@ -1765,7 +1773,7 @@ class DamageCalculator {
             }
             else {
                 // 通常攻撃
-                currentDamage = this.__calcUnitAttackDamage(defUnit, normalDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial);
+                currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, normalDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 this.writeLog("通常攻撃によるダメージ" + currentDamage);
                 this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>通常攻撃ダメージ" + currentDamage);
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
@@ -1784,6 +1792,13 @@ class DamageCalculator {
                 && (defUnit.restHp - totalDamage - currentDamage <= 0)
             ) {
                 this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
+                // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
+                if (defUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    let currentHp = defUnit.restHp - totalDamage;
+                    let miracleDamage = currentHp - 1;
+                    let miracleReducedDamage = currentDamage - miracleDamage;
+                    defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
+                }
                 totalDamage = defUnit.restHp - 1;
                 if (defUnit.special == Special.Miracle) {
                     this.__restoreMaxSpecialCount(defUnit);
@@ -1892,7 +1907,7 @@ class DamageCalculator {
         this.writeDebugLog(unit.getNameWithGroup() + "は" + healedHp + "回復: HP=" + unit.restHp + "/" + unit.maxHpWithSkills);
     }
 
-    __calcUnitAttackDamage(defUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial) {
+    __calcUnitAttackDamage(defUnit, atkUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context) {
         let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
         var currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
@@ -1903,14 +1918,34 @@ class DamageCalculator {
 
         if (activatesDefenderSpecial) {
             switch (defUnit.special) {
-                case Special.KoriNoSeikyo:
-                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);
-                    break;
                 case Special.IceMirror2:
-                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.4);
-                    break;
                 case Special.NegatingFang:
-                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);
+                    defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
+                    break;
+            }
+        }
+
+        // 自分の次の攻撃の時にダメージ軽減加算をするための処理
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Special.KoriNoSeikyo:
+                    if (activatesDefenderSpecial) {
+                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                    }
+                    break;
+                case Weapon.Ginnungagap:
+                    // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
+                    if (!context.isFirstAttack(atkUnit)) break;
+                    if (atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation) break;
+                    if (defUnit.snapshot.restHpPercentage >= 25) {
+                        let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
+                        if (defUnit.battleContext.initiatesCombat ||
+                            (atkUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
+                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                        }
+                    }
                     break;
             }
         }

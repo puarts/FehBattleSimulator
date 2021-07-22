@@ -1054,6 +1054,7 @@ const Weapon = {
     FairFuryAxe: 1767, // 荒ぶる女子力の斧
     TigerSpirit: 1771, // 虎神・寅
     RauarRabbitPlus: 1775, // ラウアラビット+
+    Ginnungagap: 1769, // ギンヌンガガプ
 };
 
 const Support = {

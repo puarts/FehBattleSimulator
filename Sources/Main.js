@@ -6344,6 +6344,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Ginnungagap:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        let isTomeOrStaff = enemyUnit.isTome || (enemyUnit.weaponType === WeaponType.Staff);
+                        if (targetUnit.battleContext.initiatesCombat ||
+                            (enemyUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4);
+                        }
+                    }
+                    break;
                 case Weapon.TigerSpirit:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.atkSpur += 6;
