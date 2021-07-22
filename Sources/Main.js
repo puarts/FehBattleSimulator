@@ -6920,6 +6920,8 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case Weapon.SteadfastLancePlus:
+                case Weapon.SteadfastLance:
                 case Weapon.SteadfastAxePlus:
                 case Weapon.SteadfastAxe:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {

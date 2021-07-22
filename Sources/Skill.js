@@ -1048,6 +1048,8 @@ const Weapon = {
     ShellpointLancePlus: 1764, // 巻貝の槍+
 
     // 偽らざる明日へ＆ニフル
+    SteadfastLancePlus: 1777, // 護衛の槍+
+    SteadfastLance: 1778, // 護衛の槍
     FrostbiteBreath: 1772, // 絶氷のブレス
     FairFuryAxe: 1767, // 荒ぶる女子力の斧
     TigerSpirit: 1771, // 虎神・寅
