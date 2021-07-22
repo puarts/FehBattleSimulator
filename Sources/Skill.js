@@ -1050,6 +1050,7 @@ const Weapon = {
     // 偽らざる明日へ＆ニフル
     FrostbiteBreath: 1772, // 絶氷のブレス
     FairFuryAxe: 1767, // 荒ぶる女子力の斧
+    TigerSpirit: 1771, // 虎神・寅
 };
 
 const Support = {

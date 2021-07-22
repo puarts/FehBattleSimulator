@@ -5503,6 +5503,13 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TigerSpirit:
+                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.Panic);
+                        }
+                    }
+                    break;
                 case Weapon.FrostbiteBreath:
                     if (attackUnit.snapshot.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
@@ -6336,6 +6343,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TigerSpirit:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.resSpur += 6;
+                    }
+                    break;
                 case PassiveC.DomainOfIce:
                     if (this.__isThereAnyUnitIn2Spaces(targetUnit)) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
