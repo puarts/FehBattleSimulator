@@ -995,8 +995,8 @@ class DamageCalculator {
             case Special.KoriNoSeikyo:
                 // 通常ダメージに加算
                 if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
-                    fixedAddDamage += atkUnit.battleContext.reducedDamageBySpecial;
-                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
                     atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
@@ -1908,7 +1908,7 @@ class DamageCalculator {
                 case Special.IceMirror2:
                 case Special.NegatingFang:
                     defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
-                    defUnit.battleContext.reducedDamageBySpecial = damage - currentDamage;
+                    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                     break;
             }
         }

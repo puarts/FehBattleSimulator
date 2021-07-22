@@ -909,8 +909,8 @@ class BattleContext {
         // 守備魔防の低い方でダメージ計算
         this.refersMinOfDefOrRes = false;
 
-        // 氷の聖鏡で軽減したダメージ保持用
-        this.reducedDamageBySpecial = 0;
+        // 氷の聖鏡発動時などの軽減ダメージ保持用
+        this.reducedDamageForNextAttack = 0;
 
         // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生するか
         this.nextAttackEffectAfterSpecialActivated = false;
@@ -1020,7 +1020,7 @@ class BattleContext {
         this.invalidatesOwnResDebuff = false;
 
         this.refersMinOfDefOrRes = false;
-        this.reducedDamageBySpecial = 0;
+        this.reducedDamageForNextAttack = 0;
         this.nextAttackEffectAfterSpecialActivated = false;
 
         // // 自身の発動カウント変動量-1を無効
