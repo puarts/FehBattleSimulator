@@ -1066,6 +1066,12 @@ class BattleContext {
         damageRatio *= (1.0 - damageReductionRatio);
         this.damageReductionRatio = Math.trunc((1.0 - damageRatio) * 100 + 0.5) * 0.01;
     }
+
+    multDamageReductionRatioOfFirstAttack(damageReductionRatio) {
+        let damageRatio = 1.0 - this.damageReductionRatioOfFirstAttack;
+        damageRatio *= (1.0 - damageReductionRatio);
+        this.damageReductionRatioOfFirstAttack = Math.trunc((1.0 - damageRatio) * 100 + 0.5) * 0.01;
+    }
 }
 
 /// 攻撃可能なユニット情報です。
@@ -3484,6 +3490,10 @@ class Unit {
     getSpdInPrecombat() {
         return Math.min(99, this.getSpdInPrecombatWithoutDebuff() + Number(this.spdDebuff));
     }
+    getEvalAtkInCombat(enemyUnit = null) {
+        let val = this.getAtkInCombat(enemyUnit) + this.__getEvalAtkAdd();
+        return val;
+    }
     getEvalSpdInCombat(enemyUnit = null) {
         let val = this.getSpdInCombat(enemyUnit) + this.__getEvalSpdAdd();
         return val;
@@ -3491,6 +3501,9 @@ class Unit {
     getEvalSpdInPrecombat() {
         let val = this.getSpdInPrecombat() + this.__getEvalSpdAdd();
         return val;
+    }
+    __getEvalAtkAdd() {
+        return 0;
     }
     __getEvalSpdAdd() {
         switch (this.passiveS) {
@@ -4716,6 +4729,16 @@ function isDebufferTier2(attackUnit, targetUnit) {
 function isAfflictor(attackUnit, lossesInCombat) {
     for (let skillId of attackUnit.enumerateSkills()) {
         switch (skillId) {
+            case Weapon.TigerSpirit:
+                if (attackUnit.snapshot.restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
+            case Weapon.FrostbiteBreath:
+                if (attackUnit.snapshot.restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
             case Weapon.Pain:
             case Weapon.PainPlus:
             case Weapon.Panic:

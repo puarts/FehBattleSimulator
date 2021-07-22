@@ -101,7 +101,7 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
 戦闘中、最初に受けた攻撃のダメージを30%軽減
-targetUnit.battleContext.damageReductionRatioOfFirstAttack = 0.3;
+targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
 
 ダメージ+N(固定ダメージ)
 DamageCalculator.js

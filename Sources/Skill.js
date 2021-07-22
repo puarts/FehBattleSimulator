@@ -1046,6 +1046,12 @@ const Weapon = {
     TridentPlus: 1756, // トライデント+
     DolphinDiveAxe: 1762, // 波舞うイルカの斧
     ShellpointLancePlus: 1764, // 巻貝の槍+
+
+    // 偽らざる明日へ＆ニフル
+    FrostbiteBreath: 1772, // 絶氷のブレス
+    FairFuryAxe: 1767, // 荒ぶる女子力の斧
+    TigerSpirit: 1771, // 虎神・寅
+    RauarRabbitPlus: 1775, // ラウアラビット+
 };
 
 const Support = {
@@ -1376,6 +1382,7 @@ const PassiveA = {
     AtkResSolo4: 1312,
     AtkSpdSolo4: 1316,
     AtkDefSolo4: 1428,
+    SpdResSolo4: 1770,
     DefResSolo4: 1544,
 
     SvelNoTate: 565, // スヴェルの盾
@@ -1444,8 +1451,10 @@ const PassiveA = {
     DefResBojosen3: 918,
     SpdResBojosen3: 962,
     AtkDefBojosen3: 1008,
+    AtkSpdBojosen4: 1773,
 
-    AtkDefKojosen3: 883, // 攻城戦
+    // 攻城戦
+    AtkDefKojosen3: 883,
     AtkSpdKojosen3: 914,
     SpdResKojosen3: 925,
 
@@ -1628,6 +1637,7 @@ const PassiveB = {
     Kazenagi3: 629, // 風薙ぎ3
     Mizunagi3: 630, // 水薙ぎ3
 
+    Frenzy3: 1768, // 回避・攻め立て3
     Spurn3: 1391, // 回避・怒り3
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
@@ -1950,6 +1960,7 @@ const PassiveC = {
     InevitableDeath: 1420, // 死からは逃れられぬ
     WingsOfLight: 1622, // 光輝く翼
     OrdersRestraint: 1724, // 束縛、秩序、安定
+    DomainOfIce: 1774, // 絶氷結界
 };
 
 const PassiveS = {
