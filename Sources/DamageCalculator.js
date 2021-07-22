@@ -1904,13 +1904,9 @@ class DamageCalculator {
         if (activatesDefenderSpecial) {
             switch (defUnit.special) {
                 case Special.KoriNoSeikyo:
-                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);
-                    break;
                 case Special.IceMirror2:
-                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.4);
-                    break;
                 case Special.NegatingFang:
-                    defUnit.battleContext.reducedDamageBySpecial = Math.trunc(damage * 0.3);
+                    defUnit.battleContext.reducedDamageBySpecial = damage - currentDamage;
                     break;
             }
         }
