@@ -915,6 +915,9 @@ class BattleContext {
         // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生するか
         this.nextAttackEffectAfterSpecialActivated = false;
 
+        // 自分の次の攻撃のダメージに軽減をプラスする効果が発動するか
+        this.nextAttackAddReducedDamageActivated = false;
+
         // 自分から攻撃したか
         this.initiatesCombat = false;
 
