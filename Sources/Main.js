@@ -5279,6 +5279,7 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case Weapon.RauarRabbitPlus:
                 case Weapon.BlarRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
@@ -7459,6 +7460,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.spdSpur += 5;
                     }
                     break;
+                case Weapon.RauarRabbitPlus:
                 case Weapon.BlarRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
