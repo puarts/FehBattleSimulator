@@ -912,6 +912,9 @@ class BattleContext {
         // 氷の聖鏡で軽減したダメージ保持用
         this.reducedDamageBySpecial = 0;
 
+        // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生するか
+        this.nextAttackEffectAfterSpecialActivated = false;
+
         // 自分から攻撃したか
         this.initiatesCombat = false;
 
@@ -1018,6 +1021,7 @@ class BattleContext {
 
         this.refersMinOfDefOrRes = false;
         this.reducedDamageBySpecial = 0;
+        this.nextAttackEffectAfterSpecialActivated = false;
 
         // // 自身の発動カウント変動量-1を無効
         // this.invalidatesReduceCooldownCount = false;

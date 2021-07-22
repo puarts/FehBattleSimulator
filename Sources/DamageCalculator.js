@@ -994,21 +994,22 @@ class DamageCalculator {
 
             case Special.KoriNoSeikyo:
                 // 通常ダメージに加算
-                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
+                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                     fixedAddDamage += atkUnit.battleContext.reducedDamageBySpecial;
                     atkUnit.battleContext.reducedDamageBySpecial = 0;
+                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
             case Special.IceMirror2:
-                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
+                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                     fixedAddDamage += Math.trunc(atkUnit.getResInCombat(defUnit) * 0.4);
-                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
             case Special.NegatingFang:
-                if (atkUnit.battleContext.reducedDamageBySpecial > 0) {
+                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                     fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.3);
-                    atkUnit.battleContext.reducedDamageBySpecial = 0;
+                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
             case Special.SeidrShell:
@@ -1906,6 +1907,7 @@ class DamageCalculator {
                 case Special.KoriNoSeikyo:
                 case Special.IceMirror2:
                 case Special.NegatingFang:
+                    defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
                     defUnit.battleContext.reducedDamageBySpecial = damage - currentDamage;
                     break;
             }
