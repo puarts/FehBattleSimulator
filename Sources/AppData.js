@@ -920,7 +920,6 @@ class AppData {
     initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true) {
         if (heroIndex < 0) {
             unit.heroIndex = heroIndex;
-            unit.icon = g_siteRootPath + "images/dummy.png";
         }
 
         let heroInfo = this.heroInfos.get(heroIndex);

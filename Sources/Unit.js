@@ -3312,7 +3312,7 @@ class Unit {
 
     get icon() {
         if (this.heroInfo == null) {
-            return "";
+            return g_siteRootPath + "images/dummy.png";
         }
         return this.heroInfo.iconUrl;
     }
