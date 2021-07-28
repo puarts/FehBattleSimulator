@@ -363,6 +363,10 @@ class DamageCalculator {
 
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveB.YngviAscendant:
+                        this.writeDebugLog(`ユングヴィの祖の攻め立て発動、${atkUnit.getNameWithGroup()}は自分の攻撃の直後に追撃`);
+                        atkUnit.battleContext.isDesperationActivated = true;
+                        break;
                     case PassiveB.Frenzy3:
                         if (atkUnit.snapshot.restHpPercentage <= 50) {
                             atkUnit.battleContext.isDesperationActivated = true;

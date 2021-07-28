@@ -1716,6 +1716,7 @@ const PassiveB = {
     MoonTwinWing: 1732, // 双姫の月翼
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
+    YngviAscendant: 1780, // ユングヴィの祖
 
     // 近影、遠影
     SpdDefNearTrace3: 1695, // 速さ守備の近影3

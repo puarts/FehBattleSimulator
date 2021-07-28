@@ -6351,6 +6351,9 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.YngviAscendant:
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    break;
                 case Weapon.HolyYewfelle:
                     if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 6;
