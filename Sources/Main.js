@@ -3728,6 +3728,13 @@ class AetherRaidTacticsBoard {
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HolyYewfelle:
+                    if (atkUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage >= 75) {
+                        defUnit.battleContext.increaseCooldownCountForAttack = false;
+                        defUnit.battleContext.increaseCooldownCountForDefense = false;
+                        defUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Weapon.SyunsenAiraNoKen:
                     if (atkUnit.isWeaponRefined) {
                         defUnit.battleContext.increaseCooldownCountForAttack = false;
@@ -6344,6 +6351,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HolyYewfelle:
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                    }
+                    break;
                 case Weapon.Ginnungagap:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.atkSpur += 6;

@@ -1055,6 +1055,9 @@ const Weapon = {
     TigerSpirit: 1771, // 虎神・寅
     RauarRabbitPlus: 1775, // ラウアラビット+
     Ginnungagap: 1769, // ギンヌンガガプ
+
+    // 2021年7月 神階英雄ウル
+    HolyYewfelle: 1779, // 聖弓イチイバル
 };
 
 const Support = {
