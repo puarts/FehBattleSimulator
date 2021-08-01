@@ -12681,7 +12681,7 @@ class AetherRaidTacticsBoard {
         return null;
     }
 
-    __isAllAlliesOnInitialTiles() {
+    __areAllAlliesOnInitialTiles() {
         for (let unit of this.enumerateAllyUnitsOnMap()) {
             if (unit.posY < this.vm.map.height - 2) {
                 return false;
@@ -12690,7 +12690,7 @@ class AetherRaidTacticsBoard {
         return true;
     }
 
-    __isAnyAlliesOnThreatenedTiles() {
+    __areAnyAlliesOnThreatenedTiles() {
         for (let unit of this.enumerateAllyUnitsOnMap()) {
             if (unit.placedTile.isAttackableForEnemy) {
                 return true;
@@ -12714,7 +12714,7 @@ class AetherRaidTacticsBoard {
             // 安全柵の実行(他の施設と実行タイミングが異なるので、別途処理している)
             let safetyFence = self.__findSafetyFence();
             if (safetyFence != null && Number(self.vm.currentTurn) <= Number(safetyFence.level)) {
-                if (self.__isAllAlliesOnInitialTiles() || !self.__isAnyAlliesOnThreatenedTiles()) {
+                if (self.__areAllAlliesOnInitialTiles() || !self.__areAnyAlliesOnThreatenedTiles()) {
                     for (let unit of self.enumerateEnemyUnitsOnMap()) {
                         unit.endAction();
                     }
