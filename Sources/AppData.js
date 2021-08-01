@@ -1763,6 +1763,7 @@ class AppData {
         this.registerDefenceStructure(new DefHiyokuNoTorikago(g_idGenerator.generate()));
         // this.registerDefenceStructure(new BoltTrap(g_idGenerator.generate()));
         // this.registerDefenceStructure(new HeavyTrap(g_idGenerator.generate()));
+        this.registerOffenceStructure(new SafetyFence(g_idGenerator.generate()));
     }
 
     registerDefenceStructure(structure) {

@@ -12672,6 +12672,34 @@ class AetherRaidTacticsBoard {
         return priority;
     }
 
+    __findSafetyFence() {
+        for (let st of this.offenceStructureStorage.enumerateAllObjs()) {
+            if (g_appData.map.isObjAvailable(st) && st instanceof SafetyFence) {
+                return st;
+            }
+        }
+        return null;
+    }
+
+    __isAllAlliesOnInitialTiles() {
+        for (let unit of this.enumerateAllyUnitsOnMap()) {
+            if (unit.posY < this.vm.map.height - 2) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    __isAnyAlliesOnThreatenedTiles() {
+        for (let unit of this.enumerateAllyUnitsOnMap()) {
+            if (unit.placedTile.isAttackableForEnemy) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     simulateBeginningOfEnemyTurn() {
         if (this.vm.currentTurn == this.vm.maxTurn) {
             return;
@@ -12682,6 +12710,16 @@ class AetherRaidTacticsBoard {
             self.vm.currentTurnType = UnitGroupType.Enemy;
             self.audioManager.playSoundEffect(SoundEffectId.EnemyPhase);
             self.__simulateBeginningOfTurn(self.__getOnMapEnemyUnitList());
+
+            // 安全柵の実行(他の施設と実行タイミングが異なるので、別途処理している)
+            let safetyFence = self.__findSafetyFence();
+            if (safetyFence != null && Number(self.vm.currentTurn) <= Number(safetyFence.level)) {
+                if (self.__isAllAlliesOnInitialTiles() || !self.__isAnyAlliesOnThreatenedTiles()) {
+                    for (let unit of self.enumerateEnemyUnitsOnMap()) {
+                        unit.endAction();
+                    }
+                }
+            }
 
             // 拡張枠ユニットの行動終了
             let expansionEnemyUnit = g_appData.getEnemyExpansionUnitOnMap();

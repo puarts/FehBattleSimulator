@@ -328,6 +328,22 @@ class AetherFountain extends DefenceStructureBase {
     }
 }
 
+class SafetyFence extends OffenceStructureBase {
+    constructor(id) {
+        super(id);
+    }
+    get iconFileName() {
+        return "SafetyFence.png";
+    }
+    get name() {
+        return "攻撃・安全柵";
+    }
+    get description() {
+        let value = Number(this.level);
+        return `${value}ターン目まで、防衛部隊のターン開始時スキル発動後に、攻撃部隊全員が危険範囲外か、本設備を下段とした縦2×横7マスにいる時、防衛部隊全員を行動終了`;
+    }
+}
+
 class DefArmorSchool extends DefenceStructureBase {
     constructor(id) {
         super(id);
