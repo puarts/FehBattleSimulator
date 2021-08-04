@@ -1059,8 +1059,9 @@ const Weapon = {
     // 2021年7月 神階英雄ウル
     HolyYewfelle: 1779, // 聖弓イチイバル
 
-    // TODO
+    // 恐るべき海賊たち
     SeaSearLance: 1790, // 炎海の灼槍
+    CrossbonesClaw: 1784, // 凶兆の海賊の嘴爪
 };
 
 const Support = {

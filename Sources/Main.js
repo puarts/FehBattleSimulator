@@ -6357,6 +6357,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CrossbonesClaw:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        enemyUnit.spdSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.isDesperationActivated = true;
+                        }
+                    }
+                    break;
                 case PassiveB.YngviAscendant:
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     break;
