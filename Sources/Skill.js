@@ -1480,6 +1480,7 @@ const PassiveA = {
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
     AtkDefIdeal4: 1705,
     AtkResIdeal4: 1723,
+    DefResIdeal4: 1791, // 守備魔防の万全4
 };
 
 const PassiveB = {

@@ -4801,6 +4801,12 @@ class AetherRaidTacticsBoard {
                             unit.atkSpur += value; unit.resSpur += value;
                         });
                     break;
+                case PassiveA.DefResIdeal4:
+                    this.__applyIdealEffect(targetUnit, enemyUnit,
+                        (unit, value) => {
+                            unit.defSpur += value; unit.resSpur += value;
+                        });
+                    break;
                 case Weapon.Skinfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.applyAtkUnity();
