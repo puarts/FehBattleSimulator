@@ -10077,6 +10077,10 @@ class AetherRaidTacticsBoard {
                                 targetUnit.spdSpur -= 4;
                                 targetUnit.resSpur -= 4;
                                 break;
+                            case PassiveC.DefResRein3:
+                                targetUnit.defSpur -= 4;
+                                targetUnit.resSpur -= 4;
+                                break;
                             case Weapon.YashiNoKiNoTsuePlus:
                                 targetUnit.atkSpur -= 5;
                                 targetUnit.spdSpur -= 5;
