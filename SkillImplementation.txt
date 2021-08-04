@@ -137,6 +137,8 @@ function statusEffectTypeToIconFilePath(value) {
     case StatusEffectType.Dodge:
     return g_imageRootPath + "XXX.png";
 }
+/// ステータス効果が不利なステータス効果であるかどうかを判定
+function isNegativeStatusEffect(type) {}
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
 
