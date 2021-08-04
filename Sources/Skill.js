@@ -1955,6 +1955,7 @@ const PassiveC = {
     SeimeiNoKagayaki: 773,
     ChaosNamed: 868, // 我が名は混沌
     SurtrsMenace: 767, // 炎王の威嚇
+    SurtrsPortent: 1792, // 炎王の脅嚇
     WithEveryone: 754, // みんなと一緒に
     SolitaryDream: 898, // ひとりぼっちのゆめ
     DivineFang: 915, // 神竜王の牙

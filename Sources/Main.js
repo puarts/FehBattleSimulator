@@ -11214,6 +11214,21 @@ class AetherRaidTacticsBoard {
                         unit.reserveToApplyResDebuff(-6);
                     });
                 break;
+            case PassiveC.SurtrsPortent:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyAtkBuff(5);
+                        unit.applySpdBuff(5);
+                        unit.applyDefBuff(5);
+                        unit.applyResBuff(5);
+                    },
+                    unit => {
+                        unit.reserveToApplyAtkDebuff(-5);
+                        unit.reserveToApplySpdDebuff(-5);
+                        unit.reserveToApplyDefDebuff(-5);
+                        unit.reserveToApplyResDebuff(-5);
+                    });
+                break;
             case Special.HolyKnightAura:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;
