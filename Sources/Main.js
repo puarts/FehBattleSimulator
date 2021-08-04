@@ -7037,6 +7037,7 @@ class AetherRaidTacticsBoard {
                         enemyUnit.resSpur -= 5;
                     }
                     break;
+                case Weapon.SeaSearLance:
                 case Weapon.LoyalistAxe:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         enemyUnit.atkSpur -= 6;

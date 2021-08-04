@@ -1058,6 +1058,9 @@ const Weapon = {
 
     // 2021年7月 神階英雄ウル
     HolyYewfelle: 1779, // 聖弓イチイバル
+
+    // TODO
+    SeaSearLance: 1790, // 炎海の灼槍
 };
 
 const Support = {

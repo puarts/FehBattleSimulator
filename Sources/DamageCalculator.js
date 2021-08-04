@@ -210,6 +210,7 @@ class DamageCalculator {
 
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
+            case Weapon.SeaSearLance:
             case Weapon.LoyalistAxe:
                 if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) &&
                     enemyUnit.battleContext.canFollowupAttack) {
