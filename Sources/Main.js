@@ -11159,6 +11159,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case PassiveC.StallPloy3:
+                this.__applySkillToEnemiesInCross(skillOwner,
+                    unit => this.__getStatusEvalUnit(unit).hp <= this.__getStatusEvalUnit(skillOwner).hp - 1,
+                    unit => unit.reserveToAddStatusEffect(StatusEffectType.Stall));
+                break;
             case Weapon.ShellpointLancePlus:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
                     skillOwner.applyDefBuff(6);

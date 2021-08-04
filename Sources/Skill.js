@@ -1952,6 +1952,8 @@ const PassiveC = {
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
     DefResMenace: 1728, // 守備魔防の脅嚇
 
+    StallPloy3: 1789, // 空転の奇策3
+
     // 専用
     SeimeiNoKagayaki: 773,
     ChaosNamed: 868, // 我が名は混沌
