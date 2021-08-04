@@ -6357,6 +6357,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EbonPirateClaw:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                    break;
                 case Weapon.CrossbonesClaw:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         enemyUnit.spdSpur -= 6;
@@ -11029,10 +11036,10 @@ class AetherRaidTacticsBoard {
             debuffFunc(unit);
         }
     }
-    __applySabotageSkill(skillOwnerUnit, debuffFunc) {
+    __applySabotageSkill(skillOwnerUnit, debuffFunc, diff = 3) {
         this.__applySabotageSkillImpl(
             skillOwnerUnit,
-            unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat() - 3),
+            unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat() - diff),
             debuffFunc);
     }
     __applyPolySkill(skillOwnerUnit, debuffFunc) {
@@ -11159,6 +11166,12 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.EbonPirateClaw:
+                this.__applySabotageSkill(skillOwner, unit => {
+                    unit.reserveToApplyDefDebuff(-7);
+                    unit.reserveToApplyResDebuff(-7);
+                }, 1);
+                break;
             case PassiveC.StallPloy3:
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => this.__getStatusEvalUnit(unit).hp <= this.__getStatusEvalUnit(skillOwner).hp - 1,

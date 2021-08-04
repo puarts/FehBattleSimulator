@@ -1062,6 +1062,7 @@ const Weapon = {
     // 恐るべき海賊たち
     SeaSearLance: 1790, // 炎海の灼槍
     CrossbonesClaw: 1784, // 凶兆の海賊の嘴爪
+    EbonPirateClaw: 1785, // 射干玉の海賊の嘴爪
 };
 
 const Support = {
