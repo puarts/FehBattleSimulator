@@ -5045,6 +5045,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MermaidBow:
+                    if (targetUnit.snapshot.restHpPercentage >= 25 &&
+                        targetUnit.battleContext.initiatesCombat) {
+                        if (this.damageCalc.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                                targetUnit.battleContext.attackCount = 2;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Luin:
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
@@ -6357,6 +6367,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MermaidBow:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.battleContext.refersMinOfDefOrRes = true;
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
                 case Weapon.EbonPirateClaw:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 5;
