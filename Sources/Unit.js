@@ -52,6 +52,7 @@ const Hero = {
     HarmonizedCatria: 670,
     DuoHilda: 682,
     HarmonizedCaeda: 688,
+    DuoHinoka: 700,
 };
 
 function isThiefIndex(heroIndex) {
@@ -237,6 +238,8 @@ const StatusEffectType = {
     TriangleAttack: 21, // トライアングルアタック
     FollowUpAttackPlus: 22, // 絶対追撃
     NullPanic: 23, // 見切り・パニック
+    Stall: 24, // 空転
+    CancelAffinity: 25, // 相性相殺
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -287,6 +290,7 @@ function isNegativeStatusEffect(type) {
         case StatusEffectType.Guard:
         case StatusEffectType.Isolation:
         case StatusEffectType.DeepWounds:
+        case StatusEffectType.Stall:
             return true;
         default:
             return false;
@@ -343,6 +347,18 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_TriangleAttack.png";
         case StatusEffectType.NullPanic:
             return g_imageRootPath + "StatusEffect_NullPanic.png";
+        case StatusEffectType.Stall:
+            // @TODO: 「空転」の画像を用意する
+            // return g_imageRootPath + "StatusEffect_Stall.png";
+            return g_imageRootPath + "MovementRestriction.png";
+        case StatusEffectType.TriangleAdept:
+            // @TODO: 「相性激化」の画像を用意する
+            // return g_imageRootPath + "StatusEffect_TriangleAdept.png";
+            return g_imageRootPath + "MovementRestriction.png";
+        case StatusEffectType.CancelAffinity:
+            // @TODO: 「相性相殺」の画像を用意する
+            // return g_imageRootPath + "StatusEffect_CancelAffinity.png";
+            return g_imageRootPath + "MovementRestriction.png";
         default: return "";
     }
 }
@@ -2416,6 +2432,7 @@ class Unit {
                 || this.heroIndex == Hero.HarmonizedCatria
                 || this.heroIndex == Hero.DuoHilda
                 || this.heroIndex == Hero.HarmonizedCaeda
+                || this.heroIndex == Hero.DuoHinoka
             );
     }
 
@@ -3216,6 +3233,9 @@ class Unit {
             return 1;
         }
         if (this.hasStatusEffect(StatusEffectType.MobilityIncreased)) {
+            if (this.hasStatusEffect(StatusEffectType.Stall)) {
+                return 1;
+            }
             return this.getNormalMoveCount() + 1;
         }
         if (this.isTransformed
@@ -3450,10 +3470,10 @@ class Unit {
             || this.weapon == Weapon.YoheidanNoSenfu
             || (this.weapon == Weapon.Forukuvangu && this.isWeaponSpecialRefined)
             || (this.weapon == Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
+            || this.hasStatusEffect(StatusEffectType.TriangleAdept)
         ) {
             return 0.2;
-        }
-        else if (this.passiveA == PassiveA.AishoGekika2) {
+        } else if (this.passiveA == PassiveA.AishoGekika2) {
             return 0.15;
         } else if (this.passiveA == PassiveA.AishoGekika1) {
             return 0.1;
@@ -3461,6 +3481,7 @@ class Unit {
         return 0;
     }
 
+    // @TODO: 相性相殺の修正で呼び出さなくなったので動作確認後に削除
     hasTriangleAdeptSkill() {
         return this.passiveA == PassiveA.AishoGekika3
             || this.passiveA == PassiveA.AishoGekika2
@@ -3478,6 +3499,18 @@ class Unit {
             || (this.weapon == Weapon.Forukuvangu && this.isWeaponSpecialRefined)
             || (this.weapon == Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
             ;
+    }
+
+    // 「自分のスキルによる3すくみ激化を無効化」
+    neutralizesSelfTriangleAdvantage() {
+        // @TODO: 相性相殺1,2も同様
+        return this.hasPassiveSkill(PassiveB.AisyoSosatsu3) || this.hasStatusEffect(StatusEffectType.CancelAffinity);
+    }
+
+    // 「相性不利の時、敵スキルによる3すくみ激化を反転」
+    reversesTriangleAdvantage() {
+        // @TODO: 相性相殺1,2は反転しない
+        return this.hasPassiveSkill(PassiveB.AisyoSosatsu3) || this.hasStatusEffect(StatusEffectType.CancelAffinity);
     }
 
     __getBuffMultiply() {

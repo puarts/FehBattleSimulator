@@ -862,6 +862,33 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoHinoka:
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 3, 99)) {
+                    if (unit.moveType === MoveType.Flying) {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 99, 3)) {
+                    if (unit.moveType === MoveType.Flying) {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                }
+
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
+                    if (unit.isRangedWeaponType() && unit.moveType !== MoveType.Flying) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 99, 3)) {
+                    if (unit.isRangedWeaponType() && unit.moveType !== MoveType.Flying) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                }
+                break;
             case Hero.DuoHilda: {
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
                     unit.applyAtkDebuff(-7);
@@ -4801,6 +4828,12 @@ class AetherRaidTacticsBoard {
                             unit.atkSpur += value; unit.resSpur += value;
                         });
                     break;
+                case PassiveA.DefResIdeal4:
+                    this.__applyIdealEffect(targetUnit, enemyUnit,
+                        (unit, value) => {
+                            unit.defSpur += value; unit.resSpur += value;
+                        });
+                    break;
                 case Weapon.Skinfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.applyAtkUnity();
@@ -4897,13 +4930,18 @@ class AetherRaidTacticsBoard {
                         enemyUnit.addAllSpur(-5);
                     }
                     break;
-                case Weapon.Niu:
-                    {
-                        let amount = Math.trunc(enemyUnit.getBuffTotalInCombat(targetUnit) * 0.5);
-                        if (amount > 0) {
-                            targetUnit.addAllSpur(amount);
-                        }
+                case Weapon.Niu: {
+                    let amount = 0;
+                    if (!targetUnit.isWeaponRefined) {
+                        amount = Math.trunc(enemyUnit.getBuffTotalInCombat(targetUnit) * 0.5);
+                    } else {
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit) + enemyUnit.getBuffTotalInCombat(targetUnit);
+                        amount = Math.min(Math.trunc(buff * 0.4), 10);
                     }
+                    if (amount > 0) {
+                        targetUnit.addAllSpur(amount);
+                    }
+                }
                     break;
                 case Weapon.AxeOfDespair:
                 case Weapon.TomeOfDespair:
@@ -5039,6 +5077,16 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MermaidBow:
+                    if (targetUnit.snapshot.restHpPercentage >= 25 &&
+                        targetUnit.battleContext.initiatesCombat) {
+                        if (this.damageCalc.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                                targetUnit.battleContext.attackCount = 2;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Luin:
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
@@ -5641,6 +5689,7 @@ class AetherRaidTacticsBoard {
                     attackTargetUnit.addStatusEffect(StatusEffectType.TriangleAdept);
                     break;
                 case Weapon.TrilemmaPlus:
+                case Weapon.PunishmentStaff:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.addStatusEffect(StatusEffectType.TriangleAdept);
                     }
@@ -6351,6 +6400,80 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Niu:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
+                case Weapon.MakenMistoruthin:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.defSpur += 5;
+                        }
+                    }
+                    break;
+                case Weapon.LoyaltySpear:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        enemyUnit.atkSpur -= 4;
+                        enemyUnit.spdSpur -= 4;
+                        enemyUnit.defSpur -= 4;
+                        targetUnit.battleContext.invalidateAtkBuff = true;
+                        targetUnit.battleContext.invalidateDefBuff = true;
+                    }
+                    break;
+                case Weapon.NifuruNoHyoka:
+                    if (!targetUnit.isWeaponRefined) break;
+                    let allies = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                    if (allies.length >= 1) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                        targetUnit.atkSpur += Math.min(allies.length, 2) * 2;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.resSpur += 5;
+                            let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false));
+                            let atkMax = units.reduce((max, unit) => Math.max(max, unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : unit.atkBuff), 0);
+                            targetUnit.atkSpur += atkMax;
+                        }
+                    }
+                    break;
+                case Weapon.PunishmentStaff:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
+                case Weapon.MermaidBow:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.battleContext.refersMinOfDefOrRes = true;
+                        targetUnit.atkSpur += 6;
+                        targetUnit.spdSpur += 6;
+                    }
+                    break;
+                case Weapon.EbonPirateClaw:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                    break;
+                case Weapon.CrossbonesClaw:
+                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        enemyUnit.spdSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.isDesperationActivated = true;
+                        }
+                    }
+                    break;
                 case PassiveB.YngviAscendant:
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     break;
@@ -7037,6 +7160,7 @@ class AetherRaidTacticsBoard {
                         enemyUnit.resSpur -= 5;
                     }
                     break;
+                case Weapon.SeaSearLance:
                 case Weapon.LoyalistAxe:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                         enemyUnit.atkSpur -= 6;
@@ -8889,6 +9013,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.KinranNoSyo:
                     atkUnit.atkSpur += 6;
                     break;
+                case Weapon.HelmsmanAxePlus:
                 case Weapon.RauaFoxPlus:
                 case Weapon.BlarfoxPlus:
                 case Weapon.GronnfoxPlus:
@@ -10036,6 +10161,10 @@ class AetherRaidTacticsBoard {
                                 targetUnit.spdSpur -= 4;
                                 targetUnit.resSpur -= 4;
                                 break;
+                            case PassiveC.DefResRein3:
+                                targetUnit.defSpur -= 4;
+                                targetUnit.resSpur -= 4;
+                                break;
                             case Weapon.YashiNoKiNoTsuePlus:
                                 targetUnit.atkSpur -= 5;
                                 targetUnit.spdSpur -= 5;
@@ -10331,6 +10460,7 @@ class AetherRaidTacticsBoard {
                             });
                         break;
                     case Weapon.NifuruNoHyoka:
+                        if (targetUnit.isWeaponRefined) break;
                     case Weapon.MusuperuNoEnka:
                         this.__applyFormSkill(targetUnit,
                             (unit, amount) => {
@@ -11012,10 +11142,10 @@ class AetherRaidTacticsBoard {
             debuffFunc(unit);
         }
     }
-    __applySabotageSkill(skillOwnerUnit, debuffFunc) {
+    __applySabotageSkill(skillOwnerUnit, debuffFunc, diff = 3) {
         this.__applySabotageSkillImpl(
             skillOwnerUnit,
-            unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat() - 3),
+            unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat() - diff),
             debuffFunc);
     }
     __applyPolySkill(skillOwnerUnit, debuffFunc) {
@@ -11142,6 +11272,29 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.PunishmentStaff:
+                if (!skillOwner.isWeaponSpecialRefined) break;
+                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
+                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
+                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
+                if (skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.CancelAffinity);
+                        unit.applyAtkBuff(6);
+                    }
+                }
+                break;
+            case Weapon.EbonPirateClaw:
+                this.__applySabotageSkill(skillOwner, unit => {
+                    unit.reserveToApplyDefDebuff(-7);
+                    unit.reserveToApplyResDebuff(-7);
+                }, 1);
+                break;
+            case PassiveC.StallPloy3:
+                this.__applySkillToEnemiesInCross(skillOwner,
+                    unit => this.__getStatusEvalUnit(unit).hp <= this.__getStatusEvalUnit(skillOwner).hp - 1,
+                    unit => unit.reserveToAddStatusEffect(StatusEffectType.Stall));
+                break;
             case Weapon.ShellpointLancePlus:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
                     skillOwner.applyDefBuff(6);
@@ -11205,6 +11358,21 @@ class AetherRaidTacticsBoard {
                     unit => {
                         unit.reserveToApplyDefDebuff(-6);
                         unit.reserveToApplyResDebuff(-6);
+                    });
+                break;
+            case PassiveC.SurtrsPortent:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applyAtkBuff(5);
+                        unit.applySpdBuff(5);
+                        unit.applyDefBuff(5);
+                        unit.applyResBuff(5);
+                    },
+                    unit => {
+                        unit.reserveToApplyAtkDebuff(-5);
+                        unit.reserveToApplySpdDebuff(-5);
+                        unit.reserveToApplyDefDebuff(-5);
+                        unit.reserveToApplyResDebuff(-5);
                     });
                 break;
             case Special.HolyKnightAura:

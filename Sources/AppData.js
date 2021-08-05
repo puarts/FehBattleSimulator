@@ -830,6 +830,8 @@ class AppData {
         // 化身によるステータス変化
         if (unit.isTransformed) {
             switch (unit.weapon) {
+                case Weapon.EbonPirateClaw:
+                case Weapon.CrossbonesClaw:
                 case Weapon.ResolvedFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RenewedFang:

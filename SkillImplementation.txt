@@ -5,6 +5,9 @@ if (targetUnit.isWeaponRefined) {}
 <特殊錬成武器判定>
 if (targetUnit.isWeaponSpecialRefined) {}
 
+化身状態なら
+if (targetUnit.isTransformed) {}
+
 自分から攻撃した時
 if (targetUnit.battleContext.initiatesCombat) {
 敵から攻撃された時
@@ -112,6 +115,11 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
 }
 
+奥義によるダメージ+N
+__calcFixedSpecialAddDamage() {
+    fixedSpecialAddDamage += N;
+}
+
 戦闘中に攻撃していれば
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
 
@@ -134,6 +142,8 @@ function statusEffectTypeToIconFilePath(value) {
     case StatusEffectType.Dodge:
     return g_imageRootPath + "XXX.png";
 }
+/// ステータス効果が不利なステータス効果であるかどうかを判定
+function isNegativeStatusEffect(type) {}
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
 

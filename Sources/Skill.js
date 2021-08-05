@@ -1058,6 +1058,17 @@ const Weapon = {
 
     // 2021年7月 神階英雄ウル
     HolyYewfelle: 1779, // 聖弓イチイバル
+
+    // 恐るべき海賊たち
+    SeaSearLance: 1790, // 炎海の灼槍
+    CrossbonesClaw: 1784, // 凶兆の海賊の嘴爪
+    EbonPirateClaw: 1785, // 射干玉の海賊の嘴爪
+    MermaidBow: 1786, // 海泳ぐ人魚の弓
+    HelmsmanAxePlus: 1783, // 操舵の斧+
+
+    // 2021年8月 武器錬成
+    PunishmentStaff: 1782, // 痛罵の杖
+    LoyaltySpear: 1781, // 忠誠の槍
 };
 
 const Support = {
@@ -1477,6 +1488,7 @@ const PassiveA = {
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
     AtkDefIdeal4: 1705,
     AtkResIdeal4: 1723,
+    DefResIdeal4: 1791, // 守備魔防の万全4
 };
 
 const PassiveB = {
@@ -1685,6 +1697,7 @@ const PassiveB = {
     TeniNoKona: 661, // 転移の粉
     TsuigekiRing: 658, // 追撃リング
     TateNoKodo3: 634, // 盾の鼓動3
+    // @TODO: 相性相殺1, 2は効果が異なるので時間がある時に実装する
     AisyoSosatsu3: 626, // 相性相殺
     Sashitigae3: 598, // 差し違え3
     ShingunSoshi3: 593, // 進軍阻止3
@@ -1923,6 +1936,7 @@ const PassiveC = {
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     SpdDefRein3: 1485, // 速さ守備の牽制3
     SpdResRein3: 1538, // 速さ魔防の牽制3
+    DefResRein3: 1787, // 守備魔防の牽制3
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
     EvenTempest3: 1681, // 迅雷風烈・偶数3
@@ -1947,10 +1961,13 @@ const PassiveC = {
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
     DefResMenace: 1728, // 守備魔防の脅嚇
 
+    StallPloy3: 1789, // 空転の奇策3
+
     // 専用
     SeimeiNoKagayaki: 773,
     ChaosNamed: 868, // 我が名は混沌
     SurtrsMenace: 767, // 炎王の威嚇
+    SurtrsPortent: 1792, // 炎王の脅嚇
     WithEveryone: 754, // みんなと一緒に
     SolitaryDream: 898, // ひとりぼっちのゆめ
     DivineFang: 915, // 神竜王の牙
