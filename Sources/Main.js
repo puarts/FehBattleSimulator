@@ -6368,6 +6368,24 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.NifuruNoHyoka:
+                    if (!targetUnit.isWeaponRefined) break;
+                    let allies = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                    if (allies.length >= 1) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                        targetUnit.atkSpur += Math.min(allies.length, 2) * 2;
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.resSpur += 5;
+                            let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false));
+                            let atkMax = units.reduce((max, unit) => Math.max(max, unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : unit.atkBuff), 0);
+                            targetUnit.atkSpur += atkMax;
+                        }
+                    }
+                    break;
                 case Weapon.PunishmentStaff:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.atkSpur += 4;
@@ -10383,6 +10401,7 @@ class AetherRaidTacticsBoard {
                             });
                         break;
                     case Weapon.NifuruNoHyoka:
+                        if (targetUnit.isWeaponRefined) break;
                     case Weapon.MusuperuNoEnka:
                         this.__applyFormSkill(targetUnit,
                             (unit, amount) => {
