@@ -4903,13 +4903,18 @@ class AetherRaidTacticsBoard {
                         enemyUnit.addAllSpur(-5);
                     }
                     break;
-                case Weapon.Niu:
-                    {
-                        let amount = Math.trunc(enemyUnit.getBuffTotalInCombat(targetUnit) * 0.5);
-                        if (amount > 0) {
-                            targetUnit.addAllSpur(amount);
-                        }
+                case Weapon.Niu: {
+                    let amount = 0;
+                    if (!targetUnit.isWeaponRefined) {
+                        amount = Math.trunc(enemyUnit.getBuffTotalInCombat(targetUnit) * 0.5);
+                    } else {
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit) + enemyUnit.getBuffTotalInCombat(targetUnit);
+                        amount = Math.min(Math.trunc(buff * 0.4), 10);
                     }
+                    if (amount > 0) {
+                        targetUnit.addAllSpur(amount);
+                    }
+                }
                     break;
                 case Weapon.AxeOfDespair:
                 case Weapon.TomeOfDespair:
@@ -6368,6 +6373,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Niu:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                            targetUnit.addAllSpur(4);
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
                 case Weapon.MakenMistoruthin:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
