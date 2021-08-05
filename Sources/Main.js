@@ -6368,6 +6368,15 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.LoyaltySpear:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        enemyUnit.atkSpur -= 4;
+                        enemyUnit.spdSpur -= 4;
+                        enemyUnit.defSpur -= 4;
+                        targetUnit.battleContext.invalidateAtkBuff = true;
+                        targetUnit.battleContext.invalidateDefBuff = true;
+                    }
+                    break;
                 case Weapon.NifuruNoHyoka:
                     if (!targetUnit.isWeaponRefined) break;
                     let allies = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));

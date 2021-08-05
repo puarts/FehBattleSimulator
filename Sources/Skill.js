@@ -1067,6 +1067,7 @@ const Weapon = {
 
     // 2021年8月 武器錬成
     PunishmentStaff: 1782, // 痛罵の杖
+    LoyaltySpear: 1781, // 忠誠の槍
 };
 
 const Support = {
