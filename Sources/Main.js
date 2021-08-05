@@ -862,6 +862,33 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoHinoka:
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 3, 99)) {
+                    if (unit.moveType === MoveType.Flying) {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 99, 3)) {
+                    if (unit.moveType === MoveType.Flying) {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                }
+
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
+                    if (unit.isRangedWeaponType() && unit.moveType !== MoveType.Flying) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 99, 3)) {
+                    if (unit.isRangedWeaponType() && unit.moveType !== MoveType.Flying) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                }
+                break;
             case Hero.DuoHilda: {
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
                     unit.applyAtkDebuff(-7);
