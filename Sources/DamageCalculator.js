@@ -554,6 +554,11 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MakenMistoruthin:
+                    if (defUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage >= 75) {
+                        fixedSpecialAddDamage += 7;
+                    }
+                    break;
                 case Weapon.ResolvedFang:
                 case Weapon.RenewedFang:
                 case Weapon.JinroMusumeNoTsumekiba:
@@ -670,6 +675,15 @@ class DamageCalculator {
             }
         }
         switch (atkUnit.weapon) {
+            case Weapon.MakenMistoruthin:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (isPrecombat) {
+                        if (defUnit.restHpPercentage >= 75) {
+                            fixedAddDamage += 7;
+                        }
+                    }
+                }
+                break;
             case Weapon.Ginnungagap:
                 if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
                     atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;

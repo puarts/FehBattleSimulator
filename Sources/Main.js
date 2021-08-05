@@ -6368,6 +6368,14 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MakenMistoruthin:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.defSpur += 5;
+                        }
+                    }
+                    break;
                 case Weapon.LoyaltySpear:
                     if (targetUnit.isWeaponSpecialRefined) {
                         enemyUnit.atkSpur -= 4;

@@ -115,6 +115,11 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
 }
 
+奥義によるダメージ+N
+__calcFixedSpecialAddDamage() {
+    fixedSpecialAddDamage += N;
+}
+
 戦闘中に攻撃していれば
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
 
