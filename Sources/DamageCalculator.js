@@ -1053,35 +1053,42 @@ class DamageCalculator {
             switch (attackTriangleAdv) {
                 case TriangleAdvantage.Advantageous:
                     triangleAdeptRate = 0.2;
-                    triangleMult = (Math.abs(triangleAdeptRate) / triangleAdeptRate);
+                    triangleMult = 1;
                     break;
                 case TriangleAdvantage.Disadvantageous:
-                    triangleAdeptRate = -0.2;
-                    triangleMult = (Math.abs(triangleAdeptRate) / triangleAdeptRate);
+                    triangleAdeptRate = 0.2;
+                    triangleMult = -1;
                     break;
                 case TriangleAdvantage.None:
                 default:
                     break;
             }
 
-            let atkUnitGekika3 = atkUnit.hasTriangleAdeptSkill() && !atkUnit.hasPassiveSkill(PassiveB.AisyoSosatsu3);
-            let defUnitGekika3 = defUnit.hasTriangleAdeptSkill() && !defUnit.hasPassiveSkill(PassiveB.AisyoSosatsu3);
-            if (atkUnitGekika3 || defUnitGekika3) {
-                let atkUnitGekikaRatio = atkUnit.getTriangleAdeptAdditionalRatio();
-                let defUnitGekikaRatio = defUnit.getTriangleAdeptAdditionalRatio();
-                let gekikaAdditionalRatio = Math.max(atkUnitGekikaRatio, defUnitGekikaRatio);
-                triangleAdeptRate += gekikaAdditionalRatio * triangleMult;
+            // 相性激化
+            let atkAdditionalRatio = atkUnit.getTriangleAdeptAdditionalRatio();
+            let defAdditionalRatio = defUnit.getTriangleAdeptAdditionalRatio();
+            // 相性相殺: 自分のスキルによる相性激化を無効
+            if (atkUnit.neutralizesSelfTriangleAdvantage()) {
+                atkAdditionalRatio = 0;
             }
-
-            if (atkUnitGekika3 && defUnit.hasPassiveSkill(PassiveB.AisyoSosatsu3)) {
-                triangleAdeptRate *= -1;
+            if (defUnit.neutralizesSelfTriangleAdvantage()) {
+                defAdditionalRatio = 0;
             }
-
-            if (defUnitGekika3 && atkUnit.hasPassiveSkill(PassiveB.AisyoSosatsu3)) {
-                triangleAdeptRate *= -1;
+            let additionalRatio = Math.max(atkAdditionalRatio, defAdditionalRatio);
+            // @TODO: 相性相殺1,2の実装
+            // 相性相殺3: 相性不利の時、相手の相性激化を反転
+            if (attackTriangleAdv === TriangleAdvantage.Disadvantageous) {
+                if (atkUnit.reversesTriangleAdvantage()) {
+                    // 自分が相性不利で自分が相性相殺3を持っている時反転する
+                    additionalRatio = -defAdditionalRatio;
+                }
+            } else if (attackTriangleAdv === TriangleAdvantage.Advantageous) {
+                if (defUnit.reversesTriangleAdvantage()) {
+                    // 相手が相性不利で相手が相性相殺3を持っている時反転する
+                    additionalRatio = -atkAdditionalRatio;
+                }
             }
-
-            attackAdvRatio += triangleAdeptRate;
+            attackAdvRatio = triangleMult * (triangleAdeptRate + additionalRatio);
             this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio);
         }
 

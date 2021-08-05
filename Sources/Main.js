@@ -5657,6 +5657,7 @@ class AetherRaidTacticsBoard {
                     attackTargetUnit.addStatusEffect(StatusEffectType.TriangleAdept);
                     break;
                 case Weapon.TrilemmaPlus:
+                case Weapon.PunishmentStaff:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.addStatusEffect(StatusEffectType.TriangleAdept);
                     }
@@ -6367,6 +6368,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PunishmentStaff:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
                 case Weapon.MermaidBow:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.battleContext.refersMinOfDefOrRes = true;
@@ -11187,6 +11194,18 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.PunishmentStaff:
+                if (!skillOwner.isWeaponSpecialRefined) break;
+                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
+                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
+                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
+                if (skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.CancelAffinity);
+                        unit.applyAtkBuff(6);
+                    }
+                }
+                break;
             case Weapon.EbonPirateClaw:
                 this.__applySabotageSkill(skillOwner, unit => {
                     unit.reserveToApplyDefDebuff(-7);

@@ -1064,6 +1064,9 @@ const Weapon = {
     CrossbonesClaw: 1784, // 凶兆の海賊の嘴爪
     EbonPirateClaw: 1785, // 射干玉の海賊の嘴爪
     MermaidBow: 1786, // 海泳ぐ人魚の弓
+
+    // 2021年8月 武器錬成
+    PunishmentStaff: 1782, // 痛罵の杖
 };
 
 const Support = {
@@ -1692,6 +1695,7 @@ const PassiveB = {
     TeniNoKona: 661, // 転移の粉
     TsuigekiRing: 658, // 追撃リング
     TateNoKodo3: 634, // 盾の鼓動3
+    // @TODO: 相性相殺1, 2は効果が異なるので時間がある時に実装する
     AisyoSosatsu3: 626, // 相性相殺
     Sashitigae3: 598, // 差し違え3
     ShingunSoshi3: 593, // 進軍阻止3
