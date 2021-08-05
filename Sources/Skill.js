@@ -1064,6 +1064,7 @@ const Weapon = {
     CrossbonesClaw: 1784, // 凶兆の海賊の嘴爪
     EbonPirateClaw: 1785, // 射干玉の海賊の嘴爪
     MermaidBow: 1786, // 海泳ぐ人魚の弓
+    HelmsmanAxePlus: 1783, // 操舵の斧+
 
     // 2021年8月 武器錬成
     PunishmentStaff: 1782, // 痛罵の杖

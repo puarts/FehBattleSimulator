@@ -8986,6 +8986,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.KinranNoSyo:
                     atkUnit.atkSpur += 6;
                     break;
+                case Weapon.HelmsmanAxePlus:
                 case Weapon.RauaFoxPlus:
                 case Weapon.BlarfoxPlus:
                 case Weapon.GronnfoxPlus:
