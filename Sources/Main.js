@@ -12714,6 +12714,9 @@ class AetherRaidTacticsBoard {
         // 化身によりステータス変化する
         g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
 
+        // マップの更新(ターン開始時の移動マスの変化をマップに反映)
+        g_appData.map.updateTiles();
+
         // ターンワイド状態の評価と保存
         {
             for (let unit of targetUnits) {
@@ -12849,23 +12852,21 @@ class AetherRaidTacticsBoard {
         return null;
     }
 
-    __areAllAlliesOnInitialTiles() {
+    __areAllAlliesOnSafetyTiles(safetyFence) {
         for (let unit of this.enumerateAllyUnitsOnMap()) {
-            if (unit.posY < this.vm.map.height - 2) {
-                return false;
+            if (!unit.placedTile.isAttackableForEnemy) {
+                continue;
             }
+
+            if (unit.posY >= safetyFence.posY - 1
+                && (safetyFence.posX - 3 <= unit.posX && unit.posX <= safetyFence.posX + 3)
+            ) {
+                continue;
+            }
+
+            return false;
         }
         return true;
-    }
-
-    __areAnyAlliesOnThreatenedTiles() {
-        for (let unit of this.enumerateAllyUnitsOnMap()) {
-            if (unit.placedTile.isAttackableForEnemy) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     simulateBeginningOfEnemyTurn() {
@@ -12882,7 +12883,7 @@ class AetherRaidTacticsBoard {
             // 安全柵の実行(他の施設と実行タイミングが異なるので、別途処理している)
             let safetyFence = self.__findSafetyFence();
             if (safetyFence != null && Number(self.vm.currentTurn) <= Number(safetyFence.level)) {
-                if (self.__areAllAlliesOnInitialTiles() || !self.__areAnyAlliesOnThreatenedTiles()) {
+                if (self.__areAllAlliesOnSafetyTiles(safetyFence)) {
                     for (let unit of self.enumerateEnemyUnitsOnMap()) {
                         unit.endAction();
                     }
