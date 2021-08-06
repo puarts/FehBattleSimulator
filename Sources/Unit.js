@@ -348,17 +348,11 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.NullPanic:
             return g_imageRootPath + "StatusEffect_NullPanic.png";
         case StatusEffectType.Stall:
-            // @TODO: 「空転」の画像を用意する
-            // return g_imageRootPath + "StatusEffect_Stall.png";
-            return g_imageRootPath + "MovementRestriction.png";
+            return g_imageRootPath + "StatusEffect_Stall.png";
         case StatusEffectType.TriangleAdept:
-            // @TODO: 「相性激化」の画像を用意する
-            // return g_imageRootPath + "StatusEffect_TriangleAdept.png";
-            return g_imageRootPath + "MovementRestriction.png";
+            return g_imageRootPath + "StatusEffect_TriangleAdept.png";
         case StatusEffectType.CancelAffinity:
-            // @TODO: 「相性相殺」の画像を用意する
-            // return g_imageRootPath + "StatusEffect_CancelAffinity.png";
-            return g_imageRootPath + "MovementRestriction.png";
+            return g_imageRootPath + "StatusEffect_CancelAffinity.png";
         default: return "";
     }
 }
