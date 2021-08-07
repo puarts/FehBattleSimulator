@@ -12745,6 +12745,9 @@ class AetherRaidTacticsBoard {
         for (let unit of this.enumerateAllUnitsOnMap(x => true)) {
             unit.moveCountAtBeginningOfTurn = unit.moveCount;
         }
+
+        // 安全柵の効果が発動する場合でも、敵の移動をトリガーするかどうかの判定が行われている
+        this.__prepareActionContextForAssist(targetUnits, enemyUnits, true);
     }
 
     __getOnMapEnemyUnitList() {
