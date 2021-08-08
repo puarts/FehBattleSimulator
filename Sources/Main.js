@@ -1190,7 +1190,9 @@ class AetherRaidTacticsBoard {
         if (this.openCvLoadState == ModuleLoadState.NotLoaded) {
             self.openCvLoadState = ModuleLoadState.Loading;
             self.writeSimpleLogLine("OpenCV の初期化開始..");
-            importJs("https://docs.opencv.org/4.3.0/opencv.js", x => {
+            // let jsPath = "https://docs.opencv.org/4.3.0/opencv.js";
+            let jsPath = g_siteRootPath + "externals/opencv4.5.3/opencv.js";
+            importJs(jsPath, x => {
                 cv['onRuntimeInitialized'] = () => {
                     self.openCvLoadState = ModuleLoadState.Loaded;
                     self.writeSimpleLogLine("OpenCV の初期化完了");
