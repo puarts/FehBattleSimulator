@@ -6914,6 +6914,10 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     break;
+                case PassiveB.AtkDefNearTrace3:
+                    enemyUnit.atkSpur -= 3;
+                    enemyUnit.defSpur -= 3;
+                    break;
                 case PassiveB.SpdDefNearTrace3:
                     enemyUnit.spdSpur -= 3;
                     enemyUnit.defSpur -= 3;
@@ -15026,6 +15030,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
+                case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
@@ -15052,6 +15057,7 @@ class AetherRaidTacticsBoard {
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
                 case PassiveB.MurderousLion:
+                case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
                     break;
