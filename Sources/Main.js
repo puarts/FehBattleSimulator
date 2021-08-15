@@ -11271,8 +11271,10 @@ class AetherRaidTacticsBoard {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
                 skillOwner.isTransformed = true;
-            }
-            else {
+                if (skillOwner.moveType === MoveType.Flying && isWeaponTypeBeast(skillOwner.weaponType)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+            } else {
                 skillOwner.isTransformed = false;
             }
         }
@@ -11986,7 +11988,7 @@ class AetherRaidTacticsBoard {
             case PassiveC.SolitaryDream:
                 if (!this.__isNextToOtherUnitsExcept(skillOwner, x => isWeaponTypeBreath(x.weaponType))) {
                     skillOwner.applyAllBuff(4);
-                    skillOwner.moveCount = 2;
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;
             case PassiveC.WithEveryone:
@@ -12570,9 +12572,9 @@ class AetherRaidTacticsBoard {
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
                     if (unit.moveType == MoveType.Armor) {
                         this.writeLogLine(unit.getNameWithGroup() + "は重装の行軍により移動値+1");
-                        unit.moveCount = 2;
+                        unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                         this.writeLogLine(skillOwner.getNameWithGroup() + "は重装の行軍により移動値+1");
-                        skillOwner.moveCount = 2;
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                     }
                 }
                 break;
