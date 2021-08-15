@@ -11271,8 +11271,10 @@ class AetherRaidTacticsBoard {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
                 skillOwner.isTransformed = true;
-            }
-            else {
+                if (skillOwner.moveType === MoveType.Flying && isWeaponTypeBeast(skillOwner.weaponType)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+            } else {
                 skillOwner.isTransformed = false;
             }
         }

@@ -3232,13 +3232,6 @@ class Unit {
             }
             return this.getNormalMoveCount() + 1;
         }
-        if (this.isTransformed
-            && this.moveType == MoveType.Flying
-            && isWeaponTypeBeast(this.weaponType)
-        ) {
-            return 3;
-        }
-
         return this._moveCount;
     }
 
