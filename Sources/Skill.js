@@ -1260,6 +1260,7 @@ const Special = {
 const PassiveA = {
     None: -1,
     CloseCounter: 561, // 近距離反撃
+    CloseReversal: 1803, // 近反・金剛の構え
     DistantCounter: 562, // 遠距離反撃
     DistantPressure: 1795, // 遠反・速さの渾身
     DeathBlow3: 528, // 鬼神の一撃3

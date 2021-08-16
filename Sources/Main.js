@@ -9566,6 +9566,9 @@ class AetherRaidTacticsBoard {
                 case Weapon.MizuNoBreath:
                 case Weapon.MizuNoBreathPlus:
                 case PassiveA.KongoMeikyoNoKamae2: defUnit.defSpur += 4; defUnit.resSpur += 4; break;
+                case PassiveA.CloseReversal:
+                    defUnit.defSpur += 5;
+                    break;
                 case PassiveA.KongoNoKamae4:
                     defUnit.defSpur += 8;
                     defUnit.battleContext.reducesCooldownCount = true;
