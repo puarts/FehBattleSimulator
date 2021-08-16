@@ -3401,7 +3401,7 @@ class AetherRaidTacticsBoard {
             this.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
             this.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
 
-            // 武器内蔵の全距離反撃
+            // スキル内蔵の全距離反撃
             defUnit.battleContext.canCounterattackToAllDistance = this.__canCounterAttackToAllDistance(defUnit);
         }
 
@@ -3645,6 +3645,9 @@ class AetherRaidTacticsBoard {
         }
 
         if (defUnit.weaponInfo.canCounterattackToAllDistance) {
+            return true;
+        }
+        if (defUnit.passiveAInfo != null && defUnit.passiveAInfo.canCounterattackToAllDistance) {
             return true;
         }
 
@@ -5431,12 +5434,13 @@ class AetherRaidTacticsBoard {
                         targetUnit.reserveTakeDamage(1);
                     }
                     break;
+                case PassiveA.DistantPressure:
                 case PassiveA.AtkSpdPush4:
                 case PassiveA.AtkResPush4:
                 case PassiveA.AtkDefPush4:
-                    this.writeDebugLogLine("渾身4を評価: 戦闘前のHP=" + targetUnit.battleContext.hpBeforeCombat);
+                    this.writeDebugLogLine(`${targetUnit.passiveAInfo.name}を評価: 戦闘前のHP=` + targetUnit.battleContext.hpBeforeCombat);
                     if (targetUnit.battleContext.hpBeforeCombat >= Math.floor(targetUnit.maxHpWithSkills * 0.25)) {
-                        this.writeLogLine("渾身4による5ダメージ");
+                        this.writeLogLine(`${targetUnit.passiveAInfo.name}による5ダメージ`);
                         targetUnit.reserveTakeDamage(5);
                     }
                     break;
@@ -8666,6 +8670,9 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveA.AtkSpdPush4:
                     if (targetUnit.snapshot.restHpPercentage >= 25) { targetUnit.atkSpur += 7; targetUnit.spdSpur += 7; }
+                    break;
+                case PassiveA.DistantPressure:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) { targetUnit.spdSpur += 5; }
                     break;
                 case PassiveA.BrazenAtkSpd3:
                     if (targetUnit.snapshot.restHpPercentage <= 80) { targetUnit.atkSpur += 7; targetUnit.spdSpur += 7; }

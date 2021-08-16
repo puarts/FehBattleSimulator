@@ -1261,6 +1261,7 @@ const PassiveA = {
     None: -1,
     CloseCounter: 561, // 近距離反撃
     DistantCounter: 562, // 遠距離反撃
+    DistantPressure: 1795, // 遠反・速さの渾身
     DeathBlow3: 528, // 鬼神の一撃3
     DeathBlow4: 529, // 鬼神の一撃4
     HienNoIchigeki1: 1149,
