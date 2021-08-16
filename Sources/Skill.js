@@ -1073,6 +1073,7 @@ const Weapon = {
     // 2021年8月 希望の護り手たち
     // 男性
     GenesisFalchion: 1793, // 始祖ファルシオン
+    ChargingHorn: 1802, // 突撃の角笛
 
     // 女性
 

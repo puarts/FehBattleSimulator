@@ -6416,6 +6416,16 @@ class AetherRaidTacticsBoard {
         return total;
     }
 
+    __isThereBreakableStructureForEnemyIn2Spaces(targetUnit) {
+        for (let block of this.__getBreakableStructureTiles(this.getDifferentGroup(targetUnit.groupId))) {
+            let dist = Math.abs(block.posX - targetUnit.posX) + Math.abs(block.posY - targetUnit.posY);
+            if (dist <= 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
@@ -6480,6 +6490,25 @@ class AetherRaidTacticsBoard {
                         }
                         if (buffTotal >= 60) {
                             targetUnit.battleContext.isVantabeActivatable = true;
+                        }
+                    }
+                    break;
+                case Weapon.ChargingHorn:
+                    {
+                        let count = 0;
+                        if (this.__isThereBreakableStructureForEnemyIn2Spaces(targetUnit)) {
+                            count = 3;
+                        }
+                        else {
+                            count = this.__countAllyUnitsInClossWithOffset(targetUnit, 1);
+                        }
+                        if (count >= 1) {
+                            let debuffAmount = Math.min(count * 2, 6);
+                            enemyUnit.atkSpur -= debuffAmount;
+                            enemyUnit.resSpur -= debuffAmount;
+                        }
+                        if (count >= 3) {
+                            --enemyUnit.battleContext.followupAttackPriority;
                         }
                     }
                     break;
@@ -10028,6 +10057,23 @@ class AetherRaidTacticsBoard {
         return unitA.posX == unitB.posX || unitA.posY == unitB.posY;
     }
 
+    // 自身を中心とした縦〇列と横〇列
+    __isInClossWithOffset(unitA, unitB, offset) {
+        return (unitA.posX - offset <= unitB.posX && unitB.posX <= unitA.posX + offset)
+            || (unitA.posY - offset <= unitB.posY && unitB.posY <= unitA.posY + offset);
+    }
+
+    // 自身を中心とした縦〇列と横〇列にいる味方の人数を返します
+    __countAllyUnitsInClossWithOffset(targetUnit, offset) {
+        let count = 0;
+        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, false)) {
+            if (this.__isInClossWithOffset(targetUnit, unit, offset)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
     updateCurrentUnitSpur() {
         this.__updateUnitSpur(this.currentUnit);
     }
@@ -10139,6 +10185,15 @@ class AetherRaidTacticsBoard {
                             case Weapon.FlowerOfJoy:
                                 targetUnit.atkSpur += 3;
                                 targetUnit.spdSpur += 3;
+                                break;
+                        }
+                    }
+
+                    if (this.__isInClossWithOffset(unit, targetUnit, 1)) {
+                        switch (unit.weapon) {
+                            case Weapon.ChargingHorn:
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
                                 break;
                         }
                     }
