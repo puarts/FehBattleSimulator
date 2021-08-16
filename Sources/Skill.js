@@ -1248,6 +1248,7 @@ const Special = {
     Chiyu: 502, // 治癒
     Tensho: 503, // 天照
     RighteousWind: 1237, // 聖風
+    ShiningEmblem: 1794, // 光炎の紋章
 
     NegatingFang: 1469, // 反竜穿
 
@@ -2263,6 +2264,7 @@ function isNormalAttackSpecial(special) {
         case Special.Hyouten: // 氷点
         case Special.Youkage: // 陽影
         case Special.Hotarubi: // 蛍火
+        case Special.ShiningEmblem: // 光炎の紋章
         case Special.HonoNoMonsyo: // 炎の紋章
         case Special.HerosBlood:
         case Special.KuroNoGekko: // 黒の月光

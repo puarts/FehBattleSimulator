@@ -3550,6 +3550,12 @@ class AetherRaidTacticsBoard {
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.5);
                 break;
             }
+            case Special.ShiningEmblem:
+                {
+                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.35);
+                }
+                break;
             case Special.HonoNoMonsyo:
             case Special.HerosBlood:
                 {
@@ -5537,6 +5543,13 @@ class AetherRaidTacticsBoard {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
                             unit.applyAtkBuff(6);
                             unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                        }
+                    }
+                    break;
+                case Special.ShiningEmblem:
+                    if (attackUnit.battleContext.isSpecialActivated) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
+                            unit.applyAllBuff(6);
                         }
                     }
                     break;
@@ -11320,10 +11333,7 @@ class AetherRaidTacticsBoard {
         switch (skillId) {
             case Weapon.PunishmentStaff:
                 if (!skillOwner.isWeaponSpecialRefined) break;
-                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
-                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
-                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
-                if (skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         unit.reserveToAddStatusEffect(StatusEffectType.CancelAffinity);
                         unit.applyAtkBuff(6);
@@ -11352,13 +11362,18 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.WeddingBellAxe:
-                skillOwner.battleContext.isThereAnyUnitIn2Spaces =
-                    skillOwner.battleContext.isThereAnyUnitIn2Spaces ||
-                    this.__isThereAllyInSpecifiedSpaces(skillOwner, 2);
-                if (skillOwner.battleContext.isThereAnyUnitIn2Spaces) {
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                         unit.reserveToAddStatusEffect(StatusEffectType.TriangleAttack);
+                    }
+                }
+                break;
+            case Special.ShiningEmblem:
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                    skillOwner.applyAllBuff(6);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
+                        unit.applyAtkBuff(6);
                     }
                 }
                 break;
