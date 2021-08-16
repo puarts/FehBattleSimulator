@@ -1069,6 +1069,12 @@ const Weapon = {
     // 2021年8月 武器錬成
     PunishmentStaff: 1782, // 痛罵の杖
     LoyaltySpear: 1781, // 忠誠の槍
+
+    // 2021年8月 希望の護り手たち
+    // 男性
+
+    // 女性
+
 };
 
 const Support = {
