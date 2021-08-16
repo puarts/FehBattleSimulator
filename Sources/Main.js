@@ -10733,6 +10733,9 @@ class AetherRaidTacticsBoard {
                 case PassiveC.JointDriveRes:
                     targetUnit.resSpur += 4;
                     break;
+                case PassiveC.JointDriveDef:
+                    targetUnit.defSpur += 4;
+                    break;
                 case Weapon.ChichiNoSenjutsusyo:
                     targetUnit.atkSpur += 3;
                     targetUnit.spdSpur += 3;
@@ -11027,6 +11030,9 @@ class AetherRaidTacticsBoard {
                         break;
                     case PassiveC.JointDriveRes:
                         targetUnit.resSpur += 4;
+                        break;
+                    case PassiveC.JointDriveDef:
+                        targetUnit.defSpur += 4;
                         break;
                     case Weapon.Geirusukeguru:
                         if (targetUnit.isPhysicalAttacker()) {
