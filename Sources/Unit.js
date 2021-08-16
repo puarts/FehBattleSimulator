@@ -864,7 +864,8 @@ class BattleContext {
         this.hpBeforeCombat = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
-        this.isVantageActivated = false; // 待ち伏せ
+        this.isVantabeActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
+        this.isVantageActivated = false; // 待ち伏せが実際に発動するか(敵の戦闘順入替スキルを加味した有効無効)
         this.isDesperationActivated = false; // 攻め立て
         this.isDefDesperationActivated = false; // 最後の聖戦のように攻め立て受け側バージョン
         this.damageReductionRatioOfFirstAttack = 0;
@@ -996,6 +997,7 @@ class BattleContext {
     clear() {
         this.canFollowupAttack = false;
         this.canCounterattack = false;
+        this.isVantabeActivatable = false;
         this.isVantageActivated = false; // 待ち伏せ
         this.isDesperationActivated = false; // 攻め立て
         this.damageReductionRatioOfFirstAttack = 0;

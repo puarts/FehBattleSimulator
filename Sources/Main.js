@@ -6378,6 +6378,27 @@ class AetherRaidTacticsBoard {
         return targetUnit.battleContext.isThereAnyUnitIn2Spaces;
     }
 
+    __getTotalBuffAmountOfTop3Units(targetUnit) {
+        let units = [];
+        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, false)) {
+            units.push(unit);
+        }
+
+        units.sort(function (a, b) {
+            return b.buffTotal - a.buffTotal;
+        });
+
+        let total = 0;
+        for (let i = 0; i < 3; ++i) {
+            if (i == units.length) {
+                break;
+            }
+
+            total += units[i].buffTotal;
+        }
+        return total;
+    }
+
     __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
@@ -6426,6 +6447,23 @@ class AetherRaidTacticsBoard {
                         enemyUnit.defSpur -= 4;
                         targetUnit.battleContext.invalidateAtkBuff = true;
                         targetUnit.battleContext.invalidateDefBuff = true;
+                    }
+                    break;
+                case Weapon.GenesisFalchion:
+                    if (targetUnit.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(5);
+                        let buffTotal = this.__getTotalBuffAmountOfTop3Units(targetUnit);
+                        if (buffTotal >= 10) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        }
+                        if (buffTotal >= 25) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.battleContext.healedHpByAttack = 5;
+                        }
+                        if (buffTotal >= 60) {
+                            targetUnit.battleContext.isVantabeActivatable = true;
+                        }
                     }
                     break;
                 case Weapon.NifuruNoHyoka:

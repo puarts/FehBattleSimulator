@@ -308,7 +308,7 @@ class DamageCalculator {
             if (atkUnit.hasStatusEffect(StatusEffectType.Desperation)) {
                 atkUnit.battleContext.isDesperationActivated = true;
             }
-            if (defUnit.hasStatusEffect(StatusEffectType.Vantage)) {
+            if (defUnit.battleContext.isVantabeActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage)) {
                 defUnit.battleContext.isVantageActivated = true;
             }
 
