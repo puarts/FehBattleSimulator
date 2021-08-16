@@ -1673,7 +1673,9 @@ class Unit {
         }
         catch (e) {
             console.error(`${this.name} ${statusName}: ` + e.message, e.name);
-            return -1;
+
+            // ステータスが判明してないキャラの実装時にテストしやすいよう適当な値を返しておく
+            return 0.8;
         }
     }
 
