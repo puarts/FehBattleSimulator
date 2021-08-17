@@ -1076,7 +1076,7 @@ const Weapon = {
     ChargingHorn: 1802, // 突撃の角笛
 
     // 女性
-
+    PhantasmTome: 1799, // 幻影の書
 };
 
 const Support = {

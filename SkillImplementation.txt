@@ -74,7 +74,7 @@ __applyBonusDoubler(targetUnit, enemyUnit) {}
 
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
-targetUnit.battleContext.invalidateAtkBuff = true;
+targetUnit.battleContext.invalidatesAtkBuff = true;
 
 自身の弱化を無効(弱化無効)
 targetUnit.battleContext.invalidateAllOwnDebuffs();

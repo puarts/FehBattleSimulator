@@ -6450,6 +6450,19 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PhantasmTome:
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        enemyUnit.spdSput -= 6;
+                        enemyUnit.resSput -= 6;
+                        targetUnit.battleContext.invalidatesSpdBuff = true;
+                        targetUnit.battleContext.invalidatesResBuff = true;
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            // @TODO: ダメージ軽減処理のコミットを取り込んだ際に必ず引数を追加する
+                            // targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7);
+                        }
+                    }
+                    break;
                 case Weapon.Niu:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 25) {
