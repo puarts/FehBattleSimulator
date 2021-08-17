@@ -951,6 +951,7 @@ class BattleContext {
         this.damageReductionRatioForPrecombat = 0;
 
         // 戦闘中常に有効になるダメージ軽減率
+        // @NOTE: ダメージ軽減無効を考慮する必要があるので基本this.multDamageReductionRatioメソッドで値を設定する
         this.damageReductionRatio = 0;
 
         // 護り手が発動しているかどうか
@@ -1084,16 +1085,31 @@ class BattleContext {
         this.invalidatesOwnResDebuff = true;
     }
 
-    multDamageReductionRatio(damageReductionRatio) {
-        let damageRatio = 1.0 - this.damageReductionRatio;
-        damageRatio *= (1.0 - damageReductionRatio);
-        this.damageReductionRatio = Math.trunc((1.0 - damageRatio) * 100 + 0.5) * 0.01;
+    // ダメージ軽減無効(シャールヴィなど)
+    static calcDamageReductionRatio(damageReductionRatio, atkUnit) {
+        let reducedRatio = Math.trunc(damageReductionRatio * 100 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial) * 0.01;
+        return damageReductionRatio - reducedRatio;
     }
 
-    multDamageReductionRatioOfFirstAttack(damageReductionRatio) {
-        let damageRatio = 1.0 - this.damageReductionRatioOfFirstAttack;
-        damageRatio *= (1.0 - damageReductionRatio);
-        this.damageReductionRatioOfFirstAttack = Math.trunc((1.0 - damageRatio) * 100 + 0.5) * 0.01;
+    // ダメージ軽減積
+    static multDamageReductionRatio(sourceRatio, ratio, atkUnit) {
+        let modifiedRatio = BattleContext.calcDamageReductionRatio(ratio, atkUnit);
+        return 1 - (1 - sourceRatio) * (1 - modifiedRatio);
+    }
+
+    // ダメージ軽減積
+    multDamageReductionRatio(ratio, atkUnit) {
+        this.damageReductionRatio = BattleContext.multDamageReductionRatio(this.damageReductionRatio, ratio, atkUnit);
+    }
+
+    // 最初の攻撃のダメージ軽減積
+    multDamageReductionRatioOfFirstAttack(ratio, atkUnit) {
+        this.damageReductionRatioOfFirstAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttack, ratio, atkUnit);
+    }
+
+    // 連撃のダメージ軽減積
+    multDamageReductionRatioOfConsecutiveAttacks(ratio, atkUnit) {
+        this.damageReductionRatioOfConsecutiveAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfConsecutiveAttacks, ratio, atkUnit);
     }
 }
 

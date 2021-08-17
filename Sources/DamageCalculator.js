@@ -203,48 +203,37 @@ class DamageCalculator {
         }
     }
 
-    __multiplyDamageReductionRatio(sourceRatio, ratio, enemyUnit) {
-        let modifiedRatio = this.__calcDamageReductionRatio(ratio, enemyUnit);
-        return 1 - (1 - sourceRatio) * (1 - modifiedRatio);
-    }
-
     __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
         switch (unit.weapon) {
             case Weapon.SeaSearLance:
             case Weapon.LoyalistAxe:
                 if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) &&
                     enemyUnit.battleContext.canFollowupAttack) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack =
-                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.75, enemyUnit);
+                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
                 }
                 break;
             case Weapon.Hrist:
                 if (unit.snapshot.restHpPercentage <= 99) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack =
-                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.3, enemyUnit);
+                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                 }
                 break;
             case Weapon.CourtlyMaskPlus:
             case Weapon.CourtlyBowPlus:
             case Weapon.CourtlyCandlePlus:
                 if (unit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack =
-                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.5, enemyUnit);
+                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
                 }
                 break;
             case Weapon.SummerStrikers:
                 if (unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
-                    unit.battleContext.damageReductionRatioOfFirstAttack =
-                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.75, enemyUnit);
+                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
                 }
                 break;
             case Weapon.Urvan:
                 {
-                    unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
-                        this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
+                    unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
                     if (unit.isWeaponSpecialRefined) {
-                        unit.battleContext.damageReductionRatioOfFirstAttack =
-                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFirstAttack, 0.4, enemyUnit);
+                        unit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
                     }
                 }
                 break;
@@ -258,38 +247,30 @@ class DamageCalculator {
             switch (skillId) {
                 case PassiveB.BlackEagleRule:
                     if (!unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
-                        unit.battleContext.damageReductionRatioOfFollowupAttack =
-                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfFollowupAttack, 0.8, enemyUnit);
+                        unit.battleContext.multDamageReductionRatioOfFirstAttack(0.8, enemyUnit);
                     }
                     break;
                 case PassiveB.SeikishiNoKago:
                     if (isRangedWeaponType(enemyUnit.weaponType)) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
-                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
+                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
                     }
                     break;
                 case PassiveS.RengekiBogyoKenYariOno3:
-                    if (enemyUnit.weaponType == WeaponType.Sword
-                        || enemyUnit.weaponType == WeaponType.Lance
-                        || enemyUnit.weaponType == WeaponType.Axe
-                    ) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
-                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
+                    if (enemyUnit.weaponType == WeaponType.Sword ||
+                        enemyUnit.weaponType == WeaponType.Lance ||
+                        enemyUnit.weaponType == WeaponType.Axe ) {
+                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
                     }
                     break;
                 case PassiveS.RengekiBogyoYumiAnki3:
-                    if (isWeaponTypeBow(enemyUnit.weaponType)
-                        || isWeaponTypeDagger(enemyUnit.weaponType)
-                    ) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
-                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
+                    if (isWeaponTypeBow(enemyUnit.weaponType) ||
+                        isWeaponTypeDagger(enemyUnit.weaponType)) {
+                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
                     }
                     break;
                 case PassiveS.RengekiBogyoMado3:
-                    if (isWeaponTypeTome(enemyUnit.weaponType)
-                    ) {
-                        unit.battleContext.damageReductionRatioOfConsecutiveAttacks =
-                            this.__multiplyDamageReductionRatio(unit.battleContext.damageReductionRatioOfConsecutiveAttacks, 0.8, enemyUnit);
+                    if (isWeaponTypeTome(enemyUnit.weaponType)) {
+                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
                     }
                     break;
             }
@@ -1606,10 +1587,6 @@ class DamageCalculator {
         return 0;
     }
 
-    __calcDamageReductionRatio(damageReductionRatio, atkUnit) {
-        return damageReductionRatio - Math.trunc(damageReductionRatio * 100 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial) * 0.01;
-    }
-
     __calcAttackTotalDamage(
         context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
         invalidatesDamageReductionExceptSpecialOnSpecialActivation
@@ -1637,23 +1614,20 @@ class DamageCalculator {
 
             // 奥義以外のダメージ軽減
             {
-
                 // 計算機の外側で設定されたダメージ軽減率
-                {
-                    damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(defUnit.battleContext.damageReductionRatio, atkUnit);
-                }
+                damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatio;
 
                 for (let skillId of defUnit.enumerateSkills()) {
                     let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
                     if (ratio > 0) {
-                        damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(ratio, atkUnit);
+                        damageReductionRatio *= 1.0 - BattleContext.calcDamageReductionRatio(ratio, atkUnit);
                     }
                 }
 
                 if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
                     let ratio = this.__getDodgeDamageReductionRatio(atkUnit, defUnit);
                     if (ratio > 0) {
-                        damageReductionRatio *= 1.0 - this.__calcDamageReductionRatio(ratio, atkUnit);
+                        damageReductionRatio *= 1.0 - BattleContext.calcDamageReductionRatio(ratio, atkUnit);
                     }
                 }
 
