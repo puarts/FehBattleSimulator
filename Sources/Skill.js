@@ -1712,6 +1712,7 @@ const PassiveB = {
     AisyoSosatsu3: 626, // 相性相殺
     Sashitigae3: 598, // 差し違え3
     ShingunSoshi3: 593, // 進軍阻止3
+    DetailedReport: 1804, // 異常なしであります
     Surinuke3: 592, // すり抜け3
     Tenmakoku3: 1139, // 天馬行空3
     WyvernFlight3: 1529, // 飛竜行空3

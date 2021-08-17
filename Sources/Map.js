@@ -2618,6 +2618,19 @@ class Map {
         }
     }
 
+    *enumerateTilesWithinSpecifiedDistance(targetTile, targetDistance) {
+        for (var y = 0; y < this._height; ++y) {
+            for (var x = 0; x < this._width; ++x) {
+                var index = y * this._width + x;
+                var tile = this._tiles[index];
+                var distance = tile.calculateDistance(targetTile);
+                if (distance <= targetDistance) {
+                    yield tile;
+                }
+            }
+        }
+    }
+
     *enumerateAttackableTiles(attackerUnit, targetUnitTile) {
         for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(targetUnitTile, attackerUnit.attackRange)) {
             if (tile.isMovableTileForUnit(attackerUnit)) {
@@ -3258,6 +3271,16 @@ class Map {
         }
     }
 
+    __canWarp(targetTile, warpUnit) {
+        for (let tile of this.enumerateTilesWithinSpecifiedDistance(targetTile, 4)) {
+            if (tile.isEnemyUnitAvailable(warpUnit)
+                && tile.placedUnit.passiveB == PassiveB.DetailedReport) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     *__enumerateAllMovableTilesImpl(
         unit,
         moveCount,
@@ -3276,6 +3299,10 @@ class Map {
 
         if (!ignoresTeleportTile) {
             for (let tile of this.__enumerateTeleportTiles(unit)) {
+                if (!this.__canWarp(tile, unit)) {
+                    continue;
+                }
+
                 if (unit.isCantoActivated()) {
                     if (tile.calculateDistanceToUnit(unit) <= unit.moveCountForCanto) {
                         yield tile;

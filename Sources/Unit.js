@@ -2669,9 +2669,22 @@ class Unit {
         return dist;
     }
 
+    /// すり抜けを発動可能ならtrue、そうでなければfalseを返します。
     canActivatePass() {
         return (this.passiveB == PassiveB.Surinuke3 && this.hpPercentage >= 25)
             || (this.weapon == Weapon.FujinYumi && !this.isWeaponRefined && this.hpPercentage >= 50);
+    }
+
+    /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
+    canActivateObstractToTilesIn2Spaces(moveUnit) {
+        return (this.passiveB == PassiveB.DetailedReport && moveUnit.attackRange == 2);
+    }
+
+    /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
+    canActivateObstractToAdjacentTiles(moveUnit) {
+        return (this.passiveB == PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
+            || (this.passiveB == PassiveB.DetailedReport)
+            || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.attackRange == 2);
     }
 
     get isOnMap() {

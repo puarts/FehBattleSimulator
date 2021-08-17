@@ -613,6 +613,10 @@ class Tile {
         }
     }
 
+    isEnemyUnitAvailable(moveUnit) {
+        return this.placedUnit != null
+            && this._placedUnit.groupId != moveUnit.groupId;
+    }
 
     getMoveWeight(unit, ignoresUnits, ignoresBreakableWalls = false, isUnitIgnoredFunc = null, isPathfinderEnabled = true) {
         if (this._placedUnit != null && isUnitIgnoredFunc != null && !isUnitIgnoredFunc(this._placedUnit)) {
@@ -626,16 +630,22 @@ class Tile {
                     // 敵ユニットだったらオブジェクトと同じ扱い
                     return CanNotReachTile;
                 }
+
                 // 隣接マスに進軍阻止持ちがいるか確認
-                for (let tile of this.neighbors) {
-                    if (tile.placedUnit != null
-                        && tile._placedUnit.groupId != unit.groupId
-                        && (
-                            (tile.placedUnit.passiveB == PassiveB.ShingunSoshi3 && tile.placedUnit.hpPercentage >= 50)
-                            || (tile.placedUnit.passiveS == PassiveS.GoeiNoGuzo && unit.attackRange == 2)
-                        )
+                for (let tile1Space of this.neighbors) {
+                    if (tile1Space.isEnemyUnitAvailable(unit)
+                        && tile1Space.placedUnit.canActivateObstractToAdjacentTiles(unit)
                     ) {
                         return ObstructTile;
+                    }
+
+                    // 2マス以内に進軍阻止持ちがいるか確認
+                    for (let tile2Spaces of tile1Space.neighbors) {
+                        if (tile2Spaces.isEnemyUnitAvailable(unit)
+                            && tile2Spaces.placedUnit.canActivateObstractToTilesIn2Spaces(unit)
+                        ) {
+                            return ObstructTile;
+                        }
                     }
                 }
             }
