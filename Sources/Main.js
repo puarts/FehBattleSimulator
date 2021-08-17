@@ -6482,6 +6482,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BindingReginleif:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        // @TODO: ダメージ軽減処理のコミットを取り込んだ際に必ず引数を追加する
+                        // targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
                 case Weapon.PhantasmTome:
                     if (enemyUnit.snapshot.restHpPercentage >= 50) {
                         enemyUnit.spdSput -= 6;
