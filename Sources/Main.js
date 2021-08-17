@@ -3031,6 +3031,31 @@ class AetherRaidTacticsBoard {
             && atkUnit.isActionDone
         ) {
             switch (atkUnit.special) {
+                case Special.RequiemDance:
+                    let highestHpUnits = [];
+                    let highestHp = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
+                        if (unit.isActionDone) {
+                            if (unit.hp > highestHp) {
+                                highestHpUnits = [unit];
+                                highestHp = unit.hp;
+                            } else if (unit.hp === highestHp) {
+                                highestHpUnits.push(unit);
+                            }
+                        }
+                    }
+
+                    if (highestHpUnits.length === 1) {
+                        for (let unit of highestHpUnits) {
+                            this.writeLogLine(`${atkUnit.getNameWithGroup()}が${atkUnit.specialInfo.name}を発動、対象は${unit.getNameWithGroup()}`);
+                            atkUnit.isOneTimeActionActivatedForSpecial = true;
+                            atkUnit.specialCount = atkUnit.maxSpecialCount;
+                            unit.isActionDone = false;
+                            // @TODO: 将来飛空城でダブルが使用できるようになった場合はダブル相手にもグラビティ付与
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                    break;
                 case Special.NjorunsZeal:
                     this.__activateRefreshSpecial(atkUnit);
                     atkUnit.addStatusEffect(StatusEffectType.Gravity);

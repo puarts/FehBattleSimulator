@@ -1256,6 +1256,8 @@ const Special = {
     HolyKnightAura: 1702, // グランベルの聖騎士
 
     SublimeHeaven: 1752, // 覇天
+
+    RequiemDance: 1800, // 鎮魂の舞
 };
 
 const PassiveA = {
