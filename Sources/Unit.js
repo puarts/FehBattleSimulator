@@ -682,24 +682,28 @@ class HeroInfo {
 
     get maxDragonflower() {
         let releaseDate = this.releaseDateAsNumber;
-        if (releaseDate > 20200817) {
+        if (releaseDate > 20210816) {
             return 5;
+        }
+
+        if (releaseDate > 20200817) {
+            return 10;
         }
 
         switch (this._moveType) {
             case MoveType.Infantry:
                 if (releaseDate < 20190101) {
                     // リリース日で二分探索したところ、獣登場の2019年が境界だった
-                    return 15;
+                    return 20;
                 }
                 else {
-                    return 10;
+                    return 15;
                 }
             case MoveType.Flying:
             case MoveType.Armor:
             case MoveType.Cavalry:
             default:
-                return 10;
+                return 15;
         }
     }
 
