@@ -6492,9 +6492,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.BindingReginleif:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
-                        // @TODO: ダメージ軽減処理のコミットを取り込んだ際に必ず引数を追加する
-                        // targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                         if (targetUnit.battleContext.initiatesCombat) {
                             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                         }
@@ -6507,9 +6505,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.invalidatesSpdBuff = true;
                         targetUnit.battleContext.invalidatesResBuff = true;
                         if (targetUnit.battleContext.initiatesCombat) {
-                            // @TODO: ダメージ軽減処理のコミットを取り込んだ際に必ず引数を追加する
-                            // targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
-                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7);
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
                         }
                     }
                     break;
