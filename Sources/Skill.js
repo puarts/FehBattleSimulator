@@ -1504,6 +1504,9 @@ const PassiveA = {
     AtkDefIdeal4: 1705,
     AtkResIdeal4: 1723,
     DefResIdeal4: 1791, // 守備魔防の万全4
+
+    // 迫撃
+    SurgeSparrow: 1797, // 鬼神飛燕の迫撃
 };
 
 const PassiveB = {

@@ -1790,6 +1790,15 @@ class DamageCalculator {
                             }
                     }
 
+                    switch (atkUnit.passiveA) {
+                        case PassiveA.SurgeSparrow:
+                            if (atkUnit.battleContext.initiatesCombat) {
+                                let healRatio = 0.1 + (atkUnit.maxSpecialCount * 0.2);
+                                healedHp = Math.trunc(atkUnit.maxHpWithSkills * healRatio);
+                            }
+                            break;
+                    }
+
                     if (atkUnit.passiveB == PassiveB.TaiyoNoUdewa) {
                         healedHp += Math.trunc(actualDamage * 0.3);
                     }

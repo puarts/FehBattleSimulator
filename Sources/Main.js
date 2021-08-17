@@ -6482,6 +6482,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.SurgeSparrow:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
+                    }
+                    break;
                 case Weapon.BindingReginleif:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
