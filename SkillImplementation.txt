@@ -74,7 +74,7 @@ __applyBonusDoubler(targetUnit, enemyUnit) {}
 
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
-targetUnit.battleContext.invalidateAtkBuff = true;
+targetUnit.battleContext.invalidatesAtkBuff = true;
 
 自身の弱化を無効(弱化無効)
 targetUnit.battleContext.invalidateAllOwnDebuffs();
@@ -88,6 +88,11 @@ targetUnit.battleContext.healedHpByAttack = N
 
 敵の奥義カウント変動量-1
 targetUnit.battleContext.reducesCooldownCount = true;
+
+自身の奥義発動カウント変動量-を無効
+__applyInvalidationSkillEffect() {
+    defUnit.battleContext.reducesCooldownCount = false;
+}
 
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCount() {

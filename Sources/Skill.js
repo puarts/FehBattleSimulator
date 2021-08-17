@@ -1076,7 +1076,8 @@ const Weapon = {
     ChargingHorn: 1802, // 突撃の角笛
 
     // 女性
-
+    PhantasmTome: 1799, // 幻影の書
+    BindingReginleif: 1796, // 絆槍レギンレイヴ
 };
 
 const Support = {
@@ -1256,6 +1257,8 @@ const Special = {
     HolyKnightAura: 1702, // グランベルの聖騎士
 
     SublimeHeaven: 1752, // 覇天
+
+    RequiemDance: 1800, // 鎮魂の舞
 };
 
 const PassiveA = {
@@ -1487,6 +1490,7 @@ const PassiveA = {
     SpdResKojosen3: 925,
 
     // 連帯
+    AtkSpdUnity: 1801, // 攻撃速さの連帯
     AtkDefUnity: 1450, // 攻撃守備の連帯
     AtkResUnity: 1575, // 攻撃魔防の連帯
 
@@ -1500,6 +1504,9 @@ const PassiveA = {
     AtkDefIdeal4: 1705,
     AtkResIdeal4: 1723,
     DefResIdeal4: 1791, // 守備魔防の万全4
+
+    // 迫撃
+    SurgeSparrow: 1797, // 鬼神飛燕の迫撃
 };
 
 const PassiveB = {
@@ -1742,6 +1749,7 @@ const PassiveB = {
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
+    MoonlightBangle: 1798, // 華月の腕輪
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3

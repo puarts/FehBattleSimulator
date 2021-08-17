@@ -527,14 +527,19 @@ class DamageCalculator {
 
     __calcFixedSpecialAddDamage(atkUnit, defUnit, isPrecombat) {
         let fixedSpecialAddDamage = 0;
-        if (atkUnit.passiveB == PassiveB.RunaBracelet) {
-            fixedSpecialAddDamage += Math.trunc(defUnit.getDefInCombat(atkUnit) * 0.5);
-        }
 
         fixedSpecialAddDamage += atkUnit.battleContext.additionalDamageOfSpecial;
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.MoonlightBangle: {
+                    let ratio = 0.2 + atkUnit.maxSpecialCount * 0.1;
+                    fixedSpecialAddDamage += Math.trunc(defUnit.getDefInCombat(atkUnit) * ratio);
+                }
+                    break;
+                case PassiveB.RunaBracelet:
+                    fixedSpecialAddDamage += Math.trunc(defUnit.getDefInCombat(atkUnit) * 0.5);
+                    break;
                 case Weapon.MakenMistoruthin:
                     if (defUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage >= 75) {
                         fixedSpecialAddDamage += 7;
@@ -1762,6 +1767,15 @@ class DamageCalculator {
                             if (atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
                                 healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.3);
                             }
+                    }
+
+                    switch (atkUnit.passiveA) {
+                        case PassiveA.SurgeSparrow:
+                            if (atkUnit.battleContext.initiatesCombat) {
+                                let healRatio = 0.1 + (atkUnit.maxSpecialCount * 0.2);
+                                healedHp = Math.trunc(atkUnit.maxHpWithSkills * healRatio);
+                            }
+                            break;
                     }
 
                     if (atkUnit.passiveB == PassiveB.TaiyoNoUdewa) {

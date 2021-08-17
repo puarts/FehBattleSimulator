@@ -3031,6 +3031,31 @@ class AetherRaidTacticsBoard {
             && atkUnit.isActionDone
         ) {
             switch (atkUnit.special) {
+                case Special.RequiemDance:
+                    let highestHpUnits = [];
+                    let highestHp = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
+                        if (unit.isActionDone) {
+                            if (unit.hp > highestHp) {
+                                highestHpUnits = [unit];
+                                highestHp = unit.hp;
+                            } else if (unit.hp === highestHp) {
+                                highestHpUnits.push(unit);
+                            }
+                        }
+                    }
+
+                    if (highestHpUnits.length === 1) {
+                        for (let unit of highestHpUnits) {
+                            this.writeLogLine(`${atkUnit.getNameWithGroup()}が${atkUnit.specialInfo.name}を発動、対象は${unit.getNameWithGroup()}`);
+                            atkUnit.isOneTimeActionActivatedForSpecial = true;
+                            atkUnit.specialCount = atkUnit.maxSpecialCount;
+                            unit.isActionDone = false;
+                            // @TODO: 将来飛空城でダブルが使用できるようになった場合はダブル相手にもグラビティ付与
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                    break;
                 case Special.NjorunsZeal:
                     this.__activateRefreshSpecial(atkUnit);
                     atkUnit.addStatusEffect(StatusEffectType.Gravity);
@@ -3766,10 +3791,11 @@ class AetherRaidTacticsBoard {
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.MoonlightBangle:
+                    defUnit.battleContext.reducesCooldownCount = false;
+                    break;
                 case Weapon.HolyYewfelle:
                     if (atkUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage >= 75) {
-                        defUnit.battleContext.increaseCooldownCountForAttack = false;
-                        defUnit.battleContext.increaseCooldownCountForDefense = false;
                         defUnit.battleContext.reducesCooldownCount = false;
                     }
                     break;
@@ -4892,6 +4918,13 @@ class AetherRaidTacticsBoard {
                             targetUnit.getDefBuffInCombat(enemyUnit) +
                             targetUnit.getResBuffInCombat(enemyUnit)
                         ) * 1.5);
+                    }
+                    break;
+                case PassiveA.AtkSpdUnity:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.applyAtkUnity();
+                        targetUnit.applySpdUnity();
                     }
                     break;
                 case PassiveA.AtkDefUnity:
@@ -6450,6 +6483,36 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.SurgeSparrow:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
+                    }
+                    break;
+                case Weapon.BindingReginleif:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        // @TODO: ダメージ軽減処理のコミットを取り込んだ際に必ず引数を追加する
+                        // targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3);
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
+                case Weapon.PhantasmTome:
+                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                        enemyUnit.spdSput -= 6;
+                        enemyUnit.resSput -= 6;
+                        targetUnit.battleContext.invalidatesSpdBuff = true;
+                        targetUnit.battleContext.invalidatesResBuff = true;
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            // @TODO: ダメージ軽減処理のコミットを取り込んだ際に必ず引数を追加する
+                            // targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7);
+                        }
+                    }
+                    break;
                 case Weapon.Niu:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 25) {
@@ -6472,8 +6535,8 @@ class AetherRaidTacticsBoard {
                         enemyUnit.atkSpur -= 4;
                         enemyUnit.spdSpur -= 4;
                         enemyUnit.defSpur -= 4;
-                        targetUnit.battleContext.invalidateAtkBuff = true;
-                        targetUnit.battleContext.invalidateDefBuff = true;
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                        targetUnit.battleContext.invalidatesDefBuff = true;
                     }
                     break;
                 case Weapon.GenesisFalchion:
@@ -15151,6 +15214,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
@@ -15172,6 +15236,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
