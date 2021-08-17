@@ -3796,8 +3796,6 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.HolyYewfelle:
                     if (atkUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage >= 75) {
-                        defUnit.battleContext.increaseCooldownCountForAttack = false;
-                        defUnit.battleContext.increaseCooldownCountForDefense = false;
                         defUnit.battleContext.reducesCooldownCount = false;
                     }
                     break;
