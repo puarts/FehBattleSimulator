@@ -3791,6 +3791,9 @@ class AetherRaidTacticsBoard {
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.MoonlightBangle:
+                    defUnit.battleContext.reducesCooldownCount = false;
+                    break;
                 case Weapon.HolyYewfelle:
                     if (atkUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage >= 75) {
                         defUnit.battleContext.increaseCooldownCountForAttack = false;
@@ -15215,6 +15218,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
@@ -15236,6 +15240,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:

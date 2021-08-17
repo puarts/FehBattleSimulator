@@ -1749,6 +1749,7 @@ const PassiveB = {
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
+    MoonlightBangle: 1798, // 華月の腕輪
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
