@@ -4919,6 +4919,13 @@ class AetherRaidTacticsBoard {
                         ) * 1.5);
                     }
                     break;
+                case PassiveA.AtkSpdUnity:
+                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        targetUnit.applyAtkUnity();
+                        targetUnit.applySpdUnity();
+                    }
+                    break;
                 case PassiveA.AtkDefUnity:
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {

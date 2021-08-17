@@ -1489,6 +1489,7 @@ const PassiveA = {
     SpdResKojosen3: 925,
 
     // 連帯
+    AtkSpdUnity: 1801, // 攻撃速さの連帯
     AtkDefUnity: 1450, // 攻撃守備の連帯
     AtkResUnity: 1575, // 攻撃魔防の連帯
 
