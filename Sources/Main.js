@@ -6485,8 +6485,8 @@ class AetherRaidTacticsBoard {
                         enemyUnit.atkSpur -= 4;
                         enemyUnit.spdSpur -= 4;
                         enemyUnit.defSpur -= 4;
-                        targetUnit.battleContext.invalidateAtkBuff = true;
-                        targetUnit.battleContext.invalidateDefBuff = true;
+                        targetUnit.battleContext.invalidatesAtkBuff = true;
+                        targetUnit.battleContext.invalidatesDefBuff = true;
                     }
                     break;
                 case Weapon.GenesisFalchion:
