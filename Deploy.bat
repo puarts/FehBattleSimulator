@@ -16,7 +16,8 @@ for %%n in (%filenames%) do (
 echo commpressing %output_js%
 call %JSMIN% %output_js%
 
-for %%n in (%filenames%) do (
+set copyfiles=%filenames%,StatusCalcMain
+for %%n in (%copyfiles%) do (
     copy %~dp0Sources\%%n.js %destination%\%%n.js
 )
 
