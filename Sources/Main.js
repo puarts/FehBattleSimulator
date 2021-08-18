@@ -6567,7 +6567,7 @@ class AetherRaidTacticsBoard {
                             enemyUnit.resSpur -= debuffAmount;
                         }
                         if (count >= 3) {
-                            --enemyUnit.battleContext.followupAttackPriority;
+                            --enemyUnit.battleContext.followupAttackPriorityDecrement;
                         }
                     }
                     break;
