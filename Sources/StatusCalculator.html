@@ -73,11 +73,20 @@
             <tr>
                 <td>
                     <p>
-                        {{value.name}}
-                        <label for="merge">☆5 LV.40+</label>
+                        <img v-bind:src="value.icon" width="50" height="50" />{{value.name}} ☆5<br />
+                        <label for="merge"> LV.40+</label>
                         <input name="merge" type="number" v-model="value.merge" min="0" max="10" @input="updateStatus()"
                             style="width:50px" />
-                        <label for="dragonflower">神竜の花+</label>
+                        <label for="dragonflower">
+                            <img v-if="value.moveType == MoveType.Infantry"
+                                src="/blog/images/feh/Dragonflower_Infantry.png" width="30" height="30" />
+                            <img v-else-if="value.moveType == MoveType.Flying"
+                                src="/blog/images/feh/Dragonflower_Flying.png" width="30" height="30" />
+                            <img v-else-if="value.moveType == MoveType.Cavalry"
+                                src="/blog/images/feh/Dragonflower_Cavalry.png" width="30" height="30" />
+                            <img v-else-if="value.moveType == MoveType.Armor"
+                                src="/blog/images/feh/Dragonflower_Armored.png" width="30" height="30" />
+                            +</label>
                         <input name="dragonflower" type="number" v-model="value.dragonflower" min="0"
                             @input="updateStatus()" style="width:50px" v-bind:max="value.maxDragonflower" />
                     </p>
@@ -94,6 +103,7 @@
                                 {{ option.text }}
                             </option>
                         </select>
+                        <br />
                         <span v-if="value.groupId == UnitGroupType.Ally">
                             <label class="normal">召喚士との絆: </label>
                             <select v-model="value.summonerLevel" @change="updateStatus()">

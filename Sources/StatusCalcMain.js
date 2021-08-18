@@ -56,6 +56,8 @@ function updateStatus() {
     unit.__updateStatusByBlessing(unit.blessing2);
     unit.__updateStatusByBlessing(unit.blessing3);
     unit.__updateStatusByBlessing(unit.blessing4);
+    unit.__updateStatusByBlessing(unit.blessing5);
+    unit.__updateStatusByBlessing(unit.blessing6);
 }
 
 
