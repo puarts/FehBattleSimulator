@@ -247,7 +247,7 @@ class DamageCalculator {
             switch (skillId) {
                 case PassiveB.BlackEagleRule:
                     if (!unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
-                        unit.battleContext.multDamageReductionRatioOfFirstAttack(0.8, enemyUnit);
+                        unit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
                     }
                     break;
                 case PassiveB.SeikishiNoKago:

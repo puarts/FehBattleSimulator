@@ -1111,6 +1111,11 @@ class BattleContext {
     multDamageReductionRatioOfConsecutiveAttacks(ratio, atkUnit) {
         this.damageReductionRatioOfConsecutiveAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfConsecutiveAttacks, ratio, atkUnit);
     }
+
+    // 追撃のダメージ軽減積
+    multDamageReductionRatioOfFollowupAttack(ratio, atkUnit) {
+        this.damageReductionRatioOfFollowupAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFollowupAttack, ratio, atkUnit);
+    }
 }
 
 /// 攻撃可能なユニット情報です。
