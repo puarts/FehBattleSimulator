@@ -943,7 +943,6 @@ class BattleContext {
         this.isThereAnyPartnerPairsIn3Spaces = false;
 
         // 追撃優先度
-        this.followupAttackPriority = 0;
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
 
@@ -1052,7 +1051,8 @@ class BattleContext {
         this.initiatesCombat = false;
         this.isThereAnyUnitIn2Spaces = false;
         this.isThereAnyPartnerPairsIn3Spaces = false;
-        this.followupAttackPriority = 0;
+        this.followupAttackPriorityIncrement = 0;
+        this.followupAttackPriorityDecrement = 0;
         this.damageReductionRatio = 0;
 
         this.isSaviorActivated = false;

@@ -4221,7 +4221,7 @@ class AetherRaidTacticsBoard {
     }
 
     __getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
-        let followupAttackPriority = atkUnit.battleContext.followupAttackPriority;
+        let followupAttackPriority = 0;
         if (!this.__canInvalidateAbsoluteFollowupAttack(defUnit, atkUnit)) {
             followupAttackPriority += atkUnit.battleContext.followupAttackPriorityIncrement;
 
@@ -4994,12 +4994,10 @@ class AetherRaidTacticsBoard {
                         let debuffTotal = targetUnit.debuffTotal;
                         let buffDebuffTotal = buff - debuffTotal;
                         if (buffDebuffTotal >= 5) {
-                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-                                --enemyUnit.battleContext.followupAttackPriority;
-                            }
+                            --enemyUnit.battleContext.followupAttackPriorityDecrement;
 
                             if (buffDebuffTotal >= 10) {
-                                ++targetUnit.battleContext.followupAttackPriority;
+                                ++targetUnit.battleContext.followupAttackPriorityIncrement;
 
                                 if (buffDebuffTotal >= 15) {
                                     targetUnit.battleContext.reducesCooldownCount = true;
@@ -6229,9 +6227,7 @@ class AetherRaidTacticsBoard {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.spdSpur += 5;
                                 targetUnit.defSpur += 5;
-                                if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-                                    --enemyUnit.battleContext.followupAttackPriority;
-                                }
+                                --enemyUnit.battleContext.followupAttackPriorityDecrement;
                             }
                         }
                     }
@@ -6680,9 +6676,7 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
                         targetUnit.atkSpur += 6;
                         enemyUnit.atkSpur -= 6;
-                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                            targetUnit.battleContext.followupAttackPriority++;
-                        }
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                     }
                     break;
                 case Weapon.BrightmareHorn:
@@ -6857,9 +6851,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.HolyGradivus:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
-                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                            targetUnit.battleContext.followupAttackPriority++;
-                        }
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                     }
                     break;
                 case Weapon.Ladyblade:
@@ -6917,9 +6909,7 @@ class AetherRaidTacticsBoard {
                         if (enemyUnit.snapshot.restHpPercentage >= 75) {
                             enemyUnit.atkSpur -= 4;
                             enemyUnit.defSpur -= 4;
-                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-                                --enemyUnit.battleContext.followupAttackPriority;
-                            }
+                            --enemyUnit.battleContext.followupAttackPriorityDecrement;
                         }
                     }
                     break;
@@ -7002,18 +6992,14 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         enemyUnit.atkSpur -= 6;
                         enemyUnit.defSpur -= 6;
-                        targetUnit.battleContext.followupAttackPriority--;
-                        if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-                            enemyUnit.battleContext.followupAttackPriority--;
-                        }
+                        targetUnit.battleContext.followupAttackPriorityDecrement--;
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
                     }
                     break;
                 case Weapon.HallowedTyrfing:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.addAllSpur(5);
-                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                            targetUnit.battleContext.followupAttackPriority++;
-                        }
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                         if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
                         }
@@ -7213,10 +7199,7 @@ class AetherRaidTacticsBoard {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3,
                             x => x.moveType == MoveType.Cavalry || x.moveType == MoveType.Flying)
                         ) {
-                            if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                                targetUnit.battleContext.followupAttackPriority++;
-                            }
-
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
                             targetUnit.battleContext.healedHpByAttack = 5;
                         }
                     }
@@ -7273,9 +7256,7 @@ class AetherRaidTacticsBoard {
                         targetUnit.atkSpur += 5;
                         enemyUnit.atkSpur -= 5;
                         if (targetUnit.battleContext.initiatesCombat) {
-                            if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-                                --enemyUnit.battleContext.followupAttackPriority;
-                            }
+                            --enemyUnit.battleContext.followupAttackPriorityDecrement;
                         }
                     }
                     break;
@@ -7293,9 +7274,7 @@ class AetherRaidTacticsBoard {
                     if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
                         targetUnit.addAllSpur(6);
-                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                            targetUnit.battleContext.followupAttackPriority++;
-                        }
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                     }
                     break;
                 case Weapon.UnityBloomsPlus:
@@ -7337,16 +7316,12 @@ class AetherRaidTacticsBoard {
                 case Weapon.AuroraBreath:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.atkSpur += 6;
-                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                            ++targetUnit.battleContext.followupAttackPriority;
-                        }
+                        ++targetUnit.battleContext.followupAttackPriorityIncrement;
                     }
                     else {
                         targetUnit.defSpur += 6;
                         targetUnit.resSpur += 6;
-                        if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-                            --enemyUnit.battleContext.followupAttackPriority;
-                        }
+                        --enemyUnit.battleContext.followupAttackPriorityDecrement;
                     }
                     break;
                 case Weapon.IndignantBow:
@@ -7468,9 +7443,7 @@ class AetherRaidTacticsBoard {
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 6;
                         enemyUnit.defSpur -= 6;
-                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                            targetUnit.battleContext.followupAttackPriority++;
-                        }
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                     }
                     break;
                 case Weapon.TomeOfStorms:
@@ -7502,9 +7475,7 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
                         targetUnit.addAllSpur(5);
                         if (enemyUnit.snapshot.restHpPercentage === 100) {
-                            if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                                targetUnit.battleContext.followupAttackPriority++;
-                            }
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
                         }
                     }
                     break;
@@ -7645,9 +7616,7 @@ class AetherRaidTacticsBoard {
                         && targetUnit.snapshot.restHpPercentage >= 25
                     ) {
                         targetUnit.battleContext.reducesCooldownCount = true;
-                        if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                            ++targetUnit.battleContext.followupAttackPriority;
-                        }
+                        ++targetUnit.battleContext.followupAttackPriorityIncrement;
                     }
                     break;
                 case Weapon.Garumu:
@@ -7969,9 +7938,7 @@ class AetherRaidTacticsBoard {
                             if (enemyUnit.snapshot.restHpPercentage >= 50) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.defSpur += 5;
-                                if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                                    targetUnit.battleContext.followupAttackPriority++;
-                                }
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
                             }
                         }
                     }
@@ -8026,9 +7993,7 @@ class AetherRaidTacticsBoard {
                             if (targetUnit.snapshot.restHpPercentage >= 50) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.resSpur += 5;
-                                if (!this.__canInvalidateAbsoluteFollowupAttack(enemyUnit, targetUnit)) {
-                                    targetUnit.battleContext.followupAttackPriority++;
-                                }
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
                             }
                         }
                     }
