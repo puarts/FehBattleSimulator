@@ -1933,6 +1933,7 @@ class DamageCalculator {
         if (activatesDefenderSpecial) {
             switch (defUnit.special) {
                 case Special.IceMirror2:
+                    if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
                 case Special.NegatingFang:
                     defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
                     break;
@@ -1944,6 +1945,7 @@ class DamageCalculator {
             switch (skillId) {
                 case Special.KoriNoSeikyo:
                     if (activatesDefenderSpecial) {
+                        if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
                         defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
                         defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                     }
