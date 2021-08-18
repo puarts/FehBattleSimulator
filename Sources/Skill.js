@@ -1078,6 +1078,9 @@ const Weapon = {
     // 女性
     PhantasmTome: 1799, // 幻影の書
     BindingReginleif: 1796, // 絆槍レギンレイヴ
+
+    // 大英雄線 ペレアス
+    RauarLionPlus: 1806, // ラウアライオン+
 };
 
 const Support = {
