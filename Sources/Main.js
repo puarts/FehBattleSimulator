@@ -6479,6 +6479,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RauarLionPlus:
+                    if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                    break;
                 case PassiveA.SurgeSparrow:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.atkSpur += 7;
@@ -11424,6 +11430,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.RauarLionPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
+                    unit.applyAtkBuff(6);
+                }
+                break;
             case Weapon.PunishmentStaff:
                 if (!skillOwner.isWeaponSpecialRefined) break;
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
