@@ -1385,24 +1385,7 @@ class DamageCalculator {
                         actualDamage = defUnit.restHp;
                     }
 
-                    let healedHp = 0;
-                    switch (atkUnit.special) {
-                        case Special.Aether:
-                        case Special.AoNoTenku:
-                        case Special.RadiantAether2:
-                        case Special.MayhemAether:
-                        case Special.Taiyo:
-                            healedHp = Math.trunc(actualDamage * 0.5);
-                            break;
-                        case Special.Sirius:
-                        case Special.Youkage:
-                        case Special.Yuyo:
-                            healedHp = Math.trunc(actualDamage * 0.3);
-                            break;
-                        case Special.OpenTheFuture:
-                            healedHp = Math.trunc(actualDamage * 0.25);
-                            break;
-                    }
+                    let healedHp = Math.trunc(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
 
                     switch (atkUnit.weapon) {
                         case Weapon.KyoufuArmars:

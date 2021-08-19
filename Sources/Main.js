@@ -3597,6 +3597,13 @@ class AetherRaidTacticsBoard {
 
     __applySpecialSkillEffect(targetUnit, enemyUnit) {
         switch (targetUnit.special) {
+            case Special.Taiyo:
+                targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
+                break;
+            case Special.Youkage:
+            case Special.Yuyo:
+                targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
+                break;
             case Special.Kagetsuki:
             case Special.Moonbow:
                 // 月虹
@@ -3615,6 +3622,7 @@ class AetherRaidTacticsBoard {
             case Special.MayhemAether:
                 // 天空
                 targetUnit.battleContext.specialSufferPercentage = 50;
+                targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
                 break;
             case Special.LunaFlash: {
                 // 月光閃
@@ -3703,12 +3711,18 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Special.RighteousWind:
-            case Special.Sirius:
                 // 聖風
+                {
+                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
+                }
+                break;
+            case Special.Sirius:
                 // 天狼
                 {
                     let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
                     targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
+                    targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
                 }
                 break;
             case Special.TwinBlades: // 双刃
@@ -3747,6 +3761,7 @@ class AetherRaidTacticsBoard {
                 {
                     let totalDef = targetUnit.getDefInCombat(enemyUnit);
                     targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
+                    targetUnit.battleContext.specialDamageRatioToHeal = 0.25;
                 }
                 break;
             case Special.BlueFrame:
