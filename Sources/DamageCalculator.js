@@ -258,7 +258,7 @@ class DamageCalculator {
                 case PassiveS.RengekiBogyoKenYariOno3:
                     if (enemyUnit.weaponType == WeaponType.Sword ||
                         enemyUnit.weaponType == WeaponType.Lance ||
-                        enemyUnit.weaponType == WeaponType.Axe ) {
+                        enemyUnit.weaponType == WeaponType.Axe) {
                         unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
                     }
                     break;
@@ -308,35 +308,6 @@ class DamageCalculator {
                                 // 攻め立て強制
                                 this.writeDebugLog(`ウルヴァンにより${defUnit.getNameWithGroup()}は攻め立て強制`);
                                 atkUnit.battleContext.isDesperationActivated = true;
-                            }
-                        }
-                        break;
-                    case Weapon.Reipia:
-                    case PassiveB.Vantage3: // 待ち伏せ3
-                        {
-                            this.writeDebugLog("待ち伏せ評価: hpPercentage=" + defUnit.snapshot.restHpPercentage);
-                            if (defUnit.snapshot.restHpPercentage <= 75) {
-                                this.writeDebugLog("HP" + defUnit.snapshot.restHpPercentage + "%で待ち伏せ発動、" + defUnit.getNameWithGroup() + "は先制攻撃");
-                                defUnit.battleContext.isVantageActivated = true;
-                            }
-                        }
-                        break;
-                    case Weapon.AsameiNoTanken:
-                        if (!atkUnit.snapshot.isFullHp) {
-                            defUnit.battleContext.isVantageActivated = true;
-                        }
-                        break;
-                    case Weapon.FeatherSword:
-                        {
-                            if (defUnit.snapshot.restHpPercentage <= 75
-                                || atkUnit.weaponType == WeaponType.Sword
-                                || atkUnit.weaponType == WeaponType.Lance
-                                || atkUnit.weaponType == WeaponType.Axe
-                                || atkUnit.weaponType == WeaponType.ColorlessBow
-                                || atkUnit.moveType == MoveType.Armor
-                            ) {
-                                this.writeDebugLog("待ち伏せ発動、" + defUnit.getNameWithGroup() + "は先制攻撃");
-                                defUnit.battleContext.isVantageActivated = true;
                             }
                         }
                         break;
@@ -447,6 +418,13 @@ class DamageCalculator {
                         }
                         break;
                 }
+            }
+
+            if (atkUnit.battleContext.isDesperationActivated) {
+                this.writeDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動");
+            }
+            if (defUnit.battleContext.isVantageActivated) {
+                this.writeDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動");
             }
         }
         else {

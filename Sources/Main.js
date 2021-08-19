@@ -6537,8 +6537,34 @@ class AetherRaidTacticsBoard {
                         targetUnit.battleContext.invalidatesDefBuff = true;
                     }
                     break;
+                case Weapon.Reipia:
+                case PassiveB.Vantage3: // 待ち伏せ3
+                    if (!targetUnit.battleContext.initiatesCombat) {
+                        if (targetUnit.snapshot.restHpPercentage <= 75) {
+                            targetUnit.battleContext.isVantabeActivatable = true;
+                        }
+                    }
+                    break;
+                case Weapon.AsameiNoTanken:
+                    if (!targetUnit.battleContext.initiatesCombat && !enemyUnit.snapshot.isFullHp) {
+                        targetUnit.battleContext.isVantabeActivatable = true;
+                    }
+                    break;
+                case Weapon.FeatherSword:
+                    if (!targetUnit.battleContext.initiatesCombat) {
+                        if (targetUnit.snapshot.restHpPercentage <= 75
+                            || enemyUnit.weaponType == WeaponType.Sword
+                            || enemyUnit.weaponType == WeaponType.Lance
+                            || enemyUnit.weaponType == WeaponType.Axe
+                            || enemyUnit.weaponType == WeaponType.ColorlessBow
+                            || enemyUnit.moveType == MoveType.Armor
+                        ) {
+                            targetUnit.battleContext.isVantabeActivatable = true;
+                        }
+                    }
+                    break;
                 case Weapon.GenesisFalchion:
-                    if (targetUnit.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
                         targetUnit.addAllSpur(5);
                         let buffTotal = this.__getTotalBuffAmountOfTop3Units(targetUnit);
                         if (buffTotal >= 10) {
