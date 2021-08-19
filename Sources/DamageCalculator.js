@@ -105,8 +105,6 @@ class DamageCalculator {
         // 戦闘中ダメージ計算
         this.writeDebugLog("戦闘中ダメージ計算..");
 
-        this.__setSkillEffetToContext(atkUnit, defUnit);
-
         if (defUnit.battleContext.isVantageActivated) {
             // 反撃
             this.__counterattack(atkUnit, defUnit, result, context);
@@ -193,117 +191,6 @@ class DamageCalculator {
         }
 
         return result;
-    }
-
-    __setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit) {
-        if (atkUnit.hasPassiveSkill(PassiveB.Cancel3)) {
-            if (atkUnit.snapshot.restHpPercentage >= 80) {
-                defUnit.battleContext.cooldownCount = 1;
-            }
-        }
-    }
-
-    __setBothOfAtkDefSkillEffetToContext(unit, enemyUnit) {
-        switch (unit.weapon) {
-            case Weapon.SeaSearLance:
-            case Weapon.LoyalistAxe:
-                if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) &&
-                    enemyUnit.battleContext.canFollowupAttack) {
-                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
-                }
-                break;
-            case Weapon.Hrist:
-                if (unit.snapshot.restHpPercentage <= 99) {
-                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-                }
-                break;
-            case Weapon.CourtlyMaskPlus:
-            case Weapon.CourtlyBowPlus:
-            case Weapon.CourtlyCandlePlus:
-                if (unit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
-                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
-                }
-                break;
-            case Weapon.SummerStrikers:
-                if (unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
-                    unit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
-                }
-                break;
-            case Weapon.Urvan:
-                {
-                    unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    if (unit.isWeaponSpecialRefined) {
-                        unit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
-                    }
-                }
-                break;
-            case Weapon.SplashyBucketPlus:
-                {
-                    unit.battleContext.invalidatesReferenceLowerMit = true;
-                }
-                break;
-        }
-        for (let skillId of unit.enumeratePassiveSkills()) {
-            switch (skillId) {
-                case PassiveB.BlackEagleRule:
-                    if (!unit.battleContext.initiatesCombat && unit.snapshot.restHpPercentage >= 25) {
-                        unit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveB.SeikishiNoKago:
-                    if (isRangedWeaponType(enemyUnit.weaponType)) {
-                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveS.RengekiBogyoKenYariOno3:
-                    if (enemyUnit.weaponType == WeaponType.Sword ||
-                        enemyUnit.weaponType == WeaponType.Lance ||
-                        enemyUnit.weaponType == WeaponType.Axe) {
-                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveS.RengekiBogyoYumiAnki3:
-                    if (isWeaponTypeBow(enemyUnit.weaponType) ||
-                        isWeaponTypeDagger(enemyUnit.weaponType)) {
-                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveS.RengekiBogyoMado3:
-                    if (isWeaponTypeTome(enemyUnit.weaponType)) {
-                        unit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-            }
-        }
-    }
-
-    __setSkillEffetToContext(atkUnit, defUnit) {
-        this.__setBothOfAtkDefSkillEffetToContext(atkUnit, defUnit);
-        this.__setBothOfAtkDefSkillEffetToContext(defUnit, atkUnit);
-        this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit);
-        this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(defUnit, atkUnit);
-
-        if (!canDisableAttackOrderSwapSkill(atkUnit, atkUnit.snapshot.restHpPercentage)
-            && !canDisableAttackOrderSwapSkill(defUnit, defUnit.snapshot.restHpPercentage)
-        ) {
-            atkUnit.battleContext.isDesperationActivated = atkUnit.battleContext.isDesperationActivatable || atkUnit.hasStatusEffect(StatusEffectType.Desperation);
-            defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantabeActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
-            defUnit.battleContext.isDefDesperationActivated = defUnit.battleContext.isDefDesperationActivatable;
-
-            if (defUnit.battleContext.isDefDesperationActivated) {
-                this.writeDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
-            }
-            if (atkUnit.battleContext.isDesperationActivated) {
-                this.writeDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動");
-            }
-            if (defUnit.battleContext.isVantageActivated) {
-                this.writeDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動");
-            }
-        }
-        else {
-            atkUnit.battleContext.isDesperationActivated = false;
-            defUnit.battleContext.isVantageActivated = false;
-        }
     }
 
     __isDead(unit) {

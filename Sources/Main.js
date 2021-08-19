@@ -3468,6 +3468,9 @@ class AetherRaidTacticsBoard {
             this.__applySpecialSkillEffect(defUnit, atkUnit);
         }
 
+        // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
+        this.__setSkillEffetToContext(atkUnit, defUnit);
+
         let result = this.damageCalc.calc(atkUnit, defUnit);
         result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);
         result.atkUnit_spd = atkUnit.getSpdInCombat(defUnit);
@@ -3479,6 +3482,117 @@ class AetherRaidTacticsBoard {
         result.defUnit_def = defUnit.getDefInCombat(atkUnit);
         result.defUnit_res = defUnit.getResInCombat(atkUnit);
         return result;
+    }
+
+
+    __setSkillEffetToContext(atkUnit, defUnit) {
+        this.__setBothOfAtkDefSkillEffetToContext(atkUnit, defUnit);
+        this.__setBothOfAtkDefSkillEffetToContext(defUnit, atkUnit);
+        this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit);
+        this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(defUnit, atkUnit);
+
+        if (!canDisableAttackOrderSwapSkill(atkUnit, atkUnit.snapshot.restHpPercentage)
+            && !canDisableAttackOrderSwapSkill(defUnit, defUnit.snapshot.restHpPercentage)
+        ) {
+            atkUnit.battleContext.isDesperationActivated = atkUnit.battleContext.isDesperationActivatable || atkUnit.hasStatusEffect(StatusEffectType.Desperation);
+            defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantabeActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
+            defUnit.battleContext.isDefDesperationActivated = defUnit.battleContext.isDefDesperationActivatable;
+
+            if (defUnit.battleContext.isDefDesperationActivated) {
+                this.damageCalc.writeDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
+            }
+            if (atkUnit.battleContext.isDesperationActivated) {
+                this.damageCalc.writeDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動、攻撃の直後に追撃");
+            }
+            if (defUnit.battleContext.isVantageActivated) {
+                this.damageCalc.writeDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
+            }
+        }
+        else {
+            atkUnit.battleContext.isDesperationActivated = false;
+            defUnit.battleContext.isVantageActivated = false;
+        }
+    }
+
+    __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
+        switch (targetUnit.weapon) {
+            case Weapon.SeaSearLance:
+            case Weapon.LoyalistAxe:
+                if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) &&
+                    enemyUnit.battleContext.canFollowupAttack) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
+                }
+                break;
+            case Weapon.Hrist:
+                if (targetUnit.snapshot.restHpPercentage <= 99) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+                break;
+            case Weapon.CourtlyMaskPlus:
+            case Weapon.CourtlyBowPlus:
+            case Weapon.CourtlyCandlePlus:
+                if (targetUnit.snapshot.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
+                }
+                break;
+            case Weapon.SummerStrikers:
+                if (targetUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 25) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
+                }
+                break;
+            case Weapon.Urvan:
+                {
+                    targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    }
+                }
+                break;
+            case Weapon.SplashyBucketPlus:
+                {
+                    targetUnit.battleContext.invalidatesReferenceLowerMit = true;
+                }
+                break;
+        }
+        for (let skillId of targetUnit.enumeratePassiveSkills()) {
+            switch (skillId) {
+                case PassiveB.BlackEagleRule:
+                    if (!targetUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+                    }
+                    break;
+                case PassiveB.SeikishiNoKago:
+                    if (isRangedWeaponType(enemyUnit.weaponType)) {
+                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                    }
+                    break;
+                case PassiveS.RengekiBogyoKenYariOno3:
+                    if (enemyUnit.weaponType == WeaponType.Sword ||
+                        enemyUnit.weaponType == WeaponType.Lance ||
+                        enemyUnit.weaponType == WeaponType.Axe) {
+                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                    }
+                    break;
+                case PassiveS.RengekiBogyoYumiAnki3:
+                    if (isWeaponTypeBow(enemyUnit.weaponType) ||
+                        isWeaponTypeDagger(enemyUnit.weaponType)) {
+                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                    }
+                    break;
+                case PassiveS.RengekiBogyoMado3:
+                    if (isWeaponTypeTome(enemyUnit.weaponType)) {
+                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                    }
+                    break;
+            }
+        }
+    }
+    __setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit) {
+        if (atkUnit.hasPassiveSkill(PassiveB.Cancel3)) {
+            if (atkUnit.snapshot.restHpPercentage >= 80) {
+                defUnit.battleContext.cooldownCount = 1;
+            }
+        }
     }
 
     __applySpecialSkillEffect(targetUnit, enemyUnit) {
