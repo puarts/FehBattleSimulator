@@ -6506,6 +6506,7 @@ class AetherRaidTacticsBoard {
 
                     break;
                 case Weapon.RuneAxe:
+                    targetUnit.battleContext.healedHpByAttack += 7;
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.hasNegativeStatusEffect()) {
                             targetUnit.addAllSpur(4);
@@ -6684,6 +6685,29 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Absorb:
+                case Weapon.AbsorbPlus:
+                    {
+                        targetUnit.battleContext.damageRatioToHeal += 0.5;
+                    }
+                    break;
+                case Weapon.VirtuousTyrfing:
+                    if (!targetUnit.battleContext.initiatesCombat
+                        || targetUnit.snapshot.restHpPercentage <= 99
+                    ) {
+                        enemyUnit.atkSpur -= 6;
+                        enemyUnit.defSpur -= 6;
+                        targetUnit.battleContext.healedHpByAttack += 7;
+                    }
+                    break;
+                case Weapon.Taiyo:
+                    targetUnit.battleContext.healedHpByAttack += 10;
+                    break;
+                case Weapon.SeirinNoKenPlus:
+                case Weapon.FuyumatsuriNoStickPlus:
+                case Weapon.ChisanaSeijuPlus:
+                    targetUnit.battleContext.healedHpByAttack += 5;
+                    break;
                 case PassiveA.SurgeSparrow:
                     if (targetUnit.battleContext.initiatesCombat) {
                         let healRatio = 0.1 + (targetUnit.maxSpecialCount * 0.2);
@@ -7511,6 +7535,7 @@ class AetherRaidTacticsBoard {
                     targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
                     if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
                         targetUnit.addAllSpur(6);
+                        targetUnit.battleContext.healedHpByAttack += 5;
                     }
                     break;
                 }
@@ -7530,6 +7555,7 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.resSpur -= 5;
+                        targetUnit.battleContext.healedHpByAttack += 4;
                     }
                     break;
                 case Weapon.SeaSearLance:
@@ -7867,6 +7893,7 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.snapshot.restHpPercentage >= 25) {
                             targetUnit.addAllSpur(5);
+                            targetUnit.battleContext.healedHpByAttack += 7;
                         }
                     }
                     break;
@@ -8845,6 +8872,7 @@ class AetherRaidTacticsBoard {
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (!targetUnit.snapshot.isRestHpFull || !enemyUnit.snapshot.isRestHpFull) {
                                 targetUnit.addAllSpur(4);
+                                targetUnit.battleContext.healedHpByAttack += 7;
                             }
                         }
                     }
@@ -9429,12 +9457,6 @@ class AetherRaidTacticsBoard {
                         atkUnit.resSpur += 5;
                     }
                     break;
-                case Weapon.VirtuousTyrfing:
-                    if (atkUnit.snapshot.restHpPercentage <= 99) {
-                        defUnit.atkSpur -= 6;
-                        defUnit.defSpur -= 6;
-                    }
-                    break;
                 case Weapon.SummerStrikers:
                     if (atkUnit.snapshot.restHpPercentage >= 25) {
                         atkUnit.atkSpur += 5;
@@ -9709,10 +9731,6 @@ class AetherRaidTacticsBoard {
                     if (!defUnit.isOneTimeActionActivatedForPassiveB) {
                         defUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, atkUnit);
                     }
-                    break;
-                case Weapon.VirtuousTyrfing:
-                    atkUnit.atkSpur -= 6;
-                    atkUnit.defSpur -= 6;
                     break;
                 case Weapon.StalwartSword:
                     atkUnit.atkSpur -= 6;
