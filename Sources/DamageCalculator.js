@@ -1378,7 +1378,7 @@ class DamageCalculator {
                 this.writeSimpleLog(" " + atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>奥義ダメージ" + currentDamage);
                 this.__restoreMaxSpecialCount(atkUnit);
 
-                // 回復
+                // 奥義発動時の回復
                 {
                     let actualDamage = currentDamage;
                     if (defUnit.restHp < currentDamage) {
@@ -1386,36 +1386,7 @@ class DamageCalculator {
                     }
 
                     let healedHp = Math.trunc(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
-
-                    switch (atkUnit.weapon) {
-                        case Weapon.KyoufuArmars:
-                            if (atkUnit.isWeaponSpecialRefined) {
-                                if (defUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage === 100) {
-                                    healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.3);
-                                }
-                            }
-                            break;
-                        case Weapon.WindParthia:
-                            if (atkUnit.battleContext.initiatesCombat
-                                || atkUnit.battleContext.isThereAnyUnitIn2Spaces
-                            ) {
-                                healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.5);
-                            }
-                            break;
-                        case Weapon.MoonlessBreath:
-                            if (atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                                healedHp = Math.trunc(atkUnit.maxHpWithSkills * 0.3);
-                            }
-                    }
-
-                    switch (atkUnit.passiveA) {
-                        case PassiveA.SurgeSparrow:
-                            if (atkUnit.battleContext.initiatesCombat) {
-                                let healRatio = 0.1 + (atkUnit.maxSpecialCount * 0.2);
-                                healedHp = Math.trunc(atkUnit.maxHpWithSkills * healRatio);
-                            }
-                            break;
-                    }
+                    healedHp += Math.trunc(atkUnit.maxHpWithSkills * atkUnit.battleContext.maxHpRatioToHealBySpecial);
 
                     if (atkUnit.passiveB == PassiveB.TaiyoNoUdewa) {
                         healedHp += Math.trunc(actualDamage * 0.3);

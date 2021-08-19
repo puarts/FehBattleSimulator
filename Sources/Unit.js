@@ -996,6 +996,9 @@ class BattleContext {
 
         // 奥義発動時の「与えたダメージの〇%自分を回復」のパーセンテージ(1.0が100%)
         this.specialDamageRatioToHeal = 0;
+
+        // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
+        this.maxHpRatioToHealBySpecial = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -1078,6 +1081,7 @@ class BattleContext {
         this.specialMultDamage = 1;
         this.specialAddDamage = 0;
         this.specialDamageRatioToHeal = 0;
+        this.maxHpRatioToHealBySpecial = 0;
     }
 
     invalidateAllBuffs() {

@@ -6684,6 +6684,17 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.SurgeSparrow:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let healRatio = 0.1 + (targetUnit.maxSpecialCount * 0.2);
+                        targetUnit.battleContext.maxHpRatioToHealBySpecial += healRatio;
+                    }
+                    break;
+                case Weapon.MoonlessBreath:
+                    if (this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
+                    }
+                    break;
                 case Weapon.RauarLionPlus:
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 5;
@@ -7245,6 +7256,7 @@ class AetherRaidTacticsBoard {
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
+                            targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
                         }
                     }
                     break;
@@ -7893,6 +7905,7 @@ class AetherRaidTacticsBoard {
                         || (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces)
                     ) {
                         targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.5;
                     }
                     break;
                 case Weapon.DarkSpikesT:
