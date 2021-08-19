@@ -263,87 +263,6 @@ class DamageCalculator {
         }
     }
 
-    __calcFixedSpecialAddDamage(atkUnit, defUnit, isPrecombat) {
-        let fixedSpecialAddDamage = 0;
-
-        fixedSpecialAddDamage += atkUnit.battleContext.additionalDamageOfSpecial;
-
-        for (let skillId of atkUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveB.MoonlightBangle: {
-                    let ratio = 0.2 + atkUnit.maxSpecialCount * 0.1;
-                    fixedSpecialAddDamage += Math.trunc(defUnit.getDefInCombat(atkUnit) * ratio);
-                }
-                    break;
-                case PassiveB.RunaBracelet:
-                    fixedSpecialAddDamage += Math.trunc(defUnit.getDefInCombat(atkUnit) * 0.5);
-                    break;
-                case Weapon.MakenMistoruthin:
-                    if (defUnit.battleContext.initiatesCombat || defUnit.snapshot.restHpPercentage >= 75) {
-                        fixedSpecialAddDamage += 7;
-                    }
-                    break;
-                case Weapon.ResolvedFang:
-                case Weapon.RenewedFang:
-                case Weapon.JinroMusumeNoTsumekiba:
-                case Weapon.TrasenshiNoTsumekiba:
-                case Weapon.JinroOuNoTsumekiba:
-                case Weapon.OkamijoouNoKiba:
-                case Weapon.BridesFang:
-                case Weapon.GroomsWings:
-                    if (atkUnit.isTransformed) {
-                        fixedSpecialAddDamage += 10;
-                    }
-                    break;
-                case PassiveB.Bushido:
-                case Weapon.Watou:
-                case Weapon.WatouPlus:
-                case Weapon.Wabo:
-                case Weapon.WaboPlus:
-                case Weapon.BigSpoon:
-                case Weapon.BigSpoonPlus:
-                case Weapon.Wakon:
-                case Weapon.WakonPlus:
-                case Weapon.TankyuPlus:
-                case Weapon.BabyCarrot:
-                case Weapon.BabyCarrotPlus:
-                case Weapon.KyoufuArmars:
-                case Weapon.KieiWayuNoKen:
-                case Weapon.Toron:
-                case Weapon.IhoNoHIken:
-                case Weapon.DarkExcalibur:
-                    fixedSpecialAddDamage += 10;
-                    break;
-                case Weapon.Shamsir:
-                    fixedSpecialAddDamage += 7;
-                    break;
-                case Weapon.RunaNoEiken:
-                case Weapon.Otokureru:
-                case Weapon.MumeiNoIchimonNoKen:
-                case Weapon.SyaniNoSeisou:
-                case Weapon.DevilAxe:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        fixedSpecialAddDamage += 10;
-                    }
-                    break;
-                case PassiveB.Ikari3:
-                    if (atkUnit.restHpPercentage <= 75) {
-                        this.writeDebugLog("怒りにより奥義ダメージ+10");
-                        fixedSpecialAddDamage += 10;
-                    }
-                    break;
-                case PassiveB.Spurn3:
-                    if (atkUnit.restHpPercentage <= 75) {
-                        this.writeDebugLog("回避・怒りにより奥義ダメージ+5");
-                        fixedSpecialAddDamage += 5;
-                    }
-                    break;
-            }
-        }
-
-        return fixedSpecialAddDamage;
-    }
-
     __getAtk(atkUnit, defUnit, isPrecombat) {
         if (isPrecombat) {
             return atkUnit.getAtkInPrecombat();
@@ -730,8 +649,8 @@ class DamageCalculator {
         let specialTotalMit = totalMit; // 攻撃側の奥義発動時の防御力
         let specialTotalMitDefailLog = "";
 
-        var fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
-        var fixedSpecialAddDamage = 0;
+        let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
+        let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         switch (atkUnit.special) {
             case Special.Fukusyu:
@@ -780,8 +699,6 @@ class DamageCalculator {
             default:
                 break;
         }
-
-        fixedSpecialAddDamage += this.__calcFixedSpecialAddDamage(atkUnit, defUnit, false);
 
         let attackAdvRatio = 0;
         {
@@ -876,6 +793,7 @@ class DamageCalculator {
             specialDamage = 0;
         }
         specialDamage += fixedAddDamage;
+        this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
         specialDamage += fixedSpecialAddDamage;
         this.writeDebugLog("通常ダメージ=" + damage + ", 奥義ダメージ=" + specialDamage);
 
@@ -990,7 +908,7 @@ class DamageCalculator {
         }
 
         var addDamage = this.__calcFixedAddDamage(atkUnit, defUnit, true);
-        let specialAddDamage = this.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
+        let specialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let damage = rangedSpecialDamage + addDamage + specialAddDamage;
 
         let damageReductionRatio = 1.0 - defUnit.battleContext.damageReductionRatioForPrecombat;
