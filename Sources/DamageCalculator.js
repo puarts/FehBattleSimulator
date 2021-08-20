@@ -866,116 +866,8 @@ class DamageCalculator {
         let specialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let damage = rangedSpecialDamage + addDamage + specialAddDamage;
 
-        let damageReductionRatio = 1.0 - defUnit.battleContext.damageReductionRatioForPrecombat;
-        for (let skillId of defUnit.enumerateSkills()) {
-            switch (skillId) {
-                case Weapon.LilacJadeBreath:
-                    if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
-                        damageReductionRatio *= 1.0 - 0.4;
-                    }
-                    break;
-                case Weapon.Areadbhar:
-                    let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                    if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
-                        let percentage = Math.min(diff * 4, 40);
-                        damageReductionRatio *= 1.0 - (percentage / 100.0);
-                    }
-                    break;
-                case Weapon.GiltGoblet:
-                    if (atkUnit.snapshot.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
-                        damageReductionRatio *= 1.0 - 0.5;
-                    }
-                    break;
-                case Weapon.BloodTome:
-                    if (isRangedWeaponType(atkUnit.weaponType)) {
-                        damageReductionRatio *= 1.0 - 0.8;
-                    }
-                    break;
-                case Weapon.EtherealBreath:
-                    {
-                        damageReductionRatio *= 1.0 - 0.8;
-                    }
-                    break;
-                case PassiveB.DragonWall3:
-                case Weapon.NewFoxkitFang:
-                    {
-                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                        if (resDiff > 0) {
-                            let percentage = resDiff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
+        let damageReductionRatio = defUnit.battleContext.damageReductionRatioForPrecombat;
 
-                            damageReductionRatio *= 1.0 - (percentage / 100.0);
-                        }
-                    }
-                    break;
-                case Weapon.BrightmareHorn: {
-                    if (defUnit.snapshot.restHpPercentage >= 25) {
-                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - (percentage / 100.0);
-                        }
-                    }
-                }
-                    break;
-                case Weapon.NightmareHorn:
-                case Weapon.NewBrazenCatFang:
-                    {
-                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - (percentage / 100.0);
-                        }
-                    }
-                    break;
-                case PassiveB.MoonTwinWing:
-                    if (defUnit.snapshot.restHpPercentage >= 25) {
-                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                        damageReductionRatio *= 1.0 - ratio;
-                    }
-                    break;
-                case PassiveB.Bushido2:
-                case PassiveB.Frenzy3:
-                case PassiveB.Spurn3:
-                case PassiveB.KaihiIchigekiridatsu3:
-                case PassiveB.KaihiTatakikomi3:
-                    {
-                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                        damageReductionRatio *= 1.0 - ratio;
-                    }
-                    break;
-                case PassiveB.BlueLionRule:
-                    {
-                        let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            damageReductionRatio *= 1.0 - (percentage / 100.0);
-                        }
-                    }
-                    break;
-            }
-        }
-
-        if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-            let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-            damageReductionRatio *= 1.0 - ratio;
-        }
-
-        damageReductionRatio = 1.0 - damageReductionRatio;
         let reducedDamage = Math.trunc(damage * damageReductionRatio);
         let currentDamage = Math.max(damage - reducedDamage, 0);
 
@@ -986,18 +878,6 @@ class DamageCalculator {
         return currentDamage;
     }
 
-    __getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
-        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-        if (diff > 0) {
-            let percentage = diff * 4;
-            if (percentage > 40) {
-                percentage = 40;
-            }
-
-            return percentage / 100.0;
-        }
-        return 0;
-    }
 
     __calcAndSetCooldownCount(atkUnit, defUnit, atkUnitSkillIds, defUnitSkillIds) {
         atkUnit.battleContext.cooldownCountForAttack = 1;

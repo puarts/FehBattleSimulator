@@ -1016,6 +1016,7 @@ class BattleContext {
         this.damageReductionRatio = 0;
         this.additionalDamage = 0;
         this.precombatSpecialDamageMult = 0;
+        this.damageReductionRatioForPrecombat = 0;
     }
 
     clear() {
@@ -1123,6 +1124,11 @@ class BattleContext {
         return 1 - (1 - sourceRatio) * (1 - modifiedRatio);
     }
 
+    // 範囲奥義のダメージ軽減積
+    static multDamageReductionRatioForSpecial(sourceRatio, ratio) {
+        return 1 - (1 - sourceRatio) * (1 - ratio);
+    }
+
     // ダメージ軽減積
     multDamageReductionRatio(ratio, atkUnit) {
         this.damageReductionRatio = BattleContext.multDamageReductionRatio(this.damageReductionRatio, ratio, atkUnit);
@@ -1141,6 +1147,12 @@ class BattleContext {
     // 追撃のダメージ軽減積
     multDamageReductionRatioOfFollowupAttack(ratio, atkUnit) {
         this.damageReductionRatioOfFollowupAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFollowupAttack, ratio, atkUnit);
+    }
+
+    // 範囲奥義のダメージ軽減積
+    multDamageReductionRatioOfPrecombatSpecial(ratio) {
+        this.damageReductionRatioForPrecombat = BattleContext.multDamageReductionRatioForSpecial(
+            this.damageReductionRatioForPrecombat, ratio);
     }
 }
 

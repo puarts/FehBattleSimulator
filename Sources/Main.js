@@ -3283,13 +3283,14 @@ class AetherRaidTacticsBoard {
         this.__applySkillEffectForPrecombat(atkUnit, defUnit, calcPotentialDamage);
         this.__applySkillEffectForPrecombat(defUnit, atkUnit, calcPotentialDamage);
         this.__applyPrecombatSpecialDamageMult(atkUnit);
+        this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
 
         // 戦闘前ダメージ計算
         this.damageCalc.clearLog();
         let preCombatDamage = this.damageCalc.calcPreCombatDamage(atkUnit, defUnit);
 
-        atkUnit.clearPrecombatState();
-        defUnit.clearPrecombatState();
+        atkUnit.battleContext.clearPrecombatState();
+        defUnit.battleContext.clearPrecombatState();
 
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
         this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
@@ -6535,6 +6536,130 @@ class AetherRaidTacticsBoard {
                     }
                     break;
             }
+        }
+    }
+
+
+    __getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
+        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+        if (diff > 0) {
+            let percentage = diff * 4;
+            if (percentage > 40) {
+                percentage = 40;
+            }
+
+            return percentage / 100.0;
+        }
+        return 0;
+    }
+
+    __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.LilacJadeBreath:
+                    if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
+                    }
+                    break;
+                case Weapon.Areadbhar:
+                    let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                    if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                        let percentage = Math.min(diff * 4, 40);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    }
+                    break;
+                case Weapon.GiltGoblet:
+                    if (atkUnit.snapshot.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
+                    }
+                    break;
+                case Weapon.BloodTome:
+                    if (isRangedWeaponType(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+                    }
+                    break;
+                case Weapon.EtherealBreath:
+                    {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+                    }
+                    break;
+                case PassiveB.DragonWall3:
+                case Weapon.NewFoxkitFang:
+                    {
+                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                    break;
+                case Weapon.BrightmareHorn: {
+                    if (defUnit.snapshot.restHpPercentage >= 25) {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                }
+                    break;
+                case Weapon.NightmareHorn:
+                case Weapon.NewBrazenCatFang:
+                    {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                    break;
+                case PassiveB.MoonTwinWing:
+                    if (defUnit.snapshot.restHpPercentage >= 25) {
+                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
+                case PassiveB.Bushido2:
+                case PassiveB.Frenzy3:
+                case PassiveB.Spurn3:
+                case PassiveB.KaihiIchigekiridatsu3:
+                case PassiveB.KaihiTatakikomi3:
+                    {
+                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
+                case PassiveB.BlueLionRule:
+                    {
+                        let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
+            let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
         }
     }
 
