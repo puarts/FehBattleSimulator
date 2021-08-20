@@ -291,9 +291,6 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {
-                case PassiveB.Bushido2:
-                    fixedAddDamage += 7;
-                    break;
                 case PassiveB.Atrocity:
                     if (defUnit.snapshot.restHpPercentage >= 50) {
                         fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat() * 0.25);
@@ -546,17 +543,6 @@ class DamageCalculator {
         return `魔防${unit.resWithSkills}、強化${unit.getResBuffInCombat(enemyUnit)}、弱化${unit.getResDebuffInCombat()}、戦闘中強化${unit.resSpur}`;
     }
 
-    __canInvalidateReferenceLowerMit(defUnit) {
-        for (let skillId of defUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveB.SeimeiNoGofu3:
-                case PassiveB.HikariToYamito:
-                    return true;
-            }
-        }
-        return defUnit.battleContext.invalidatesReferenceLowerMit;
-    }
-
     __calcCombatDamage(atkUnit, defUnit, context) {
         if (!this.__isDead(atkUnit)) {
             if (context.isCounterattack) {
@@ -604,7 +590,7 @@ class DamageCalculator {
         let totalMitDefailLog = "";
         let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
             || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
-        if (refersLowerMit && !this.__canInvalidateReferenceLowerMit(defUnit)) {
+        if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
             this.writeDebugLog("守備魔防の低い方でダメージ計算");
             var defInCombat = defUnit.getDefInCombat(atkUnit);
             var resInCombat = defUnit.getResInCombat(atkUnit);
@@ -683,7 +669,7 @@ class DamageCalculator {
                 break;
             case Special.SeidrShell:
                 specialAddDamage = 15;
-                if (!this.__canInvalidateReferenceLowerMit(defUnit)) {
+                if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
                     this.writeDebugLog("魔弾の守備魔防の低い方でダメージ計算");
                     let defInCombat = defUnit.getDefInCombat(atkUnit);
                     let resInCombat = defUnit.getResInCombat(atkUnit);
@@ -859,7 +845,7 @@ class DamageCalculator {
     }
 
     calcPrecombatDamage(atkUnit, defUnit) {
-        var precombatTotalMit = 0;
+        let precombatTotalMit = 0;
         if (atkUnit.isPhysicalAttacker()) {
             this.writeDebugLog("守備参照");
             precombatTotalMit = defUnit.getDefInPrecombat();
@@ -869,43 +855,12 @@ class DamageCalculator {
             precombatTotalMit = defUnit.getResInPrecombat();
         }
 
-        var tmpMit = precombatTotalMit;
+        let tmpMit = precombatTotalMit;
         if (defUnit.placedTile.isDefensiveTile) {
             tmpMit *= 1.3;
         }
 
-        var rangedSpecialDamage = -1;
-        switch (atkUnit.special) {
-            case Special.BlazingFlame:
-            case Special.BlazingWind:
-            case Special.BlazingLight:
-            case Special.BlazingThunder:
-                {
-                    // 烈光など
-                    rangedSpecialDamage = Math.trunc(Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit) * 1.5);
-                }
-                break;
-            case Special.RisingFrame:
-            case Special.RisingLight:
-            case Special.RisingWind:
-            case Special.RisingThunder:
-            case Special.GrowingFlame:
-            case Special.GrowingWind:
-            case Special.GrowingLight:
-            case Special.GrowingThunder:
-                {
-                    // 爆光など
-                    rangedSpecialDamage = Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit);
-                }
-                break;
-            case Special.GiftedMagic:
-                {
-                    rangedSpecialDamage = Math.trunc(Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit) * 0.8);
-                }
-                break;
-            default:
-                break;
-        }
+        let rangedSpecialDamage = Math.trunc(Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit) * atkUnit.battleContext.precombatSpecialDamageMult);
 
         var addDamage = this.__calcFixedAddDamage(atkUnit, defUnit, true);
         let specialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;

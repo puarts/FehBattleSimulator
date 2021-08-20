@@ -3252,11 +3252,10 @@ class AetherRaidTacticsBoard {
     ) {
 
         atkUnit.battleContext.clear();
-        atkUnit.battleContext.hpBeforeCombat = atkUnit.hp;
-        atkUnit.battleContext.initiatesCombat = true;
-
         defUnit.battleContext.clear();
+        atkUnit.battleContext.hpBeforeCombat = atkUnit.hp;
         defUnit.battleContext.hpBeforeCombat = defUnit.hp;
+        atkUnit.battleContext.initiatesCombat = true;
         defUnit.battleContext.initiatesCombat = false;
 
         let origTile = atkUnit.placedTile;
@@ -3281,9 +3280,19 @@ class AetherRaidTacticsBoard {
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
         this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
+        this.__applySkillEffectForPrecombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectForPrecombat(defUnit, atkUnit, calcPotentialDamage);
+        this.__applyPrecombatSpecialDamageMult(atkUnit);
+
         // 戦闘前ダメージ計算
         this.damageCalc.clearLog();
         let preCombatDamage = this.damageCalc.calcPreCombatDamage(atkUnit, defUnit);
+
+        atkUnit.clearPrecombatState();
+        defUnit.clearPrecombatState();
+
+        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
         // 戦闘開始時の状態を保存
         atkUnit.createSnapshot();
@@ -5262,7 +5271,7 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
                     ) {
-                        targetUnit.battleContext.additionalDamage = Math.trunc(targetUnit.getEvalSpdInCombat() * 0.2);
+                        targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalSpdInCombat() * 0.2);
                         targetUnit.battleContext.invalidatesCounterattack = true;
                         targetUnit.spdSpur += 6;
                     }
@@ -6529,9 +6538,60 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    __applyPrecombatSpecialDamageMult(atkUnit) {
+        switch (atkUnit.special) {
+            case Special.BlazingFlame:
+            case Special.BlazingWind:
+            case Special.BlazingLight:
+            case Special.BlazingThunder:
+                {
+                    atkUnit.battleContext.precombatSpecialDamageMult = 1.5;
+                }
+                break;
+            case Special.RisingFrame:
+            case Special.RisingLight:
+            case Special.RisingWind:
+            case Special.RisingThunder:
+            case Special.GrowingFlame:
+            case Special.GrowingWind:
+            case Special.GrowingLight:
+            case Special.GrowingThunder:
+                {
+                    atkUnit.battleContext.precombatSpecialDamageMult = 1.0;
+                }
+                break;
+            case Special.GiftedMagic:
+                {
+                    atkUnit.battleContext.precombatSpecialDamageMult = 0.8;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /// 戦闘前奥義のみの効果の実装
+    __applySkillEffectForPrecombat(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Luin:
+                    if (targetUnit.battleContext.initiatesCombat
+                        || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
+                    ) {
+                        targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                    }
+                    break;
+            }
+        }
+    }
+
+    /// 戦闘前奥義、戦闘のどちらでも同様の効果のスキルの実装
     __applySkillEffectForPrecombatAndCombat(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.Bushido2:
+                    targetUnit.battleContext.additionalDamage += 7;
+                    break;
                 case Weapon.BladeOfRenais:
                     // 戦闘前奥義にも必要なのでここでフラグを立てておく
                     targetUnit.battleContext.isThereAnyUnitIn2Spaces |= this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
@@ -6685,6 +6745,9 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SeimeiNoGofu3:
+                    targetUnit.battleContext.invalidatesReferenceLowerMit = true;
+                    break;
                 case Weapon.Absorb:
                 case Weapon.AbsorbPlus:
                     {
@@ -8774,6 +8837,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.HikariToYamito:
                     enemyUnit.addAllSpur(-2);
                     targetUnit.battleContext.invalidateAllBuffs();
+                    targetUnit.battleContext.invalidatesReferenceLowerMit = true;
 
                     break;
                 case Weapon.ShiseiNaga:

@@ -1002,6 +1002,9 @@ class BattleContext {
 
         // 与えたダメージの〇%自分を回復
         this.damageRatioToHeal = 0;
+
+        // 範囲奥義のダメージ倍率
+        this.precombatSpecialDamageMult = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -1009,7 +1012,15 @@ class BattleContext {
         this.increaseCooldownCountForDefense = true;
     }
 
+    clearPrecombatState() {
+        this.damageReductionRatio = 0;
+        this.additionalDamage = 0;
+        this.precombatSpecialDamageMult = 0;
+    }
+
     clear() {
+        this.clearPrecombatState();
+
         this.canFollowupAttack = false;
         this.canCounterattack = false;
         this.isVantabeActivatable = false;
@@ -1067,11 +1078,9 @@ class BattleContext {
         this.isThereAnyPartnerPairsIn3Spaces = false;
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
-        this.damageReductionRatio = 0;
 
         this.isSaviorActivated = false;
 
-        this.additionalDamage = 0;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
