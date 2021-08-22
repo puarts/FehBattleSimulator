@@ -14656,9 +14656,14 @@ class DamageCalcResult {
 /// ダメージ計算を行うためのクラスです。
 class DamageCalculator {
     constructor() {
+        this._rawLog = "";
         this._log = "";
         this._simpleLog = "";
         this.isLogEnabled = true;
+    }
+
+    get rawLog() {
+        return this._rawLog;
     }
 
     get log() {
@@ -14680,12 +14685,14 @@ class DamageCalculator {
             return;
         }
         this._log += log + "<br/>";
+        this._rawLog += log + "\n";
     }
     writeDebugLog(log) {
         if (!this.isLogEnabled) {
             return;
         }
         this._log += "<span style='font-size:10px; color:#666666'>" + log + "</span><br/>";
+        this._rawLog += log + "\n";
     }
     writeRestHpLog(unit) {
         if (!this.isLogEnabled) {
@@ -14697,6 +14704,7 @@ class DamageCalculator {
     clearLog() {
         this._log = "";
         this._simpleLog = "";
+        this._rawLog = "";
     }
 
     /// ダメージ計算を行います。
@@ -18775,13 +18783,22 @@ class SettingManager {
     }
 }
 
+function createTestUnit() {
+  let unit = new Unit();
+  unit.placedTile = new Tile(0, 0);
+  return unit;
+}
+
 test('DamageCalculatorSimple', () => {
   let damageCalc = new DamageCalculator();
-  let atkUnit = new Unit();
-  let defUnit = new Unit();
-  atkUnit.placedTile = new Tile(0, 0);
-  defUnit.placedTile = new Tile(0, 0);
+  let atkUnit = createTestUnit();
+  let defUnit = createTestUnit();
+  atkUnit.atkWithSkills = 40;
+  atkUnit.spdWithSkills = 30;
+  defUnit.resWithSkills = 30;
+  defUnit.defWithSkills = 30;
+  defUnit.spdWithSkills = 30;
   let result = damageCalc.calc(atkUnit, defUnit);
-  console.log(result);
-  // expect(value).toBe(3);
+  console.log(damageCalc.rawLog);
+  expect(result.atkUnit_normalAttackDamage).toBe(10);
 });

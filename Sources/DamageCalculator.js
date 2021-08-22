@@ -50,9 +50,14 @@ class DamageCalcResult {
 /// ダメージ計算を行うためのクラスです。
 class DamageCalculator {
     constructor() {
+        this._rawLog = "";
         this._log = "";
         this._simpleLog = "";
         this.isLogEnabled = true;
+    }
+
+    get rawLog() {
+        return this._rawLog;
     }
 
     get log() {
@@ -74,12 +79,14 @@ class DamageCalculator {
             return;
         }
         this._log += log + "<br/>";
+        this._rawLog += log + "\n";
     }
     writeDebugLog(log) {
         if (!this.isLogEnabled) {
             return;
         }
         this._log += "<span style='font-size:10px; color:#666666'>" + log + "</span><br/>";
+        this._rawLog += log + "\n";
     }
     writeRestHpLog(unit) {
         if (!this.isLogEnabled) {
@@ -91,6 +98,7 @@ class DamageCalculator {
     clearLog() {
         this._log = "";
         this._simpleLog = "";
+        this._rawLog = "";
     }
 
     /// ダメージ計算を行います。
