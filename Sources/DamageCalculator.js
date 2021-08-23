@@ -82,6 +82,24 @@ class DamageCalculator {
         return false;
     }
 
+
+    getDodgeDamageReductionRatio(atkUnit, defUnit) {
+        let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
+        let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
+        let diff = defUnitSpd - atkUnitSpd;
+        if (diff > 0) {
+            let percentage = diff * 4;
+            if (percentage > 40) {
+                percentage = 40;
+            }
+
+            this.writeDebugLog(`回避効果によりダメージ${percentage}%軽減(速さの差 ${defUnitSpd}-${atkUnitSpd}=${diff})`);
+            return percentage / 100.0;
+        }
+
+        return 0;
+    }
+
     __logSpdInCombat(unit, enemyUnit, tab = "") {
         this.writeDebugLog(tab + unit.getNameWithGroup()
             + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
@@ -760,128 +778,6 @@ class DamageCalculator {
         return TriangleAdvantage.None;
     }
 
-    __getDodgeDamageReductionRatio(atkUnit, defUnit) {
-        let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
-        let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
-        let diff = defUnitSpd - atkUnitSpd;
-        if (diff > 0) {
-            let percentage = diff * 4;
-            if (percentage > 40) {
-                percentage = 40;
-            }
-
-            this.writeDebugLog(`回避スキルによりダメージ${percentage}%軽減(速さの差 ${defUnitSpd}-${atkUnitSpd}=${diff})`);
-            return percentage / 100.0;
-        }
-
-        return 0;
-    }
-
-    __getDamageReductionRatio(skillId, atkUnit, defUnit) {
-        switch (skillId) {
-            case Weapon.LilacJadeBreath:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
-                    return 0.4;
-                }
-                break;
-            case Weapon.Areadbhar:
-                let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
-                    let percentage = Math.min(diff * 4, 40);
-                    this.writeDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
-                    return percentage / 100.0;
-                }
-                break;
-            case Weapon.GiltGoblet:
-                if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
-                    isWeaponTypeTome(atkUnit.weaponType)) {
-                    return 0.5;
-                }
-                break;
-            case Weapon.BloodTome:
-                if (isRangedWeaponType(atkUnit.weaponType)) {
-                    return 0.5;
-                }
-                break;
-            case PassiveB.DragonWall3:
-            case Weapon.NewFoxkitFang:
-                {
-                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
-                    if (resDiff > 0) {
-                        let percentage = resDiff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
-
-                        this.writeDebugLog("ダメージ" + percentage + "%軽減");
-                        return percentage / 100.0;
-                    }
-                }
-                break;
-            case Weapon.BrightmareHorn: {
-                if (defUnit.snapshot.restHpPercentage >= 25) {
-                    {
-                        let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                        if (diff > 0) {
-                            let percentage = diff * 4;
-                            if (percentage > 40) {
-                                percentage = 40;
-                            }
-
-                            this.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
-                            return percentage / 100.0;
-                        }
-                    }
-                }
-            }
-                break;
-            case Weapon.NightmareHorn:
-            case Weapon.NewBrazenCatFang:
-                {
-                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                    if (diff > 0) {
-                        let percentage = diff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
-
-                        this.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
-                        return percentage / 100.0;
-                    }
-                }
-                break;
-            case PassiveB.MoonTwinWing:
-                if (defUnit.snapshot.restHpPercentage >= 25) {
-                    return this.__getDodgeDamageReductionRatio(atkUnit, defUnit);
-                }
-                break;
-            case PassiveB.Bushido2:
-            case PassiveB.Frenzy3:
-            case PassiveB.Spurn3:
-            case PassiveB.KaihiIchigekiridatsu3:
-            case PassiveB.KaihiTatakikomi3:
-                return this.__getDodgeDamageReductionRatio(atkUnit, defUnit);
-            case PassiveB.BlueLionRule:
-                {
-                    let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
-                    let atkUnitDef = atkUnit.getEvalDefInCombat(defUnit);
-                    let diff = defUnitDef - atkUnitDef;
-                    if (diff > 0) {
-                        let percentage = diff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
-
-                        this.writeDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
-                        return percentage / 100.0;
-                    }
-                }
-                break;
-        }
-
-        return 0;
-    }
-
     __calcAttackTotalDamage(
         context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
         invalidatesDamageReductionExceptSpecialOnSpecialActivation
@@ -911,20 +807,6 @@ class DamageCalculator {
             {
                 // 計算機の外側で設定されたダメージ軽減率
                 damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatio;
-
-                for (let skillId of defUnit.enumerateSkills()) {
-                    let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
-                    if (ratio > 0) {
-                        damageReductionRatio *= 1.0 - BattleContext.calcDamageReductionRatio(ratio, atkUnit);
-                    }
-                }
-
-                if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-                    let ratio = this.__getDodgeDamageReductionRatio(atkUnit, defUnit);
-                    if (ratio > 0) {
-                        damageReductionRatio *= 1.0 - BattleContext.calcDamageReductionRatio(ratio, atkUnit);
-                    }
-                }
 
                 {
                     if (context.isFirstAttack(atkUnit)) {
@@ -1115,10 +997,10 @@ class DamageCalculator {
     }
 
     __calcUnitAttackDamage(defUnit, atkUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context) {
-        let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
+        let reducedDamage = Math.trunc(roundFloatError(damage * damageReductionRatio)) + damageReductionValue;
         var currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
-            this.writeDebugLog("ダメージ軽減" + damageReductionRatio * 100 + "%");
+            this.writeDebugLog("ダメージ軽減" + roundFloatError(damageReductionRatio) * 100 + "%");
             this.writeDebugLog("ダメージ-" + damageReductionValue);
             this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
         }

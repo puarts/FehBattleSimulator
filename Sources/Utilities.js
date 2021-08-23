@@ -1011,3 +1011,10 @@ function dateStrToNumber(dateStr) {
     let numStr = dateStr.replace(/-/g, "");
     return Number(numStr);
 }
+
+/// 浮動小数点計算誤差を丸めます。
+function roundFloatError(value) {
+    const factor = 10000000;
+    const revertFactor = 1.0 / factor;
+    return Math.round(value * factor) * revertFactor;
+}

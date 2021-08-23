@@ -3338,6 +3338,127 @@ class AetherRaidTacticsBoard {
         return result;
     }
 
+    __getDamageReductionRatio(skillId, atkUnit, defUnit) {
+        switch (skillId) {
+            case Weapon.LilacJadeBreath:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
+                    return 0.4;
+                }
+                break;
+            case Weapon.Areadbhar:
+                let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                    let percentage = Math.min(diff * 4, 40);
+                    this.damageCalc.writeDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
+                    return percentage / 100.0;
+                }
+                break;
+            case Weapon.GiltGoblet:
+                if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
+                    isWeaponTypeTome(atkUnit.weaponType)) {
+                    return 0.5;
+                }
+                break;
+            case Weapon.BloodTome:
+                if (isRangedWeaponType(atkUnit.weaponType)) {
+                    return 0.5;
+                }
+                break;
+            case PassiveB.DragonWall3:
+            case Weapon.NewFoxkitFang:
+                {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = resDiff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.damageCalc.writeDebugLog("ダメージ" + percentage + "%軽減");
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case Weapon.BrightmareHorn: {
+                if (defUnit.snapshot.restHpPercentage >= 25) {
+                    {
+                        let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            this.damageCalc.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                            return percentage / 100.0;
+                        }
+                    }
+                }
+            }
+                break;
+            case Weapon.NightmareHorn:
+            case Weapon.NewBrazenCatFang:
+                {
+                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.damageCalc.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case PassiveB.MoonTwinWing:
+                if (defUnit.snapshot.restHpPercentage >= 25) {
+                    return this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
+            case PassiveB.Bushido2:
+            case PassiveB.Frenzy3:
+            case PassiveB.Spurn3:
+            case PassiveB.KaihiIchigekiridatsu3:
+            case PassiveB.KaihiTatakikomi3:
+                return this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+            case PassiveB.BlueLionRule:
+                {
+                    let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
+                    let atkUnitDef = atkUnit.getEvalDefInCombat(defUnit);
+                    let diff = defUnitDef - atkUnitDef;
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.damageCalc.writeDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+        }
+
+        return 0;
+    }
+
+    __applyDamageReductionRatio(atkUnit, defUnit) {
+        for (let skillId of defUnit.enumerateSkills()) {
+            let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
+            if (ratio > 0) {
+                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+            }
+        }
+
+        if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
+            let ratio = this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+            if (ratio > 0) {
+                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+            }
+        }
+    }
+
     __calcDamageImpl(atkUnit, defUnit, calcPotentialDamage) {
         this.__applyImpenetrableDark(atkUnit, defUnit, calcPotentialDamage);
         this.__applyImpenetrableDark(defUnit, atkUnit, calcPotentialDamage);
@@ -3446,6 +3567,12 @@ class AetherRaidTacticsBoard {
             this.__applySkillEffectAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
             this.__applySkillEffectForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
             this.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
+        }
+
+        // ダメージ軽減率の計算(ダメージ軽減効果を軽減する効果の後に実行する必要がある)
+        {
+            this.__applyDamageReductionRatio(atkUnit, defUnit);
+            this.__applyDamageReductionRatio(defUnit, atkUnit);
         }
 
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
@@ -6522,7 +6649,7 @@ class AetherRaidTacticsBoard {
     }
 
 
-    __getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
+    damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
         let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
         if (diff > 0) {
             let percentage = diff * 4;
@@ -6609,7 +6736,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.MoonTwinWing:
                     if (defUnit.snapshot.restHpPercentage >= 25) {
-                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        let ratio = this.damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
@@ -6619,7 +6746,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.KaihiTatakikomi3:
                     {
-                        let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        let ratio = this.damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
@@ -6640,7 +6767,7 @@ class AetherRaidTacticsBoard {
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-            let ratio = this.__getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            let ratio = this.damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
         }
     }

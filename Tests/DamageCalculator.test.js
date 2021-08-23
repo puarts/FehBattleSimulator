@@ -35,16 +35,42 @@ class test_DamageCalculator {
     return atkUnit.attackRange == defUnit.attackRange;
   }
 
+  __applyDamageReduction(atkUnit, defUnit) {
+    // テスト用に一部スキルのみ実装しておく
+    switch (defUnit.passiveB) {
+      case PassiveB.Spurn3:
+        {
+          let ratio = this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+          if (ratio > 0) {
+            defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+          }
+        }
+        break;
+    }
+
+    if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
+      let ratio = this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+      if (ratio > 0) {
+        defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+      }
+    }
+  }
+
   calcDamage(atkUnit, defUnit) {
     defUnit.battleContext.canCounterattack = this.__examinesCanCounterattackBasically(atkUnit, defUnit);
     atkUnit.battleContext.canFollowupAttack = this.damageCalc.examinesCanFollowupAttack(atkUnit, defUnit);
     defUnit.battleContext.canFollowupAttack = !atkUnit.battleContext.canFollowupAttack;
+
+    this.__applyDamageReduction(atkUnit, defUnit);
+    this.__applyDamageReduction(defUnit, atkUnit);
 
     let result = this.damageCalc.calc(atkUnit, defUnit);
     if (this.isLogEnabled) {
       console.log(this.damageCalc.rawLog);
     }
     this.damageCalc.clearLog();
+    atkUnit.hp = atkUnit.restHp;
+    defUnit.hp = defUnit.restHp;
     return result;
   }
 }
@@ -55,6 +81,26 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
   return calclator.calcDamage(atkUnit, defUnit);
 }
 
+/// ダメージ軽減テストです。
+test('DamageCalculatorDamageReductionTest', () => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+  atkUnit.atkWithSkills = 40;
+  defUnit.defWithSkills = 30;
+  defUnit.weapon = Weapon.None;
+  defUnit.passiveB = PassiveB.Spurn3;
+  defUnit.addStatusEffect(StatusEffectType.Dodge);
+  atkUnit.spdWithSkills = defUnit.spdWithSkills - 10;
+
+  let result = test_calcDamage(atkUnit, defUnit, true);
+
+  // 回避が重複してるので40%軽減、そこに軽減値を50%軽減する効果が入ると最終的に36%軽減になるはず
+  let reductionRatio = 0.4 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial;
+  let actualReductionRatio = roundFloatError(1 - (1 - reductionRatio) * (1 - reductionRatio));
+  expect(actualReductionRatio).toBe(0.36);
+  expect(defUnit.currentDamage).toBe(result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
+});
 
 /// 復讐のダメージ計算テストです。
 test('DamageCalculatorVengeanceTest', () => {
@@ -67,7 +113,7 @@ test('DamageCalculatorVengeanceTest', () => {
   defUnit.atkWithSkills = 51;
   defUnit.spdWithSkills = atkUnit.spdWithSkills - 5;
 
-  let result = test_calcDamage(atkUnit, defUnit, true);
+  let result = test_calcDamage(atkUnit, defUnit, false);
 
   expect(result.atkUnit_normalAttackDamage).toBe(10);
   expect(result.atkUnit_totalAttackCount).toBe(2);
