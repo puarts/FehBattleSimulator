@@ -67,6 +67,26 @@ class DamageCalculator {
         return this._simpleLog.substring(0, this._simpleLog.length - "<br/>".length);
     }
 
+    examinesCanFollowupAttack(atkUnit, defUnit) {
+        var totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
+        var totalSpdDef = defUnit.getSpdInCombat(atkUnit);
+        this.writeDebugLog(`${atkUnit.getNameWithGroup()}の速さによる追撃評価:`);
+        this.__logSpdInCombat(atkUnit, defUnit, TabChar);
+        this.__logSpdInCombat(defUnit, atkUnit, TabChar);
+        if (totalSpdAtk >= totalSpdDef + 5) {
+            this.writeDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");
+            return true;
+        }
+
+        this.writeDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
+        return false;
+    }
+
+    __logSpdInCombat(unit, enemyUnit, tab = "") {
+        this.writeDebugLog(tab + unit.getNameWithGroup()
+            + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
+    }
+
     writeSimpleLog(log) {
         if (!this.isLogEnabled) {
             return;
@@ -330,6 +350,7 @@ class DamageCalculator {
 
     __calcCombatDamage(atkUnit, defUnit, context) {
         if (!this.__isDead(atkUnit)) {
+            this.writeDebugLog("----");
             if (context.isCounterattack) {
                 this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
             }
@@ -426,6 +447,7 @@ class DamageCalculator {
         switch (atkUnit.special) {
             case Special.Fukusyu:
                 specialAddDamage = Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * 0.5);
+                this.writeDebugLog(`復讐による加算ダメージ${specialAddDamage}`);
                 break;
             case Special.Setsujoku:
             case Special.Kessyu:
@@ -872,8 +894,8 @@ class DamageCalculator {
         context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
         invalidatesDamageReductionExceptSpecialOnSpecialActivation
     ) {
-        let hasAtkUnitSpecial = atkUnit.maxSpecialCount != 0 && isNormalAttackSpecial(atkUnit.special);
-        let hasDefUnitSpecial = defUnit.maxSpecialCount != 0 && isDefenseSpecial(defUnit.special);
+        let hasAtkUnitSpecial = atkUnit.hasSpecial && isNormalAttackSpecial(atkUnit.special);
+        let hasDefUnitSpecial = defUnit.hasSpecial && isDefenseSpecial(defUnit.special);
 
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
@@ -1153,8 +1175,7 @@ class DamageCalculator {
     }
 
     __reduceSpecialCount(unit, reduceSpCount) {
-        var hasUnitSpecial = unit.maxSpecialCount != 0;
-        if (hasUnitSpecial == false) {
+        if (!unit.hasSpecial) {
             return;
         }
 

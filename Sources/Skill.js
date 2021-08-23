@@ -146,6 +146,8 @@ const EffectiveType = {
 const Weapon = {
     None: -1,
 
+    SilverSwordPlus: 4, // 銀の剣+
+
     MerankoryPlus: 1016, // メランコリー+
     ReginRave: 1027, // レギンレイヴ
     TsubakiNoKinnagitou: 1030, // ツバキの金薙刀

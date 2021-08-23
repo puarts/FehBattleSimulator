@@ -15,5 +15,3 @@ set CONFIG=%~dp0jest.config.js
 set CONFIG=%CONFIG:\=/%
 
 call npx jest "%TMP_TEST_JS%" -c %CONFIG% --silent=false --verbose false
-
-pause

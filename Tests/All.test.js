@@ -1172,6 +1172,8 @@ const EffectiveType = {
 const Weapon = {
     None: -1,
 
+    SilverSwordPlus: 4, // 銀の剣+
+
     MerankoryPlus: 1016, // メランコリー+
     ReginRave: 1027, // レギンレイヴ
     TsubakiNoKinnagitou: 1030, // ツバキの金薙刀
@@ -14673,6 +14675,26 @@ class DamageCalculator {
         return this._simpleLog.substring(0, this._simpleLog.length - "<br/>".length);
     }
 
+    examinesCanFollowupAttack(atkUnit, defUnit) {
+        var totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
+        var totalSpdDef = defUnit.getSpdInCombat(atkUnit);
+        this.writeDebugLog(`${atkUnit.getNameWithGroup()}の速さによる追撃評価:`);
+        this.__logSpdInCombat(atkUnit, defUnit, TabChar);
+        this.__logSpdInCombat(defUnit, atkUnit, TabChar);
+        if (totalSpdAtk >= totalSpdDef + 5) {
+            this.writeDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");
+            return true;
+        }
+
+        this.writeDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
+        return false;
+    }
+
+    __logSpdInCombat(unit, enemyUnit, tab = "") {
+        this.writeDebugLog(tab + unit.getNameWithGroup()
+            + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
+    }
+
     writeSimpleLog(log) {
         if (!this.isLogEnabled) {
             return;
@@ -14936,6 +14958,7 @@ class DamageCalculator {
 
     __calcCombatDamage(atkUnit, defUnit, context) {
         if (!this.__isDead(atkUnit)) {
+            this.writeDebugLog("----");
             if (context.isCounterattack) {
                 this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
             }
@@ -15032,6 +15055,7 @@ class DamageCalculator {
         switch (atkUnit.special) {
             case Special.Fukusyu:
                 specialAddDamage = Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * 0.5);
+                this.writeDebugLog(`復讐による加算ダメージ${specialAddDamage}`);
                 break;
             case Special.Setsujoku:
             case Special.Kessyu:
@@ -15478,8 +15502,8 @@ class DamageCalculator {
         context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
         invalidatesDamageReductionExceptSpecialOnSpecialActivation
     ) {
-        let hasAtkUnitSpecial = atkUnit.maxSpecialCount != 0 && isNormalAttackSpecial(atkUnit.special);
-        let hasDefUnitSpecial = defUnit.maxSpecialCount != 0 && isDefenseSpecial(defUnit.special);
+        let hasAtkUnitSpecial = atkUnit.hasSpecial && isNormalAttackSpecial(atkUnit.special);
+        let hasDefUnitSpecial = defUnit.hasSpecial && isDefenseSpecial(defUnit.special);
 
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
@@ -15759,8 +15783,7 @@ class DamageCalculator {
     }
 
     __reduceSpecialCount(unit, reduceSpCount) {
-        var hasUnitSpecial = unit.maxSpecialCount != 0;
-        if (hasUnitSpecial == false) {
+        if (!unit.hasSpecial) {
             return;
         }
 
@@ -18783,22 +18806,96 @@ class SettingManager {
     }
 }
 
-function createTestUnit() {
-  let unit = new Unit();
+function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
+  let unit = new Unit("", "テストユニット", groupId);
   unit.placedTile = new Tile(0, 0);
+  unit.maxHpWithSkills = 40;
+  unit.hp = unit.maxHpWithSkills;
+  unit.weapon = Weapon.SilverSwordPlus;
+  unit.weaponType = WeaponType.Sword;
+  unit.moveType = MoveType.Infantry;
+  unit.atkWithSkills = 40;
+  unit.spdWithSkills = 40;
+  unit.defWithSkills = 30;
+  unit.resWithSkills = 30;
+  unit.createSnapshot();
+  unit.saveCurrentHpAndSpecialCount();
   return unit;
 }
 
-test('DamageCalculatorSimple', () => {
-  let damageCalc = new DamageCalculator();
-  let atkUnit = createTestUnit();
-  let defUnit = createTestUnit();
-  atkUnit.atkWithSkills = 40;
-  atkUnit.spdWithSkills = 30;
-  defUnit.resWithSkills = 30;
-  defUnit.defWithSkills = 30;
-  defUnit.spdWithSkills = 30;
-  let result = damageCalc.calc(atkUnit, defUnit);
-  console.log(damageCalc.rawLog);
+/// テスト用のダメージ計算機です。
+class test_DamageCalculator {
+  constructor() {
+    this.damageCalc = new DamageCalculator();
+    this.isLogEnabled = false;
+  }
+
+  __examinesCanCounterattackBasically(atkUnit, defUnit) {
+    if (!defUnit.hasWeapon) {
+      return false;
+    }
+
+    if (defUnit.battleContext.canCounterattackToAllDistance) {
+      return true;
+    }
+
+    return atkUnit.attackRange == defUnit.attackRange;
+  }
+
+  calcDamage(atkUnit, defUnit) {
+    defUnit.battleContext.canCounterattack = this.__examinesCanCounterattackBasically(atkUnit, defUnit);
+    atkUnit.battleContext.canFollowupAttack = this.damageCalc.examinesCanFollowupAttack(atkUnit, defUnit);
+    defUnit.battleContext.canFollowupAttack = !atkUnit.battleContext.canFollowupAttack;
+
+    let result = this.damageCalc.calc(atkUnit, defUnit);
+    if (this.isLogEnabled) {
+      console.log(this.damageCalc.rawLog);
+    }
+    this.damageCalc.clearLog();
+    return result;
+  }
+}
+
+function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
+  let calclator = new test_DamageCalculator();
+  calclator.isLogEnabled = isLogEnabled;
+  return calclator.calcDamage(atkUnit, defUnit);
+}
+
+
+/// 復讐のダメージ計算テストです。
+test('DamageCalculatorVengeanceTest', () => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  atkUnit.special = Special.Fukusyu;
+  atkUnit.specialCount = 2;
+
+  defUnit.atkWithSkills = 51;
+  defUnit.spdWithSkills = atkUnit.spdWithSkills - 5;
+
+  let result = test_calcDamage(atkUnit, defUnit, true);
+
   expect(result.atkUnit_normalAttackDamage).toBe(10);
+  expect(result.atkUnit_totalAttackCount).toBe(2);
+  expect(result.defUnit_normalAttackDamage).toBe(21);
+  expect(result.defUnit_totalAttackCount).toBe(1);
+
+  let specialDamage = Math.trunc(result.defUnit_normalAttackDamage * result.defUnit_totalAttackCount * 0.5);
+  let normalAttackDamage = result.atkUnit_normalAttackDamage * result.atkUnit_totalAttackCount;
+  let actualDamageDealt = defUnit.maxHpWithSkills - defUnit.restHp;
+  expect(actualDamageDealt - normalAttackDamage).toBe(specialDamage);
+});
+
+/// シンプルなダメージ計算テストです。
+test('DamageCalculatorSimple', () => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  atkUnit.atkWithSkills = 40;
+  defUnit.defWithSkills = 30;
+  defUnit.spdWithSkills = atkUnit.spdWithSkills - 5;
+
+  let result = test_calcDamage(atkUnit, defUnit);
+
+  expect(result.atkUnit_normalAttackDamage).toBe(10);
+  expect(result.atkUnit_totalAttackCount).toBe(2);
 });
