@@ -6648,20 +6648,6 @@ class AetherRaidTacticsBoard {
         }
     }
 
-
-    damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
-        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-        if (diff > 0) {
-            let percentage = diff * 4;
-            if (percentage > 40) {
-                percentage = 40;
-            }
-
-            return percentage / 100.0;
-        }
-        return 0;
-    }
-
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {

@@ -82,6 +82,18 @@ class DamageCalculator {
         return false;
     }
 
+    getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
+        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+        if (diff > 0) {
+            let percentage = diff * 4;
+            if (percentage > 40) {
+                percentage = 40;
+            }
+
+            return percentage / 100.0;
+        }
+        return 0;
+    }
 
     getDodgeDamageReductionRatio(atkUnit, defUnit) {
         let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
