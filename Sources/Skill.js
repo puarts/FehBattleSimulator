@@ -2585,6 +2585,19 @@ function hasPathfinderEffect(skillId) {
     }
 }
 
+/// 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合を0～1で返します。
+function getSelfDamageDealtRateToAddSpecialDamage(skillId) {
+    switch (skillId) {
+        case Special.Fukusyu:
+            return 0.5;
+        case Special.Setsujoku:
+        case Special.Kessyu:
+            return 0.3;
+        default:
+            return 0;
+    }
+}
+
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,

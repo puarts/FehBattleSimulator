@@ -3611,6 +3611,19 @@ function hasPathfinderEffect(skillId) {
     }
 }
 
+/// 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合を0～1で返します。
+function getSelfDamageDealtRateToAddSpecialDamage(skillId) {
+    switch (skillId) {
+        case Special.Fukusyu:
+            return 0.5;
+        case Special.Setsujoku:
+        case Special.Kessyu:
+            return 0.3;
+        default:
+            return 0;
+    }
+}
+
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,
@@ -10733,6 +10746,9 @@ class BattleContext {
 
         // 範囲奥義のダメージ倍率
         this.precombatSpecialDamageMult = 0;
+
+        // 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合
+        this.selfDamageDealtRateToAddSpecialDamage = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -10824,6 +10840,7 @@ class BattleContext {
         this.specialDamageRatioToHeal = 0;
         this.maxHpRatioToHealBySpecial = 0;
         this.damageRatioToHeal = 0;
+        this.selfDamageDealtRateToAddSpecialDamage = 0;
     }
 
     invalidateAllBuffs() {
@@ -18868,6 +18885,7 @@ test('DamageCalculatorVengeanceTest', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.special = Special.Fukusyu;
+  atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(atkUnit.special);
   atkUnit.specialCount = 2;
 
   defUnit.atkWithSkills = 51;

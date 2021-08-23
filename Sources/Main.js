@@ -7093,6 +7093,9 @@ class AetherRaidTacticsBoard {
 
         this.__calcFixedSpecialAddDamage(targetUnit, enemyUnit);
 
+        // 今のところ奥義にしかこの効果が存在しないので、重複しない。もし今後重複する場合は重複時の計算方法を調査して実装する
+        targetUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(targetUnit.special);
+
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:

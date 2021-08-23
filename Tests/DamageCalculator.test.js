@@ -61,6 +61,7 @@ test('DamageCalculatorVengeanceTest', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.special = Special.Fukusyu;
+  atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(atkUnit.special);
   atkUnit.specialCount = 2;
 
   defUnit.atkWithSkills = 51;

@@ -1005,6 +1005,9 @@ class BattleContext {
 
         // 範囲奥義のダメージ倍率
         this.precombatSpecialDamageMult = 0;
+
+        // 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合
+        this.selfDamageDealtRateToAddSpecialDamage = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -1096,6 +1099,7 @@ class BattleContext {
         this.specialDamageRatioToHeal = 0;
         this.maxHpRatioToHealBySpecial = 0;
         this.damageRatioToHeal = 0;
+        this.selfDamageDealtRateToAddSpecialDamage = 0;
     }
 
     invalidateAllBuffs() {
