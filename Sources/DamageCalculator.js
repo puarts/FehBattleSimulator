@@ -444,16 +444,8 @@ class DamageCalculator {
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
+        specialAddDamage += Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
         switch (atkUnit.special) {
-            case Special.Fukusyu:
-                specialAddDamage = Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * 0.5);
-                this.writeDebugLog(`復讐による加算ダメージ${specialAddDamage}`);
-                break;
-            case Special.Setsujoku:
-            case Special.Kessyu:
-                specialAddDamage = Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * 0.3);
-                break;
-
             case Special.KoriNoSeikyo:
                 // 通常ダメージに加算
                 if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
