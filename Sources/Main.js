@@ -11320,6 +11320,7 @@ class AetherRaidTacticsBoard {
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
             spurAmount += 2;
         }
+        if (spurAmount === 0) return;
         if (spurAmount > spurLimit) {
             spurAmount = spurLimit;
         }
