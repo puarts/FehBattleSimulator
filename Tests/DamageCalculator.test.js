@@ -54,6 +54,15 @@ class test_DamageCalculator {
         defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
       }
     }
+
+    switch (defUnit.special) {
+      case Special.Otate:
+        // この判定だと本当はダメだけどテスト用なので許容
+        if (atkUnit.attackRange == 1) {
+          defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
+        }
+        break;
+    }
   }
 
   calcDamage(atkUnit, defUnit) {
@@ -81,6 +90,26 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
   return calclator.calcDamage(atkUnit, defUnit);
 }
 
+/// 奥義によるダメージ軽減テストです。
+test('DamageCalculatorSpecialDamageReductionTest', () => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  atkUnit.posX = 1; // 奥義発動時の射程計算に必要
+  defUnit.weapon = Weapon.None;
+  defUnit.special = Special.Otate;
+  defUnit.specialCount = 0;
+  atkUnit.atkWithSkills = 40;
+  defUnit.defWithSkills = 30;
+
+  let result = test_calcDamage(atkUnit, defUnit, true);
+
+  expect(result.atkUnit_normalAttackDamage).toBe(10);
+  expect(result.atkUnit_totalAttackCount).toBe(1);
+  let actualReductionRatio = 0.5;
+  expect(defUnit.currentDamage).toBe(
+    result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
+});
+
 /// ダメージ軽減テストです。
 test('DamageCalculatorDamageReductionTest', () => {
   let atkUnit = test_createDefaultUnit();
@@ -93,7 +122,7 @@ test('DamageCalculatorDamageReductionTest', () => {
   defUnit.addStatusEffect(StatusEffectType.Dodge);
   atkUnit.spdWithSkills = defUnit.spdWithSkills - 10;
 
-  let result = test_calcDamage(atkUnit, defUnit, true);
+  let result = test_calcDamage(atkUnit, defUnit, false);
 
   // 回避が重複してるので40%軽減、そこに軽減値を50%軽減する効果が入ると最終的に36%軽減になるはず
   let reductionRatio = 0.4 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial;

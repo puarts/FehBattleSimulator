@@ -3575,6 +3575,9 @@ class AetherRaidTacticsBoard {
             this.__applyDamageReductionRatio(defUnit, atkUnit);
         }
 
+        this.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
+        this.__applyDamageReductionRatioBySpecial(defUnit, atkUnit);
+
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
         this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
         this.__calcFixedAddDamage(atkUnit, defUnit, false);
@@ -6645,6 +6648,43 @@ class AetherRaidTacticsBoard {
                     }
                     break;
             }
+        }
+    }
+
+    __applyDamageReductionRatioBySpecial(defUnit, atkUnit) {
+        let attackRange = atkUnit.getActualAttackRange(defUnit);
+        switch (defUnit.special) {
+            case Special.NegatingFang:
+                defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
+                break;
+            case Special.Seikabuto:
+            case Special.Seii:
+            case Special.KoriNoSeikyo:
+                if (attackRange == 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
+                }
+                break;
+            case Special.IceMirror2:
+                if (attackRange === 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+                }
+                break;
+            case Special.Seitate:
+                if (attackRange == 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
+                }
+                break;
+            case Special.Kotate:
+            case Special.Nagatate:
+                if (attackRange == 1) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
+                }
+                break;
+            case Special.Otate:
+                if (attackRange == 1) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
+                }
+                break;
         }
     }
 

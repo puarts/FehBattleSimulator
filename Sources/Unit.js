@@ -955,6 +955,9 @@ class BattleContext {
         // @NOTE: ダメージ軽減無効を考慮する必要があるので基本this.multDamageReductionRatioメソッドで値を設定する
         this.damageReductionRatio = 0;
 
+        // 防御系奥義によるダメージ軽減率
+        this.damageReductionRatioBySpecial = 0;
+
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
 
@@ -1100,6 +1103,7 @@ class BattleContext {
         this.maxHpRatioToHealBySpecial = 0;
         this.damageRatioToHeal = 0;
         this.selfDamageDealtRateToAddSpecialDamage = 0;
+        this.damageReductionRatioBySpecial = 0;
     }
 
     invalidateAllBuffs() {

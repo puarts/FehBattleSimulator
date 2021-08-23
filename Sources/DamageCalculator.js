@@ -820,19 +820,17 @@ class DamageCalculator {
                 // 計算機の外側で設定されたダメージ軽減率
                 damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatio;
 
-                {
-                    if (context.isFirstAttack(atkUnit)) {
-                        // 初回攻撃
-                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttack;
-                    } else if (context.isConsecutiveAttack(atkUnit)) {
-                        // 連続した攻撃
-                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfConsecutiveAttacks;
-                    }
+                if (context.isFirstAttack(atkUnit)) {
+                    // 初回攻撃
+                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttack;
+                } else if (context.isConsecutiveAttack(atkUnit)) {
+                    // 連続した攻撃
+                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfConsecutiveAttacks;
+                }
 
-                    if (context.isFollowupAttack) {
-                        // 追撃
-                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
-                    }
+                if (context.isFollowupAttack) {
+                    // 追撃
+                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
                 }
             }
 
@@ -846,45 +844,9 @@ class DamageCalculator {
             // 奥義によるダメージ軽減
             let isDefenderSpecialActivated = false;
             if (activatesDefenderSpecial) {
-                let attackRange = atkUnit.getActualAttackRange(defUnit);
-                switch (defUnit.special) {
-                    case Special.NegatingFang:
-                        damageReductionRatio *= 1.0 - 0.3;
-                        isDefenderSpecialActivated = true;
-                        break;
-                    case Special.Seikabuto:
-                    case Special.Seii:
-                    case Special.KoriNoSeikyo:
-                        if (attackRange == 2) {
-                            damageReductionRatio *= 1.0 - 0.3;
-                            isDefenderSpecialActivated = true;
-                        }
-                        break;
-                    case Special.IceMirror2:
-                        if (attackRange === 2) {
-                            damageReductionRatio *= 1.0 - 0.4;
-                            isDefenderSpecialActivated = true;
-                        }
-                        break;
-                    case Special.Seitate:
-                        if (attackRange == 2) {
-                            damageReductionRatio *= 1.0 - 0.5;
-                            isDefenderSpecialActivated = true;
-                        }
-                        break;
-                    case Special.Kotate:
-                    case Special.Nagatate:
-                        if (attackRange == 1) {
-                            damageReductionRatio *= 1.0 - 0.3;
-                            isDefenderSpecialActivated = true;
-                        }
-                        break;
-                    case Special.Otate:
-                        if (attackRange == 1) {
-                            damageReductionRatio *= 1.0 - 0.5;
-                            isDefenderSpecialActivated = true;
-                        }
-                        break;
+                if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
+                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
+                    isDefenderSpecialActivated = true;
                 }
 
                 if (isDefenderSpecialActivated) {
