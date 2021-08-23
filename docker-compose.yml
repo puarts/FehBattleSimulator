@@ -1,0 +1,7 @@
+services:
+  feh_bs_test:
+    build: .
+    tty: true
+    volumes:
+      - ./Sources:/Sources
+      - ./Tests:/Tests
