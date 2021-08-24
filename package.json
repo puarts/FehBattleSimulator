@@ -1,0 +1,23 @@
+{
+  "name": "fehbattlesimulator",
+  "version": "1.0.0",
+  "description": "## 概要 FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦渦の連戦、双界を越えてのバトルをシミュレートできるツールである[飛空城シミュレーター](https://puarts.com/?pid=1469)のソースコードです。",
+  "main": "Sources/index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/puarts/FehBattleSimulator.git"
+  },
+  "author": "puarts",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/puarts/FehBattleSimulator/issues"
+  },
+  "homepage": "https://github.com/puarts/FehBattleSimulator#readme",
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "jest": "^27.0.6"
+  }
+}
