@@ -26,7 +26,9 @@ jobs:
       run: npm install
     - name: Action ESLint
       uses: sibiraj-s/action-eslint@v2.0.0
+    - name: Create Test
+      run: ./create_tests.sh
     - name: Run Jest
       uses: stefanoeb/jest-action@1.0.3
       with:
-        jestArgs: ./Tests/Sample.test.js  -c ./jest.config.js --silent=false --verbose false
+        jestArgs: ./All.test.js  -c ./jest.config.js --silent=false --verbose false
