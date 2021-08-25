@@ -492,8 +492,9 @@ class DamageCalculator {
 
         let attackAdvRatio = 0;
         {
-            var attackTriangleAdv = this.calcAttackerTriangleAdvantage(atkUnit, defUnit);
-            var triangleAdeptRate = 0;
+            this.writeDebugLog("[相性判定] 攻撃属性:" + colorTypeToString(atkUnit.color) + "、防御属性:" + colorTypeToString(defUnit.color));
+            let attackTriangleAdv = DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit);
+            let triangleAdeptRate = 0;
             let triangleMult = 0;
             switch (attackTriangleAdv) {
                 case TriangleAdvantage.Advantageous:
@@ -709,60 +710,6 @@ class DamageCalculator {
             defUnit.battleContext.cooldownCountForAttack -= 1;
             defUnit.battleContext.cooldownCountForDefense -= 1;
         }
-    }
-
-    calcAttackerTriangleAdvantage(atkUnit, defUnit) {
-        var atkColor = atkUnit.color;
-        var defColor = defUnit.color;
-        this.writeDebugLog("[相性判定] 攻撃属性:" + colorTypeToString(atkColor) + "、防御属性:" + colorTypeToString(defColor));
-
-        if (atkUnit.color == ColorType.Red) {
-            if (defUnit.color == ColorType.Green) {
-                return TriangleAdvantage.Advantageous;
-            }
-            if (defUnit.color == ColorType.Blue) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        if (atkUnit.color == ColorType.Blue) {
-            if (defUnit.color == ColorType.Red) {
-                return TriangleAdvantage.Advantageous;
-            }
-            else if (defUnit.color == ColorType.Green) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        if (atkUnit.color == ColorType.Green) {
-            if (defUnit.color == ColorType.Blue) {
-                return TriangleAdvantage.Advantageous;
-            }
-            else if (defUnit.color == ColorType.Red) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        if (atkUnit.battleContext.isAdvantageForColorless
-            || atkUnit.isAdvantageForColorless(defUnit)
-        ) {
-            this.writeDebugLog(atkUnit.getNameWithGroup() + "は無属性に有利");
-            if (defUnit.color == ColorType.Colorless) {
-                return TriangleAdvantage.Advantageous;
-            }
-        }
-
-        if (defUnit.battleContext.isAdvantageForColorless
-            || defUnit.isAdvantageForColorless(atkUnit)
-        ) {
-            this.writeDebugLog(defUnit.getNameWithGroup() + "は無属性に有利");
-            if (atkUnit.color == ColorType.Colorless) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        this.writeDebugLog("相性補正なし");
-        return TriangleAdvantage.None;
     }
 
     __calcAttackTotalDamage(

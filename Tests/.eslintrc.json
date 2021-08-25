@@ -6,6 +6,12 @@
     "parserOptions": {
         "ecmaVersion": 2017
     },
+    "settings": {
+        "import/extensions": [
+          ".js",
+          ".jsx",
+        ]
+    },
     "env": {
         "browser": true,
         "es6": true
@@ -14,11 +20,12 @@
     "rules": {
         "no-unused-vars": 1,
         "import/extensions": [
-            ".js",
-            ".jsx",
-            ".json",
-            ".ts",
-            ".tsx"
+              "error",
+              "ignorePackages",
+              {
+                "js": "never",
+                "jsx": "never",
+              }
         ]
     }
 }

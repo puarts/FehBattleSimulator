@@ -3,6 +3,54 @@
 
 /// ダメージ計算用のユーティリティー関数です。
 class DamageCalculationUtility {
+    /// 相性有利不利を判定して返します。
+    static calcAttackerTriangleAdvantage(atkUnit, defUnit) {
+        if (atkUnit.color == ColorType.Red) {
+            if (defUnit.color == ColorType.Green) {
+                return TriangleAdvantage.Advantageous;
+            }
+            if (defUnit.color == ColorType.Blue) {
+                return TriangleAdvantage.Disadvantageous;
+            }
+        }
+
+        if (atkUnit.color == ColorType.Blue) {
+            if (defUnit.color == ColorType.Red) {
+                return TriangleAdvantage.Advantageous;
+            }
+            else if (defUnit.color == ColorType.Green) {
+                return TriangleAdvantage.Disadvantageous;
+            }
+        }
+
+        if (atkUnit.color == ColorType.Green) {
+            if (defUnit.color == ColorType.Blue) {
+                return TriangleAdvantage.Advantageous;
+            }
+            else if (defUnit.color == ColorType.Red) {
+                return TriangleAdvantage.Disadvantageous;
+            }
+        }
+
+        if (atkUnit.battleContext.isAdvantageForColorless
+            || atkUnit.isAdvantageForColorless(defUnit)
+        ) {
+            if (defUnit.color == ColorType.Colorless) {
+                return TriangleAdvantage.Advantageous;
+            }
+        }
+
+        if (defUnit.battleContext.isAdvantageForColorless
+            || defUnit.isAdvantageForColorless(atkUnit)
+        ) {
+            if (atkUnit.color == ColorType.Colorless) {
+                return TriangleAdvantage.Disadvantageous;
+            }
+        }
+
+        return TriangleAdvantage.None;
+    }
+
     /// 速さ比較で追撃可能かどうかを調べます。
     static examinesCanFollowupAttack(atkUnit, defUnit) {
         var totalSpdAtk = atkUnit.getSpdInCombat(defUnit);

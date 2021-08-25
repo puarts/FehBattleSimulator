@@ -4476,7 +4476,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.TenmaNoNinjinPlus:
-                if (this.damageCalc.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
+                if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
                     return true;
                 }
                 break;
@@ -5386,7 +5386,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.MermaidBow:
                     if (targetUnit.snapshot.restHpPercentage >= 25 &&
                         targetUnit.battleContext.initiatesCombat) {
-                        if (this.damageCalc.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
+                        if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
                             if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
                                 targetUnit.battleContext.attackCount = 2;
                             }
