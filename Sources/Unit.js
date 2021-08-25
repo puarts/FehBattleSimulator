@@ -938,11 +938,20 @@ class BattleContext {
         // 自分から攻撃したか
         this.initiatesCombat = false;
 
+        // 隣接マスに味方がいるか
+        this.isThereAllyOnAdjacentTiles = false;
+
         // 2マス以内に味方がいるか
         this.isThereAnyUnitIn2Spaces = false;
 
+        // 3マス以内に味方がいるか
+        this.isThereAllyIn3Spaces = false;
+
         // 3マス以内に支援を組んでいる味方の組み合わせがいるか
         this.isThereAnyPartnerPairsIn3Spaces = false;
+
+        // 2マス以内の敵の数が味方の数と同じ、もしくは多いかどうか
+        this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
 
         // 追撃優先度
         this.followupAttackPriorityIncrement = 0;
@@ -1081,8 +1090,11 @@ class BattleContext {
         // this.invalidatesIncreaseCooldownCount = false;
 
         this.initiatesCombat = false;
+        this.isThereAllyOnAdjacentTiles = false;
         this.isThereAnyUnitIn2Spaces = false;
+        this.isThereAllyIn3Spaces = false;
         this.isThereAnyPartnerPairsIn3Spaces = false;
+        this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
 
@@ -1857,7 +1869,7 @@ class Unit {
         return false;
     }
 
-    // 攻撃可能なユニット
+    /// 攻撃可能なユニットを列挙します。
     *enumerateAttackableUnits() {
         for (let tile of this.attackableTiles) {
             if (tile.placedUnit != null && tile.placedUnit.groupId != this.groupId) {
@@ -2304,10 +2316,6 @@ class Unit {
     get isDefenseMythicHero() {
         return this.providableBlessingSeason == SeasonType.Anima
             || this.providableBlessingSeason == SeasonType.Dark;
-    }
-
-    get debuffTotal() {
-        return this.atkDebuffTotal + this.spdDebuffTotal + this.defDebuffTotal + this.resDebuffTotal;
     }
 
     get atkDebuffTotal() {
@@ -4591,15 +4599,6 @@ class Unit {
         }
     }
 
-    /// 攻撃可能なユニットを列挙します。
-    *enumerateAttackableUnits() {
-        for (let tile of this.attackableTiles) {
-            if (tile.placedUnit != null && tile.placedUnit.groupId != this.groupId) {
-                yield tile.placedUnit;
-            }
-        }
-    }
-
     /// 攻撃可能な壊せる壁や施設を列挙します。
     *enumerateBreakableStructures() {
         for (let tile of this.attackableTiles) {
@@ -4859,8 +4858,6 @@ function isAfflictor(attackUnit, lossesInCombat) {
             case Weapon.Panic:
             case Weapon.PanicPlus:
             case Weapon.FlashPlus:
-            // case Weapon.Candlelight:
-            // case Weapon.CandlelightPlus:
             case Weapon.LegionsAxe:
             case Weapon.LegionsAxePlus:
             case Weapon.MonstrousBow:
