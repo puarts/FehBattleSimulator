@@ -987,7 +987,7 @@ const Weapon = {
     BladeOfRenais: 1699, // ルネスの礼剣
     BowOfFrelia: 1700, // フレリアの玉弓
 
-    // 2021年4月　武器錬成
+    // 2021年4月 武器錬成
     Shamsir: 1682, // シャムシール
     FlowerLance: 1683, // スミアの花槍
 
@@ -1003,7 +1003,7 @@ const Weapon = {
     AxeOfDespair: 1707, // 絶望の邪斧
     BereftLance: 1713, // 虚ろな槍
 
-    // 2021年5月　武器錬成
+    // 2021年5月 武器錬成
     Ragnell: 27, // ラグネル
     Alondite: 35, // エタルド
     Raijinto: 20, // 雷神刀

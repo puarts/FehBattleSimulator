@@ -125,6 +125,7 @@ class AetherRaidTacticsBoard {
                             break;
                         case GameMode.PawnsOfLoki:
                             this.mapKind = -1;
+                            break;
                         default:
                             break;
                     }
@@ -3032,27 +3033,29 @@ class AetherRaidTacticsBoard {
         ) {
             switch (atkUnit.special) {
                 case Special.RequiemDance:
-                    let highestHpUnits = [];
-                    let highestHp = 0;
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
-                        if (unit.isActionDone) {
-                            if (unit.hp > highestHp) {
-                                highestHpUnits = [unit];
-                                highestHp = unit.hp;
-                            } else if (unit.hp === highestHp) {
-                                highestHpUnits.push(unit);
+                    {
+                        let highestHpUnits = [];
+                        let highestHp = 0;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
+                            if (unit.isActionDone) {
+                                if (unit.hp > highestHp) {
+                                    highestHpUnits = [unit];
+                                    highestHp = unit.hp;
+                                } else if (unit.hp === highestHp) {
+                                    highestHpUnits.push(unit);
+                                }
                             }
                         }
-                    }
 
-                    if (highestHpUnits.length === 1) {
-                        for (let unit of highestHpUnits) {
-                            this.writeLogLine(`${atkUnit.getNameWithGroup()}が${atkUnit.specialInfo.name}を発動、対象は${unit.getNameWithGroup()}`);
-                            atkUnit.isOneTimeActionActivatedForSpecial = true;
-                            atkUnit.specialCount = atkUnit.maxSpecialCount;
-                            unit.isActionDone = false;
-                            // @TODO: 将来飛空城でダブルが使用できるようになった場合はダブル相手にもグラビティ付与
-                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        if (highestHpUnits.length === 1) {
+                            for (let unit of highestHpUnits) {
+                                this.writeLogLine(`${atkUnit.getNameWithGroup()}が${atkUnit.specialInfo.name}を発動、対象は${unit.getNameWithGroup()}`);
+                                atkUnit.isOneTimeActionActivatedForSpecial = true;
+                                atkUnit.specialCount = atkUnit.maxSpecialCount;
+                                unit.isActionDone = false;
+                                // @TODO: 将来飛空城でダブルが使用できるようになった場合はダブル相手にもグラビティ付与
+                                unit.addStatusEffect(StatusEffectType.Gravity);
+                            }
                         }
                     }
                     break;
@@ -3350,11 +3353,13 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.Areadbhar:
-                let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
-                    let percentage = Math.min(diff * 4, 40);
-                    this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
-                    return percentage / 100.0;
+                {
+                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                    if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                        let percentage = Math.min(diff * 4, 40);
+                        this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
+                        return percentage / 100.0;
+                    }
                 }
                 break;
             case Weapon.GiltGoblet:
@@ -4788,11 +4793,6 @@ class AetherRaidTacticsBoard {
                         break;
                 }
             }
-
-            for (let skillId of defUnit.enumerateSkills()) {
-                switch (skillId) {
-                }
-            }
         }
 
         if (followupAttackPriority < 0) {
@@ -5471,7 +5471,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.KentoushiNoGoken:
                     this.__applyHeavyBladeSkill(targetUnit, enemyUnit);
                     break;
-                case PassiveA.FlashingBlade2:
+                case PassiveA.FlashingBlade1:
                     if (targetUnit.getSpdInCombat(enemyUnit) >= enemyUnit.getSpdInCombat(targetUnit) + 5) {
                         targetUnit.battleContext.increaseCooldownCountForAttack = true;
                     }
@@ -6048,8 +6048,7 @@ class AetherRaidTacticsBoard {
                     attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
                     break;
                 case Weapon.GrimasTruth:
-                    if (attackUnit.isWeaponRefined) {
-                    } else {
+                    if (!attackUnit.isWeaponRefined) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
                             unit.applyAtkBuff(5);
                             unit.applySpdBuff(5);
@@ -6710,10 +6709,12 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Areadbhar:
-                    let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                    if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
-                        let percentage = Math.min(diff * 4, 40);
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                            let percentage = Math.min(diff * 4, 40);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
                     }
                     break;
                 case Weapon.GiltGoblet:
@@ -7294,6 +7295,8 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.battleContext.initiatesCombat) {
                         let healRatio = 0.1 + (targetUnit.maxSpecialCount * 0.2);
                         targetUnit.battleContext.maxHpRatioToHealBySpecial += healRatio;
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
                     }
                     break;
                 case Weapon.MoonlessBreath:
@@ -7305,12 +7308,6 @@ class AetherRaidTacticsBoard {
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 5;
                         targetUnit.resSpur += 5;
-                    }
-                    break;
-                case PassiveA.SurgeSparrow:
-                    if (targetUnit.battleContext.initiatesCombat) {
-                        targetUnit.atkSpur += 7;
-                        targetUnit.spdSpur += 7;
                     }
                     break;
                 case Weapon.BindingReginleif:
@@ -7417,20 +7414,22 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.NifuruNoHyoka:
-                    if (!targetUnit.isWeaponRefined) break;
-                    let allies = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
-                    if (allies.length >= 1) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.resSpur += 5;
-                        targetUnit.atkSpur += Math.min(allies.length, 2) * 2;
-                    }
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                    {
+                        if (!targetUnit.isWeaponRefined) break;
+                        let allies = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                        if (allies.length >= 1) {
                             targetUnit.atkSpur += 5;
                             targetUnit.resSpur += 5;
-                            let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false));
-                            let atkMax = units.reduce((max, unit) => Math.max(max, unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : unit.atkBuff), 0);
-                            targetUnit.atkSpur += atkMax;
+                            targetUnit.atkSpur += Math.min(allies.length, 2) * 2;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.resSpur += 5;
+                                let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false));
+                                let atkMax = units.reduce((max, unit) => Math.max(max, unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : unit.atkBuff), 0);
+                                targetUnit.atkSpur += atkMax;
+                            }
                         }
                     }
                     break;
@@ -7726,12 +7725,14 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.ObservantStaffPlus:
-                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
-                    let partners = units.map(u => u.partnerHeroIndex);
-                    targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
-                    if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
-                        targetUnit.addAllSpur(6);
-                        targetUnit.battleContext.invalidateAllBuffs();
+                    {
+                        let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+                        let partners = units.map(u => u.partnerHeroIndex);
+                        targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
+                        if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                            targetUnit.addAllSpur(6);
+                            targetUnit.battleContext.invalidateAllBuffs();
+                        }
                     }
                     break;
                 case Weapon.FairFuryAxe:
@@ -11577,6 +11578,12 @@ class AetherRaidTacticsBoard {
                         break;
                     case Weapon.NifuruNoHyoka:
                         if (targetUnit.isWeaponRefined) break;
+                        this.__applyFormSkill(targetUnit,
+                            (unit, amount) => {
+                                unit.atkSpur += amount;
+                                unit.spdSpur += amount;
+                            });
+                        break;
                     case Weapon.MusuperuNoEnka:
                         this.__applyFormSkill(targetUnit,
                             (unit, amount) => {
@@ -11979,10 +11986,6 @@ class AetherRaidTacticsBoard {
                 case PassiveC.SpurSpdRes2:
                     targetUnit.spdSpur += 3;
                     targetUnit.resSpur += 3;
-                    break;
-                case PassiveC.SpurSpdDef1:
-                    targetUnit.spdSpur += 2;
-                    targetUnit.defSpur += 2;
                     break;
                 case PassiveC.SpurSpdDef1:
                     targetUnit.spdSpur += 2;

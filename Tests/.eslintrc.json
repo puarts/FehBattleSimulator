@@ -6,12 +6,6 @@
     "parserOptions": {
         "ecmaVersion": 2017
     },
-    "settings": {
-        "import/extensions": [
-          ".js",
-          ".jsx",
-        ]
-    },
     "env": {
         "browser": true,
         "es6": true
@@ -19,13 +13,6 @@
     "globals": {},
     "rules": {
         "no-unused-vars": 1,
-        "import/extensions": [
-              "error",
-              "ignorePackages",
-              {
-                "js": "never",
-                "jsx": "never",
-              }
-        ]
+        "no-undef": 0
     }
 }
