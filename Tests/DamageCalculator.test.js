@@ -19,7 +19,7 @@ function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
 /// テスト用のダメージ計算機です。
 class test_DamageCalculator {
   constructor() {
-    this.damageCalc = new DamageCalculator();
+    this.damageCalc = new DamageCalculatorWrapper();
     this.isLogEnabled = false;
   }
 
@@ -73,7 +73,7 @@ class test_DamageCalculator {
     this.__applyDamageReduction(atkUnit, defUnit);
     this.__applyDamageReduction(defUnit, atkUnit);
 
-    let result = this.damageCalc.calc(atkUnit, defUnit);
+    let result = this.damageCalc.calcCombatResult(atkUnit, defUnit);
     if (this.isLogEnabled) {
       console.log(this.damageCalc.rawLog);
     }
