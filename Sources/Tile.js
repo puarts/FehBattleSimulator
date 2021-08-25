@@ -285,19 +285,19 @@ class Tile {
         switch (value) {
             case TileType.Normal:
             case TileType.DefensiveTile:
-                for (var key in this._moveWeights) {
+                for (let key in this._moveWeights) {
                     this._moveWeights[key] = 1;
                 }
                 break;
             case TileType.Trench:
             case TileType.DefensiveTrench:
-                for (var key in this._moveWeights) {
+                for (let key in this._moveWeights) {
                     this._moveWeights[key] = 1;
                 }
                 this._moveWeights[MoveType.Cavalry] = 3;
                 break;
             case TileType.Flier:
-                for (var key in this._moveWeights) {
+                for (let key in this._moveWeights) {
                     this._moveWeights[key] = CanNotReachTile;
                 }
                 this._moveWeights[MoveType.Flying] = 1;

@@ -120,7 +120,7 @@ class DamageCalculator {
     /// ダメージ計算を行います。
     /// @param {Unit} atkUnit 攻撃をするユニットです。
     /// @param {Unit} defUnit 攻撃を受けるユニットです。
-    calc(atkUnit, defUnit) {
+    calcCombatResult(atkUnit, defUnit) {
         // 初期化
         var context = new DamageCalcContext();
         var result = new DamageCalcResult();
@@ -615,7 +615,7 @@ class DamageCalculator {
     }
 
 
-    calcPreCombatDamage(atkUnit, defUnit) {
+    calcPrecombatSpecialResult(atkUnit, defUnit) {
         this.writeDebugLog("戦闘前ダメージ計算..");
         if (isPrecombatSpecial(atkUnit.special) == false) {
             this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を持たない`);
@@ -635,7 +635,7 @@ class DamageCalculator {
         }
 
         atkUnit.battleContext.isSpecialActivated = true;
-        var totalDamage = this.calcPrecombatDamage(atkUnit, defUnit);
+        var totalDamage = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
         if (defUnit.restHp - totalDamage < 1) {
             totalDamage = defUnit.restHp - 1;
         }
@@ -649,7 +649,7 @@ class DamageCalculator {
         return totalDamage;
     }
 
-    calcPrecombatDamage(atkUnit, defUnit) {
+    calcPrecombatSpecialDamage(atkUnit, defUnit) {
         let precombatTotalMit = 0;
         if (atkUnit.isPhysicalAttacker()) {
             this.writeDebugLog("守備参照");
