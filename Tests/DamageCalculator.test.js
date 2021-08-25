@@ -67,7 +67,7 @@ class test_DamageCalculator {
 
   calcDamage(atkUnit, defUnit) {
     defUnit.battleContext.canCounterattack = this.__examinesCanCounterattackBasically(atkUnit, defUnit);
-    atkUnit.battleContext.canFollowupAttack = this.damageCalc.examinesCanFollowupAttack(atkUnit, defUnit);
+    atkUnit.battleContext.canFollowupAttack = DamageCalculationUtility.examinesCanFollowupAttack(atkUnit, defUnit);
     defUnit.battleContext.canFollowupAttack = !atkUnit.battleContext.canFollowupAttack;
 
     this.__applyDamageReduction(atkUnit, defUnit);

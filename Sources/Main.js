@@ -4806,13 +4806,32 @@ class AetherRaidTacticsBoard {
         }
         else {
             // 速さ勝負
-            if (this.damageCalc.examinesCanFollowupAttack(atkUnit, defUnit)) {
+            if (this.__examinesCanFollowupAttack(atkUnit, defUnit)) {
                 return true;
             }
             else {
                 return false;
             }
         }
+    }
+
+    __examinesCanFollowupAttack(atkUnit, defUnit) {
+        this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の速さによる追撃評価:`);
+        this.__logSpdInCombat(atkUnit, defUnit, TabChar);
+        this.__logSpdInCombat(defUnit, atkUnit, TabChar);
+        let result = DamageCalculationUtility.examinesCanFollowupAttack(atkUnit, defUnit);
+        if (result) {
+            this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");
+        }
+        else {
+            this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
+        }
+        return result;
+    }
+
+    __logSpdInCombat(unit, enemyUnit, tab = "") {
+        this.__writeDamageCalcDebugLog(tab + unit.getNameWithGroup()
+            + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
     }
 
     __examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage) {
@@ -4977,7 +4996,7 @@ class AetherRaidTacticsBoard {
         }
         else {
             // 速さ勝負
-            if (this.damageCalc.examinesCanFollowupAttack(defUnit, atkUnit)) {
+            if (this.__examinesCanFollowupAttack(defUnit, atkUnit)) {
                 return true;
             }
             else {
