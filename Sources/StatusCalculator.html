@@ -69,12 +69,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
     <div id="app" style="text-align:center">
-        <table align="center" border="0" style="border-style: none;">
+        <table border="0" style="border-style: none;">
             <tr>
                 <td>
                     <p>
                         <img v-bind:src="value.icon" width="50" height="50" /> {{value.name}} ☆5<br />
-                        <label for="merge"> LV.40+</label>
+                        LV.
+                        <input name="merge" type="number" v-model="value.level" min="1" max="99" @input="updateStatus()"
+                            style="width:50px" />
+                        +
                         <input name="merge" type="number" v-model="value.merge" min="0" max="10" @input="updateStatus()"
                             style="width:50px" />
                         <label for="dragonflower">
@@ -158,7 +161,7 @@
             </tr>
             <tr>
                 <td>
-                    <table align="center" border="1">
+                    <table border="1">
                         <tr>
                             <th></th>
                             <th>HP</th>

@@ -3338,6 +3338,10 @@ class AetherRaidTacticsBoard {
         return result;
     }
 
+    __writeDamageCalcDebugLog(message) {
+        this.damageCalc.writeDebugLog(message);
+    }
+
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
             case Weapon.LilacJadeBreath:
@@ -3349,7 +3353,7 @@ class AetherRaidTacticsBoard {
                 let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
                 if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
                     let percentage = Math.min(diff * 4, 40);
-                    this.damageCalc.writeDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
+                    this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
                     return percentage / 100.0;
                 }
                 break;
@@ -3374,7 +3378,7 @@ class AetherRaidTacticsBoard {
                             percentage = 40;
                         }
 
-                        this.damageCalc.writeDebugLog("ダメージ" + percentage + "%軽減");
+                        this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
                         return percentage / 100.0;
                     }
                 }
@@ -3389,7 +3393,7 @@ class AetherRaidTacticsBoard {
                                 percentage = 40;
                             }
 
-                            this.damageCalc.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                            this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
                             return percentage / 100.0;
                         }
                     }
@@ -3406,14 +3410,14 @@ class AetherRaidTacticsBoard {
                             percentage = 40;
                         }
 
-                        this.damageCalc.writeDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                        this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
                         return percentage / 100.0;
                     }
                 }
                 break;
             case PassiveB.MoonTwinWing:
                 if (defUnit.snapshot.restHpPercentage >= 25) {
-                    return this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
                 }
                 break;
             case PassiveB.Bushido2:
@@ -3421,7 +3425,7 @@ class AetherRaidTacticsBoard {
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
-                return this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
             case PassiveB.BlueLionRule:
                 {
                     let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
@@ -3433,7 +3437,7 @@ class AetherRaidTacticsBoard {
                             percentage = 40;
                         }
 
-                        this.damageCalc.writeDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
+                        this.__writeDamageCalcDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
                         return percentage / 100.0;
                     }
                 }
@@ -3452,7 +3456,7 @@ class AetherRaidTacticsBoard {
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-            let ratio = this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
             if (ratio > 0) {
                 defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
             }
@@ -3613,17 +3617,7 @@ class AetherRaidTacticsBoard {
         // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
         this.__setSkillEffetToContext(atkUnit, defUnit);
 
-        let result = this.damageCalc.calc(atkUnit, defUnit);
-        result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);
-        result.atkUnit_spd = atkUnit.getSpdInCombat(defUnit);
-        result.atkUnit_def = atkUnit.getDefInCombat(defUnit);
-        result.atkUnit_res = atkUnit.getResInCombat(defUnit);
-
-        result.defUnit_atk = defUnit.getAtkInCombat(atkUnit);
-        result.defUnit_spd = defUnit.getSpdInCombat(atkUnit);
-        result.defUnit_def = defUnit.getDefInCombat(atkUnit);
-        result.defUnit_res = defUnit.getResInCombat(atkUnit);
-        return result;
+        return this.damageCalc.calc(atkUnit, defUnit);
     }
 
 
@@ -3641,13 +3635,13 @@ class AetherRaidTacticsBoard {
             defUnit.battleContext.isDefDesperationActivated = defUnit.battleContext.isDefDesperationActivatable;
 
             if (defUnit.battleContext.isDefDesperationActivated) {
-                this.damageCalc.writeDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
+                this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
             }
             if (atkUnit.battleContext.isDesperationActivated) {
-                this.damageCalc.writeDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動、攻撃の直後に追撃");
+                this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動、攻撃の直後に追撃");
             }
             if (defUnit.battleContext.isVantageActivated) {
-                this.damageCalc.writeDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
+                this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
             }
         }
         else {
@@ -4721,7 +4715,7 @@ class AetherRaidTacticsBoard {
     }
 
     __examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage) {
-        this.damageCalc.writeDebugLog(`${atkUnit.getNameWithGroup()}の追撃評価 ------`);
+        this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の追撃評価 ------`);
         let followupAttackPriority = this.__getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage);
         if (!this.__canInvalidateAbsoluteFollowupAttack(defUnit, atkUnit)) {
             for (let skillId of atkUnit.enumerateSkills()) {
@@ -4803,11 +4797,11 @@ class AetherRaidTacticsBoard {
 
         if (followupAttackPriority < 0) {
             // 追撃不可を受けた
-            this.damageCalc.writeDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により追撃不可");
+            this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により追撃不可");
             return false;
         } else if (followupAttackPriority > 0) {
             // 絶対追撃発動
-            this.damageCalc.writeDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
+            this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
             return true;
         }
         else {
@@ -4822,7 +4816,7 @@ class AetherRaidTacticsBoard {
     }
 
     __examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage) {
-        this.damageCalc.writeDebugLog(`${defUnit.getNameWithGroup()}の追撃評価 ------`);
+        this.__writeDamageCalcDebugLog(`${defUnit.getNameWithGroup()}の追撃評価 ------`);
         let followupAttackPriority = this.__getFollowupAttackPriorityForBoth(defUnit, atkUnit, calcPotentialDamage);
         if (!this.__canInvalidateAbsoluteFollowupAttack(atkUnit, defUnit)) {
             for (let skillId of defUnit.enumerateSkills()) {
@@ -4974,11 +4968,11 @@ class AetherRaidTacticsBoard {
 
         if (followupAttackPriority < 0) {
             // 追撃不可を受けた
-            this.damageCalc.writeDebugLog(defUnit.getNameWithGroup() + "はスキル効果により追撃不可");
+            this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により追撃不可");
             return false;
         } else if (followupAttackPriority > 0) {
             // 絶対追撃発動
-            this.damageCalc.writeDebugLog(defUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
+            this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
             return true;
         }
         else {
@@ -5341,7 +5335,7 @@ class AetherRaidTacticsBoard {
                         let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
                         let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
                         let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-                        this.damageCalc.writeDebugLog(`混沌ラグネルにより攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+                        this.__writeDamageCalcDebugLog(`混沌ラグネルにより攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
                         targetUnit.atkSpur += atkAdd;
                         targetUnit.spdSpur += spdAdd;
                         targetUnit.defSpur += defAdd;
@@ -5356,7 +5350,7 @@ class AetherRaidTacticsBoard {
             return;
         }
 
-        this.damageCalc.writeDebugLog("強化増幅効果により各ステータスの強化値分をさらに強化");
+        this.__writeDamageCalcDebugLog("強化増幅効果により各ステータスの強化値分をさらに強化");
         targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
         targetUnit.spdSpur += targetUnit.getSpdBuffInCombat(enemyUnit);
         targetUnit.defSpur += targetUnit.getDefBuffInCombat(enemyUnit);
@@ -5525,14 +5519,14 @@ class AetherRaidTacticsBoard {
         let atkUnitAtk = atkUnit.getAtkInCombat(defUnit);
         let defUnitAtk = defUnit.getAtkInCombat(atkUnit);
         const tab = "&nbsp;&nbsp;";
-        this.damageCalc.writeDebugLog(`剛剣を評価:<br/>${tab}${atkUnit.getNameWithGroup()}の攻撃${atkUnitAtk}(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`
+        this.__writeDamageCalcDebugLog(`剛剣を評価:<br/>${tab}${atkUnit.getNameWithGroup()}の攻撃${atkUnitAtk}(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`
             + `<br/>${tab}${defUnit.getNameWithGroup()}の攻撃${defUnitAtk}(${this.__getAtkInCombatDetail(defUnit, atkUnit)})`);
         if (atkUnitAtk > defUnitAtk) {
-            this.damageCalc.writeDebugLog(`${tab}剛剣発動`);
+            this.__writeDamageCalcDebugLog(`${tab}剛剣発動`);
             atkUnit.battleContext.increaseCooldownCountForAttack = true;
         }
         else {
-            this.damageCalc.writeDebugLog(`${tab}剛剣は発動しない`);
+            this.__writeDamageCalcDebugLog(`${tab}剛剣は発動しない`);
         }
     }
 
@@ -6762,7 +6756,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveB.MoonTwinWing:
                     if (defUnit.snapshot.restHpPercentage >= 25) {
-                        let ratio = this.damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
@@ -6772,7 +6766,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.KaihiTatakikomi3:
                     {
-                        let ratio = this.damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
@@ -6793,7 +6787,7 @@ class AetherRaidTacticsBoard {
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-            let ratio = this.damageCalc.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
         }
     }
@@ -8700,7 +8694,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.SpendthriftBowPlus:
                     targetUnit.atkSpur += 7;
                     enemyUnit.atkSpur -= 7;
-                    this.damageCalc.writeDebugLog(`お大尽の弓により${targetUnit.getNameWithGroup()}の攻撃+7、${enemyUnit.getNameWithGroup()}の攻撃-7`);
+                    this.__writeDamageCalcDebugLog(`お大尽の弓により${targetUnit.getNameWithGroup()}の攻撃+7、${enemyUnit.getNameWithGroup()}の攻撃-7`);
                     break;
                 case PassiveA.AtkSpdBond4:
                     if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
@@ -9116,7 +9110,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.KokukarasuNoSyo:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.getAtkInPrecombat() >= targetUnit.getAtkInPrecombat() + 3) {
-                            this.damageCalc.writeDebugLog("黒鴉の書の効果が発動、敵の攻魔-6、奥義カウント変動量を-1");
+                            this.__writeDamageCalcDebugLog("黒鴉の書の効果が発動、敵の攻魔-6、奥義カウント変動量を-1");
                             enemyUnit.atkSpur -= 6;
                             enemyUnit.resSpur -= 6;
                             targetUnit.battleContext.reducesCooldownCount = true;
@@ -9876,7 +9870,7 @@ class AetherRaidTacticsBoard {
 
     __calcKojosenSpurAmount() {
         let count = this.__countDefenceStructuresOnMap();
-        this.damageCalc.writeDebugLog(`攻城戦に影響する施設数: ${count}`);
+        this.__writeDamageCalcDebugLog(`攻城戦に影響する施設数: ${count}`);
         if (count <= 2) {
             return 10;
         }
@@ -9893,7 +9887,7 @@ class AetherRaidTacticsBoard {
 
     __calcBojosenSpurAmount() {
         let count = this.__countDefenceStructuresOnMap();
-        this.damageCalc.writeDebugLog(`防城戦に影響する施設数: ${count}`);
+        this.__writeDamageCalcDebugLog(`防城戦に影響する施設数: ${count}`);
         if (count >= 5) {
             return 10;
         }
@@ -9910,7 +9904,7 @@ class AetherRaidTacticsBoard {
 
     __calcBojosen4SpurAmount() {
         let count = this.__countDefenceStructuresOnMap();
-        this.damageCalc.writeDebugLog(`防城戦4に影響する施設数: ${count}`);
+        this.__writeDamageCalcDebugLog(`防城戦4に影響する施設数: ${count}`);
         if (count >= 5) {
             return 11;
         } else if (count === 4) {

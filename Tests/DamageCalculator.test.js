@@ -40,7 +40,7 @@ class test_DamageCalculator {
     switch (defUnit.passiveB) {
       case PassiveB.Spurn3:
         {
-          let ratio = this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+          let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
           if (ratio > 0) {
             defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
           }
@@ -49,7 +49,7 @@ class test_DamageCalculator {
     }
 
     if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-      let ratio = this.damageCalc.getDodgeDamageReductionRatio(atkUnit, defUnit);
+      let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
       if (ratio > 0) {
         defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
       }

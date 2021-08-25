@@ -40,6 +40,16 @@ class DamageCalcResult {
         this.atkUnit_normalAttackDamage = 0;
         this.defUnit_normalAttackDamage = 0;
 
+        this.atkUnit_atk = 0;
+        this.atkUnit_spd = 0;
+        this.atkUnit_def = 0;
+        this.atkUnit_res = 0;
+
+        this.defUnit_atk = 0;
+        this.defUnit_spd = 0;
+        this.defUnit_def = 0;
+        this.defUnit_res = 0;
+
         this.preCombatDamage = 0;
 
         // 護り手ユニットかそうでないかを後で区別できるよう結果に戦ったユニットを記録しておく
@@ -80,36 +90,6 @@ class DamageCalculator {
 
         this.writeDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
         return false;
-    }
-
-    getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
-        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-        if (diff > 0) {
-            let percentage = diff * 4;
-            if (percentage > 40) {
-                percentage = 40;
-            }
-
-            return percentage / 100.0;
-        }
-        return 0;
-    }
-
-    getDodgeDamageReductionRatio(atkUnit, defUnit) {
-        let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
-        let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
-        let diff = defUnitSpd - atkUnitSpd;
-        if (diff > 0) {
-            let percentage = diff * 4;
-            if (percentage > 40) {
-                percentage = 40;
-            }
-
-            this.writeDebugLog(`回避効果によりダメージ${percentage}%軽減(速さの差 ${defUnitSpd}-${atkUnitSpd}=${diff})`);
-            return percentage / 100.0;
-        }
-
-        return 0;
     }
 
     __logSpdInCombat(unit, enemyUnit, tab = "") {
@@ -159,6 +139,15 @@ class DamageCalculator {
         var context = new DamageCalcContext();
         var result = new DamageCalcResult();
         result.defUnit = defUnit;
+        result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);
+        result.atkUnit_spd = atkUnit.getSpdInCombat(defUnit);
+        result.atkUnit_def = atkUnit.getDefInCombat(defUnit);
+        result.atkUnit_res = atkUnit.getResInCombat(defUnit);
+
+        result.defUnit_atk = defUnit.getAtkInCombat(atkUnit);
+        result.defUnit_spd = defUnit.getSpdInCombat(atkUnit);
+        result.defUnit_def = defUnit.getDefInCombat(atkUnit);
+        result.defUnit_res = defUnit.getResInCombat(atkUnit);
 
         // 戦闘中ダメージ計算
         this.writeDebugLog("戦闘中ダメージ計算..");
@@ -983,6 +972,8 @@ class DamageCalculator {
             switch (defUnit.special) {
                 case Special.IceMirror2:
                     if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
+                    defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
+                    break;
                 case Special.NegatingFang:
                     defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
                     break;
