@@ -59,7 +59,7 @@ class AetherRaidTacticsBoard {
         this.tesseractLoadState = ModuleLoadState.NotLoaded;
 
         this.cropper = null;
-        this.damageCalc = new DamageCalculator();
+        this.damageCalc = new DamageCalculatorWrapper();
         this.weaponSkillCharWhiteList = "";
         this.supportSkillCharWhiteList = "";
         this.specialSkillCharWhiteList = "";
@@ -2948,7 +2948,7 @@ class AetherRaidTacticsBoard {
                     && tile.placedUnit.groupId == defUnit.groupId
                 ) {
                     let targetUnit = tile.placedUnit;
-                    let damage = this.damageCalc.calcPrecombatDamage(atkUnit, targetUnit);
+                    let damage = this.damageCalc.calcPrecombatSpecialDamage(atkUnit, targetUnit);
                     this.writeLogLine(
                         atkUnit.specialInfo.name + "により" +
                         targetUnit.getNameWithGroup() + "に" + damage + "ダメージ");
@@ -3291,7 +3291,7 @@ class AetherRaidTacticsBoard {
 
         // 戦闘前ダメージ計算
         this.damageCalc.clearLog();
-        let preCombatDamage = this.damageCalc.calcPreCombatDamage(atkUnit, defUnit);
+        let preCombatDamage = this.damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
 
         atkUnit.battleContext.clearPrecombatState();
         defUnit.battleContext.clearPrecombatState();
@@ -3622,7 +3622,7 @@ class AetherRaidTacticsBoard {
         // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
         this.__setSkillEffetToContext(atkUnit, defUnit);
 
-        return this.damageCalc.calc(atkUnit, defUnit);
+        return this.damageCalc.calcCombatResult(atkUnit, defUnit);
     }
 
 

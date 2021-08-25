@@ -2,3 +2,4 @@ node_modules
 x64
 .vs
 .vcxproj.user
+.vscode
