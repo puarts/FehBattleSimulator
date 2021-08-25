@@ -4,12 +4,17 @@ class DamageCalculatorWrapper {
         this._damageCalc = new DamageCalculator();
     }
 
+    // ログ関連のAPIがとっ散らかってるので、Logger的なものを作って一元管理したい
     get log() {
         return this._damageCalc.log;
     }
 
     get simpleLog() {
         return this._damageCalc.simpleLog;
+    }
+
+    get rawLog() {
+        return this._damageCalc.rawLog;
     }
 
     set isLogEnabled(value) {
