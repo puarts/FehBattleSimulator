@@ -4318,17 +4318,6 @@ class AetherRaidTacticsBoard {
             return true;
         }
 
-        // 味方から受ける効果
-        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-            switch (allyUnit.weapon) {
-                case Weapon.ProfessorialText:
-                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
-                        return true;
-                    }
-                    break;
-            }
-        }
-
         switch (targetUnit.weapon) {
             case Weapon.ProfessorialText:
                 if (targetUnit.battleContext.initiatesCombat
@@ -4405,17 +4394,6 @@ class AetherRaidTacticsBoard {
             return true;
         }
 
-        // 味方から受ける効果
-        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-            switch (allyUnit.weapon) {
-                case Weapon.ProfessorialText:
-                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
-                        return true;
-                    }
-                    break;
-            }
-        }
-
         switch (targetUnit.passiveB) {
             case PassiveB.SphiasSoul:
                 return true;
@@ -4426,15 +4404,6 @@ class AetherRaidTacticsBoard {
         }
 
         switch (targetUnit.weapon) {
-            case Weapon.ProfessorialText:
-                if (targetUnit.battleContext.initiatesCombat
-                    || this.__isThereAnyUnitIn2Spaces(targetUnit)
-                ) {
-                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
-                        return true;
-                    }
-                }
-                break;
             case Weapon.Failnaught:
                 if (targetUnit.snapshot.restHpPercentage >= 25) {
                     return true;
@@ -7624,6 +7593,8 @@ class AetherRaidTacticsBoard {
                         || this.__isThereAnyUnitIn2Spaces(targetUnit)
                     ) {
                         targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     }
                     break;
                 case Weapon.SunflowerBowPlus:
@@ -10679,6 +10650,12 @@ class AetherRaidTacticsBoard {
             for (let skillId of allyUnit.enumerateSkills()) {
                 if (!calcPotentialDamage) {
                     switch (skillId) {
+                        case Weapon.ProfessorialText:
+                            if (unit.getSpdInCombat(vsUnit) > vsUnit.getSpdInCombat(unit)) {
+                                unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                                unit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                            break;
                         case PassiveC.DomainOfIce:
                             unit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, vsUnit);
                             break;
