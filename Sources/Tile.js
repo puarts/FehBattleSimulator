@@ -836,6 +836,11 @@ class TilePriorityContext {
         let defensiveTileWeight = 0;
         if (this.isDefensiveTile) { defensiveTileWeight = 1; }
         let tileTypeWeight = this.__getTileTypePriority(moveUnit, this.tileType);
+        if (moveUnit.moveType == MoveType.Cavalry) {
+            // 騎馬はタイル優先度がないっぽい
+            // https://twitter.com/lidick_l/status/1338005122882793477?s=20
+            tileTypeWeight = 0;
+        }
 
         let pivotRequiredPriority = 0;
         if (this.isPivotRequired) {
@@ -856,7 +861,8 @@ class TilePriorityContext {
             - this.enemyThreat * 10000000
             - this.restMovementPower * 1000000
             + defensiveTileWeight * 100000
-            - this.distanceFromDiagonal * 5000
+            - this.distanceFromDiagonal * 10000
+            + tileTypeWeight * 5000
             + teleportationRequirementWeight * 2500
             - requiredMovementCount * 100
             + this.tilePriority;
