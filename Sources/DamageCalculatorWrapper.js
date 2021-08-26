@@ -39,6 +39,10 @@ class DamageCalculatorWrapper {
 
     calcCombatResult(atkUnit, defUnit) {
 
+        // 防御系奥義発動時のダメージ軽減率設定
+        this.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
+        this.__applyDamageReductionRatioBySpecial(defUnit, atkUnit);
+
         // 追撃可能かどうかが条件として必要なスキル効果の適用
         {
             this.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
@@ -80,6 +84,62 @@ class DamageCalculatorWrapper {
     __logSpdInCombat(unit, enemyUnit, tab = "") {
         this.__writeDamageCalcDebugLog(tab + unit.getNameWithGroup()
             + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
+    }
+
+    /// 殺しスキルを発動できるならtrue、そうでなければfalseを返します。
+    static canActivateBreakerSkill(breakerUnit, targetUnit) {
+        // 殺し3の評価
+        if (breakerUnit.snapshot.restHpPercentage < 50) { return false; }
+        switch (breakerUnit.passiveB) {
+            case PassiveB.Swordbreaker3: return targetUnit.weaponType == WeaponType.Sword;
+            case PassiveB.Lancebreaker3: return targetUnit.weaponType == WeaponType.Lance;
+            case PassiveB.Axebreaker3: return targetUnit.weaponType == WeaponType.Axe;
+            case PassiveB.Bowbreaker3: return targetUnit.weaponType == WeaponType.ColorlessBow;
+            case PassiveB.Daggerbreaker3: return targetUnit.weaponType == WeaponType.ColorlessDagger;
+            case PassiveB.RedTomebreaker3: return targetUnit.weaponType == WeaponType.RedTome;
+            case PassiveB.BlueTomebreaker3: return targetUnit.weaponType == WeaponType.BlueTome;
+            case PassiveB.GreenTomebreaker3: return targetUnit.weaponType == WeaponType.GreenTome;
+        }
+
+        return false;
+    }
+
+
+    __applyDamageReductionRatioBySpecial(defUnit, atkUnit) {
+        let attackRange = atkUnit.getActualAttackRange(defUnit);
+        switch (defUnit.special) {
+            case Special.NegatingFang:
+                defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
+                break;
+            case Special.Seikabuto:
+            case Special.Seii:
+            case Special.KoriNoSeikyo:
+                if (attackRange == 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
+                }
+                break;
+            case Special.IceMirror2:
+                if (attackRange === 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+                }
+                break;
+            case Special.Seitate:
+                if (attackRange == 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
+                }
+                break;
+            case Special.Kotate:
+            case Special.Nagatate:
+                if (attackRange == 1) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
+                }
+                break;
+            case Special.Otate:
+                if (attackRange == 1) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
+                }
+                break;
+        }
     }
 
     /// 追撃可能かどうかが条件として必要なスキル効果の適用

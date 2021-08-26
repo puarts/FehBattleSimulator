@@ -14,10 +14,10 @@ if (targetUnit.battleContext.initiatesCombat) {
 if (enemyUnit.battleContext.initiatesCombat) {
 
 周囲2マス以内に味方がいる時
-targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-    targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+targetUnit.battleContext.isThereAllyIn2Spaces =
+    targetUnit.battleContext.isThereAllyIn2Spaces ||
     this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {}
+if (targetUnit.battleContext.isThereAllyIn2Spaces) {}
 
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)

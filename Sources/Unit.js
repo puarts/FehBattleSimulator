@@ -942,7 +942,7 @@ class BattleContext {
         this.isThereAllyOnAdjacentTiles = false;
 
         // 2マス以内に味方がいるか
-        this.isThereAnyUnitIn2Spaces = false;
+        this.isThereAllyIn2Spaces = false;
 
         // 3マス以内に味方がいるか
         this.isThereAllyIn3Spaces = false;
@@ -952,6 +952,12 @@ class BattleContext {
 
         // 2マス以内の敵の数が味方の数と同じ、もしくは多いかどうか
         this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
+
+        // 2マス以内の味方の数が敵の数より多いかどうか
+        this.isAllyCountIsGreaterThanEnemyCountIn2Spaces = false;
+
+        // マップ上の飛行の味方の数
+        this.flyingAllyCount = 0;
 
         // 追撃優先度
         this.followupAttackPriorityIncrement = 0;
@@ -1091,10 +1097,12 @@ class BattleContext {
 
         this.initiatesCombat = false;
         this.isThereAllyOnAdjacentTiles = false;
-        this.isThereAnyUnitIn2Spaces = false;
+        this.isThereAllyIn2Spaces = false;
         this.isThereAllyIn3Spaces = false;
         this.isThereAnyPartnerPairsIn3Spaces = false;
         this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
+        this.isAllyCountIsGreaterThanEnemyCountIn2Spaces = false;
+        this.flyingAllyCount = 0;
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
 
@@ -1116,6 +1124,11 @@ class BattleContext {
         this.damageRatioToHeal = 0;
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
+    }
+
+    /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
+    get isSolo() {
+        return !this.isThereAllyOnAdjacentTiles;
     }
 
     invalidateAllBuffs() {

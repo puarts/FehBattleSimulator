@@ -3350,12 +3350,12 @@ class AetherRaidTacticsBoard {
     __setBattleContextRelatedToMap(targetUnit, enemyUnit, calcPotentialDamage) {
         targetUnit.battleContext.isThereAllyOnAdjacentTiles = this.__isThereAllyInSpecifiedSpaces(targetUnit, 1);
         if (targetUnit.battleContext.isThereAllyOnAdjacentTiles) {
-            targetUnit.battleContext.isThereAnyUnitIn2Spaces = true;
+            targetUnit.battleContext.isThereAllyIn2Spaces = true;
         } else {
-            targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+            targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
         }
 
-        if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+        if (targetUnit.battleContext.isThereAllyIn2Spaces) {
             targetUnit.battleContext.isThereAllyIn3Spaces = true;
         } else {
             targetUnit.battleContext.isThereAllyIn3Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 3);
@@ -3363,6 +3363,10 @@ class AetherRaidTacticsBoard {
 
         targetUnit.battleContext.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(
             targetUnit, enemyUnit, calcPotentialDamage);
+
+        targetUnit.battleContext.isAllyCountIsGreaterThanEnemyCountIn2Spaces = this.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage);
+
+        targetUnit.battleContext.flyingAllyCount = this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying);
 
         {
             let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
@@ -3614,9 +3618,6 @@ class AetherRaidTacticsBoard {
             this.__applyDamageReductionRatio(defUnit, atkUnit);
         }
 
-        this.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
-        this.__applyDamageReductionRatioBySpecial(defUnit, atkUnit);
-
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
         this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
         this.__calcFixedAddDamage(atkUnit, defUnit, false);
@@ -3835,7 +3836,7 @@ class AetherRaidTacticsBoard {
 
         switch (atkUnit.passiveA) {
             case PassiveA.LawsOfSacae2:
-                if (atkUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(atkUnit)) {
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     if (defUnit.isMeleeWeaponType()) {
                         let atkUnitSpd = atkUnit.getSpdInCombat(defUnit);
                         let defUnitSpd = defUnit.getSpdInCombat(atkUnit);
@@ -3942,22 +3943,6 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
-    __canActivateBreakerSkill(breakerUnit, targetUnit) {
-        // 殺し3の評価
-        if (breakerUnit.snapshot.restHpPercentage < 50) { return false; }
-        switch (breakerUnit.passiveB) {
-            case PassiveB.Swordbreaker3: return targetUnit.weaponType == WeaponType.Sword;
-            case PassiveB.Lancebreaker3: return targetUnit.weaponType == WeaponType.Lance;
-            case PassiveB.Axebreaker3: return targetUnit.weaponType == WeaponType.Axe;
-            case PassiveB.Bowbreaker3: return targetUnit.weaponType == WeaponType.ColorlessBow;
-            case PassiveB.Daggerbreaker3: return targetUnit.weaponType == WeaponType.ColorlessDagger;
-            case PassiveB.RedTomebreaker3: return targetUnit.weaponType == WeaponType.RedTome;
-            case PassiveB.BlueTomebreaker3: return targetUnit.weaponType == WeaponType.BlueTome;
-            case PassiveB.GreenTomebreaker3: return targetUnit.weaponType == WeaponType.GreenTome;
-        }
-
-        return false;
-    }
     __isAllyCountIsGreaterThanEnemyCount(skillUnit, battleTargetUnit, calcPotentialDamage) {
         if (calcPotentialDamage) {
             return true;
@@ -3978,166 +3963,12 @@ class AetherRaidTacticsBoard {
         return enemyCount >= allyCount;
     }
 
-    /// 敵の絶対追撃を無効化できるか調べます。
-    __canInvalidateAbsoluteFollowupAttack(targetUnit, enemyUnit) {
-        if (targetUnit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
-            return true;
-        }
-        if (targetUnit.passiveB == PassiveB.SphiasSoul) {
-            return true;
-        }
-
-        if (targetUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
-            return true;
-        }
-
-        switch (targetUnit.weapon) {
-            case Weapon.ProfessorialText:
-                if (targetUnit.battleContext.initiatesCombat
-                    || targetUnit.battleContext.isThereAnyUnitIn2Spaces
-                ) {
-                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
-                        return true;
-                    }
-                }
-                break;
-            case Weapon.KenhimeNoKatana:
-                if (targetUnit.isWeaponRefined) {
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
-                            return true;
-                        }
-                    }
-                }
-                break;
-            case Weapon.Failnaught:
-                if (targetUnit.snapshot.restHpPercentage >= 25) {
-                    return true;
-                }
-                break;
-            case Weapon.TomeOfStorms:
-                if (enemyUnit.snapshot.restHpPercentage >= 75) {
-                    return true;
-                }
-                break;
-            case Weapon.ShinenNoBreath:
-                if (targetUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.snapshot.restHpPercentage >= 25 && targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
-                        return true;
-                    }
-                }
-                break;
-            case Weapon.SunsPercussors:
-                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
-                    || enemyUnit.snapshot.restHpPercentage == 100
-                ) {
-                    return true;
-                }
-                break;
-            case Weapon.WindsOfChange:
-                if (targetUnit.isBuffed || targetUnit.snapshot.restHpPercentage >= 50) {
-                    return true;
-                }
-                break;
-            case Weapon.HakutoshinNoNinjin:
-                return true;
-            case Weapon.TenteiNoKen:
-                return true;
-            case Weapon.Ifingr:
-                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                    return true;
-                }
-                break;
-            case Weapon.MaritaNoKen:
-                if (this.__isSolo(targetUnit)) {
-                    return true;
-                }
-                break;
-        }
-        return false;
-    }
-
-    /// 自分の追撃不可を無効化できるかを調べます。
-    __canInvalidateInvalidationOfFollowupAttack(targetUnit, enemyUnit) {
-        if (targetUnit.hasPassiveSkill(PassiveB.MikiriTsuigeki3)) {
-            return true;
-        }
-
-        if (targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
-            return true;
-        }
-
-        switch (targetUnit.passiveB) {
-            case PassiveB.SphiasSoul:
-                return true;
-            case PassiveB.KyusyuTaikei3:
-                return targetUnit.battleContext.initiatesCombat;
-            case PassiveB.DragonsIre3:
-                return enemyUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 50;
-        }
-
-        switch (targetUnit.weapon) {
-            case Weapon.Failnaught:
-                if (targetUnit.snapshot.restHpPercentage >= 25) {
-                    return true;
-                }
-                break;
-            case Weapon.TomeOfStorms:
-                if (enemyUnit.snapshot.restHpPercentage >= 75) {
-                    return true;
-                }
-                break;
-            case Weapon.Thunderbrand:
-                if (enemyUnit.snapshot.restHpPercentage >= 50) {
-                    return true;
-                }
-                break;
-            case Weapon.CourtlyFanPlus:
-                return targetUnit.battleContext.initiatesCombat;
-            case Weapon.Garumu:
-                if (targetUnit.isWeaponRefined) {
-                    if (targetUnit.hasPositiveStatusEffect()) {
-                        return true;
-                    }
-                }
-                break;
-            case Weapon.SunsPercussors:
-                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
-                    || enemyUnit.snapshot.restHpPercentage == 100
-                ) {
-                    return true;
-                }
-                break;
-            case Weapon.WindsOfChange:
-                if (targetUnit.isBuffed || targetUnit.snapshot.restHpPercentage >= 50) {
-                    return true;
-                }
-                break;
-            case Weapon.HakutoshinNoNinjin:
-                return true;
-            case Weapon.TenteiNoKen:
-                return true;
-            case Weapon.MaritaNoKen:
-                if (this.__isSolo(targetUnit)) {
-                    return true;
-                }
-                break;
-            case Weapon.TenmaNoNinjinPlus:
-                if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
-                    return true;
-                }
-                break;
-        }
-
-        return false;
-    }
-
     __getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
         let followupAttackPriority = 0;
-        if (!this.__canInvalidateAbsoluteFollowupAttack(defUnit, atkUnit)) {
+        if (!defUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             followupAttackPriority += atkUnit.battleContext.followupAttackPriorityIncrement;
 
-            if (this.__canActivateBreakerSkill(atkUnit, defUnit)) {
+            if (DamageCalculatorWrapper.canActivateBreakerSkill(atkUnit, defUnit)) {
                 ++followupAttackPriority;
             }
 
@@ -4180,6 +4011,11 @@ class AetherRaidTacticsBoard {
                             || defUnit.hasNegativeStatusEffect()
                         ) {
                             ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.DragonsIre3:
+                        if (enemyUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                         }
                         break;
                     case Weapon.Garumu:
@@ -4242,7 +4078,7 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        if (!this.__canInvalidateInvalidationOfFollowupAttack(atkUnit, defUnit)) {
+        if (!atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
             followupAttackPriority += atkUnit.battleContext.followupAttackPriorityDecrement;
 
             if (defUnit.hasStatusEffect(StatusEffectType.FollowUpAttackMinus)) {
@@ -4255,7 +4091,7 @@ class AetherRaidTacticsBoard {
             if (atkUnit.passiveB == PassiveB.WaryFighter3 && atkUnit.snapshot.restHpPercentage >= 50) {
                 --followupAttackPriority;
             }
-            if (this.__canActivateBreakerSkill(defUnit, atkUnit)) {
+            if (DamageCalculatorWrapper.canActivateBreakerSkill(defUnit, atkUnit)) {
                 --followupAttackPriority;
             }
 
@@ -4271,19 +4107,19 @@ class AetherRaidTacticsBoard {
 
                         break;
                     case Weapon.Aymr:
-                        if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(defUnit, 1)) {
+                        if (calcPotentialDamage || defUnit.battleContext.isSolo) {
                             --followupAttackPriority;
                         }
                         break;
                     case Weapon.HarukazeNoBreath:
-                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)
+                        if (defUnit.battleContext.isThereAllyIn2Spaces
                             || defUnit.isBuffed
                         ) {
                             --followupAttackPriority;
                         }
                         break;
                     case Weapon.TenraiArumazu:
-                        if (this.__isAllyCountIsGreaterThanEnemyCount(defUnit, atkUnit, calcPotentialDamage)) {
+                        if (defUnit.battleContext.isAllyCountIsGreaterThanEnemyCountIn2Spaces) {
                             --followupAttackPriority;
                         }
                         break;
@@ -4338,7 +4174,7 @@ class AetherRaidTacticsBoard {
                         }
                         break;
                     case Weapon.GeneiBattleAxe:
-                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
+                        if (defUnit.battleContext.isThereAllyIn2Spaces) {
                             --followupAttackPriority;
                         }
                         break;
@@ -4364,7 +4200,7 @@ class AetherRaidTacticsBoard {
     __examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage) {
         this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の追撃評価 ------`);
         let followupAttackPriority = this.__getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage);
-        if (!this.__canInvalidateAbsoluteFollowupAttack(defUnit, atkUnit)) {
+        if (!defUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
                     case Weapon.DarkSpikesT:
@@ -4424,7 +4260,7 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        if (!this.__canInvalidateInvalidationOfFollowupAttack(atkUnit, defUnit)) {
+        if (!atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
                     case PassiveB.Kazenagi3:
@@ -4479,7 +4315,7 @@ class AetherRaidTacticsBoard {
     __examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage) {
         this.__writeDamageCalcDebugLog(`${defUnit.getNameWithGroup()}の追撃評価 ------`);
         let followupAttackPriority = this.__getFollowupAttackPriorityForBoth(defUnit, atkUnit, calcPotentialDamage);
-        if (!this.__canInvalidateAbsoluteFollowupAttack(atkUnit, defUnit)) {
+        if (!atkUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
                     case PassiveB.SlickFighter3:
@@ -4548,7 +4384,7 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        if (!this.__canInvalidateInvalidationOfFollowupAttack(defUnit, atkUnit)) {
+        if (!defUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
                     case Weapon.InstantLancePlus:
@@ -4727,7 +4563,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.BladeOfRenais:
                     if (targetUnit.battleContext.initiatesCombat
-                        || targetUnit.battleContext.isThereAnyUnitIn2Spaces
+                        || targetUnit.battleContext.isThereAllyIn2Spaces
                     ) {
                         targetUnit.addAllSpur(5);
 
@@ -4827,22 +4663,22 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveA.AtkSpdUnity:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.applyAtkUnity();
                         targetUnit.applySpdUnity();
                     }
                     break;
                 case PassiveA.AtkDefUnity:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.applyAtkUnity();
                         targetUnit.applyDefUnity();
                     }
                     break;
                 case PassiveA.AtkResUnity:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    if (calcPotentialDamage || targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.applyAtkUnity();
                         targetUnit.applyResUnity();
                     }
@@ -6305,42 +6141,6 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    __applyDamageReductionRatioBySpecial(defUnit, atkUnit) {
-        let attackRange = atkUnit.getActualAttackRange(defUnit);
-        switch (defUnit.special) {
-            case Special.NegatingFang:
-                defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
-                break;
-            case Special.Seikabuto:
-            case Special.Seii:
-            case Special.KoriNoSeikyo:
-                if (attackRange == 2) {
-                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
-                }
-                break;
-            case Special.IceMirror2:
-                if (attackRange === 2) {
-                    defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
-                }
-                break;
-            case Special.Seitate:
-                if (attackRange == 2) {
-                    defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
-                }
-                break;
-            case Special.Kotate:
-            case Special.Nagatate:
-                if (attackRange == 1) {
-                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
-                }
-                break;
-            case Special.Otate:
-                if (attackRange == 1) {
-                    defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
-                }
-                break;
-        }
-    }
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
@@ -6580,12 +6380,12 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Weapon.FairFuryAxe:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalAtkInCombat() * 0.15);
                 }
                 break;
             case Weapon.RoseQuartsBow:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
                 }
                 break;
@@ -6664,7 +6464,7 @@ class AetherRaidTacticsBoard {
                 break;
             case Weapon.BladeOfRenais:
                 if (atkUnit.battleContext.initiatesCombat
-                    || atkUnit.battleContext.isThereAnyUnitIn2Spaces
+                    || atkUnit.battleContext.isThereAllyIn2Spaces
                 ) {
                     if (atkUnit.hasPositiveStatusEffect(defUnit)
                         || atkUnit.hasNegativeStatusEffect()
@@ -6753,7 +6553,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.BladeOfRenais:
                     // 戦闘前奥義にも必要なのでここでフラグを立てておく
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |= this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    targetUnit.battleContext.isThereAllyIn2Spaces |= this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     break;
                 case Weapon.DarkCreatorS:
                     if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
@@ -6766,11 +6566,11 @@ class AetherRaidTacticsBoard {
         }
     }
 
-    __isThereAnyUnitIn2Spaces(targetUnit) {
-        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+    __isThereAllyIn2Spaces(targetUnit) {
+        targetUnit.battleContext.isThereAllyIn2Spaces =
+            targetUnit.battleContext.isThereAllyIn2Spaces ||
             this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-        return targetUnit.battleContext.isThereAnyUnitIn2Spaces;
+        return targetUnit.battleContext.isThereAllyIn2Spaces;
     }
 
     __getTotalBuffAmountOfTop3Units(targetUnit) {
@@ -6907,6 +6707,19 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.MikiriTsuigeki3:
+                case PassiveB.SphiasSoul:
+                case Weapon.HakutoshinNoNinjin:
+                case Weapon.TenteiNoKen:
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    break;
+                case Weapon.MaritaNoKen:
+                    if (calcPotentialDamage || targetUnit.battleContext.isSolo) {
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                    break;
                 case PassiveB.SeimeiNoGofu3:
                     targetUnit.battleContext.invalidatesReferenceLowerMit = true;
                     break;
@@ -6942,7 +6755,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.MoonlessBreath:
-                    if (this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                    if (this.__isThereAllyIn2Spaces(targetUnit)) {
                         targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
                     }
                     break;
@@ -7020,7 +6833,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.GenesisFalchion:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         targetUnit.addAllSpur(5);
                         let buffTotal = this.__getTotalBuffAmountOfTop3Units(targetUnit);
                         if (buffTotal >= 10) {
@@ -7134,7 +6947,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveC.DomainOfIce:
-                    if (this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                    if (this.__isThereAllyIn2Spaces(targetUnit)) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                         targetUnit.spdSpur += 4;
                         targetUnit.resSpur += 4;
@@ -7151,7 +6964,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.DolphinDiveAxe:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         targetUnit.addAllSpur(5);
                     }
                     break;
@@ -7163,7 +6976,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.RaydreamHorn:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         targetUnit.atkSpur += 6;
                         enemyUnit.atkSpur -= 6;
                         targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -7196,7 +7009,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.StoutTomahawk:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                             targetUnit.battleContext.invalidateAllBuffs();
@@ -7234,7 +7047,7 @@ class AetherRaidTacticsBoard {
                             targetUnit.spdSpur += 5;
                         }
                         if (targetUnit.isWeaponSpecialRefined) {
-                            if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.spdSpur += 5;
                                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
@@ -7257,13 +7070,13 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveA.LawsOfSacae2:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAnyUnitIn2Spaces(targetUnit)) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         targetUnit.addAllSpur(6);
                     }
                     break;
                 case Weapon.ProfessorialText:
                     if (targetUnit.battleContext.initiatesCombat
-                        || this.__isThereAnyUnitIn2Spaces(targetUnit)
+                        || this.__isThereAllyIn2Spaces(targetUnit)
                     ) {
                         targetUnit.addAllSpur(5);
                         targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -7310,10 +7123,10 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.KenhimeNoKatana:
                     if (targetUnit.isWeaponRefined) {
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        targetUnit.battleContext.isThereAllyIn2Spaces =
+                            targetUnit.battleContext.isThereAllyIn2Spaces ||
                             this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                        if (targetUnit.battleContext.isThereAnyUnitIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                        if (targetUnit.battleContext.isThereAllyIn2Spaces || targetUnit.battleContext.initiatesCombat) {
                             targetUnit.spdSpur += 5;
                         }
                         if (targetUnit.isWeaponSpecialRefined) {
@@ -7332,10 +7145,10 @@ class AetherRaidTacticsBoard {
                             targetUnit.addAllSpur(4);
                         }
                         if (targetUnit.isWeaponSpecialRefined) {
-                            targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                                targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                            targetUnit.battleContext.isThereAllyIn2Spaces =
+                                targetUnit.battleContext.isThereAllyIn2Spaces ||
                                 this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                            if (targetUnit.battleContext.isThereAnyUnitIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.battleContext.isThereAllyIn2Spaces || targetUnit.battleContext.initiatesCombat) {
                                 targetUnit.addAllSpur(4);
                             }
                         }
@@ -7351,10 +7164,10 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.RohyouNoKnife:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        targetUnit.battleContext.isThereAllyIn2Spaces =
+                            targetUnit.battleContext.isThereAllyIn2Spaces ||
                             this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                             targetUnit.battleContext.reducesCooldownCount = true;
@@ -7382,10 +7195,10 @@ class AetherRaidTacticsBoard {
                 case Weapon.FairFuryAxe:
                 case Weapon.WeddingBellAxe:
                 case Weapon.RoseQuartsBow:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                    targetUnit.battleContext.isThereAllyIn2Spaces =
+                        targetUnit.battleContext.isThereAllyIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
                     }
@@ -7409,10 +7222,10 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.Raijinto:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                            targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                        targetUnit.battleContext.isThereAllyIn2Spaces =
+                            targetUnit.battleContext.isThereAllyIn2Spaces ||
                             this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
                             targetUnit.addAllSpur(4)
                             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -7718,6 +7531,8 @@ class AetherRaidTacticsBoard {
                 case Weapon.Failnaught:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     }
                     break;
                 case Weapon.UnboundBlade:
@@ -7776,10 +7591,10 @@ class AetherRaidTacticsBoard {
                 case Weapon.UnityBloomsPlus:
                 case Weapon.AmityBloomsPlus:
                 case Weapon.PactBloomsPlus:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                    targetUnit.battleContext.isThereAllyIn2Spaces =
+                        targetUnit.battleContext.isThereAllyIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (targetUnit.battleContext.isThereAllyIn2Spaces) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.resSpur -= 5;
                         targetUnit.battleContext.healedHpByAttack += 4;
@@ -7830,10 +7645,10 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Grafcalibur:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                    targetUnit.battleContext.isThereAllyIn2Spaces =
+                        targetUnit.battleContext.isThereAllyIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.addAllSpur(5);
                         targetUnit.battleContext.invalidateAllBuffs();
                     }
@@ -7907,10 +7722,10 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.ReindeerBowPlus:
                 case Weapon.CandyCanePlus:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                    targetUnit.battleContext.isThereAllyIn2Spaces =
+                        targetUnit.battleContext.isThereAllyIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                         targetUnit.battleContext.reducesCooldownCount = true;
@@ -7947,6 +7762,8 @@ class AetherRaidTacticsBoard {
                     if (enemyUnit.snapshot.restHpPercentage >= 75) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     }
                     break;
                 case Weapon.Lyngheior:
@@ -7957,9 +7774,9 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Aureola:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                    targetUnit.battleContext.isThereAllyIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
                         targetUnit.resSpur += 5;
@@ -7967,9 +7784,9 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.TigerRoarAxe:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                    targetUnit.battleContext.isThereAllyIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.addAllSpur(5);
                         if (enemyUnit.snapshot.restHpPercentage === 100) {
                             targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -7990,9 +7807,9 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.SpearOfAssal:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces |=
+                    targetUnit.battleContext.isThereAllyIn2Spaces |=
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.battleContext.invalidatesAtkBuff = true;
                         targetUnit.battleContext.invalidatesSpdBuff = true;
                     }
@@ -8001,6 +7818,7 @@ class AetherRaidTacticsBoard {
                     if (enemyUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     }
                     break;
                 case Weapon.EffiesLance:
@@ -8017,10 +7835,10 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.PaleBreathPlus:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces =
-                        targetUnit.battleContext.isThereAnyUnitIn2Spaces ||
+                    targetUnit.battleContext.isThereAllyIn2Spaces =
+                        targetUnit.battleContext.isThereAllyIn2Spaces ||
                         this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces) {
+                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
@@ -8076,9 +7894,9 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.TalreganAxe:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.initiatesCombat
-                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces)
+                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces)
                     ) {
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
@@ -8122,6 +7940,9 @@ class AetherRaidTacticsBoard {
                             targetUnit.addAllSpur(5);
                             targetUnit.battleContext.healedHpByAttack += 7;
                         }
+                        if (targetUnit.hasPositiveStatusEffect()) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
                     }
                     break;
                 case Weapon.PrimordialBreath:
@@ -8154,9 +7975,9 @@ class AetherRaidTacticsBoard {
                     targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     break;
                 case Weapon.WindParthia:
-                    targetUnit.battleContext.isThereAnyUnitIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.initiatesCombat
-                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAnyUnitIn2Spaces)
+                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces)
                     ) {
                         targetUnit.addAllSpur(5);
                         targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.5;
@@ -8230,6 +8051,8 @@ class AetherRaidTacticsBoard {
                     ) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     }
                     break;
                 case Weapon.RauarRabbitPlus:
@@ -8254,6 +8077,7 @@ class AetherRaidTacticsBoard {
                             && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
                         ) {
                             targetUnit.addAllSpur(5);
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                         }
                     }
                     break;
@@ -8353,6 +8177,13 @@ class AetherRaidTacticsBoard {
                     if (targetUnit.isBuffed || targetUnit.snapshot.restHpPercentage >= 50) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                    break;
+                case Weapon.TenmaNoNinjinPlus:
+                    if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     }
                     break;
                 case Weapon.SpendthriftBowPlus:
@@ -9161,8 +8992,9 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.Ifingr:
-                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn3Spaces) {
                         targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     }
                     break;
                 case Weapon.BookOfShadows:
@@ -9474,6 +9306,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveB.KyusyuTaikei3:
+                    atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     if (atkUnit.snapshot.restHpPercentage <= 80) {
                         atkUnit.battleContext.isDesperationActivatable = true;
                     }
@@ -9668,6 +9501,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.CourtlyFanPlus:
                     atkUnit.atkSpur += 5;
                     atkUnit.spdSpur += 5;
+                    atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     break;
                 case Weapon.BenihimeNoOno:
                     if (atkUnit.isWeaponSpecialRefined) {
@@ -10324,7 +10158,7 @@ class AetherRaidTacticsBoard {
                 if (!calcPotentialDamage) {
                     switch (skillId) {
                         case Weapon.ProfessorialText:
-                            if (unit.getSpdInCombat(vsUnit) > vsUnit.getSpdInCombat(unit)) {
+                            if (unit.getEvalSpdInCombat(vsUnit) > vsUnit.getEvalSpdInCombat(unit)) {
                                 unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                                 unit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                             }
