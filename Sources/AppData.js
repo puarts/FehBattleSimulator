@@ -529,7 +529,7 @@ class AppData {
             this.defenseStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.offenceStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.createStructures();
-            this.map = new Map(g_idGenerator.generate(), this.mapKind, this.gameVersion);
+            this.map = new BattleMap(g_idGenerator.generate(), this.mapKind, this.gameVersion);
             this.map.isExpansionUnitFunc = x => {
                 return this.isSpecialSlotUnit(x);
             };
@@ -986,7 +986,7 @@ class AppData {
     }
 
     removeItem(itemType) {
-        var index = this.__findIndexOfBattleItem(itemType);
+        let index = this.__findIndexOfBattleItem(itemType);
         if (index >= 0) {
             this.resonantBattleItems.splice(index, 1);
         }
@@ -1564,7 +1564,7 @@ class AppData {
     }
 
     fromPerTurnStatusString(value) {
-        var splited = value.split(ValueDelimiter);
+        let splited = value.split(ValueDelimiter);
         let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.currentTurnType = Number(splited[i]); ++i; }
         this.isEnemyActionTriggered = intToBool(Number(splited[i])); ++i;
@@ -1574,7 +1574,7 @@ class AppData {
     }
 
     fromTurnWideStatusString(value) {
-        var splited = value.split(ValueDelimiter);
+        let splited = value.split(ValueDelimiter);
         let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.mapKind = Number(splited[i]); ++i; }
         this.isLightSeason = intToBool(Number(splited[i])); ++i;

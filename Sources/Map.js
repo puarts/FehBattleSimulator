@@ -1,5 +1,5 @@
 /// @file
-/// @brief Map クラスとそれに関連するクラスや関数等の定義です。
+/// @brief BattleMap クラスとそれに関連するクラスや関数等の定義です。
 
 const MapType_ArenaOffset = 50;
 const MapType_ResonantBattlesOffset = MapType_ArenaOffset + 100;
@@ -474,7 +474,7 @@ function getMapBackgroundImage(mapKind) {
 }
 
 /// 戦闘マップを表すクラスです。
-class Map {
+class BattleMap {
     constructor(id, mapKind, gameVersion) {
         this._gameVersion = 0;
         this._type = -1;
@@ -3472,7 +3472,7 @@ class Map {
         }
     }
 
-    /// Map を Table に変換します。
+    /// マップを Table に変換します。
     toTable() {
         let isMapHeaderEnabled = this.isHeaderEnabled;
         if (isMapHeaderEnabled) {
