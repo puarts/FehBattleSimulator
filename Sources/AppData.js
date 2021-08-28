@@ -1094,7 +1094,6 @@ class AppData {
 
                     return false;
                 }
-                break;
             case GameMode.ResonantBattles:
                 {
                     if (targetUnit.grantedBlessing == SeasonType.None
@@ -1391,6 +1390,8 @@ class AppData {
             case GameMode.PawnsOfLoki:
                 // todo: 本当は盤位で最大値が決まる。盤位1は9ターン、盤位4は10ターンだったが法則は不明
                 return 20;
+            default:
+                throw new Error("invalid gameMode");
         }
     }
 
@@ -1623,6 +1624,7 @@ class AppData {
                 this.map.isBackgroundImageEnabled = false;
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToPawnsOfLoki();
+                break;
             default:
                 break;
         }
