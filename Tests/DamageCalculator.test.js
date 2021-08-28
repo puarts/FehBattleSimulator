@@ -126,7 +126,7 @@ test('DamageCalculatorDamageReductionTest', () => {
 
   // 回避が重複してるので40%軽減、そこに軽減値を50%軽減する効果が入ると最終的に36%軽減になるはず
   let reductionRatio = 0.4 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial;
-  let actualReductionRatio = roundFloatError(1 - (1 - reductionRatio) * (1 - reductionRatio));
+  let actualReductionRatio = roundFloat(1 - (1 - reductionRatio) * (1 - reductionRatio));
   expect(actualReductionRatio).toBe(0.36);
   expect(defUnit.currentDamage).toBe(result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
 });

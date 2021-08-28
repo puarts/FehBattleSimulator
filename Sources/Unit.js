@@ -1026,6 +1026,9 @@ class BattleContext {
 
         // 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合
         this.selfDamageDealtRateToAddSpecialDamage = 0;
+
+        // 防御床にいるかどうか
+        this.isOnDefensiveTile = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -1124,6 +1127,7 @@ class BattleContext {
         this.damageRatioToHeal = 0;
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
+        this.isOnDefensiveTile = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。

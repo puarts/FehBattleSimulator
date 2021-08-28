@@ -526,8 +526,8 @@ class AppData {
 
         {
             // 生成順を変えるとIDが変わってしまうので注意
-            this.defenseStructureStorage = new Storage(g_idGenerator.generate());
-            this.offenceStructureStorage = new Storage(g_idGenerator.generate());
+            this.defenseStructureStorage = new ObjectStorage(g_idGenerator.generate());
+            this.offenceStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.createStructures();
             this.map = new Map(g_idGenerator.generate(), this.mapKind, this.gameVersion);
             this.map.isExpansionUnitFunc = x => {

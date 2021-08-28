@@ -186,7 +186,7 @@ class IdGenerator {
 }
 
 /// オブジェクトを管理するストレージです。
-class Storage {
+class ObjectStorage {
     constructor(id) {
         this._id = id;
         this._objs = [];
@@ -983,14 +983,14 @@ function getRandomInt(max) {
 
 function selectText(containerid) {
 
-    var node = document.getElementById(containerid);
+    let node = document.getElementById(containerid);
 
     if (document.selection) {
-        var range = document.body.createTextRange();
+        let range = document.body.createTextRange();
         range.moveToElementText(node);
         range.select();
     } else if (window.getSelection) {
-        var range = document.createRange();
+        let range = document.createRange();
         range.selectNodeContents(node);
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(range);
@@ -1012,9 +1012,28 @@ function dateStrToNumber(dateStr) {
     return Number(numStr);
 }
 
-/// 浮動小数点計算誤差を丸めます。
-function roundFloatError(value) {
-    const factor = 10000000;
+/// 浮動小数の誤差を加味して floor します。
+function floorNumberWithFloatError(value) {
+    const errorCorrectionValue = 1.0 / 100000;
+    return Math.floor(value + errorCorrectionValue);
+}
+
+/// 浮動小数の誤差を加味して trunc します。
+function truncNumberWithFloatError(value) {
+    const errorCorrectionValue = 1.0 / 100000;
+    let revisedValue = value;
+    if (value < 0) {
+        revisedValue -= errorCorrectionValue;
+    }
+    else {
+        revisedValue += errorCorrectionValue;
+    }
+    return Math.trunc(revisedValue);
+}
+
+/// 小数を指定した桁数で丸めます。
+function roundFloat(value, precision = 6) {
+    const factor = 10 ** precision;
     const revertFactor = 1.0 / factor;
     return Math.round(value * factor) * revertFactor;
 }

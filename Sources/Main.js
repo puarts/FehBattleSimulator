@@ -3276,6 +3276,12 @@ class AetherRaidTacticsBoard {
             this.__updateUnitSpur(defUnit, calcPotentialDamage);
         }
 
+        // 戦闘前奥義の計算に影響するマップ関連の設定
+        {
+            atkUnit.battleContext.isOnDefensiveTile = atkUnit.placedTile.isDefensiveTile;
+            defUnit.battleContext.isOnDefensiveTile = defUnit.placedTile.isDefensiveTile;
+        }
+
         atkUnit.saveCurrentHpAndSpecialCount();
         defUnit.saveCurrentHpAndSpecialCount();
 
@@ -3291,6 +3297,7 @@ class AetherRaidTacticsBoard {
 
         // 戦闘前ダメージ計算
         this.damageCalc.clearLog();
+
         let preCombatDamage = this.damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
 
         atkUnit.battleContext.clearPrecombatState();
@@ -3348,6 +3355,8 @@ class AetherRaidTacticsBoard {
     }
 
     __setBattleContextRelatedToMap(targetUnit, enemyUnit, calcPotentialDamage) {
+        targetUnit.battleContext.isOnDefensiveTile = targetUnit.placedTile.isDefensiveTile;
+
         targetUnit.battleContext.isThereAllyOnAdjacentTiles = this.__isThereAllyInSpecifiedSpaces(targetUnit, 1);
         if (targetUnit.battleContext.isThereAllyOnAdjacentTiles) {
             targetUnit.battleContext.isThereAllyIn2Spaces = true;
@@ -4209,7 +4218,7 @@ class AetherRaidTacticsBoard {
                         }
                         break;
                     case Weapon.WhitedownSpear:
-                        if (this.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying) >= 3) {
+                        if (atkUnit.battleContext.flyingAllyCount >= 3) {
                             ++followupAttackPriority;
                         }
                         break;

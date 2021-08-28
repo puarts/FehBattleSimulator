@@ -7,17 +7,26 @@ var TriangleAdvantage = {
     Disadvantageous: 2,
 };
 
+/// ダメージ計算時の1回攻撃分のログです。
+class DamageLog {
+    constructor(attackUnit, attackedUnit, damageDealt) {
+        this.attackUnit = attackUnit;
+        this.attackedUnit = attackedUnit;
+        this.damageDealt = damageDealt;
+    }
+}
+
 /// ダメージ計算時に一時的に使用するコンテキストです。
 class DamageCalcContext {
     constructor() {
         this.isCounterattack = false;
         this.isFollowupAttack = false;
-        this.attackedUnitHistory = []; // 攻撃したユニットの履歴
+        this.damageHistory = []; // 攻撃ダメージの履歴
     }
 
     isFirstAttack(atkUnit) {
-        for (let unit of this.attackedUnitHistory) {
-            if (unit == atkUnit) {
+        for (let log of this.damageHistory) {
+            if (log.attackUnit == atkUnit) {
                 return false;
             }
         }
@@ -26,13 +35,14 @@ class DamageCalcContext {
     }
 
     isConsecutiveAttack(atkUnit) {
-        return this.attackedUnitHistory[this.attackedUnitHistory.length - 1] == atkUnit;
+        return this.damageHistory[this.damageHistory.length - 1].attackUnit == atkUnit;
     }
 }
 
 /// ダメージ計算結果を表すクラスです。
 class DamageCalcResult {
     constructor() {
+        this.damageHistory = [];
         this.atkUnit_totalAttackCount = 0;
         this.defUnit_totalAttackCount = 0;
         this.atkUnit_actualTotalAttackCount = 0;
@@ -78,8 +88,8 @@ class DamageCalculator {
     }
 
     examinesCanFollowupAttack(atkUnit, defUnit) {
-        var totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
-        var totalSpdDef = defUnit.getSpdInCombat(atkUnit);
+        let totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
+        let totalSpdDef = defUnit.getSpdInCombat(atkUnit);
         return totalSpdAtk >= totalSpdDef + 5;
     }
 
@@ -122,8 +132,8 @@ class DamageCalculator {
     /// @param {Unit} defUnit 攻撃を受けるユニットです。
     calcCombatResult(atkUnit, defUnit) {
         // 初期化
-        var context = new DamageCalcContext();
-        var result = new DamageCalcResult();
+        let context = new DamageCalcContext();
+        let result = new DamageCalcResult();
         result.defUnit = defUnit;
         result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);
         result.atkUnit_spd = atkUnit.getSpdInCombat(defUnit);
@@ -223,6 +233,7 @@ class DamageCalculator {
             }
         }
 
+        result.damageHistory = context.damageHistory;
         return result;
     }
 
@@ -246,7 +257,7 @@ class DamageCalculator {
     __attack(atkUnit, defUnit, result, context) {
         context.isCounterattack = false;
         context.isFollowupAttack = false;
-        var combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
+        let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
         result.atkUnit_normalAttackDamage = combatResult.damagePerAttack;
         result.atkUnit_totalAttackCount += combatResult.attackCount;
         if (atkUnit.restHp > 0) {
@@ -258,7 +269,7 @@ class DamageCalculator {
         if (atkUnit.battleContext.canFollowupAttack) {
             context.isCounterattack = false;
             context.isFollowupAttack = true;
-            var combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
+            let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
             result.atkUnit_totalAttackCount += combatResult.attackCount;
             if (atkUnit.restHp > 0) {
                 result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
@@ -270,7 +281,7 @@ class DamageCalculator {
         if (defUnit.battleContext.canCounterattack) {
             context.isCounterattack = true;
             context.isFollowupAttack = false;
-            var combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
+            let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
             result.defUnit_normalAttackDamage = combatResult.damagePerAttack;
             result.defUnit_totalAttackCount += combatResult.attackCount;
             if (defUnit.restHp > 0) {
@@ -288,7 +299,7 @@ class DamageCalculator {
         if (defUnit.battleContext.canCounterattack && defUnit.battleContext.canFollowupAttack) {
             context.isCounterattack = true;
             context.isFollowupAttack = true;
-            var combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
+            let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
             result.defUnit_totalAttackCount += combatResult.attackCount;
             if (defUnit.restHp > 0) {
                 result.defUnit_actualTotalAttackCount += combatResult.attackCount;
@@ -321,7 +332,7 @@ class DamageCalculator {
         }
 
         if (atk > value) {
-            return Math.trunc((atk - value) * rate);
+            return floorNumberWithFloatError((atk - value) * rate);
         }
         return 0;
     }
@@ -335,7 +346,7 @@ class DamageCalculator {
             diff = getCombatFunc(atkUnit, defUnit) - getCombatFunc(defUnit, atkUnit);
         }
         if (diff > 0) {
-            let addDamage = Math.trunc(diff * 0.7);
+            let addDamage = floorNumberWithFloatError(diff * 0.7);
             if (addDamage > 7) {
                 addDamage = 7;
             }
@@ -377,23 +388,23 @@ class DamageCalculator {
 
         let totalAtkDetailLog = this.__getAtkInCombatDetail(atkUnit, defUnit);
 
-        var atkDamageAdd = 0;
-        var atkCountPerOneAttack = 1;
+        let atkDamageAdd = 0;
+        let atkCountPerOneAttack = 1;
         if (context.isCounterattack) {
             atkCountPerOneAttack = atkUnit.battleContext.counterattackCount;
         } else {
             atkCountPerOneAttack = atkUnit.battleContext.attackCount;
         }
 
-        var atkCount = atkCountPerOneAttack;
+        let atkCount = atkCountPerOneAttack;
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.specialAddDamage;
-        var reduceAtkHalf = atkUnit.weaponType == WeaponType.Staff;
+        let reduceAtkHalf = atkUnit.weaponType == WeaponType.Staff;
         if (atkUnit.battleContext.wrathfulStaff) {
             reduceAtkHalf = false;
         }
 
-        var effectiveAtk = atkUnit.battleContext.isEffectiveToOpponent;
+        let effectiveAtk = atkUnit.battleContext.isEffectiveToOpponent;
 
         let mitHp = defUnit.restHp;
         let totalMit = 0;
@@ -403,8 +414,8 @@ class DamageCalculator {
             || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
         if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
             this.writeDebugLog("守備魔防の低い方でダメージ計算");
-            var defInCombat = defUnit.getDefInCombat(atkUnit);
-            var resInCombat = defUnit.getResInCombat(atkUnit);
+            let defInCombat = defUnit.getDefInCombat(atkUnit);
+            let resInCombat = defUnit.getResInCombat(atkUnit);
             totalMit = Math.min(defInCombat, resInCombat);
             if (resInCombat < defInCombat) {
                 totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
@@ -449,7 +460,7 @@ class DamageCalculator {
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
-        specialAddDamage += Math.trunc((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
+        specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
         switch (atkUnit.special) {
             case Special.KoriNoSeikyo:
                 // 通常ダメージに加算
@@ -461,13 +472,13 @@ class DamageCalculator {
                 break;
             case Special.IceMirror2:
                 if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
-                    fixedAddDamage += Math.trunc(atkUnit.getResInCombat(defUnit) * 0.4);
+                    fixedAddDamage += floorNumberWithFloatError(atkUnit.getResInCombat(defUnit) * 0.4);
                     atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
             case Special.NegatingFang:
                 if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
-                    fixedAddDamage += Math.trunc(atkUnit.getAtkInCombat(defUnit) * 0.3);
+                    fixedAddDamage += floorNumberWithFloatError(atkUnit.getAtkInCombat(defUnit) * 0.3);
                     atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
@@ -534,52 +545,56 @@ class DamageCalculator {
                     additionalRatio = -atkAdditionalRatio;
                 }
             }
-            attackAdvRatio = triangleMult * (triangleAdeptRate + additionalRatio);
-            this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio);
+            let triangleReviseRate = triangleAdeptRate + additionalRatio;
+            attackAdvRatio = triangleMult * triangleReviseRate;
+            this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio.toFixed(2));
         }
 
-        var mitAdvRatio = 0.0;
-        if (defUnit.placedTile.isDefensiveTile) {
+        let mitAdvRatio = 0.0;
+        if (defUnit.battleContext.isOnDefensiveTile) {
             this.writeDebugLog(defUnit.getNameWithGroup() + "は防御地形補正 1.3");
             mitAdvRatio = 0.3;
         }
 
-        var damageReduceRatio = 1.0;
+        let damageReduceRatio = 1.0;
         if (reduceAtkHalf) {
             damageReduceRatio *= 0.5;
         }
 
 
         this.writeDebugLog("補正前の攻撃:" + totalAtk + `(${totalAtkDetailLog})`);
-        var finalAtk = totalAtk;
+        let finalAtk = totalAtk;
         if (effectiveAtk) {
             // 特効
-            finalAtk = Math.trunc(finalAtk * 1.5);
+            finalAtk = floorNumberWithFloatError(finalAtk * 1.5);
             this.writeDebugLog("特効補正値: 1.5");
         }
 
-        let addAdjustAtk = finalAtk * attackAdvRatio;
-        this.writeDebugLog(`相性による攻撃加算: ${Math.trunc(addAdjustAtk)}(${addAdjustAtk})`);
-        finalAtk = finalAtk + Math.trunc(addAdjustAtk);
+        let addAdjustAtk = truncNumberWithFloatError(finalAtk * attackAdvRatio);
+        this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
+        finalAtk = finalAtk + addAdjustAtk;
 
         this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDefailLog})`);
         if (totalMit != specialTotalMit) {
             this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDefailLog})`);
         }
-        var finalMit = Math.trunc(totalMit + totalMit * mitAdvRatio);
+        let finalMit = floorNumberWithFloatError(totalMit + totalMit * mitAdvRatio);
         this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
-        var damage = Math.trunc((finalAtk - finalMit) * damageReduceRatio) + atkDamageAdd;
+        let damage = truncNumberWithFloatError((finalAtk - finalMit) * damageReduceRatio) + atkDamageAdd;
         if (damage < 0) {
             damage = 0;
         }
         this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
         damage += fixedAddDamage;
 
-        var specialSuffer = atkUnit.battleContext.specialSufferPercentage;
-        var sufferRatio = (specialSuffer / 100.0);
+        let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
+        let sufferRatio = (specialSuffer / 100.0);
+        if (sufferRatio > 0) {
+            this.writeDebugLog(`守備、魔防－${floorNumberWithFloatError(sufferRatio * 100)}%扱い`);
+        }
 
-        var specialFinalMit = Math.trunc((specialTotalMit - Math.trunc(specialTotalMit * sufferRatio)) + (specialTotalMit * mitAdvRatio));
-        var specialDamage = Math.trunc((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage + atkDamageAdd;
+        let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * sufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
+        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage + atkDamageAdd;
         if (specialDamage < 0) {
             specialDamage = 0;
         }
@@ -600,7 +615,7 @@ class DamageCalculator {
 
         if (!this.__isDead(atkUnit)) {
             // 攻撃側が倒されていたらダメージを反映しない(潜在ダメージ計算のためにダメージ計算は必要)
-            var restHp = Math.max(0, mitHp - totalDamage);
+            let restHp = Math.max(0, mitHp - totalDamage);
             defUnit.restHp = restHp;
             this.writeLog(defUnit.getNameWithGroup() + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
             this.writeLog(atkUnit.getNameWithGroup() + "の残りHP " + atkUnit.restHp + "/" + atkUnit.maxHpWithSkills);
@@ -608,7 +623,7 @@ class DamageCalculator {
                 this.writeLog(defUnit.getNameWithGroup() + "は戦闘不能");
             }
         }
-        var result = new Object();
+        let result = new Object();
         result.damagePerAttack = damage;
         result.attackCount = atkCount;
         return result;
@@ -622,7 +637,7 @@ class DamageCalculator {
             return;
         }
 
-        var isSpecialActivated = false;
+        let isSpecialActivated = false;
         if (atkUnit.maxSpecialCount > 0) {
             if (atkUnit.tmpSpecialCount == 0) {
                 isSpecialActivated = true;
@@ -635,7 +650,7 @@ class DamageCalculator {
         }
 
         atkUnit.battleContext.isSpecialActivated = true;
-        var totalDamage = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
+        let totalDamage = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
         if (defUnit.restHp - totalDamage < 1) {
             totalDamage = defUnit.restHp - 1;
         }
@@ -661,19 +676,19 @@ class DamageCalculator {
         }
 
         let tmpMit = precombatTotalMit;
-        if (defUnit.placedTile.isDefensiveTile) {
+        if (defUnit.battleContext.isOnDefensiveTile) {
             tmpMit *= 1.3;
         }
 
-        let rangedSpecialDamage = Math.trunc(Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit) * atkUnit.battleContext.precombatSpecialDamageMult);
+        let rangedSpecialDamage = floorNumberWithFloatError(Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit) * atkUnit.battleContext.precombatSpecialDamageMult);
 
-        var addDamage = this.__calcFixedAddDamage(atkUnit, defUnit, true);
+        let addDamage = this.__calcFixedAddDamage(atkUnit, defUnit, true);
         let specialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let damage = rangedSpecialDamage + addDamage + specialAddDamage;
 
         let damageReductionRatio = defUnit.battleContext.damageReductionRatioForPrecombat;
 
-        let reducedDamage = Math.trunc(damage * damageReductionRatio);
+        let reducedDamage = floorNumberWithFloatError(damage * damageReductionRatio);
         let currentDamage = Math.max(damage - reducedDamage, 0);
 
         if (damageReductionRatio > 0.0) {
@@ -797,11 +812,11 @@ class DamageCalculator {
                         actualDamage = defUnit.restHp;
                     }
 
-                    let healedHp = Math.trunc(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
-                    healedHp += Math.trunc(atkUnit.maxHpWithSkills * atkUnit.battleContext.maxHpRatioToHealBySpecial);
+                    let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
+                    healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * atkUnit.battleContext.maxHpRatioToHealBySpecial);
 
                     if (atkUnit.passiveB == PassiveB.TaiyoNoUdewa) {
-                        healedHp += Math.trunc(actualDamage * 0.3);
+                        healedHp += floorNumberWithFloatError(actualDamage * 0.3);
                     }
 
                     this.__heal(atkUnit, healedHp, defUnit);
@@ -847,7 +862,7 @@ class DamageCalculator {
             if (!isDefenderSpecialActivated) {
                 this.__reduceSpecialCount(defUnit, defReduceSpCount);
             }
-            context.attackedUnitHistory.push(atkUnit);
+            context.damageHistory.push(new DamageLog(atkUnit, defUnit, currentDamage));
 
             this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + (defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
         }
@@ -857,7 +872,7 @@ class DamageCalculator {
 
     __getHealAmountByAttack(targetUnit, defUnit, currentDamage) {
         let healedHp = targetUnit.battleContext.healedHpByAttack;
-        healedHp += Math.trunc(currentDamage * targetUnit.battleContext.damageRatioToHeal);
+        healedHp += floorNumberWithFloatError(currentDamage * targetUnit.battleContext.damageRatioToHeal);
         return healedHp;
     }
 
@@ -893,10 +908,10 @@ class DamageCalculator {
     }
 
     __calcUnitAttackDamage(defUnit, atkUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context) {
-        let reducedDamage = Math.trunc(roundFloatError(damage * damageReductionRatio)) + damageReductionValue;
-        var currentDamage = Math.max(damage - reducedDamage, 0);
+        let reducedDamage = floorNumberWithFloatError(damage * damageReductionRatio) + damageReductionValue;
+        let currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
-            this.writeDebugLog("ダメージ軽減" + roundFloatError(damageReductionRatio) * 100 + "%");
+            this.writeDebugLog("ダメージ軽減" + floorNumberWithFloatError(damageReductionRatio) * 100 + "%");
             this.writeDebugLog("ダメージ-" + damageReductionValue);
             this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
         }
@@ -951,7 +966,7 @@ class DamageCalculator {
             return;
         }
 
-        var currentSpCount = unit.tmpSpecialCount;
+        let currentSpCount = unit.tmpSpecialCount;
         unit.tmpSpecialCount -= reduceSpCount;
         if (unit.tmpSpecialCount < 0) {
             unit.tmpSpecialCount = 0;

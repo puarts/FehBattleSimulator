@@ -1,0 +1,261 @@
+<html>
+
+<head>
+    <title>[FEH] ダメージ計算機</title>
+    <link rel="stylesheet" href="https://puarts.com/css/main.css?20181201" type="text/css" />
+</head>
+
+<body>
+    <style>
+        td.param {
+            font-size: 16px;
+        }
+
+        .numeric {
+            width: 40px;
+        }
+
+        dt {
+            width: 100px;
+            float: left;
+            clear: left;
+            margin: 5;
+            border-bottom: 1px solid #ccc;
+        }
+
+        dd {
+            float: left;
+            margin-inline-start: 0px;
+            margin: 5;
+        }
+    </style>
+    <div id="damageCalc" style="text-align: left;">
+        <dl>
+            <dt style="border-bottom-style: none;">モード:</dt>
+            <dd>
+                <select v-model="mode">
+                    <option v-for="option in DamageCalcModeOptions" v-bind:value="option.value">
+                        {{option.label}}
+                    </option>
+                </select>
+            </dd>
+        </dl>
+        <div style="clear:both"></div>
+
+        <fieldset>
+            <legend>計算結果</legend>
+            与ダメージ =
+            <span style="font-weight: bold;font-size: 20;">{{actualDamageDealt}}</span>
+        </fieldset>
+        <div style="clear:both"></div>
+        <fieldset>
+            <legend>基本設定</legend>
+            <dl>
+                <dt>攻撃</dt>
+                <dd>
+                    <input class="numeric" v-model="atkUnit.atkWithSkills" @change="updateDamageResult" type="number"
+                        min="1" max="99" step="1" value="50" />
+                    <input id="incrementAtk" type="button" value="＋">
+                    <input id="decrementAtk" type="button" value="－">
+                </dd>
+
+                <dt>守備/魔防</dt>
+                <dd>
+                    <input class="numeric" v-model="defUnit.defWithSkills" @change="updateDamageResult" type="number"
+                        min="1" max="99" step="1" value="50" />
+                    <input id="incrementMit" type="button" value="＋">
+                    <input id="decrementMit" type="button" value="－">
+                </dd>
+
+                <dt>3すくみ</dt>
+                <dd>
+                    <label class="normal" v-for="option in TriangleAdvantageOptions">
+                        <input type="radio" v-model="attackerTriangleAdvantage" v-bind:value="option.value"
+                            @change="triangleAdvantageChanged">
+                        {{option.label}}
+                    </label>
+                </dd>
+
+                <dt>相性激化</dt>
+                <dd>
+                    <label class="normal" v-for="option in TriangleAdeptOptions">
+                        <input type="radio" v-model="triangleAdeptType" v-bind:value="option.value"
+                            @change="triangleAdvantageChanged">
+                        {{option.label}}
+                    </label>
+                </dd>
+
+                <dt><label for="effectiveness">特効</label></dt>
+                <dd>
+                    <input id="effectiveness" type="checkbox" v-model="atkUnit.battleContext.isEffectiveToOpponent"
+                        @change="updateDamageResult">
+                </dd>
+
+                <dt><label for="defensiveTile">防御地形</label></dt>
+                <dd>
+                    <input id="defensiveTile" type="checkbox" v-model="defUnit.battleContext.isOnDefensiveTile"
+                        @change="updateDamageResult">
+                </dd>
+
+                <dt><label for="defensiveTile">ダメージ軽減</label></dt>
+                <dd>
+                    <input class="numeric" v-model="damageReductionPercentage" @change="updateDamageResult"
+                        type="number" min="0" max="100" step="1" value="0" />%
+                    <input id="incrementDamageReduction" type="button" value="＋">
+                    <input id="decrementDamageReduction" type="button" value="－">
+                </dd>
+
+                <dt><label for="special">攻撃者の奥義</label></dt>
+                <dd>
+                    <select2 :options="specialOptins" v-model="atkUnit.special" class="skill"
+                        @input="updateDamageResult">
+                    </select2>
+                </dd>
+
+            </dl>
+        </fieldset>
+        <div style="clear:both"></div>
+        <details>
+            <summary>ダメージ計算式</summary>
+
+            <dl>
+                <dt>基本ダメージ</dt>
+                <dd>= [攻撃×特攻補正] + [攻撃×特攻補正×相性補正] - [防御] + [防御×防御地形補正]<br />
+                    = (floor({{atkUnit.atkWithSkills}} × {{effectivenessFactor}}) +
+                    trunc(floor({{atkUnit.atkWithSkills}} ×
+                    {{effectivenessFactor}}) × {{attackerTriangleAdvantageFactor}})) -
+                    {{defUnit.defWithSkills}} + floor({{defUnit.defWithSkills}} × {{defensiveTileFactor}})<br />
+                    = {{floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)}} +
+                    {{truncNumberWithFloatError(floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
+                    *
+                    attackerTriangleAdvantageFactor)}} - {{defUnit.defWithSkills}} +
+                    {{floorNumberWithFloatError(defUnit.defWithSkills *
+                    defensiveTileFactor)}}<br />
+                    <span style="font-weight: bold;font-size: 20;">= {{basicDamageDealt}}</span>
+                </dd>
+
+                <dt>最終ダメージ</dt>
+                <dd>= [基本ダメージ] - [基本ダメージ×ダメージ軽減率]<br />
+                    = {{basicDamageDealt}} - floor({{basicDamageDealt}} × {{(damageReductionPercentage *
+                    0.01).toFixed(2)}})<br />
+                    = {{basicDamageDealt}} - {{floorNumberWithFloatError(basicDamageDealt *
+                    damageReductionPercentage *
+                    0.01)}}<br />
+                    <span style="font-weight: bold;font-size: 20;">= {{actualDamageDealt}}</span>
+                </dd>
+
+            </dl>
+        </details>
+        <div style="clear:both"></div>
+        <details>
+            <summary>詳細計算ログ</summary>
+            <div v-html="log"
+                style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
+            </div>
+        </details>
+    </div>
+
+    <!-- <script>
+        let g_damageCalcData = null;
+    </script> -->
+
+    <!-- jquery -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+                integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
+    <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <!-- select2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+    <!-- jquery-ui -->
+    <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+    <!-- 文字列圧縮 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+
+    <script>
+        function createScriptElement(src, onloadFunc) {
+            let element = document.createElement("script");
+            element.type = "text/javascript";
+            element.src = src;
+            element.onload = onloadFunc;
+            // document.body.appendChild(element);
+            let headElement = document.getElementsByTagName('head')[0];
+            headElement.appendChild(element);
+        }
+
+        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
+            if (index == scriptFileNames.length) {
+                allScriptLoaded();
+                return;
+            }
+
+            let reloadSuffix = "20200513";
+            let scriptFileName = scriptFileNames[index];
+            let src = scriptFileName + "?" + reloadSuffix;
+            const startTime = Date.now();
+            createScriptElement(src, x => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load ${src}`);
+                loadScripts(scriptFileNames, allScriptLoaded, ++index);
+            });
+        }
+
+
+
+        $(function () {
+            const startTime = Date.now();
+            loadScripts([
+                "GlobalDefinitions_Debug.js",
+                "Utilities.js",
+                "Skill.js",
+                "Tile.js",
+                "Map.js",
+                "Structures.js",
+                "Table.js",
+                "Unit.js",
+                "DamageCalculationUtility.js",
+                "DamageCalculator.js",
+                "DamageCalculatorWrapper.js",
+                // "TurnSetting.js",
+                // "AudioManager.js",
+                // "AetherRaidDefensePresets.js",
+                // "AppData.js",
+                // "SettingManager.js",
+                // "Main_ImageProcessing.js",
+                // "Main_OriginalAi.js",
+                // "Main_MouseAndTouch.js",
+                // "Main.js",
+                "SampleSkillInfos.js",
+                // "SampleHeroInfos.js",
+                "VueComponents.js",
+                "DamageCalculatorMain.js",
+            ], () => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load all scripts`);
+                console.log("initializing application");
+                // g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+                //     passiveSInfos);
+                // g_app.registerHeroOptions(heroInfos);
+
+
+                addKeepChangingSettingEventById("incrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.min(g_damageCalcData.atkUnit.atkWithSkills + 1, 99));
+                addKeepChangingSettingEventById("decrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.max(g_damageCalcData.atkUnit.atkWithSkills - 1, 0));
+                addKeepChangingSettingEventById("incrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.min(g_damageCalcData.defUnit.defWithSkills + 1, 99));
+                addKeepChangingSettingEventById("decrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.max(g_damageCalcData.defUnit.defWithSkills - 1, 0));
+                addKeepChangingSettingEventById("incrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.min(g_damageCalcData.damageReductionPercentage + 1, 100));
+                addKeepChangingSettingEventById("decrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.max(g_damageCalcData.damageReductionPercentage - 1, 0));
+            });
+        });
+        window.addEventListener('load', (event) => {
+            // initAetherRaidBoard(heroInfos);
+            // g_app.vm.$forceUpdate();
+        });
+    </script>
+</body>
+
+</html>
