@@ -680,75 +680,75 @@ class OriginalAi {
 
         updateAllUi();
         return true;
-        startProgressiveProcess(patterns.length,
-            function (iter) {
-                let pattern = patterns[iter];
-                for (let snapshot of pattern) {
-                    let unit = self.findUnitById(snapshot.id);
-                    self.map.placeUnitForcibly(unit, snapshot.posX, snapshot.posY);
-                }
-            },
-            function (iter, iterMax) {
-                $("#progress").progressbar({
-                    value: iter,
-                    max: iterMax,
-                });
-                updateAllUi();
-            },
-            function () {
-                $("#progress").progressbar({ disabled: true });
-                updateAllUi();
-            },
-            300
-        );
+        // startProgressiveProcess(patterns.length,
+        //     function (iter) {
+        //         let pattern = patterns[iter];
+        //         for (let snapshot of pattern) {
+        //             let unit = self.findUnitById(snapshot.id);
+        //             self.map.placeUnitForcibly(unit, snapshot.posX, snapshot.posY);
+        //         }
+        //     },
+        //     function (iter, iterMax) {
+        //         $("#progress").progressbar({
+        //             value: iter,
+        //             max: iterMax,
+        //         });
+        //         updateAllUi();
+        //     },
+        //     function () {
+        //         $("#progress").progressbar({ disabled: true });
+        //         updateAllUi();
+        //     },
+        //     300
+        // );
 
-        // for (let tile of self.map.enumerateSafeTilesNextToThreatenedTiles(UnitGroupType.Ally)) {
-        //     self.writeSimpleLogLine(tile.positionToString());
+        // // for (let tile of self.map.enumerateSafeTilesNextToThreatenedTiles(UnitGroupType.Ally)) {
+        // //     self.writeSimpleLogLine(tile.positionToString());
+        // // }
+        // return true;
+
+        // {
+        //     let targetGroup = UnitGroupType.Ally;
+        //     let enemyGroup = UnitGroupType.Enemy;
+        //     if (self.vm.currentTurnType == enemyGroup) {
+        //         return false;
+        //     }
+
+        //     let enemyUnits = self.__getUnits(unit =>
+        //         unit.isOnMap
+        //         && unit.groupId == enemyGroup);
+
+        //     // self.tempSerializedTurn = exportPerTurnSettingAsString();
+
+        //     // let currentTurn = self.vm.currentTurn;
+        //     // self.isTurnWideCommandQueueEnabled = true;
+        //     // for (let i = 0; i < 100; ++i) {
+        //     let isActionExecuted = this.__origAi_simulateAttackerAction(targetGroup, enemyUnits);
+        //     if (isActionExecuted) {
+        //         // continue;
+        //         return true;
+        //     }
+
+        //     isActionExecuted = this.__origAi_simulateRefreshAction(targetGroup);
+        //     if (isActionExecuted) {
+        //         // continue;
+        //         return true;
+        //     }
+
+        //     isActionExecuted = this.__origAi_simulateSmiteAction(targetGroup);
+        //     if (isActionExecuted) {
+        //         // continue;
+        //         return true;
+        //     }
+
+        //     // break;
+        //     // }
+        //     // self.isTurnWideCommandQueueEnabled = false;
+
+        //     // self.vm.currentTurn = currentTurn;
+        //     // importPerTurnSetting(self.tempSerializedTurn);
+        //     // self.__executeAllCommands(self.commandQueue, 100);
         // }
-        return true;
-
-        {
-            let targetGroup = UnitGroupType.Ally;
-            let enemyGroup = UnitGroupType.Enemy;
-            if (self.vm.currentTurnType == enemyGroup) {
-                return false;
-            }
-
-            let enemyUnits = self.__getUnits(unit =>
-                unit.isOnMap
-                && unit.groupId == enemyGroup);
-
-            // self.tempSerializedTurn = exportPerTurnSettingAsString();
-
-            // let currentTurn = self.vm.currentTurn;
-            // self.isTurnWideCommandQueueEnabled = true;
-            // for (let i = 0; i < 100; ++i) {
-            let isActionExecuted = this.__origAi_simulateAttackerAction(targetGroup, enemyUnits);
-            if (isActionExecuted) {
-                // continue;
-                return true;
-            }
-
-            isActionExecuted = this.__origAi_simulateRefreshAction(targetGroup);
-            if (isActionExecuted) {
-                // continue;
-                return true;
-            }
-
-            isActionExecuted = this.__origAi_simulateSmiteAction(targetGroup);
-            if (isActionExecuted) {
-                // continue;
-                return true;
-            }
-
-            // break;
-            // }
-            // self.isTurnWideCommandQueueEnabled = false;
-
-            // self.vm.currentTurn = currentTurn;
-            // importPerTurnSetting(self.tempSerializedTurn);
-            // self.__executeAllCommands(self.commandQueue, 100);
-        }
-        return false;
+        // return false;
     }
 }

@@ -786,7 +786,7 @@ class HeroInfo {
         this.hpLv1ForStar2 = this.hpLv1ForStar3 - 1;
         this.hpLv1ForStar1 = this.hpLv1ForStar2;
 
-        var statusList = [
+        let statusList = [
             { type: StatusType.Atk, value: this.atkLv1 },
             { type: StatusType.Spd, value: this.spdLv1 },
             { type: StatusType.Def, value: this.defLv1 },
@@ -1462,7 +1462,7 @@ class ActionContext {
     }
 
     removeAttackableUnitInfosWhereBestTileIsEmpty() {
-        var result = this.attackableUnitInfos.filter(function (item) {
+        let result = this.attackableUnitInfos.filter(function (item) {
             return item.bestTileToAttack != null;
         });
         this.attackableUnitInfos = result;
@@ -3788,16 +3788,16 @@ class Unit {
     }
 
     getDefInPrecombatWithoutDebuff() {
-        var mit = Number(this.defWithSkills);
-        var mitBuff = Number(this.defBuff) * this.__getBuffMultiply();
+        let mit = Number(this.defWithSkills);
+        let mitBuff = Number(this.defBuff) * this.__getBuffMultiply();
         return mit + mitBuff;
     }
     getDefInPrecombat() {
         return Math.min(99, this.getDefInPrecombatWithoutDebuff() + Number(this.defDebuff));
     }
     getResInPrecombatWithoutDebuff() {
-        var mit = Number(this.resWithSkills);
-        var mitBuff = Number(this.resBuff) * this.__getBuffMultiply();
+        let mit = Number(this.resWithSkills);
+        let mitBuff = Number(this.resBuff) * this.__getBuffMultiply();
         return mit + mitBuff;
     }
     getResInPrecombat() {
@@ -3960,11 +3960,11 @@ class Unit {
             throw new Error("heroInfo must not be null.");
         }
 
-        var hpLv1IvChange = 0;
-        var atkLv1IvChange = 0;
-        var spdLv1IvChange = 0;
-        var defLv1IvChange = 0;
-        var resLv1IvChange = 0;
+        let hpLv1IvChange = 0;
+        let atkLv1IvChange = 0;
+        let spdLv1IvChange = 0;
+        let defLv1IvChange = 0;
+        let resLv1IvChange = 0;
         switch (this.ivHighStat) {
             case StatusType.None: break;
             case StatusType.Hp: hpLv1IvChange = 1; break;
@@ -4067,11 +4067,11 @@ class Unit {
 
     updateStatusByMergeAndDragonFlower() {
         // todo: 本来はキャラ毎の個体値上昇値を参照
-        var hpLv1IvChange = 0;
-        var atkLv1IvChange = 0;
-        var spdLv1IvChange = 0;
-        var defLv1IvChange = 0;
-        var resLv1IvChange = 0;
+        let hpLv1IvChange = 0;
+        let atkLv1IvChange = 0;
+        let spdLv1IvChange = 0;
+        let defLv1IvChange = 0;
+        let resLv1IvChange = 0;
         switch (this.ivHighStat) {
             case StatusType.None: break;
             case StatusType.Hp: hpLv1IvChange = 1; break;
@@ -4092,7 +4092,7 @@ class Unit {
 
         // 限界突破によるステータス上昇
         if (this.merge > 0 || this.dragonflower > 0) {
-            var statusList = [
+            let statusList = [
                 { type: StatusType.Hp, value: this.heroInfo.hpLv1 + hpLv1IvChange },
                 { type: StatusType.Atk, value: this.heroInfo.atkLv1 + atkLv1IvChange },
                 { type: StatusType.Spd, value: this.heroInfo.spdLv1 + spdLv1IvChange },
@@ -4102,8 +4102,8 @@ class Unit {
             statusList.sort((a, b) => {
                 return b.value - a.value;
             });
-            var updateStatus = (statItr) => {
-                var statIndex = statItr % 5;
+            let updateStatus = (statItr) => {
+                let statIndex = statItr % 5;
                 switch (statusList[statIndex].type) {
                     case StatusType.Hp: this._maxHpWithSkills += 1; break;
                     case StatusType.Atk: this.atkWithSkills += 1; break;

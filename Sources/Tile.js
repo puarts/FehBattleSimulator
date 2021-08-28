@@ -26,7 +26,7 @@ function tileTypeToString(type) {
             return "不明";
     }
 }
-let TileTypeOptions = [];
+const TileTypeOptions = [];
 for (let key in TileType) {
     let id = TileType[key];
     if (id == TileType.Wall) {
@@ -119,8 +119,8 @@ class Tile {
     }
 
     fromTurnWideStatusString(value) {
-        var splited = value.split(ValueDelimiter);
-        var i = 0;
+        let splited = value.split(ValueDelimiter);
+        let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this._type = Number(splited[i]); ++i; }
     }
 
@@ -310,7 +310,7 @@ class Tile {
                 this._moveWeights[MoveType.Infantry] = 2;
                 break;
             case TileType.Wall:
-                for (var key in this._moveWeights) {
+                for (let key in this._moveWeights) {
                     this._moveWeights[key] = CanNotReachTile;
                 }
                 break;
@@ -573,7 +573,7 @@ class Tile {
                 }
             }
 
-            var weight = 1;
+            let weight = 1;
             if (ignoreWeights == false) {
                 weight = neighborTile.getMoveWeight(unit, ignoresUnits, false);
             }
@@ -594,7 +594,7 @@ class Tile {
                 tracedDepthDict[key] = -1;
             }
 
-            var nextDepth = currentDepth + weight;
+            let nextDepth = currentDepth + weight;
             if (nextDepth > maxDepth) {
                 continue;
             }
@@ -651,7 +651,7 @@ class Tile {
             }
         }
 
-        var weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
+        let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
         if (weight != CanNotReachTile && weight != 0) {
             if (unit.weapon == Weapon.FujinYumi && unit.isWeaponRefined && unit.hpPercentage >= 50) {
                 weight = 1;

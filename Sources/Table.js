@@ -1,7 +1,7 @@
 /// @file
 /// @brief Table クラスとそれに関連するクラスや関数等の定義です。
 
-var CellType = {
+const CellType = {
     Normal: 0,
     Header: 1,
 };
@@ -113,11 +113,11 @@ class Table {
             return;
         }
 
-        var oldCount = this._columnCount * this._rowCount;
+        let oldCount = this._columnCount * this._rowCount;
         this._columnCount = columnCount;
         this._rowCount = rowCount;
-        var newCount = columnCount * rowCount;
-        var diff = newCount - oldCount;
+        let newCount = columnCount * rowCount;
+        let diff = newCount - oldCount;
         for (let i = 0; i < diff; ++i) {
             this._cells.push(new Cell());
         }
@@ -236,7 +236,7 @@ class Table {
     }
 
     _updateTableElemSize() {
-        var diffRowCount = this._rowCount - this._tableElem.childElementCount;
+        let diffRowCount = this._rowCount - this._tableElem.childElementCount;
         if (diffRowCount > 0) {
             for (let i = 0; i < diffRowCount; ++i) {
                 let trElem = document.createElement("tr");
@@ -256,7 +256,7 @@ class Table {
 
         for (let y = 0; y < this._rowCount; ++y) {
             let trElem = this._tableElem.children[y];
-            var diffColumnCount = this._columnCount - trElem.childElementCount;
+            let diffColumnCount = this._columnCount - trElem.childElementCount;
             if (diffColumnCount > 0) {
                 for (let x = 0; x < diffColumnCount; ++x) {
                     let cell = this.getCell(x, y);
@@ -285,7 +285,7 @@ class Table {
                 let cellElemName = cell.getHtmlTagName();
 
                 if (cellElem.tagName != cellElemName) {
-                    var nextElem = cellElem.nextSibling;
+                    let nextElem = cellElem.nextSibling;
                     trElem.removeChild(cellElem);
                     cellElem = document.createElement(cellElemName);
 
@@ -297,11 +297,11 @@ class Table {
 
 
     toHtml() {
-        var html = "<table border='0' style='border-collapse: separate;border-width: 0px;' >";
+        let html = "<table border='0' style='border-collapse: separate;border-width: 0px;' >";
         for (let y = 0; y < this._rowCount; ++y) {
             html += "<tr>";
             for (let x = 0; x < this._columnCount; ++x) {
-                var index = y * this._columnCount + x;
+                let index = y * this._columnCount + x;
                 let cell = this._cells[index];
                 let cellElemName = "td";
                 switch (cell.type) {
@@ -338,4 +338,4 @@ class Table {
         html += "</table>";
         return html;
     }
-}    
+}

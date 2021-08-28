@@ -141,8 +141,8 @@ class StructureBase {
             return [[], 0];
         }
 
-        var splited = value.split(ValueDelimiter);
-        var i = 0;
+        let splited = value.split(ValueDelimiter);
+        let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.ownerType = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.posX = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.posY = Number(splited[i]); ++i; }
@@ -150,8 +150,8 @@ class StructureBase {
     }
 
     fromTurnWideStatusString(value) {
-        var splited = value.split(ValueDelimiter);
-        var i = 0;
+        let splited = value.split(ValueDelimiter);
+        let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.level = Number(splited[i]); ++i; }
     }
 
@@ -163,8 +163,8 @@ class StructureBase {
     }
 
     fromString(value) {
-        var splited = value.split(ValueDelimiter);
-        var i = 0;
+        let splited = value.split(ValueDelimiter);
+        let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.ownerType = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.posX = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.posY = Number(splited[i]); ++i; }
@@ -551,7 +551,7 @@ class Ornament extends DefenceStructureBase {
         return false;
     }
     setIconByOrnamentTypeIndex() {
-        var icon = OrnamentSettings[this.ornamentTypeIndex].icon;
+        let icon = OrnamentSettings[this.ornamentTypeIndex].icon;
         this._icon = icon;
     }
 }

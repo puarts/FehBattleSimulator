@@ -120,8 +120,10 @@ class ImageProcessor {
                 }
                 break;
             case OcrSettingTarget.MapStructures:
-                let file = files[0];
-                this.setMapByImage(file);
+                {
+                    let file = files[0];
+                    this.setMapByImage(file);
+                }
                 break;
         }
     }

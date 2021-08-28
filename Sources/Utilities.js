@@ -126,19 +126,19 @@ class CookieWriter {
         else {
             // console.log("read:" + document.cookie);
             if (document.cookie != "") {
-                var settings = document.cookie.split(';');
-                for (var settingIndex = 0; settingIndex < settings.length; ++settingIndex) {
+                let settings = document.cookie.split(';');
+                for (let settingIndex = 0; settingIndex < settings.length; ++settingIndex) {
                     let elemText = settings[settingIndex];
-                    var keyValue = elemText.split('=');
+                    let keyValue = elemText.split('=');
                     if (keyValue.length < 2) {
                         // console.error("invalid cookie: " + settings[settingIndex]);
                         continue;
                     }
-                    var settingName = keyValue[0].trim();
+                    let settingName = keyValue[0].trim();
                     if (settingName != name) {
                         continue;
                     }
-                    var settingValue = elemText.substring(keyValue[0].length + 1).trim();
+                    let settingValue = elemText.substring(keyValue[0].length + 1).trim();
                     return settingValue;
                 }
             }
@@ -217,8 +217,8 @@ class ObjectStorage {
     }
 
     findById(id) {
-        for (var i = 0; i < this._objs.length; ++i) {
-            var obj = this._objs[i];
+        for (let i = 0; i < this._objs.length; ++i) {
+            let obj = this._objs[i];
             if (obj.id == id) {
                 return obj;
             }
@@ -227,15 +227,15 @@ class ObjectStorage {
     }
 
     *enumerateAllObjs() {
-        for (var i = 0; i < this._objs.length; ++i) {
-            var obj = this._objs[i];
+        for (let i = 0; i < this._objs.length; ++i) {
+            let obj = this._objs[i];
             yield obj;
         }
     }
 
     *enumerateRequiredObjs() {
-        for (var i = 0; i < this._objs.length; ++i) {
-            var obj = this._objs[i];
+        for (let i = 0; i < this._objs.length; ++i) {
+            let obj = this._objs[i];
             if (obj.isRequired) {
                 yield obj;
             }
@@ -259,7 +259,7 @@ class StructureContainer {
     }
 
     removeStructure(structure) {
-        var index = this._structures.indexOf(structure);
+        let index = this._structures.indexOf(structure);
         if (index < 0) {
             return;
         }
@@ -267,8 +267,8 @@ class StructureContainer {
     }
 
     findStructure(id) {
-        for (var i = 0; i < this._structures.length; ++i) {
-            var structure = this._structures[i];
+        for (let i = 0; i < this._structures.length; ++i) {
+            let structure = this._structures[i];
             if (structure.id == id) {
                 return structure;
             }
@@ -281,9 +281,9 @@ class StructureContainer {
     }
 
     toHtml() {
-        var html = "";
-        for (var i = 0; i < this._structures.length; ++i) {
-            var structure = this._structures[i];
+        let html = "";
+        for (let i = 0; i < this._structures.length; ++i) {
+            let structure = this._structures[i];
             html += "<img id='" + structure.id + "' class='draggable-elem' src='" + structure.icon + "' width='32px' height='32px' draggable='true' ondragstart='f_dragstart(event)' />";
         }
 
@@ -308,7 +308,7 @@ class ScopedStopwatch {
 
     dispose() {
         const endTime = Date.now();
-        var diff = endTime - this._startTime;
+        let diff = endTime - this._startTime;
         this._logFunc(diff);
     }
 }
@@ -431,7 +431,7 @@ class CommandQueue {
 
 /// 現在のスレッドを指定時間の間、スピンループでスリープします。
 function sleep(waitMilliseconds) {
-    var startMilliseconds = new Date();
+    let startMilliseconds = new Date();
     while (new Date() - startMilliseconds < waitMilliseconds);
 }
 
@@ -487,8 +487,8 @@ function using(disposable, func) {
 }
 
 function getFirstElementByTagName(elements, targetTagName) {
-    for (var i = 0; i < elements.length; ++i) {
-        var elem = elements[i];
+    for (let i = 0; i < elements.length; ++i) {
+        let elem = elements[i];
         if (elem.tagName == targetTagName) {
             return elem;
         }
@@ -589,8 +589,8 @@ function levenshtein(s1, s2) {
         return 0;
     }
 
-    var s1_len = s1.length;
-    var s2_len = s2.length;
+    let s1_len = s1.length;
+    let s2_len = s2.length;
     if (s1_len === 0) {
         return s2_len;
     }
@@ -599,7 +599,7 @@ function levenshtein(s1, s2) {
     }
 
     // BEGIN STATIC
-    var split = false;
+    let split = false;
     try {
         split = !('0')[0];
     } catch (e) {
@@ -611,14 +611,14 @@ function levenshtein(s1, s2) {
         s2 = s2.split('');
     }
 
-    var v0 = new Array(s1_len + 1);
-    var v1 = new Array(s1_len + 1);
+    let v0 = new Array(s1_len + 1);
+    let v1 = new Array(s1_len + 1);
 
-    var s1_idx = 0, s2_idx = 0, cost = 0;
+    let s1_idx = 0, s2_idx = 0, cost = 0;
     for (s1_idx = 0; s1_idx < s1_len + 1; s1_idx++) {
         v0[s1_idx] = s1_idx;
     }
-    var char_s1 = '', char_s2 = '';
+    let char_s1 = '', char_s2 = '';
     for (s2_idx = 1; s2_idx <= s2_len; s2_idx++) {
         v1[0] = s2_idx;
         char_s2 = s2[s2_idx - 1];
@@ -626,9 +626,9 @@ function levenshtein(s1, s2) {
         for (s1_idx = 0; s1_idx < s1_len; s1_idx++) {
             char_s1 = s1[s1_idx];
             cost = (char_s1 == char_s2) ? 0 : 1;
-            var m_min = v0[s1_idx + 1] + 1;
-            var b = v1[s1_idx] + 1;
-            var c = v0[s1_idx] + cost;
+            let m_min = v0[s1_idx + 1] + 1;
+            let b = v1[s1_idx] + 1;
+            let c = v0[s1_idx] + cost;
             if (b < m_min) {
                 m_min = b;
             }
@@ -637,7 +637,7 @@ function levenshtein(s1, s2) {
             }
             v1[s1_idx + 1] = m_min;
         }
-        var v_tmp = v0;
+        let v_tmp = v0;
         v0 = v1;
         v1 = v_tmp;
     }
@@ -832,9 +832,9 @@ function cropAndBinarizeImageAndOcr(
         dst = src;
     } else {
         dst = ctx.createImageData(destCanvas.width, destCanvas.height);
-        for (var i = 0; i < src.data.length; i = i + 4) {
-            var y = ~~(0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2]);
-            var ret = (y > binarizeThreshold) ? 255 : 0;
+        for (let i = 0; i < src.data.length; i = i + 4) {
+            let y = ~~(0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2]);
+            let ret = (y > binarizeThreshold) ? 255 : 0;
             dst.data[i] = dst.data[i + 1] = dst.data[i + 2] = ret;
             dst.data[i + 3] = src.data[i + 3];
         }

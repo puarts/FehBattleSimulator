@@ -541,11 +541,11 @@ class Map {
     }
 
     fromTurnWideStatusString(elemTexts) {
-        // for (var i = 0; i < elemTexts.length; ++i) {
-        //     var elemText = elemTexts[i];
-        //     var splited = elemText.split(NameValueDelimiter);
-        //     var serialId = splited[0];
-        //     var value = splited[1];
+        // for (let i = 0; i < elemTexts.length; ++i) {
+        //     let elemText = elemTexts[i];
+        //     let splited = elemText.split(NameValueDelimiter);
+        //     let serialId = splited[0];
+        //     let value = splited[1];
         // }
     }
 
@@ -573,17 +573,17 @@ class Map {
         this._height = height;
 
         this._tiles = [];
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var tile = new Tile(x, y);
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let tile = new Tile(x, y);
                 tile.tilePriority = x + (this._height - (y + 1)) * this._width;
                 this._tiles.push(tile);
             }
         }
 
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var tile = this.getTile(x, y);
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let tile = this.getTile(x, y);
                 if (x + 1 < this._width) {
                     tile.addNeighbor(this.getTile(x + 1, y));
                 }
@@ -632,21 +632,21 @@ class Map {
         return this._showClosestDistanceToEnemy;
     }
     set showClosestDistanceToEnemy(value) {
-        return this._showClosestDistanceToEnemy = value;
+        this._showClosestDistanceToEnemy = value;
     }
 
     get showEnemyAttackRange() {
         return this._showEnemyAttackRange;
     }
     set showEnemyAttackRange(value) {
-        return this._showEnemyAttackRange = value;
+        this._showEnemyAttackRange = value;
     }
 
     get showAllyAttackRange() {
         return this._showAllyAttackRange;
     }
     set showAllyAttackRange(value) {
-        return this._showAllyAttackRange = value;
+        this._showAllyAttackRange = value;
     }
 
     get breakableObjCountOfCurrentMapType() {
@@ -727,8 +727,8 @@ class Map {
     }
 
     resetPlacement(withUnits = false) {
-        for (var i = 0; i < this._tiles.length; ++i) {
-            var tile = this._tiles[i];
+        for (let i = 0; i < this._tiles.length; ++i) {
+            let tile = this._tiles[i];
             tile.type = TileType.Normal;
             if (tile.obj != null) {
                 if (tile.obj instanceof BreakableWall || tile.obj instanceof Wall) {
@@ -2277,11 +2277,11 @@ class Map {
     // 指定ユニットの近くのユニットを列挙します。
     // distance: 近くと判定するユニットからのタイル数
     *enumerateNeighboringUnits(unit, distance) {
-        var tile = this.findTileUnitPlaced(unit.id);
+        let tile = this.findTileUnitPlaced(unit.id);
         if (tile != null) {
-            var enumeratedUnits = [unit];
+            let enumeratedUnits = [unit];
             for (let neighborTile of this.__enumerateNeighboringTiles(tile, distance)) {
-                var neighborUnit = neighborTile.placedUnit;
+                let neighborUnit = neighborTile.placedUnit;
                 if (neighborUnit == null) {
                     continue;
                 }
@@ -2297,8 +2297,8 @@ class Map {
 
     *__enumerateNeighboringTiles(tile, distance) {
         if (distance > 0) {
-            for (var i = 0; i < tile.neighbors.length; ++i) {
-                var neighbor = tile.neighbors[i];
+            for (let i = 0; i < tile.neighbors.length; ++i) {
+                let neighbor = tile.neighbors[i];
                 yield neighbor;
                 for (let neighborNeighbor of this.__enumerateNeighboringTiles(neighbor, distance - 1)) {
                     yield neighborNeighbor;
@@ -2314,15 +2314,15 @@ class Map {
     }
 
     *enumerateWalls() {
-        for (var i = 0; i < this._walls.length; ++i) {
-            var obj = this._walls[i];
+        for (let i = 0; i < this._walls.length; ++i) {
+            let obj = this._walls[i];
             yield obj;
         }
     }
 
     *enumerateBreakableWalls() {
-        for (var i = 0; i < this._breakableWalls.length; ++i) {
-            var obj = this._breakableWalls[i];
+        for (let i = 0; i < this._breakableWalls.length; ++i) {
+            let obj = this._breakableWalls[i];
             yield obj;
         }
     }
@@ -2374,8 +2374,8 @@ class Map {
     }
 
     *enumerateBreakableWallsOfCurrentMapType() {
-        for (var i = 0; i < this.breakableObjCountOfCurrentMapType; ++i) {
-            var obj = this._breakableWalls[i];
+        for (let i = 0; i < this.breakableObjCountOfCurrentMapType; ++i) {
+            let obj = this._breakableWalls[i];
             yield obj;
         }
     }
@@ -2389,7 +2389,7 @@ class Map {
     }
 
     findWallById(objId) {
-        for (var i = 0; i < this._walls.length; ++i) {
+        for (let i = 0; i < this._walls.length; ++i) {
             if (this._walls[i].id == objId) {
                 return this._walls[i];
             }
@@ -2398,7 +2398,7 @@ class Map {
     }
 
     findBreakbleWallById(objId) {
-        for (var i = 0; i < this._breakableWalls.length; ++i) {
+        for (let i = 0; i < this._breakableWalls.length; ++i) {
             if (this._breakableWalls[i].id == objId) {
                 return this._breakableWalls[i];
             }
@@ -2435,7 +2435,7 @@ class Map {
     }
 
     exchangeObj(obj, x, y) {
-        var targetTile = this.getTile(x, y);
+        let targetTile = this.getTile(x, y);
         if (targetTile == null) {
             return false;
         }
@@ -2445,8 +2445,8 @@ class Map {
             return true;
         }
         else {
-            var destObj = targetTile.obj;
-            var srcTile = this.findTileObjPlaced(obj.id);
+            let destObj = targetTile.obj;
+            let srcTile = this.findTileObjPlaced(obj.id);
             if (srcTile == null) {
                 // 交換できない
                 return false;
@@ -2461,7 +2461,7 @@ class Map {
     }
 
     placeObj(obj, x, y) {
-        var targetTile = this.findNeighborObjEmptyTile(x, y);
+        let targetTile = this.findNeighborObjEmptyTile(x, y);
         if (targetTile == null) {
             return false;
         }
@@ -2471,7 +2471,7 @@ class Map {
         return true;
     }
     placeObjToEmptyTile(obj) {
-        var emptyTile;
+        let emptyTile;
         if (obj instanceof OffenceStructureBase) {
             emptyTile = this.__findEmptyTileOfOffenceStructure();
         }
@@ -2491,9 +2491,9 @@ class Map {
     }
 
     __findEmptyTile(offsetX, offsetY, width, height) {
-        for (var y = offsetY; y < height; ++y) {
-            for (var x = offsetX; x < width; ++x) {
-                var tile = this.getTile(x, y);
+        for (let y = offsetY; y < height; ++y) {
+            for (let x = offsetX; x < width; ++x) {
+                let tile = this.getTile(x, y);
                 if (tile.isObjPlacable()) {
                     return tile;
                 }
@@ -2502,7 +2502,7 @@ class Map {
         return null;
     }
     findNeighborObjEmptyTile(x, y) {
-        var targetTile = this.getTile(x, y);
+        let targetTile = this.getTile(x, y);
         if (targetTile == null) {
             return null;
         }
@@ -2511,8 +2511,8 @@ class Map {
             return targetTile;
         }
 
-        for (var i = 0; i < targetTile.neighbors.length; ++i) {
-            var tile = targetTile.neighbors[i];
+        for (let i = 0; i < targetTile.neighbors.length; ++i) {
+            let tile = targetTile.neighbors[i];
             if (tile.isObjPlacable()) {
                 return tile;
             }
@@ -2521,7 +2521,7 @@ class Map {
         return null;
     }
     findNeighborUnitEmptyTile(x, y) {
-        var targetTile = this.getTile(x, y);
+        let targetTile = this.getTile(x, y);
         if (targetTile == null) {
             return null;
         }
@@ -2529,8 +2529,8 @@ class Map {
             return targetTile;
         }
 
-        for (var i = 0; i < targetTile.neighbors.length; ++i) {
-            var tile = targetTile.neighbors[i];
+        for (let i = 0; i < targetTile.neighbors.length; ++i) {
+            let tile = targetTile.neighbors[i];
             if (tile.isUnitPlacable()) {
                 return tile;
             }
@@ -2558,7 +2558,7 @@ class Map {
         return null;
     }
     removeObj(obj) {
-        var tile = this.findTileObjPlaced(obj.id);
+        let tile = this.findTileObjPlaced(obj.id);
         if (tile != null) {
             // console.log(obj.id + " was removed");
             tile.setObj(null);
@@ -2569,10 +2569,10 @@ class Map {
     }
 
     findTileObjPlaced(objId) {
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var index = y * this._width + x;
-                var tile = this._tiles[index];
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let index = y * this._width + x;
+                let tile = this._tiles[index];
                 if (tile.obj != null) {
                     if (tile.obj.id == objId) {
                         return tile;
@@ -2584,11 +2584,11 @@ class Map {
     }
 
     getTileObjsAsString() {
-        var text = "";
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var index = y * this._width + x;
-                var tile = this._tiles[index];
+        let text = "";
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let index = y * this._width + x;
+                let tile = this._tiles[index];
                 if (tile.obj != null) {
                     text += tile.obj.id + "|";
                 }
@@ -2606,11 +2606,11 @@ class Map {
     }
 
     *enumerateTilesInSpecifiedDistanceFrom(targetTile, targetDistance) {
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var index = y * this._width + x;
-                var tile = this._tiles[index];
-                var distance = tile.calculateDistance(targetTile);
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let index = y * this._width + x;
+                let tile = this._tiles[index];
+                let distance = tile.calculateDistance(targetTile);
                 if (distance == targetDistance) {
                     yield tile;
                 }
@@ -2619,11 +2619,11 @@ class Map {
     }
 
     *enumerateTilesWithinSpecifiedDistance(targetTile, targetDistance) {
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var index = y * this._width + x;
-                var tile = this._tiles[index];
-                var distance = tile.calculateDistance(targetTile);
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let index = y * this._width + x;
+                let tile = this._tiles[index];
+                let distance = tile.calculateDistance(targetTile);
                 if (distance <= targetDistance) {
                     yield tile;
                 }
@@ -2648,10 +2648,10 @@ class Map {
     }
 
     findTileUnitPlaced(unitId) {
-        for (var y = 0; y < this._height; ++y) {
-            for (var x = 0; x < this._width; ++x) {
-                var index = y * this._width + x;
-                var tile = this._tiles[index];
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let index = y * this._width + x;
+                let tile = this._tiles[index];
                 if (tile.placedUnit != null) {
                     if (tile.placedUnit.id == unitId) {
                         return tile;
@@ -2669,7 +2669,7 @@ class Map {
 
         // console.log("x = " + x + ", y = " + y);
 
-        var tile = this.findNeighborUnitEmptyTile(x, y);
+        let tile = this.findNeighborUnitEmptyTile(x, y);
         if (tile == null) {
             console.error("could not find empty tile near the tile: (" + x + ", " + y + ")");
             return;
@@ -2692,7 +2692,7 @@ class Map {
     }
 
     getUnitOnTile(x, y) {
-        var targetTile = this.getTile(x, y);
+        let targetTile = this.getTile(x, y);
         if (targetTile == null) {
             return null;
         }
@@ -2700,21 +2700,21 @@ class Map {
     }
 
     moveUnitForcibly(unit, x, y) {
-        var currentTile = unit.placedTile;
+        let currentTile = unit.placedTile;
         if (currentTile == null) {
             return false;
         }
 
         try {
-            var targetTile = this.getTile(x, y);
+            let targetTile = this.getTile(x, y);
             if (targetTile == null) {
                 return false;
             }
 
             if (targetTile.placedUnit != null) {
                 // スワップ
-                var posX = currentTile.placedUnit.posX;
-                var posY = currentTile.placedUnit.posY;
+                let posX = currentTile.placedUnit.posX;
+                let posY = currentTile.placedUnit.posY;
                 currentTile.placedUnit = targetTile.placedUnit;
                 currentTile.placedUnit.placedTile = currentTile;
                 currentTile.placedUnit.setPos(posX, posY);
@@ -2748,7 +2748,7 @@ class Map {
         this.moveUnitForcibly(unit, x, y);
     }
     removeUnit(unit) {
-        var currentTile = this.findTileUnitPlaced(unit.id);
+        let currentTile = this.findTileUnitPlaced(unit.id);
         if (currentTile != null) {
             currentTile.placedUnit = null;
         }
@@ -2759,14 +2759,14 @@ class Map {
     __removeUnit(unit) {
         unit.placedTile = null;
         unit.setPos(-1, -1);
-        var unitIndex = this.__findUnitIndex(unit);
+        let unitIndex = this.__findUnitIndex(unit);
         if (unitIndex >= 0) {
             this._units.splice(unitIndex, 1);
         }
     }
 
     __findUnitIndex(unit) {
-        for (var i = 0; i < this._units.length; ++i) {
+        for (let i = 0; i < this._units.length; ++i) {
             if (this._units[i] == unit) {
                 return i;
             }
@@ -2783,7 +2783,7 @@ class Map {
     }
 
     getTileLabelX(x) {
-        var charCode = "A".charCodeAt(0) + x;
+        let charCode = "A".charCodeAt(0) + x;
         return String.fromCharCode(charCode);
     }
 
@@ -3369,7 +3369,7 @@ class Map {
             return;
         }
 
-        var doneTiles = [];
+        let doneTiles = [];
         for (let neighborTile of this.enumerateMovableTilesForEnemyThreat(unit, true, true, true)) {
             for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, unit.attackRange)) {
                 if (doneTiles.includes(tile)) {
@@ -3480,8 +3480,8 @@ class Map {
             this.cellOffsetY = 0;
         }
 
-        var tableWidth = this._width + this.cellOffsetX;
-        var tableHeight = this._height + this.cellOffsetY;
+        let tableWidth = this._width + this.cellOffsetX;
+        let tableHeight = this._height + this.cellOffsetY;
 
         if (this._table == null) {
             this._table = new Table(tableWidth, tableHeight);
@@ -3489,7 +3489,7 @@ class Map {
         else {
             this._table.resize(tableWidth, tableHeight);
         }
-        var table = this._table;
+        let table = this._table;
 
         if (this.isBackgroundImageEnabled) {
             table.backgroundImage = `url(${getMapBackgroundImage(this._type)})`;
@@ -3503,11 +3503,11 @@ class Map {
         let cellHeight = this.cellHeight;
         {
             // テーブルセルの初期化
-            for (var y = 0; y < this._height; ++y) {
-                for (var x = 0; x < this._width; ++x) {
-                    var cell = table.getCell(x + this.cellOffsetX, y + this.cellOffsetY);
-                    var fontColor = "#fff";
-                    var tileText = this.getTileLabel(x, y);
+            for (let y = 0; y < this._height; ++y) {
+                for (let x = 0; x < this._width; ++x) {
+                    let cell = table.getCell(x + this.cellOffsetX, y + this.cellOffsetY);
+                    let fontColor = "#fff";
+                    let tileText = this.getTileLabel(x, y);
                     cell.setToDefault();
                     cell.fontColor = fontColor;
                     cell.innerText = tileText;
@@ -3527,22 +3527,22 @@ class Map {
             }
 
             // 施設などの配置
-            for (var y = 0; y < this._height; ++y) {
+            for (let y = 0; y < this._height; ++y) {
                 if (isMapHeaderEnabled) {
-                    var cell = table.getCell(0, y);
+                    let cell = table.getCell(0, y);
                     cell.type = CellType.Header;
                     cell.innerText = this.getTileLabelY(y);
                     cell.borderWidth = "0px";
                 }
-                for (var x = 0; x < this._width; ++x) {
-                    var index = y * this._width + x;
-                    var tile = this._tiles[index];
-                    var obj = tile.obj;
+                for (let x = 0; x < this._width; ++x) {
+                    let index = y * this._width + x;
+                    let tile = this._tiles[index];
+                    let obj = tile.obj;
 
-                    var tileText = "";
-                    // var tileText = this.getTileLabel(x, y);
+                    let tileText = "";
+                    // let tileText = this.getTileLabel(x, y);
                     if (!this.isBackgroundImageEnabled) {
-                        var tileThumb = tileTypeToThumb(tile.type, this._type);
+                        let tileThumb = tileTypeToThumb(tile.type, this._type);
                         if (tileThumb != null) {
                             // なんかwidthを+2しないと合わなかった
                             let thumbWidth = cellWidth + 2;
@@ -3558,12 +3558,12 @@ class Map {
                         }
                     }
 
-                    var showTilePriority = false;
+                    let showTilePriority = false;
                     if (showTilePriority) {
                         tileText += tile.tilePriority;
                     }
 
-                    var cell = table.getCell(x + this.cellOffsetX, y + this.cellOffsetY);
+                    let cell = table.getCell(x + this.cellOffsetX, y + this.cellOffsetY);
                     cell.innerText = tileText;
                     if (obj != null) {
                         this.__putStructureIconToCell(cell, obj);
@@ -3573,11 +3573,11 @@ class Map {
 
             if (isMapHeaderEnabled) {
                 {
-                    var cell = table.getCell(0, this._height);
+                    let cell = table.getCell(0, this._height);
                     cell.borderWidth = "0px";
                 }
-                for (var x = 0; x < this._width; ++x) {
-                    var cell = table.getCell(x + this.cellOffsetX, this._height);
+                for (let x = 0; x < this._width; ++x) {
+                    let cell = table.getCell(x + this.cellOffsetX, this._height);
                     cell.type = CellType.Header;
                     cell.innerText = this.getTileLabelX(x);
                     cell.borderWidth = "0px";
@@ -3588,8 +3588,8 @@ class Map {
         // 各ユニットの処理
         for (let unit of this._units) {
             // console.log(unit);
-            var tile = unit.placedTile;
-            var cell = table.getCell(tile.posX + this.cellOffsetX, tile.posY + this.cellOffsetY);
+            let tile = unit.placedTile;
+            let cell = table.getCell(tile.posX + this.cellOffsetX, tile.posY + this.cellOffsetY);
             switch (unit.groupId) {
                 case UnitGroupType.Enemy:
                     {
@@ -3632,7 +3632,7 @@ class Map {
 
                 if (tile.closestDistanceToEnemy > 0) {
                     // 敵への最短距離の表示
-                    var closestDistance = tile.closestDistanceToEnemy;
+                    let closestDistance = tile.closestDistanceToEnemy;
                     if (tile.closestDistanceToEnemy > 100) {
                         // たどり着けない
                         closestDistance = "∞";
@@ -3715,7 +3715,7 @@ class Map {
 
     * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit)) {
-            var dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);
+            let dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);
             if (dist <= spaces) {
                 yield unit;
             }
@@ -3744,7 +3744,7 @@ class Map {
         }
         if (!this.isIconOverlayDisabled) {
             if (!this.isTrapIconOverlayDisabled || !(structure instanceof TrapBase)) {
-                var shadowCss = this.__getShadowCss();
+                let shadowCss = this.__getShadowCss();
                 if (structure.hasLevel) {
                     cell.innerText += "<span style='position:absolute;bottom:0;right:0;font-size:10px;" + shadowCss + ";'>"
                     cell.innerText += "LV." + structure.level;
@@ -3755,8 +3755,8 @@ class Map {
     }
 
     __putUnitIconToCell(cell, unit) {
-        var style = "";
-        var color = "#bbeeff";
+        let style = "";
+        let color = "#bbeeff";
         {
             // 残りHPで枠線を変える
             if (unit.hpPercentage <= 50) {
@@ -3789,7 +3789,7 @@ class Map {
         }
 
         if (!this.isIconOverlayDisabled) {
-            var shadowCss = this.__getShadowCss();
+            let shadowCss = this.__getShadowCss();
             if (this.isExpansionUnitFunc != null && this.isExpansionUnitFunc(unit)) {
                 cell.innerText += "<span style='position:absolute;bottom:0;right:0;'><img src='"
                     + g_imageRootPath + "ExpansionUnit.png" + "' style='width:15px' ></span>";
@@ -3798,7 +3798,7 @@ class Map {
             cell.innerText += "<span style='font-size:10px;color:" + color + ";position:absolute;bottom:0;left:0;" + shadowCss + ";'>"
                 + unit.hp + "</span>";
             if (unit.maxSpecialCount > 0) {
-                var specialCount = unit.specialCount;
+                let specialCount = unit.specialCount;
                 if (unit.specialCount == 0) {
                     specialCount = "<img src='" + g_imageRootPath + "Special.png" + "' style='width:12px;height:12px'>";
                 }
