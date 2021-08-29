@@ -49,6 +49,8 @@ class DamageCalcResult {
         this.defUnit_actualTotalAttackCount = 0;
         this.atkUnit_normalAttackDamage = 0;
         this.defUnit_normalAttackDamage = 0;
+        this.atkUnit_specialAttackDamage = 0;
+        this.defUNit_specialAttackDamage = 0;
 
         this.atkUnit_atk = 0;
         this.atkUnit_spd = 0;
@@ -260,6 +262,7 @@ class DamageCalculator {
         let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
         result.atkUnit_normalAttackDamage = combatResult.damagePerAttack;
         result.atkUnit_totalAttackCount += combatResult.attackCount;
+        result.atkUnit_specialAttackDamage = combatResult.specialDamagePerAttack;
         if (atkUnit.restHp > 0) {
             result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
         }
@@ -284,6 +287,7 @@ class DamageCalculator {
             let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
             result.defUnit_normalAttackDamage = combatResult.damagePerAttack;
             result.defUnit_totalAttackCount += combatResult.attackCount;
+            result.defUnit_specialAttackDamage = combatResult.specialDamagePerAttack;
             if (defUnit.restHp > 0) {
                 result.defUnit_actualTotalAttackCount += combatResult.attackCount;
             }
@@ -625,6 +629,7 @@ class DamageCalculator {
         }
         let result = new Object();
         result.damagePerAttack = damage;
+        result.specialDamagePerAttack = specialDamage;
         result.attackCount = atkCount;
         return result;
     }

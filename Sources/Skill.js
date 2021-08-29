@@ -1179,9 +1179,9 @@ const Special = {
     Luna: 467,
     Aether: 470,
     LunaFlash: 889,
-    Glimmer: 462,
+    Glimmer: 462, // 凶星
     Deadeye: 1481, // 狙撃
-    Astra: 461,
+    Astra: 461, // 流星
     Bonfire: 455,
     Ignis: 450,
     Iceberg: 456,
