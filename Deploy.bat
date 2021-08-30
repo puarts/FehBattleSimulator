@@ -9,7 +9,7 @@ call %~dp0MergeSources.bat %output_js% %filenames%
 echo commpressing %output_js%
 call %JSMIN% %output_js%
 
-set copyfiles=%filenames% StatusCalcMain
+set copyfiles=%filenames% StatusCalcMain SampleSkillInfos DamageCalculatorMain
 for %%n in (%copyfiles%) do (
     copy %~dp0Sources\%%n.js %destination%\%%n.js
 )
