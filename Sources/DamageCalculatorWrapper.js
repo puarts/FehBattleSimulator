@@ -357,11 +357,8 @@ class DamageCalculatorWrapper {
                 break;
             case Special.BlueFrame:
                 targetUnit.battleContext.specialAddDamage = 10;
-                for (let tile of targetUnit.placedTile.neighbors) {
-                    if (tile.placedUnit != null && tile.placedUnit.groupId == targetUnit.groupId) {
-                        targetUnit.battleContext.specialAddDamage += 15;
-                        break;
-                    }
+                if (targetUnit.battleContext.isThereAllyOnAdjacentTiles) {
+                    targetUnit.battleContext.specialAddDamage += 15;
                 }
                 break;
         }

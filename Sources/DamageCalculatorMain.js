@@ -10,13 +10,15 @@ const DamageCalcModeOptions = [
 ];
 
 const SpecialDamageGraphMode = {
-    AllSpecials: 0,
-    Count2Specials: 1,
-    Count3Specials: 2,
-    Count4Specials: 3,
+    AllInheritableSpecials: 0,
+    AllSpecials: 1,
+    Count2Specials: 2,
+    Count3Specials: 3,
+    Count4Specials: 4,
 };
 
 const SpecialDamageGraphModeOptions = [
+    { label: "全ての継承可能な奥義", value: SpecialDamageGraphMode.AllInheritableSpecials },
     { label: "全ての奥義", value: SpecialDamageGraphMode.AllSpecials },
     { label: "発動カウント2の奥義", value: SpecialDamageGraphMode.Count2Specials },
     { label: "発動カウント3の奥義", value: SpecialDamageGraphMode.Count3Specials },
@@ -62,7 +64,7 @@ class DamageCalcData {
     constructor() {
         this.damageCalc = new DamageCalculatorWrapper();
         this.mode = DamageCalcMode.Simple;
-        this.specialGraphMode = SpecialDamageGraphMode.Count2Specials;
+        this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
         this.attackerTriangleAdvantage = TriangleAdvantage.None;
         this.triangleAdeptType = TriangleAdeptType.None;
         this.atkUnit = createDefaultUnit("攻撃者");
@@ -94,10 +96,15 @@ class DamageCalcData {
     updateDamageDealt() {
         this.__clearBattleContext();
 
+        this.atkUnit.resWithSkills = this.atkUnit.defWithSkills;
+        this.defUnit.resWithSkills = this.defUnit.defWithSkills;
+
         this.atkUnit.saveCurrentHpAndSpecialCount();
         this.defUnit.saveCurrentHpAndSpecialCount();
         this.atkUnit.createSnapshot();
         this.defUnit.createSnapshot();
+
+        this.atkUnit.battleContext.isThereAllyOnAdjacentTiles = true;
 
         this.defUnit.battleContext.damageReductionRatio = roundFloat(this.damageReductionPercentage * 0.01);
         this.atkUnit.tmpSpecialCount = 0;
@@ -213,7 +220,6 @@ class DamageCalcData {
             let values = [];
             for (let mit = mitStart; mit <= mitEnd; mit += mitIncrement) {
                 this.defUnit.defWithSkills = mit;
-                this.defUnit.resWithSkills = mit;
                 this.updateDamageDealt();
                 values.push(this.actualDamageDealt);
             }
@@ -259,10 +265,17 @@ class DamageCalcData {
                     datasets: datasets
                 },
                 options: {
+                    animation: {
+                        duration: 0, // 一般的なアニメーションの時間
+                    },
+                    hover: {
+                        animationDuration: 0, // アイテムのマウスオーバー時のアニメーションの長さ
+                    },
+                    responsiveAnimationDuration: 0, // サイズ変更後のアニメーションの長さ
                     scales: {
                         yAxes: [{
                             ticks: {
-                                beginAtZero: true
+                                beginAtZero: true,
                             }
                         }]
                     }
@@ -279,27 +292,36 @@ class DamageCalcData {
 
     __getSpecialsForCurrentGraphMode() {
         switch (this.specialGraphMode) {
+            case SpecialDamageGraphMode.AllInheritableSpecials:
+                return this.__getInheritableCount2Specials()
+                    .concat(this.__getInheritableCount3Specials())
+                    .concat(this.__getInheritableCount4Specials());
             case SpecialDamageGraphMode.AllSpecials:
-                return this.__getCount2Specials()
-                    .concat(this.__getCount3Specials())
-                    .concat(this.__getCount4Specials());
+                return this.__getInheritableCount2Specials().concat(this.__getCount2Specials())
+                    .concat(this.__getInheritableCount3Specials()).concat(this.__getCount3Specials())
+                    .concat(this.__getInheritableCount4Specials()).concat(this.__getCount4Specials());
             case SpecialDamageGraphMode.Count2Specials:
-                return this.__getCount2Specials();
+                return this.__getInheritableCount2Specials().concat(this.__getCount2Specials());
             case SpecialDamageGraphMode.Count3Specials:
-                return this.__getCount3Specials();
+                return this.__getInheritableCount3Specials().concat(this.__getCount3Specials());
             case SpecialDamageGraphMode.Count4Specials:
-                return this.__getCount4Specials();
+                return this.__getInheritableCount4Specials().concat(this.__getCount4Specials());
         }
+    }
+
+    __getInheritableCount2Specials() {
+        return [
+            Special.Moonbow, // 月虹(守備魔防-30%)
+            Special.Glimmer, // 凶星(1.5倍)
+            Special.RupturedSky, // 破天(+攻撃20%)
+        ];
     }
 
 
     __getCount2Specials() {
         return [
-            Special.Moonbow, // 月虹(守備魔防-30%)
-            Special.Glimmer, // 凶星(1.5倍)
-            Special.RupturedSky, // 破天(+攻撃20%)
             Special.SublimeHeaven, // 覇天(+攻撃25%、獣なら50%)
-            // Special.HolyKnightAura, // 覇天と同じ(+攻撃25%)
+            // Special.HolyKnightAura, // グランベルの聖騎士(+攻撃25%)
             Special.LunaFlash, // 月光閃(守備魔防-20%、+速さ20%)
             Special.ShiningEmblem, // 光炎の紋章(+速さ35%)
             Special.Sirius, // 天狼(+速さ30%)
@@ -310,51 +332,72 @@ class DamageCalcData {
             Special.TwinBlades, // 双刃(+魔防30%)
         ];
     }
-
-    __getCount3Specials() {
+    __getInheritableCount3Specials() {
         return [
-            Special.SeidrShell, // 魔弾(+15)
             Special.Deadeye, // 狙撃(2倍)
-            // Special.OpenTheFuture, // 開世(+守備50%)
             Special.BlueFrame, // ブルーフレイム(+10 or +25)
-            Special.KuroNoGekko, // 黒の月光(守備魔防-80%)
             Special.DraconicAura, // 竜穿
-            Special.Iceberg, // 氷蒼(+魔防50%)
+            // Special.Iceberg, // 氷蒼(+魔防50%)
             Special.Bonfire, // 緋炎(+守備50%)
             Special.Luna, // 月光(守備魔防-50%)
         ];
     }
-
-    __getCount4Specials() {
+    __getCount3Specials() {
         return [
-            Special.Glacies, // 氷華(+魔防80%)
+            Special.SeidrShell, // 魔弾(+15)
+            // Special.OpenTheFuture, // 開世(+守備50%)
+            Special.KuroNoGekko, // 黒の月光(守備魔防-80%)
+        ];
+    }
+    __getInheritableCount4Specials() {
+        return [
+            // Special.Glacies, // 氷華(+魔防80%)
             Special.Ignis, // 華炎(+守備80%)
             Special.DragonFang, // 竜穿(+攻撃50%)
             Special.Astra, // 流星(2.5倍)
         ];
     }
 
-    writeLog(message) {
+    __getCount4Specials() {
+        return [
+        ];
+    }
+
+    __writeLog(message) {
         this.log += message;
     }
-    writeLogLine(message) {
-        this.writeLog(message + "<br/>");
+    __writeLogLine(message) {
+        this.__writeLog(message + "<br/>");
     }
 }
 
 const g_damageCalcData = new DamageCalcData();
 
-let g_keyRepeatTimeoutId;
-function startKeyRepeat(incrementFunc, speed = 250) {
-    incrementFunc();
-    g_keyRepeatTimeoutId = setTimeout(() => {
-        startKeyRepeat(incrementFunc, speed * 0.9);
-    }, speed);
+class KeyRepeatHandler {
+    constructor() {
+        this._keyRepeatTimeoutId = null;
+
+        this.intervalReductionRate = 0.9;
+        this.startKeyRepeatInterval = 250;
+    }
+
+    startKeyRepeat(incrementFunc) {
+        this.__startKeyRepeat(incrementFunc, this.startKeyRepeatInterval);
+    }
+
+    __startKeyRepeat(incrementFunc, interval) {
+        incrementFunc();
+        this._keyRepeatTimeoutId = setTimeout(() => {
+            this.__startKeyRepeat(incrementFunc, interval * this.intervalReductionRate);
+        }, interval);
+    }
+
+    stopKeyRepeat() {
+        clearTimeout(this._keyRepeatTimeoutId);
+    }
 }
 
-function stopKeyRepeat() {
-    clearTimeout(g_keyRepeatTimeoutId);
-}
+let g_keyRepeatHandler = new KeyRepeatHandler();
 
 function addMultipleEventListener(element, events, handler) {
     for (let e of events) {
@@ -362,20 +405,24 @@ function addMultipleEventListener(element, events, handler) {
     }
 }
 
-function addKeepChangingSettingEvent(elem, changeSettingFunc) {
+function addKeyRepeatEvent(elem, changeValueFunc) {
     addMultipleEventListener(elem, ['mousedown', 'mouseup', 'mouseleave'], (e) => {
         if (e.type == "mousedown") {
-            startKeyRepeat(changeSettingFunc);
+            g_keyRepeatHandler.startKeyRepeat(changeValueFunc);
         } else {
-            stopKeyRepeat();
+            g_keyRepeatHandler.stopKeyRepeat();
             g_damageCalcData.updateDamageDealt();
+            if (g_damageCalcData.mode == DamageCalcMode.SpecialDamageGraph) {
+                console.log("ダメージグラフ更新");
+                g_damageCalcData.updateDamageGraph();
+            }
         }
     });
 }
 
-function addKeepChangingSettingEventById(elemId, changeSettingFunc) {
+function addKeyRepeatEventById(elemId, changeValueFunc) {
     let elem = document.getElementById(elemId);
-    addKeepChangingSettingEvent(elem, changeSettingFunc);
+    addKeyRepeatEvent(elem, changeValueFunc);
 }
 
 const g_damageCalcVm = new Vue({
@@ -390,6 +437,10 @@ const g_damageCalcVm = new Vue({
         updateDamageResult: function () {
             console.log("ダメージ更新");
             g_damageCalcData.updateDamageDealt();
+            if (g_damageCalcData.mode == DamageCalcMode.SpecialDamageGraph) {
+                console.log("ダメージグラフ更新");
+                g_damageCalcData.updateDamageGraph();
+            }
         },
         updateDamageGraph: function () {
             g_damageCalcData.updateDamageGraph();
@@ -428,8 +479,3 @@ function* enumerateColors() {
         }
     }
 }
-
-// function getInheritableSpecials() {
-
-// }
-

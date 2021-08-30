@@ -66,9 +66,25 @@
                 <dt>攻撃</dt>
                 <dd>
                     <input class="numeric" v-model="atkUnit.atkWithSkills" @change="updateDamageResult" type="number"
-                        min="1" max="99" step="1" value="50" />
+                        min="1" max="99" step="1" />
                     <input id="incrementAtk" type="button" value="＋">
                     <input id="decrementAtk" type="button" value="－">
+                </dd>
+
+                <dt>速さ</dt>
+                <dd>
+                    <input class="numeric" v-model="atkUnit.spdWithSkills" @change="updateDamageResult" type="number"
+                        min="1" max="99" step="1" />
+                    <input id="incrementSpd" type="button" value="＋">
+                    <input id="decrementSpd" type="button" value="－">
+                </dd>
+
+                <dt>守備/魔防</dt>
+                <dd>
+                    <input class="numeric" v-model="atkUnit.defWithSkills" @change="updateDamageResult" type="number"
+                        min="1" max="99" step="1" />
+                    <input id="incrementAttackerMit" type="button" value="＋">
+                    <input id="decrementAttackerMit" type="button" value="－">
                 </dd>
 
                 <dt><label for="effectiveness">特効</label></dt>
@@ -254,8 +270,6 @@
             });
         }
 
-
-
         $(function () {
             const startTime = Date.now();
             loadScripts([
@@ -277,12 +291,16 @@
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
 
-                addKeepChangingSettingEventById("incrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.min(g_damageCalcData.atkUnit.atkWithSkills + 1, 99));
-                addKeepChangingSettingEventById("decrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.max(g_damageCalcData.atkUnit.atkWithSkills - 1, 0));
-                addKeepChangingSettingEventById("incrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.min(g_damageCalcData.defUnit.defWithSkills + 1, 99));
-                addKeepChangingSettingEventById("decrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.max(g_damageCalcData.defUnit.defWithSkills - 1, 0));
-                addKeepChangingSettingEventById("incrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.min(g_damageCalcData.damageReductionPercentage + 1, 100));
-                addKeepChangingSettingEventById("decrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.max(g_damageCalcData.damageReductionPercentage - 1, 0));
+                addKeyRepeatEventById("incrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.min(g_damageCalcData.atkUnit.atkWithSkills + 1, 99));
+                addKeyRepeatEventById("decrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.max(g_damageCalcData.atkUnit.atkWithSkills - 1, 0));
+                addKeyRepeatEventById("incrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.min(g_damageCalcData.atkUnit.spdWithSkills + 1, 99));
+                addKeyRepeatEventById("decrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.max(g_damageCalcData.atkUnit.spdWithSkills - 1, 0));
+                addKeyRepeatEventById("incrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.min(g_damageCalcData.atkUnit.defWithSkills + 1, 99));
+                addKeyRepeatEventById("decrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.max(g_damageCalcData.atkUnit.defWithSkills - 1, 0));
+                addKeyRepeatEventById("incrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.min(g_damageCalcData.defUnit.defWithSkills + 1, 99));
+                addKeyRepeatEventById("decrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.max(g_damageCalcData.defUnit.defWithSkills - 1, 0));
+                addKeyRepeatEventById("incrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.min(g_damageCalcData.damageReductionPercentage + 1, 100));
+                addKeyRepeatEventById("decrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.max(g_damageCalcData.damageReductionPercentage - 1, 0));
             });
         });
     </script>
