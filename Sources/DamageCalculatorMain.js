@@ -45,6 +45,33 @@ const TriangleAdeptOptions = [
     { label: "激化3", value: TriangleAdeptType.Adept3 },
 ];
 
+const WeaponTypeOptions = [
+    { text: "剣", id: WeaponType.Sword },
+    { text: "槍", id: WeaponType.Lance },
+    { text: "斧", id: WeaponType.Axe },
+    { text: "杖", id: WeaponType.Staff },
+    { text: "赤魔", id: WeaponType.RedTome },
+    { text: "青魔", id: WeaponType.BlueTome },
+    { text: "緑魔", id: WeaponType.GreenTome },
+    { text: "無魔", id: WeaponType.ColorlessTome },
+    { text: "赤弓", id: WeaponType.RedBow },
+    { text: "青弓", id: WeaponType.BlueBow },
+    { text: "緑弓", id: WeaponType.GreenBow },
+    { text: "弓", id: WeaponType.ColorlessBow },
+    { text: "赤暗器", id: WeaponType.RedDagger },
+    { text: "青暗器", id: WeaponType.BlueDagger },
+    { text: "緑暗器", id: WeaponType.GreenDagger },
+    { text: "暗器", id: WeaponType.ColorlessDagger },
+    { text: "赤竜", id: WeaponType.RedBreath },
+    { text: "青竜", id: WeaponType.BlueBreath },
+    { text: "緑竜", id: WeaponType.GreenBreath },
+    { text: "無竜", id: WeaponType.ColorlessBreath },
+    { text: "赤獣", id: WeaponType.RedBeast },
+    { text: "青獣", id: WeaponType.BlueBeast },
+    { text: "緑獣", id: WeaponType.GreenBeast },
+    { text: "無獣", id: WeaponType.ColorlessBeast },
+];
+
 function createDefaultUnit(name, groupId = UnitGroupType.Ally) {
     let unit = new Unit("", name, groupId);
     unit.placedTile = new Tile(0, 0);
@@ -98,6 +125,7 @@ class DamageCalcData {
 
         this.atkUnit.resWithSkills = this.atkUnit.defWithSkills;
         this.defUnit.resWithSkills = this.defUnit.defWithSkills;
+        this.__applyTriangleAdeptToAtkUnit();
 
         this.atkUnit.saveCurrentHpAndSpecialCount();
         this.defUnit.saveCurrentHpAndSpecialCount();
@@ -111,15 +139,16 @@ class DamageCalcData {
 
         this.damageCalc.clearLog();
         let result = this.damageCalc.calcCombatResult(this.atkUnit, this.defUnit);
-        console.log(result);
         this.basicDamageDealt = result.atkUnit_specialAttackDamage;
         this.actualDamageDealt = result.damageHistory[0].damageDealt;
         this.log = this.damageCalc.log;
 
-
+        // 計算式用のプロパティ設定
         this.effectivenessFactor = this.atkUnit.battleContext.isEffectiveToOpponent ? 1.5 : 1.0;
         this.defensiveTileFactor = this.defUnit.battleContext.isOnDefensiveTile ? 0.3 : 0;
         this.specialSufferMitRatio = this.atkUnit.battleContext.specialSufferPercentage * 0.01;
+        this.attackerTriangleAdvantage = DamageCalculationUtility.calcAttackerTriangleAdvantage(this.atkUnit, this.defUnit);
+        this.attackerTriangleAdvantageFactor = this.__getAttackerTriangleAdvantageFactor();
     }
 
     syncSettingsWithAttackerTriangleAdvantage() {
@@ -430,8 +459,6 @@ const g_damageCalcVm = new Vue({
     data: g_damageCalcData,
     methods: {
         triangleAdvantageChanged: function () {
-            console.log("3すくみ変更");
-            g_damageCalcData.syncSettingsWithAttackerTriangleAdvantage();
             g_damageCalcData.updateDamageDealt();
         },
         updateDamageResult: function () {

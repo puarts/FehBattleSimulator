@@ -3298,38 +3298,7 @@ class Unit {
     }
 
     get color() {
-        switch (this.weaponType) {
-            case WeaponType.Sword:
-            case WeaponType.RedTome:
-            case WeaponType.RedBreath:
-            case WeaponType.RedBeast:
-            case WeaponType.RedBow:
-            case WeaponType.RedDagger:
-                return ColorType.Red;
-            case WeaponType.Lance:
-            case WeaponType.BlueTome:
-            case WeaponType.BlueBreath:
-            case WeaponType.BlueBeast:
-            case WeaponType.BlueBow:
-            case WeaponType.BlueDagger:
-                return ColorType.Blue;
-            case WeaponType.Axe:
-            case WeaponType.GreenTome:
-            case WeaponType.GreenBreath:
-            case WeaponType.GreenBeast:
-            case WeaponType.GreenBow:
-            case WeaponType.GreenDagger:
-                return ColorType.Green;
-            case WeaponType.Staff:
-            case WeaponType.ColorlessTome:
-            case WeaponType.ColorlessBreath:
-            case WeaponType.ColorlessBeast:
-            case WeaponType.ColorlessBow:
-            case WeaponType.ColorlessDagger:
-                return ColorType.Colorless;
-            default:
-                return ColorType.Unknown;
-        }
+        return getColorFromWeaponType(this.weaponType);
     }
 
     get moveCount() {

@@ -63,6 +63,13 @@
         <fieldset>
             <legend>攻撃者の設定</legend>
             <dl>
+                <dt>武器種</dt>
+                <dd>
+                    <select2 :options="WeaponTypeOptions" v-model="atkUnit.weaponType" class="skill"
+                        @input="updateDamageResult">
+                    </select2>
+                </dd>
+
                 <dt>攻撃</dt>
                 <dd>
                     <input class="numeric" v-model="atkUnit.atkWithSkills" @change="updateDamageResult" type="number"
@@ -105,6 +112,13 @@
             <legend>被攻撃者の設定</legend>
             <dl>
 
+                <dt>武器種</dt>
+                <dd>
+                    <select2 :options="WeaponTypeOptions" v-model="defUnit.weaponType" class="skill"
+                        @input="updateDamageResult">
+                    </select2>
+                </dd>
+
                 <dt>守備/魔防</dt>
                 <dd>
                     <input class="numeric" v-model="defUnit.defWithSkills" @change="updateDamageResult" type="number"
@@ -130,16 +144,6 @@
         <fieldset>
             <legend>その他の設定</legend>
             <dl>
-
-                <dt>3すくみ</dt>
-                <dd>
-                    <label class="normal" v-for="option in TriangleAdvantageOptions">
-                        <input type="radio" v-model="attackerTriangleAdvantage" v-bind:value="option.value"
-                            @change="triangleAdvantageChanged">
-                        {{option.label}}
-                    </label>
-                </dd>
-
                 <dt>相性激化</dt>
                 <dd>
                     <label class="normal" v-for="option in TriangleAdeptOptions">
