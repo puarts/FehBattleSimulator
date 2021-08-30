@@ -6,6 +6,9 @@
 </head>
 
 <body>
+    <p>FEヒーローズ用のダメージ計算機です。与ダメージの計算や奥義ダメージ比較用のグラフを出力できます。</p>
+    <p>より複雑な計算、実際の英雄のステータスやスキルを設定した上でのダメージ計算には<a href="https://puarts.com/?pid=1469">飛空城シミュレーター</a>をお使いください。</p>
+
     <style>
         td.param {
             font-size: 16px;
@@ -257,6 +260,9 @@
             headElement.appendChild(element);
         }
 
+        let rootPath = "";
+        // rootPath = "/AetherRaidTacticsBoard/Release2/";
+
         function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
             if (index == scriptFileNames.length) {
                 allScriptLoaded();
@@ -264,7 +270,7 @@
             }
 
             let reloadSuffix = "20200513";
-            let scriptFileName = scriptFileNames[index];
+            let scriptFileName = rootPath + scriptFileNames[index];
             let src = scriptFileName + "?" + reloadSuffix;
             const startTime = Date.now();
             createScriptElement(src, x => {

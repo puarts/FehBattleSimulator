@@ -286,36 +286,33 @@ class DamageCalcData {
             }
         }
 
-        if (this._graph == null) {
-            this._graph = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: xLabels,
-                    datasets: datasets
+        if (this._graph != null) {
+            this._graph.destroy();
+        }
+
+        this._graph = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: xLabels,
+                datasets: datasets
+            },
+            options: {
+                animation: {
+                    duration: 0, // 一般的なアニメーションの時間
                 },
-                options: {
-                    animation: {
-                        duration: 0, // 一般的なアニメーションの時間
-                    },
-                    hover: {
-                        animationDuration: 0, // アイテムのマウスオーバー時のアニメーションの長さ
-                    },
-                    responsiveAnimationDuration: 0, // サイズ変更後のアニメーションの長さ
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true,
-                            }
-                        }]
-                    }
+                hover: {
+                    animationDuration: 0, // アイテムのマウスオーバー時のアニメーションの長さ
+                },
+                responsiveAnimationDuration: 0, // サイズ変更後のアニメーションの長さ
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                        }
+                    }]
                 }
-            });
-        }
-        else {
-            this._graph.data.labels = xLabels;
-            this._graph.data.datasets = datasets;
-            this._graph.update();
-        }
+            }
+        });
     }
 
 
