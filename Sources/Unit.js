@@ -1029,6 +1029,8 @@ class BattleContext {
 
         // 防御床にいるかどうか
         this.isOnDefensiveTile = false;
+
+        this.currentTurn = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -1128,6 +1130,7 @@ class BattleContext {
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
         this.isOnDefensiveTile = false;
+        this.currentTurn = 0;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。

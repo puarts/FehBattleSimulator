@@ -86,6 +86,241 @@ class DamageCalculatorWrapper {
             + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
     }
 
+
+    static getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
+        let followupAttackPriority = 0;
+        if (!defUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
+            followupAttackPriority += atkUnit.battleContext.followupAttackPriorityIncrement;
+
+            if (DamageCalculatorWrapper.canActivateBreakerSkill(atkUnit, defUnit)) {
+                ++followupAttackPriority;
+            }
+
+            if (atkUnit.hasStatusEffect(StatusEffectType.FollowUpAttackPlus)) {
+                ++followupAttackPriority;
+            }
+
+            for (let skillId of atkUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveB.BlackEagleRule:
+                        if (atkUnit.snapshot.restHpPercentage >= 25) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.GateAnchorAxe:
+                        if (calcPotentialDamage || !atkUnit.battleContext.isThereAllyOnAdjacentTiles) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.SkyPirateClaw:
+                        if (calcPotentialDamage || !atkUnit.battleContext.isThereAllyOnAdjacentTiles) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.DarkScripture:
+                        if (!defUnit.hasEffective(EffectiveType.Dragon)) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.RagingStorm:
+                        if (calcPotentialDamage ||
+                            (isWeaponTypeBreathOrBeast(defUnit.weaponType)
+                                && !atkUnit.battleContext.isThereAllyOnAdjacentTiles)
+                        ) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.VoidTome:
+                        if (defUnit.getSpdInPrecombat() >= 35
+                            || defUnit.hasNegativeStatusEffect()
+                        ) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.DragonsIre3:
+                        if (enemyUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 50) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                        break;
+                    case Weapon.Garumu:
+                        if (atkUnit.isWeaponRefined) {
+                            if (atkUnit.hasPositiveStatusEffect()) {
+                                ++followupAttackPriority;
+                            }
+                        }
+                        else if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.AnkigoroshiNoYumi:
+                    case Weapon.AnkigoroshiNoYumiPlus:
+                        if (isWeaponTypeDagger(defUnit.weaponType)) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.KouketsuNoSensou:
+                        if ((atkUnit.snapshot.restHpPercentage == 100 && defUnit.snapshot.restHpPercentage == 100)
+                            || (atkUnit.snapshot.restHpPercentage < 100 && defUnit.snapshot.restHpPercentage < 100)
+                        ) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.ReginRave:
+                        if (atkUnit.getAtkInCombat(defUnit) > defUnit.getAtkInCombat(atkUnit) || atkUnit.isMobilityIncreased) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.FlameSiegmund:
+                    case Weapon.HadoNoSenfu:
+                        if (atkUnit.battleContext.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.Gyorru:
+                    case Weapon.ChaosManifest:
+                        if (defUnit.hasNegativeStatusEffect()) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.Sekuvaveku:
+                        if (calcPotentialDamage || atkUnit.battleContext.isThereAllyIn3Spaces) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                }
+            }
+
+            if (atkUnit.passiveB == PassiveB.FuinNoTate) {
+                if (isWeaponTypeBreath(defUnit.weaponType)) {
+                    ++followupAttackPriority;
+                }
+            }
+            else if (atkUnit.passiveB == PassiveB.TsuigekiRing) {
+                if (atkUnit.snapshot.restHpPercentage >= 50) {
+                    ++followupAttackPriority;
+                }
+            }
+        }
+
+        if (!atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
+            followupAttackPriority += atkUnit.battleContext.followupAttackPriorityDecrement;
+
+            if (defUnit.hasStatusEffect(StatusEffectType.FollowUpAttackMinus)) {
+                --followupAttackPriority;
+            }
+
+            if (defUnit.hasStatusEffect(StatusEffectType.ResonantShield) && defUnit.isOneTimeActionActivatedForShieldEffect == false) {
+                --followupAttackPriority;
+            }
+            if (atkUnit.passiveB == PassiveB.WaryFighter3 && atkUnit.snapshot.restHpPercentage >= 50) {
+                --followupAttackPriority;
+            }
+            if (DamageCalculatorWrapper.canActivateBreakerSkill(defUnit, atkUnit)) {
+                --followupAttackPriority;
+            }
+
+            for (let skillId of defUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.Marute:
+                        if (defUnit.isWeaponSpecialRefined) {
+                            if (!defUnit.battleContext.initiatesCombat
+                                || atkUnit.snapshot.restHpPercentage == 100) {
+                                --followupAttackPriority;
+                            }
+                        }
+
+                        break;
+                    case Weapon.Aymr:
+                        if (calcPotentialDamage || defUnit.battleContext.isSolo) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.HarukazeNoBreath:
+                        if (defUnit.battleContext.isThereAllyIn2Spaces
+                            || defUnit.isBuffed
+                        ) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.TenraiArumazu:
+                        if (defUnit.battleContext.isAllyCountIsGreaterThanEnemyCountIn2Spaces) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.AnkigoroshiNoYumi:
+                    case Weapon.AnkigoroshiNoYumiPlus:
+                        if (isWeaponTypeDagger(atkUnit.weaponType)) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.Buryunhirude:
+                        if (defUnit.isWeaponSpecialRefined) {
+                            if (atkUnit.isRangedWeaponType()) {
+                                if (defUnit.getDefInCombat(atkUnit) > atkUnit.getDefInCombat(defUnit)) {
+                                    --followupAttackPriority;
+                                }
+                            }
+                        }
+                        break;
+                    case Weapon.Gyorru:
+                        if (atkUnit.hasNegativeStatusEffect()) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.ShintakuNoBreath:
+                        if (defUnit.isBuffed) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.SarieruNoOkama:
+                        if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.ImbuedKoma:
+                        if (defUnit.isSpecialCharged) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.FellBreath:
+                        if (atkUnit.snapshot.restHpPercentage < 100) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.ShinenNoBreath:
+                        if (defUnit.getDefInCombat(atkUnit) >= atkUnit.getDefInCombat(defUnit) + 5) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.BaraNoYari:
+                        if (defUnit.getAtkInPrecombat() > atkUnit.getAtkInPrecombat()) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.GeneiBattleAxe:
+                        if (defUnit.battleContext.isThereAllyIn2Spaces) {
+                            --followupAttackPriority;
+                        }
+                        break;
+
+
+                    case PassiveB.WaryFighter3:
+                        if (defUnit.snapshot.restHpPercentage >= 50) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.FuinNoTate:
+                        if (isWeaponTypeBreath(atkUnit.weaponType)) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                }
+            }
+
+        }
+        return followupAttackPriority;
+    }
+
     /// 殺しスキルを発動できるならtrue、そうでなければfalseを返します。
     static canActivateBreakerSkill(breakerUnit, targetUnit) {
         // 殺し3の評価

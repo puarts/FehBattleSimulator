@@ -69,7 +69,7 @@
                 <dt>武器種</dt>
                 <dd>
                     <select2 :options="WeaponTypeOptions" v-model="atkUnit.weaponType" class="skill"
-                        @input="updateDamageResult">
+                        @input="updateDamageResult" style="width: 150;">
                     </select2>
                 </dd>
 
@@ -106,7 +106,7 @@
                 <dt><label for="special">奥義</label></dt>
                 <dd>
                     <select2 :options="specialOptins" v-model="atkUnit.special" class="skill"
-                        @input="updateDamageResult">
+                        @input="updateDamageResult" style="width: 150;">
                     </select2>
                 </dd>
             </dl>
@@ -118,7 +118,7 @@
                 <dt>武器種</dt>
                 <dd>
                     <select2 :options="WeaponTypeOptions" v-model="defUnit.weaponType" class="skill"
-                        @input="updateDamageResult">
+                        @input="updateDamageResult" style="width: 150;">
                     </select2>
                 </dd>
 
@@ -295,6 +295,7 @@
                 "DamageCalculator.js",
                 "DamageCalculatorWrapper.js",
                 "SampleSkillInfos.js",
+                "SampleHeroInfos.js",
                 "VueComponents.js",
                 "DamageCalculatorMain.js",
             ], () => {
