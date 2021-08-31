@@ -6716,6 +6716,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.Prescience:
+                    enemyUnit.atkSpur -= 5;
+                    enemyUnit.resSpur -= 5;
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                    break;
                 case Weapon.NewDawn:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         targetUnit.atkSpur += 6;
