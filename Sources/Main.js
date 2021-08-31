@@ -6716,6 +6716,12 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.JointDistGuard:
+                    if (this.__isThereAllyIn2Spaces(targetUnit) && enemyUnit.isRangedWeaponType()) {
+                        targetUnit.defSpur += 4;
+                        targetUnit.resSpur += 4;
+                    }
+                    break;
                 case PassiveB.Prescience:
                     enemyUnit.atkSpur -= 5;
                     enemyUnit.resSpur -= 5;
@@ -10256,6 +10262,7 @@ class AetherRaidTacticsBoard {
                             }
                             break;
                         case PassiveC.DistantGuard3:
+                        case PassiveC.JointDistGuard:
                             if (vsUnit.isRangedWeaponType()) {
                                 unit.defSpur += 4;
                                 unit.resSpur += 4;

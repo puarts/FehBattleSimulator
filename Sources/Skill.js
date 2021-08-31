@@ -1830,6 +1830,7 @@ const PassiveC = {
     DistantGuard1: 1355,
     DistantGuard2: 1143, // 遠距離警戒2
     DistantGuard3: 685, // 遠距離警戒3
+    JointDistGuard: 1823, // 遠距離相互警戒
 
     SorakaranoSendo3: 735,
     HikonoSendo3: 736,
