@@ -1083,6 +1083,9 @@ const Weapon = {
 
     // 大英雄線 ペレアス
     RauarLionPlus: 1806, // ラウアライオン+
+
+    // 2021年8月 伝承ミカヤ
+    NewDawn: 1820, // 明日の光
 };
 
 const Support = {

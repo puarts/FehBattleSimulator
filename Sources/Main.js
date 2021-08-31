@@ -6716,6 +6716,13 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.NewDawn:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.resSpur += 6;
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                    break;
                 case PassiveB.MikiriTsuigeki3:
                 case PassiveB.SphiasSoul:
                 case Weapon.HakutoshinNoNinjin:
@@ -9278,6 +9285,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.YngviAscendant:
                     atkUnit.battleContext.isDesperationActivatable = true;
                     break;
+                case Weapon.NewDawn:
                 case PassiveB.Frenzy3:
                     if (atkUnit.snapshot.restHpPercentage <= 50) {
                         atkUnit.battleContext.isDesperationActivatable = true;
