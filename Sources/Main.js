@@ -17816,6 +17816,7 @@ class AetherRaidTacticsBoard {
                 switch (supporterUnit.support) {
                     case Support.MaidensSolace:
                         if (targetUnit.hasNegativeStatusEffect()) return true;
+                        return targetUnit.isDebuffed || Math.min(targetUnit.currentDamage, supporterUnit.hp - 1) > 0;
                     case Support.Sacrifice:
                         return targetUnit.isDebuffed || Math.min(targetUnit.currentDamage, supporterUnit.hp - 1) > 0;
                     default:
