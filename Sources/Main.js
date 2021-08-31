@@ -13460,7 +13460,9 @@ class AetherRaidTacticsBoard {
         }
 
         let staffUserOrSacrificeUserPriority = 0;
-        if (unit.weaponType == WeaponType.Staff || unit.support == Support.Sacrifice) {
+        if (unit.weaponType == WeaponType.Staff ||
+            unit.support == Support.Sacrifice ||
+            unit.support == Support.MaidensSolace) {
             staffUserOrSacrificeUserPriority = 1;
         }
 
@@ -14692,7 +14694,8 @@ class AetherRaidTacticsBoard {
                     && targetUnit.actionContext.hasThreatensEnemyStatus
                     && unit.canRallyTo(targetUnit, 2);
             case AssistType.Heal:
-                if (unit.support == Support.Sacrifice) {
+                if (unit.support == Support.Sacrifice ||
+                    unit.support == Support.MaidensSolace) {
                     let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
                     let targetEnemyThreat = targetUnit.placedTile.getEnemyThreatFor(targetUnit.groupId);
                     if (assisterEnemyThreat > targetEnemyThreat) {
@@ -14858,7 +14861,8 @@ class AetherRaidTacticsBoard {
             case AssistType.Refresh:
                 return true;
             case AssistType.Heal:
-                if (unit.support == Support.Sacrifice) {
+                if (unit.support == Support.Sacrifice ||
+                    unit.support == Support.MaidensSolace) {
                     if (unit.hp == 1) {
                         return false;
                     }
@@ -14900,13 +14904,14 @@ class AetherRaidTacticsBoard {
                 return true;
             case AssistType.Heal:
                 {
-                    if (unit.support == Support.Sacrifice) {
+                    if (unit.support == Support.Sacrifice ||
+                        unit.support == Support.MaidensSolace) {
                         if (unit.hp == 1) {
                             return false;
                         }
                     }
 
-                    let ignores5DamageDealt = unit.support != Support.Sacrifice;
+                    let ignores5DamageDealt = unit.support != (Support.Sacrifice || Support.MaidensSolace);
                     if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt)) { return false; }
                     return true;
                 }
@@ -17795,6 +17800,8 @@ class AetherRaidTacticsBoard {
                 return supporterUnit.canRallyForcibly() || supporterUnit.canRallyTo(targetUnit, 1);
             case AssistType.Heal:
                 switch (supporterUnit.support) {
+                    case Support.MaidensSolace:
+                        if (targetUnit.hasNegativeStatusEffect()) return true;
                     case Support.Sacrifice:
                         return targetUnit.isDebuffed || Math.min(targetUnit.currentDamage, supporterUnit.hp - 1) > 0;
                     default:
@@ -17856,12 +17863,16 @@ class AetherRaidTacticsBoard {
             case AssistType.Refresh:
                 return this.__applyRefresh(supporterUnit, targetUnit);
             case AssistType.Heal:
-                if (supporterUnit.support == Support.Sacrifice) {
+                if (supporterUnit.support == Support.Sacrifice ||
+                    supporterUnit.support == Support.MaidensSolace) {
                     let healAmount = Math.min(targetUnit.currentDamage, supporterUnit.hp - 1);
                     if (healAmount > 0) {
                         targetUnit.heal(healAmount);
                         supporterUnit.takeDamage(healAmount, true);
                         this.writeSimpleLogLine(`${targetUnit.getNameWithGroup()}は${healAmount}回復`);
+                    }
+                    if (supporterUnit.support == Support.MaidensSolace) {
+                        targetUnit.clearNegativeStatusEffects();
                     }
                     return healAmount > 0 || this.__executeHarshCommand(targetUnit);
                 }

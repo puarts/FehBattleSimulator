@@ -1139,6 +1139,7 @@ const Support = {
     PhysicPlus: 438, // リブロー+
 
     Sacrifice: 432, // 癒しの手
+    MaidensSolace: 1821, // 癒しの乙女
     Recover: 439, // リカバー
     RecoverPlus: 440, // リカバー+ 
     RestorePlus: 449, // レスト+
@@ -2184,7 +2185,9 @@ function getResBuffAmount(support) {
 /// https://vervefeh.github.io/FEH-AI/charts.html#chartF
 function getPrecombatHealThreshold(support) {
     switch (support) {
-        case Support.Sacrifice: return 1;
+        case Support.MaidensSolace:
+        case Support.Sacrifice:
+            return 1;
         case Support.Heal:
             return 5;
         case Support.Reconcile:
