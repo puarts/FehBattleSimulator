@@ -958,6 +958,9 @@ class BattleContext {
         // 2マス以内の味方の数が敵の数より多いかどうか
         this.isAllyCountIsGreaterThanEnemyCountIn2Spaces = false;
 
+        // マップ上でHPが90%以上の味方の数
+        this.countOfAlliesWith90PercentOrMoreHp = 0;
+
         // マップ上の飛行の味方の数
         this.flyingAllyCount = 0;
 
@@ -1110,6 +1113,7 @@ class BattleContext {
         this.isThereAnyPartnerPairsIn3Spaces = false;
         this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
         this.isAllyCountIsGreaterThanEnemyCountIn2Spaces = false;
+        this.countOfAlliesWith90PercentOrMoreHp = 0;
         this.flyingAllyCount = 0;
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;

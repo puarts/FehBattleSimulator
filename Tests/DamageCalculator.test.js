@@ -35,40 +35,7 @@ class test_DamageCalculator {
     return atkUnit.attackRange == defUnit.attackRange;
   }
 
-  __applyDamageReduction(atkUnit, defUnit) {
-    // テスト用に一部スキルのみ実装しておく
-    switch (defUnit.passiveB) {
-      case PassiveB.Spurn3:
-        {
-          let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
-          if (ratio > 0) {
-            defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
-          }
-        }
-        break;
-    }
-
-    if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-      let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
-      if (ratio > 0) {
-        defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
-      }
-    }
-
-    switch (defUnit.special) {
-      case Special.Otate:
-        // この判定だと本当はダメだけどテスト用なので許容
-        if (atkUnit.attackRange == 1) {
-          defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
-        }
-        break;
-    }
-  }
-
   calcDamage(atkUnit, defUnit) {
-    this.__applyDamageReduction(atkUnit, defUnit);
-    this.__applyDamageReduction(defUnit, atkUnit);
-
     let result = this.damageCalc.calcCombatResult(atkUnit, defUnit, false);
     if (this.isLogEnabled) {
       console.log(this.damageCalc.rawLog);
@@ -106,7 +73,7 @@ test('DamageCalculatorFollowupAttackTest', () => {
 
   {
     defUnit.weaponType = WeaponType.RedTome;
-    let result = test_calcDamage(atkUnit, defUnit, true);
+    let result = test_calcDamage(atkUnit, defUnit, false);
     expect(result.atkUnit_totalAttackCount).toBe(1);
     expect(result.defUnit_totalAttackCount).toBe(0);
   }

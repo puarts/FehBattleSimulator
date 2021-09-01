@@ -38,6 +38,16 @@ class DamageCalculatorWrapper {
     }
 
     calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+        // ダメージ軽減率の計算(ダメージ軽減効果を軽減する効果の後に実行する必要がある)
+        {
+            this.__applyDamageReductionRatio(atkUnit, defUnit);
+            this.__applyDamageReductionRatio(defUnit, atkUnit);
+        }
+
+        DamageCalculatorWrapper.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        DamageCalculatorWrapper.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
+
+        DamageCalculatorWrapper.__calcFixedAddDamage(atkUnit, defUnit, false);
 
         // 敵が反撃可能か判定
         defUnit.battleContext.canCounterattack = DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit);
@@ -75,6 +85,393 @@ class DamageCalculatorWrapper {
         this.__setSkillEffetToContext(atkUnit, defUnit);
 
         return this._damageCalc.calcCombatResult(atkUnit, defUnit);
+    }
+
+
+    __getDamageReductionRatio(skillId, atkUnit, defUnit) {
+        switch (skillId) {
+            case Weapon.LilacJadeBreath:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
+                    return 0.4;
+                }
+                break;
+            case Weapon.Areadbhar:
+                {
+                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                    if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                        let percentage = Math.min(diff * 4, 40);
+                        this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case Weapon.GiltGoblet:
+                if ((atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) &&
+                    isWeaponTypeTome(atkUnit.weaponType)) {
+                    return 0.5;
+                }
+                break;
+            case Weapon.BloodTome:
+                if (isRangedWeaponType(atkUnit.weaponType)) {
+                    return 0.5;
+                }
+                break;
+            case PassiveB.DragonWall3:
+            case Weapon.NewFoxkitFang:
+                {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = resDiff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case Weapon.BrightmareHorn: {
+                if (defUnit.snapshot.restHpPercentage >= 25) {
+                    {
+                        let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                            return percentage / 100.0;
+                        }
+                    }
+                }
+            }
+                break;
+            case Weapon.NightmareHorn:
+            case Weapon.NewBrazenCatFang:
+                {
+                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+            case PassiveB.MoonTwinWing:
+                if (defUnit.snapshot.restHpPercentage >= 25) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
+            case PassiveB.Bushido2:
+            case PassiveB.Frenzy3:
+            case PassiveB.Spurn3:
+            case PassiveB.KaihiIchigekiridatsu3:
+            case PassiveB.KaihiTatakikomi3:
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+            case PassiveB.BlueLionRule:
+                {
+                    let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
+                    let atkUnitDef = atkUnit.getEvalDefInCombat(defUnit);
+                    let diff = defUnitDef - atkUnitDef;
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        this.__writeDamageCalcDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
+        }
+
+        return 0;
+    }
+
+    __applyDamageReductionRatio(atkUnit, defUnit) {
+        for (let skillId of defUnit.enumerateSkills()) {
+            let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
+            if (ratio > 0) {
+                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+            }
+        }
+
+        if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+            if (ratio > 0) {
+                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+            }
+        }
+    }
+
+
+    /// 戦闘前奥義、戦闘のどちらでも同様の効果のスキルの実装
+    static __applySkillEffectForPrecombatAndCombat(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.Bushido2:
+                    targetUnit.battleContext.additionalDamage += 7;
+                    break;
+                case Weapon.DarkCreatorS:
+                    if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
+                        let count = targetUnit.battleContext.countOfAlliesWith90PercentOrMoreHp;
+                        let damageReductionRatio = Math.min(count * 15, 45) * 0.01;
+                        targetUnit.battleContext.multDamageReductionRatio(damageReductionRatio, enemyUnit);
+                    }
+                    break;
+            }
+        }
+    }
+
+    static __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+        for (let skillId of atkUnit.enumeratePassiveSkills()) {
+            switch (skillId) {
+                case PassiveB.Atrocity:
+                    if (defUnit.snapshot.restHpPercentage >= 50) {
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getAtkInCombat() * 0.25);
+                    }
+                    break;
+                case PassiveA.HeavyBlade4:
+                    if (DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat) > DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat)) {
+                        atkUnit.battleContext.additionalDamage += 5;
+                    }
+                    break;
+                case PassiveA.FlashingBlade4:
+                    if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) > DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+                        atkUnit.battleContext.additionalDamage += 5;
+                    }
+                    break;
+                case PassiveA.HashinDanryuKen:
+                    {
+                        let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.25);
+                    }
+                    break;
+            }
+        }
+        switch (atkUnit.weapon) {
+            case Weapon.MakenMistoruthin:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (isPrecombat) {
+                        if (defUnit.restHpPercentage >= 75) {
+                            atkUnit.battleContext.additionalDamage += 7;
+                        }
+                    }
+                }
+                break;
+            case Weapon.Ginnungagap:
+                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                    atkUnit.battleContext.additionalDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                }
+                break;
+            case Weapon.FairFuryAxe:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalAtkInCombat() * 0.15);
+                }
+                break;
+            case Weapon.RoseQuartsBow:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+                }
+                break;
+            case Weapon.SpySongBow:
+            case Weapon.HikariNoKen:
+            case Weapon.ShiningBow:
+            case Weapon.ShiningBowPlus:
+            case Weapon.ZeroNoGyakukyu:
+                {
+                    let def = 0;
+                    let res = 0;
+                    if (isPrecombat) {
+                        def = defUnit.getDefInPrecombat();
+                        res = defUnit.getResInPrecombat();
+                    }
+                    else {
+                        def = defUnit.getDefInCombat(atkUnit);
+                        res = defUnit.getResInCombat(atkUnit);
+                    }
+                    if (res <= def - 5) {
+                        atkUnit.battleContext.additionalDamage += 7;
+                    }
+                }
+                break;
+            case Weapon.TsubakiNoKinnagitou:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.snapshot.restHpPercentage >= 70) {
+                        atkUnit.battleContext.additionalDamage += 7;
+                    }
+                }
+                break;
+            case Weapon.LevinDagger:
+                {
+                    if (!isPrecombat) {
+                        let value = 0;
+                        value = atkUnit.getResInCombat(defUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                    }
+                }
+                break;
+            case Weapon.SatougashiNoAnki:
+                if (atkUnit.battleContext.initiatesCombat) {
+                    let value = 0;
+                    if (isPrecombat) {
+                        value = atkUnit.getSpdInPrecombat();
+                    }
+                    else {
+                        value = atkUnit.getSpdInCombat(defUnit);
+                    }
+                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.1);
+                }
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (isPrecombat) {
+                        if (defUnit.isRestHpFull) {
+                            atkUnit.battleContext.additionalDamage += 7;
+                        }
+                    }
+                    else {
+                        if (defUnit.snapshot.isRestHpFull) {
+                            atkUnit.battleContext.additionalDamage += 7;
+                        }
+                    }
+                }
+                break;
+            case Weapon.LunaArc:
+                if (atkUnit.battleContext.initiatesCombat) {
+                    let value = 0;
+                    if (isPrecombat) {
+                        value = defUnit.getDefInPrecombat();
+                    }
+                    else {
+                        value = defUnit.getDefInCombat(atkUnit);
+                    }
+                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
+                }
+                break;
+            case Weapon.BladeOfRenais:
+                if (atkUnit.battleContext.initiatesCombat
+                    || atkUnit.battleContext.isThereAllyIn2Spaces
+                ) {
+                    if (atkUnit.hasPositiveStatusEffect(defUnit)
+                        || atkUnit.hasNegativeStatusEffect()
+                    ) {
+                        let value = isPrecombat ? defUnit.getDefInPrecombat() : defUnit.getDefInCombat(atkUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(0.2 * value);
+                    }
+                }
+                break;
+            case Weapon.TenseiAngel:
+                if (atkUnit.battleContext.initiatesCombat) {
+                    let value = 0;
+                    if (isPrecombat) {
+                        value = defUnit.getResInPrecombat();
+                    }
+                    else {
+                        value = defUnit.getResInCombat(atkUnit);
+                    }
+                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
+                }
+                break;
+            case Weapon.NewFoxkitFang:
+                atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                    atkUnit, defUnit, isPrecombat,
+                    x => x.getEvalResInPrecombat(),
+                    (x, y) => x.getEvalResInCombat(y));
+                break;
+            case Weapon.KenhimeNoKatana:
+                if (atkUnit.isWeaponRefined) {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.15);
+                } else {
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
+            case Weapon.KarasuOuNoHashizume:
+            case Weapon.NewBrazenCatFang:
+            case Weapon.AkaiAhiruPlus:
+            case Weapon.GigaExcalibur:
+                if (atkUnit.isWeaponRefined) {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+                } else {
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
+            case Weapon.KieiWayuNoKen:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
+            case Weapon.RefreshedFang:
+                if (defUnit.snapshot.restHpPercentage >= 75) {
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y));
+                }
+                break;
+            case Weapon.ResolvedFang:
+                if (defUnit.snapshot.restHpPercentage >= 75) {
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalDefInPrecombat(),
+                        (x, y) => x.getEvalDefInCombat(y));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    static __getAtk(atkUnit, defUnit, isPrecombat) {
+        if (isPrecombat) {
+            return atkUnit.getAtkInPrecombat();
+        }
+        else {
+            return atkUnit.getAtkInCombat(defUnit);
+        }
+    }
+    static __getSpd(atkUnit, defUnit, isPrecombat) {
+        if (isPrecombat) {
+            return atkUnit.getSpdInPrecombat();
+        }
+        else {
+            return atkUnit.getSpdInCombat(defUnit);
+        }
+    }
+
+    static __calcAddDamageForDiffOf70Percent(atkUnit, defUnit, isPrecombat, getPrecombatFunc, getCombatFunc) {
+        let diff = 0;
+        if (isPrecombat) {
+            diff = getPrecombatFunc(atkUnit) - getPrecombatFunc(defUnit);
+        }
+        else {
+            diff = getCombatFunc(atkUnit, defUnit) - getCombatFunc(defUnit, atkUnit);
+        }
+        if (diff > 0) {
+            let addDamage = Math.trunc(diff * 0.7);
+            if (addDamage > 7) {
+                addDamage = 7;
+            }
+            return addDamage;
+        }
+        return 0;
     }
 
     __examinesCanFollowupAttack(atkUnit, defUnit) {
