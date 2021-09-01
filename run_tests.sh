@@ -6,3 +6,6 @@ TARGET_FILE=All.test.js
 CONFIG=jest.config.js
 npx jest $TARGET_FILE -c ../$CONFIG --silent=false --verbose false
 rm $TARGET_FILE
+
+cd Sources
+npx eslint ./

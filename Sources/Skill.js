@@ -1083,6 +1083,9 @@ const Weapon = {
 
     // 大英雄線 ペレアス
     RauarLionPlus: 1806, // ラウアライオン+
+
+    // 2021年8月 伝承ミカヤ
+    NewDawn: 1820, // 明日の光
 };
 
 const Support = {
@@ -1136,6 +1139,7 @@ const Support = {
     PhysicPlus: 438, // リブロー+
 
     Sacrifice: 432, // 癒しの手
+    MaidensSolace: 1821, // 癒しの乙女
     Recover: 439, // リカバー
     RecoverPlus: 440, // リカバー+ 
     RestorePlus: 449, // レスト+
@@ -1755,6 +1759,7 @@ const PassiveB = {
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
     MoonlightBangle: 1798, // 華月の腕輪
+    Prescience: 1822, // 未来を知る力
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
@@ -1825,6 +1830,7 @@ const PassiveC = {
     DistantGuard1: 1355,
     DistantGuard2: 1143, // 遠距離警戒2
     DistantGuard3: 685, // 遠距離警戒3
+    JointDistGuard: 1823, // 遠距離相互警戒
 
     SorakaranoSendo3: 735,
     HikonoSendo3: 736,
@@ -2181,7 +2187,9 @@ function getResBuffAmount(support) {
 /// https://vervefeh.github.io/FEH-AI/charts.html#chartF
 function getPrecombatHealThreshold(support) {
     switch (support) {
-        case Support.Sacrifice: return 1;
+        case Support.MaidensSolace:
+        case Support.Sacrifice:
+            return 1;
         case Support.Heal:
             return 5;
         case Support.Reconcile:
