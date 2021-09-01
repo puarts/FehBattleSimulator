@@ -37,7 +37,17 @@ class DamageCalculatorWrapper {
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
 
-    calcCombatResult(atkUnit, defUnit) {
+    calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+
+        // 敵が反撃可能か判定
+        defUnit.battleContext.canCounterattack = DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit);
+        // this.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
+
+        // 追撃可能か判定
+        atkUnit.battleContext.canFollowupAttack = this.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
+        if (defUnit.battleContext.canCounterattack) {
+            defUnit.battleContext.canFollowupAttack = this.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
+        }
 
         // 防御系奥義発動時のダメージ軽減率設定
         this.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
@@ -86,6 +96,439 @@ class DamageCalculatorWrapper {
             + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
     }
 
+
+    __examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage) {
+        this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の追撃評価 ------`);
+        let followupAttackPriority = DamageCalculatorWrapper.getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage);
+        if (!defUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
+            for (let skillId of atkUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.DarkSpikesT:
+                        if (atkUnit.snapshot.restHpPercentage <= 99) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.WhitedownSpear:
+                        if (atkUnit.battleContext.flyingAllyCount >= 3) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.Jikumunt:
+                        if (atkUnit.snapshot.restHpPercentage >= 90) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.SeireiNoBreath:
+                        if (atkUnit.getDefInPrecombat() >= defUnit.getDefInPrecombat() + 5) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.BoldFighter3: ++followupAttackPriority; break;
+                    case Weapon.TakaouNoHashizume:
+                        if (defUnit.snapshot.isRestHpFull) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.TsuigekiTaikeiKisu3:
+                        if (atkUnit.battleContext.currentTurn % 2 == 1) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.EvenFollowUp3:
+                        if (atkUnit.battleContext.currentTurn % 2 === 0) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.Sashitigae3:
+                        if (atkUnit.snapshot.restHpPercentage <= 50 && DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit)) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.SoulCaty:
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            if (atkUnit.snapshot.restHpPercentage <= 75 && DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit)) {
+                                ++followupAttackPriority;
+                            }
+                        }
+                        break;
+                    case Weapon.RohyouNoKnife:
+                        if ((defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) && DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit)) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                }
+            }
+        }
+
+        if (!atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
+            for (let skillId of atkUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveB.Kazenagi3:
+                        --followupAttackPriority;
+                        break;
+                    case PassiveB.Mizunagi3:
+                        --followupAttackPriority;
+                        break;
+                }
+            }
+        }
+
+        if (followupAttackPriority < 0) {
+            // 追撃不可を受けた
+            this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により追撃不可");
+            return false;
+        } else if (followupAttackPriority > 0) {
+            // 絶対追撃発動
+            this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
+            return true;
+        }
+        else {
+            // 速さ勝負
+            if (this.__examinesCanFollowupAttack(atkUnit, defUnit)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
+    __examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage) {
+        this.__writeDamageCalcDebugLog(`${defUnit.getNameWithGroup()}の追撃評価 ------`);
+        let followupAttackPriority = DamageCalculatorWrapper.getFollowupAttackPriorityForBoth(defUnit, atkUnit, calcPotentialDamage);
+        if (!atkUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
+            for (let skillId of defUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveB.SlickFighter3:
+                        if (defUnit.snapshot.restHpPercentage >= 25) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.Marute:
+                        if (defUnit.isWeaponRefined) {
+                            if (defUnit.snapshot.restHpPercentage >= 25) {
+                                ++followupAttackPriority;
+                            }
+                        }
+                        else if (defUnit.snapshot.restHpPercentage >= 50) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.BlueLionRule:
+                        ++followupAttackPriority;
+                        break;
+                    case PassiveB.HolyWarsEnd:
+                        if (defUnit.snapshot.restHpPercentage >= 50) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.QuickRiposte1:
+                        if (defUnit.snapshot.restHpPercentage >= 90) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.QuickRiposte2:
+                        if (defUnit.snapshot.restHpPercentage >= 80) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.QuickRiposte3:
+                        if (defUnit.snapshot.restHpPercentage >= 70) {
+                            // this.writeDebugLogLine("HP" + defUnit.snapshot.restHpPercentage + "%で切り返し発動、" + defUnit.getNameWithGroup() + "は絶対追撃");
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.DragonsIre3:
+                        if (defUnit.snapshot.restHpPercentage >= 50) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.VengefulFighter3:
+                        if (defUnit.snapshot.restHpPercentage >= 50) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.Arumazu:
+                        if (defUnit.snapshot.restHpPercentage >= 80) {
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.HuinNoKen:
+                    case Weapon.MoumokuNoYumi:
+                        if (defUnit.isWeaponSpecialRefined) {
+                            if (defUnit.snapshot.restHpPercentage >= 50) {
+                                ++followupAttackPriority;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        if (!defUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
+            for (let skillId of atkUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.InstantLancePlus:
+                        --followupAttackPriority;
+                        break;
+                    case Weapon.Rifia:
+                        if (atkUnit.snapshot.restHpPercentage >= 50) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.HewnLance:
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.JoyfulVows:
+                        if (atkUnit.hasPositiveStatusEffect(defUnit)) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.KarenNoYumi:
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.BlazingDurandal:
+                        if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.MasterBow:
+                        if (atkUnit.groupId == UnitGroupType.Ally) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case PassiveA.KishinKongoNoSyungeki:
+                    case PassiveA.KishinMeikyoNoSyungeki:
+                    case PassiveA.SteadyImpact:
+                    case PassiveA.SwiftImpact:
+                        --followupAttackPriority;
+                        break;
+                    case PassiveB.TsuigekiTaikeiKisu3:
+                        if (atkUnit.battleContext.currentTurn % 2 == 1) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.EvenFollowUp3:
+                        if (atkUnit.battleContext.currentTurn % 2 === 0) {
+                            --followupAttackPriority;
+                        }
+                        break;
+                    case Weapon.AijouNoHanaNoYumiPlus:
+                    case Weapon.BukeNoSteckPlus:
+                        --followupAttackPriority;
+                        break;
+                }
+            }
+        }
+
+        if (atkUnit.isTransformed) {
+            switch (atkUnit.weapon) {
+                case Weapon.RefreshedFang:
+                case Weapon.RaydreamHorn:
+                case Weapon.BrightmareHorn:
+                case Weapon.NightmareHorn:
+                case Weapon.BrazenCatFang:
+                case Weapon.NewBrazenCatFang:
+                case Weapon.NewFoxkitFang:
+                case Weapon.FoxkitFang:
+                case Weapon.TaguelFang:
+                case Weapon.TaguelChildFang:
+                case Weapon.YoukoohNoTsumekiba:
+                case Weapon.JunaruSenekoNoTsumekiba:
+                    --followupAttackPriority;
+                    break;
+            }
+        }
+
+        if (followupAttackPriority < 0) {
+            // 追撃不可を受けた
+            this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により追撃不可");
+            return false;
+        } else if (followupAttackPriority > 0) {
+            // 絶対追撃発動
+            this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
+            return true;
+        }
+        else {
+            // 速さ勝負
+            if (this.__examinesCanFollowupAttack(defUnit, atkUnit)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
+    static canCounterAttack(atkUnit, defUnit) {
+        return DamageCalculatorWrapper.__examinesCanCounterattackBasically(atkUnit, defUnit)
+            && !DamageCalculatorWrapper.__canDisableCounterAttack(atkUnit, defUnit);
+    }
+
+    static __canDisableCounterAttack(atkUnit, defUnit) {
+        if (defUnit.hasPassiveSkill(PassiveB.MikiriHangeki3)) {
+            return false;
+        }
+
+        if (defUnit.hasStatusEffect(StatusEffectType.CounterattacksDisrupted)) {
+            return true;
+        }
+
+        if (atkUnit.battleContext.invalidatesCounterattack) {
+            return true;
+        }
+
+        switch (atkUnit.weapon) {
+            case Weapon.SurvivalistBow:
+                if (atkUnit.battleContext.isSolo && defUnit.snapshot.restHpPercentage >= 80) {
+                    return true;
+                }
+                break;
+            case Weapon.Nizuheggu:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (isWeaponTypeTome(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
+                        return true;
+                    }
+                }
+                break;
+            case Weapon.GeneiLongBow:
+                if (atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)) {
+                    return true;
+                }
+                break;
+            case Weapon.SnipersBow:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.snapshot.restHpPercentage >= 50
+                        && atkUnit.battleContext.isTherePartnerIn2Spaces
+                    ) {
+                        return true;
+                    }
+                }
+                break;
+            case Weapon.EishinNoAnki:
+                if (atkUnit.battleContext.isTherePartnerIn2Spaces) {
+                    return true;
+                }
+                break;
+            case Weapon.DeathlyDagger:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (isWeaponTypeTome(defUnit.weaponType)) {
+                        return true;
+                    }
+                }
+                break;
+        }
+
+        switch (atkUnit.passiveA) {
+            case PassiveA.LawsOfSacae2:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (defUnit.isMeleeWeaponType()) {
+                        let atkUnitSpd = atkUnit.getSpdInCombat(defUnit);
+                        let defUnitSpd = defUnit.getSpdInCombat(atkUnit);
+                        if (atkUnitSpd >= defUnitSpd + 5) {
+                            return true;
+                        }
+                    }
+                }
+                break;
+        }
+
+        // 反撃不可
+        let atkWeaponInfo = atkUnit.weaponInfo;
+        let passiveBInfo = atkUnit.passiveBInfo;
+        if ((atkWeaponInfo != null && atkWeaponInfo.disableCounterattack)
+            || (passiveBInfo != null && passiveBInfo.disableCounterattack)
+            || (atkUnit.weaponRefinement == WeaponRefinementType.DazzlingStaff)
+            || (atkUnit.passiveB == PassiveB.SacaesBlessing
+                && (defUnit.weaponType == WeaponType.Sword || defUnit.weaponType == WeaponType.Lance || defUnit.weaponType == WeaponType.Axe))
+            || (atkUnit.hasPassiveSkill(PassiveB.Kazenagi3)
+                && atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)
+                && isPhysicalWeaponType(defUnit.weaponType))
+            || (atkUnit.hasPassiveSkill(PassiveB.Mizunagi3)
+                && atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)
+                && !isPhysicalWeaponType(defUnit.weaponType))
+            || (atkUnit.passiveB == PassiveB.FuinNoTate && isWeaponTypeBreath(defUnit.weaponType))
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    static __examinesCanCounterattackBasically(atkUnit, defUnit) {
+        if (!defUnit.hasWeapon) {
+            return false;
+        }
+
+        if (defUnit.battleContext.canCounterattackToAllDistance) {
+            return true;
+        }
+
+        if (atkUnit.attackRange == defUnit.attackRange) {
+            return true;
+        }
+
+        if (atkUnit.isRangedWeaponType()) {
+            switch (defUnit.passiveA) {
+                case PassiveA.DistantCounter:
+                case PassiveA.OstiasCounter:
+                    return true;
+                case PassiveA.DistantFoil:
+                    if (isPhysicalWeaponType(atkUnit.weaponType)) {
+                        return true;
+                    }
+                    break;
+                case PassiveA.DistantWard:
+                    if (atkUnit.weaponType == WeaponType.Staff
+                        || isWeaponTypeBreath(atkUnit.weaponType)
+                        || isWeaponTypeTome(atkUnit.weaponType)) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+        else if (atkUnit.isMeleeWeaponType()) {
+            switch (defUnit.passiveA) {
+                case PassiveA.CloseCounter:
+                    return true;
+                case PassiveA.CloseFoil:
+                    if (isPhysicalWeaponType(atkUnit.weaponType)) {
+                        return true;
+                    }
+                    break;
+                case PassiveA.CloseWard:
+                    if (atkUnit.weaponType === WeaponType.Staff ||
+                        isWeaponTypeBreath(atkUnit.weaponType) ||
+                        isWeaponTypeTome(atkUnit.weaponType)) {
+                        return true;
+                    }
+                    break;
+            }
+            switch (defUnit.weapon) {
+                case Weapon.DoubleBow:
+                    if (defUnit.battleContext.isSolo) {
+                        return true;
+                    }
+                    break;
+                case Weapon.KinsekiNoSyo:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.weaponType == WeaponType.Sword
+                            || atkUnit.weaponType == WeaponType.Lance
+                            || atkUnit.weaponType == WeaponType.Axe
+                            || isWeaponTypeBeast(atkUnit.weaponType)
+                        ) {
+                            return true;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        return false;
+    }
 
     static getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
         let followupAttackPriority = 0;

@@ -56,6 +56,41 @@ const WeaponType = {
     All: 30,
 };
 
+/// 指定した武器種の射程を取得します。
+function getAttackRangeOfWeaponType(weaponType) {
+    switch (weaponType) {
+        case WeaponType.Sword:
+        case WeaponType.Lance:
+        case WeaponType.Axe:
+        case WeaponType.RedBreath:
+        case WeaponType.BlueBreath:
+        case WeaponType.GreenBreath:
+        case WeaponType.ColorlessBreath:
+        case WeaponType.RedBeast:
+        case WeaponType.BlueBeast:
+        case WeaponType.GreenBeast:
+        case WeaponType.ColorlessBeast:
+            return 1;
+        case WeaponType.RedTome:
+        case WeaponType.BlueTome:
+        case WeaponType.GreenTome:
+        case WeaponType.ColorlessTome:
+        case WeaponType.RedBow:
+        case WeaponType.BlueBow:
+        case WeaponType.GreenBow:
+        case WeaponType.ColorlessBow:
+        case WeaponType.RedDagger:
+        case WeaponType.BlueDagger:
+        case WeaponType.GreenDagger:
+        case WeaponType.ColorlessDagger:
+        case WeaponType.Staff:
+            return 2;
+        case WeaponType.None:
+        default:
+            return 0;
+    }
+}
+
 function getWeaponTypeOrder(weaponType) {
     let weaponTypes = [
         WeaponType.Sword,

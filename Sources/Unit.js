@@ -950,6 +950,8 @@ class BattleContext {
         // 3マス以内に支援を組んでいる味方の組み合わせがいるか
         this.isThereAnyPartnerPairsIn3Spaces = false;
 
+        this.isTherePartnerIn2Spaces = false;
+
         // 2マス以内の敵の数が味方の数と同じ、もしくは多いかどうか
         this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
 
@@ -1104,6 +1106,7 @@ class BattleContext {
         this.isThereAllyOnAdjacentTiles = false;
         this.isThereAllyIn2Spaces = false;
         this.isThereAllyIn3Spaces = false;
+        this.isTherePartnerIn2Spaces = false;
         this.isThereAnyPartnerPairsIn3Spaces = false;
         this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
         this.isAllyCountIsGreaterThanEnemyCountIn2Spaces = false;
@@ -1476,7 +1479,7 @@ const NotReserved = -2;
 
 /// ユニットのインスタンス
 class Unit {
-    constructor(id = "", name = "", unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry, icon = "", attackRange = 1) {
+    constructor(id = "", name = "", unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry, icon = "") {
         this._id = id;
         this._name = name;
         this._groupId = unitGroupType;
@@ -1489,7 +1492,7 @@ class Unit {
         this._res = 30;
         this._posX = 0;
         this._posY = 0;
-        this._attackRange = attackRange;
+
         this._placedTile = null;
         this._moveCount = 1;
         this.moveCountAtBeginningOfTurn = 1;
@@ -1550,7 +1553,7 @@ class Unit {
         this.reservedResDebuff = 0;
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
-        this.weaponType = '';
+        this.weaponType = WeaponType.None;
         this.specialCount = 0;
         this.maxSpecialCount = 0;
 
@@ -2776,14 +2779,14 @@ class Unit {
 
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
-        return (this.passiveB == PassiveB.DetailedReport && moveUnit.attackRange == 2);
+        return (this.passiveB == PassiveB.DetailedReport && moveUnit.isRangedWeaponType());
     }
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToAdjacentTiles(moveUnit) {
         return (this.passiveB == PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
             || (this.passiveB == PassiveB.DetailedReport)
-            || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.attackRange == 2);
+            || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
     }
 
     get isOnMap() {
@@ -3417,10 +3420,7 @@ class Unit {
         if (this.weapon == Weapon.None) {
             return 0;
         }
-        return this._attackRange;
-    }
-    set attackRange(value) {
-        this._attackRange = value;
+        return getAttackRangeOfWeaponType(this.weaponType);
     }
 
     get enemyGroupId() {
@@ -4391,7 +4391,6 @@ class Unit {
         this.name = heroInfo.name;
 
         this.weaponType = stringToWeaponType(heroInfo.weaponType);
-        this.attackRange = heroInfo.attackRange;
         this.moveType = heroInfo.moveType;
         this.maxHp = heroInfo.hp;
         this.atk = heroInfo.atk;

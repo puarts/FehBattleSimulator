@@ -66,14 +66,10 @@ class test_DamageCalculator {
   }
 
   calcDamage(atkUnit, defUnit) {
-    defUnit.battleContext.canCounterattack = this.__examinesCanCounterattackBasically(atkUnit, defUnit);
-    atkUnit.battleContext.canFollowupAttack = DamageCalculationUtility.examinesCanFollowupAttack(atkUnit, defUnit);
-    defUnit.battleContext.canFollowupAttack = !atkUnit.battleContext.canFollowupAttack;
-
     this.__applyDamageReduction(atkUnit, defUnit);
     this.__applyDamageReduction(defUnit, atkUnit);
 
-    let result = this.damageCalc.calcCombatResult(atkUnit, defUnit);
+    let result = this.damageCalc.calcCombatResult(atkUnit, defUnit, false);
     if (this.isLogEnabled) {
       console.log(this.damageCalc.rawLog);
     }
@@ -90,6 +86,32 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
   return calclator.calcDamage(atkUnit, defUnit);
 }
 
+test('DamageCalculatorFollowupAttackTest', () => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  {
+    atkUnit.spdWithSkills = 40;
+    defUnit.spdWithSkills = 35;
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.defUnit_totalAttackCount).toBe(1);
+  }
+  {
+    atkUnit.spdWithSkills = 40;
+    defUnit.spdWithSkills = 36;
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_totalAttackCount).toBe(1);
+    expect(result.defUnit_totalAttackCount).toBe(1);
+  }
+
+  {
+    defUnit.weaponType = WeaponType.RedTome;
+    let result = test_calcDamage(atkUnit, defUnit, true);
+    expect(result.atkUnit_totalAttackCount).toBe(1);
+    expect(result.defUnit_totalAttackCount).toBe(0);
+  }
+});
+
 /// 奥義によるダメージ軽減テストです。
 test('DamageCalculatorSpecialDamageReductionTest', () => {
   let atkUnit = test_createDefaultUnit();
@@ -101,7 +123,7 @@ test('DamageCalculatorSpecialDamageReductionTest', () => {
   atkUnit.atkWithSkills = 40;
   defUnit.defWithSkills = 30;
 
-  let result = test_calcDamage(atkUnit, defUnit, true);
+  let result = test_calcDamage(atkUnit, defUnit, false);
 
   expect(result.atkUnit_normalAttackDamage).toBe(10);
   expect(result.atkUnit_totalAttackCount).toBe(1);
