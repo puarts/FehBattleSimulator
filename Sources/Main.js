@@ -4034,7 +4034,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.Luin:
                     if (targetUnit.battleContext.initiatesCombat
-                        || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
+                        || targetUnit.battleContext.isThereAllyIn2Spaces
                     ) {
                         targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalSpdInCombat() * 0.2);
                         targetUnit.battleContext.invalidatesCounterattack = true;
@@ -4042,7 +4042,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.PlegianAxePlus:
-                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.defSpur -= 5;
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -4050,7 +4050,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.PlegianBowPlus:
-                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.defSpur -= 5;
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -4058,7 +4058,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.FellFlambeau:
-                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.spdSpur -= 5;
                         enemyUnit.defSpur -= 5;
@@ -4070,7 +4070,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.PlegianTorchPlus:
-                    if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.resSpur -= 5;
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -5766,7 +5766,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Weapon.ChargingHorn:
-                    {
+                    if (!calcPotentialDamage) {
                         let count = 0;
                         if (this.__isThereBreakableStructureForEnemyIn2Spaces(targetUnit)) {
                             count = 3;
