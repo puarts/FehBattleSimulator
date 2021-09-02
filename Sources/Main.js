@@ -3505,8 +3505,6 @@ class AetherRaidTacticsBoard {
             this.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
         }
 
-
-
         return this.damageCalc.calcCombatResult(atkUnit, defUnit, calcPotentialDamage);
     }
 
@@ -3719,7 +3717,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.Hrimfaxi:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(5);
-                        this.__applyBonusDoubler(targetUnit, enemyUnit);
+                        DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
                     }
                     break;
                 case Weapon.BladeOfRenais:
@@ -4003,21 +4001,10 @@ class AetherRaidTacticsBoard {
             }
         }
     }
-    __applyBonusDoubler(targetUnit, enemyUnit) {
-        if (targetUnit.hasPanic) {
-            return;
-        }
 
-        this.__writeDamageCalcDebugLog("強化増幅効果により各ステータスの強化値分をさらに強化");
-        targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
-        targetUnit.spdSpur += targetUnit.getSpdBuffInCombat(enemyUnit);
-        targetUnit.defSpur += targetUnit.getDefBuffInCombat(enemyUnit);
-        targetUnit.resSpur += targetUnit.getResBuffInCombat(enemyUnit);
-    }
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)
-        ) {
-            this.__applyBonusDoubler(targetUnit, enemyUnit);
+        if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
+            DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
         }
 
         for (let skillId of targetUnit.enumerateSkills()) {
@@ -4079,7 +4066,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveA.Kyokazohuku3:
                 case Weapon.ShinkenFalcion:
-                    this.__applyBonusDoubler(targetUnit, enemyUnit);
+                    DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
                     break;
                 case Weapon.FoxkitFang:
                     if (enemyUnit.weaponType == WeaponType.Sword
@@ -4108,7 +4095,7 @@ class AetherRaidTacticsBoard {
                 case PassiveA.HeavyBlade3:
                 case PassiveA.HeavyBlade4:
                 case Weapon.KentoushiNoGoken:
-                    this.__applyHeavyBladeSkill(targetUnit, enemyUnit);
+                    DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
                     break;
                 case PassiveA.FlashingBlade1:
                     if (targetUnit.getSpdInCombat(enemyUnit) >= enemyUnit.getSpdInCombat(targetUnit) + 5) {
@@ -4122,7 +4109,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case PassiveA.FlashingBlade3:
                 case PassiveA.FlashingBlade4:
-                    this.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                    DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                     break;
             }
         }
@@ -4132,12 +4119,12 @@ class AetherRaidTacticsBoard {
                 switch (skillId) {
                     case PassiveC.HokoNoGogeki3:
                         if (targetUnit.moveType == MoveType.Infantry) {
-                            this.__applyHeavyBladeSkill(targetUnit, enemyUnit);
+                            DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
                         }
                         break;
                     case PassiveC.HokoNoJugeki3:
                         if (targetUnit.moveType == MoveType.Infantry) {
-                            this.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                            DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                         }
                         break;
                 }
@@ -4173,26 +4160,7 @@ class AetherRaidTacticsBoard {
     __getAtkInCombatDetail(unit, enemyUnit) {
         return `攻撃${unit.atkWithSkills}、強化${unit.getAtkBuffInCombat(enemyUnit)}、弱化${unit.getAtkDebuffInCombat()}、戦闘中強化${Number(unit.atkSpur)}`;
     }
-    __applyHeavyBladeSkill(atkUnit, defUnit) {
-        let atkUnitAtk = atkUnit.getAtkInCombat(defUnit);
-        let defUnitAtk = defUnit.getAtkInCombat(atkUnit);
-        const tab = "&nbsp;&nbsp;";
-        this.__writeDamageCalcDebugLog(`剛剣を評価:<br/>${tab}${atkUnit.getNameWithGroup()}の攻撃${atkUnitAtk}(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`
-            + `<br/>${tab}${defUnit.getNameWithGroup()}の攻撃${defUnitAtk}(${this.__getAtkInCombatDetail(defUnit, atkUnit)})`);
-        if (atkUnitAtk > defUnitAtk) {
-            this.__writeDamageCalcDebugLog(`${tab}剛剣発動`);
-            atkUnit.battleContext.increaseCooldownCountForAttack = true;
-        }
-        else {
-            this.__writeDamageCalcDebugLog(`${tab}剛剣は発動しない`);
-        }
-    }
 
-    __applyFlashingBladeSkill(atkUnit, defUnit) {
-        if (atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)) {
-            atkUnit.battleContext.increaseCooldownCountForAttack = true;
-        }
-    }
 
     __setOnetimeActionFlag(unit) {
         unit.isOneTimeActionActivatedForShieldEffect = true;
@@ -7636,7 +7604,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.ZeroNoGyakukyu:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        this.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                        DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                     }
                     break;
                 case Weapon.SyunsenAiraNoKen:
@@ -7649,13 +7617,13 @@ class AetherRaidTacticsBoard {
                         }
                     }
                     else {
-                        this.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                        DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                     }
                     break;
                 case Weapon.WingSword:
                 case Weapon.Romfire:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        this.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                        DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                     }
                     break;
                 case Weapon.KageroNoGenwakushin:

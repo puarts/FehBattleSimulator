@@ -13,3 +13,4 @@ const ElemDelimiter = ':';
 const ValueDelimiter = '|';
 const ArrayValueElemDelimiter = '+';
 const DebugModeDefault = false;
+const TabChar = "&emsp;&emsp;";

@@ -73,7 +73,6 @@ function __findSkillInfo(skillInfos, id) {
     return null;
 }
 
-const TabChar = "&emsp;&emsp;";
 const g_idGenerator = new IdGenerator();
 const g_deffenceStructureContainer = new StructureContainer('deffenceStructureContainer');
 const g_offenceStructureContainer = new StructureContainer('offenceStructureContainer');

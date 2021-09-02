@@ -87,6 +87,28 @@ class DamageCalculatorWrapper {
         return this._damageCalc.calcCombatResult(atkUnit, defUnit);
     }
 
+    static __applyBonusDoubler(targetUnit, enemyUnit) {
+        if (targetUnit.hasPanic) {
+            return;
+        }
+
+        targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+        targetUnit.spdSpur += targetUnit.getSpdBuffInCombat(enemyUnit);
+        targetUnit.defSpur += targetUnit.getDefBuffInCombat(enemyUnit);
+        targetUnit.resSpur += targetUnit.getResBuffInCombat(enemyUnit);
+    }
+
+    static __applyHeavyBladeSkill(atkUnit, defUnit) {
+        if (atkUnit.getEvalAtkInCombat(defUnit) > defUnit.getEvalAtkInCombat(atkUnit)) {
+            atkUnit.battleContext.increaseCooldownCountForAttack = true;
+        }
+    }
+
+    static __applyFlashingBladeSkill(atkUnit, defUnit) {
+        if (atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)) {
+            atkUnit.battleContext.increaseCooldownCountForAttack = true;
+        }
+    }
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
