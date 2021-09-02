@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SOURCE_FILE_NAMES=(GlobalDefinitions Utilities Skill Tile Map Structures Cell Table Unit DamageCalculationUtility DamageCalculator DamageCalculatorWrapper TurnSetting AudioManager AetherRaidDefensePresets AppData SettingManager)
+SOURCE_FILE_NAMES=(GlobalDefinitions Utilities Skill Tile Map Structures Cell Table Unit DamageCalculationUtility DamageCalculator DamageCalculatorWrapper TurnSetting AudioManager AetherRaidDefensePresets UnitManagerBase AppData SettingManager)
 TEST_FILE_NAMES=(DamageCalculator)
 
 TARGET_FILE=All.test.js

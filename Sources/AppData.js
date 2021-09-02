@@ -46,11 +46,6 @@ class HeroDataBase {
     }
 }
 
-
-function createUnitViewModel(id, unitGroupType) {
-    return new Unit(id, "", unitGroupType, MoveType.Infantry, "", 1);
-}
-
 function __registerSkillOptions(options, infos) {
     for (let info of infos) {
         options.push({ id: info.id, text: info.name });
@@ -152,12 +147,10 @@ function getPawnsOfLokiDifficalityScore(difficality) {
     }
 }
 
-const MaxEnemyUnitCount = 12;
-const MaxAllyUnitCount = 20;
-
 /// シミュレーターの持つデータです。
-class AppData {
+class AppData extends UnitManagerBase {
     constructor() {
+        super();
         this.gameVersion = 360;
         this.gameVersionOptions = [{ label: "3.6.0(2019/6のアプデ後)", value: 360 },];
         this.gameMode = GameMode.AetherRaid;
@@ -341,15 +334,7 @@ class AppData {
         this.isDebugMenuEnabled = DebugModeDefault;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
-        this.units = [];
-        for (let i = 0; i < MaxEnemyUnitCount; ++i) {
-            this.units.push(createUnitViewModel("e" + i, UnitGroupType.Enemy));
-        }
-        for (let i = 0; i < MaxAllyUnitCount; ++i) {
-            this.units.push(createUnitViewModel("a" + i, UnitGroupType.Ally));
-        }
-        this.enemyUnits = [];
-        this.allyUnits = [];
+
         this.updateEnemyAndAllyUnits();
 
         this.durabilityTestAllyUnitId = this.allyUnits[0].id;

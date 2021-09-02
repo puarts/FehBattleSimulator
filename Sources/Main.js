@@ -59,7 +59,7 @@ class AetherRaidTacticsBoard {
         this.tesseractLoadState = ModuleLoadState.NotLoaded;
 
         this.cropper = null;
-        this.damageCalc = new DamageCalculatorWrapper();
+        this.damageCalc = new DamageCalculatorWrapper(g_appData.enumerateUnits());
         this.weaponSkillCharWhiteList = "";
         this.supportSkillCharWhiteList = "";
         this.specialSkillCharWhiteList = "";
@@ -15094,14 +15094,6 @@ class AetherRaidTacticsBoard {
         }
 
         return isActionActivated;
-    }
-
-    __getAllyCount() {
-        let count = 0;
-        for (let unit of this.enumerateUnitsInSpecifiedGroup(UnitGroupType.Ally)) {
-            ++count;
-        }
-        return count;
     }
 
     __evaluateBestTileToAttack(
