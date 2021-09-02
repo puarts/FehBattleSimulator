@@ -1259,6 +1259,7 @@ class DamageCalculatorWrapper {
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                     defUnit.battleContext.reducesCooldownCount = false;
                     break;

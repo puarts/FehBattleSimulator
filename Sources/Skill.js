@@ -1754,6 +1754,7 @@ const PassiveB = {
     Bushido2: 1693, // 武士道・承
     Recovering: 659, // リカバーリング
     TaiyoNoUdewa: 662, // 太陽の腕輪
+    SolarBrace2: 1827, // 太陽の腕輪・承
     KyusyuTaikei3: 1072, // 急襲隊形3
     FuinNoTate: 666, // 封印の盾
     TeniNoKona: 661, // 転移の粉
