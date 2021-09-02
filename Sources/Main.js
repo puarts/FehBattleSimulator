@@ -11388,6 +11388,15 @@ class AetherRaidTacticsBoard {
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;
+            case PassiveC.OstiasPulse2:
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
+                    if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
+                        unit.reduceSpecialCount(1);
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                    }
+                }
+                break;
             case PassiveC.OstiasPulse:
                 if (this.vm.currentTurn == 1) {
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
