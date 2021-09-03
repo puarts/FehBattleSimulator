@@ -1754,6 +1754,7 @@ const PassiveB = {
     Bushido2: 1693, // 武士道・承
     Recovering: 659, // リカバーリング
     TaiyoNoUdewa: 662, // 太陽の腕輪
+    SolarBrace2: 1827, // 太陽の腕輪・承
     KyusyuTaikei3: 1072, // 急襲隊形3
     FuinNoTate: 666, // 封印の盾
     TeniNoKona: 661, // 転移の粉
@@ -2045,6 +2046,7 @@ const PassiveC = {
     Upheaval: 823, // メガクェイク
     VisionOfArcadia: 933, // 理想郷となるように
     OstiasPulse: 753, // オスティアの鼓動
+    OstiasPulse2: 1828, // 盟主の鼓動・承
     Jagan: 811, // 邪眼
     HitoNoKanouseiWo: 850, // 人の可能性を
     ImpenetrableDark: 1178, // 見通せぬ深き暗闇

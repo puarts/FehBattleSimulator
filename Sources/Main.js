@@ -4196,6 +4196,9 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SolarBrace2:
+                    targetUnit.reserveHeal(10);
+                    break;
                 case PassiveB.FlowRefresh3:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.reserveHeal(10);
@@ -11385,6 +11388,15 @@ class AetherRaidTacticsBoard {
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;
+            case PassiveC.OstiasPulse2:
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
+                    if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
+                        unit.reduceSpecialCount(1);
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                    }
+                }
+                break;
             case PassiveC.OstiasPulse:
                 if (this.vm.currentTurn == 1) {
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
@@ -14555,6 +14567,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
@@ -14577,6 +14590,7 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
