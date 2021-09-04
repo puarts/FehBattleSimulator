@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 SOURCE_FILE_NAMES=(GlobalDefinitions Utilities Skill Tile Map Structures Cell Table Unit DamageCalculationUtility DamageCalculator DamageCalculatorWrapper TurnSetting AudioManager AetherRaidDefensePresets UnitManagerBase AppData SettingManager)
-TEST_FILE_NAMES=(DamageCalculator)
+TEST_FILE_NAMES=(
+    DamageCalculator
+    UnitManager
+    )
 
 TARGET_FILE=All.test.js
 touch ./$TARGET_FILE

@@ -1,6 +1,8 @@
 
 class DamageCalculatorWrapper {
-    constructor() {
+    /// @param {UnitManagerBase} unitManager ユニットマネージャーのインスタンス
+    constructor(unitManager) {
+        this._unitManager = unitManager;
         this._damageCalc = new DamageCalculator();
     }
 

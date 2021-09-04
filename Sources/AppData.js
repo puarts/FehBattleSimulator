@@ -335,6 +335,8 @@ class AppData extends UnitManagerBase {
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
 
+        this.enemyUnits = [];
+        this.allyUnits = [];
         this.updateEnemyAndAllyUnits();
 
         this.durabilityTestAllyUnitId = this.allyUnits[0].id;
@@ -1860,13 +1862,6 @@ class AppData extends UnitManagerBase {
                     yield unit;
                 }
                 break;
-        }
-    }
-    * enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
-        for (let unit of this.enumerateUnitsInSpecifiedGroup(targetUnit.groupId)) {
-            if (withTargetUnit || unit != targetUnit) {
-                yield unit;
-            }
         }
     }
 

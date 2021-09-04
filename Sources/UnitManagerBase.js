@@ -12,14 +12,31 @@ class UnitManagerBase {
             this.units.push(this.__createDefaultUnit("a" + i, UnitGroupType.Ally));
         }
 
-        this.enemyUnits = [];
-        this.allyUnits = [];
-
     }
 
     *enumerateUnits() {
-        for (let unit of units) {
+        for (let unit of this.units) {
             yield unit;
+        }
+    }
+
+    *enumerateUnitsWithPredicator(predicator) {
+        for (let unit of this.enumerateUnits()) {
+            if (predicator(unit)) {
+                yield unit;
+            }
+        }
+    }
+
+    enumerateUnitsInSpecifiedGroup(groupId) {
+        return this.enumerateUnitsWithPredicator(x => x.groupId == groupId);
+    }
+
+    * enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
+        for (let unit of this.enumerateUnitsInSpecifiedGroup(targetUnit.groupId)) {
+            if (withTargetUnit || unit != targetUnit) {
+                yield unit;
+            }
         }
     }
 
