@@ -71,7 +71,7 @@ class UnitManager {
         });
     }
 
-    enumerateUnitsInTheDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
+    enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         let targetGroup = targetUnit.getEnemyGroupId();
         return this.enumerateUnitsWithinSpecifiedSpaces(targetUnit.posX, targetUnit.posY, targetGroup, spaces);
     }
@@ -94,6 +94,25 @@ class UnitManager {
         return false;
     }
 
+    isThereAnyUnitInTheSameGroupOnMap(unit, conditionFunc) {
+        for (let ally of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
+            if (conditionFunc(ally)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    countUnitInSpecifiedGroupOnMap(groupId, predicateFunc) {
+        let count = 0;
+        for (let unit of this.enumerateUnitsInSpecifiedGroup(groupId)) {
+            if (unit.isOnMap && predicateFunc(unit)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
     countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         let count = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
@@ -102,6 +121,24 @@ class UnitManager {
             }
         }
         return count;
+    }
+
+    countEnemiesWithinSpecifiedSpaces(targetUnit, spaces, predicator) {
+        let count = 0;
+        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces)) {
+            if (predicator(unit)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    enumeratePartnersInSpecifiedRange(targetUnit, spaces) {
+        return this.enumerateUnitsWithPredicator(x =>
+            targetUnit.groupId == x.groupId
+            && x.isOnMap
+            && targetUnit.calculateDistanceToUnit(x) <= spaces
+            && targetUnit.partnerHeroIndex == x.heroIndex);
     }
 
     __createDefaultUnit(id, unitGroupType) {

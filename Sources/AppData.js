@@ -310,7 +310,6 @@ class AppData extends UnitManager {
         // その他
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
-        this.currentTurn = 0;
         this.currentTurnType = UnitGroupType.Ally;
 
         this.isEnemyActionTriggered = true;
@@ -507,6 +506,8 @@ class AppData extends UnitManager {
         this.passiveSInfos = [];
         this.skillIdToInfoDict = {};
         this.skillNameToInfoDict = {};
+
+        this.globalBattleContext = new GlobalBattleContext();
 
         this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
 
@@ -1525,6 +1526,23 @@ class AppData extends UnitManager {
             }
         }
     }
+
+    get isCombatOccuredInCurrentTurn() {
+        return this.globalBattleContext.isCombatOccuredInCurrentTurn;
+    }
+
+    get currentTurn() {
+        return this.globalBattleContext.currentTurn;
+    }
+
+    set isCombatOccuredInCurrentTurn(value) {
+        this.globalBattleContext.isCombatOccuredInCurrentTurn = value;
+    }
+
+    set currentTurn(value) {
+        this.globalBattleContext.currentTurn = value;
+    }
+
 
     perTurnStatusToString() {
         return this.currentTurnType

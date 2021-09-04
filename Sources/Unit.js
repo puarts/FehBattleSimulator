@@ -4754,6 +4754,13 @@ class Unit {
         }
         return false;
     }
+
+
+    // unit を中心とした縦〇列と横〇列に自身がいるかどうか
+    isInClossWithOffset(unit, offset) {
+        return (unit.posX - offset <= this.posX && this.posX <= unit.posX + offset)
+            || (unit.posY - offset <= this.posY && this.posY <= unit.posY + offset);
+    }
 }
 
 /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。

@@ -501,7 +501,7 @@
                                             <table style="margin-top:5px;margin-bottom:10px;border-style: none;">
                                                 <tr>
                                                     <td>
-                                                        <span v-if="currentTurn > 0">
+                                                        <span v-if="globalBattleContext.currentTurn > 0">
                                                             <input type="button"
                                                                 style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/BackToZeroTurn.png) "
                                                                 class="playerButton imageButton"
@@ -515,16 +515,16 @@
                                                     <td style="padding-left:10px;padding-right: 10px;">
                                                         <span style="font-size:12px;font-weight: bold;">
                                                             <span
-                                                                v-if="currentTurn > 0 && currentTurnType == UnitGroupType.Ally"
+                                                                v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally"
                                                                 style="color:blue;">Player Phase<br />ターン
-                                                                {{currentTurn}} /
+                                                                {{globalBattleContext.currentTurn}} /
                                                                 {{g_appData.maxTurn}}</span>
                                                             <span
-                                                                v-if="currentTurn > 0 && currentTurnType == UnitGroupType.Enemy"
+                                                                v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Enemy"
                                                                 style="color:red;">Enemy Phase<br />ターン
-                                                                {{currentTurn}} /
+                                                                {{globalBattleContext.currentTurn}} /
                                                                 {{g_appData.maxTurn}}</span>
-                                                            <span v-if="currentTurn == 0">
+                                                            <span v-if="globalBattleContext.currentTurn == 0">
                                                                 <input type="button"
                                                                     style="width: 140px;height:34px; background-color: #ffffff; border-style: none;
                                                                             background-size:cover;background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/StartBattle.png) ;cursor: pointer;"
@@ -534,7 +534,7 @@
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <span v-if="currentTurn > 0">
+                                                        <span v-if="globalBattleContext.currentTurn > 0">
                                                             <input type="button"
                                                                 style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/GainTurn.png) "
                                                                 class="playerButton imageButton"
@@ -631,19 +631,22 @@
                                                     data-src="https://puarts.com/AetherRaidTacticsBoard/images/LoadState.png"
                                                     @click="g_app.clearSimpleLog();loadSettings();">
 
-                                                <span v-if="currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
+                                                <span
+                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/AutoPlay.png) "
                                                         class="fehButton imageButton"
                                                         @click="g_app.clearLog(); g_app.simulateAllyAction();">
                                                 </span>
-                                                <span v-if="currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
+                                                <span
+                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/EndTurn.png)"
                                                         class="fehButton imageButton" @click="endTurn">
                                                 </span>
 
-                                                <span v-if="currentTurn > 0 && currentTurnType == UnitGroupType.Enemy">
+                                                <span
+                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Enemy">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
                                                         class="fehButton imageButton"
@@ -676,7 +679,7 @@
                                         </tr>
                                     </table>
                                     <!-- <label for='currentTurnSlider'>現在のターン:</label> -->
-                                    <!-- <input type='number' id='currentTurn' v-model='currentTurn' min='0' max='7' step='1'
+                                    <!-- <input type='number' id='currentTurn' v-model='globalBattleContext.currentTurn' min='0' max='7' step='1'
                                         style='width:30px' @change="currentTurnChanged" readonly='readonly' /> -->
 
 
@@ -2369,6 +2372,7 @@
                 "Structures.js",
                 "Unit.js",
                 "Map.js",
+                "GlobalBattleContext.js",
                 "DamageCalculationUtility.js",
                 "DamageCalculator.js",
                 "DamageCalculatorWrapper.js",

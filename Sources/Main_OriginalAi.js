@@ -156,7 +156,7 @@ class OriginalAi {
 
         // self.tempSerializedTurn = exportPerTurnSettingAsString();
 
-        // let currentTurn = self.vm.currentTurn;
+        // let currentTurn = g_appData.currentTurn;
         // self.isTurnWideCommandQueueEnabled = true;
         // for (let i = 0; i < 100; ++i) {
         let isActionExecuted = this.__origAi_simulateAttackerAction(targetGroup, enemyUnits);
@@ -181,7 +181,7 @@ class OriginalAi {
         // }
         // self.isTurnWideCommandQueueEnabled = false;
 
-        // self.vm.currentTurn = currentTurn;
+        // g_appData.currentTurn = currentTurn;
         // importPerTurnSetting(self.tempSerializedTurn);
         // self.__executeAllCommands(self.commandQueue, 100);
 
@@ -508,7 +508,7 @@ class OriginalAi {
 
     examinesAttackableEnemies() {
         let self = this;
-        let currentTurn = self.vm.currentTurn;
+        let currentTurn = g_appData.currentTurn;
 
         // 元の状態を保存
         let serializedTurn = exportPerTurnSettingAsString();
@@ -550,7 +550,7 @@ class OriginalAi {
         let alivePattern = null;
         for (let i = 0; i < patterns.length; ++i) {
 
-            self.vm.currentTurn = currentTurn;
+            g_appData.globalBattleContext.currentTurn = currentTurn;
             importPerTurnSetting(self.tempSerializedTurn);
 
             self.commandQueuePerAction.clear();
@@ -720,7 +720,7 @@ class OriginalAi {
 
         //     // self.tempSerializedTurn = exportPerTurnSettingAsString();
 
-        //     // let currentTurn = self.vm.currentTurn;
+        //     // let currentTurn = g_appData.currentTurn;
         //     // self.isTurnWideCommandQueueEnabled = true;
         //     // for (let i = 0; i < 100; ++i) {
         //     let isActionExecuted = this.__origAi_simulateAttackerAction(targetGroup, enemyUnits);
@@ -745,7 +745,7 @@ class OriginalAi {
         //     // }
         //     // self.isTurnWideCommandQueueEnabled = false;
 
-        //     // self.vm.currentTurn = currentTurn;
+        //     // g_appData.globalBattleContext.currentTurn = currentTurn;
         //     // importPerTurnSetting(self.tempSerializedTurn);
         //     // self.__executeAllCommands(self.commandQueue, 100);
         // }

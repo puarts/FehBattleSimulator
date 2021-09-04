@@ -2327,6 +2327,14 @@ class BattleMap {
         }
     }
 
+    *enumerateBreakableStructureTiles(groupId) {
+        for (let block of this.enumerateBreakableStructures(groupId)) {
+            if (block.placedTile != null) {
+                yield block.placedTile;
+            }
+        }
+    }
+
     *enumerateBreakableStructures(groupId) {
         for (let obj of this.enumerateBreakableWallsOfCurrentMapType()) {
             if (obj.isOnMap) {
