@@ -4756,10 +4756,23 @@ class Unit {
     }
 
 
-    // unit を中心とした縦〇列と横〇列に自身がいるかどうか
+    /// ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
     isInClossWithOffset(unit, offset) {
         return (unit.posX - offset <= this.posX && this.posX <= unit.posX + offset)
             || (unit.posY - offset <= this.posY && this.posY <= unit.posY + offset);
+    }
+
+    /// 自身が指定したユニットの十字方向にいるかどうかを取得します。
+    isInClossOf(unit) {
+        return this.posX == unit.posX || this.posY == unit.posY;
+    }
+
+    /// 指定したユニットの指定した距離以内に自身がいるかどうかを取得します。
+    isWithinSpecifiedDistanceFrom(unit, spaces) {
+        let diffX = Math.abs(this.posX - unit.posX);
+        let diffY = Math.abs(this.posY - unit.posY);
+        let dist = diffX + diffY;
+        return dist <= spaces;
     }
 }
 
