@@ -13,7 +13,7 @@ class test_UnitManager extends UnitManager {
     }
 }
 
-test('UnitManagerEnumerateUnits', () => {
+test('UnitManager_EnumerateUnits', () => {
     let manager = new test_UnitManager();
 
     let allies = Array.from(manager.enumerateUnitsInSpecifiedGroup(UnitGroupType.Ally));

@@ -3,6 +3,32 @@
 
 /// ダメージ計算用のユーティリティー関数です。
 class DamageCalculationUtility {
+
+    static isEffectiveAttackEnabled(unit, effective) {
+        if (unit.canInvalidateSpecifiedEffectiveAttack(effective)) {
+            // 特効無効
+            return false;
+        }
+
+        switch (effective) {
+            case EffectiveType.Armor: return unit.moveType == MoveType.Armor;
+            case EffectiveType.Cavalry: return unit.moveType == MoveType.Cavalry;
+            case EffectiveType.Flying: return unit.moveType == MoveType.Flying;
+            case EffectiveType.Infantry: return unit.moveType == MoveType.Infantry;
+            case EffectiveType.Dragon:
+                return isWeaponTypeBreath(unit.weaponType)
+                    || unit.weapon == Weapon.Roputous;
+            case EffectiveType.Beast: return isWeaponTypeBeast(unit.weaponType);
+            case EffectiveType.Tome: return isWeaponTypeTome(unit.weaponType);
+            case EffectiveType.Sword: return unit.weaponType == WeaponType.Sword;
+            case EffectiveType.Lance: return unit.weaponType == WeaponType.Lance;
+            case EffectiveType.Axe: return unit.weaponType == WeaponType.Axe;
+            case EffectiveType.ColorlessBow: return unit.weaponType == WeaponType.ColorlessBow;
+        }
+
+        return false;
+    }
+
     static applyDebuffBlade(atkUnit, defUnit) {
         if (defUnit.atkDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.atkDebuffTotal; }
         if (defUnit.spdDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.spdDebuffTotal; }

@@ -3486,36 +3486,11 @@ class AetherRaidTacticsBoard {
             // 神罰の杖
             this.__setWrathfulStaff(atkUnit, defUnit);
             this.__setWrathfulStaff(defUnit, atkUnit);
-
-            // 特効
-            this.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
-            this.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
-
-            // スキル内蔵の全距離反撃
-            defUnit.battleContext.canCounterattackToAllDistance = this.__canCounterAttackToAllDistance(defUnit);
         }
 
         return this.damageCalc.calcCombatResult(atkUnit, defUnit, calcPotentialDamage);
     }
 
-    __canCounterAttackToAllDistance(defUnit) {
-        if (defUnit.weaponInfo == null) {
-            return false;
-        }
-
-        if (defUnit.battleContext.canCounterattackToAllDistance) {
-            return true;
-        }
-
-        if (defUnit.weaponInfo.canCounterattackToAllDistance) {
-            return true;
-        }
-        if (defUnit.passiveAInfo != null && defUnit.passiveAInfo.canCounterattackToAllDistance) {
-            return true;
-        }
-
-        return false;
-    }
 
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.passiveC) {
@@ -8645,105 +8620,8 @@ class AetherRaidTacticsBoard {
         return false;
     }
 
-    __setEffectiveAttackEnabledIfPossible(atkUnit, defUnit) {
-        if (atkUnit.weaponInfo == null) {
-            return;
-        }
 
-        atkUnit.battleContext.isEffectiveToOpponent = false;
-        for (let effective of atkUnit.weaponInfo.effectives) {
-            if (this.__isEffectiveAttackEnabled(defUnit, effective)) {
-                atkUnit.battleContext.isEffectiveToOpponent = true;
-                return;
-            }
-        }
-        if (atkUnit.hasStatusEffect(StatusEffectType.EffectiveAgainstDragons)) {
-            if (this.__isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
-                atkUnit.battleContext.isEffectiveToOpponent = true;
-                return;
-            }
-        }
-    }
 
-    __isEffectiveAttackEnabled(unit, effective) {
-        if (this.isEffectiveAttackInvalidated(unit, effective)) {
-            // 特効無効
-            return false;
-        }
-
-        switch (effective) {
-            case EffectiveType.Armor: return unit.moveType == MoveType.Armor;
-            case EffectiveType.Cavalry: return unit.moveType == MoveType.Cavalry;
-            case EffectiveType.Flying: return unit.moveType == MoveType.Flying;
-            case EffectiveType.Infantry: return unit.moveType == MoveType.Infantry;
-            case EffectiveType.Dragon:
-                return isWeaponTypeBreath(unit.weaponType)
-                    || unit.weapon == Weapon.Roputous;
-            case EffectiveType.Beast: return isWeaponTypeBeast(unit.weaponType);
-            case EffectiveType.Tome: return isWeaponTypeTome(unit.weaponType);
-            case EffectiveType.Sword: return unit.weaponType == WeaponType.Sword;
-            case EffectiveType.Lance: return unit.weaponType == WeaponType.Lance;
-            case EffectiveType.Axe: return unit.weaponType == WeaponType.Axe;
-            case EffectiveType.ColorlessBow: return unit.weaponType == WeaponType.ColorlessBow;
-        }
-
-        return false;
-    }
-
-    isEffectiveAttackInvalidated(unit, effective) {
-        if (unit.hasStatusEffect(StatusEffectType.ShieldFlying)) {
-            if (effective === EffectiveType.Flying) {
-                return true;
-            }
-        }
-
-        if (unit.hasStatusEffect(StatusEffectType.SieldDragonArmor)) {
-            if (effective == EffectiveType.Armor
-                || effective == EffectiveType.Dragon
-            ) {
-                return true;
-            }
-        }
-
-        for (let skillInfo of this.enumerateOwnWeaponAndPassiveSkillInfos(unit)) {
-            if (skillInfo.invalidatedEffectives.includes(effective)) {
-                return true;
-            }
-        }
-
-        switch (unit.weapon) {
-            case Weapon.Marute:
-                if (unit.isWeaponRefined && effective == EffectiveType.Armor) {
-                    return true;
-                }
-                break;
-        }
-
-        return false;
-    }
-
-    * enumerateOwnWeaponAndPassiveSkillInfos(unit) {
-        let weaponInfo = this.__findWeaponInfo(unit.weapon);
-        if (weaponInfo != null) {
-            yield weaponInfo;
-        }
-        let passiveAInfo = this.__findPassiveAInfo(unit.passiveA);
-        if (passiveAInfo != null) {
-            yield passiveAInfo;
-        }
-        let passiveBInfo = this.__findPassiveBInfo(unit.passiveB);
-        if (passiveBInfo != null) {
-            yield passiveBInfo;
-        }
-        let passiveCInfo = this.__findPassiveCInfo(unit.passiveC);
-        if (passiveCInfo != null) {
-            yield passiveCInfo;
-        }
-        let passiveSInfo = this.__findPassiveSInfo(unit.passiveS);
-        if (passiveSInfo != null) {
-            yield passiveSInfo;
-        }
-    }
 
     * enumerateUnitsWithinSpecifiedRange(posX, posY, unitGroup, rangeHorLength, rangeVerLength) {
         let halfHorLength = Math.floor(rangeHorLength / 2);

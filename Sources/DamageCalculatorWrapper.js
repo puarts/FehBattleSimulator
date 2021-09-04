@@ -40,6 +40,13 @@ class DamageCalculatorWrapper {
     }
 
     calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+        // 特効
+        this.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
+        this.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
+
+        // スキル内蔵の全距離反撃
+        defUnit.battleContext.canCounterattackToAllDistance = defUnit.canCounterAttackToAllDistance();
+
         // 戦闘中バフが決まった後に評価するスキル効果
         {
             this.__applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
@@ -98,6 +105,25 @@ class DamageCalculatorWrapper {
         return this._damageCalc.calcCombatResult(atkUnit, defUnit);
     }
 
+    __setEffectiveAttackEnabledIfPossible(atkUnit, defUnit) {
+        if (atkUnit.weaponInfo == null) {
+            return;
+        }
+
+        atkUnit.battleContext.isEffectiveToOpponent = false;
+        for (let effective of atkUnit.weaponInfo.effectives) {
+            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, effective)) {
+                atkUnit.battleContext.isEffectiveToOpponent = true;
+                return;
+            }
+        }
+        if (atkUnit.hasStatusEffect(StatusEffectType.EffectiveAgainstDragons)) {
+            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
+                atkUnit.battleContext.isEffectiveToOpponent = true;
+                return;
+            }
+        }
+    }
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {

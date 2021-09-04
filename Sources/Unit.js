@@ -4119,6 +4119,30 @@ class Unit {
         return this.currentDamage >= requiredHealAmount;
     }
 
+    *enumerateSkillInfos() {
+        if (this.weaponInfo != null) {
+            yield this.weaponInfo;
+        }
+        if (this.supportInfo != null) {
+            yield this.supportInfo;
+        }
+        if (this.specialInfo != null) {
+            yield this.specialInfo;
+        }
+        if (this.passiveAInfo != null) {
+            yield this.passiveAInfo;
+        }
+        if (this.passiveBInfo != null) {
+            yield this.passiveBInfo;
+        }
+        if (this.passiveCInfo != null) {
+            yield this.passiveCInfo;
+        }
+        if (this.passiveSInfo != null) {
+            yield this.passiveSInfo;
+        }
+    }
+
     *enumerateSkills() {
         if (this.weapon != null) { yield this.weapon; }
         if (this.support != null) { yield this.support; }
@@ -4650,6 +4674,57 @@ class Unit {
             default:
                 throw new Error("Invalid groupId");
         }
+    }
+
+    canCounterAttackToAllDistance() {
+        if (this.weaponInfo == null) {
+            return false;
+        }
+
+        if (this.battleContext.canCounterattackToAllDistance) {
+            return true;
+        }
+
+        if (this.weaponInfo.canCounterattackToAllDistance) {
+            return true;
+        }
+        if (this.passiveAInfo != null && this.passiveAInfo.canCounterattackToAllDistance) {
+            return true;
+        }
+
+        return false;
+    }
+
+    canInvalidateSpecifiedEffectiveAttack(effective) {
+        if (this.hasStatusEffect(StatusEffectType.ShieldFlying)) {
+            if (effective === EffectiveType.Flying) {
+                return true;
+            }
+        }
+
+        if (this.hasStatusEffect(StatusEffectType.SieldDragonArmor)) {
+            if (effective == EffectiveType.Armor
+                || effective == EffectiveType.Dragon
+            ) {
+                return true;
+            }
+        }
+
+        for (let skillInfo of this.enumerateSkillInfos()) {
+            if (skillInfo.invalidatedEffectives.includes(effective)) {
+                return true;
+            }
+        }
+
+        switch (this.weapon) {
+            case Weapon.Marute:
+                if (this.isWeaponRefined && effective == EffectiveType.Armor) {
+                    return true;
+                }
+                break;
+        }
+
+        return false;
     }
 }
 

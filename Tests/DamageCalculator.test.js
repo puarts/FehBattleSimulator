@@ -54,7 +54,7 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
   return calclator.calcDamage(atkUnit, defUnit);
 }
 
-test('DamageCalculatorDebuffBladeTest', () => {
+test('DamageCalculator_DebuffBladeTest', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.atkWithSkills = 40;
@@ -72,7 +72,7 @@ test('DamageCalculatorDebuffBladeTest', () => {
   }
 });
 
-test('DamageCalculatorFollowupAttackTest', () => {
+test('DamageCalculator_FollowupAttackTest', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   {
@@ -99,7 +99,7 @@ test('DamageCalculatorFollowupAttackTest', () => {
 });
 
 /// 奥義によるダメージ軽減テストです。
-test('DamageCalculatorSpecialDamageReductionTest', () => {
+test('DamageCalculator_SpecialDamageReductionTest', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.posX = 1; // 奥義発動時の射程計算に必要
@@ -119,7 +119,7 @@ test('DamageCalculatorSpecialDamageReductionTest', () => {
 });
 
 /// ダメージ軽減テストです。
-test('DamageCalculatorDamageReductionTest', () => {
+test('DamageCalculator_DamageReductionTest', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
@@ -140,7 +140,7 @@ test('DamageCalculatorDamageReductionTest', () => {
 });
 
 /// 復讐のダメージ計算テストです。
-test('DamageCalculatorVengeanceTest', () => {
+test('DamageCalculator_VengeanceTest', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.special = Special.Fukusyu;
@@ -164,7 +164,7 @@ test('DamageCalculatorVengeanceTest', () => {
 });
 
 /// シンプルなダメージ計算テストです。
-test('DamageCalculatorSimple', () => {
+test('DamageCalculator_Simple', () => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.atkWithSkills = 40;
