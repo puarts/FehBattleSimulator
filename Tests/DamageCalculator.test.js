@@ -39,18 +39,6 @@ class test_DamageCalculator {
     this.isLogEnabled = false;
   }
 
-  __examinesCanCounterattackBasically(atkUnit, defUnit) {
-    if (!defUnit.hasWeapon) {
-      return false;
-    }
-
-    if (defUnit.battleContext.canCounterattackToAllDistance) {
-      return true;
-    }
-
-    return atkUnit.attackRange == defUnit.attackRange;
-  }
-
   calcDamage(atkUnit, defUnit) {
     let result = this.damageCalc.calcCombatResult(atkUnit, defUnit, false);
     if (this.isLogEnabled) {

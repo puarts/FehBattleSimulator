@@ -6,10 +6,10 @@ class GlobalBattleContext {
     }
 
     get isOddTurn() {
-        return this.currentTurn % 2 == 1;
+        return this.currentTurn % 2 === 1;
     }
 
     get isEvenTurn() {
-        return this.currentTurn % 2 == 0;
+        return this.currentTurn % 2 === 0;
     }
 }

@@ -3227,24 +3227,6 @@ class AetherRaidTacticsBoard {
         return saverUnit;
     }
 
-    /// 一時的に戦闘のダメージを計算します。
-    calcDamageTemporary(
-        atkUnit,
-        defUnit,
-        tileToAttack = null,
-        calcPotentialDamage = false
-    ) {
-        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
-        if (defUnit != result.defUnit) {
-            // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
-            let saverUnit = result.defUnit;
-            let tile = saverUnit.placedTile;
-            saverUnit.restoreOriginalTile();
-            this.updateAllUnitSpur();
-            tile.setUnit(defUnit);
-        }
-        return result;
-    }
 
     /// 戦闘のダメージを計算します。
     calcDamage(
@@ -3260,8 +3242,6 @@ class AetherRaidTacticsBoard {
         defUnit.battleContext.hpBeforeCombat = defUnit.hp;
         atkUnit.battleContext.initiatesCombat = true;
         defUnit.battleContext.initiatesCombat = false;
-        atkUnit.battleContext.currentTurn = g_appData.currentTurn;
-        defUnit.battleContext.currentTurn = g_appData.currentTurn;
 
         let origTile = atkUnit.placedTile;
         let isUpdateSpurRequired = true; // 戦闘中強化をリセットするために必ず必要
@@ -3334,12 +3314,6 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        // マップ参照が必要な設定は予めセットしておく
-        {
-            this.__setBattleContextRelatedToMap(atkUnit, actualDefUnit, calcPotentialDamage);
-            this.__setBattleContextRelatedToMap(actualDefUnit, atkUnit, calcPotentialDamage);
-        }
-
         let result = this.damageCalc.calcCombatResult(atkUnit, defUnit, calcPotentialDamage);
 
         result.preCombatDamage = preCombatDamage;
@@ -3356,68 +3330,23 @@ class AetherRaidTacticsBoard {
         return result;
     }
 
-    __setBattleContextRelatedToMap(targetUnit, enemyUnit, calcPotentialDamage) {
-        targetUnit.battleContext.isOnDefensiveTile = targetUnit.placedTile.isDefensiveTile;
-
-        targetUnit.battleContext.isThereAllyOnAdjacentTiles = this.__isThereAllyInSpecifiedSpaces(targetUnit, 1);
-        if (targetUnit.battleContext.isThereAllyOnAdjacentTiles) {
-            targetUnit.battleContext.isThereAllyIn2Spaces = true;
-        } else {
-            targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
+    /// 一時的に戦闘のダメージを計算します。
+    calcDamageTemporary(
+        atkUnit,
+        defUnit,
+        tileToAttack = null,
+        calcPotentialDamage = false
+    ) {
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        if (defUnit != result.defUnit) {
+            // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
+            let saverUnit = result.defUnit;
+            let tile = saverUnit.placedTile;
+            saverUnit.restoreOriginalTile();
+            this.updateAllUnitSpur();
+            tile.setUnit(defUnit);
         }
-
-        if (targetUnit.battleContext.isThereAllyIn2Spaces) {
-            targetUnit.battleContext.isThereAllyIn3Spaces = true;
-        } else {
-            targetUnit.battleContext.isThereAllyIn3Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 3);
-        }
-
-        targetUnit.battleContext.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(
-            targetUnit, enemyUnit, calcPotentialDamage);
-
-        targetUnit.battleContext.isAllyCountIsGreaterThanEnemyCountIn2Spaces = this.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage);
-
-        targetUnit.battleContext.flyingAllyCount = this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying);
-
-        {
-            let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
-            let partners = units.map(u => u.partnerHeroIndex);
-            targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces = units.some(u => partners.includes(u.heroIndex));
-        }
-
-        targetUnit.battleContext.isTherePartnerIn2Spaces = this.__isTherePartnerInSpace2(targetUnit);
-
-        targetUnit.battleContext.countOfAlliesWith90PercentOrMoreHp = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
-    }
-
-    __writeDamageCalcDebugLog(message) {
-        this.damageCalc.writeDebugLog(message);
-    }
-
-    __isTherePartnerInSpace2(unit) {
-        return this.__isThereAnyAllyUnit(unit,
-            x => unit.calculateDistanceToUnit(x) <= 2
-                && unit.partnerHeroIndex == x.heroIndex);
-    }
-
-    __isAllyCountIsGreaterThanEnemyCount(skillUnit, battleTargetUnit, calcPotentialDamage) {
-        if (calcPotentialDamage) {
-            return true;
-        }
-
-        let allyCount = this.__countAlliesWithinSpecifiedSpaces(skillUnit, 2, x => true);
-        let enemyCount = this.__countEnemiesWithinSpecifiedSpaces(skillUnit, 2, x => x != battleTargetUnit);
-        return allyCount > enemyCount;
-    }
-
-    __isEnemyCountIsGreaterThanOrEqualToAllyCount(skillUnit, battleTargetUnit, calcPotentialDamage) {
-        if (calcPotentialDamage) {
-            return true;
-        }
-
-        let allyCount = this.__countAlliesWithinSpecifiedSpaces(skillUnit, 2, x => true);
-        let enemyCount = this.__countEnemiesWithinSpecifiedSpaces(skillUnit, 2, x => x != battleTargetUnit);
-        return enemyCount >= allyCount;
+        return result;
     }
 
     __getAtkInCombatDetail(unit, enemyUnit) {

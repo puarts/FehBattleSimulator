@@ -26,7 +26,10 @@ class DamageCalculatorWrapper {
     }
 
     get isOddTurn() {
-        return this.currentTurn % 2 == 1;
+        return this.globalBattleContext.isOddTurn;
+    }
+    get isEvenTurn() {
+        return this.globalBattleContext.isEvenTurn;
     }
 
     set isLogEnabled(value) {
@@ -50,6 +53,9 @@ class DamageCalculatorWrapper {
     }
 
     calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+
+        this.__setBattleContextRelatedToMap(atkUnit, defUnit, calcPotentialDamage);
+        this.__setBattleContextRelatedToMap(defUnit, atkUnit, calcPotentialDamage);
 
         this.__applyImpenetrableDark(atkUnit, defUnit, calcPotentialDamage);
         this.__applyImpenetrableDark(defUnit, atkUnit, calcPotentialDamage);
@@ -139,6 +145,10 @@ class DamageCalculatorWrapper {
         this.__setSkillEffetToContext(atkUnit, defUnit);
 
         return this._damageCalc.calcCombatResult(atkUnit, defUnit);
+    }
+
+    __setBattleContextRelatedToMap(targetUnit, enemyUnit, calcPotentialDamage) {
+        targetUnit.battleContext.isOnDefensiveTile = targetUnit.placedTile.isDefensiveTile;
     }
 
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
@@ -1452,10 +1462,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.KenhimeNoKatana:
                     if (targetUnit.isWeaponRefined) {
-                        targetUnit.battleContext.isThereAllyIn2Spaces =
-                            targetUnit.battleContext.isThereAllyIn2Spaces ||
-                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                        if (targetUnit.battleContext.isThereAllyIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2) || targetUnit.battleContext.initiatesCombat) {
                             targetUnit.spdSpur += 5;
                         }
                         if (targetUnit.isWeaponSpecialRefined) {
@@ -1474,10 +1481,7 @@ class DamageCalculatorWrapper {
                             targetUnit.addAllSpur(4);
                         }
                         if (targetUnit.isWeaponSpecialRefined) {
-                            targetUnit.battleContext.isThereAllyIn2Spaces =
-                                targetUnit.battleContext.isThereAllyIn2Spaces ||
-                                this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                            if (targetUnit.battleContext.isThereAllyIn2Spaces || targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                                 targetUnit.addAllSpur(4);
                             }
                         }
@@ -1493,10 +1497,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.RohyouNoKnife:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.battleContext.isThereAllyIn2Spaces =
-                            targetUnit.battleContext.isThereAllyIn2Spaces ||
-                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                             targetUnit.battleContext.reducesCooldownCount = true;
@@ -1512,10 +1513,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.ObservantStaffPlus:
                     {
-                        let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
-                        let partners = units.map(u => u.partnerHeroIndex);
-                        targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
-                        if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                        if (this.__isThereAnyPartnerPairsIn3Spaces(targetUnit)) {
                             targetUnit.addAllSpur(6);
                             targetUnit.battleContext.invalidateAllBuffs();
                         }
@@ -1524,10 +1522,7 @@ class DamageCalculatorWrapper {
                 case Weapon.FairFuryAxe:
                 case Weapon.WeddingBellAxe:
                 case Weapon.RoseQuartsBow:
-                    targetUnit.battleContext.isThereAllyIn2Spaces =
-                        targetUnit.battleContext.isThereAllyIn2Spaces ||
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
                     }
@@ -1551,10 +1546,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.Raijinto:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.battleContext.isThereAllyIn2Spaces =
-                            targetUnit.battleContext.isThereAllyIn2Spaces ||
-                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                        if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                             targetUnit.addAllSpur(4)
                             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -1901,10 +1893,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.SpySongBow: {
                     if (!targetUnit.isWeaponSpecialRefined) break;
-                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
-                    let partners = units.map(u => u.partnerHeroIndex);
-                    targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => partners.includes(u.heroIndex));
-                    if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {
+                    if (this.__isThereAnyPartnerPairsIn3Spaces(targetUnit)) {
                         targetUnit.addAllSpur(6);
                         targetUnit.battleContext.healedHpByAttack += 5;
                     }
@@ -1920,10 +1909,7 @@ class DamageCalculatorWrapper {
                 case Weapon.UnityBloomsPlus:
                 case Weapon.AmityBloomsPlus:
                 case Weapon.PactBloomsPlus:
-                    targetUnit.battleContext.isThereAllyIn2Spaces =
-                        targetUnit.battleContext.isThereAllyIn2Spaces ||
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.resSpur -= 5;
                         targetUnit.battleContext.healedHpByAttack += 4;
@@ -1974,10 +1960,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Grafcalibur:
-                    targetUnit.battleContext.isThereAllyIn2Spaces =
-                        targetUnit.battleContext.isThereAllyIn2Spaces ||
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.addAllSpur(5);
                         targetUnit.battleContext.invalidateAllBuffs();
                     }
@@ -2051,10 +2034,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.ReindeerBowPlus:
                 case Weapon.CandyCanePlus:
-                    targetUnit.battleContext.isThereAllyIn2Spaces =
-                        targetUnit.battleContext.isThereAllyIn2Spaces ||
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                         targetUnit.battleContext.reducesCooldownCount = true;
@@ -2103,9 +2083,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Aureola:
-                    targetUnit.battleContext.isThereAllyIn2Spaces |=
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
                         targetUnit.resSpur += 5;
@@ -2113,9 +2091,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.TigerRoarAxe:
-                    targetUnit.battleContext.isThereAllyIn2Spaces |=
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (targetUnit.battleContext.initiatesCombat || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.addAllSpur(5);
                         if (enemyUnit.snapshot.restHpPercentage === 100) {
                             targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -2129,16 +2105,14 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.DarkCreatorS:
                     if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
-                        let count = targetUnit.battleContext.countOfAlliesWith90PercentOrMoreHp;
+                        let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
                         let buff = Math.min(count * 2, 6);
                         targetUnit.atkSpur += buff;
                         targetUnit.defSpur += buff;
                     }
                     break;
                 case Weapon.SpearOfAssal:
-                    targetUnit.battleContext.isThereAllyIn2Spaces |=
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.battleContext.invalidatesAtkBuff = true;
                         targetUnit.battleContext.invalidatesSpdBuff = true;
                     }
@@ -2164,10 +2138,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.PaleBreathPlus:
-                    targetUnit.battleContext.isThereAllyIn2Spaces =
-                        targetUnit.battleContext.isThereAllyIn2Spaces ||
-                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.atkSpur += 5;
                         targetUnit.defSpur += 5;
                         targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
@@ -2223,9 +2194,8 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.TalreganAxe:
-                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.initiatesCombat
-                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces)
+                        || (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
                     ) {
                         targetUnit.atkSpur += 6;
                         targetUnit.spdSpur += 6;
@@ -2304,9 +2274,8 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     break;
                 case Weapon.WindParthia:
-                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
                     if (targetUnit.battleContext.initiatesCombat
-                        || (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn2Spaces)
+                        || (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
                     ) {
                         targetUnit.addAllSpur(5);
                         targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.5;
@@ -3321,7 +3290,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Ifingr:
-                    if (!calcPotentialDamage && targetUnit.battleContext.isThereAllyIn3Spaces) {
+                    if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.addAllSpur(4);
                         targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     }
@@ -4206,7 +4175,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.BladeOfRenais:
                     if (targetUnit.battleContext.initiatesCombat
-                        || targetUnit.battleContext.isThereAllyIn2Spaces
+                        || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
                     ) {
                         targetUnit.addAllSpur(5);
 
@@ -4306,22 +4275,19 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveA.AtkSpdUnity:
-                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.applyAtkUnity();
                         targetUnit.applySpdUnity();
                     }
                     break;
                 case PassiveA.AtkDefUnity:
-                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.applyAtkUnity();
                         targetUnit.applyDefUnity();
                     }
                     break;
                 case PassiveA.AtkResUnity:
-                    targetUnit.battleContext.isThereAllyIn2Spaces = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-                    if (calcPotentialDamage || targetUnit.battleContext.isThereAllyIn2Spaces) {
+                    if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.applyAtkUnity();
                         targetUnit.applyResUnity();
                     }
@@ -4487,10 +4453,7 @@ class DamageCalculatorWrapper {
     }
 
     __isThereAllyIn2Spaces(targetUnit) {
-        targetUnit.battleContext.isThereAllyIn2Spaces =
-            targetUnit.battleContext.isThereAllyIn2Spaces ||
-            this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
-        return targetUnit.battleContext.isThereAllyIn2Spaces;
+        return this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
     }
 
     __isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator = null) {
@@ -4556,7 +4519,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.Luin:
                     if (targetUnit.battleContext.initiatesCombat
-                        || targetUnit.battleContext.isThereAllyIn2Spaces
+                        || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
                     ) {
                         targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalSpdInCombat() * 0.2);
                         targetUnit.battleContext.invalidatesCounterattack = true;
@@ -4849,7 +4812,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.DarkCreatorS:
                     if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
-                        let count = targetUnit.battleContext.countOfAlliesWith90PercentOrMoreHp;
+                        let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
                         let damageReductionRatio = Math.min(count * 15, 45) * 0.01;
                         targetUnit.battleContext.multDamageReductionRatio(damageReductionRatio, enemyUnit);
                     }
@@ -4902,12 +4865,12 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.FairFuryAxe:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalAtkInCombat() * 0.15);
                 }
                 break;
             case Weapon.RoseQuartsBow:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
                 }
                 break;
@@ -4986,7 +4949,7 @@ class DamageCalculatorWrapper {
                 break;
             case Weapon.BladeOfRenais:
                 if (atkUnit.battleContext.initiatesCombat
-                    || atkUnit.battleContext.isThereAllyIn2Spaces
+                    || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)
                 ) {
                     if (atkUnit.hasPositiveStatusEffect(defUnit)
                         || atkUnit.hasNegativeStatusEffect()
@@ -5124,7 +5087,7 @@ class DamageCalculatorWrapper {
 
     __examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage) {
         this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の追撃評価 ------`);
-        let followupAttackPriority = DamageCalculatorWrapper.getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage);
+        let followupAttackPriority = this.getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage);
         if (!defUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
@@ -5134,7 +5097,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.WhitedownSpear:
-                        if (atkUnit.battleContext.flyingAllyCount >= 3) {
+                        if (this.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying) >= 3) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -5155,12 +5118,12 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case PassiveB.TsuigekiTaikeiKisu3:
-                        if (atkUnit.battleContext.currentTurn % 2 == 1) {
+                        if (this.isOddTurn) {
                             ++followupAttackPriority;
                         }
                         break;
                     case PassiveB.EvenFollowUp3:
-                        if (atkUnit.battleContext.currentTurn % 2 === 0) {
+                        if (this.isEvenTurn) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -5220,7 +5183,7 @@ class DamageCalculatorWrapper {
 
     __examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage) {
         this.__writeDamageCalcDebugLog(`${defUnit.getNameWithGroup()}の追撃評価 ------`);
-        let followupAttackPriority = DamageCalculatorWrapper.getFollowupAttackPriorityForBoth(defUnit, atkUnit, calcPotentialDamage);
+        let followupAttackPriority = this.getFollowupAttackPriorityForBoth(defUnit, atkUnit, calcPotentialDamage);
         if (!atkUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
@@ -5333,12 +5296,12 @@ class DamageCalculatorWrapper {
                         --followupAttackPriority;
                         break;
                     case PassiveB.TsuigekiTaikeiKisu3:
-                        if (atkUnit.battleContext.currentTurn % 2 == 1) {
+                        if (this.isOddTurn) {
                             --followupAttackPriority;
                         }
                         break;
                     case PassiveB.EvenFollowUp3:
-                        if (atkUnit.battleContext.currentTurn % 2 === 0) {
+                        if (this.isEvenTurn) {
                             --followupAttackPriority;
                         }
                         break;
@@ -5428,14 +5391,14 @@ class DamageCalculatorWrapper {
             case Weapon.SnipersBow:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.snapshot.restHpPercentage >= 50
-                        && atkUnit.battleContext.isTherePartnerIn2Spaces
+                        && this.__isTherePartnerInSpace2(atkUnit)
                     ) {
                         return true;
                     }
                 }
                 break;
             case Weapon.EishinNoAnki:
-                if (atkUnit.battleContext.isTherePartnerIn2Spaces) {
+                if (this.__isTherePartnerInSpace2(atkUnit)) {
                     return true;
                 }
                 break;
@@ -5450,7 +5413,7 @@ class DamageCalculatorWrapper {
 
         switch (atkUnit.passiveA) {
             case PassiveA.LawsOfSacae2:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.isThereAllyIn2Spaces) {
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
                     if (defUnit.isMeleeWeaponType()) {
                         let atkUnitSpd = atkUnit.getSpdInCombat(defUnit);
                         let defUnitSpd = defUnit.getSpdInCombat(atkUnit);
@@ -5555,7 +5518,7 @@ class DamageCalculatorWrapper {
         return false;
     }
 
-    static getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
+    getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage) {
         let followupAttackPriority = 0;
         if (!defUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             followupAttackPriority += atkUnit.battleContext.followupAttackPriorityIncrement;
@@ -5576,12 +5539,12 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.GateAnchorAxe:
-                        if (calcPotentialDamage || !atkUnit.battleContext.isThereAllyOnAdjacentTiles) {
+                        if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)) {
                             ++followupAttackPriority;
                         }
                         break;
                     case Weapon.SkyPirateClaw:
-                        if (calcPotentialDamage || !atkUnit.battleContext.isThereAllyOnAdjacentTiles) {
+                        if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -5593,7 +5556,7 @@ class DamageCalculatorWrapper {
                     case PassiveB.RagingStorm:
                         if (calcPotentialDamage ||
                             (isWeaponTypeBreathOrBeast(defUnit.weaponType)
-                                && !atkUnit.battleContext.isThereAllyOnAdjacentTiles)
+                                && !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1))
                         ) {
                             ++followupAttackPriority;
                         }
@@ -5640,7 +5603,7 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.FlameSiegmund:
                     case Weapon.HadoNoSenfu:
-                        if (atkUnit.battleContext.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces) {
+                        if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -5651,7 +5614,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.Sekuvaveku:
-                        if (calcPotentialDamage || atkUnit.battleContext.isThereAllyIn3Spaces) {
+                        if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -5704,14 +5667,14 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.HarukazeNoBreath:
-                        if (defUnit.battleContext.isThereAllyIn2Spaces
+                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)
                             || defUnit.isBuffed
                         ) {
                             --followupAttackPriority;
                         }
                         break;
                     case Weapon.TenraiArumazu:
-                        if (defUnit.battleContext.isAllyCountIsGreaterThanEnemyCountIn2Spaces) {
+                        if (this.__isAllyCountIsGreaterThanEnemyCount(defUnit, atkUnit, calcPotentialDamage)) {
                             --followupAttackPriority;
                         }
                         break;
@@ -5766,7 +5729,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.GeneiBattleAxe:
-                        if (defUnit.battleContext.isThereAllyIn2Spaces) {
+                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
                             --followupAttackPriority;
                         }
                         break;
@@ -5851,7 +5814,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case Weapon.VengefulLance:
                     {
-                        if (!targetUnit.battleContext.isThereAllyOnAdjacentTiles
+                        if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)
                             && !targetUnit.battleContext.canFollowupAttack
                         ) {
                             targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
@@ -6061,7 +6024,7 @@ class DamageCalculatorWrapper {
                 break;
             case Special.BlueFrame:
                 targetUnit.battleContext.specialAddDamage = 10;
-                if (targetUnit.battleContext.isThereAllyOnAdjacentTiles) {
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                     targetUnit.battleContext.specialAddDamage += 15;
                 }
                 break;
@@ -7519,6 +7482,18 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+    }
+
+    __isTherePartnerInSpace2(unit) {
+        return this.__isThereAnyAllyUnit(unit,
+            x => unit.calculateDistanceToUnit(x) <= 2
+                && unit.partnerHeroIndex == x.heroIndex);
+    }
+
+    __isThereAnyPartnerPairsIn3Spaces(targetUnit) {
+        let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+        let partners = units.map(u => u.partnerHeroIndex);
+        return units.some(u => partners.includes(u.heroIndex));
     }
 
     /// 実装の移植を楽にするために暫定的に用意

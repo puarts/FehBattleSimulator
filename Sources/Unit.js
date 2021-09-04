@@ -938,32 +938,6 @@ class BattleContext {
         // 自分から攻撃したか
         this.initiatesCombat = false;
 
-        // 隣接マスに味方がいるか
-        this.isThereAllyOnAdjacentTiles = false;
-
-        // 2マス以内に味方がいるか
-        this.isThereAllyIn2Spaces = false;
-
-        // 3マス以内に味方がいるか
-        this.isThereAllyIn3Spaces = false;
-
-        // 3マス以内に支援を組んでいる味方の組み合わせがいるか
-        this.isThereAnyPartnerPairsIn3Spaces = false;
-
-        this.isTherePartnerIn2Spaces = false;
-
-        // 2マス以内の敵の数が味方の数と同じ、もしくは多いかどうか
-        this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
-
-        // 2マス以内の味方の数が敵の数より多いかどうか
-        this.isAllyCountIsGreaterThanEnemyCountIn2Spaces = false;
-
-        // マップ上でHPが90%以上の味方の数
-        this.countOfAlliesWith90PercentOrMoreHp = 0;
-
-        // マップ上の飛行の味方の数
-        this.flyingAllyCount = 0;
-
         // 追撃優先度
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
@@ -1034,8 +1008,6 @@ class BattleContext {
 
         // 防御床にいるかどうか
         this.isOnDefensiveTile = false;
-
-        this.currentTurn = 0;
     }
 
     increaseCooldownCountForBoth() {
@@ -1106,15 +1078,6 @@ class BattleContext {
         // this.invalidatesIncreaseCooldownCount = false;
 
         this.initiatesCombat = false;
-        this.isThereAllyOnAdjacentTiles = false;
-        this.isThereAllyIn2Spaces = false;
-        this.isThereAllyIn3Spaces = false;
-        this.isTherePartnerIn2Spaces = false;
-        this.isThereAnyPartnerPairsIn3Spaces = false;
-        this.isEnemyCountIsGreaterThanOrEqualToAllyCountIn2Spaces = false;
-        this.isAllyCountIsGreaterThanEnemyCountIn2Spaces = false;
-        this.countOfAlliesWith90PercentOrMoreHp = 0;
-        this.flyingAllyCount = 0;
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
 
@@ -1137,7 +1100,6 @@ class BattleContext {
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
         this.isOnDefensiveTile = false;
-        this.currentTurn = 0;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
