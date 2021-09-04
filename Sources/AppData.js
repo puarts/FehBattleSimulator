@@ -148,7 +148,7 @@ function getPawnsOfLokiDifficalityScore(difficality) {
 }
 
 /// シミュレーターの持つデータです。
-class AppData extends UnitManagerBase {
+class AppData extends UnitManager {
     constructor() {
         super();
         this.gameVersion = 360;

@@ -19,7 +19,8 @@ function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
 /// テスト用のダメージ計算機です。
 class test_DamageCalculator {
   constructor() {
-    this.damageCalc = new DamageCalculatorWrapper();
+    this.unitManager = new UnitManager();
+    this.damageCalc = new DamageCalculatorWrapper(this.unitManager);
     this.isLogEnabled = false;
   }
 
@@ -52,6 +53,24 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
   calclator.isLogEnabled = isLogEnabled;
   return calclator.calcDamage(atkUnit, defUnit);
 }
+
+test('DamageCalculatorDebuffBladeTest', () => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  atkUnit.atkWithSkills = 40;
+  defUnit.defWithSkills = 46;
+  defUnit.applyAllDebuff(-6);
+  {
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_normalAttackDamage).toBe(0);
+  }
+
+  {
+    atkUnit.weapon = Weapon.Blizard;
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_normalAttackDamage).toBe(6 * 4);
+  }
+});
 
 test('DamageCalculatorFollowupAttackTest', () => {
   let atkUnit = test_createDefaultUnit();

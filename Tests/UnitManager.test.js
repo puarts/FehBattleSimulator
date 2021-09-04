@@ -1,5 +1,5 @@
 
-class test_UnitManager extends UnitManagerBase {
+class test_UnitManager extends UnitManager {
     constructor() {
         super();
     }

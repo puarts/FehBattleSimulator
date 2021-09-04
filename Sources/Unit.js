@@ -4642,6 +4642,15 @@ class Unit {
     get isTome() {
         return isWeaponTypeTome(this.weaponType);
     }
+
+    getEnemyGroupId() {
+        switch (this.groupId) {
+            case UnitGroupType.Ally: return UnitGroupType.Enemy;
+            case UnitGroupType.Enemy: return UnitGroupType.Ally;
+            default:
+                throw new Error("Invalid groupId");
+        }
+    }
 }
 
 /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。

@@ -3,6 +3,13 @@
 
 /// ダメージ計算用のユーティリティー関数です。
 class DamageCalculationUtility {
+    static applyDebuffBlade(atkUnit, defUnit) {
+        if (defUnit.atkDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.atkDebuffTotal; }
+        if (defUnit.spdDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.spdDebuffTotal; }
+        if (defUnit.defDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.defDebuffTotal; }
+        if (defUnit.resDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.resDebuffTotal; }
+    }
+
     /// 相性有利不利を判定して返します。
     static calcAttackerTriangleAdvantage(atkUnit, defUnit) {
         if (atkUnit.color == ColorType.Red) {
