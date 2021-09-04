@@ -124,6 +124,80 @@ class DamageCalculatorWrapper {
     }
 
 
+
+    static __calcFixedSpecialAddDamage(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.MoonlightBangle: {
+                    let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * ratio);
+                }
+                    break;
+                case PassiveB.RunaBracelet:
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * 0.5);
+                    break;
+                case Weapon.MakenMistoruthin:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                    }
+                    break;
+                case Weapon.ResolvedFang:
+                case Weapon.RenewedFang:
+                case Weapon.JinroMusumeNoTsumekiba:
+                case Weapon.TrasenshiNoTsumekiba:
+                case Weapon.JinroOuNoTsumekiba:
+                case Weapon.OkamijoouNoKiba:
+                case Weapon.BridesFang:
+                case Weapon.GroomsWings:
+                    if (targetUnit.isTransformed) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    }
+                    break;
+                case PassiveB.Bushido:
+                case Weapon.Watou:
+                case Weapon.WatouPlus:
+                case Weapon.Wabo:
+                case Weapon.WaboPlus:
+                case Weapon.BigSpoon:
+                case Weapon.BigSpoonPlus:
+                case Weapon.Wakon:
+                case Weapon.WakonPlus:
+                case Weapon.TankyuPlus:
+                case Weapon.BabyCarrot:
+                case Weapon.BabyCarrotPlus:
+                case Weapon.KyoufuArmars:
+                case Weapon.KieiWayuNoKen:
+                case Weapon.Toron:
+                case Weapon.IhoNoHIken:
+                case Weapon.DarkExcalibur:
+                    targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    break;
+                case Weapon.Shamsir:
+                    targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                    break;
+                case Weapon.RunaNoEiken:
+                case Weapon.Otokureru:
+                case Weapon.MumeiNoIchimonNoKen:
+                case Weapon.SyaniNoSeisou:
+                case Weapon.DevilAxe:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    }
+                    break;
+                case PassiveB.Ikari3:
+                    if (targetUnit.restHpPercentage <= 75) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    }
+                    break;
+                case PassiveB.Spurn3:
+                    if (targetUnit.restHpPercentage <= 75) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 5;
+                    }
+                    break;
+            }
+        }
+    }
+
     __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
             if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
