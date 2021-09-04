@@ -40,6 +40,24 @@ class DamageCalculatorWrapper {
     }
 
     calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+        this.__applySkillEffectRelatedToEnemyStatusEffects(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
+
+        // 紋章を除く味方ユニットからの戦闘中バフ
+        {
+            this.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
+            this.__applySkillEffectFromAllies(atkUnit, defUnit, calcPotentialDamage);
+            this.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
+        }
+
+        // 1回の攻撃の攻撃回数を設定
+        this.__setAttackCount(atkUnit, defUnit);
+        this.__setAttackCount(defUnit, atkUnit);
+
+        // 神罰の杖
+        this.__setWrathfulStaff(atkUnit, defUnit);
+        this.__setWrathfulStaff(defUnit, atkUnit);
+
         // 特効
         this.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
         this.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
@@ -103,6 +121,534 @@ class DamageCalculatorWrapper {
         this.__setSkillEffetToContext(atkUnit, defUnit);
 
         return this._damageCalc.calcCombatResult(atkUnit, defUnit);
+    }
+
+
+    __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+            if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
+                // 縦3列以内
+                switch (unit.weapon) {
+                    case Weapon.FlowerOfEase:
+                        if (targetUnit.hasNegativeStatusEffect()) {
+                            targetUnit.atkSpur -= 3;
+                            targetUnit.defSpur -= 3;
+                            targetUnit.resSpur -= 3;
+                        }
+                        break;
+                }
+            }
+        }
+
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.AtkSpdCatch4:
+                    if (enemyUnit.snapshot.restHpPercentage == 100
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
+
+                        if (enemyUnit.snapshot.restHpPercentage == 100
+                            && enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.atkSpur += 2;
+                            targetUnit.spdSpur += 2;
+                        }
+                    }
+                    break;
+                case PassiveA.AtkDefCatch4:
+                    if (enemyUnit.snapshot.restHpPercentage == 100
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 7;
+                        targetUnit.defSpur += 7;
+
+                        if (enemyUnit.snapshot.restHpPercentage == 100
+                            && enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.atkSpur += 2;
+                            targetUnit.defSpur += 2;
+                        }
+                    }
+                    break;
+                case PassiveA.DefResCatch4:
+                    if (enemyUnit.snapshot.restHpPercentage == 100
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.defSpur += 7;
+                        targetUnit.resSpur += 7;
+
+                        if (enemyUnit.snapshot.restHpPercentage == 100
+                            && enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.defSpur += 2;
+                            targetUnit.resSpur += 2;
+                        }
+                    }
+                    break;
+                case Weapon.FukenFalcion:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.snapshot.restHpPercentage < 100
+                            || targetUnit.hasPositiveStatusEffect(enemyUnit)
+                        ) {
+                            targetUnit.addAllSpur(5);
+                        }
+
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.defSpur += 5;
+                                --enemyUnit.battleContext.followupAttackPriorityDecrement;
+                            }
+                        }
+                    }
+                    else {
+                        if (targetUnit.snapshot.restHpPercentage < 100) {
+                            targetUnit.addAllSpur(5);
+                        }
+                    }
+                    break;
+                case Weapon.EternalBreath:
+                    {
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                enemyUnit.atkSpur -= 4;
+                                enemyUnit.refSpur -= 4;
+                                targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.JoyfulVows:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 6;
+                        targetUnit.resSpur += 6;
+                    }
+                    break;
+                case Weapon.SpiritedSpearPlus:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
+                case Weapon.PledgedBladePlus:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
+                case Weapon.HugeFanPlus:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
+                case Weapon.SetsunasYumi:
+                    {
+                        if (enemyUnit.isRangedWeaponType()) {
+                            targetUnit.addAllSpur(4);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.LevinDagger:
+                    if (enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                        targetUnit.defSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                    break;
+                case Weapon.VoidTome:
+                    if (enemyUnit.getAtkInPrecombat() >= 50
+                        || enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                    break;
+                case PassiveB.KillingIntent:
+                    if (enemyUnit.snapshot.restHpPercentage < 100 || enemyUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.resSpur -= 5;
+                    }
+                    break;
+                case Weapon.WeirdingTome:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                    break;
+                case Weapon.ChaosManifest:
+                    if (enemyUnit.hasNegativeStatusEffect()) {
+                        targetUnit.atkSpur += 6;
+                    }
+                    break;
+                case Weapon.HigasaPlus:
+                case Weapon.TairyoNoYuPlus:
+                case Weapon.KaigaraNoNaifuPlus:
+                    if (enemyUnit.hasNegativeStatusEffect()) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
+                case Weapon.HarorudoNoYufu:
+                    if (targetUnit.isBuffed) {
+                        targetUnit.addAllSpur(3);
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.hasNegativeStatusEffect()
+                            || !targetUnit.snapshot.isRestHpFull
+                        ) {
+                            targetUnit.addAllSpur(5);
+                        }
+                    }
+                    break;
+                case PassiveB.ShisyaNoChojiriwo:
+                    if (targetUnit.snapshot.restHpPercentage >= 50 || targetUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    }
+                    break;
+                case Weapon.HigaimosoNoYumi:
+                    if (targetUnit.hasNegativeStatusEffect()
+                        || !targetUnit.snapshot.isRestHpFull
+                    ) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
+                case Weapon.MaryuNoBreath:
+                    if (targetUnit.hasNegativeStatusEffect()
+                        || !targetUnit.snapshot.isRestHpFull
+                    ) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    }
+                    break;
+                case Weapon.Fimbulvetr:
+                    if (targetUnit.snapshot.restHpPercentage < 100 || targetUnit.hasNegativeStatusEffect()) {
+                        targetUnit.battleContext.invalidateAllOwnDebuffs();
+                        targetUnit.addAllSpur(4);
+                    }
+
+                    break;
+                case Weapon.RuneAxe:
+                    targetUnit.battleContext.healedHpByAttack += 7;
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                    break;
+                case Weapon.MasyouNoYari:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage < 100
+                            || enemyUnit.hasNegativeStatusEffect()
+                        ) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                            targetUnit.defSpur += 5;
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    __applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit, calcPotentialDamage) {
+        if (atkUnit.canDisableEnemySpursFromAlly()) {
+            return;
+        }
+        if (calcPotentialDamage) {
+            return;
+        }
+
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+            for (let skillId of allyUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.SunshadeStaff:
+                        defUnit.battleContext.increaseCooldownCountForDefense = true;
+                        defUnit.atkSpur += 6;
+                        break;
+                    case Weapon.Geirusukeguru:
+                        if (allyUnit.isWeaponSpecialRefined) {
+                            if (defUnit.isPhysicalAttacker()) {
+                                defUnit.battleContext.increaseCooldownCountForBoth();
+                            }
+                        }
+                        break;
+                    case Weapon.MasyumaroNoTsuePlus:
+                        defUnit.defSpur += 3;
+                        defUnit.resSpur += 3;
+                        break;
+                }
+            }
+        }
+    }
+    __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (enemyUnit.canDisableEnemySpursFromAlly()) {
+            return;
+        }
+
+        // 2マス以内の味方からの効果
+        if (!calcPotentialDamage) {
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                for (let skillId of allyUnit.enumerateSkills()) {
+                    switch (skillId) {
+                        case Weapon.ProfessorialText:
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                            break;
+                        case PassiveC.DomainOfIce:
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            break;
+                        case Weapon.RenewedFang:
+                            if (targetUnit.partnerHeroIndex === allyUnit.heroIndex ||
+                                targetUnit.heroIndex === allyUnit.partnerHeroIndex) {
+                                targetUnit.battleContext.increaseCooldownCountForBoth();
+                            }
+                            break;
+                        case Weapon.CaduceusStaff:
+                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            break;
+                        case Weapon.Flykoogeru:
+                            if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat()) {
+                                targetUnit.atkSpur += 4;
+                                targetUnit.spdSpur += 4;
+                            }
+                            break;
+                        case Weapon.YoukoohNoTsumekiba:
+                            if (!allyUnit.hasStatusEffect(StatusEffectType.Panic)) {
+                                targetUnit.atkSpur += allyUnit.atkBuff;
+                                targetUnit.spdSpur += allyUnit.spdBuff;
+                                targetUnit.defSpur += allyUnit.defBuff;
+                                targetUnit.resSpur += allyUnit.resBuff;
+                            }
+                            break;
+                        case Weapon.GengakkiNoYumiPlus:
+                            if (enemyUnit.isMeleeWeaponType()) {
+                                targetUnit.defSpur += 4;
+                                targetUnit.resSpur += 4;
+                            }
+                            break;
+                        case Weapon.GinNoGobulettoPlus:
+                            if (enemyUnit.isRangedWeaponType()) {
+                                targetUnit.defSpur += 4;
+                                targetUnit.resSpur += 4;
+                            }
+                            break;
+                        case PassiveC.CloseGuard1:
+                            if (enemyUnit.isMeleeWeaponType()) {
+                                targetUnit.defSpur += 2;
+                                targetUnit.resSpur += 2;
+                            }
+                            break;
+                        case PassiveC.CloseGuard2:
+                            if (enemyUnit.isMeleeWeaponType()) {
+                                targetUnit.defSpur += 3;
+                                targetUnit.resSpur += 3;
+                            }
+                            break;
+                        case PassiveC.CloseGuard3:
+                            if (enemyUnit.isMeleeWeaponType()) {
+                                targetUnit.defSpur += 4;
+                                targetUnit.resSpur += 4;
+                            }
+                            break;
+                        case PassiveC.DistantGuard1:
+                            if (enemyUnit.isRangedWeaponType()) {
+                                targetUnit.defSpur += 2;
+                                targetUnit.resSpur += 2;
+                            }
+                            break;
+                        case PassiveC.DistantGuard2:
+                            if (enemyUnit.isRangedWeaponType()) {
+                                targetUnit.defSpur += 3;
+                                targetUnit.resSpur += 3;
+                            }
+                            break;
+                        case PassiveC.DistantGuard3:
+                        case PassiveC.JointDistGuard:
+                            if (enemyUnit.isRangedWeaponType()) {
+                                targetUnit.defSpur += 4;
+                                targetUnit.resSpur += 4;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        switch (targetUnit.passiveA) {
+            case PassiveA.AsherasChosen:
+                if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) == false) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.defSpur += 6;
+                }
+                break;
+        }
+    }
+
+    __isThereAllyExceptDragonAndBeastWithin1Space(unit) {
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1)) {
+            if (isWeaponTypeBreath(allyUnit.weaponType) == false
+                && isWeaponTypeBeast(allyUnit.weaponType) == false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    __setAttackCount(targetUnit, enemyUnit) {
+        let atkWeaponInfo = targetUnit.weaponInfo;
+        if (atkWeaponInfo != null) {
+            targetUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
+            targetUnit.battleContext.counterattackCount = atkWeaponInfo.counterattackCount;
+        }
+        else {
+            targetUnit.battleContext.attackCount = 0;
+            targetUnit.battleContext.counterattackCount = 0;
+        }
+
+        // Triangle Attack
+        if (targetUnit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+            let triangleAttackerCount = 0;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                if (unit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+                    triangleAttackerCount++;
+                }
+            }
+            if (targetUnit.battleContext.initiatesCombat && triangleAttackerCount >= 2) {
+                targetUnit.battleContext.attackCount = 2;
+            }
+        }
+
+        switch (targetUnit.passiveB) {
+            case PassiveB.Shishirenzan:
+                if (targetUnit.battleContext.initiatesCombat
+                    && targetUnit.snapshot.isRestHpFull) {
+                    targetUnit.battleContext.attackCount = 2;
+                }
+                break;
+        }
+
+        switch (targetUnit.weapon) {
+            case Weapon.FalcionEchoes:
+                if (targetUnit.battleContext.initiatesCombat && targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.snapshot.restHpPercentage == 100) {
+                        targetUnit.battleContext.attackCount = 2;
+                    }
+                }
+                break;
+            case Weapon.WhitedownSpear:
+                if (targetUnit.battleContext.initiatesCombat
+                    && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
+                        x.moveType == MoveType.Flying) >= 2
+                ) {
+                    targetUnit.battleContext.attackCount = 2;
+                }
+                break;
+            case Weapon.ShirokiNoTyokusou:
+            case Weapon.ShirokiNoTyouken:
+            case Weapon.ShirokiNoTansou:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat
+                        && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
+                            x.moveType == MoveType.Flying) >= 2
+                    ) {
+                        targetUnit.battleContext.attackCount = 2;
+                    }
+                }
+                break;
+            case Weapon.KurohyoNoYari:
+            case Weapon.MogyuNoKen:
+                if (targetUnit.battleContext.initiatesCombat
+                    && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
+                        x.moveType == MoveType.Cavalry
+                        && (x.weaponType == WeaponType.Sword
+                            || x.weaponType == WeaponType.Lance
+                            || x.weaponType == WeaponType.Axe)
+                    )) {
+                    targetUnit.battleContext.attackCount = 2;
+                }
+                break;
+            case Weapon.WakakiKurohyoNoKen:
+            case Weapon.WakakiMogyuNoYari:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (!targetUnit.battleContext.initiatesCombat
+                        && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
+                            x.moveType == MoveType.Cavalry
+                            && (x.weaponType == WeaponType.Sword
+                                || x.weaponType == WeaponType.Lance
+                                || x.weaponType == WeaponType.Axe)
+                        )) {
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                }
+                break;
+            case Weapon.GullinkambiEgg:
+                {
+                    if (targetUnit.battleContext.initiatesCombat
+                        && enemyUnit.snapshot.restHpPercentage >= 75
+                        && g_appData.isCombatOccuredInCurrentTurn
+                    ) {
+                        targetUnit.battleContext.attackCount = 2;
+                    }
+                }
+                break;
+            case Weapon.RazuwarudoNoMaiken:
+                {
+                    let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3, x =>
+                        x.buffTotal >= 10);
+                    if (count >= 2) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                }
+                break;
+        }
+    }
+
+    __countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
+        return this._unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator);
+    }
+
+    __setWrathfulStaff(atkUnit, defUnit) {
+        if (defUnit.canInvalidateWrathfulStaff()) {
+            return;
+        }
+
+        let atkWeaponInfo = atkUnit.weaponInfo;
+        let passiveBInfo = atkUnit.passiveBInfo;
+
+        // 神罰の杖
+        if ((atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
+            || (passiveBInfo != null && passiveBInfo.wrathfulStaff)
+            || (atkUnit.weaponRefinement == WeaponRefinementType.WrathfulStaff)
+        ) {
+            atkUnit.battleContext.wrathfulStaff = true;
+        }
     }
 
     __setEffectiveAttackEnabledIfPossible(atkUnit, defUnit) {

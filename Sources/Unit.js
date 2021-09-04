@@ -4695,6 +4695,7 @@ class Unit {
         return false;
     }
 
+    /// 指定した特効を無効化できるかどうかを調べます。
     canInvalidateSpecifiedEffectiveAttack(effective) {
         if (this.hasStatusEffect(StatusEffectType.ShieldFlying)) {
             if (effective === EffectiveType.Flying) {
@@ -4724,6 +4725,33 @@ class Unit {
                 break;
         }
 
+        return false;
+    }
+
+    /// 神罰の杖を無効化できるか調べます。
+    canInvalidateWrathfulStaff() {
+        for (let skillId of this.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.SeimeiNoGofu3:
+                case Weapon.SplashyBucketPlus:
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /// 神罰の杖を発動可能か調べます。
+    canActivateWrathfulStaff() {
+        let atkWeaponInfo = atkUnit.weaponInfo;
+        let passiveBInfo = atkUnit.passiveBInfo;
+
+        // 神罰の杖
+        if ((atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
+            || (passiveBInfo != null && passiveBInfo.wrathfulStaff)
+            || (atkUnit.weaponRefinement == WeaponRefinementType.WrathfulStaff)
+        ) {
+            return true;
+        }
         return false;
     }
 }

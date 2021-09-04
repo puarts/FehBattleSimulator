@@ -94,6 +94,16 @@ class UnitManager {
         return false;
     }
 
+    countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
+        let count = 0;
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
+            if (predicator != null && predicator(unit)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
     __createDefaultUnit(id, unitGroupType) {
         return new Unit(id, "", unitGroupType, MoveType.Infantry, "");
     }

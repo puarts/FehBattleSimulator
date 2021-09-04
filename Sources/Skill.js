@@ -693,7 +693,7 @@ const Weapon = {
     TaguelChildFang: 916, // タグエルの子の爪牙
     FutsugyouNoYari: 902, // 払暁の槍
     WakakiMogyuNoYari: 901, // 若き猛牛の槍
-    WakakiKurohyoNoKen: 900, // 若き黒豹の槍
+    WakakiKurohyoNoKen: 900, // 若き黒豹の剣
     BoranNoBreath: 895, // 暴乱のブレス
     Kurimuhirudo: 893, // クリムヒルド
     Erudofurimuniru: 886, // エルドフリムニル
