@@ -1,10 +1,19 @@
 
+function test_createDefaultSkillInfo() {
+  return new SkillInfo(
+    "", "", 16, 2, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false,
+    16, false, false, AssistType.None, true, 0, WeaponType.Sword,
+    300, true, [], [], false, false
+  );
+}
+
 function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
   let unit = new Unit("", "テストユニット", groupId);
   unit.placedTile = new Tile(0, 0);
   unit.maxHpWithSkills = 40;
   unit.hp = unit.maxHpWithSkills;
   unit.weapon = Weapon.SilverSwordPlus;
+  unit.weaponInfo = test_createDefaultSkillInfo();
   unit.weaponType = WeaponType.Sword;
   unit.moveType = MoveType.Infantry;
   unit.atkWithSkills = 40;
@@ -20,7 +29,13 @@ function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
 class test_DamageCalculator {
   constructor() {
     this.unitManager = new UnitManager();
-    this.damageCalc = new DamageCalculatorWrapper(this.unitManager);
+    this.map = new BattleMap("", MapType.None, 0);
+    this.battleContext = new GlobalBattleContext();
+    this.damageCalc = new DamageCalculatorWrapper(
+      this.unitManager,
+      this.map,
+      this.battleContext
+    );
     this.isLogEnabled = false;
   }
 
@@ -171,7 +186,7 @@ test('DamageCalculator_Simple', () => {
   defUnit.defWithSkills = 30;
   defUnit.spdWithSkills = atkUnit.spdWithSkills - 5;
 
-  let result = test_calcDamage(atkUnit, defUnit);
+  let result = test_calcDamage(atkUnit, defUnit, false);
 
   expect(result.atkUnit_normalAttackDamage).toBe(10);
   expect(result.atkUnit_totalAttackCount).toBe(2);
