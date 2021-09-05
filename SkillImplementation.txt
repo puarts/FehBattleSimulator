@@ -40,6 +40,12 @@ __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
 targetUnit.snapshot.restHpPercentage >= N
 enemyUnit.snapshot.restHpPercentage >= N
 
+速さが敵よりN以上高い時
+__applySkillEffectForUnitAfterCombatStatusFixed() {
+    if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + N) {
+    }
+}
+
 2回攻撃
 __setAttackCount(atkUnit, enemyUnit) {
     atkUnit.battleContext.attackCount = 2;

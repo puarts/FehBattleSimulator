@@ -1121,6 +1121,9 @@ const Weapon = {
 
     // 2021年8月 伝承ミカヤ
     NewDawn: 1820, // 明日の光
+
+    // 聖戦士の末裔たち
+    WhirlingGrace: 1830, // 流麗なる戦舞の聖器
 };
 
 const Support = {

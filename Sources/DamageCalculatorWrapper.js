@@ -1026,6 +1026,13 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.WhirlingGrace:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                    break;
                 case PassiveC.JointDistGuard:
                     if (this.__isThereAllyIn2Spaces(targetUnit) && enemyUnit.isRangedWeaponType()) {
                         targetUnit.defSpur += 4;
@@ -5828,6 +5835,13 @@ class DamageCalculatorWrapper {
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.WhirlingGrace:
+                    if (atkUnit.snapshot.restHpPercentage >= 25) {
+                        if (atkUnit.getEvalSpdInCombat() >= defUnit.getSpdInCombat() + 1) {
+                            defUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                     defUnit.battleContext.reducesCooldownCount = false;
