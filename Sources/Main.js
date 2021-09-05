@@ -901,6 +901,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             }
+            case Hero.HarmonizedLeif:
             case Hero.HarmonizedCatria:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Desperation);

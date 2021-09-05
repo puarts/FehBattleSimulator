@@ -36,6 +36,7 @@ const Hero = {
     DuoHilda: 682,
     HarmonizedCaeda: 688,
     DuoHinoka: 700,
+    HarmonizedLeif: 711,
 };
 
 function isThiefIndex(heroIndex) {
@@ -1973,6 +1974,7 @@ class Unit {
                 || this.heroIndex == Hero.DuoHilda
                 || this.heroIndex == Hero.HarmonizedCaeda
                 || this.heroIndex == Hero.DuoHinoka
+                || this.heroIndex == Hero.HarmonizedLeif
             );
     }
 
