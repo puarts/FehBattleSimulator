@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
 
-SOURCE_FILE_NAMES=(GlobalDefinitions Utilities Skill Tile Map Structures Cell Table Unit GlobalBattleContext DamageCalculationUtility DamageCalculator DamageCalculatorWrapper TurnSetting AudioManager AetherRaidDefensePresets UnitManager AppData SettingManager)
+SOURCE_FILE_NAMES=(
+    GlobalDefinitions
+    Utilities
+    Skill
+    Tile
+    Structures
+    Cell
+    Table
+    HeroInfo
+    Unit
+    UnitManager
+    Map
+    GlobalBattleContext
+    DamageCalculationUtility
+    DamageCalculator
+    DamageCalculatorWrapper
+    TurnSetting
+    AudioManager
+    AetherRaidDefensePresets
+    HeroDatabase
+    AppData
+    SettingManager
+    SampleSkillInfo
+    SampleHeroInfo
+    )
 TEST_FILE_NAMES=(
     DamageCalculator
     UnitManager

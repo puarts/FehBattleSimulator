@@ -2,7 +2,7 @@
 set JSMIN=%~dp0..\..\..\PortableApplications\JSMin-master\jsmin.bat
 set destination=%~dp0..\AetherRaidTacticsBoard\Release2
 set output_js=%destination%\FehBattleSimulator.js
-set filenames=GlobalDefinitions,VueComponents,Utilities,Skill,Tile,Map,Structures,Cell,Table,Unit,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,DamageCalculatorWrapper,TurnSetting,AudioManager,AetherRaidDefensePresets,UnitManager,AppData,SettingManager,Main_ImageProcessing,Main_OriginalAi,Main_MouseAndTouch,Main
+set filenames=GlobalDefinitions,VueComponents,Utilities,Skill,Tile,Map,Structures,Cell,Table,HeroInfo,Unit,UnitManager,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,DamageCalculatorWrapper,TurnSetting,AudioManager,AetherRaidDefensePresets,HeroDatabase,AppData,SettingManager,Main_ImageProcessing,Main_OriginalAi,Main_MouseAndTouch,Main
 
 call %~dp0MergeSources.bat %output_js% %filenames%
 

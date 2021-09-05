@@ -1,51 +1,6 @@
 /// @file
 /// @brief AppData クラスとそれに関連するクラスや関数等の定義です。
 
-/// 全ての英雄情報を格納するデータベースです。
-class HeroDataBase {
-    constructor(heroInfos) {
-        this._heroInfos = heroInfos;
-        this._nameToInfoDict = {};
-        for (let info of heroInfos) {
-            this._nameToInfoDict[info.name] = info;
-        }
-
-        this._nameToIndexDict = {};
-        for (let i = 0; i < this._heroInfos.length; ++i) {
-            let info = this._heroInfos[i];
-            this._nameToIndexDict[info.name] = i;
-        }
-    }
-
-    get data() {
-        return this._heroInfos;
-    }
-
-    get length() {
-        return this._heroInfos.length;
-    }
-
-    get(index) {
-        return this._heroInfos[index];
-    }
-
-    findIcon(name) {
-        let info = this.findInfo(name);
-        if (info == null) {
-            return null;
-        }
-        return info.icon;
-    }
-
-    findInfo(name) {
-        return this._nameToInfoDict[name];
-    }
-
-    findIndexOfInfo(name) {
-        return this._nameToIndexDict[name];
-    }
-}
-
 function __registerSkillOptions(options, infos) {
     for (let info of infos) {
         options.push({ id: info.id, text: info.name });
@@ -611,7 +566,7 @@ class AppData extends UnitManager {
     }
 
     initHeroInfos(heroInfos) {
-        this.heroInfos = new HeroDataBase(heroInfos);
+        this.heroInfos = new HeroDatabase(heroInfos);
     }
 
     __registerInfosToDict(skillInfos) {
