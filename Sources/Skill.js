@@ -1121,6 +1121,12 @@ const Weapon = {
 
     // 2021年8月 伝承ミカヤ
     NewDawn: 1820, // 明日の光
+
+    // 聖戦士の末裔たち
+    WhirlingGrace: 1830, // 流麗なる戦舞の聖器
+    LuminousGracePlus: 1832, // 聖祭の光炎+
+    DriftingGracePlus: 1833, // 聖祭の風光+
+    BowOfTwelve: 1834, // 双聖戦士の聖弓
 };
 
 const Support = {
@@ -1457,6 +1463,7 @@ const PassiveA = {
     AtkResSolo4: 1312,
     AtkSpdSolo4: 1316,
     AtkDefSolo4: 1428,
+    SpdDefSolo4: 1831,
     SpdResSolo4: 1770,
     DefResSolo4: 1544,
 

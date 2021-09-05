@@ -22,8 +22,8 @@ SOURCE_FILE_NAMES=(
     HeroDatabase
     AppData
     SettingManager
-    SampleSkillInfo
-    SampleHeroInfo
+    SampleSkillInfos
+    SampleHeroInfos
     )
 TEST_FILE_NAMES=(
     DamageCalculator

@@ -1026,6 +1026,27 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BowOfTwelve:
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        (targetUnit.snapshot.restHpPercentage >= 75 &&
+                            (enemyUnit.isTome || enemyUnit.weaponType === WeaponType.Staff))) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
+                case Weapon.DriftingGracePlus:
+                case Weapon.LuminousGracePlus:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
+                case Weapon.WhirlingGrace:
+                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                    break;
                 case PassiveC.JointDistGuard:
                     if (this.__isThereAllyIn2Spaces(targetUnit) && enemyUnit.isRangedWeaponType()) {
                         targetUnit.defSpur += 4;
@@ -5828,6 +5849,13 @@ class DamageCalculatorWrapper {
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.WhirlingGrace:
+                    if (atkUnit.snapshot.restHpPercentage >= 25) {
+                        if (atkUnit.getEvalSpdInCombat() >= defUnit.getSpdInCombat() + 1) {
+                            defUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                     defUnit.battleContext.reducesCooldownCount = false;
@@ -7168,6 +7196,9 @@ class DamageCalculatorWrapper {
                         break;
                     case PassiveA.SpdResSolo3:
                         targetUnit.spdSpur += 6; targetUnit.resSpur += 6;
+                        break;
+                    case PassiveA.SpdDefSolo4:
+                        targetUnit.spdSpur += 7; targetUnit.defSpur += 7;
                         break;
                     case PassiveA.SpdResSolo4:
                         targetUnit.spdSpur += 7; targetUnit.resSpur += 7;

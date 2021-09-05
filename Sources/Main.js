@@ -901,6 +901,7 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             }
+            case Hero.HarmonizedLeif:
             case Hero.HarmonizedCatria:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Desperation);
@@ -4679,6 +4680,10 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.DriftingGracePlus:
+            case Weapon.LuminousGracePlus:
+                skillOwner.reserveHeal(10);
+                break;
             case Weapon.RauarLionPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
                     unit.applyAtkBuff(6);
@@ -8443,6 +8448,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
@@ -8466,6 +8472,9 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.BowOfTwelve:
+                    moveCountForCanto = Math.max(moveCountForCanto, 1);
+                    break;
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
