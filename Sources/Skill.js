@@ -1124,6 +1124,7 @@ const Weapon = {
 
     // 聖戦士の末裔たち
     WhirlingGrace: 1830, // 流麗なる戦舞の聖器
+    LuminousGracePlus: 1832, // 聖祭の光炎+
 };
 
 const Support = {

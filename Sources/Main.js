@@ -4679,6 +4679,9 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.LuminousGracePlus:
+                skillOwner.reserveHeal(10);
+                break;
             case Weapon.RauarLionPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
                     unit.applyAtkBuff(6);
