@@ -16,12 +16,8 @@ SOURCE_FILE_NAMES=(
     DamageCalculationUtility
     DamageCalculator
     DamageCalculatorWrapper
-    TurnSetting
-    AudioManager
-    AetherRaidDefensePresets
+    SkillDatabase
     HeroDatabase
-    AppData
-    SettingManager
     SampleSkillInfos
     SampleHeroInfos
     )

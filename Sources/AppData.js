@@ -102,6 +102,7 @@ function getPawnsOfLokiDifficalityScore(difficality) {
     }
 }
 
+
 /// シミュレーターの持つデータです。
 class AppData extends UnitManager {
     constructor() {
@@ -452,15 +453,7 @@ class AppData extends UnitManager {
         this.commandQueue = new CommandQueue(100);
 
         this.heroInfos = null;
-        this.weaponInfos = [];
-        this.supportInfos = [];
-        this.specialInfos = [];
-        this.passiveAInfos = [];
-        this.passiveBInfos = [];
-        this.passiveCInfos = [];
-        this.passiveSInfos = [];
-        this.skillIdToInfoDict = {};
-        this.skillNameToInfoDict = {};
+        this.skillDatabase = new SkillDatabase();
 
         this.globalBattleContext = new GlobalBattleContext();
 
@@ -569,29 +562,8 @@ class AppData extends UnitManager {
         this.heroInfos = new HeroDatabase(heroInfos);
     }
 
-    __registerInfosToDict(skillInfos) {
-        for (let info of skillInfos) {
-            this.skillIdToInfoDict[info.id] = info;
-            this.skillNameToInfoDict[info.name] = info;
-        }
-    }
-
     registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
-        this.weaponInfos = weapons;
-        this.supportInfos = supports;
-        this.specialInfos = specials;
-        this.passiveAInfos = passiveAs;
-        this.passiveBInfos = passiveBs;
-        this.passiveCInfos = passiveCs;
-        this.passiveSInfos = passiveSs;
-
-        this.__registerInfosToDict(weapons);
-        this.__registerInfosToDict(supports);
-        this.__registerInfosToDict(specials);
-        this.__registerInfosToDict(passiveAs);
-        this.__registerInfosToDict(passiveBs);
-        this.__registerInfosToDict(passiveCs);
-        this.__registerInfosToDict(passiveSs);
+        this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
 
         __registerSkillOptions(this.weaponOptions, weapons);
         __registerSkillOptions(this.supportOptions, supports);
@@ -605,24 +577,36 @@ class AppData extends UnitManager {
         __registerPassiveSOptions(this.passiveSOptions, passiveCs);
     }
     __updateUnitSkillInfo(unit) {
-        unit.weaponInfo = this.findSkillInfoByDict(unit.weapon);
-        unit.supportInfo = this.findSkillInfoByDict(unit.support);
-        unit.specialInfo = this.findSkillInfoByDict(unit.special);
-        unit.passiveAInfo = this.findSkillInfoByDict(unit.passiveA);
-        unit.passiveBInfo = this.findSkillInfoByDict(unit.passiveB);
-        unit.passiveCInfo = this.findSkillInfoByDict(unit.passiveC);
-        unit.passiveSInfo = this.findSkillInfoByDict(unit.passiveS);
+        this.skillDatabase.updateUnitSkillInfo(unit);
     }
 
     findSkillInfoByDict(id) {
-        return this.skillIdToInfoDict[id];
+        return this.skillDatabase.findSkillInfoByDict(id);
     }
     findSkillInfoByName(name) {
-        let result = this.skillNameToInfoDict[name];
-        if (result) {
-            return result;
-        }
-        return null;
+        return this.skillDatabase.findSkillInfoByName(name);
+    }
+
+    get weaponInfos() {
+        return this.skillDatabase.weaponInfos;
+    }
+    get supportInfos() {
+        return this.skillDatabase.supportInfos;
+    }
+    get specialInfos() {
+        return this.skillDatabase.specialInfos;
+    }
+    get passiveAInfos() {
+        return this.skillDatabase.passiveAInfos;
+    }
+    get passiveBInfos() {
+        return this.skillDatabase.passiveBInfos;
+    }
+    get passiveCInfos() {
+        return this.skillDatabase.passiveCInfos;
+    }
+    get passiveSInfos() {
+        return this.skillDatabase.passiveSInfos;
     }
 
     __findWeaponInfo(id) {
@@ -649,17 +633,7 @@ class AppData extends UnitManager {
     __findPassiveSInfo(id) {
         return this.findSkillInfoByDict(id);
     }
-    __updateStatusByPassiveA(unit, skillId) {
-        let skillInfo = this.findSkillInfoByDict(skillId);
-        if (skillInfo == null) {
-            return;
-        }
-        unit.maxHpWithSkillsWithoutAdd += skillInfo.hp;
-        unit.atkWithSkills += skillInfo.atk;
-        unit.spdWithSkills += skillInfo.spd;
-        unit.defWithSkills += skillInfo.def;
-        unit.resWithSkills += skillInfo.res;
-    }
+
     __showStatusToAttackerInfo() {
         let unit = this.currentUnit;
         if (unit == null) { return; }
@@ -682,21 +656,15 @@ class AppData extends UnitManager {
             this.__updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate);
         }
     }
+
+    /**
+     * @param  {Unit} unit
+     * @param  {boolean} updatesPureGrowthRate=false
+     */
     __updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate = false) {
-        this.__updateUnitSkillInfo(unit);
+        this.skillDatabase.updateUnitSkillInfo(unit);
 
-        unit.updateBaseStatus(updatesPureGrowthRate);
-
-        unit.maxHpWithSkillsWithoutAdd = unit.hpLvN;
-        unit.atkWithSkills = Math.floor(Number(unit.atkLvN) * Number(unit.atkMult) + Number(unit.atkAdd));
-        unit.spdWithSkills = Math.floor(Number(unit.spdLvN) * Number(unit.spdMult) + Number(unit.spdAdd));
-        unit.defWithSkills = Math.floor(Number(unit.defLvN) * Number(unit.defMult) + Number(unit.defAdd));
-        unit.resWithSkills = Math.floor(Number(unit.resLvN) * Number(unit.resMult) + Number(unit.resAdd));
-
-        // 個体値と限界突破によるステータス上昇
-        unit.updateStatusByMergeAndDragonFlower();
-
-        // 祝福効果
+        // 祝福効果の更新
         {
             unit.clearBlessingEffects();
             for (let ally of this.enumerateUnitsInTheSameGroup(unit, false)) {
@@ -709,102 +677,9 @@ class AppData extends UnitManager {
                 }
                 unit.addBlessingEffect(heroInfo.blessingType);
             }
-
-            unit.updateStatusByBlessing();
         }
 
-        // 武器錬成
-        unit.updateStatusByWeaponRefinement();
-
-        // 召喚士との絆
-        unit.updateStatusBySummonerLevel();
-
-        unit.updateStatusByWeapon();
-
-        if (unit.passiveA != PassiveA.None) {
-            this.__updateStatusByPassiveA(unit, unit.passiveA);
-        }
-        if (unit.passiveS != PassiveS.None) {
-            this.__updateStatusByPassiveA(unit, unit.passiveS);
-        }
-        switch (unit.weapon) {
-            case Weapon.SyunsenAiraNoKen:
-                if (unit.isWeaponRefined) {
-                    unit.atkWithSkills += 3;
-                }
-                break;
-            case Weapon.Mistoruthin:
-                if (unit.isWeaponSpecialRefined) {
-                    unit.atkWithSkills += 3;
-                    unit.spdWithSkills += 3;
-                    unit.defWithSkills += 3;
-                    unit.resWithSkills += 3;
-                }
-                break;
-            case Weapon.KokouNoKen:
-            case Weapon.Bashirikosu:
-                if (unit.isWeaponSpecialRefined) {
-                    unit.spdWithSkills += 5;
-                    unit.atkWithSkills += 5;
-                    unit.defWithSkills -= 5;
-                    unit.resWithSkills -= 5;
-                }
-                break;
-            case Weapon.Yatonokami:
-                if (unit.weaponRefinement != WeaponRefinementType.None) {
-                    unit.atkWithSkills += 2;
-                    unit.spdWithSkills += 2;
-                    unit.defWithSkills += 2;
-                    unit.resWithSkills += 2;
-                }
-                break;
-            case Weapon.BatoruNoGofu:
-            case Weapon.HinataNoMoutou:
-                if (unit.isWeaponSpecialRefined) {
-                    unit.atkWithSkills += 3;
-                    unit.spdWithSkills += 3;
-                    unit.defWithSkills += 3;
-                    unit.resWithSkills += 3;
-                }
-                break;
-        }
-
-        // 化身によるステータス変化
-        if (unit.isTransformed) {
-            switch (unit.weapon) {
-                case Weapon.EbonPirateClaw:
-                case Weapon.CrossbonesClaw:
-                case Weapon.ResolvedFang:
-                case Weapon.RefreshedFang:
-                case Weapon.RenewedFang:
-                case Weapon.RaydreamHorn:
-                case Weapon.BrightmareHorn:
-                case Weapon.NightmareHorn:
-                case Weapon.BrazenCatFang:
-                case Weapon.TaguelFang:
-                case Weapon.TaguelChildFang:
-                case Weapon.FoxkitFang:
-                case Weapon.NewBrazenCatFang:
-                case Weapon.NewFoxkitFang:
-                case Weapon.KarasuOuNoHashizume:
-                case Weapon.TakaouNoHashizume:
-                case Weapon.YoukoohNoTsumekiba:
-                case Weapon.JunaruSenekoNoTsumekiba:
-                case Weapon.ShishiouNoTsumekiba:
-                case Weapon.TrasenshiNoTsumekiba:
-                case Weapon.JinroMusumeNoTsumekiba:
-                case Weapon.JinroOuNoTsumekiba:
-                case Weapon.OkamijoouNoKiba:
-                case Weapon.ShirasagiNoTsubasa:
-                case Weapon.SeijuNoKeshinHiko:
-                case Weapon.BridesFang:
-                case Weapon.GroomsWings:
-                case Weapon.SkyPirateClaw:
-                case Weapon.TwinCrestPower:
-                    unit.atkWithSkills += 2;
-                    break;
-            }
-        }
+        unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate);
 
         // 砦レベル差
         {
@@ -831,24 +706,6 @@ class AppData extends UnitManager {
             }
         }
 
-        // ボナキャラ補正
-        if (unit.isBonusChar) {
-            unit.maxHpWithSkillsWithoutAdd += 10;
-            unit.atkWithSkills += 4;
-            unit.spdWithSkills += 4;
-            unit.defWithSkills += 4;
-            unit.resWithSkills += 4;
-        }
-
-        // 神装
-        if (unit.isResplendent) {
-            unit.maxHpWithSkillsWithoutAdd += 2;
-            unit.atkWithSkills += 2;
-            unit.spdWithSkills += 2;
-            unit.defWithSkills += 2;
-            unit.resWithSkills += 2;
-        }
-
         switch (this.gameMode) {
             case GameMode.Arena:
                 this.updateArenaScore(unit);
@@ -862,18 +719,10 @@ class AppData extends UnitManager {
     }
 
     initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true) {
-        if (heroIndex < 0) {
-            unit.heroIndex = heroIndex;
-        }
-
         let heroInfo = this.heroInfos.get(heroIndex);
         if (heroInfo == null) {
             console.log("heroInfo was not found:" + heroIndex);
             return;
-        }
-
-        if (unit.heroIndex != heroIndex) {
-            unit.heroIndex = heroIndex;
         }
 
         unit.initByHeroInfo(heroInfo);

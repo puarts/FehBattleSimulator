@@ -3893,6 +3893,144 @@ class Unit {
         // this.updatePureGrowthRate();
     }
 
+    updateStatusBySkillsAndMerges(updatesPureGrowthRate = true) {
+        this.updateBaseStatus(updatesPureGrowthRate);
+
+        this.maxHpWithSkillsWithoutAdd = this.hpLvN;
+        this.atkWithSkills = Math.floor(Number(this.atkLvN) * Number(this.atkMult) + Number(this.atkAdd));
+        this.spdWithSkills = Math.floor(Number(this.spdLvN) * Number(this.spdMult) + Number(this.spdAdd));
+        this.defWithSkills = Math.floor(Number(this.defLvN) * Number(this.defMult) + Number(this.defAdd));
+        this.resWithSkills = Math.floor(Number(this.resLvN) * Number(this.resMult) + Number(this.resAdd));
+
+        // 個体値と限界突破によるステータス上昇
+        this.updateStatusByMergeAndDragonFlower();
+
+        // 祝福によるステータス変化
+        this.updateStatusByBlessing();
+
+        // 武器錬成
+        this.updateStatusByWeaponRefinement();
+
+        // 召喚士との絆
+        this.updateStatusBySummonerLevel();
+
+        this.updateStatusByWeapon();
+
+        this.updateStatusBySkillsExceptWeapon();
+
+        switch (this.weapon) {
+            case Weapon.SyunsenAiraNoKen:
+                if (this.isWeaponRefined) {
+                    this.atkWithSkills += 3;
+                }
+                break;
+            case Weapon.Mistoruthin:
+                if (this.isWeaponSpecialRefined) {
+                    this.atkWithSkills += 3;
+                    this.spdWithSkills += 3;
+                    this.defWithSkills += 3;
+                    this.resWithSkills += 3;
+                }
+                break;
+            case Weapon.KokouNoKen:
+            case Weapon.Bashirikosu:
+                if (this.isWeaponSpecialRefined) {
+                    this.spdWithSkills += 5;
+                    this.atkWithSkills += 5;
+                    this.defWithSkills -= 5;
+                    this.resWithSkills -= 5;
+                }
+                break;
+            case Weapon.Yatonokami:
+                if (this.weaponRefinement != WeaponRefinementType.None) {
+                    this.atkWithSkills += 2;
+                    this.spdWithSkills += 2;
+                    this.defWithSkills += 2;
+                    this.resWithSkills += 2;
+                }
+                break;
+            case Weapon.BatoruNoGofu:
+            case Weapon.HinataNoMoutou:
+                if (this.isWeaponSpecialRefined) {
+                    this.atkWithSkills += 3;
+                    this.spdWithSkills += 3;
+                    this.defWithSkills += 3;
+                    this.resWithSkills += 3;
+                }
+                break;
+        }
+
+        // 化身によるステータス変化
+        if (this.isTransformed) {
+            switch (this.weapon) {
+                case Weapon.EbonPirateClaw:
+                case Weapon.CrossbonesClaw:
+                case Weapon.ResolvedFang:
+                case Weapon.RefreshedFang:
+                case Weapon.RenewedFang:
+                case Weapon.RaydreamHorn:
+                case Weapon.BrightmareHorn:
+                case Weapon.NightmareHorn:
+                case Weapon.BrazenCatFang:
+                case Weapon.TaguelFang:
+                case Weapon.TaguelChildFang:
+                case Weapon.FoxkitFang:
+                case Weapon.NewBrazenCatFang:
+                case Weapon.NewFoxkitFang:
+                case Weapon.KarasuOuNoHashizume:
+                case Weapon.TakaouNoHashizume:
+                case Weapon.YoukoohNoTsumekiba:
+                case Weapon.JunaruSenekoNoTsumekiba:
+                case Weapon.ShishiouNoTsumekiba:
+                case Weapon.TrasenshiNoTsumekiba:
+                case Weapon.JinroMusumeNoTsumekiba:
+                case Weapon.JinroOuNoTsumekiba:
+                case Weapon.OkamijoouNoKiba:
+                case Weapon.ShirasagiNoTsubasa:
+                case Weapon.SeijuNoKeshinHiko:
+                case Weapon.BridesFang:
+                case Weapon.GroomsWings:
+                case Weapon.SkyPirateClaw:
+                case Weapon.TwinCrestPower:
+                    this.atkWithSkills += 2;
+                    break;
+            }
+        }
+
+        // ボナキャラ補正
+        if (this.isBonusChar) {
+            this.maxHpWithSkillsWithoutAdd += 10;
+            this.atkWithSkills += 4;
+            this.spdWithSkills += 4;
+            this.defWithSkills += 4;
+            this.resWithSkills += 4;
+        }
+
+        // 神装
+        if (this.isResplendent) {
+            this.maxHpWithSkillsWithoutAdd += 2;
+            this.atkWithSkills += 2;
+            this.spdWithSkills += 2;
+            this.defWithSkills += 2;
+            this.resWithSkills += 2;
+        }
+    }
+
+    /// ステータスにスキルの加算値を加算します。
+    updateStatusBySkillsExceptWeapon() {
+        for (let skillInfo of this.enumerateSkillInfos()) {
+            if (skillInfo == this.weaponInfo) {
+                continue;
+            }
+
+            this.maxHpWithSkillsWithoutAdd += skillInfo.hp;
+            this.atkWithSkills += skillInfo.atk;
+            this.spdWithSkills += skillInfo.spd;
+            this.defWithSkills += skillInfo.def;
+            this.resWithSkills += skillInfo.res;
+        }
+    }
+
     updateStatusByWeapon() {
         if (this.weapon != Weapon.None) {
             let weaponInfo = this.weaponInfo;

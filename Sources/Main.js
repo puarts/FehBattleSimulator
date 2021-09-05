@@ -2747,7 +2747,7 @@ class AetherRaidTacticsBoard {
             self.weaponSkillCharWhiteList = "";
             self.supportSkillCharWhiteList = "";
             self.specialSkillCharWhiteList = "";
-            for (let info of g_appData.weaponInfos) {
+            for (let info of g_appData.skillDatabase.weaponInfos) {
                 info.type = SkillType.Weapon;
                 self.weaponSkillCharWhiteList += info.name;
 
@@ -2785,27 +2785,27 @@ class AetherRaidTacticsBoard {
                     }
                 }
             }
-            for (let info of g_appData.supportInfos) {
+            for (let info of g_appData.skillDatabase.supportInfos) {
                 info.type = SkillType.Support;
                 self.supportSkillCharWhiteList += info.name;
             }
-            for (let info of g_appData.specialInfos) {
+            for (let info of g_appData.skillDatabase.specialInfos) {
                 info.type = SkillType.Special;
                 self.specialSkillCharWhiteList += info.name;
             }
-            for (let info of g_appData.passiveAInfos) {
+            for (let info of g_appData.skillDatabase.passiveAInfos) {
                 info.type = SkillType.PassiveA;
                 self.passiveSkillCharWhiteList += info.name;
             }
-            for (let info of g_appData.passiveBInfos) {
+            for (let info of g_appData.skillDatabase.passiveBInfos) {
                 info.type = SkillType.PassiveB;
                 self.passiveSkillCharWhiteList += info.name;
             }
-            for (let info of g_appData.passiveCInfos) {
+            for (let info of g_appData.skillDatabase.passiveCInfos) {
                 info.type = SkillType.PassiveC;
                 self.passiveSkillCharWhiteList += info.name;
             }
-            for (let info of g_appData.passiveSInfos) {
+            for (let info of g_appData.skillDatabase.passiveSInfos) {
                 info.type = SkillType.PassiveS;
                 self.passiveSkillCharWhiteList += info.name;
             }
