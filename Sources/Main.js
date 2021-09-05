@@ -4679,6 +4679,7 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.DriftingGracePlus:
             case Weapon.LuminousGracePlus:
                 skillOwner.reserveHeal(10);
                 break;
