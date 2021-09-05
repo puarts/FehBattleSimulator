@@ -7183,6 +7183,9 @@ class DamageCalculatorWrapper {
                     case PassiveA.SpdResSolo3:
                         targetUnit.spdSpur += 6; targetUnit.resSpur += 6;
                         break;
+                    case PassiveA.SpdDefSolo4:
+                        targetUnit.spdSpur += 7; targetUnit.defSpur += 7;
+                        break;
                     case PassiveA.SpdResSolo4:
                         targetUnit.spdSpur += 7; targetUnit.resSpur += 7;
                         break;

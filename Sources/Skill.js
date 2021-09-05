@@ -1460,6 +1460,7 @@ const PassiveA = {
     AtkResSolo4: 1312,
     AtkSpdSolo4: 1316,
     AtkDefSolo4: 1428,
+    SpdDefSolo4: 1831,
     SpdResSolo4: 1770,
     DefResSolo4: 1544,
 
