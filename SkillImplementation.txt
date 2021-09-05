@@ -131,6 +131,11 @@ __calcFixedSpecialAddDamage() {
     fixedSpecialAddDamage += N;
 }
 
+ダメージをHPが1残るように軽減(祈り)
+__canActivateMiracle() {
+    return true;
+}
+
 戦闘中に攻撃していれば
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
 

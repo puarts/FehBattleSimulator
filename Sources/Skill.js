@@ -1126,6 +1126,7 @@ const Weapon = {
     WhirlingGrace: 1830, // 流麗なる戦舞の聖器
     LuminousGracePlus: 1832, // 聖祭の光炎+
     DriftingGracePlus: 1833, // 聖祭の風光+
+    BowOfTwelve: 1834, // 双聖戦士の聖弓
 };
 
 const Support = {

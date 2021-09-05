@@ -882,16 +882,26 @@ class DamageCalculator {
     }
 
     __canActivateMiracle(unit, atkUnit) {
-        if (unit.special == Special.Miracle && unit.tmpSpecialCount == 0) {
-            return true;
-        }
-        if (unit.weapon == Weapon.Thirufingu
-            && unit.snapshot.restHpPercentage >= 50) {
-            return true;
-        }
-        else if (unit.weapon == Weapon.HelsReaper) {
-            if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
-                return true;
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.BowOfTwelve:
+                    if (unit.battleContext.initiatesCombat ||
+                        (unit.snapshot.restHpPercentage >= 75 &&
+                            (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff))) {
+                        return true;
+                    }
+                    break;
+                case Special.Miracle:
+                    if (unit.tmpSpecialCount === 0) return true;
+                    break;
+                case Weapon.Thirufingu:
+                    if (unit.snapshot.restHpPercentage >= 50) return true;
+                    break;
+                case Weapon.HelsReaper:
+                    if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
+                        return true;
+                    }
+                    break;
             }
         }
         return false;

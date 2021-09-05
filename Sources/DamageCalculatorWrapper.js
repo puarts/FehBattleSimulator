@@ -1026,6 +1026,13 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BowOfTwelve:
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        (targetUnit.snapshot.restHpPercentage >= 75 &&
+                            (enemyUnit.isTome || enemyUnit.weaponType === WeaponType.Staff))) {
+                        targetUnit.addAllSpur(5);
+                    }
+                    break;
                 case Weapon.DriftingGracePlus:
                 case Weapon.LuminousGracePlus:
                     if (targetUnit.snapshot.restHpPercentage >= 25) {

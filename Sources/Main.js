@@ -8447,6 +8447,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
@@ -8470,6 +8471,9 @@ class AetherRaidTacticsBoard {
         for (let skillId of unit.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.BowOfTwelve:
+                    moveCountForCanto = Math.max(moveCountForCanto, 1);
+                    break;
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
