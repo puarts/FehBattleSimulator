@@ -100,6 +100,9 @@ __applyInvalidationSkillEffect() {
     defUnit.battleContext.reducesCooldownCount = false;
 }
 
+戦闘中、自身の奥義発動カウント変動量+1
+targetUnit.battleContext.increaseCooldownCountForBoth();
+
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCount() {
     specialCountMax -= 1;

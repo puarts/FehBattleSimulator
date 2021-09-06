@@ -1026,6 +1026,22 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FlameSiegmund:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit)) {
+                            targetUnit.atkSpur += 4;
+                            targetUnit.defSpur += 4;
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                enemyUnit.atkSpur -= 5;
+                                enemyUnit.defSpur -= 5;
+                                targetUnit.battleContext.increaseCooldownCountForBoth();
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.BowOfTwelve:
                     if (targetUnit.battleContext.initiatesCombat ||
                         (targetUnit.snapshot.restHpPercentage >= 75 &&
@@ -5623,6 +5639,12 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.FlameSiegmund:
+                        if (!atkUnit.isWeaponRefined) {
+                            if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                                ++followupAttackPriority;
+                            }
+                        }
+                        break;
                     case Weapon.HadoNoSenfu:
                         if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
                             ++followupAttackPriority;
