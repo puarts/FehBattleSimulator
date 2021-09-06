@@ -464,7 +464,7 @@ class AppData extends UnitManager {
             this.defenseStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.offenceStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.createStructures();
-            this.map = new BattleMap(g_idGenerator.generate(), this.mapKind, this.gameVersion);
+            this.map = new BattleMap(g_idGenerator.generate(), this.mapKind, this.gameVersion, g_idGenerator);
             this.map.isExpansionUnitFunc = x => {
                 return this.isSpecialSlotUnit(x);
             };
