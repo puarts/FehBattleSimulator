@@ -1127,6 +1127,9 @@ const Weapon = {
     LuminousGracePlus: 1832, // 聖祭の光炎+
     DriftingGracePlus: 1833, // 聖祭の風光+
     BowOfTwelve: 1834, // 双聖戦士の聖弓
+
+    // 2021年9月 武器錬成
+    DuskDragonstone: 1829, // 暗夜の竜石
 };
 
 const Support = {

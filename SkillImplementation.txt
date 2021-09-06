@@ -16,6 +16,12 @@ if (enemyUnit.battleContext.initiatesCombat) {
 周囲2マス以内に味方がいる時
 if (__isThereAllyIn2Spaces(targetUnit)) {}
 
+周囲Nマス以内に味方がいる時
+if (this.__isThereAllyInSpecifiedSpaces(targetUnit, N)) {}
+
+周囲1マス以内に味方がいない時(孤軍)
+if (this.__isSolo(targetUnit) || calcPotentialDamage) {}
+
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
@@ -66,7 +72,7 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
 反撃不可
-__isCounterAttackDisabledImpl(atkUnit, defUnit) {
+static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
 
@@ -80,6 +86,9 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 自身の弱化を無効(弱化無効)
 targetUnit.battleContext.invalidateAllOwnDebuffs();
 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+
+敵が不利な状態異常を受けている時
+if (enemyUnit.hasNegativeStatusEffect())
 
 HP N回復
 targetUnit.reserveHeal(N);
@@ -99,6 +108,9 @@ targetUnit.battleContext.reducesCooldownCount = true;
 __applyInvalidationSkillEffect() {
     defUnit.battleContext.reducesCooldownCount = false;
 }
+
+戦闘中、自身の奥義発動カウント変動量+1
+targetUnit.battleContext.increaseCooldownCountForBoth();
 
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCount() {

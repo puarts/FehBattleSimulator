@@ -3391,6 +3391,13 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DuskDragonstone:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.reserveHeal(7);
+                        }
+                    }
+                    break;
                 case PassiveB.SolarBrace2:
                     targetUnit.reserveHeal(10);
                     break;
@@ -4682,6 +4689,23 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.Sangurizuru:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
+                        if (!unit.isOnMap) { continue; }
+                        if (skillOwner.posX - 1 <= unit.posX && unit.posX <= skillOwner.posX + 1 ||
+                            skillOwner.posY - 1 <= unit.posY && unit.posY <= skillOwner.posY + 1) {
+                            unit.reserveToApplyDefDebuff(-7);
+                            unit.reserveToApplyResDebuff(-7);
+                        }
+                    }
+                }
+                break;
+            case Weapon.RyukenFalcion:
+                if (skillOwner.isWeaponRefined) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
             case Weapon.DriftingGracePlus:
             case Weapon.LuminousGracePlus:
                 skillOwner.reserveHeal(10);

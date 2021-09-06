@@ -152,10 +152,19 @@ class DamageCalculatorWrapper {
     }
 
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
-        switch (targetUnit.passiveC) {
-            case PassiveC.ImpenetrableDark:
-                this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
-                break;
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.ShikkyuMyurugure:
+                    if (targetUnit.isWeaponRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
+                            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+                        }
+                    }
+                    break;
+                case PassiveC.ImpenetrableDark:
+                    this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+                    break;
+            }
         }
     }
 
@@ -458,8 +467,17 @@ class DamageCalculatorWrapper {
                     atkUnit.addAllSpur(2);
                     break;
                 case Weapon.Sangurizuru:
-                    atkUnit.atkSpur += 3;
-                    atkUnit.spdSpur += 3;
+                    if (!atkUnit.isWeaponRefined) {
+                        atkUnit.atkSpur += 3;
+                        atkUnit.spdSpur += 3;
+                    } else {
+                        atkUnit.atkSpur += 4;
+                        atkUnit.spdSpur += 4;
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            atkUnit.atkSpur += 6;
+                            atkUnit.spdSpur += 6;
+                        }
+                    }
                     break;
                 case Weapon.GeneiFalcion:
                     {
@@ -508,7 +526,9 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.NinissIceLance:
-                    atkUnit.addAllSpur(4);
+                    if (!atkUnit.isWeaponRefined) {
+                        atkUnit.addAllSpur(4);
+                    }
                     break;
                 case Weapon.Forblaze:
                     if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
@@ -1026,6 +1046,43 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DuskDragonstone:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                    break;
+                case Weapon.NinissIceLance:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            targetUnit.addAllSpur(5);
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            if (targetUnit.isWeaponSpecialRefined) {
+                                targetUnit.addAllSpur(5);
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.FlameSiegmund:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                            targetUnit.atkSpur += 4;
+                            targetUnit.defSpur += 4;
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                enemyUnit.atkSpur -= 5;
+                                enemyUnit.defSpur -= 5;
+                                targetUnit.battleContext.increaseCooldownCountForBoth();
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.BowOfTwelve:
                     if (targetUnit.battleContext.initiatesCombat ||
                         (targetUnit.snapshot.restHpPercentage >= 75 &&
@@ -2710,6 +2767,24 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.ShikkyuMyurugure:
+                    if (!targetUnit.isWeaponRefined) {
+                        if (this.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                    } else {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.MizuNoHimatsu:
                     if (this.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
                         targetUnit.atkSpur += 5;
@@ -3025,8 +3100,19 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.RyukenFalcion:
-                    if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
-                        targetUnit.addAllSpur(5);
+                    if (!targetUnit.isWeaponRefined) {
+                        if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
+                            targetUnit.addAllSpur(5);
+                        }
+                    } else {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                            targetUnit.addAllSpur(5);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                targetUnit.addAllSpur(5);
+                            }
+                        }
                     }
                     break;
                 case Weapon.Vorufuberugu:
@@ -3838,7 +3924,7 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit, calcPotentialDamage) {
-        if (atkUnit.canDisableEnemySpursFromAlly()) {
+        if (this.__canDisableEnemySpursFromAlly(atkUnit, defUnit, calcPotentialDamage)) {
             return;
         }
         if (calcPotentialDamage) {
@@ -3868,7 +3954,7 @@ class DamageCalculatorWrapper {
         }
     }
     __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (enemyUnit.canDisableEnemySpursFromAlly()) {
+        if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
             return;
         }
 
@@ -4405,10 +4491,27 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.AkatsukiNoHikari:
-                    if (enemyUnit.atkDebuffTotal < 0) { targetUnit.atkSpur += -enemyUnit.atkDebuffTotal; }
-                    if (enemyUnit.spdDebuffTotal < 0) { targetUnit.spdSpur += -enemyUnit.spdDebuffTotal; }
-                    if (enemyUnit.defDebuffTotal < 0) { targetUnit.defSpur += -enemyUnit.defDebuffTotal; }
-                    if (enemyUnit.resDebuffTotal < 0) { targetUnit.resSpur += -enemyUnit.resDebuffTotal; }
+                    if (!targetUnit.isWeaponRefined) {
+                        if (enemyUnit.atkDebuffTotal < 0) { targetUnit.atkSpur += -enemyUnit.atkDebuffTotal; }
+                        if (enemyUnit.spdDebuffTotal < 0) { targetUnit.spdSpur += -enemyUnit.spdDebuffTotal; }
+                        if (enemyUnit.defDebuffTotal < 0) { targetUnit.defSpur += -enemyUnit.defDebuffTotal; }
+                        if (enemyUnit.resDebuffTotal < 0) { targetUnit.resSpur += -enemyUnit.resDebuffTotal; }
+                    } else {
+                        if (enemyUnit.snapshot.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.addAllSpur(4);
+                            if (enemyUnit.atkDebuffTotal < 0) { targetUnit.atkSpur += -enemyUnit.atkDebuffTotal; }
+                            if (enemyUnit.spdDebuffTotal < 0) { targetUnit.spdSpur += -enemyUnit.spdDebuffTotal; }
+                            if (enemyUnit.defDebuffTotal < 0) { targetUnit.defSpur += -enemyUnit.defDebuffTotal; }
+                            if (enemyUnit.resDebuffTotal < 0) { targetUnit.resSpur += -enemyUnit.resDebuffTotal; }
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                                targetUnit.atkSpur += 6;
+                                targetUnit.resSpur += 6;
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                        }
+                    }
                     break;
                 case Weapon.SyukuseiNoAnki:
                 case Weapon.SyukuseiNoAnkiPlus:
@@ -4513,6 +4616,22 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RyukenFalcion:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25 && isPhysicalWeaponType(enemyUnit.weaponType)) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.ShikkyuMyurugure:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalSpdInCombat() * 0.15);
+                        }
+                    }
+                    break;
                 case PassiveB.BoldFighter3:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.increaseCooldownCountForAttack = true;
@@ -4778,6 +4897,13 @@ class DamageCalculatorWrapper {
             case PassiveB.MoonTwinWing:
                 if (defUnit.snapshot.restHpPercentage >= 25) {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
+            case Weapon.NinissIceLance:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
+                        return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                    }
                 }
                 break;
             case PassiveB.Bushido2:
@@ -5392,6 +5518,15 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.RyukenFalcion:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.snapshot.restHpPercentage >= 25 && isPhysicalWeaponType(defUnit.weaponType)) {
+                        if (atkUnit.getEvalSpdInCombat() >= defUnit.getSpdInCombat() + 1) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.SurvivalistBow:
                 if (atkUnit.battleContext.isSolo && defUnit.snapshot.restHpPercentage >= 80) {
                     return true;
@@ -5623,6 +5758,12 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.FlameSiegmund:
+                        if (!atkUnit.isWeaponRefined) {
+                            if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                                ++followupAttackPriority;
+                            }
+                        }
+                        break;
                     case Weapon.HadoNoSenfu:
                         if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
                             ++followupAttackPriority;
@@ -7538,5 +7679,22 @@ class DamageCalculatorWrapper {
     /// 実装の移植を楽にするために暫定的に用意
     __writeDamageCalcDebugLog(message) {
         this.writeDebugLog(message);
+    }
+
+    __canDisableEnemySpursFromAlly(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.ShikkyuMyurugure:
+                    if (targetUnit.isWeaponRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
+                            return true;
+                        }
+                    }
+                    break;
+                case PassiveC.ImpenetrableDark:
+                    return true;
+            }
+        }
+        return false;
     }
 }
