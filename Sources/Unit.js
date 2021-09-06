@@ -2281,10 +2281,6 @@ class Unit {
         }
     }
 
-    canDisableEnemySpursFromAlly() {
-        return this.passiveC == PassiveC.ImpenetrableDark;
-    }
-
     resetSpurs() {
         this.atkSpur = 0;
         this.spdSpur = 0;

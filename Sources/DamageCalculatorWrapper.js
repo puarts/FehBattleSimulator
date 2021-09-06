@@ -152,17 +152,19 @@ class DamageCalculatorWrapper {
     }
 
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
-        switch (targetUnit.passiveC) {
-            case Weapon.ShikkyuMyurugure:
-                if (targetUnit.isWeaponRefined) {
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
-                        this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.ShikkyuMyurugure:
+                    if (targetUnit.isWeaponRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
+                            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+                        }
                     }
-                }
-                break;
-            case PassiveC.ImpenetrableDark:
-                this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
-                break;
+                    break;
+                case PassiveC.ImpenetrableDark:
+                    this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+                    break;
+            }
         }
     }
 
@@ -3890,7 +3892,7 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit, calcPotentialDamage) {
-        if (atkUnit.canDisableEnemySpursFromAlly()) {
+        if (this.__canDisableEnemySpursFromAlly(atkUnit, defUnit, calcPotentialDamage)) {
             return;
         }
         if (calcPotentialDamage) {
@@ -3920,7 +3922,7 @@ class DamageCalculatorWrapper {
         }
     }
     __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (enemyUnit.canDisableEnemySpursFromAlly()) {
+        if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
             return;
         }
 
@@ -7630,5 +7632,22 @@ class DamageCalculatorWrapper {
     /// 実装の移植を楽にするために暫定的に用意
     __writeDamageCalcDebugLog(message) {
         this.writeDebugLog(message);
+    }
+
+    __canDisableEnemySpursFromAlly(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.ShikkyuMyurugure:
+                    if (targetUnit.isWeaponRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
+                            return true;
+                        }
+                    }
+                    break;
+                case PassiveC.ImpenetrableDark:
+                    return true;
+            }
+        }
+        return false;
     }
 }
