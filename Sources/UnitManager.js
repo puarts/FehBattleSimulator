@@ -102,6 +102,21 @@ class UnitManager {
         }
         return false;
     }
+    /**
+     * @param  {Unit} unit
+     * @param  {function(Unit): boolean} exceptCondition
+     */
+    isNextToAlliesExcept(unit, exceptCondition) {
+        for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
+            if (!otherUnit.isOnMap) { continue; }
+            if (!exceptCondition(otherUnit)
+                && unit.isNextTo(otherUnit)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     countUnitInSpecifiedGroupOnMap(groupId, predicateFunc) {
         let count = 0;

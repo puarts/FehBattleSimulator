@@ -104,10 +104,10 @@ class DamageCalculatorWrapper {
             this.__applyDamageReductionRatio(defUnit, atkUnit);
         }
 
-        DamageCalculatorWrapper.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
-        DamageCalculatorWrapper.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
+        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
-        DamageCalculatorWrapper.__calcFixedAddDamage(atkUnit, defUnit, false);
+        this.__calcFixedAddDamage(atkUnit, defUnit, false);
 
         // 敵が反撃可能か判定
         defUnit.battleContext.canCounterattack = this.canCounterAttack(atkUnit, defUnit);
@@ -4951,7 +4951,7 @@ class DamageCalculatorWrapper {
 
 
     /// 戦闘前奥義、戦闘のどちらでも同様の効果のスキルの実装
-    static __applySkillEffectForPrecombatAndCombat(targetUnit, enemyUnit, calcPotentialDamage) {
+    __applySkillEffectForPrecombatAndCombat(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.Bushido2:
@@ -4968,7 +4968,7 @@ class DamageCalculatorWrapper {
         }
     }
 
-    static __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+    __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         for (let skillId of atkUnit.enumeratePassiveSkills()) {
             switch (skillId) {
                 case PassiveB.Atrocity:
@@ -6329,6 +6329,14 @@ class DamageCalculatorWrapper {
             return true;
         }
         return false;
+    }
+
+    __isNextToOtherUnitsExceptDragonAndBeast(skillOwnerUnit) {
+        return this.__isNextToOtherUnitsExcept(skillOwnerUnit,
+            x => isWeaponTypeBreath(x.weaponType) || isWeaponTypeBeast(x.weaponType));
+    }
+    __isNextToOtherUnitsExcept(unit, exceptCondition) {
+        return this._unitManager.isNextToAlliesExcept(unit, exceptCondition);
     }
 
     __countUnit(groupId, predicateFunc) {
