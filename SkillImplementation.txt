@@ -16,6 +16,9 @@ if (enemyUnit.battleContext.initiatesCombat) {
 周囲2マス以内に味方がいる時
 if (__isThereAllyIn2Spaces(targetUnit)) {}
 
+周囲Nマス以内に味方がいる時
+if (this.__isThereAllyInSpecifiedSpaces(targetUnit, N)) {}
+
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N

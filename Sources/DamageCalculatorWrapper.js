@@ -153,6 +153,13 @@ class DamageCalculatorWrapper {
 
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.passiveC) {
+            case Weapon.ShikkyuMyurugure:
+                if (targetUnit.isWeaponRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
+                        this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+                    }
+                }
+                break;
             case PassiveC.ImpenetrableDark:
                 this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
                 break;
@@ -2726,6 +2733,24 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.ShikkyuMyurugure:
+                    if (!targetUnit.isWeaponRefined) {
+                        if (this.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                    } else {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.MizuNoHimatsu:
                     if (this.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
                         targetUnit.atkSpur += 5;
@@ -4529,6 +4554,13 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ShikkyuMyurugure:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                            targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalSpdInCombat() * 0.15);
+                        }
+                    }
+                    break;
                 case PassiveB.BoldFighter3:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.increaseCooldownCountForAttack = true;
