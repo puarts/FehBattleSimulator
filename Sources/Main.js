@@ -4680,6 +4680,11 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.RyukenFalcion:
+                if (skillOwner.isWeaponRefined) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
             case Weapon.DriftingGracePlus:
             case Weapon.LuminousGracePlus:
                 skillOwner.reserveHeal(10);

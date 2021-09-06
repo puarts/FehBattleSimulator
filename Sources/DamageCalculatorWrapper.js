@@ -3066,8 +3066,19 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.RyukenFalcion:
-                    if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
-                        targetUnit.addAllSpur(5);
+                    if (!targetUnit.isWeaponRefined) {
+                        if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
+                            targetUnit.addAllSpur(5);
+                        }
+                    } else {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                            targetUnit.addAllSpur(5);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                                targetUnit.addAllSpur(5);
+                            }
+                        }
                     }
                     break;
                 case Weapon.Vorufuberugu:
@@ -4554,6 +4565,15 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RyukenFalcion:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.snapshot.restHpPercentage >= 25 && isPhysicalWeaponType(enemyUnit.weaponType)) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.ShikkyuMyurugure:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
@@ -5440,6 +5460,15 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.RyukenFalcion:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.snapshot.restHpPercentage >= 25 && isPhysicalWeaponType(defUnit.weaponType)) {
+                        if (atkUnit.getEvalSpdInCombat() >= defUnit.getSpdInCombat() + 1) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.SurvivalistBow:
                 if (atkUnit.battleContext.isSolo && defUnit.snapshot.restHpPercentage >= 80) {
                     return true;

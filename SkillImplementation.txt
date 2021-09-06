@@ -19,6 +19,9 @@ if (__isThereAllyIn2Spaces(targetUnit)) {}
 周囲Nマス以内に味方がいる時
 if (this.__isThereAllyInSpecifiedSpaces(targetUnit, N)) {}
 
+周囲1マス以内に味方がいない時(孤軍)
+if (this.__isSolo(targetUnit) || calcPotentialDamage) {}
+
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
@@ -69,7 +72,7 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
 反撃不可
-__isCounterAttackDisabledImpl(atkUnit, defUnit) {
+static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
 
