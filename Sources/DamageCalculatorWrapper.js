@@ -110,7 +110,7 @@ class DamageCalculatorWrapper {
         DamageCalculatorWrapper.__calcFixedAddDamage(atkUnit, defUnit, false);
 
         // 敵が反撃可能か判定
-        defUnit.battleContext.canCounterattack = DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit);
+        defUnit.battleContext.canCounterattack = this.canCounterAttack(atkUnit, defUnit);
         // this.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
 
         // 追撃可能か判定
@@ -5234,19 +5234,19 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case PassiveB.Sashitigae3:
-                        if (atkUnit.snapshot.restHpPercentage <= 50 && DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit)) {
+                        if (atkUnit.snapshot.restHpPercentage <= 50 && this.canCounterAttack(atkUnit, defUnit)) {
                             ++followupAttackPriority;
                         }
                         break;
                     case Weapon.SoulCaty:
                         if (atkUnit.isWeaponSpecialRefined) {
-                            if (atkUnit.snapshot.restHpPercentage <= 75 && DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit)) {
+                            if (atkUnit.snapshot.restHpPercentage <= 75 && this.canCounterAttack(atkUnit, defUnit)) {
                                 ++followupAttackPriority;
                             }
                         }
                         break;
                     case Weapon.RohyouNoKnife:
-                        if ((defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) && DamageCalculatorWrapper.canCounterAttack(atkUnit, defUnit)) {
+                        if ((defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) && this.canCounterAttack(atkUnit, defUnit)) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -5458,12 +5458,12 @@ class DamageCalculatorWrapper {
         }
     }
 
-    static canCounterAttack(atkUnit, defUnit) {
+    canCounterAttack(atkUnit, defUnit) {
         return DamageCalculatorWrapper.__examinesCanCounterattackBasically(atkUnit, defUnit)
-            && !DamageCalculatorWrapper.__canDisableCounterAttack(atkUnit, defUnit);
+            && !this.__canDisableCounterAttack(atkUnit, defUnit);
     }
 
-    static __canDisableCounterAttack(atkUnit, defUnit) {
+    __canDisableCounterAttack(atkUnit, defUnit) {
         if (defUnit.hasPassiveSkill(PassiveB.MikiriHangeki3)) {
             return false;
         }
