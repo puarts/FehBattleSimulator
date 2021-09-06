@@ -517,7 +517,9 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.NinissIceLance:
-                    atkUnit.addAllSpur(4);
+                    if (!atkUnit.isWeaponRefined) {
+                        atkUnit.addAllSpur(4);
+                    }
                     break;
                 case Weapon.Forblaze:
                     if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
@@ -1035,6 +1037,17 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.NinissIceLance:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            targetUnit.addAllSpur(5);
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            if (targetUnit.isWeaponSpecialRefined) {
+                                targetUnit.addAllSpur(5);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.FlameSiegmund:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
@@ -4865,6 +4878,13 @@ class DamageCalculatorWrapper {
             case PassiveB.MoonTwinWing:
                 if (defUnit.snapshot.restHpPercentage >= 25) {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
+            case Weapon.NinissIceLance:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
+                        return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                    }
                 }
                 break;
             case PassiveB.Bushido2:
