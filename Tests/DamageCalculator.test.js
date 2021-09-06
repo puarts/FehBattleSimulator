@@ -26,12 +26,23 @@ function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
 }
 
 class test_HeroDatabase extends HeroDatabase {
-  constructor(inputHeroInfos) {
+  constructor(inputHeroInfos, weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
     super(inputHeroInfos);
+    this.skillDatabase = new SkillDatabase();
+    this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
   }
-
+  /**
+   * @param  {String} heroName
+   * @param  {UnitGroupType} groupId=UnitGroupType.Ally
+   * @returns {Unit}
+   */
   createUnit(heroName, groupId = UnitGroupType.Ally) {
     let unit = test_createDefaultUnit(groupId);
+    this.initUnit(unit, heroName);
+    return unit;
+  }
+
+  initUnit(unit, heroName) {
     let heroInfo = this.findInfo(heroName);
     unit.initByHeroInfo(heroInfo);
 
@@ -39,6 +50,7 @@ class test_HeroDatabase extends HeroDatabase {
     unit.merge = 0;
     unit.dragonflower = 0;
     unit.initializeSkillsToDefault();
+    this.skillDatabase.updateUnitSkillInfo(unit);
     unit.setMoveCountFromMoveType();
     unit.isBonusChar = false;
     if (!unit.heroInfo.isResplendent) {
@@ -50,7 +62,6 @@ class test_HeroDatabase extends HeroDatabase {
     unit.resetMaxSpecialCount();
     unit.specialCount = unit.maxSpecialCount;
     unit.hp = unit.maxHpWithSkills;
-    return unit;
   }
 }
 
@@ -87,13 +98,27 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
 }
 
 test('DamageCalculator_HeroBattleTest', () => {
-  const heroDatabase = new test_HeroDatabase(heroInfos);
+  const heroDatabase = new test_HeroDatabase(
+    heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+    passiveSInfos);
+
+  // アルフォンスのデフォルト状態の戦闘結果がGUI上と同じ計算結果になる事を確認
   let atkUnit = heroDatabase.createUnit("アルフォンス");
   let defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+  {
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_normalAttackDamage).toBe(25);
+    expect(result.atkUnit_totalAttackCount).toBe(1);
+  }
 
-  let result = test_calcDamage(atkUnit, defUnit, false);
-  expect(result.atkUnit_normalAttackDamage).toBe(25);
-  expect(result.atkUnit_totalAttackCount).toBe(1);
+  // 全ての英雄で戦闘を行って例外が出ない事を確認する
+  for (let info of heroDatabase.enumerateHeroInfos()) {
+    // テストのために攻撃側だけ特殊錬成にしておく
+    atkUnit.weaponRefinement = WeaponRefinementType.Special;
+    heroDatabase.initUnit(atkUnit, info.name);
+    heroDatabase.initUnit(defUnit, info.name);
+    test_calcDamage(atkUnit, defUnit, false);
+  }
 });
 
 test('DamageCalculator_DebuffBladeTest', () => {

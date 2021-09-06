@@ -27,6 +27,10 @@ class HeroDatabase {
         return this._heroInfos[index];
     }
 
+    enumerateHeroInfos() {
+        return this._heroInfos;
+    }
+
     findIcon(name) {
         let info = this.findInfo(name);
         if (info == null) {

@@ -3267,16 +3267,18 @@ class AetherRaidTacticsBoard {
 
         atkUnit.saveCurrentHpAndSpecialCount();
         defUnit.saveCurrentHpAndSpecialCount();
+        atkUnit.createSnapshot();
+        defUnit.createSnapshot();
 
         // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
-        DamageCalculatorWrapper.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
-        DamageCalculatorWrapper.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
+        this.damageCalc.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        this.damageCalc.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
         this.__applySkillEffectForPrecombat(atkUnit, defUnit, calcPotentialDamage);
         this.__applySkillEffectForPrecombat(defUnit, atkUnit, calcPotentialDamage);
         this.__applyPrecombatSpecialDamageMult(atkUnit);
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
-        DamageCalculatorWrapper.__calcFixedAddDamage(atkUnit, defUnit, true);
+        this.damageCalc.__calcFixedAddDamage(atkUnit, defUnit, true);
 
         // 戦闘前ダメージ計算
         this.damageCalc.clearLog();
@@ -6014,15 +6016,7 @@ class AetherRaidTacticsBoard {
     }
 
     __isNextToOtherUnitsExcept(unit, exceptCondition) {
-        for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
-            if (!otherUnit.isOnMap) { continue; }
-            if (!exceptCondition(otherUnit)
-                && unit.isNextTo(otherUnit)
-            ) {
-                return true;
-            }
-        }
-        return false;
+        return g_appData.isNextToAlliesExcept(unit, exceptCondition);
     }
 
     __applyThreatenSkill(skillOwnerUnit, applyDebuffFunc, conditionFunc = null) {
