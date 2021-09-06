@@ -3392,7 +3392,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.DuskDragonstone:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                            targetUnit.reserveHeal(10);
+                            targetUnit.reserveHeal(7);
                         }
                     }
                     break;
