@@ -1046,6 +1046,16 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DuskDragonstone:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                    break;
                 case Weapon.NinissIceLance:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {

@@ -3389,6 +3389,13 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DuskDragonstone:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.reserveHeal(10);
+                        }
+                    }
+                    break;
                 case PassiveB.SolarBrace2:
                     targetUnit.reserveHeal(10);
                     break;
