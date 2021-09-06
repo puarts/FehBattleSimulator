@@ -112,13 +112,18 @@ test('DamageCalculator_HeroBattleTest', () => {
   }
 
   // 全ての英雄で戦闘を行って例外が出ない事を確認する
-  for (let info of heroDatabase.enumerateHeroInfos()) {
-    // テストのために攻撃側だけ特殊錬成にしておく
-    atkUnit.weaponRefinement = WeaponRefinementType.Special;
-    heroDatabase.initUnit(atkUnit, info.name);
-    heroDatabase.initUnit(defUnit, info.name);
-    test_calcDamage(atkUnit, defUnit, false);
-  }
+  using(new ScopedStopwatch(x => console.log(`${heroDatabase.length}回の戦闘の時間: ${x} ms`)), () => {
+    let calclator = new test_DamageCalculator();
+    calclator.isLogEnabled = false;
+
+    for (let info of heroDatabase.enumerateHeroInfos()) {
+      // テストのために攻撃側だけ特殊錬成にしておく
+      atkUnit.weaponRefinement = WeaponRefinementType.Special;
+      heroDatabase.initUnit(atkUnit, info.name);
+      heroDatabase.initUnit(defUnit, info.name);
+      calclator.calcDamage(atkUnit, defUnit);
+    }
+  });
 });
 
 test('DamageCalculator_DebuffBladeTest', () => {
