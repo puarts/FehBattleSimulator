@@ -87,6 +87,9 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 targetUnit.battleContext.invalidateAllOwnDebuffs();
 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
 
+敵が不利な状態異常を受けている時
+if (enemyUnit.hasNegativeStatusEffect())
+
 HP N回復
 targetUnit.reserveHeal(N);
 
