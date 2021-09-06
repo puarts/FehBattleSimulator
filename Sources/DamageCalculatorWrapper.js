@@ -1035,7 +1035,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case Weapon.FlameSiegmund:
                     if (targetUnit.isWeaponRefined) {
-                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit)) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
                             targetUnit.atkSpur += 4;
                             targetUnit.defSpur += 4;
                             targetUnit.battleContext.followupAttackPriorityIncrement++;
