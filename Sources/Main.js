@@ -4680,6 +4680,18 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.Sangurizuru:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
+                        if (!unit.isOnMap) { continue; }
+                        if (skillOwner.posX - 1 <= unit.posX && unit.posX <= skillOwner.posX + 1 ||
+                            skillOwner.posY - 1 <= unit.posY && unit.posY <= skillOwner.posY + 1) {
+                            unit.reserveToApplyDefDebuff(-7);
+                            unit.reserveToApplyResDebuff(-7);
+                        }
+                    }
+                }
+                break;
             case Weapon.RyukenFalcion:
                 if (skillOwner.isWeaponRefined) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);

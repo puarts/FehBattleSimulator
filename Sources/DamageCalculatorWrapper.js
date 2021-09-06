@@ -467,8 +467,17 @@ class DamageCalculatorWrapper {
                     atkUnit.addAllSpur(2);
                     break;
                 case Weapon.Sangurizuru:
-                    atkUnit.atkSpur += 3;
-                    atkUnit.spdSpur += 3;
+                    if (!atkUnit.isWeaponRefined) {
+                        atkUnit.atkSpur += 3;
+                        atkUnit.spdSpur += 3;
+                    } else {
+                        atkUnit.atkSpur += 4;
+                        atkUnit.spdSpur += 4;
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            atkUnit.atkSpur += 6;
+                            atkUnit.spdSpur += 6;
+                        }
+                    }
                     break;
                 case Weapon.GeneiFalcion:
                     {
