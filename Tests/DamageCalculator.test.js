@@ -25,6 +25,35 @@ function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
   return unit;
 }
 
+class test_HeroDatabase extends HeroDatabase {
+  constructor(inputHeroInfos) {
+    super(inputHeroInfos);
+  }
+
+  createUnit(heroName, groupId = UnitGroupType.Ally) {
+    let unit = test_createDefaultUnit(groupId);
+    let heroInfo = this.findInfo(heroName);
+    unit.initByHeroInfo(heroInfo);
+
+    unit.level = 40;
+    unit.merge = 0;
+    unit.dragonflower = 0;
+    unit.initializeSkillsToDefault();
+    unit.setMoveCountFromMoveType();
+    unit.isBonusChar = false;
+    if (!unit.heroInfo.isResplendent) {
+      unit.isResplendent = true;
+    }
+
+    unit.updateStatusBySkillsAndMerges(true);
+
+    unit.resetMaxSpecialCount();
+    unit.specialCount = unit.maxSpecialCount;
+    unit.hp = unit.maxHpWithSkills;
+    return unit;
+  }
+}
+
 /// テスト用のダメージ計算機です。
 class test_DamageCalculator {
   constructor() {
@@ -56,6 +85,16 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
   calclator.isLogEnabled = isLogEnabled;
   return calclator.calcDamage(atkUnit, defUnit);
 }
+
+test('DamageCalculator_HeroBattleTest', () => {
+  const heroDatabase = new test_HeroDatabase(heroInfos);
+  let atkUnit = heroDatabase.createUnit("アルフォンス");
+  let defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+
+  let result = test_calcDamage(atkUnit, defUnit, false);
+  expect(result.atkUnit_normalAttackDamage).toBe(25);
+  expect(result.atkUnit_totalAttackCount).toBe(1);
+});
 
 test('DamageCalculator_DebuffBladeTest', () => {
   let atkUnit = test_createDefaultUnit();

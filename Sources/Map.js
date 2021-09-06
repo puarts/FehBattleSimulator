@@ -475,7 +475,7 @@ function getMapBackgroundImage(mapKind) {
 
 /// 戦闘マップを表すクラスです。
 class BattleMap {
-    constructor(id, mapKind, gameVersion) {
+    constructor(id, mapKind, gameVersion, idGenerator = null) {
         this._gameVersion = 0;
         this._type = -1;
         this._id = id;
@@ -484,21 +484,21 @@ class BattleMap {
         this._tiles = [];
         this._units = [];
         this._breakableWalls = [];
-        this._breakableWalls.push(new BreakableWall(g_idGenerator.generate()));
-        this._breakableWalls.push(new BreakableWall(g_idGenerator.generate()));
-        this._breakableWalls.push(new BreakableWall(g_idGenerator.generate()));
+        this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
+        this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
+        this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
 
         this._walls = [];
-        this._walls.push(new Wall(g_idGenerator.generate()));
-        this._walls.push(new Wall(g_idGenerator.generate()));
+        this._walls.push(new Wall(idGenerator == null ? "" : idGenerator.generate()));
+        this._walls.push(new Wall(idGenerator == null ? "" : idGenerator.generate()));
 
         // id の互換を維持するためにここから追加
         for (let i = this._breakableWalls.length; i < 16; ++i) {
-            this._breakableWalls.push(new BreakableWall(g_idGenerator.generate()));
+            this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
         }
 
         for (let i = this._walls.length; i < 16; ++i) {
-            this._walls.push(new Wall(g_idGenerator.generate()));
+            this._walls.push(new Wall(idGenerator == null ? "" : idGenerator.generate()));
         }
 
         this._showEnemyAttackRange = false;
