@@ -44,6 +44,116 @@ class DamageCalculatorWrapper {
         this._damageCalc.writeDebugLog(message);
     }
 
+    /**
+     * 戦闘のダメージを計算します。
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Tile} tileToAttack=null
+     * @param  {boolean} calcPotentialDamage=false
+     */
+    calcDamage(
+        atkUnit,
+        defUnit,
+        tileToAttack = null,
+        calcPotentialDamage = false
+    ) {
+        atkUnit.battleContext.clear();
+        defUnit.battleContext.clear();
+        atkUnit.battleContext.hpBeforeCombat = atkUnit.hp;
+        defUnit.battleContext.hpBeforeCombat = defUnit.hp;
+        atkUnit.battleContext.initiatesCombat = true;
+        defUnit.battleContext.initiatesCombat = false;
+
+        let origTile = atkUnit.placedTile;
+        let isUpdateSpurRequired = true; // 戦闘中強化をリセットするために必ず必要
+        if (tileToAttack != null) {
+            // 攻撃ユニットの位置を一時的に変更
+            // this.writeDebugLogLine(atkUnit.getNameWithGroup() + "の位置を(" + tileToAttack.posX + ", " + tileToAttack.posY + ")に変更");
+            tileToAttack.setUnit(atkUnit);
+
+            isUpdateSpurRequired = true;
+        }
+
+        if (isUpdateSpurRequired) {
+            this.updateUnitSpur(atkUnit, calcPotentialDamage);
+            this.updateUnitSpur(defUnit, calcPotentialDamage);
+        }
+
+        // 戦闘前奥義の計算に影響するマップ関連の設定
+        {
+            atkUnit.battleContext.isOnDefensiveTile = atkUnit.placedTile.isDefensiveTile;
+            defUnit.battleContext.isOnDefensiveTile = defUnit.placedTile.isDefensiveTile;
+        }
+
+        atkUnit.saveCurrentHpAndSpecialCount();
+        defUnit.saveCurrentHpAndSpecialCount();
+        atkUnit.createSnapshot();
+        defUnit.createSnapshot();
+
+        // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
+        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
+
+        this.__applySkillEffectForPrecombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectForPrecombat(defUnit, atkUnit, calcPotentialDamage);
+        this.__applyPrecombatSpecialDamageMult(atkUnit);
+        this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
+        this.__calcFixedAddDamage(atkUnit, defUnit, true);
+
+        // 戦闘前ダメージ計算
+        this.clearLog();
+
+        let preCombatDamage = this.calcPrecombatSpecialResult(atkUnit, defUnit);
+
+        atkUnit.battleContext.clearPrecombatState();
+        defUnit.battleContext.clearPrecombatState();
+
+        // 戦闘開始時の状態を保存
+        atkUnit.createSnapshot();
+        defUnit.createSnapshot();
+
+        let actualDefUnit = defUnit;
+        if (!calcPotentialDamage) {
+            let saverUnit = this.__getSaverUnitIfPossible(atkUnit, defUnit);
+            if (saverUnit != null) {
+                // 戦闘後効果の適用処理が間に挟まるので、restoreOriginalTile() はこの関数の外で行わなければならない
+                saverUnit.saveOriginalTile();
+
+                // Tile.placedUnit に本当は配置ユニットが設定されないといけないが、
+                // 1マスに複数ユニットが配置される状況は考慮していなかった。
+                // おそらく戦闘中だけの設定であれば不要だと思われるので一旦設定無視してる。
+                // todo: 必要になったら、Tile.placedUnit を複数設定できるよう対応する
+                saverUnit.placedTile = defUnit.placedTile;
+                saverUnit.setPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
+
+                saverUnit.battleContext.clear();
+                saverUnit.battleContext.hpBeforeCombat = defUnit.hp;
+                saverUnit.battleContext.initiatesCombat = defUnit.battleContext.initiatesCombat;
+                saverUnit.battleContext.isSaviorActivated = true;
+                saverUnit.saveCurrentHpAndSpecialCount();
+                saverUnit.createSnapshot();
+
+                actualDefUnit = saverUnit;
+                this.updateAllUnitSpur(calcPotentialDamage);
+            }
+        }
+
+        let result = this.calcCombatResult(atkUnit, actualDefUnit, calcPotentialDamage);
+
+        result.preCombatDamage = preCombatDamage;
+
+        if (tileToAttack != null) {
+            // ユニットの位置を元に戻す
+            setUnitToTile(atkUnit, origTile);
+        }
+
+        // 計算のために変更した紋章値をリセット
+        if (isUpdateSpurRequired) {
+            this.updateAllUnitSpur();
+        }
+        return result;
+    }
+
     calcPrecombatSpecialDamage(atkUnit, defUnit) {
         return this._damageCalc.calcPrecombatSpecialDamage(atkUnit, defUnit);
     }
@@ -147,24 +257,231 @@ class DamageCalculatorWrapper {
         return this._damageCalc.calcCombatResult(atkUnit, defUnit);
     }
 
+    __getSaverUnitIfPossible(atkUnit, defUnit) {
+        let saverUnit = null;
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false)) {
+            if (defUnit.placedTile == null
+                || !defUnit.placedTile.isMovableTileForUnit(unit)
+            ) {
+                continue;
+            }
+
+            if (this.__canActivateSaveSkill(atkUnit, unit)) {
+                if (saverUnit != null) {
+                    // 複数発動可能な場合は発動しない
+                    return null;
+                }
+
+                saverUnit = unit;
+            }
+        }
+
+        return saverUnit;
+    }
+
+    __canActivateSaveSkill(atkUnit, unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveC.ArFarSave3:
+                    if (atkUnit.isRangedWeaponType()) {
+                        return true;
+                    }
+                    break;
+                case PassiveC.AdNearSave3:
+                case PassiveC.DrNearSave3:
+                    if (atkUnit.isMeleeWeaponType()) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+    __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.LilacJadeBreath:
+                    if (atkUnit.battleContext.initiatesCombat || atkUnit.snapshot.restHpPercentage === 100) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
+                    }
+                    break;
+                case Weapon.Areadbhar:
+                    {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
+                            let percentage = Math.min(diff * 4, 40);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                    break;
+                case Weapon.GiltGoblet:
+                    if (atkUnit.snapshot.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
+                    }
+                    break;
+                case Weapon.BloodTome:
+                    if (isRangedWeaponType(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+                    }
+                    break;
+                case Weapon.EtherealBreath:
+                    {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+                    }
+                    break;
+                case PassiveB.DragonWall3:
+                case Weapon.NewFoxkitFang:
+                    {
+                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                    break;
+                case Weapon.BrightmareHorn: {
+                    if (defUnit.snapshot.restHpPercentage >= 25) {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                }
+                    break;
+                case Weapon.NightmareHorn:
+                case Weapon.NewBrazenCatFang:
+                    {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                    break;
+                case PassiveB.MoonTwinWing:
+                    if (defUnit.snapshot.restHpPercentage >= 25) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
+                case PassiveB.Bushido2:
+                case PassiveB.Frenzy3:
+                case PassiveB.Spurn3:
+                case PassiveB.KaihiIchigekiridatsu3:
+                case PassiveB.KaihiTatakikomi3:
+                    {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
+                case PassiveB.BlueLionRule:
+                    {
+                        let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    }
+
+    __applyPrecombatSpecialDamageMult(atkUnit) {
+        switch (atkUnit.special) {
+            case Special.BlazingFlame:
+            case Special.BlazingWind:
+            case Special.BlazingLight:
+            case Special.BlazingThunder:
+                {
+                    atkUnit.battleContext.precombatSpecialDamageMult = 1.5;
+                }
+                break;
+            case Special.RisingFrame:
+            case Special.RisingLight:
+            case Special.RisingWind:
+            case Special.RisingThunder:
+            case Special.GrowingFlame:
+            case Special.GrowingWind:
+            case Special.GrowingLight:
+            case Special.GrowingThunder:
+                {
+                    atkUnit.battleContext.precombatSpecialDamageMult = 1.0;
+                }
+                break;
+            case Special.GiftedMagic:
+                {
+                    atkUnit.battleContext.precombatSpecialDamageMult = 0.8;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /// 戦闘前奥義のみの効果の実装
+    __applySkillEffectForPrecombat(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Luin:
+                    if (targetUnit.battleContext.initiatesCombat
+                        || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
+                    ) {
+                        targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                    }
+                    break;
+            }
+        }
+    }
+
     __setBattleContextRelatedToMap(targetUnit, enemyUnit, calcPotentialDamage) {
         targetUnit.battleContext.isOnDefensiveTile = targetUnit.placedTile.isDefensiveTile;
     }
 
-    __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
+    __canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.ShikkyuMyurugure:
                     if (targetUnit.isWeaponRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
-                            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+                            return true;
                         }
                     }
                     break;
                 case PassiveC.ImpenetrableDark:
-                    this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
-                    break;
+                    return true;
             }
+        }
+        return false;
+    }
+
+    __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (this.__canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage)) {
+            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
         }
     }
 
@@ -2431,6 +2748,11 @@ class DamageCalculatorWrapper {
                         targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     }
                     break;
+                case PassiveB.DragonsIre3:
+                    if (enemyUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 50) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                    break;
                 case Weapon.RauarRabbitPlus:
                 case Weapon.BlarRabbitPlus:
                 case Weapon.ConchBouquetPlus:
@@ -4161,7 +4483,7 @@ class DamageCalculatorWrapper {
                 {
                     if (targetUnit.battleContext.initiatesCombat
                         && enemyUnit.snapshot.restHpPercentage >= 75
-                        && this.battleContext.isCombatOccuredInCurrentTurn
+                        && this.globalBattleContext.isCombatOccuredInCurrentTurn
                     ) {
                         targetUnit.battleContext.attackCount = 2;
                     }
@@ -5724,11 +6046,7 @@ class DamageCalculatorWrapper {
                             ++followupAttackPriority;
                         }
                         break;
-                    case PassiveB.DragonsIre3:
-                        if (enemyUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 50) {
-                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                        }
-                        break;
+
                     case Weapon.Garumu:
                         if (atkUnit.isWeaponRefined) {
                             if (atkUnit.hasPositiveStatusEffect()) {
@@ -6960,6 +7278,12 @@ class DamageCalculatorWrapper {
             spurAmount = spurLimit;
         }
         buffFunc(targetUnit, spurAmount + addSpur);
+    }
+
+    updateAllUnitSpur(calcPotentialDamage = false) {
+        for (let unit of this._unitManager.enumerateUnitsWithPredicator(x => x.isOnMap)) {
+            this.updateUnitSpur(unit, calcPotentialDamage);
+        }
     }
 
     updateUnitSpur(targetUnit, calcPotentialDamage = false, ignoresSkillEffectFromAllies = false) {

@@ -80,7 +80,7 @@ class test_DamageCalculator {
   }
 
   calcDamage(atkUnit, defUnit) {
-    let result = this.damageCalc.calcCombatResult(atkUnit, defUnit, false);
+    let result = this.damageCalc.calcDamage(atkUnit, defUnit, null, false);
     if (this.isLogEnabled) {
       console.log(this.damageCalc.rawLog);
     }
