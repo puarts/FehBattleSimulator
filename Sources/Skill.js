@@ -1130,7 +1130,8 @@ const Weapon = {
 
     // 2021年9月 武器錬成
     DuskDragonstone: 1829, // 暗夜の竜石
-};
+    StaffOfTwelvePlus: 1837, // 聖祭の杖+
+}
 
 const Support = {
     None: -1,
@@ -2043,7 +2044,7 @@ const PassiveC = {
     StallPloy3: 1789, // 空転の奇策3
 
     // 専用
-    SeimeiNoKagayaki: 773,
+    SeimeiNoKagayaki: 773, // 生命の輝き
     ChaosNamed: 868, // 我が名は混沌
     SurtrsMenace: 767, // 炎王の威嚇
     SurtrsPortent: 1792, // 炎王の脅嚇
