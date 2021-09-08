@@ -4975,6 +4975,7 @@ class AetherRaidTacticsBoard {
                     unit.reserveHeal(7);
                 }
                 break;
+            case Weapon.StaffOfTwelvePlus:
             case PassiveC.SeimeiNoKagayaki:
                 {
                     let targetUnits = [];
