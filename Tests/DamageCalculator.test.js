@@ -1,120 +1,29 @@
 
-function test_createDefaultSkillInfo() {
-  return new SkillInfo(
-    "", "", 16, 2, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false,
-    16, false, false, AssistType.None, true, 0, WeaponType.Sword,
-    300, true, [], [], false, false
-  );
-}
-
-function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
-  let unit = new Unit("", "テストユニット", groupId);
-  unit.placedTile = new Tile(0, 0);
-  unit.maxHpWithSkills = 40;
-  unit.hp = unit.maxHpWithSkills;
-  unit.weapon = Weapon.SilverSwordPlus;
-  unit.weaponInfo = test_createDefaultSkillInfo();
-  unit.weaponType = WeaponType.Sword;
-  unit.moveType = MoveType.Infantry;
-  unit.atkWithSkills = 40;
-  unit.spdWithSkills = 40;
-  unit.defWithSkills = 30;
-  unit.resWithSkills = 30;
-  unit.createSnapshot();
-  unit.saveCurrentHpAndSpecialCount();
-  return unit;
-}
-
-class test_HeroDatabase extends HeroDatabase {
-  constructor(inputHeroInfos, weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
-    super(inputHeroInfos);
-    this.skillDatabase = new SkillDatabase();
-    this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
-  }
-  /**
-   * @param  {String} heroName
-   * @param  {UnitGroupType} groupId=UnitGroupType.Ally
-   * @returns {Unit}
-   */
-  createUnit(heroName, groupId = UnitGroupType.Ally) {
-    let unit = test_createDefaultUnit(groupId);
-    this.initUnit(unit, heroName);
-    return unit;
-  }
-
-  initUnit(unit, heroName) {
-    let heroInfo = this.findInfo(heroName);
-    unit.initByHeroInfo(heroInfo);
-
-    unit.level = 40;
-    unit.merge = 0;
-    unit.dragonflower = 0;
-    unit.initializeSkillsToDefault();
-    this.skillDatabase.updateUnitSkillInfo(unit);
-    unit.setMoveCountFromMoveType();
-    unit.isBonusChar = false;
-    if (!unit.heroInfo.isResplendent) {
-      unit.isResplendent = true;
-    }
-
-    unit.updateStatusBySkillsAndMerges(true);
-
-    unit.resetMaxSpecialCount();
-    unit.specialCount = unit.maxSpecialCount;
-    unit.hp = unit.maxHpWithSkills;
-  }
-}
-
-/// テスト用のダメージ計算機です。
-class test_DamageCalculator {
-  constructor() {
-    this.unitManager = new UnitManager();
-    this.map = new BattleMap("", MapType.None, 0);
-    this.battleContext = new GlobalBattleContext();
-    this.damageCalc = new DamageCalculatorWrapper(
-      this.unitManager,
-      this.map,
-      this.battleContext
-    );
-    this.isLogEnabled = false;
-  }
-
-  calcDamage(atkUnit, defUnit) {
-    let result = this.damageCalc.calcDamage(atkUnit, defUnit, null, false);
-    if (this.isLogEnabled) {
-      console.log(this.damageCalc.rawLog);
-    }
-    this.damageCalc.clearLog();
-    atkUnit.hp = atkUnit.restHp;
-    defUnit.hp = defUnit.restHp;
-    return result;
-  }
-}
-
-function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
-  let calclator = new test_DamageCalculator();
-  calclator.isLogEnabled = isLogEnabled;
-  return calclator.calcDamage(atkUnit, defUnit);
-}
-
-test('DamageCalculator_HeroBattleTest', () => {
-  const heroDatabase = new test_HeroDatabase(
+test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
+  let log = "";
+  let heroDatabase = null;
+  heroDatabase = new test_HeroDatabase(
     heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
     passiveSInfos);
 
   // アルフォンスのデフォルト状態の戦闘結果がGUI上と同じ計算結果になる事を確認
-  let atkUnit = heroDatabase.createUnit("アルフォンス");
-  let defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+  let atkUnit = null;
+  let defUnit = null;
   {
+    atkUnit = heroDatabase.createUnit("アルフォンス");
+    defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
     let result = test_calcDamage(atkUnit, defUnit, false);
     expect(result.atkUnit_normalAttackDamage).toBe(25);
     expect(result.atkUnit_totalAttackCount).toBe(1);
   }
 
   // 全ての英雄で戦闘を行って例外が出ない事を確認する
-  using(new ScopedStopwatch(x => console.log(`${heroDatabase.length}回の戦闘の時間: ${x} ms`)), () => {
+  using(new ScopedStopwatch(x => log += `${heroDatabase.length}回の戦闘の時間: ${x} ms\n`), () => {
     let calclator = new test_DamageCalculator();
+    // calclator.unitManager.units = [atkUnit, defUnit];
+    // calclator.unitManager.units = [];
     calclator.isLogEnabled = false;
+    // calclator.disableProfile();
 
     for (let info of heroDatabase.enumerateHeroInfos()) {
       // テストのために攻撃側だけ特殊錬成にしておく
@@ -123,10 +32,13 @@ test('DamageCalculator_HeroBattleTest', () => {
       heroDatabase.initUnit(defUnit, info.name);
       calclator.calcDamage(atkUnit, defUnit);
     }
-  });
-});
 
-test('DamageCalculator_DebuffBladeTest', () => {
+    log += calclator.getProfileLog();
+  });
+  return log;
+}));
+
+test('DamageCalculator_DebuffBladeTest', () => test_executeTest(() => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.atkWithSkills = 40;
@@ -142,9 +54,9 @@ test('DamageCalculator_DebuffBladeTest', () => {
     let result = test_calcDamage(atkUnit, defUnit, false);
     expect(result.atkUnit_normalAttackDamage).toBe(6 * 4);
   }
-});
+}));
 
-test('DamageCalculator_FollowupAttackTest', () => {
+test('DamageCalculator_FollowupAttackTest', () => test_executeTest(() => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   {
@@ -168,10 +80,10 @@ test('DamageCalculator_FollowupAttackTest', () => {
     expect(result.atkUnit_totalAttackCount).toBe(1);
     expect(result.defUnit_totalAttackCount).toBe(0);
   }
-});
+}));
 
 /// 奥義によるダメージ軽減テストです。
-test('DamageCalculator_SpecialDamageReductionTest', () => {
+test('DamageCalculator_SpecialDamageReductionTest', () => test_executeTest(() => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.posX = 1; // 奥義発動時の射程計算に必要
@@ -188,10 +100,10 @@ test('DamageCalculator_SpecialDamageReductionTest', () => {
   let actualReductionRatio = 0.5;
   expect(defUnit.currentDamage).toBe(
     result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
-});
+}));
 
 /// ダメージ軽減テストです。
-test('DamageCalculator_DamageReductionTest', () => {
+test('DamageCalculator_DamageReductionTest', () => test_executeTest(() => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
@@ -209,10 +121,10 @@ test('DamageCalculator_DamageReductionTest', () => {
   let actualReductionRatio = roundFloat(1 - (1 - reductionRatio) * (1 - reductionRatio));
   expect(actualReductionRatio).toBe(0.36);
   expect(defUnit.currentDamage).toBe(result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
-});
+}));
 
 /// 復讐のダメージ計算テストです。
-test('DamageCalculator_VengeanceTest', () => {
+test('DamageCalculator_VengeanceTest', () => test_executeTest(() => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.special = Special.Fukusyu;
@@ -233,10 +145,10 @@ test('DamageCalculator_VengeanceTest', () => {
   let normalAttackDamage = result.atkUnit_normalAttackDamage * result.atkUnit_totalAttackCount;
   let actualDamageDealt = defUnit.maxHpWithSkills - defUnit.restHp;
   expect(actualDamageDealt - normalAttackDamage).toBe(specialDamage);
-});
+}));
 
 /// シンプルなダメージ計算テストです。
-test('DamageCalculator_Simple', () => {
+test('DamageCalculator_Simple', () => test_executeTest(() => {
   let atkUnit = test_createDefaultUnit();
   let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
   atkUnit.atkWithSkills = 40;
@@ -247,4 +159,26 @@ test('DamageCalculator_Simple', () => {
 
   expect(result.atkUnit_normalAttackDamage).toBe(10);
   expect(result.atkUnit_totalAttackCount).toBe(2);
-});
+}));
+
+test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  atkUnit.special = Special.BlazingFlame;
+  atkUnit.maxSpecialCount = 4;
+  atkUnit.specialCount = 0;
+  atkUnit.atkWithSkills = 40;
+
+  defUnit.passiveB = PassiveB.Vantage3;
+  defUnit.defWithSkills = 30;
+
+  let result = test_calcDamage(atkUnit, defUnit, false);
+
+  // 待ち伏せが発動して攻撃を受けた側から攻撃するはず
+  expect(result.damageHistory[0].attackUnit).toBe(defUnit);
+
+  expect(defUnit.currentDamage).toBe(25);
+  expect(result.preCombatDamage).toBe(15);
+  expect(result.atkUnit_normalAttackDamage).toBe(10);
+  expect(result.atkUnit_totalAttackCount).toBe(1);
+}));

@@ -1,7 +1,7 @@
 @echo off
 set TMP_TEST_JS=%1
 set SOURCE_FILE_NAMES=GlobalDefinitions,Utilities,Skill,Tile,Map,Structures,Cell,Table,HeroInfo,Unit,UnitManager,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,DamageCalculatorWrapper,TurnSetting,AudioManager,AetherRaidDefensePresets,SkillDatabase,HeroDatabase
-set SOURCE_FILE_NAMES=%SOURCE_FILE_NAMES%,SampleSkillInfos,SampleHeroInfos
+set SOURCE_FILE_NAMES=%SOURCE_FILE_NAMES%,SampleSkillInfos,SampleHeroInfos,TestUtilities
 
 call %~dp0MergeSources.bat %TMP_TEST_JS% %SOURCE_FILE_NAMES%
 

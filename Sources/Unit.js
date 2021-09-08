@@ -1129,6 +1129,13 @@ class Unit {
         this.originalTile = null; // 護り手のように一時的に移動する際に元の位置を記録しておく用
 
         this.restMoveCount = 0; // 再移動(残り)で参照する残り移動量
+
+        this.nameWithGroup = "";
+        this.__updateNameWithGroup();
+    }
+
+    __updateNameWithGroup() {
+        this.nameWithGroup = this.name + "(" + groupIdToString(this.groupId) + ")";
     }
 
     saveCurrentHpAndSpecialCount() {
@@ -1844,8 +1851,21 @@ class Unit {
         }
         --this.blessingCount;
     }
+    createSnapshotForBattle() {
+    }
 
+    /**
+     * @returns {Unit}
+     */
     createSnapshot() {
+        // Object.create() は不完全なクローンだが、スナップショット作成には十分そう
+        this.snapshot = Object.create(this);
+        // this.snapshot = this.__createSnapshotOldImpl();
+        return this.snapshot;
+    }
+
+    /// createSnapshot() の旧実装。この実装はかなり重いので現実装で特に問題がない事が分かったら消す
+    __createSnapshotOldImpl() {
         this.snapshot = new Unit();
         this.snapshot._id = this._id;
         this.snapshot.maxSpecialCount = this.maxSpecialCount;
@@ -1877,6 +1897,7 @@ class Unit {
         this.snapshot.fromString(this.toString());
         return this.snapshot;
     }
+
     deleteSnapshot() {
         this.snapshot = null;
     }
@@ -2738,7 +2759,7 @@ class Unit {
     }
 
     getNameWithGroup() {
-        return this.name + "(" + groupIdToString(this.groupId) + ")";
+        return this.nameWithGroup;
     }
 
     get color() {
@@ -3578,20 +3599,20 @@ class Unit {
     }
 
     *enumerateSkills() {
-        if (this.weapon != null) { yield this.weapon; }
-        if (this.support != null) { yield this.support; }
-        if (this.special != null) { yield this.special; }
-        if (this.passiveA != null) { yield this.passiveA; }
-        if (this.passiveB != null) { yield this.passiveB; }
-        if (this.passiveC != null) { yield this.passiveC; }
-        if (this.passiveS != null) { yield this.passiveS; }
+        if (this.weapon != NoneValue) { yield this.weapon; }
+        if (this.support != NoneValue) { yield this.support; }
+        if (this.special != NoneValue) { yield this.special; }
+        if (this.passiveA != NoneValue) { yield this.passiveA; }
+        if (this.passiveB != NoneValue) { yield this.passiveB; }
+        if (this.passiveC != NoneValue) { yield this.passiveC; }
+        if (this.passiveS != NoneValue) { yield this.passiveS; }
     }
 
     *enumeratePassiveSkills() {
-        if (this.passiveA != null) { yield this.passiveA; }
-        if (this.passiveB != null) { yield this.passiveB; }
-        if (this.passiveC != null) { yield this.passiveC; }
-        if (this.passiveS != null) { yield this.passiveS; }
+        if (this.passiveA != NoneValue) { yield this.passiveA; }
+        if (this.passiveB != NoneValue) { yield this.passiveB; }
+        if (this.passiveC != NoneValue) { yield this.passiveC; }
+        if (this.passiveS != NoneValue) { yield this.passiveS; }
     }
 
     hasDagger7Effect() {
@@ -3851,6 +3872,7 @@ class Unit {
         }
 
         this.name = heroInfo.name;
+        this.__updateNameWithGroup();
 
         this.weaponType = stringToWeaponType(heroInfo.weaponType);
         this.moveType = heroInfo.moveType;

@@ -162,6 +162,8 @@ function weaponRefinementTypeToString(type) {
     }
 }
 
+// パフォーマンスに影響しやすくて、辞書にアクセスしたくない時に使う値型
+const NoneValue = -1;
 
 const EffectiveType = {
     None: -1,

@@ -1,4 +1,32 @@
 
+class PerformanceProfile {
+    constructor() {
+        this.elaspedMilliseconds = {};
+        this.isEnabled = true;
+    }
+
+    addElaspedMilliseconds(name, ms) {
+        if (name in this.elaspedMilliseconds) {
+            this.elaspedMilliseconds[name] += ms;
+        }
+        else {
+            this.elaspedMilliseconds[name] = ms;
+        }
+    }
+
+    profile(name, func) {
+        if (this.isEnabled) {
+            let stopwatch = new ScopedStopwatch(x => this.addElaspedMilliseconds(name, x));
+            const result = func();
+            stopwatch.dispose();
+            return result;
+        }
+        else {
+            return func();
+        }
+    }
+}
+
 class DamageCalculatorWrapper {
     /// @param {UnitManager} unitManager ユニットマネージャーのインスタンス
     constructor(unitManager, map, globalBattleContext) {
@@ -6,6 +34,7 @@ class DamageCalculatorWrapper {
         this.map = map;
         this.globalBattleContext = globalBattleContext;
         this._damageCalc = new DamageCalculator();
+        this.profile = new PerformanceProfile();
     }
 
     // ログ関連のAPIがとっ散らかってるので、Logger的なものを作って一元管理したい
@@ -57,6 +86,13 @@ class DamageCalculatorWrapper {
         tileToAttack = null,
         calcPotentialDamage = false
     ) {
+        let self = this;
+        let origTile = atkUnit.placedTile;
+        let isUpdateSpurRequired = true; // 戦闘中強化をリセットするために必ず必要
+
+        // self.profile.profile("pre calcPrecombatSpecialResult", () => {
+
+        // self.profile.profile("pre calcPrecombatSpecialResult 1", () => {
         atkUnit.battleContext.clear();
         defUnit.battleContext.clear();
         atkUnit.battleContext.hpBeforeCombat = atkUnit.hp;
@@ -64,57 +100,62 @@ class DamageCalculatorWrapper {
         atkUnit.battleContext.initiatesCombat = true;
         defUnit.battleContext.initiatesCombat = false;
 
-        let origTile = atkUnit.placedTile;
-        let isUpdateSpurRequired = true; // 戦闘中強化をリセットするために必ず必要
         if (tileToAttack != null) {
             // 攻撃ユニットの位置を一時的に変更
-            // this.writeDebugLogLine(atkUnit.getNameWithGroup() + "の位置を(" + tileToAttack.posX + ", " + tileToAttack.posY + ")に変更");
+            // self.writeDebugLogLine(atkUnit.getNameWithGroup() + "の位置を(" + tileToAttack.posX + ", " + tileToAttack.posY + ")に変更");
             tileToAttack.setUnit(atkUnit);
 
             isUpdateSpurRequired = true;
         }
 
         if (isUpdateSpurRequired) {
-            this.updateUnitSpur(atkUnit, calcPotentialDamage);
-            this.updateUnitSpur(defUnit, calcPotentialDamage);
+            self.updateUnitSpur(atkUnit, calcPotentialDamage);
+            self.updateUnitSpur(defUnit, calcPotentialDamage);
         }
+        // });
 
+
+        // self.profile.profile("pre calcPrecombatSpecialResult 2", () => {
         // 戦闘前奥義の計算に影響するマップ関連の設定
         {
-            atkUnit.battleContext.isOnDefensiveTile = atkUnit.placedTile.isDefensiveTile;
-            defUnit.battleContext.isOnDefensiveTile = defUnit.placedTile.isDefensiveTile;
+            atkUnit.battleContext.isOnDefensiveTile = atkUnit.isOnMap && atkUnit.placedTile.isDefensiveTile;
+            defUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
         }
 
         atkUnit.saveCurrentHpAndSpecialCount();
         defUnit.saveCurrentHpAndSpecialCount();
-        atkUnit.createSnapshot();
-        defUnit.createSnapshot();
+        // });
+        // self.profile.profile("pre calcPrecombatSpecialResult 3", () => {
+        atkUnit.createSnapshotForBattle();
+        defUnit.createSnapshotForBattle();
+        // });
+        // });
 
-        // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
-        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
-        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
-
-        this.__applySkillEffectForPrecombat(atkUnit, defUnit, calcPotentialDamage);
-        this.__applySkillEffectForPrecombat(defUnit, atkUnit, calcPotentialDamage);
-        this.__applyPrecombatSpecialDamageMult(atkUnit);
-        this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
-        this.__calcFixedAddDamage(atkUnit, defUnit, true);
+        self.clearLog();
 
         // 戦闘前ダメージ計算
-        this.clearLog();
+        let preCombatDamage = 0;
+        // self.profile.profile("calcPrecombatSpecialResult", () => {
+        // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
+        self.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
-        let preCombatDamage = this.calcPrecombatSpecialResult(atkUnit, defUnit);
+        if (!calcPotentialDamage) {
+            preCombatDamage = self.calcPrecombatSpecialResult(atkUnit, defUnit);
+        }
+        // });
 
+        let actualDefUnit = defUnit;
+        // self.profile.profile("pre calcCombatResult", () => {
         atkUnit.battleContext.clearPrecombatState();
         defUnit.battleContext.clearPrecombatState();
 
         // 戦闘開始時の状態を保存
-        atkUnit.createSnapshot();
-        defUnit.createSnapshot();
+        atkUnit.createSnapshotForBattle();
+        defUnit.createSnapshotForBattle();
 
-        let actualDefUnit = defUnit;
         if (!calcPotentialDamage) {
-            let saverUnit = this.__getSaverUnitIfPossible(atkUnit, defUnit);
+            let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
             if (saverUnit != null) {
                 // 戦闘後効果の適用処理が間に挟まるので、restoreOriginalTile() はこの関数の外で行わなければならない
                 saverUnit.saveOriginalTile();
@@ -134,14 +175,17 @@ class DamageCalculatorWrapper {
                 saverUnit.createSnapshot();
 
                 actualDefUnit = saverUnit;
-                this.updateAllUnitSpur(calcPotentialDamage);
+                self.updateAllUnitSpur(calcPotentialDamage);
             }
         }
+        // });
 
-        let result = this.calcCombatResult(atkUnit, actualDefUnit, calcPotentialDamage);
+        let result;
+        result = self.calcCombatResult(atkUnit, actualDefUnit, calcPotentialDamage);
 
         result.preCombatDamage = preCombatDamage;
 
+        // self.profile.profile("post calcCombatResult", () => {
         if (tileToAttack != null) {
             // ユニットの位置を元に戻す
             setUnitToTile(atkUnit, origTile);
@@ -149,8 +193,9 @@ class DamageCalculatorWrapper {
 
         // 計算のために変更した紋章値をリセット
         if (isUpdateSpurRequired) {
-            this.updateAllUnitSpur();
+            self.updateAllUnitSpur();
         }
+        // });
         return result;
     }
 
@@ -159,102 +204,122 @@ class DamageCalculatorWrapper {
     }
 
     calcPrecombatSpecialResult(atkUnit, defUnit) {
+        // 戦闘前ダメージ計算に影響するスキル効果の評価
+        this.__applySkillEffectForPrecombat(atkUnit, defUnit);
+        this.__applySkillEffectForPrecombat(defUnit, atkUnit);
+        this.__applyPrecombatSpecialDamageMult(atkUnit);
+        this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
+        this.__calcFixedAddDamage(atkUnit, defUnit, true);
+
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
 
     calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+        let self = this;
 
-        this.__setBattleContextRelatedToMap(atkUnit, defUnit, calcPotentialDamage);
-        this.__setBattleContextRelatedToMap(defUnit, atkUnit, calcPotentialDamage);
 
-        this.__applyImpenetrableDark(atkUnit, defUnit, calcPotentialDamage);
-        this.__applyImpenetrableDark(defUnit, atkUnit, calcPotentialDamage);
+        // self.profile.profile("__applySkillEffect", () => {
+        self.__applyImpenetrableDark(atkUnit, defUnit, calcPotentialDamage);
+        self.__applyImpenetrableDark(defUnit, atkUnit, calcPotentialDamage);
 
-        this.__applySkillEffect(atkUnit, defUnit, calcPotentialDamage);
-        this.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage);
-        this.__applySkillEffectForUnit(defUnit, atkUnit, calcPotentialDamage);
+        self.__applySkillEffect(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectForUnit(defUnit, atkUnit, calcPotentialDamage);
 
-        this.__applySkillEffectRelatedToEnemyStatusEffects(atkUnit, defUnit, calcPotentialDamage);
-        this.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
+        self.__applySkillEffectRelatedToEnemyStatusEffects(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
+        // });
+
 
         // 紋章を除く味方ユニットからの戦闘中バフ
-        {
-            this.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
-            this.__applySkillEffectFromAllies(atkUnit, defUnit, calcPotentialDamage);
-            this.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
-        }
+        // self.profile.profile("__applySkillEffectFromAllies", () => {
+        self.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
+        self.__applySkillEffectFromAllies(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
+        // });
 
+        // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
         // 1回の攻撃の攻撃回数を設定
-        this.__setAttackCount(atkUnit, defUnit);
-        this.__setAttackCount(defUnit, atkUnit);
+        self.__setAttackCount(atkUnit, defUnit);
+        self.__setAttackCount(defUnit, atkUnit);
 
         // 神罰の杖
-        this.__setWrathfulStaff(atkUnit, defUnit);
-        this.__setWrathfulStaff(defUnit, atkUnit);
+        self.__setWrathfulStaff(atkUnit, defUnit);
+        self.__setWrathfulStaff(defUnit, atkUnit);
 
         // 特効
-        this.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
-        this.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
+        self.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
+        self.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
 
         // スキル内蔵の全距離反撃
         defUnit.battleContext.canCounterattackToAllDistance = defUnit.canCounterAttackToAllDistance();
+        // });
+
+        // self.profile.profile("__applySkillEffect 2", () => {
 
         // 戦闘中バフが決まった後に評価するスキル効果
         {
-            this.__applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
-            this.__applySpurForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
+            self.__applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
+            self.__applySpurForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
 
-            this.__applySkillEffectForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
-            this.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
+            self.__applySkillEffectForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
+            self.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
         }
 
         // ダメージ軽減率の計算(ダメージ軽減効果を軽減する効果の後に実行する必要がある)
         {
-            this.__applyDamageReductionRatio(atkUnit, defUnit);
-            this.__applyDamageReductionRatio(defUnit, atkUnit);
+            self.__applyDamageReductionRatio(atkUnit, defUnit);
+            self.__applyDamageReductionRatio(defUnit, atkUnit);
         }
 
-        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
-        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
+        self.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
-        this.__calcFixedAddDamage(atkUnit, defUnit, false);
+        self.__calcFixedAddDamage(atkUnit, defUnit, false);
+        // });
 
+        // self.profile.profile("__applySkillEffect 3", () => {
         // 敵が反撃可能か判定
-        defUnit.battleContext.canCounterattack = this.canCounterAttack(atkUnit, defUnit);
-        // this.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
+        defUnit.battleContext.canCounterattack = self.canCounterAttack(atkUnit, defUnit);
+        // self.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
 
         // 追撃可能か判定
-        atkUnit.battleContext.canFollowupAttack = this.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
+        atkUnit.battleContext.canFollowupAttack = self.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
         if (defUnit.battleContext.canCounterattack) {
-            defUnit.battleContext.canFollowupAttack = this.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
+            defUnit.battleContext.canFollowupAttack = self.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
         }
 
         // 防御系奥義発動時のダメージ軽減率設定
-        this.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
-        this.__applyDamageReductionRatioBySpecial(defUnit, atkUnit);
+        self.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
+        self.__applyDamageReductionRatioBySpecial(defUnit, atkUnit);
 
         // 追撃可能かどうかが条件として必要なスキル効果の適用
         {
-            this.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
-            this.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
+            self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
+            self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
         }
 
         // 効果を無効化するスキル
         {
-            this.__applyInvalidationSkillEffect(atkUnit, defUnit);
-            this.__applyInvalidationSkillEffect(defUnit, atkUnit);
+            self.__applyInvalidationSkillEffect(atkUnit, defUnit);
+            self.__applyInvalidationSkillEffect(defUnit, atkUnit);
         }
 
         // 奥義
         {
-            this.__applySpecialSkillEffect(atkUnit, defUnit);
-            this.__applySpecialSkillEffect(defUnit, atkUnit);
+            self.__applySpecialSkillEffect(atkUnit, defUnit);
+            self.__applySpecialSkillEffect(defUnit, atkUnit);
         }
 
         // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
-        this.__setSkillEffetToContext(atkUnit, defUnit);
+        self.__setSkillEffetToContext(atkUnit, defUnit);
+        // });
 
-        return this._damageCalc.calcCombatResult(atkUnit, defUnit);
+        let result;
+        // self.profile.profile("_damageCalc.calcCombatResult", () => {
+        result = self._damageCalc.calcCombatResult(atkUnit, defUnit);
+        // });
+        return result;
     }
 
     __getSaverUnitIfPossible(atkUnit, defUnit) {
@@ -444,7 +509,7 @@ class DamageCalculatorWrapper {
     }
 
     /// 戦闘前奥義のみの効果の実装
-    __applySkillEffectForPrecombat(targetUnit, enemyUnit, calcPotentialDamage) {
+    __applySkillEffectForPrecombat(targetUnit, enemyUnit) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Luin:
@@ -4927,10 +4992,6 @@ class DamageCalculatorWrapper {
         return true;
     }
 
-    enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
-        return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
-    }
-
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -6629,6 +6690,10 @@ class DamageCalculatorWrapper {
         }
     }
 
+    enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
+        return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
+    }
+
     enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
     }
@@ -7287,10 +7352,6 @@ class DamageCalculatorWrapper {
     }
 
     updateUnitSpur(targetUnit, calcPotentialDamage = false, ignoresSkillEffectFromAllies = false) {
-        this.__updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies);
-    }
-
-    __updateUnitSpur(targetUnit, calcPotentialDamage = false, ignoresSkillEffectFromAllies = false) {
         targetUnit.resetSpurs();
 
         if (!calcPotentialDamage) {

@@ -20,6 +20,7 @@ SOURCE_FILE_NAMES=(
     HeroDatabase
     SampleSkillInfos
     SampleHeroInfos
+    TestUtilities
     )
 TEST_FILE_NAMES=(
     DamageCalculator
