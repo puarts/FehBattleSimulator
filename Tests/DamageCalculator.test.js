@@ -20,7 +20,7 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
   // 全ての英雄で戦闘を行って例外が出ない事を確認する
   using(new ScopedStopwatch(x => log += `${heroDatabase.length}回の戦闘の時間: ${x} ms\n`), () => {
     let calclator = new test_DamageCalculator();
-    // calclator.unitManager.units = [atkUnit, defUnit];
+    calclator.unitManager.units = [atkUnit, defUnit];
     // calclator.unitManager.units = [];
     calclator.isLogEnabled = false;
     // calclator.disableProfile();

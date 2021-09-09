@@ -313,6 +313,19 @@ class ScopedStopwatch {
     }
 }
 
+class ScopedPerformanceTimer {
+    constructor(logFunc) {
+        this._logFunc = logFunc;
+        this._startTime = performance.now();
+    }
+
+    dispose() {
+        const endTime = performance.now();
+        let diff = endTime - this._startTime;
+        this._logFunc(diff);
+    }
+}
+
 const CommandType = {
     Normal: 0,
     Begin: 1,

@@ -16,9 +16,9 @@ class PerformanceProfile {
 
     profile(name, func) {
         if (this.isEnabled) {
-            let stopwatch = new ScopedStopwatch(x => this.addElaspedMilliseconds(name, x));
+            const startTime = performance.now();
             const result = func();
-            stopwatch.dispose();
+            this.addElaspedMilliseconds(name, performance.now() - startTime);
             return result;
         }
         else {
@@ -6698,7 +6698,7 @@ class DamageCalculatorWrapper {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
     }
 
-    enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit) {
+    enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
 
@@ -6756,30 +6756,6 @@ class DamageCalculatorWrapper {
             x => unit.calculateDistanceToUnit(x) <= 3
                 && unit.partnerHeroIndex == x.heroIndex);
     }
-
-    __addSpurInRange3(targetUnit, allyUnit, calcPotentialDamage) {
-        for (let skillId of allyUnit.enumerateSkills()) {
-            if (!calcPotentialDamage) {
-                switch (skillId) {
-                    case Weapon.GaeBolg:
-                        if (allyUnit.isWeaponRefined) {
-                            if (allyUnit.isWeaponSpecialRefined) {
-                                if (targetUnit.weaponType === WeaponType.Sword ||
-                                    targetUnit.weaponType === WeaponType.Lance ||
-                                    targetUnit.weaponType === WeaponType.Axe ||
-                                    targetUnit.moveType === MoveType.Cavalry
-                                ) {
-                                    targetUnit.atkSpur += 5;
-                                    targetUnit.defSpur += 5;
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-    }
-
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             if (!calcPotentialDamage) {
@@ -7103,186 +7079,6 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
-        if (!calcPotentialDamage) {
-            switch (skillId) {
-                case Weapon.LoveCandelabraPlus:
-                    targetUnit.atkSpur += 4;
-                    targetUnit.defSpur += 4;
-                    break;
-                case Weapon.LoveBouquetPlus:
-                    targetUnit.atkSpur += 4;
-                    targetUnit.resSpur += 4;
-                    break;
-                case Weapon.GigaExcalibur:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.atkSpur += 4;
-                        targetUnit.spdSpur += 4;
-                    }
-                    break;
-                case Weapon.Gurimowaru:
-                case Weapon.SenhimeNoWakyu:
-                    if (targetUnit.isWeaponRefined) {
-                        targetUnit.atkSpur += 4;
-                        targetUnit.spdSpur += 4;
-                    }
-                    break;
-                case Weapon.SpearOfAssal:
-                    targetUnit.atkSpur += 4;
-                    targetUnit.spdSpur += 4;
-                    break;
-                case PassiveC.JointDriveAtk:
-                    targetUnit.atkSpur += 4;
-                    break;
-                case PassiveC.JointDriveSpd:
-                    targetUnit.spdSpur += 4;
-                    break;
-                case PassiveC.JointDriveRes:
-                    targetUnit.resSpur += 4;
-                    break;
-                case PassiveC.JointDriveDef:
-                    targetUnit.defSpur += 4;
-                    break;
-                case Weapon.ChichiNoSenjutsusyo:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.spdSpur += 3;
-                    break;
-                case Weapon.JunaruSenekoNoTsumekiba:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.defSpur += 3;
-                    break;
-                case Weapon.VezuruNoYoran:
-                    targetUnit.atkSpur += 5;
-                    targetUnit.spdSpur += 5;
-                    targetUnit.defSpur += 5;
-                    targetUnit.resSpur += 5;
-                    break;
-                case Weapon.OgonNoFolkPlus:
-                case Weapon.NinjinhuNoSosyokuPlus:
-                    targetUnit.atkSpur += 5;
-                    targetUnit.defSpur += 5;
-                    break;
-            }
-        }
-    }
-
-    __addSelfSpurIfAllyAvailableInRange1(targetUnit, skillId, calcPotentialDamage) {
-        if (!calcPotentialDamage) {
-            switch (skillId) {
-                case Weapon.SyukusaiNoOnoPlus:
-                case Weapon.AoNoHanakagoPlus:
-                case Weapon.MidoriNoHanakagoPlus:
-                case Weapon.SyukusaiNoKenPlus:
-                case Weapon.HanawaPlus:
-                    targetUnit.addAllSpur(3);
-                    break;
-                case Weapon.FalchionAwakening:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.addAllSpur(4);
-                    }
-                    break;
-                case PassiveA.AtkSpdBond4:
-                    targetUnit.atkSpur += 7;
-                    targetUnit.spdSpur += 7;
-                    break;
-                case PassiveA.AtkDefBond4:
-                    targetUnit.atkSpur += 7;
-                    targetUnit.defSpur += 7;
-                    break;
-                case PassiveA.AtkResBond4:
-                    targetUnit.atkSpur += 7;
-                    targetUnit.resSpur += 7;
-                    break;
-                case PassiveA.AtkSpdBond1:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.spdSpur += 3;
-                    break;
-                case PassiveA.AtkSpdBond2:
-                    targetUnit.atkSpur += 4;
-                    targetUnit.spdSpur += 4;
-                    break;
-                case PassiveA.AtkSpdBond3:
-                    targetUnit.atkSpur += 5;
-                    targetUnit.spdSpur += 5;
-                    break;
-                case PassiveA.AtkResBond1:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.resSpur += 3;
-                    break;
-                case PassiveA.AtkResBond2:
-                    targetUnit.atkSpur += 4;
-                    targetUnit.resSpur += 4;
-                    break;
-                case PassiveA.AtkResBond3:
-                    targetUnit.atkSpur += 5;
-                    targetUnit.resSpur += 5;
-                    break;
-                case Weapon.Thirufingu:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.defSpur += 5;
-                    }
-                    break;
-                case PassiveA.AtkDefBond1:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.defSpur += 3;
-                    break;
-                case PassiveA.AtkDefBond2:
-                    targetUnit.atkSpur += 4;
-                    targetUnit.defSpur += 4;
-                    break;
-                case PassiveA.AtkDefBond3:
-                    targetUnit.atkSpur += 5;
-                    targetUnit.defSpur += 5;
-                    break;
-                case Weapon.Fensariru:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.spdSpur += 5;
-                        targetUnit.defSpur += 5;
-                    }
-                    break;
-                case PassiveA.SpdDefBond1:
-                    targetUnit.spdSpur += 3;
-                    targetUnit.defSpur += 3;
-                    break;
-                case PassiveA.SpdDefBond2:
-                    targetUnit.spdSpur += 4;
-                    targetUnit.defSpur += 4;
-                    break;
-                case PassiveA.SpdDefBond3:
-                    targetUnit.spdSpur += 5;
-                    targetUnit.defSpur += 5;
-                    break;
-                case PassiveA.SpdResBond1:
-                    targetUnit.spdSpur += 3;
-                    targetUnit.resSpur += 3;
-                    break;
-                case PassiveA.SpdResBond2:
-                    targetUnit.spdSpur += 4;
-                    targetUnit.resSpur += 4;
-                    break;
-                case PassiveA.SpdResBond3:
-                    targetUnit.spdSpur += 5;
-                    targetUnit.resSpur += 5;
-                    break;
-                case PassiveA.DefResBond1:
-                    targetUnit.defSpur += 3;
-                    targetUnit.resSpur += 3;
-                    break;
-                case PassiveA.DefResBond2:
-                    targetUnit.defSpur += 4;
-                    targetUnit.resSpur += 4;
-                    break;
-                case PassiveA.DefResBond3:
-                    targetUnit.defSpur += 5;
-                    targetUnit.resSpur += 5;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
     __countBreakableDefenseStructuresWithoutEnergyOnMap() {
         return this.map.countObjs(st => st instanceof DefenceStructureBase && !(st instanceof Ornament) && st.isBreakable && !st.isRequired);
     }
@@ -7352,6 +7148,13 @@ class DamageCalculatorWrapper {
     }
 
     updateUnitSpur(targetUnit, calcPotentialDamage = false, ignoresSkillEffectFromAllies = false) {
+        let self = this;
+        this.profile.profile("updateUnitSpur", () => {
+            self.__updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies);
+        });
+    }
+
+    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies) {
         targetUnit.resetSpurs();
 
         if (!calcPotentialDamage) {
@@ -7359,66 +7162,64 @@ class DamageCalculatorWrapper {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                     // 距離に関係ないもの
                     {
-                        for (let skillId of unit.enumerateSkills()) {
-                            switch (skillId) {
-                                case PassiveC.WingsOfLight:
-                                    if (targetUnit.isMythicHero
-                                        && g_appData.currentTurn <= 5
-                                        && this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.isMythicHero) <= 3
-                                    ) {
-                                        targetUnit.addAllSpur(2 + g_appData.currentTurn);
-                                    }
-                                    break;
-                            }
+                        switch (unit.passiveC) {
+                            case PassiveC.WingsOfLight:
+                                if (targetUnit.isMythicHero
+                                    && g_appData.currentTurn <= 5
+                                    && this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.isMythicHero) <= 3
+                                ) {
+                                    targetUnit.addAllSpur(2 + g_appData.currentTurn);
+                                }
+                                break;
                         }
                     }
 
                     if (Math.abs(unit.posX - targetUnit.posX) <= 1 && Math.abs(unit.posY - targetUnit.posY) <= 2) {
                         // 5×3マス以内にいる場合
-                        for (let skillId of unit.enumerateSkills()) {
-                            switch (skillId) {
-                                case Weapon.FlowerOfPlenty:
-                                    targetUnit.atkSpur += 3;
-                                    targetUnit.resSpur += 3;
-                                    break;
-                            }
+                        switch (unit.weapon) {
+                            case Weapon.FlowerOfPlenty:
+                                targetUnit.atkSpur += 3;
+                                targetUnit.resSpur += 3;
+                                break;
                         }
                     }
 
                     if (Math.abs(unit.posX - targetUnit.posX) <= 3 && Math.abs(unit.posY - targetUnit.posY) <= 3) {
                         // 7×7マス以内にいる場合
-                        for (let skillId of unit.enumerateSkills()) {
-                            switch (skillId) {
-                                case Weapon.DaichiBoshiNoBreath:
-                                    {
-                                        targetUnit.addAllSpur(2);
-                                    }
-                                    break;
-                            }
+                        switch (unit.weapon) {
+                            case Weapon.DaichiBoshiNoBreath:
+                                {
+                                    targetUnit.addAllSpur(2);
+                                }
+                                break;
                         }
                     }
 
                     if (this.__isNear(unit, targetUnit, 3)) {
                         // 3マス以内で発動する戦闘中バフ
-                        for (let skillId of unit.enumerateSkills()) {
-                            switch (skillId) {
-                                case Weapon.FirstDreamBow:
-                                    targetUnit.atkSpur += 4;
-                                    break;
-                                case Weapon.Hlidskjalf:
-                                    if (unit.isWeaponSpecialRefined) {
-                                        targetUnit.atkSpur += 3;
-                                        targetUnit.spdSpur += 3;
+                        switch (unit.weapon) {
+                            case Weapon.FirstDreamBow:
+                                targetUnit.atkSpur += 4;
+                                break;
+                            case Weapon.Hlidskjalf:
+                                if (unit.isWeaponSpecialRefined) {
+                                    targetUnit.atkSpur += 3;
+                                    targetUnit.spdSpur += 3;
+                                }
+                                break;
+                            case Weapon.GaeBolg:
+                                if (unit.isWeaponSpecialRefined) {
+                                    if (targetUnit.weaponType === WeaponType.Sword ||
+                                        targetUnit.weaponType === WeaponType.Lance ||
+                                        targetUnit.weaponType === WeaponType.Axe ||
+                                        targetUnit.moveType === MoveType.Cavalry
+                                    ) {
+                                        targetUnit.atkSpur += 5;
+                                        targetUnit.defSpur += 5;
                                     }
-                                    break;
-                            }
+                                }
+                                break;
                         }
-                    }
-
-                    if (this.__isNear(unit, targetUnit, 3)) {
-                        // 3マス以内で発動する戦闘中バフ
-                        // this.writeDebugLogLine(unit.getNameWithGroup() + "の3マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
-                        this.__addSpurInRange3(targetUnit, unit, calcPotentialDamage);
                     }
 
                     if (this.__isNear(unit, targetUnit, 2)) {
@@ -7472,115 +7273,117 @@ class DamageCalculatorWrapper {
                 }
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-                    for (let skillId of unit.enumerateSkills()) {
-                        switch (skillId) {
-                            case Weapon.Gurimowaru:
-                                if (targetUnit.isWeaponSpecialRefined) {
-                                    targetUnit.atkSpur -= 4;
-                                    targetUnit.spdSpur -= 4;
-                                    targetUnit.resSpur -= 4;
-                                }
-                                break;
-                            case Weapon.SenhimeNoWakyu:
-                                if (unit.isWeaponSpecialRefined) {
-                                    targetUnit.atkSpur -= 4;
-                                    targetUnit.spdSpur -= 4;
-                                    targetUnit.defSpur -= 4;
-                                }
-                                break;
-                            case Weapon.FirstDreamBow:
+                    switch (unit.weapon) {
+                        case Weapon.Gurimowaru:
+                            if (targetUnit.isWeaponSpecialRefined) {
                                 targetUnit.atkSpur -= 4;
-                                break;
-                            case Weapon.Hlidskjalf:
-                                if (unit.isWeaponSpecialRefined) {
-                                    targetUnit.defSpur -= 3;
-                                    targetUnit.resSpur -= 3;
-                                }
-                                break;
-                        }
+                                targetUnit.spdSpur -= 4;
+                                targetUnit.resSpur -= 4;
+                            }
+                            break;
+                        case Weapon.SenhimeNoWakyu:
+                            if (unit.isWeaponSpecialRefined) {
+                                targetUnit.atkSpur -= 4;
+                                targetUnit.spdSpur -= 4;
+                                targetUnit.defSpur -= 4;
+                            }
+                            break;
+                        case Weapon.FirstDreamBow:
+                            targetUnit.atkSpur -= 4;
+                            break;
+                        case Weapon.Hlidskjalf:
+                            if (unit.isWeaponSpecialRefined) {
+                                targetUnit.defSpur -= 3;
+                                targetUnit.resSpur -= 3;
+                            }
+                            break;
                     }
                 }
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                    for (let skillId of unit.enumerateSkills()) {
-                        switch (skillId) {
-                            case Weapon.UnboundBlade:
-                            case Weapon.UnboundBladePlus:
-                                if (this.__isSolo(unit)) {
-                                    targetUnit.atkSpur -= 5;
-                                    targetUnit.defSpur -= 5;
-                                }
-                                break;
-                            case Weapon.DanielMadeBow:
-                                targetUnit.atkSpur -= 5;
-                                break;
-                            case Weapon.ObsessiveCurse:
-                                targetUnit.spdSpur -= 5;
-                                targetUnit.resSpur -= 5;
-                                break;
-                            case PassiveC.AtkSpdRein3:
-                                targetUnit.atkSpur -= 4;
-                                targetUnit.spdSpur -= 4;
-                                break;
-                            case PassiveC.AtkDefRein3:
-                                targetUnit.atkSpur -= 4;
-                                targetUnit.defSpur -= 4;
-                                break;
-                            case PassiveC.AtkResRein3:
-                                targetUnit.atkSpur -= 4;
-                                targetUnit.resSpur -= 4;
-                                break;
-                            case Weapon.ReinBow:
-                            case Weapon.ReinBowPlus:
-                            case PassiveC.SpdDefRein3:
-                                targetUnit.spdSpur -= 4;
-                                targetUnit.defSpur -= 4;
-                                break;
-                            case PassiveC.SpdResRein3:
-                                targetUnit.spdSpur -= 4;
-                                targetUnit.resSpur -= 4;
-                                break;
-                            case PassiveC.DefResRein3:
-                                targetUnit.defSpur -= 4;
-                                targetUnit.resSpur -= 4;
-                                break;
-                            case Weapon.YashiNoKiNoTsuePlus:
-                                targetUnit.atkSpur -= 5;
-                                targetUnit.spdSpur -= 5;
-                                break;
-                            case Weapon.CoralBowPlus:
-                                targetUnit.spdSpur -= 5;
-                                targetUnit.defSpur -= 5;
-                                break;
-                            case Weapon.FloraGuidPlus:
-                                targetUnit.spdSpur -= 5;
-                                targetUnit.resSpur -= 5;
-                                break;
-                            case Weapon.ExoticFruitJuice:
-                                targetUnit.spdSpur -= 6;
-                                targetUnit.resSpur -= 6;
-                                break;
-                            case Weapon.TharjasHex:
-                                if (unit.isWeaponSpecialRefined) {
-                                    targetUnit.atkSpur -= 4;
-                                    targetUnit.spdSpur -= 4;
-                                }
-                                break;
-                            case Weapon.GeneiLod:
-                                targetUnit.atkSpur -= 6;
-                                targetUnit.resSpur -= 6;
-                                break;
-                            case Weapon.Gurgurant:
+                    switch (unit.weapon) {
+                        case Weapon.UnboundBlade:
+                        case Weapon.UnboundBladePlus:
+                            if (this.__isSolo(unit)) {
                                 targetUnit.atkSpur -= 5;
                                 targetUnit.defSpur -= 5;
-                                break;
-                            case PassiveC.InevitableDeath:
+                            }
+                            break;
+                        case Weapon.DanielMadeBow:
+                            targetUnit.atkSpur -= 5;
+                            break;
+                        case Weapon.ObsessiveCurse:
+                            targetUnit.spdSpur -= 5;
+                            targetUnit.resSpur -= 5;
+                            break;
+                        case Weapon.ReinBow:
+                        case Weapon.ReinBowPlus:
+                            targetUnit.spdSpur -= 4;
+                            targetUnit.defSpur -= 4;
+                            break;
+                        case Weapon.YashiNoKiNoTsuePlus:
+                            targetUnit.atkSpur -= 5;
+                            targetUnit.spdSpur -= 5;
+                            break;
+                        case Weapon.CoralBowPlus:
+                            targetUnit.spdSpur -= 5;
+                            targetUnit.defSpur -= 5;
+                            break;
+                        case Weapon.FloraGuidPlus:
+                            targetUnit.spdSpur -= 5;
+                            targetUnit.resSpur -= 5;
+                            break;
+                        case Weapon.ExoticFruitJuice:
+                            targetUnit.spdSpur -= 6;
+                            targetUnit.resSpur -= 6;
+                            break;
+                        case Weapon.TharjasHex:
+                            if (unit.isWeaponSpecialRefined) {
                                 targetUnit.atkSpur -= 4;
                                 targetUnit.spdSpur -= 4;
-                                targetUnit.defSpur -= 4;
-                                targetUnit.resSpur -= 4;
-                                break;
-                        }
+                            }
+                            break;
+                        case Weapon.GeneiLod:
+                            targetUnit.atkSpur -= 6;
+                            targetUnit.resSpur -= 6;
+                            break;
+                        case Weapon.Gurgurant:
+                            targetUnit.atkSpur -= 5;
+                            targetUnit.defSpur -= 5;
+                            break;
+                    }
+
+                    switch (unit.passiveC) {
+                        case PassiveC.AtkSpdRein3:
+                            targetUnit.atkSpur -= 4;
+                            targetUnit.spdSpur -= 4;
+                            break;
+                        case PassiveC.AtkDefRein3:
+                            targetUnit.atkSpur -= 4;
+                            targetUnit.defSpur -= 4;
+                            break;
+                        case PassiveC.AtkResRein3:
+                            targetUnit.atkSpur -= 4;
+                            targetUnit.resSpur -= 4;
+                            break;
+                        case PassiveC.SpdDefRein3:
+                            targetUnit.spdSpur -= 4;
+                            targetUnit.defSpur -= 4;
+                            break;
+                        case PassiveC.SpdResRein3:
+                            targetUnit.spdSpur -= 4;
+                            targetUnit.resSpur -= 4;
+                            break;
+                        case PassiveC.DefResRein3:
+                            targetUnit.defSpur -= 4;
+                            targetUnit.resSpur -= 4;
+                            break;
+                        case PassiveC.InevitableDeath:
+                            targetUnit.atkSpur -= 4;
+                            targetUnit.spdSpur -= 4;
+                            targetUnit.defSpur -= 4;
+                            targetUnit.resSpur -= 4;
+                            break;
                     }
                 }
             }
@@ -7662,45 +7465,235 @@ class DamageCalculatorWrapper {
             }
         }
 
-        if (isAllyAvailableRange1) {
-            for (let skillId of targetUnit.enumerateSkills()) {
-                this.__addSelfSpurIfAllyAvailableInRange1(targetUnit, skillId, calcPotentialDamage);
+        // 味方と隣接しているときに発動するスキル
+        if (isAllyAvailableRange1 && !calcPotentialDamage) {
+            switch (targetUnit.weapon) {
+                case Weapon.SyukusaiNoOnoPlus:
+                case Weapon.AoNoHanakagoPlus:
+                case Weapon.MidoriNoHanakagoPlus:
+                case Weapon.SyukusaiNoKenPlus:
+                case Weapon.HanawaPlus:
+                    targetUnit.addAllSpur(3);
+                    break;
+                case Weapon.FalchionAwakening:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.addAllSpur(4);
+                    }
+                    break;
+                case Weapon.Thirufingu:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    break;
+                case Weapon.Fensariru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.spdSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            for (let skillId in [targetUnit.passiveA, targetUnit.passiveS]) {
+                if (skillId == NoneValue) { continue; }
+                switch (skillId) {
+                    case PassiveA.AtkSpdBond4:
+                        targetUnit.atkSpur += 7;
+                        targetUnit.spdSpur += 7;
+                        break;
+                    case PassiveA.AtkDefBond4:
+                        targetUnit.atkSpur += 7;
+                        targetUnit.defSpur += 7;
+                        break;
+                    case PassiveA.AtkResBond4:
+                        targetUnit.atkSpur += 7;
+                        targetUnit.resSpur += 7;
+                        break;
+                    case PassiveA.AtkSpdBond1:
+                        targetUnit.atkSpur += 3;
+                        targetUnit.spdSpur += 3;
+                        break;
+                    case PassiveA.AtkSpdBond2:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                        break;
+                    case PassiveA.AtkSpdBond3:
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                        break;
+                    case PassiveA.AtkResBond1:
+                        targetUnit.atkSpur += 3;
+                        targetUnit.resSpur += 3;
+                        break;
+                    case PassiveA.AtkResBond2:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.resSpur += 4;
+                        break;
+                    case PassiveA.AtkResBond3:
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                        break;
+                    case PassiveA.AtkDefBond1:
+                        targetUnit.atkSpur += 3;
+                        targetUnit.defSpur += 3;
+                        break;
+                    case PassiveA.AtkDefBond2:
+                        targetUnit.atkSpur += 4;
+                        targetUnit.defSpur += 4;
+                        break;
+                    case PassiveA.AtkDefBond3:
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                        break;
+                    case PassiveA.SpdDefBond1:
+                        targetUnit.spdSpur += 3;
+                        targetUnit.defSpur += 3;
+                        break;
+                    case PassiveA.SpdDefBond2:
+                        targetUnit.spdSpur += 4;
+                        targetUnit.defSpur += 4;
+                        break;
+                    case PassiveA.SpdDefBond3:
+                        targetUnit.spdSpur += 5;
+                        targetUnit.defSpur += 5;
+                        break;
+                    case PassiveA.SpdResBond1:
+                        targetUnit.spdSpur += 3;
+                        targetUnit.resSpur += 3;
+                        break;
+                    case PassiveA.SpdResBond2:
+                        targetUnit.spdSpur += 4;
+                        targetUnit.resSpur += 4;
+                        break;
+                    case PassiveA.SpdResBond3:
+                        targetUnit.spdSpur += 5;
+                        targetUnit.resSpur += 5;
+                        break;
+                    case PassiveA.DefResBond1:
+                        targetUnit.defSpur += 3;
+                        targetUnit.resSpur += 3;
+                        break;
+                    case PassiveA.DefResBond2:
+                        targetUnit.defSpur += 4;
+                        targetUnit.resSpur += 4;
+                        break;
+                    case PassiveA.DefResBond3:
+                        targetUnit.defSpur += 5;
+                        targetUnit.resSpur += 5;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-        if (isAllyAvailableRange2) {
-            for (let skillId of targetUnit.enumerateSkills()) {
-                this.__addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage);
+
+        // 味方が2マス以内にいる時に発動するスキル
+        if (isAllyAvailableRange2 && !calcPotentialDamage) {
+            switch (targetUnit.weapon) {
+                case Weapon.LoveCandelabraPlus:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.defSpur += 4;
+                    break;
+                case Weapon.LoveBouquetPlus:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.resSpur += 4;
+                    break;
+                case Weapon.GigaExcalibur:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
+                case Weapon.Gurimowaru:
+                case Weapon.SenhimeNoWakyu:
+                    if (targetUnit.isWeaponRefined) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                    break;
+                case Weapon.SpearOfAssal:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                    break;
+                case Weapon.ChichiNoSenjutsusyo:
+                    targetUnit.atkSpur += 3;
+                    targetUnit.spdSpur += 3;
+                    break;
+                case Weapon.JunaruSenekoNoTsumekiba:
+                    targetUnit.atkSpur += 3;
+                    targetUnit.defSpur += 3;
+                    break;
+                case Weapon.VezuruNoYoran:
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                    targetUnit.defSpur += 5;
+                    targetUnit.resSpur += 5;
+                    break;
+                case Weapon.OgonNoFolkPlus:
+                case Weapon.NinjinhuNoSosyokuPlus:
+                    targetUnit.atkSpur += 5;
+                    targetUnit.defSpur += 5;
+                    break;
+            }
+
+            switch (targetUnit.passiveC) {
+                case PassiveC.JointDriveAtk:
+                    targetUnit.atkSpur += 4;
+                    break;
+                case PassiveC.JointDriveSpd:
+                    targetUnit.spdSpur += 4;
+                    break;
+                case PassiveC.JointDriveRes:
+                    targetUnit.resSpur += 4;
+                    break;
+                case PassiveC.JointDriveDef:
+                    targetUnit.defSpur += 4;
+                    break;
             }
         }
 
         // 孤軍
         if (this.__isSolo(targetUnit) || calcPotentialDamage) {
-            for (let skillId of targetUnit.enumerateSkills()) {
-                switch (skillId) {
-                    case Weapon.TallHammer:
-                        if (targetUnit.isWeaponRefined) {
-                            targetUnit.spdSpur += 6;
-                        }
-                        if (targetUnit.isWeaponSpecialRefined) {
-                            targetUnit.atkSpur += 5;
-                            targetUnit.spdSpur += 5;
-                        }
-                        break;
-                    case Weapon.SurvivalistBow:
-                        targetUnit.atkSpur += 6;
+            switch (targetUnit.weapon) {
+                case Weapon.TallHammer:
+                    if (targetUnit.isWeaponRefined) {
                         targetUnit.spdSpur += 6;
-                        break;
-                    case Weapon.DoubleBow:
-                        targetUnit.addAllSpur(5);
-                        break;
-                    case Weapon.GousouJikumunto:
-                    case Weapon.KokkiNoKosou:
-                    case Weapon.MaritaNoKen:
-                        targetUnit.addAllSpur(4);
-                        break;
-                    case Weapon.ShirejiaNoKaze:
-                    case Weapon.BrazenCatFang:
-                    case Weapon.VengefulLance:
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
+                case Weapon.SurvivalistBow:
+                    targetUnit.atkSpur += 6;
+                    targetUnit.spdSpur += 6;
+                    break;
+                case Weapon.DoubleBow:
+                    targetUnit.addAllSpur(5);
+                    break;
+                case Weapon.GousouJikumunto:
+                case Weapon.KokkiNoKosou:
+                case Weapon.MaritaNoKen:
+                    targetUnit.addAllSpur(4);
+                    break;
+                case Weapon.ShirejiaNoKaze:
+                case Weapon.BrazenCatFang:
+                case Weapon.VengefulLance:
+                    targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
+                    break;
+                case Weapon.KurokiChiNoTaiken:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                    break;
+            }
+
+            for (let skillId in [targetUnit.passiveA, targetUnit.passiveS]) {
+                if (skillId == NoneValue) { continue; }
+                switch (skillId) {
                     case PassiveA.AtkSpdSolo3:
                         targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
                         break;
@@ -7737,20 +7730,14 @@ class DamageCalculatorWrapper {
                     case PassiveA.SpdResSolo4:
                         targetUnit.spdSpur += 7; targetUnit.resSpur += 7;
                         break;
-                    case Weapon.KurokiChiNoTaiken:
-                        if (targetUnit.isWeaponSpecialRefined) {
-                            targetUnit.atkSpur += 5;
-                            targetUnit.spdSpur += 5;
-                        }
-                        break;
                 }
             }
         }
 
         // その他
-        for (let skillId of targetUnit.enumerateSkills()) {
+        {
             // 潜在ダメージ計算に加味される効果
-            switch (skillId) {
+            switch (targetUnit.passiveA) {
                 case PassiveA.AtkSpdBojosen3:
                     {
                         let spurAmount = this.__calcBojosenSpurAmount();
@@ -7824,7 +7811,7 @@ class DamageCalculatorWrapper {
 
             // 潜在ダメージ計算で無視される効果
             if (!calcPotentialDamage) {
-                switch (skillId) {
+                switch (targetUnit.weapon) {
                     case Weapon.AstralBreath:
                         if (this.__isTherePartnerInSpace3(targetUnit)) {
                             targetUnit.addAllSpur(5);
@@ -8002,48 +7989,54 @@ class DamageCalculatorWrapper {
                                 unit.spdSpur += amount;
                             });
                         break;
-                    case PassiveA.SpdResForm3:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.spdSpur += amount;
-                                unit.resSpur += amount;
-                            }, 1);
-                        break;
-                    case PassiveA.AtkSpdForm3:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.atkSpur += amount;
-                                unit.spdSpur += amount;
-                            }, 1);
-                        break;
-                    case PassiveA.AtkDefForm3:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.atkSpur += amount;
-                                unit.defSpur += amount;
-                            }, 1);
-                        break;
-                    case PassiveA.AtkResForm3:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.atkSpur += amount;
-                                unit.resSpur += amount;
-                            }, 1);
-                        break;
-                    case PassiveA.SpdDefForm3:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.spdSpur += amount;
-                                unit.defSpur += amount;
-                            }, 1);
-                        break;
-                    case PassiveA.DefResForm3:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.defSpur += amount;
-                                unit.resSpur += amount;
-                            }, 1);
-                        break;
+                }
+
+                for (let skillId in [targetUnit.passiveA, targetUnit.passiveS]) {
+                    if (skillId == NoneValue) { continue; }
+                    switch (skillId) {
+                        case PassiveA.SpdResForm3:
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.spdSpur += amount;
+                                    unit.resSpur += amount;
+                                }, 1);
+                            break;
+                        case PassiveA.AtkSpdForm3:
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.atkSpur += amount;
+                                    unit.spdSpur += amount;
+                                }, 1);
+                            break;
+                        case PassiveA.AtkDefForm3:
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.atkSpur += amount;
+                                    unit.defSpur += amount;
+                                }, 1);
+                            break;
+                        case PassiveA.AtkResForm3:
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.atkSpur += amount;
+                                    unit.resSpur += amount;
+                                }, 1);
+                            break;
+                        case PassiveA.SpdDefForm3:
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.spdSpur += amount;
+                                    unit.defSpur += amount;
+                                }, 1);
+                            break;
+                        case PassiveA.DefResForm3:
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.defSpur += amount;
+                                    unit.resSpur += amount;
+                                }, 1);
+                            break;
+                    }
                 }
             }
         }
