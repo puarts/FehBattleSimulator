@@ -957,7 +957,6 @@ class DamageCalculator {
             case Weapon.Ginnungagap:
                 // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
                 if (!context.isFirstAttack(atkUnit)) break;
-                if (atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation) break;
                 if (defUnit.snapshot.restHpPercentage >= 25) {
                     let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
                     if (defUnit.battleContext.initiatesCombat ||
