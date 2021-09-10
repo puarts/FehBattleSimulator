@@ -882,27 +882,27 @@ class DamageCalculator {
     }
 
     __canActivateMiracle(unit, atkUnit) {
-        for (let skillId of unit.enumerateSkills()) {
-            switch (skillId) {
-                case Weapon.BowOfTwelve:
-                    if (unit.battleContext.initiatesCombat ||
-                        (unit.snapshot.restHpPercentage >= 75 &&
-                            (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff))) {
-                        return true;
-                    }
-                    break;
-                case Special.Miracle:
-                    if (unit.tmpSpecialCount === 0) return true;
-                    break;
-                case Weapon.Thirufingu:
-                    if (unit.snapshot.restHpPercentage >= 50) return true;
-                    break;
-                case Weapon.HelsReaper:
-                    if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
-                        return true;
-                    }
-                    break;
-            }
+        switch (unit.weapon) {
+            case Weapon.BowOfTwelve:
+                if (unit.battleContext.initiatesCombat ||
+                    (unit.snapshot.restHpPercentage >= 75 &&
+                        (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff))) {
+                    return true;
+                }
+                break;
+            case Weapon.Thirufingu:
+                if (unit.snapshot.restHpPercentage >= 50) return true;
+                break;
+            case Weapon.HelsReaper:
+                if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
+                    return true;
+                }
+                break;
+        }
+        switch (unit.special) {
+            case Special.Miracle:
+                if (unit.tmpSpecialCount === 0) return true;
+                break;
         }
         return false;
     }
@@ -944,29 +944,29 @@ class DamageCalculator {
         }
 
         // 自分の次の攻撃の時にダメージ軽減加算をするための処理
-        for (let skillId of defUnit.enumerateSkills()) {
-            switch (skillId) {
-                case Special.KoriNoSeikyo:
-                    if (activatesDefenderSpecial) {
-                        if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
+        switch (defUnit.special) {
+            case Special.KoriNoSeikyo:
+                if (activatesDefenderSpecial) {
+                    if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
+                    defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                }
+                break;
+        }
+        switch (defUnit.weapon) {
+            case Weapon.Ginnungagap:
+                // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
+                if (!context.isFirstAttack(atkUnit)) break;
+                if (atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation) break;
+                if (defUnit.snapshot.restHpPercentage >= 25) {
+                    let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
+                    if (defUnit.battleContext.initiatesCombat ||
+                        (atkUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
                         defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
                         defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                     }
-                    break;
-                case Weapon.Ginnungagap:
-                    // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
-                    if (!context.isFirstAttack(atkUnit)) break;
-                    if (atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation) break;
-                    if (defUnit.snapshot.restHpPercentage >= 25) {
-                        let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
-                        if (defUnit.battleContext.initiatesCombat ||
-                            (atkUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
-                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
-                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                        }
-                    }
-                    break;
-            }
+                }
+                break;
         }
         return currentDamage;
     }
