@@ -92,6 +92,7 @@ class test_DamageCalculator {
     }
 
     calcDamage(atkUnit, defUnit) {
+        this.damageCalc.isLogEnabled = this.isLogEnabled;
         let result = this.damageCalc.calcDamage(atkUnit, defUnit, null, false);
         if (this.isLogEnabled) {
             console.log(this.damageCalc.rawLog);

@@ -131,8 +131,8 @@ class DamageCalculatorWrapper {
         defUnit.saveCurrentHpAndSpecialCount();
         // });
         // self.profile.profile("pre calcPrecombatSpecialResult 3", () => {
-        atkUnit.createSnapshotForBattle();
-        defUnit.createSnapshotForBattle();
+        atkUnit.createSnapshot();
+        defUnit.createSnapshot();
         // });
         // });
 
@@ -156,8 +156,8 @@ class DamageCalculatorWrapper {
         defUnit.battleContext.clearPrecombatState();
 
         // 戦闘開始時の状態を保存
-        atkUnit.createSnapshotForBattle();
-        defUnit.createSnapshotForBattle();
+        atkUnit.createSnapshot();
+        defUnit.createSnapshot();
 
         if (!calcPotentialDamage) {
             let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);

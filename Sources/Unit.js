@@ -1851,8 +1851,6 @@ class Unit {
         }
         --this.blessingCount;
     }
-    createSnapshotForBattle() {
-    }
 
     /**
      * @returns {Unit}
