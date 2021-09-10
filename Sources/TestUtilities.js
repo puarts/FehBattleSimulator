@@ -19,7 +19,6 @@ function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
     unit.spdWithSkills = 40;
     unit.defWithSkills = 30;
     unit.resWithSkills = 30;
-    unit.createSnapshot();
     unit.saveCurrentHpAndSpecialCount();
     return unit;
 }
