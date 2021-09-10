@@ -37,8 +37,12 @@ class DamageCalculatorWrapper {
         this.profile = new PerformanceProfile();
 
         // 高速化用
+        this._applySkillEffectForAtkUnitFuncDict = {};
+        this._applySkillEffectForDefUnitFuncDict = {};
         this._applySkillEffectForUnitFuncDict = {};
 
+        this.__init__applySkillEffectForAtkUnitFuncDict();
+        this.__init__applySkillEffectForDefUnitFuncDict();
         this.__init__applySkillEffectForUnitFuncDict();
     }
 
@@ -695,6 +699,777 @@ class DamageCalculatorWrapper {
         }
     }
 
+    __init__applySkillEffectForAtkUnitFuncDict() {
+        let self = this;
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantLancePlus] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 4;
+            atkUnit.defSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.CourtlyFanPlus] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 5;
+            atkUnit.spdSpur += 5;
+            atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.BenihimeNoOno] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (atkUnit.isWeaponSpecialRefined) {
+                if (defUnit.snapshot.restHpPercentage == 100) {
+                    atkUnit.atkSpur += 5;
+                    atkUnit.defSpur += 5;
+                    atkUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.KurooujiNoYari] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (defUnit.snapshot.restHpPercentage == 100) {
+                atkUnit.atkSpur += 5;
+                atkUnit.defSpur += 5;
+                atkUnit.resSpur += 5;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.SummerStrikers] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (atkUnit.snapshot.restHpPercentage >= 25) {
+                atkUnit.atkSpur += 5;
+                atkUnit.spdSpur += 5;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.HewnLance] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (atkUnit.isWeaponSpecialRefined) {
+                atkUnit.atkSpur += 4;
+                atkUnit.defSpur += 4;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.WhitedownSpear] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (self.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying) >= 3) {
+                defUnit.atkSpur -= 4;
+                defUnit.defSpur -= 4;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveB.BeliefInLove] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (defUnit.snapshot.restHpPercentage == 100) {
+                defUnit.atkSpur -= 5;
+                defUnit.defSpur -= 5;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.SatougashiNoAnki] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.RinkahNoOnikanabo] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (atkUnit.snapshot.restHpPercentage < 100) {
+                atkUnit.atkSpur += 5;
+                atkUnit.defSpur += 5;
+                atkUnit.battleContext.increaseCooldownCountForDefense = true;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.KokyousyaNoYari] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (defUnit.snapshot.restHpPercentage >= 70) {
+                atkUnit.atkSpur += 5;
+                atkUnit.resSpur += 5;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.HadesuOmega] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 4;
+            atkUnit.spdSpur += 4;
+            if (atkUnit.hasSpecial && atkUnit.tmpSpecialCount == 0) {
+                atkUnit.atkSpur += 6;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.ZekkaiNoSoukyu] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (defUnit.snapshot.restHpPercentage == 100) {
+                atkUnit.addAllSpur(4);
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.GeneiFeather] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (self.__isThereAnyAllyUnit(atkUnit, x => x.isActionDone)) {
+                atkUnit.atkSpur += 6;
+                atkUnit.spdSpur += 6;
+                atkUnit.battleContext.isDesperationActivated = true;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.EishinNoAnki] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 5;
+            atkUnit.spdSpur += 5;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.KinranNoSyo] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 6;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.RohyouNoKnife] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) {
+                atkUnit.defSpur += 20;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.Paruthia] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (!atkUnit.isWeaponRefined) {
+                atkUnit.resSpur += 4;
+            }
+            else {
+                if (isWeaponTypeTome(defUnit.weaponType)) {
+                    atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
+                }
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (defUnit.isRangedWeaponType()) {
+                        atkUnit.atkSpur += 6;
+                    }
+                }
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.Yatonokami] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (atkUnit.weaponRefinement == WeaponRefinementType.None) {
+                atkUnit.spdSpur += 4;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.KageroNoGenwakushin] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (atkUnit.isWeaponSpecialRefined) {
+                atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, defUnit);
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.Sangurizuru] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (!atkUnit.isWeaponRefined) {
+                atkUnit.atkSpur += 3;
+                atkUnit.spdSpur += 3;
+            } else {
+                atkUnit.atkSpur += 4;
+                atkUnit.spdSpur += 4;
+                if (atkUnit.isWeaponSpecialRefined) {
+                    atkUnit.atkSpur += 6;
+                    atkUnit.spdSpur += 6;
+                }
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.GeneiFalcion] = (atkUnit, defUnit, calcPotentialDamage) => {
+            {
+                let count = self.__countAlliesActionDone(atkUnit);
+                let amount = Math.min(7, count * 2 + 3);
+                atkUnit.atkSpur += amount;
+                atkUnit.spdSpur += amount;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.YaibaNoSession3] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (!calcPotentialDamage) {
+                let count = self.__countAlliesActionDone(atkUnit);
+                let amount = Math.min(9, count * 3 + 3);
+                atkUnit.atkSpur += amount;
+                atkUnit.spdSpur += amount;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.SteadyImpact] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 7;
+            atkUnit.defSpur += 10;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.SwiftImpact] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 7;
+            atkUnit.resSpur += 10;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.KishinKongoNoSyungeki] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 6;
+            atkUnit.defSpur += 10;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.KishinMeikyoNoSyungeki] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 6;
+            atkUnit.resSpur += 10;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.BlazingDurandal] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.battleContext.increaseCooldownCountForBoth();
+            atkUnit.battleContext.reducesCooldownCount = true;
+            if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
+                atkUnit.spdSpur += 7;
+                atkUnit.defSpur += 10;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.Balmung] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (defUnit.snapshot.isRestHpFull) {
+                atkUnit.battleContext.invalidateAllOwnDebuffs();
+                atkUnit.addAllSpur(5);
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.NinissIceLance] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (!atkUnit.isWeaponRefined) {
+                atkUnit.addAllSpur(4);
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.Forblaze] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
+                atkUnit.atkSpur += 6;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.HanasKatana] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
+                atkUnit.atkSpur += 4;
+                atkUnit.spdSpur += 4;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.Durandal] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 6;
+            if (atkUnit.isWeaponSpecialRefined) {
+                atkUnit.atkSpur += 4;
+                atkUnit.spdSpur += 4;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.FurederikuNoKenfu] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (atkUnit.isWeaponSpecialRefined) {
+                atkUnit.atkSpur += 6;
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.JokerNoSyokki] = (atkUnit, defUnit, calcPotentialDamage) => {
+            defUnit.addAllSpur(-4);
+            if (atkUnit.isWeaponSpecialRefined) {
+                let isActivated = false;
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 3, false)) {
+                    if (!unit.isFullHp) {
+                        isActivated = true;
+                        break;
+                    }
+                }
+                if (isActivated) {
+                    atkUnit.addAllSpur(4);
+                }
+            }
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.DeathBlow3] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 6;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.DeathBlow4] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 8;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.HienNoIchigeki1] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 2;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.HienNoIchigeki2] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.HienNoIchigeki3] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 6;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.HienNoIchigeki4] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 9;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.KongoNoIchigeki3] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.defSpur += 6;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.MeikyoNoIchigeki3] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.resSpur += 6;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.KishinHienNoIchigeki3] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 6; atkUnit.spdSpur += 7;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.KishinKongoNoIchigeki2] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 4; atkUnit.defSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.KishinMeikyoNoIchigeki2] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur += 4; atkUnit.resSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.HienKongoNoIchigeki2] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 4; atkUnit.defSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.HienMeikyoNoIchigeki2] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.spdSpur += 4; atkUnit.resSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[PassiveA.KongoMeikyoNoIchigeki2] = (atkUnit, defUnit, calcPotentialDamage) => {
+            atkUnit.defSpur += 4; atkUnit.resSpur += 4;
+        };
+        self._applySkillEffectForAtkUnitFuncDict[Weapon.Sogun] = (atkUnit, defUnit, calcPotentialDamage) => {
+            if (defUnit.weaponType == WeaponType.Sword
+                || defUnit.weaponType == WeaponType.Lance
+                || defUnit.weaponType == WeaponType.Axe
+                || isWeaponTypeBreath(defUnit.weaponType)) {
+                atkUnit.atkSpur += 4;
+                atkUnit.spdSpur += 4;
+                atkUnit.defSpur += 4;
+                atkUnit.resSpur += 4;
+            }
+        };
+
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                defUnit.addAllSpur(-4);
+            };
+
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.HelmsmanAxePlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.RauaFoxPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.BlarfoxPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.GronnfoxPlus] = func;
+        }
+
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                atkUnit.addAllSpur(2);
+            };
+
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.KaigaraNoYari] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.KiagaraNoYariPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.BeachFlag] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.BeachFlagPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.YashiNoMiNoYumi] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.YashiNoMiNoYumiPlus] = func;
+        }
+
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                atkUnit.atkSpur += 4;
+                atkUnit.defSpur += 4;
+            };
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.AijouNoHanaNoYumiPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.BukeNoSteckPlus] = func;
+        }
+
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                if (atkUnit.isWeaponSpecialRefined) {
+                    atkUnit.spdSpur += 6;
+                }
+            };
+
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.Toron] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.MiraiNoSeikishiNoYari] = func;
+        }
+
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                atkUnit.atkSpur += 4; atkUnit.spdSpur += 4;
+            };
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.KurokiChiNoTaiken] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.FlowerStandPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.CakeKnifePlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.SyukuhaiNoBottlePlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.SyukuhukuNoHanaNoYumiPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[PassiveA.KishinHienNoIchigeki2] = func;
+        }
+
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                if (atkUnit.isWeaponSpecialRefined) {
+                    atkUnit.atkSpur += 4; atkUnit.spdSpur += 4;
+                }
+            };
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.Amite] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.KazahanaNoReitou] = func;
+        }
+    }
+
+    __init__applySkillEffectForDefUnitFuncDict() {
+        let self = this;
+        self._applySkillEffectForDefUnitFuncDict[Weapon.Kurimuhirudo] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
+                defUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.TwinCrestPower] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isTransformed) {
+                defUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.ShishiouNoTsumekiba] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.addAllSpur(4);
+            if (defUnit.isTransformed) {
+                defUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.OgonNoTanken] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isSpecialCharged) {
+                defUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.BenihimeNoOno] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (atkUnit.isWeaponSpecialRefined) {
+                atkUnit.atkSpur += 5;
+                atkUnit.defSpur += 5;
+                atkUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.KurooujiNoYari] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 5;
+            defUnit.defSpur += 5;
+            defUnit.resSpur += 5;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveB.GuardBearing3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                defUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, atkUnit);
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.StalwartSword] = (defUnit, atkUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur -= 6;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveB.BeliefInLove] = (defUnit, atkUnit, calcPotentialDamage) => {
+            atkUnit.atkSpur -= 5;
+            atkUnit.defSpur -= 5;
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.RinkahNoOnikanabo] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 5;
+            defUnit.defSpur += 5;
+            defUnit.battleContext.increaseCooldownCountForDefense = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantWard] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (!isPhysicalWeaponType(atkUnit.weaponType)) {
+                defUnit.atkSpur += 5;
+                defUnit.resSpur += 5;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseWard] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (!isPhysicalWeaponType(atkUnit.weaponType)) {
+                defUnit.atkSpur += 5;
+                defUnit.resSpur += 5;
+                defUnit.battleContext.invalidatesReferenceLowerMit = true;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.KokyousyaNoYari] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 5;
+            defUnit.resSpur += 5;
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.Vidofuniru] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (!defUnit.isWeaponRefined) {
+                if (atkUnit.weaponType == WeaponType.Sword
+                    || atkUnit.weaponType == WeaponType.Lance
+                    || atkUnit.weaponType == WeaponType.Axe
+                ) {
+                    defUnit.defSpur += 7;
+                }
+            } else {
+                if (atkUnit.weaponType == WeaponType.Sword
+                    || atkUnit.weaponType == WeaponType.Lance
+                    || atkUnit.weaponType == WeaponType.Axe
+                    || isWeaponTypeBreath(atkUnit.weaponType)
+                    || isWeaponTypeBeast(atkUnit.weaponType)
+                ) {
+                    defUnit.defSpur += 7;
+                    defUnit.ResSpur += 7;
+                }
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.Naga] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isWeaponSpecialRefined) {
+                defUnit.defSpur += 4;
+                defUnit.resSpur += 4;
+            }
+            else {
+                defUnit.defSpur += 2;
+                defUnit.resSpur += 2;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.ManatsuNoBreath] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.battleContext.increaseCooldownCountForDefense = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.FurorinaNoSeisou] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (atkUnit.weaponType == WeaponType.Sword
+                || atkUnit.weaponType == WeaponType.Lance
+                || atkUnit.weaponType == WeaponType.Axe
+                || isWeaponTypeBreathOrBeast(atkUnit.weaponType)
+            ) {
+                defUnit.addAllSpur(4);
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.HinataNoMoutou] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 4;
+            defUnit.defSpur += 4;
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.OboroNoShitsunagitou] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isWeaponSpecialRefined) {
+                if (atkUnit.isMeleeWeaponType()) {
+                    defUnit.resSpur += 6;
+                    defUnit.defSpur += 6;
+                }
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.YukyuNoSyo] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isWeaponSpecialRefined) {
+                defUnit.resSpur += 4;
+                defUnit.defSpur += 4;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.FutsugyouNoYari] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isWeaponSpecialRefined) {
+                defUnit.atkSpur += 4;
+                defUnit.defSpur += 4;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.ByakuyaNoRyuuseki] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (!atkUnit.isBuffed) {
+                defUnit.addAllSpur(4);
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.GeneiFalcion] = (defUnit, atkUnit, calcPotentialDamage) => {
+            {
+                let count = self.__countEnemiesActionDone(defUnit);
+                let amount = Math.max(3, 7 - count * 2);
+                defUnit.defSpur += amount;
+                defUnit.resSpur += amount;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.TateNoSession3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (!calcPotentialDamage) {
+                let count = self.__countEnemiesActionDone(defUnit);
+                let amount = Math.max(3, 9 - count * 3);
+                atkUnit.defSpur += amount;
+                atkUnit.resSpur += amount;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.Balmung] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.battleContext.invalidateAllOwnDebuffs();
+            defUnit.addAllSpur(5);
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DartingBreath] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.spdSpur += 4;
+            defUnit.battleContext.increaseCooldownCountForBoth();
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinNoKokyu] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 4;
+            defUnit.battleContext.increaseCooldownCountForBoth();
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KongoNoKokyu] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.defSpur += 4;
+            defUnit.battleContext.increaseCooldownCountForBoth();
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.MeikyoNoKokyu] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 4;
+            defUnit.battleContext.increaseCooldownCountForBoth();
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.BerkutsLance] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 4;
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.BerkutsLancePlus] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.weaponRefinement == WeaponRefinementType.None) {
+                defUnit.resSpur += 4;
+            } else {
+                defUnit.resSpur += 7;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.Ekkezakkusu] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isWeaponSpecialRefined) {
+                if (atkUnit.isRangedWeaponType()) {
+                    defUnit.defSpur += 6;
+                    defUnit.resSpur += 6;
+                }
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantDef4] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (atkUnit.isRangedWeaponType()) {
+                defUnit.defSpur += 8;
+                defUnit.resSpur += 8;
+                defUnit.battleContext.invalidateAllBuffs();
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseDef4] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (atkUnit.isMeleeWeaponType()) {
+                defUnit.defSpur += 8;
+                defUnit.resSpur += 8;
+                defUnit.battleContext.invalidateAllBuffs();
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseDef3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (atkUnit.isMeleeWeaponType()) {
+                defUnit.defSpur += 6;
+                defUnit.resSpur += 6;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.MoumokuNoYumi] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (atkUnit.isRangedWeaponType()) {
+                defUnit.addAllSpur(4);
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.HuinNoKen] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isWeaponSpecialRefined) {
+                defUnit.defSpur += 4;
+                defUnit.resSpur += 4;
+            }
+            else {
+                defUnit.defSpur += 2;
+                defUnit.resSpur += 2;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.ShirokiChiNoNaginata] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 4;
+            defUnit.defSpur += 4;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinKongoNoKamae1] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 2; defUnit.defSpur += 2;
+        };
+        self._applySkillEffectForDefUnitFuncDict[Weapon.GiyuNoYari] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (defUnit.isWeaponSpecialRefined) {
+                defUnit.spdSpur += 4; defUnit.defSpur += 4;
+            }
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KongoNoKamae4] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.defSpur += 8;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.MeikyoNoKamae4] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 8;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinMeikyoNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 6;
+            defUnit.resSpur += 6;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.HienKongoNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.spdSpur += 6;
+            defUnit.defSpur += 6;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.SwiftStance3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.spdSpur += 6;
+            defUnit.resSpur += 6;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinKongoNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 6;
+            defUnit.defSpur += 6;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinHienNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 6;
+            defUnit.spdSpur += 6;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KongoMeikyoNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 6;
+            defUnit.defSpur += 6;
+            defUnit.battleContext.reducesCooldownCount = true;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.SacaNoOkite] = (defUnit, atkUnit, calcPotentialDamage) => {
+            if (self.__countAlliesWithinSpecifiedSpaces(defUnit, 2, x => true) >= 2) {
+                defUnit.addAllSpur(4);
+            }
+        };
+
+
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                if (defUnit.snapshot.restHpPercentage >= 50) {
+                    defUnit.battleContext.canCounterattackToAllDistance = true;
+                }
+            };
+
+            self._applySkillEffectForDefUnitFuncDict[Weapon.Amatsu] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.Puji] = func;
+        }
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                if (isPhysicalWeaponType(atkUnit.weaponType)) {
+                    defUnit.atkSpur += 5;
+                    defUnit.defSpur += 5;
+                }
+            };
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantFoil] = func;
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseFoil] = func;
+        }
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                if (atkUnit.isRangedWeaponType()) {
+                    defUnit.defSpur += 6;
+                    defUnit.resSpur += 6;
+                }
+            };
+            self._applySkillEffectForDefUnitFuncDict[Weapon.Blarserpent] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.BlarserpentPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.GronnserpentPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.RauarserpentPlus] = func;
+        }
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                if (atkUnit.isRangedWeaponType()) {
+                    defUnit.defSpur += 6;
+                    defUnit.resSpur += 6;
+                }
+            };
+
+
+            self._applySkillEffectForDefUnitFuncDict[Weapon.EnkyoriBougyoNoYumiPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantDef3] = func;
+        }
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                defUnit.addAllSpur(2);
+            };
+            self._applySkillEffectForDefUnitFuncDict[Weapon.Seiju] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.SeijuPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.HandBell] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.HandBellPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.PresentBukuro] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.PresentBukuroPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.Syokudai] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.SyokudaiPlus] = func;
+        }
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                defUnit.defSpur += 7;
+            };
+            self._applySkillEffectForDefUnitFuncDict[Weapon.MamoriNoKen] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.MamoriNoKenPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.MamoriNoYariPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.MamoriNoOnoPlus] = func;
+        }
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                defUnit.resSpur += 7;
+            };
+            self._applySkillEffectForDefUnitFuncDict[Weapon.BariaNoKen] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.BariaNoKenPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.BariaNoYariPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.BarrierAxePlus] = func;
+        }
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                defUnit.atkSpur += 6;
+            };
+            self._applySkillEffectForDefUnitFuncDict[Weapon.HankoNoYari] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.HankoNoYariPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.ReprisalAxePlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinNoKamae3] = func;
+        }
+
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.HienNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.spdSpur += 6;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KongoNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.defSpur += 6;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.MeikyoNoKamae3] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 6;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinHienNoKamae2] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 4; defUnit.spdSpur += 4;
+        };
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                defUnit.atkSpur += 4; defUnit.defSpur += 4;
+            };
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.OstiasCounter] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.KorakuNoKazariYariPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinKongoNoKamae2] = func;
+        }
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                defUnit.atkSpur += 4; defUnit.resSpur += 4;
+            };
+            self._applySkillEffectForDefUnitFuncDict[Weapon.SaladaSandPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.KishinMeikyoNoKamae2] = func;
+        }
+
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.HienKongoNoKamae2] = (defUnit, atkUnit, calcPotentialDamage) => { defUnit.spdSpur += 4; defUnit.defSpur += 4; };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.HienMeikyoNoKamae1] = (defUnit, atkUnit, calcPotentialDamage) => { defUnit.spdSpur += 2; defUnit.resSpur += 2; };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.HienMeikyoNoKamae2] = (defUnit, atkUnit, calcPotentialDamage) => { defUnit.spdSpur += 4; defUnit.resSpur += 4; };
+
+        {
+            let func = (defUnit, atkUnit, calcPotentialDamage) => {
+                defUnit.defSpur += 4; defUnit.resSpur += 4;
+            };
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.JaryuNoUroko] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.MizuNoBreath] = func;
+            self._applySkillEffectForDefUnitFuncDict[Weapon.MizuNoBreathPlus] = func;
+            self._applySkillEffectForDefUnitFuncDict[PassiveA.KongoMeikyoNoKamae2] = func;
+        }
+
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseReversal] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.defSpur += 5;
+        };
+    }
+
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(defUnit, 2)) {
             switch (unit.weapon) {
@@ -735,664 +1510,16 @@ class DamageCalculatorWrapper {
         this.__applyChangingAttackPrioritySkillEffects(atkUnit, defUnit);
 
         for (let skillId of atkUnit.enumerateSkills()) {
-            switch (skillId) {
-                case Weapon.InstantLancePlus:
-                    atkUnit.atkSpur += 4;
-                    atkUnit.defSpur += 4;
-                    break;
-                case Weapon.CourtlyFanPlus:
-                    atkUnit.atkSpur += 5;
-                    atkUnit.spdSpur += 5;
-                    atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                    break;
-                case Weapon.BenihimeNoOno:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        if (defUnit.snapshot.restHpPercentage == 100) {
-                            atkUnit.atkSpur += 5;
-                            atkUnit.defSpur += 5;
-                            atkUnit.battleContext.increaseCooldownCountForBoth();
-                        }
-                    }
-                    break;
-                case Weapon.KurooujiNoYari:
-                    if (defUnit.snapshot.restHpPercentage == 100) {
-                        atkUnit.atkSpur += 5;
-                        atkUnit.defSpur += 5;
-                        atkUnit.resSpur += 5;
-                    }
-                    break;
-                case Weapon.SummerStrikers:
-                    if (atkUnit.snapshot.restHpPercentage >= 25) {
-                        atkUnit.atkSpur += 5;
-                        atkUnit.spdSpur += 5;
-                    }
-                    break;
-                case Weapon.HewnLance:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.atkSpur += 4;
-                        atkUnit.defSpur += 4;
-                    }
-                    break;
-                case Weapon.WhitedownSpear:
-                    if (this.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying) >= 3) {
-                        defUnit.atkSpur -= 4;
-                        defUnit.defSpur -= 4;
-                    }
-                    break;
-                case PassiveB.BeliefInLove:
-                    if (defUnit.snapshot.restHpPercentage == 100) {
-                        defUnit.atkSpur -= 5;
-                        defUnit.defSpur -= 5;
-                    }
-                    break;
-                case Weapon.SatougashiNoAnki:
-                    atkUnit.spdSpur += 4;
-                    break;
-                case Weapon.RinkahNoOnikanabo:
-                    if (atkUnit.snapshot.restHpPercentage < 100) {
-                        atkUnit.atkSpur += 5;
-                        atkUnit.defSpur += 5;
-                        atkUnit.battleContext.increaseCooldownCountForDefense = true;
-                    }
-                    break;
-                case Weapon.KokyousyaNoYari:
-                    if (defUnit.snapshot.restHpPercentage >= 70) {
-                        atkUnit.atkSpur += 5;
-                        atkUnit.resSpur += 5;
-                    }
-                    break;
-                case Weapon.HadesuOmega:
-                    atkUnit.atkSpur += 4;
-                    atkUnit.spdSpur += 4;
-                    if (atkUnit.hasSpecial && atkUnit.tmpSpecialCount == 0) {
-                        atkUnit.atkSpur += 6;
-                    }
-                    break;
-                case Weapon.ZekkaiNoSoukyu:
-                    if (defUnit.snapshot.restHpPercentage == 100) {
-                        atkUnit.addAllSpur(4);
-                    }
-                    break;
-                case Weapon.GeneiFeather:
-                    if (this.__isThereAnyAllyUnit(atkUnit, x => x.isActionDone)) {
-                        atkUnit.atkSpur += 6;
-                        atkUnit.spdSpur += 6;
-                        atkUnit.battleContext.isDesperationActivated = true;
-                    }
-                    break;
-                case Weapon.EishinNoAnki:
-                    atkUnit.atkSpur += 5;
-                    atkUnit.spdSpur += 5;
-                    break;
-                case Weapon.KinranNoSyo:
-                    atkUnit.atkSpur += 6;
-                    break;
-                case Weapon.HelmsmanAxePlus:
-                case Weapon.RauaFoxPlus:
-                case Weapon.BlarfoxPlus:
-                case Weapon.GronnfoxPlus:
-                    defUnit.addAllSpur(-4);
-                    break;
-                case Weapon.RohyouNoKnife:
-                    if (defUnit.isMeleeWeaponType() || atkUnit.isWeaponRefined) {
-                        atkUnit.defSpur += 20;
-                    }
-                    break;
-                case Weapon.Paruthia:
-                    if (!atkUnit.isWeaponRefined) {
-                        atkUnit.resSpur += 4;
-                    }
-                    else {
-                        if (isWeaponTypeTome(defUnit.weaponType)) {
-                            atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
-                        }
-                        if (atkUnit.isWeaponSpecialRefined) {
-                            if (defUnit.isRangedWeaponType()) {
-                                atkUnit.atkSpur += 6;
-                            }
-                        }
-                    }
-                    break;
-                case Weapon.Yatonokami:
-                    if (atkUnit.weaponRefinement == WeaponRefinementType.None) {
-                        atkUnit.spdSpur += 4;
-                    }
-                    break;
-                case Weapon.KageroNoGenwakushin:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, defUnit);
-                    }
-                    break;
-                case Weapon.KaigaraNoYari:
-                case Weapon.KiagaraNoYariPlus:
-                case Weapon.BeachFlag:
-                case Weapon.BeachFlagPlus:
-                case Weapon.YashiNoMiNoYumi:
-                case Weapon.YashiNoMiNoYumiPlus:
-                    atkUnit.addAllSpur(2);
-                    break;
-                case Weapon.Sangurizuru:
-                    if (!atkUnit.isWeaponRefined) {
-                        atkUnit.atkSpur += 3;
-                        atkUnit.spdSpur += 3;
-                    } else {
-                        atkUnit.atkSpur += 4;
-                        atkUnit.spdSpur += 4;
-                        if (atkUnit.isWeaponSpecialRefined) {
-                            atkUnit.atkSpur += 6;
-                            atkUnit.spdSpur += 6;
-                        }
-                    }
-                    break;
-                case Weapon.GeneiFalcion:
-                    {
-                        let count = this.__countAlliesActionDone(atkUnit);
-                        let amount = Math.min(7, count * 2 + 3);
-                        atkUnit.atkSpur += amount;
-                        atkUnit.spdSpur += amount;
-                    }
-                    break;
-                case PassiveA.YaibaNoSession3:
-                    if (!calcPotentialDamage) {
-                        let count = this.__countAlliesActionDone(atkUnit);
-                        let amount = Math.min(9, count * 3 + 3);
-                        atkUnit.atkSpur += amount;
-                        atkUnit.spdSpur += amount;
-                    }
-                    break;
-                case PassiveA.SteadyImpact:
-                    atkUnit.spdSpur += 7;
-                    atkUnit.defSpur += 10;
-                    break;
-                case PassiveA.SwiftImpact:
-                    atkUnit.spdSpur += 7;
-                    atkUnit.resSpur += 10;
-                    break;
-                case PassiveA.KishinKongoNoSyungeki:
-                    atkUnit.atkSpur += 6;
-                    atkUnit.defSpur += 10;
-                    break;
-                case PassiveA.KishinMeikyoNoSyungeki:
-                    atkUnit.atkSpur += 6;
-                    atkUnit.resSpur += 10;
-                    break;
-                case Weapon.BlazingDurandal:
-                    atkUnit.battleContext.increaseCooldownCountForBoth();
-                    atkUnit.battleContext.reducesCooldownCount = true;
-                    if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
-                        atkUnit.spdSpur += 7;
-                        atkUnit.defSpur += 10;
-                    }
-                    break;
-                case Weapon.Balmung:
-                    if (defUnit.snapshot.isRestHpFull) {
-                        atkUnit.battleContext.invalidateAllOwnDebuffs();
-                        atkUnit.addAllSpur(5);
-                    }
-                    break;
-                case Weapon.NinissIceLance:
-                    if (!atkUnit.isWeaponRefined) {
-                        atkUnit.addAllSpur(4);
-                    }
-                    break;
-                case Weapon.Forblaze:
-                    if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
-                        atkUnit.atkSpur += 6;
-                    }
-                    break;
-                case Weapon.HanasKatana:
-                    if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
-                        atkUnit.atkSpur += 4;
-                        atkUnit.spdSpur += 4;
-                    }
-                    break;
-                case Weapon.Durandal:
-                    atkUnit.atkSpur += 6;
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.atkSpur += 4;
-                        atkUnit.spdSpur += 4;
-                    }
-                    break;
-                case Weapon.FurederikuNoKenfu:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.atkSpur += 6;
-                    }
-                    break;
-                case Weapon.AijouNoHanaNoYumiPlus:
-                case Weapon.BukeNoSteckPlus:
-                    atkUnit.atkSpur += 4;
-                    atkUnit.defSpur += 4;
-                    break;
-                case Weapon.JokerNoSyokki:
-                    defUnit.addAllSpur(-4);
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        let isActivated = false;
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 3, false)) {
-                            if (!unit.isFullHp) {
-                                isActivated = true;
-                                break;
-                            }
-                        }
-                        if (isActivated) {
-                            atkUnit.addAllSpur(4);
-                        }
-                    }
-                    break;
-                case PassiveA.DeathBlow3:
-                    atkUnit.atkSpur += 6;
-                    break;
-                case PassiveA.DeathBlow4: atkUnit.atkSpur += 8; break;
-                case Weapon.Toron:
-                case Weapon.MiraiNoSeikishiNoYari:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.spdSpur += 6;
-                    }
-                    break;
-                case PassiveA.HienNoIchigeki1: atkUnit.spdSpur += 2; break;
-                case PassiveA.HienNoIchigeki2: atkUnit.spdSpur += 4; break;
-                case PassiveA.HienNoIchigeki3: atkUnit.spdSpur += 6; break;
-                case PassiveA.HienNoIchigeki4: atkUnit.spdSpur += 9; break;
-                case PassiveA.KongoNoIchigeki3: atkUnit.defSpur += 6; break;
-                case PassiveA.MeikyoNoIchigeki3: atkUnit.resSpur += 6; break;
-                case Weapon.KurokiChiNoTaiken:
-                case Weapon.FlowerStandPlus:
-                case Weapon.CakeKnifePlus:
-                case Weapon.SyukuhaiNoBottlePlus:
-                case Weapon.SyukuhukuNoHanaNoYumiPlus:
-                case PassiveA.KishinHienNoIchigeki2:
-                    atkUnit.atkSpur += 4; atkUnit.spdSpur += 4;
-                    break;
-                case Weapon.Amite:
-                case Weapon.KazahanaNoReitou:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.atkSpur += 4; atkUnit.spdSpur += 4;
-                    }
-                    break;
-                case PassiveA.KishinHienNoIchigeki3: atkUnit.atkSpur += 6; atkUnit.spdSpur += 7; break;
-                case PassiveA.KishinKongoNoIchigeki2: atkUnit.atkSpur += 4; atkUnit.defSpur += 4; break;
-                case PassiveA.KishinMeikyoNoIchigeki2: atkUnit.atkSpur += 4; atkUnit.resSpur += 4; break;
-                case PassiveA.HienKongoNoIchigeki2: atkUnit.spdSpur += 4; atkUnit.defSpur += 4; break;
-                case PassiveA.HienMeikyoNoIchigeki2: atkUnit.spdSpur += 4; atkUnit.resSpur += 4; break;
-                case PassiveA.KongoMeikyoNoIchigeki2: atkUnit.defSpur += 4; atkUnit.resSpur += 4; break;
-                case Weapon.Sogun:
-                    if (defUnit.weaponType == WeaponType.Sword
-                        || defUnit.weaponType == WeaponType.Lance
-                        || defUnit.weaponType == WeaponType.Axe
-                        || isWeaponTypeBreath(defUnit.weaponType)) {
-                        atkUnit.atkSpur += 4;
-                        atkUnit.spdSpur += 4;
-                        atkUnit.defSpur += 4;
-                        atkUnit.resSpur += 4;
-                    }
-                    break;
+            let skillFunc = this._applySkillEffectForAtkUnitFuncDict[skillId];
+            if (skillFunc) {
+                skillFunc(atkUnit, defUnit, calcPotentialDamage);
             }
         }
 
         for (let skillId of defUnit.enumerateSkills()) {
-            switch (skillId) {
-                case Weapon.Kurimuhirudo:
-                    if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.Amatsu:
-                case Weapon.Puji:
-                    if (defUnit.snapshot.restHpPercentage >= 50) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.TwinCrestPower:
-                    if (defUnit.isTransformed) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.ShishiouNoTsumekiba:
-                    defUnit.addAllSpur(4);
-                    if (defUnit.isTransformed) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.OgonNoTanken:
-                    if (defUnit.isSpecialCharged) {
-                        defUnit.battleContext.canCounterattackToAllDistance = true;
-                    }
-                    break;
-                case Weapon.BenihimeNoOno:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.atkSpur += 5;
-                        atkUnit.defSpur += 5;
-                        atkUnit.battleContext.increaseCooldownCountForBoth();
-                    }
-                    break;
-                case Weapon.KurooujiNoYari:
-                    defUnit.atkSpur += 5;
-                    defUnit.defSpur += 5;
-                    defUnit.resSpur += 5;
-                    break;
-                case PassiveB.GuardBearing3:
-                    if (!defUnit.isOneTimeActionActivatedForPassiveB) {
-                        defUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, atkUnit);
-                    }
-                    break;
-                case Weapon.StalwartSword:
-                    atkUnit.atkSpur -= 6;
-                    break;
-                case PassiveB.BeliefInLove:
-                    atkUnit.atkSpur -= 5;
-                    atkUnit.defSpur -= 5;
-                    break;
-                case Weapon.RinkahNoOnikanabo:
-                    defUnit.atkSpur += 5;
-                    defUnit.defSpur += 5;
-                    defUnit.battleContext.increaseCooldownCountForDefense = true;
-                    break;
-                case PassiveA.DistantFoil:
-                case PassiveA.CloseFoil:
-                    if (isPhysicalWeaponType(atkUnit.weaponType)) {
-                        defUnit.atkSpur += 5;
-                        defUnit.defSpur += 5;
-                    }
-                    break;
-                case PassiveA.DistantWard:
-                    if (!isPhysicalWeaponType(atkUnit.weaponType)) {
-                        defUnit.atkSpur += 5;
-                        defUnit.resSpur += 5;
-                    }
-                    break;
-                case PassiveA.CloseWard:
-                    if (!isPhysicalWeaponType(atkUnit.weaponType)) {
-                        defUnit.atkSpur += 5;
-                        defUnit.resSpur += 5;
-                        defUnit.battleContext.invalidatesReferenceLowerMit = true;
-                    }
-                    break;
-                case Weapon.KokyousyaNoYari:
-                    defUnit.atkSpur += 5;
-                    defUnit.resSpur += 5;
-                    break;
-                case Weapon.Vidofuniru:
-                    if (!defUnit.isWeaponRefined) {
-                        if (atkUnit.weaponType == WeaponType.Sword
-                            || atkUnit.weaponType == WeaponType.Lance
-                            || atkUnit.weaponType == WeaponType.Axe
-                        ) {
-                            defUnit.defSpur += 7;
-                        }
-                    } else {
-                        if (atkUnit.weaponType == WeaponType.Sword
-                            || atkUnit.weaponType == WeaponType.Lance
-                            || atkUnit.weaponType == WeaponType.Axe
-                            || isWeaponTypeBreath(atkUnit.weaponType)
-                            || isWeaponTypeBeast(atkUnit.weaponType)
-                        ) {
-                            defUnit.defSpur += 7;
-                            defUnit.ResSpur += 7;
-                        }
-                    }
-                    break;
-                case Weapon.Naga:
-                    if (defUnit.isWeaponSpecialRefined) {
-                        defUnit.defSpur += 4;
-                        defUnit.resSpur += 4;
-                    }
-                    else {
-                        defUnit.defSpur += 2;
-                        defUnit.resSpur += 2;
-                    }
-                    break;
-                case Weapon.ManatsuNoBreath:
-                    defUnit.battleContext.increaseCooldownCountForDefense = true;
-                    break;
-                case Weapon.FurorinaNoSeisou:
-                    if (atkUnit.weaponType == WeaponType.Sword
-                        || atkUnit.weaponType == WeaponType.Lance
-                        || atkUnit.weaponType == WeaponType.Axe
-                        || isWeaponTypeBreathOrBeast(atkUnit.weaponType)
-                    ) {
-                        defUnit.addAllSpur(4);
-                    }
-                    break;
-                case Weapon.HinataNoMoutou:
-                    defUnit.atkSpur += 4;
-                    defUnit.defSpur += 4;
-                    break;
-                case Weapon.OboroNoShitsunagitou:
-                    if (defUnit.isWeaponSpecialRefined) {
-                        if (atkUnit.isMeleeWeaponType()) {
-                            defUnit.resSpur += 6;
-                            defUnit.defSpur += 6;
-                        }
-                    }
-                    break;
-                case Weapon.YukyuNoSyo:
-                    if (defUnit.isWeaponSpecialRefined) {
-                        defUnit.resSpur += 4;
-                        defUnit.defSpur += 4;
-                    }
-                    break;
-                case Weapon.FutsugyouNoYari:
-                    if (defUnit.isWeaponSpecialRefined) {
-                        defUnit.atkSpur += 4;
-                        defUnit.defSpur += 4;
-                    }
-                    break;
-                case Weapon.ByakuyaNoRyuuseki:
-                    if (!atkUnit.isBuffed) {
-                        defUnit.addAllSpur(4);
-                    }
-                    break;
-                case Weapon.Blarserpent:
-                case Weapon.BlarserpentPlus:
-                case Weapon.GronnserpentPlus:
-                case Weapon.RauarserpentPlus:
-                    if (atkUnit.isRangedWeaponType()) {
-                        defUnit.defSpur += 6;
-                        defUnit.resSpur += 6;
-                    }
-                    break;
-                case Weapon.GeneiFalcion:
-                    {
-                        let count = this.__countEnemiesActionDone(defUnit);
-                        let amount = Math.max(3, 7 - count * 2);
-                        defUnit.defSpur += amount;
-                        defUnit.resSpur += amount;
-                    }
-                    break;
-                case PassiveA.TateNoSession3:
-                    if (!calcPotentialDamage) {
-                        let count = this.__countEnemiesActionDone(defUnit);
-                        let amount = Math.max(3, 9 - count * 3);
-                        atkUnit.defSpur += amount;
-                        atkUnit.resSpur += amount;
-                    }
-                    break;
-                case Weapon.Balmung:
-                    defUnit.battleContext.invalidateAllOwnDebuffs();
-                    defUnit.addAllSpur(5);
-                    break;
-                case PassiveA.DartingBreath:
-                    defUnit.spdSpur += 4;
-                    defUnit.battleContext.increaseCooldownCountForBoth();
-                    break;
-                case PassiveA.KishinNoKokyu:
-                    defUnit.atkSpur += 4;
-                    defUnit.battleContext.increaseCooldownCountForBoth();
-                    break;
-                case PassiveA.KongoNoKokyu:
-                    defUnit.defSpur += 4;
-                    defUnit.battleContext.increaseCooldownCountForBoth();
-                    break;
-                case PassiveA.MeikyoNoKokyu:
-                    defUnit.resSpur += 4;
-                    defUnit.battleContext.increaseCooldownCountForBoth();
-                    break;
-                case Weapon.BerkutsLance:
-                    defUnit.resSpur += 4;
-                    break;
-                case Weapon.BerkutsLancePlus:
-                    if (defUnit.weaponRefinement == WeaponRefinementType.None) {
-                        defUnit.resSpur += 4;
-                    } else {
-                        defUnit.resSpur += 7;
-                    }
-                    break;
-                case Weapon.Ekkezakkusu:
-                    if (defUnit.isWeaponSpecialRefined) {
-                        if (atkUnit.isRangedWeaponType()) {
-                            defUnit.defSpur += 6;
-                            defUnit.resSpur += 6;
-                        }
-                    }
-                    break;
-                case PassiveA.DistantDef4:
-                    if (atkUnit.isRangedWeaponType()) {
-                        defUnit.defSpur += 8;
-                        defUnit.resSpur += 8;
-                        defUnit.battleContext.invalidateAllBuffs();
-                    }
-                    break;
-                case PassiveA.CloseDef4:
-                    if (atkUnit.isMeleeWeaponType()) {
-                        defUnit.defSpur += 8;
-                        defUnit.resSpur += 8;
-                        defUnit.battleContext.invalidateAllBuffs();
-                    }
-                    break;
-                case Weapon.EnkyoriBougyoNoYumiPlus:
-                case PassiveA.DistantDef3:
-                    if (atkUnit.isRangedWeaponType()) {
-                        defUnit.defSpur += 6;
-                        defUnit.resSpur += 6;
-                    }
-                    break;
-                case PassiveA.CloseDef3:
-                    if (atkUnit.isMeleeWeaponType()) {
-                        defUnit.defSpur += 6;
-                        defUnit.resSpur += 6;
-                    }
-                    break;
-                case Weapon.MoumokuNoYumi:
-                    if (atkUnit.isRangedWeaponType()) {
-                        defUnit.addAllSpur(4);
-                    }
-                    break;
-                case Weapon.HuinNoKen:
-                    if (defUnit.isWeaponSpecialRefined) {
-                        defUnit.defSpur += 4;
-                        defUnit.resSpur += 4;
-                    }
-                    else {
-                        defUnit.defSpur += 2;
-                        defUnit.resSpur += 2;
-                    }
-                    break;
-                case Weapon.ShirokiChiNoNaginata:
-                    defUnit.atkSpur += 4;
-                    defUnit.defSpur += 4;
-                    break;
-                case Weapon.Seiju:
-                case Weapon.SeijuPlus:
-                case Weapon.HandBell:
-                case Weapon.HandBellPlus:
-                case Weapon.PresentBukuro:
-                case Weapon.PresentBukuroPlus:
-                case Weapon.Syokudai:
-                case Weapon.SyokudaiPlus:
-                    defUnit.addAllSpur(2);
-                    break;
-                case Weapon.MamoriNoKen:
-                case Weapon.MamoriNoKenPlus:
-                case Weapon.MamoriNoYariPlus:
-                case Weapon.MamoriNoOnoPlus:
-                    defUnit.defSpur += 7;
-                    break;
-                case Weapon.BariaNoKen:
-                case Weapon.BariaNoKenPlus:
-                case Weapon.BariaNoYariPlus:
-                case Weapon.BarrierAxePlus:
-                    defUnit.resSpur += 7;
-                    break;
-                case Weapon.HankoNoYari:
-                case Weapon.HankoNoYariPlus:
-                case Weapon.ReprisalAxePlus:
-                case PassiveA.KishinNoKamae3:
-                    defUnit.atkSpur += 6;
-                    break;
-                case PassiveA.HienNoKamae3: defUnit.spdSpur += 6; break;
-                case PassiveA.KongoNoKamae3: defUnit.defSpur += 6; break;
-                case PassiveA.MeikyoNoKamae3: defUnit.resSpur += 6; break;
-                case PassiveA.KishinHienNoKamae2:
-                    defUnit.atkSpur += 4; defUnit.spdSpur += 4; break;
-                case PassiveA.KishinKongoNoKamae1:
-                    defUnit.atkSpur += 2; defUnit.defSpur += 2;
-                    break;
-                case PassiveA.OstiasCounter:
-                case Weapon.KorakuNoKazariYariPlus:
-                case PassiveA.KishinKongoNoKamae2:
-                    defUnit.atkSpur += 4; defUnit.defSpur += 4;
-                    break;
-                case Weapon.SaladaSandPlus:
-                case PassiveA.KishinMeikyoNoKamae2:
-                    defUnit.atkSpur += 4; defUnit.resSpur += 4;
-                    break;
-                case Weapon.GiyuNoYari:
-                    if (defUnit.isWeaponSpecialRefined) {
-                        defUnit.spdSpur += 4; defUnit.defSpur += 4;
-                    }
-                    break;
-                case PassiveA.HienKongoNoKamae2: defUnit.spdSpur += 4; defUnit.defSpur += 4; break;
-                case PassiveA.HienMeikyoNoKamae1: defUnit.spdSpur += 2; defUnit.resSpur += 2; break;
-                case PassiveA.HienMeikyoNoKamae2: defUnit.spdSpur += 4; defUnit.resSpur += 4; break;
-                case PassiveA.JaryuNoUroko:
-                case Weapon.MizuNoBreath:
-                case Weapon.MizuNoBreathPlus:
-                case PassiveA.KongoMeikyoNoKamae2: defUnit.defSpur += 4; defUnit.resSpur += 4; break;
-                case PassiveA.CloseReversal:
-                    defUnit.defSpur += 5;
-                    break;
-                case PassiveA.KongoNoKamae4:
-                    defUnit.defSpur += 8;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.MeikyoNoKamae4:
-                    defUnit.resSpur += 8;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.KishinMeikyoNoKamae3:
-                    defUnit.atkSpur += 6;
-                    defUnit.resSpur += 6;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.HienKongoNoKamae3:
-                    defUnit.spdSpur += 6;
-                    defUnit.defSpur += 6;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.SwiftStance3:
-                    defUnit.spdSpur += 6;
-                    defUnit.resSpur += 6;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.KishinKongoNoKamae3:
-                    defUnit.atkSpur += 6;
-                    defUnit.defSpur += 6;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.KishinHienNoKamae3:
-                    defUnit.atkSpur += 6;
-                    defUnit.spdSpur += 6;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.KongoMeikyoNoKamae3:
-                    defUnit.resSpur += 6;
-                    defUnit.defSpur += 6;
-                    defUnit.battleContext.reducesCooldownCount = true;
-                    break;
-                case PassiveA.SacaNoOkite:
-                    if (this.__countAlliesWithinSpecifiedSpaces(defUnit, 2, x => true) >= 2) {
-                        defUnit.addAllSpur(4);
-                    }
-                    break;
+            let skillFunc = this._applySkillEffectForDefUnitFuncDict[skillId];
+            if (skillFunc) {
+                skillFunc(defUnit, atkUnit, calcPotentialDamage);
             }
         }
     }
