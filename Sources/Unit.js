@@ -2209,7 +2209,7 @@ class Unit {
 
     hasStatusEffect(statusEffectType) {
         for (let statusEffect of this.statusEffects) {
-            if (statusEffect == statusEffectType) {
+            if (statusEffect === statusEffectType) {
                 return true;
             }
         }
@@ -2984,48 +2984,19 @@ class Unit {
     }
 
     getTriangleAdeptAdditionalRatio() {
-        if (this.passiveA == PassiveA.AishoGekika3
-            || this.weapon == Weapon.AsahiNoKen
-            || this.weapon == Weapon.AsahiNoKenPlus
-            || this.weapon == Weapon.SoukaiNoYari
-            || this.weapon == Weapon.SoukaiNoYariPlus
-            || this.weapon == Weapon.ShinryokuNoOno
-            || this.weapon == Weapon.ShinryokuNoOnoPlus
-            || this.weapon == Weapon.WakakiMogyuNoYari
-            || this.weapon == Weapon.WakakiKurohyoNoKen
-            || this.weapon == Weapon.ShinginNoSeiken
-            || this.weapon == Weapon.YoheidanNoSenfu
-            || (this.weapon == Weapon.Forukuvangu && this.isWeaponSpecialRefined)
-            || (this.weapon == Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
+        if (isTriangleAdeptSkill(this.passiveA)
+            || isTriangleAdeptSkill(this.weapon)
+            || (this.weapon === Weapon.Forukuvangu && this.isWeaponSpecialRefined)
+            || (this.weapon === Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
             || this.hasStatusEffect(StatusEffectType.TriangleAdept)
         ) {
             return 0.2;
-        } else if (this.passiveA == PassiveA.AishoGekika2) {
+        } else if (this.passiveA === PassiveA.AishoGekika2) {
             return 0.15;
-        } else if (this.passiveA == PassiveA.AishoGekika1) {
+        } else if (this.passiveA === PassiveA.AishoGekika1) {
             return 0.1;
         }
         return 0;
-    }
-
-    // @TODO: 相性相殺の修正で呼び出さなくなったので動作確認後に削除
-    hasTriangleAdeptSkill() {
-        return this.passiveA == PassiveA.AishoGekika3
-            || this.passiveA == PassiveA.AishoGekika2
-            || this.passiveA == PassiveA.AishoGekika1
-            || this.weapon == Weapon.AsahiNoKen
-            || this.weapon == Weapon.AsahiNoKenPlus
-            || this.weapon == Weapon.SoukaiNoYari
-            || this.weapon == Weapon.SoukaiNoYariPlus
-            || this.weapon == Weapon.ShinryokuNoOno
-            || this.weapon == Weapon.ShinryokuNoOnoPlus
-            || this.weapon == Weapon.WakakiMogyuNoYari
-            || this.weapon == Weapon.WakakiKurohyoNoKen
-            || this.weapon == Weapon.ShinginNoSeiken
-            || this.weapon == Weapon.YoheidanNoSenfu
-            || (this.weapon == Weapon.Forukuvangu && this.isWeaponSpecialRefined)
-            || (this.weapon == Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
-            ;
     }
 
     // 「自分のスキルによる3すくみ激化を無効化」
@@ -3073,16 +3044,7 @@ class Unit {
         return 0;
     }
     __getEvalSpdAdd() {
-        switch (this.passiveS) {
-            case PassiveS.HayasaNoKyosei1:
-                return 5;
-            case PassiveS.HayasaNoKyosei2:
-                return 8;
-            case PassiveS.HayasaNoKyosei3:
-                return 10;
-            default:
-                return 0;
-        }
+        return getEvalSpdAdd(this.passiveS);
     }
 
     getAtkInPrecombatWithoutDebuff() {
@@ -3245,57 +3207,32 @@ class Unit {
         }
     }
     __getEvalResAdd() {
-        switch (this.passiveS) {
-            case PassiveS.MaboNoKyosei1:
-                return 5;
-            case PassiveS.MaboNoKyosei2:
-                return 8;
-            case PassiveS.MaboNoKyosei3:
-                return 10;
-            default:
-                return 0;
+        let value = getEvalResAdd(this.passiveS);
+        if (value) {
+            return value;
         }
+        return 0;
     }
 
     hasSkill(skillId) {
-        for (let id of this.enumerateSkills()) {
-            if (id == skillId) {
-                return true;
-            }
-        }
-        return false;
+        return this.weapon == skillId
+            || this.support == skillId
+            || this.special == skillId
+            || this.passiveA == skillId
+            || this.passiveB == skillId
+            || this.passiveC == skillId
+            || this.passiveS == skillId;
     }
 
     hasPassiveSkill(skillId) {
-        for (let id of this.enumeratePassiveSkills()) {
-            if (id == skillId) {
-                return true;
-            }
-        }
-        return false;
+        return this.passiveA == skillId
+            || this.passiveB == skillId
+            || this.passiveC == skillId
+            || this.passiveS == skillId;
     }
 
     isPhysicalAttacker() {
-        switch (this.weaponType) {
-            case WeaponType.Sword:
-            case WeaponType.RedBeast:
-            case WeaponType.RedBow:
-            case WeaponType.RedDagger:
-            case WeaponType.Lance:
-            case WeaponType.BlueBeast:
-            case WeaponType.BlueBow:
-            case WeaponType.BlueDagger:
-            case WeaponType.Axe:
-            case WeaponType.GreenBeast:
-            case WeaponType.GreenBow:
-            case WeaponType.GreenDagger:
-            case WeaponType.ColorlessBeast:
-            case WeaponType.ColorlessBow:
-            case WeaponType.ColorlessDagger:
-                return true;
-            default:
-                return false;
-        }
+        return isPhysicalWeaponType(this.weaponType);
     }
 
     updateStatusByWeaponRefinement() {

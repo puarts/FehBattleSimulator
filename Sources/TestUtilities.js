@@ -78,13 +78,13 @@ class test_DamageCalculator {
     }
 
     disableProfile() {
-        this.damageCalc.profile.isEnabled = false;
+        this.damageCalc.profiler.isEnabled = false;
     }
 
     getProfileLog() {
         let log = "";
-        for (let name in this.damageCalc.profile.elaspedMilliseconds) {
-            let ms = this.damageCalc.profile.elaspedMilliseconds[name];
+        for (let name in this.damageCalc.profiler.elaspedMilliseconds) {
+            let ms = this.damageCalc.profiler.elaspedMilliseconds[name];
             log += `${name}: ${ms} ms\n`;
         }
         return log;

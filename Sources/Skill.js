@@ -2642,6 +2642,47 @@ function getSelfDamageDealtRateToAddSpecialDamage(skillId) {
     }
 }
 
+const TriangleAdeptDict = {};
+TriangleAdeptDict[PassiveA.AishoGekika3] = 0;
+TriangleAdeptDict[Weapon.AsahiNoKen] = 0;
+TriangleAdeptDict[Weapon.AsahiNoKenPlus] = 0;
+TriangleAdeptDict[Weapon.SoukaiNoYari] = 0;
+TriangleAdeptDict[Weapon.SoukaiNoYariPlus] = 0;
+TriangleAdeptDict[Weapon.ShinryokuNoOno] = 0;
+TriangleAdeptDict[Weapon.ShinryokuNoOnoPlus] = 0;
+TriangleAdeptDict[Weapon.WakakiMogyuNoYari] = 0;
+TriangleAdeptDict[Weapon.WakakiKurohyoNoKen] = 0;
+TriangleAdeptDict[Weapon.ShinginNoSeiken] = 0;
+TriangleAdeptDict[Weapon.YoheidanNoSenfu] = 0;
+
+/// 相性激化3の効果を標準で発動できるすきるかどうかを判定します。
+function isTriangleAdeptSkill(skillId) {
+    return skillId in TriangleAdeptDict;
+}
+const EvalSpdAddDict = {};
+EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
+EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
+EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
+
+/// 速さ比較時の速さ加算値を取得します。
+function getEvalSpdAdd(passiveS) {
+    let value = EvalSpdAddDict[passiveS];
+    if (value) {
+        return value;
+    }
+    return 0;
+}
+
+const EvalResAddDict = {};
+EvalResAddDict[PassiveS.MaboNoKyosei1] = 5;
+EvalResAddDict[PassiveS.MaboNoKyosei2] = 8;
+EvalResAddDict[PassiveS.MaboNoKyosei3] = 10;
+
+/// 魔防比較時の速さ加算値を取得します。
+function getEvalResAdd(passiveS) {
+    return passiveS in EvalResAddDict;
+}
+
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,

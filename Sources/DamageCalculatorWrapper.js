@@ -34,7 +34,7 @@ class DamageCalculatorWrapper {
         this.map = map;
         this.globalBattleContext = globalBattleContext;
         this._damageCalc = new DamageCalculator();
-        this.profile = new PerformanceProfile();
+        this.profiler = new PerformanceProfile();
 
         // 高速化用
         this._applySkillEffectForAtkUnitFuncDict = {};
@@ -1551,7 +1551,7 @@ class DamageCalculatorWrapper {
 
     __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
         let self = this;
-        this.profile.profile("__applySkillEffectForUnit", () => {
+        this.profiler.profile("__applySkillEffectForUnit", () => {
             self.____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage);
         });
     }
@@ -7415,7 +7415,7 @@ class DamageCalculatorWrapper {
 
     updateUnitSpur(targetUnit, calcPotentialDamage = false, ignoresSkillEffectFromAllies = false) {
         let self = this;
-        this.profile.profile("updateUnitSpur", () => {
+        this.profiler.profile("updateUnitSpur", () => {
             self.__updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies);
         });
     }
