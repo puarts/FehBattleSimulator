@@ -1286,7 +1286,7 @@ const Special = {
     Seitate: 474, // 聖盾
     Seii: 478, // 聖衣
     Seikabuto: 476, // 聖兜
-    KoriNoSeikyo: 480, // 氷の聖鏡
+    IceMirror: 480, // 氷の聖鏡
     IceMirror2: 1629, // 氷の聖鏡・承
 
     ShippuNoSyukuhuku: 499, // 疾風の祝福
@@ -2291,7 +2291,7 @@ DefenseSpecialDict[Special.Kotate] = 0; // 小盾
 DefenseSpecialDict[Special.Seitate] = 0; // 聖盾
 DefenseSpecialDict[Special.Seii] = 0;  // 聖衣
 DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
-DefenseSpecialDict[Special.KoriNoSeikyo] = 0;
+DefenseSpecialDict[Special.IceMirror] = 0;
 DefenseSpecialDict[Special.IceMirror2] = 0;
 DefenseSpecialDict[Special.NegatingFang] = 0;
 
@@ -2681,6 +2681,76 @@ EvalResAddDict[PassiveS.MaboNoKyosei3] = 10;
 /// 魔防比較時の速さ加算値を取得します。
 function getEvalResAdd(passiveS) {
     return passiveS in EvalResAddDict;
+}
+
+const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.EbonPirateClaw] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.CrossbonesClaw] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.ResolvedFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.RefreshedFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.RenewedFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.RaydreamHorn] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.BrightmareHorn] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.NightmareHorn] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.BrazenCatFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.TaguelFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.TaguelChildFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.FoxkitFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.NewBrazenCatFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.NewFoxkitFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.KarasuOuNoHashizume] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.TakaouNoHashizume] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.YoukoohNoTsumekiba] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.JunaruSenekoNoTsumekiba] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.ShishiouNoTsumekiba] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.TrasenshiNoTsumekiba] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.JinroMusumeNoTsumekiba] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.JinroOuNoTsumekiba] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.OkamijoouNoKiba] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.ShirasagiNoTsubasa] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.SeijuNoKeshinHiko] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.BridesFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.GroomsWings] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.SkyPirateClaw] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.TwinCrestPower] = 0;
+
+function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
+    return weapon in WeaponTypesAddAtk2AfterTransform;
+}
+
+const AdvantageousAgainstColorlessWeaponTable = {};
+AdvantageousAgainstColorlessWeaponTable[Weapon.EtherealBreath] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.KinsekiNoSyo] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.GunshiNoRaisyo] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.KokukarasuNoSyo] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.GunshiNoFusho] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.Blarraven] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.BlarravenPlus] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.Gronnraven] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.GronnravenPlus] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.Rauarraven] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.RauarravenPlus] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.YukyuNoSyo] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.Nagurufaru] = 0;
+AdvantageousAgainstColorlessWeaponTable[Weapon.TomeOfOrder] = 0;
+
+function isAdvantageousForColorless(weapon) {
+    return weapon in AdvantageousAgainstColorlessWeaponTable;
+}
+
+
+const BreakerSkillToTargetWeaponTypeTable = {};
+BreakerSkillToTargetWeaponTypeTable[PassiveB.Swordbreaker3] = WeaponType.Sword;
+BreakerSkillToTargetWeaponTypeTable[PassiveB.Lancebreaker3] = WeaponType.Lance;
+BreakerSkillToTargetWeaponTypeTable[PassiveB.Axebreaker3] = WeaponType.Axe;
+BreakerSkillToTargetWeaponTypeTable[PassiveB.Bowbreaker3] = WeaponType.ColorlessBow;
+BreakerSkillToTargetWeaponTypeTable[PassiveB.Daggerbreaker3] = WeaponType.ColorlessDagger;
+BreakerSkillToTargetWeaponTypeTable[PassiveB.RedTomebreaker3] = WeaponType.RedTome;
+BreakerSkillToTargetWeaponTypeTable[PassiveB.BlueTomebreaker3] = WeaponType.BlueTome;
+BreakerSkillToTargetWeaponTypeTable[PassiveB.GreenTomebreaker3] = WeaponType.GreenTome;
+
+function getBreakerSkillTargetWeaponType(breakerSkillId) {
+    return BreakerSkillToTargetWeaponTypeTable[breakerSkillId];
 }
 
 /// スキル情報です。ユニットの初期化等に使用します。

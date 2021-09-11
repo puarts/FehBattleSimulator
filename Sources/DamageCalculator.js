@@ -114,7 +114,7 @@ class DamageCalculator {
         if (!this.isLogEnabled) {
             return;
         }
-        this.writeLog(unit.name + "の残りHP " + unit.restHp + "/" + unit.maxHpWithSkills);
+        if (this.isLogEnabled) this.writeLog(unit.name + "の残りHP " + unit.restHp + "/" + unit.maxHpWithSkills);
     }
 
     clearLog() {
@@ -142,7 +142,7 @@ class DamageCalculator {
         result.defUnit_res = defUnit.getResInCombat(atkUnit);
 
         // 戦闘中ダメージ計算
-        this.writeDebugLog("戦闘中ダメージ計算..");
+        if (this.isLogEnabled) this.writeDebugLog("戦闘中ダメージ計算..");
 
         if (defUnit.battleContext.isVantageActivated) {
             // 反撃
@@ -287,7 +287,7 @@ class DamageCalculator {
             }
 
             if (atkUnit.restHp == 0) {
-                this.writeLog(atkUnit.getNameWithGroup() + "は戦闘不能");
+                if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "は戦闘不能");
                 return result;
             }
         }
@@ -364,16 +364,16 @@ class DamageCalculator {
 
     __calcCombatDamage(atkUnit, defUnit, context) {
         if (!this.__isDead(atkUnit)) {
-            this.writeDebugLog("----");
+            if (this.isLogEnabled) this.writeDebugLog("----");
             if (context.isCounterattack) {
-                this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
+                if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
             }
             else {
                 if (context.isFollowupAttack) {
-                    this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に追撃");
+                    if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に追撃");
                 }
                 else {
-                    this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "を攻撃");
+                    if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "を攻撃");
                 }
             }
         }
@@ -411,7 +411,7 @@ class DamageCalculator {
         let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
             || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
         if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
-            this.writeDebugLog("守備魔防の低い方でダメージ計算");
+            if (this.isLogEnabled) this.writeDebugLog("守備魔防の低い方でダメージ計算");
             let defInCombat = defUnit.getDefInCombat(atkUnit);
             let resInCombat = defUnit.getResInCombat(atkUnit);
             totalMit = Math.min(defInCombat, resInCombat);
@@ -424,30 +424,30 @@ class DamageCalculator {
         }
         else if (atkUnit.weapon === Weapon.FlameLance) {
             if (atkUnit.snapshot.restHpPercentage >= 50) {
-                this.writeDebugLog("魔防参照");
+                if (this.isLogEnabled) this.writeDebugLog("魔防参照");
                 totalMit = defUnit.getResInCombat(atkUnit);
                 totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
             }
         }
         else if ((atkUnit.weapon == Weapon.HelsReaper)) {
             if (isWeaponTypeTome(defUnit.weaponType) || defUnit.weaponType == WeaponType.Staff) {
-                this.writeDebugLog("守備参照");
+                if (this.isLogEnabled) this.writeDebugLog("守備参照");
                 totalMit = defUnit.getDefInCombat(atkUnit);
                 totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
             }
             else {
-                this.writeDebugLog("魔防参照");
+                if (this.isLogEnabled) this.writeDebugLog("魔防参照");
                 totalMit = defUnit.getResInCombat(atkUnit);
                 totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
             }
         }
         else if (atkUnit.isPhysicalAttacker()) {
-            this.writeDebugLog("守備参照");
+            if (this.isLogEnabled) this.writeDebugLog("守備参照");
             totalMit = defUnit.getDefInCombat(atkUnit);
             totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
         }
         else {
-            this.writeDebugLog("魔防参照");
+            if (this.isLogEnabled) this.writeDebugLog("魔防参照");
             totalMit = defUnit.getResInCombat(atkUnit);
             totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
         }
@@ -460,7 +460,7 @@ class DamageCalculator {
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
         switch (atkUnit.special) {
-            case Special.KoriNoSeikyo:
+            case Special.IceMirror:
                 // 通常ダメージに加算
                 if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
                     fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
@@ -483,7 +483,7 @@ class DamageCalculator {
             case Special.SeidrShell:
                 specialAddDamage = 15;
                 if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
-                    this.writeDebugLog("魔弾の守備魔防の低い方でダメージ計算");
+                    if (this.isLogEnabled) this.writeDebugLog("魔弾の守備魔防の低い方でダメージ計算");
                     let defInCombat = defUnit.getDefInCombat(atkUnit);
                     let resInCombat = defUnit.getResInCombat(atkUnit);
                     specialTotalMit = Math.min(defInCombat, resInCombat);
@@ -501,7 +501,7 @@ class DamageCalculator {
 
         let attackAdvRatio = 0;
         {
-            this.writeDebugLog("[相性判定] 攻撃属性:" + colorTypeToString(atkUnit.color) + "、防御属性:" + colorTypeToString(defUnit.color));
+            if (this.isLogEnabled) this.writeDebugLog("[相性判定] 攻撃属性:" + colorTypeToString(atkUnit.color) + "、防御属性:" + colorTypeToString(defUnit.color));
             let attackTriangleAdv = DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit);
             let triangleAdeptRate = 0;
             let triangleMult = 0;
@@ -545,12 +545,12 @@ class DamageCalculator {
             }
             let triangleReviseRate = triangleAdeptRate + additionalRatio;
             attackAdvRatio = triangleMult * triangleReviseRate;
-            this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio.toFixed(2));
+            if (this.isLogEnabled) this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio.toFixed(2));
         }
 
         let mitAdvRatio = 0.0;
         if (defUnit.battleContext.isOnDefensiveTile) {
-            this.writeDebugLog(defUnit.getNameWithGroup() + "は防御地形補正 1.3");
+            if (this.isLogEnabled) this.writeDebugLog(defUnit.getNameWithGroup() + "は防御地形補正 1.3");
             mitAdvRatio = 0.3;
         }
 
@@ -560,35 +560,35 @@ class DamageCalculator {
         }
 
 
-        this.writeDebugLog("補正前の攻撃:" + totalAtk + `(${totalAtkDetailLog})`);
+        if (this.isLogEnabled) this.writeDebugLog("補正前の攻撃:" + totalAtk + `(${totalAtkDetailLog})`);
         let finalAtk = totalAtk;
         if (effectiveAtk) {
             // 特効
             finalAtk = floorNumberWithFloatError(finalAtk * 1.5);
-            this.writeDebugLog("特効補正値: 1.5");
+            if (this.isLogEnabled) this.writeDebugLog("特効補正値: 1.5");
         }
 
         let addAdjustAtk = truncNumberWithFloatError(finalAtk * attackAdvRatio);
-        this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
+        if (this.isLogEnabled) this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
         finalAtk = finalAtk + addAdjustAtk;
 
-        this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDefailLog})`);
+        if (this.isLogEnabled) this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDefailLog})`);
         if (totalMit != specialTotalMit) {
-            this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDefailLog})`);
+            if (this.isLogEnabled) this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDefailLog})`);
         }
         let finalMit = floorNumberWithFloatError(totalMit + totalMit * mitAdvRatio);
-        this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
+        if (this.isLogEnabled) this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
         let damage = truncNumberWithFloatError((finalAtk - finalMit) * damageReduceRatio) + atkDamageAdd;
         if (damage < 0) {
             damage = 0;
         }
-        this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
+        if (this.isLogEnabled) this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
         damage += fixedAddDamage;
 
         let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
         let sufferRatio = (specialSuffer / 100.0);
         if (sufferRatio > 0) {
-            this.writeDebugLog(`守備、魔防－${floorNumberWithFloatError(sufferRatio * 100)}%扱い`);
+            if (this.isLogEnabled) this.writeDebugLog(`守備、魔防－${floorNumberWithFloatError(sufferRatio * 100)}%扱い`);
         }
 
         let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * sufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
@@ -597,9 +597,9 @@ class DamageCalculator {
             specialDamage = 0;
         }
         specialDamage += fixedAddDamage;
-        this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
+        if (this.isLogEnabled) this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
         specialDamage += fixedSpecialAddDamage;
-        this.writeDebugLog("通常ダメージ=" + damage + ", 奥義ダメージ=" + specialDamage);
+        if (this.isLogEnabled) this.writeDebugLog("通常ダメージ=" + damage + ", 奥義ダメージ=" + specialDamage);
 
         let totalDamage = this.__calcAttackTotalDamage(
             context,
@@ -615,10 +615,10 @@ class DamageCalculator {
             // 攻撃側が倒されていたらダメージを反映しない(潜在ダメージ計算のためにダメージ計算は必要)
             let restHp = Math.max(0, mitHp - totalDamage);
             defUnit.restHp = restHp;
-            this.writeLog(defUnit.getNameWithGroup() + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
-            this.writeLog(atkUnit.getNameWithGroup() + "の残りHP " + atkUnit.restHp + "/" + atkUnit.maxHpWithSkills);
+            if (this.isLogEnabled) this.writeLog(defUnit.getNameWithGroup() + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
+            if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "の残りHP " + atkUnit.restHp + "/" + atkUnit.maxHpWithSkills);
             if (this.__isDead(defUnit)) {
-                this.writeLog(defUnit.getNameWithGroup() + "は戦闘不能");
+                if (this.isLogEnabled) this.writeLog(defUnit.getNameWithGroup() + "は戦闘不能");
             }
         }
         let result = new Object();
@@ -630,9 +630,9 @@ class DamageCalculator {
 
 
     calcPrecombatSpecialResult(atkUnit, defUnit) {
-        this.writeDebugLog("戦闘前ダメージ計算..");
+        if (this.isLogEnabled) this.writeDebugLog("戦闘前ダメージ計算..");
         if (isPrecombatSpecial(atkUnit.special) == false) {
-            this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を持たない`);
+            if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を持たない`);
             return;
         }
 
@@ -644,7 +644,7 @@ class DamageCalculator {
         }
 
         if (!isSpecialActivated) {
-            this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を発動できない(発動カウント${atkUnit.tmpSpecialCount})`);
+            if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を発動できない(発動カウント${atkUnit.tmpSpecialCount})`);
             return false;
         }
 
@@ -654,7 +654,7 @@ class DamageCalculator {
             totalDamage = defUnit.restHp - 1;
         }
 
-        this.writeLog("範囲奥義によるダメージ" + totalDamage);
+        if (this.isLogEnabled) this.writeLog("範囲奥義によるダメージ" + totalDamage);
         this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>範囲奥義によるダメージ" + totalDamage);
         this.__restoreMaxSpecialCount(atkUnit);
 
@@ -666,11 +666,11 @@ class DamageCalculator {
     calcPrecombatSpecialDamage(atkUnit, defUnit) {
         let precombatTotalMit = 0;
         if (atkUnit.isPhysicalAttacker()) {
-            this.writeDebugLog("守備参照");
+            if (this.isLogEnabled) this.writeDebugLog("守備参照");
             precombatTotalMit = defUnit.getDefInPrecombat();
         }
         else {
-            this.writeDebugLog("魔防参照");
+            if (this.isLogEnabled) this.writeDebugLog("魔防参照");
             precombatTotalMit = defUnit.getResInPrecombat();
         }
 
@@ -691,8 +691,8 @@ class DamageCalculator {
         let currentDamage = Math.max(damage - reducedDamage, 0);
 
         if (damageReductionRatio > 0.0) {
-            this.writeDebugLog("ダメージ軽減" + damageReductionRatio * 100 + "%");
-            this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ軽減" + damageReductionRatio * 100 + "%");
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
         }
         return currentDamage;
     }
@@ -773,7 +773,7 @@ class DamageCalculator {
             let invalidatesDamageReductionExceptSpecial =
                 activatesAttackerSpecial && invalidatesDamageReductionExceptSpecialOnSpecialActivation;
             if (invalidatesDamageReductionExceptSpecial) {
-                this.writeDebugLog("奥義以外のダメージ軽減を無効化");
+                if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
                 damageReductionRatio = 1.0;
             }
 
@@ -800,7 +800,7 @@ class DamageCalculator {
                 atkUnit.battleContext.isSpecialActivated = true;
                 // 奥義発動
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
-                this.writeLog("奥義によるダメージ" + currentDamage);
+                if (this.isLogEnabled) this.writeLog("奥義によるダメージ" + currentDamage);
                 this.writeSimpleLog(" " + atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>奥義ダメージ" + currentDamage);
                 this.__restoreMaxSpecialCount(atkUnit);
 
@@ -824,7 +824,7 @@ class DamageCalculator {
             else {
                 // 通常攻撃
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, normalDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
-                this.writeLog("通常攻撃によるダメージ" + currentDamage);
+                if (this.isLogEnabled) this.writeLog("通常攻撃によるダメージ" + currentDamage);
                 this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>通常攻撃ダメージ" + currentDamage);
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
             }
@@ -832,7 +832,7 @@ class DamageCalculator {
             {
                 let healHpAmount = this.__getHealAmountByAttack(atkUnit, defUnit, currentDamage);
                 if (healHpAmount > 0) {
-                    this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${healHpAmount}回復`);
+                    if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${healHpAmount}回復`);
                     this.__heal(atkUnit, healHpAmount, defUnit);
                 }
             }
@@ -841,7 +841,7 @@ class DamageCalculator {
                 && (defUnit.restHp - totalDamage > 1)
                 && (defUnit.restHp - totalDamage - currentDamage <= 0)
             ) {
-                this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
+                if (this.isLogEnabled) this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
                 // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
                 if (defUnit.battleContext.nextAttackAddReducedDamageActivated) {
                     let currentHp = defUnit.restHp - totalDamage;
@@ -863,7 +863,7 @@ class DamageCalculator {
             }
             context.damageHistory.push(new DamageLog(atkUnit, defUnit, currentDamage));
 
-            this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + (defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
+            if (this.isLogEnabled) this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + (defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
         }
 
         return totalDamage;
@@ -913,16 +913,16 @@ class DamageCalculator {
         if (unit.restHp > unit.maxHpWithSkills) {
             unit.restHp = unit.maxHpWithSkills;
         }
-        this.writeDebugLog(unit.getNameWithGroup() + "は" + healedHp + "回復: HP=" + unit.restHp + "/" + unit.maxHpWithSkills);
+        if (this.isLogEnabled) this.writeDebugLog(unit.getNameWithGroup() + "は" + healedHp + "回復: HP=" + unit.restHp + "/" + unit.maxHpWithSkills);
     }
 
     __calcUnitAttackDamage(defUnit, atkUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context) {
         let reducedDamage = floorNumberWithFloatError(damage * damageReductionRatio) + damageReductionValue;
         let currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
-            this.writeDebugLog("ダメージ軽減" + floorNumberWithFloatError(damageReductionRatio) * 100 + "%");
-            this.writeDebugLog("ダメージ-" + damageReductionValue);
-            this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ軽減" + floorNumberWithFloatError(damageReductionRatio) * 100 + "%");
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ-" + damageReductionValue);
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
         }
 
         if (activatesDefenderSpecial) {
@@ -939,7 +939,7 @@ class DamageCalculator {
 
         // 自分の次の攻撃の時にダメージ軽減加算をするための処理
         switch (defUnit.special) {
-            case Special.KoriNoSeikyo:
+            case Special.IceMirror:
                 if (activatesDefenderSpecial) {
                     if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
                     defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
@@ -965,7 +965,7 @@ class DamageCalculator {
     }
 
     __restoreMaxSpecialCount(unit) {
-        this.writeDebugLog(unit.getNameWithGroup() + "の奥義カウント" + unit.tmpSpecialCount + "→" + unit.maxSpecialCount);
+        if (this.isLogEnabled) this.writeDebugLog(unit.getNameWithGroup() + "の奥義カウント" + unit.tmpSpecialCount + "→" + unit.maxSpecialCount);
         unit.tmpSpecialCount = unit.maxSpecialCount;
     }
 
@@ -979,6 +979,6 @@ class DamageCalculator {
         if (unit.tmpSpecialCount < 0) {
             unit.tmpSpecialCount = 0;
         }
-        this.writeDebugLog(unit.getNameWithGroup() + "の奥義カウント" + currentSpCount + "→" + unit.tmpSpecialCount);
+        if (this.isLogEnabled) this.writeDebugLog(unit.getNameWithGroup() + "の奥義カウント" + currentSpCount + "→" + unit.tmpSpecialCount);
     }
 }

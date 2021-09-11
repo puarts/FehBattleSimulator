@@ -242,21 +242,19 @@ function colorTypeToString(colorType) {
     }
 }
 
+const NegativeStatusEffectTable = {};
+NegativeStatusEffectTable[StatusEffectType.Panic] = 0;
+NegativeStatusEffectTable[StatusEffectType.Gravity] = 0;
+NegativeStatusEffectTable[StatusEffectType.CounterattacksDisrupted] = 0;
+NegativeStatusEffectTable[StatusEffectType.TriangleAdept] = 0;
+NegativeStatusEffectTable[StatusEffectType.Guard] = 0;
+NegativeStatusEffectTable[StatusEffectType.Isolation] = 0;
+NegativeStatusEffectTable[StatusEffectType.DeepWounds] = 0;
+NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
+
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
-    switch (type) {
-        case StatusEffectType.Panic:
-        case StatusEffectType.Gravity:
-        case StatusEffectType.CounterattacksDisrupted:
-        case StatusEffectType.TriangleAdept:
-        case StatusEffectType.Guard:
-        case StatusEffectType.Isolation:
-        case StatusEffectType.DeepWounds:
-        case StatusEffectType.Stall:
-            return true;
-        default:
-            return false;
-    }
+    return type in NegativeStatusEffectTable;
 }
 
 /// ステータス効果が有利なステータス効果であるかどうかを判定します。
@@ -2011,21 +2009,8 @@ class Unit {
         if (this.weapon == Weapon.BloodTome) {
             return isRangedWeaponType(enemyUnit.weaponType) && enemyUnit.color == ColorType.Colorless;
         }
-        return this.weapon == Weapon.EtherealBreath
-            || this.weapon == Weapon.KinsekiNoSyo
-            || this.weapon == Weapon.GunshiNoRaisyo
-            || this.weapon == Weapon.KokukarasuNoSyo
-            || this.weapon == Weapon.GunshiNoFusho
-            || this.weapon == Weapon.Blarraven
-            || this.weapon == Weapon.BlarravenPlus
-            || this.weapon == Weapon.Gronnraven
-            || this.weapon == Weapon.GronnravenPlus
-            || this.weapon == Weapon.Rauarraven
-            || this.weapon == Weapon.RauarravenPlus
-            || this.weapon == Weapon.YukyuNoSyo
-            || this.weapon == Weapon.Nagurufaru
-            || this.weapon == Weapon.TomeOfOrder
-            ;
+
+        return isAdvantageousForColorless(this.weapon);
     }
 
     getBuffTotalInCombat(enemyUnit) {
@@ -3237,6 +3222,7 @@ class Unit {
 
     updateStatusByWeaponRefinement() {
         switch (this.weaponRefinement) {
+            case WeaponRefinementType.None: break;
             case WeaponRefinementType.Special_Hp3: this._maxHpWithSkills += 3; break;
             case WeaponRefinementType.Hp5_Atk2: this._maxHpWithSkills += 5; this.atkWithSkills += 2; break;
             case WeaponRefinementType.Hp5_Spd3: this._maxHpWithSkills += 5; this.spdWithSkills += 3; break;
@@ -3252,20 +3238,7 @@ class Unit {
 
     updateStatusBySummonerLevel() {
         switch (this.summonerLevel) {
-            case SummonerLevel.C:
-                this._maxHpWithSkills += 3;
-                this.resWithSkills += 2;
-                break;
-            case SummonerLevel.B:
-                this._maxHpWithSkills += 4;
-                this.defWithSkills += 2;
-                this.resWithSkills += 2;
-                break;
-            case SummonerLevel.A:
-                this._maxHpWithSkills += 4;
-                this.defWithSkills += 2;
-                this.resWithSkills += 2;
-                this.spdWithSkills += 2;
+            case SummonerLevel.None:
                 break;
             case SummonerLevel.S:
                 this._maxHpWithSkills += 5;
@@ -3273,6 +3246,21 @@ class Unit {
                 this.resWithSkills += 2;
                 this.spdWithSkills += 2;
                 this.atkWithSkills += 2;
+                break;
+            case SummonerLevel.A:
+                this._maxHpWithSkills += 4;
+                this.defWithSkills += 2;
+                this.resWithSkills += 2;
+                this.spdWithSkills += 2;
+                break;
+            case SummonerLevel.B:
+                this._maxHpWithSkills += 4;
+                this.defWithSkills += 2;
+                this.resWithSkills += 2;
+                break;
+            case SummonerLevel.C:
+                this._maxHpWithSkills += 3;
+                this.resWithSkills += 2;
                 break;
             default:
                 break;
@@ -3913,38 +3901,8 @@ class Unit {
 
         // 化身によるステータス変化
         if (this.isTransformed) {
-            switch (this.weapon) {
-                case Weapon.EbonPirateClaw:
-                case Weapon.CrossbonesClaw:
-                case Weapon.ResolvedFang:
-                case Weapon.RefreshedFang:
-                case Weapon.RenewedFang:
-                case Weapon.RaydreamHorn:
-                case Weapon.BrightmareHorn:
-                case Weapon.NightmareHorn:
-                case Weapon.BrazenCatFang:
-                case Weapon.TaguelFang:
-                case Weapon.TaguelChildFang:
-                case Weapon.FoxkitFang:
-                case Weapon.NewBrazenCatFang:
-                case Weapon.NewFoxkitFang:
-                case Weapon.KarasuOuNoHashizume:
-                case Weapon.TakaouNoHashizume:
-                case Weapon.YoukoohNoTsumekiba:
-                case Weapon.JunaruSenekoNoTsumekiba:
-                case Weapon.ShishiouNoTsumekiba:
-                case Weapon.TrasenshiNoTsumekiba:
-                case Weapon.JinroMusumeNoTsumekiba:
-                case Weapon.JinroOuNoTsumekiba:
-                case Weapon.OkamijoouNoKiba:
-                case Weapon.ShirasagiNoTsubasa:
-                case Weapon.SeijuNoKeshinHiko:
-                case Weapon.BridesFang:
-                case Weapon.GroomsWings:
-                case Weapon.SkyPirateClaw:
-                case Weapon.TwinCrestPower:
-                    this.atkWithSkills += 2;
-                    break;
+            if (isWeaponTypeThatCanAddAtk2AfterTransform(this.weapon)) {
+                this.atkWithSkills += 2;
             }
         }
 
@@ -4224,16 +4182,15 @@ class Unit {
 
     /// 指定した特効を無効化できるかどうかを調べます。
     canInvalidateSpecifiedEffectiveAttack(effective) {
-        if (this.hasStatusEffect(StatusEffectType.ShieldFlying)) {
-            if (effective === EffectiveType.Flying) {
+        if (effective === EffectiveType.Flying) {
+            if (this.hasStatusEffect(StatusEffectType.ShieldFlying)) {
                 return true;
             }
         }
-
-        if (this.hasStatusEffect(StatusEffectType.SieldDragonArmor)) {
-            if (effective == EffectiveType.Armor
-                || effective == EffectiveType.Dragon
-            ) {
+        else if (effective == EffectiveType.Armor
+            || effective == EffectiveType.Dragon
+        ) {
+            if (this.hasStatusEffect(StatusEffectType.SieldDragonArmor)) {
                 return true;
             }
         }

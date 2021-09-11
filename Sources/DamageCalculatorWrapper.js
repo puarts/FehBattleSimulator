@@ -70,6 +70,10 @@ class DamageCalculatorWrapper {
         return this.globalBattleContext.isEvenTurn;
     }
 
+    get isLogEnabled() {
+        this._damageCalc.isLogEnabled;
+    }
+
     set isLogEnabled(value) {
         this._damageCalc.isLogEnabled = value;
     }
@@ -5148,7 +5152,7 @@ class DamageCalculatorWrapper {
                     let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
                     let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
                     let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-                    this.__writeDamageCalcDebugLog(`混沌ラグネルにより攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`混沌ラグネルにより攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
                     targetUnit.atkSpur += atkAdd;
                     targetUnit.spdSpur += spdAdd;
                     targetUnit.defSpur += defAdd;
@@ -5483,7 +5487,7 @@ class DamageCalculatorWrapper {
                     let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
                     if (diff > 0 && defUnit.snapshot.restHpPercentage >= 25) {
                         let percentage = Math.min(diff * 4, 40);
-                        this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
                         return percentage / 100.0;
                     }
                 }
@@ -5509,7 +5513,7 @@ class DamageCalculatorWrapper {
                             percentage = 40;
                         }
 
-                        this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
                         return percentage / 100.0;
                     }
                 }
@@ -5524,7 +5528,7 @@ class DamageCalculatorWrapper {
                                 percentage = 40;
                             }
 
-                            this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
                             return percentage / 100.0;
                         }
                     }
@@ -5540,7 +5544,7 @@ class DamageCalculatorWrapper {
                             percentage = 40;
                         }
 
-                        this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`武器スキル(${defUnit.weaponInfo.name})によりダメージ${percentage}%軽減`);
                         return percentage / 100.0;
                     }
                 }
@@ -5574,7 +5578,7 @@ class DamageCalculatorWrapper {
                             percentage = 40;
                         }
 
-                        this.__writeDamageCalcDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`蒼き獅子王によりダメージ${percentage}%軽減(守備の差 ${defUnitDef}-${atkUnitDef}=${diff})`);
                         return percentage / 100.0;
                     }
                 }
@@ -5864,27 +5868,27 @@ class DamageCalculatorWrapper {
     }
 
     __examinesCanFollowupAttack(atkUnit, defUnit) {
-        this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の速さによる追撃評価:`);
+        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の速さによる追撃評価:`);
         this.__logSpdInCombat(atkUnit, defUnit, TabChar);
         this.__logSpdInCombat(defUnit, atkUnit, TabChar);
         let result = DamageCalculationUtility.examinesCanFollowupAttack(atkUnit, defUnit);
         if (result) {
-            this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");
         }
         else {
-            this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
         }
         return result;
     }
 
     __logSpdInCombat(unit, enemyUnit, tab = "") {
-        this.__writeDamageCalcDebugLog(tab + unit.getNameWithGroup()
+        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(tab + unit.getNameWithGroup()
             + `の戦闘中速さ${unit.getSpdInCombat(enemyUnit)}(速さ${unit.spdWithSkills}、強化${unit.getSpdBuffInCombat(enemyUnit)}、弱化${unit.spdDebuff}、戦闘中強化${unit.spdSpur})`);
     }
 
 
     __examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage) {
-        this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の追撃評価 ------`);
+        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の追撃評価 ------`);
         let followupAttackPriority = this.getFollowupAttackPriorityForBoth(atkUnit, defUnit, calcPotentialDamage);
         if (!defUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             switch (atkUnit.weapon) {
@@ -5961,11 +5965,11 @@ class DamageCalculatorWrapper {
 
         if (followupAttackPriority < 0) {
             // 追撃不可を受けた
-            this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により追撃不可");
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により追撃不可");
             return false;
         } else if (followupAttackPriority > 0) {
             // 絶対追撃発動
-            this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
             return true;
         }
         else {
@@ -5980,7 +5984,7 @@ class DamageCalculatorWrapper {
     }
 
     __examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage) {
-        this.__writeDamageCalcDebugLog(`${defUnit.getNameWithGroup()}の追撃評価 ------`);
+        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${defUnit.getNameWithGroup()}の追撃評価 ------`);
         let followupAttackPriority = this.getFollowupAttackPriorityForBoth(defUnit, atkUnit, calcPotentialDamage);
         if (!atkUnit.battleContext.invalidatesAbsoluteFollowupAttack) {
             for (let skillId of [defUnit.passiveB, defUnit.passiveS]) {
@@ -6137,11 +6141,11 @@ class DamageCalculatorWrapper {
 
         if (followupAttackPriority < 0) {
             // 追撃不可を受けた
-            this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により追撃不可");
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により追撃不可");
             return false;
         } else if (followupAttackPriority > 0) {
             // 絶対追撃発動
-            this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
             return true;
         }
         else {
@@ -6566,18 +6570,8 @@ class DamageCalculatorWrapper {
     static canActivateBreakerSkill(breakerUnit, targetUnit) {
         // 殺し3の評価
         if (breakerUnit.snapshot.restHpPercentage < 50) { return false; }
-        switch (breakerUnit.passiveB) {
-            case PassiveB.Swordbreaker3: return targetUnit.weaponType == WeaponType.Sword;
-            case PassiveB.Lancebreaker3: return targetUnit.weaponType == WeaponType.Lance;
-            case PassiveB.Axebreaker3: return targetUnit.weaponType == WeaponType.Axe;
-            case PassiveB.Bowbreaker3: return targetUnit.weaponType == WeaponType.ColorlessBow;
-            case PassiveB.Daggerbreaker3: return targetUnit.weaponType == WeaponType.ColorlessDagger;
-            case PassiveB.RedTomebreaker3: return targetUnit.weaponType == WeaponType.RedTome;
-            case PassiveB.BlueTomebreaker3: return targetUnit.weaponType == WeaponType.BlueTome;
-            case PassiveB.GreenTomebreaker3: return targetUnit.weaponType == WeaponType.GreenTome;
-        }
 
-        return false;
+        return targetUnit.weaponType === getBreakerSkillTargetWeaponType(breakerUnit.passiveB);
     }
 
 
@@ -6589,7 +6583,7 @@ class DamageCalculatorWrapper {
                 break;
             case Special.Seikabuto:
             case Special.Seii:
-            case Special.KoriNoSeikyo:
+            case Special.IceMirror:
                 if (attackRange == 2) {
                     defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
                 }
@@ -6861,13 +6855,13 @@ class DamageCalculatorWrapper {
             defUnit.battleContext.isDefDesperationActivated = defUnit.battleContext.isDefDesperationActivatable;
 
             if (defUnit.battleContext.isDefDesperationActivated) {
-                this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
+                if (this.isLogEnabled) this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
             }
             if (atkUnit.battleContext.isDesperationActivated) {
-                this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動、攻撃の直後に追撃");
+                if (this.isLogEnabled) this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動、攻撃の直後に追撃");
             }
             if (defUnit.battleContext.isVantageActivated) {
-                this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
+                if (this.isLogEnabled) this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
             }
         }
         else {
