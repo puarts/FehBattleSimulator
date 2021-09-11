@@ -59,7 +59,7 @@ class AetherRaidTacticsBoard {
         this.tesseractLoadState = ModuleLoadState.NotLoaded;
 
         this.cropper = null;
-        this.damageCalc = new DamageCalculatorWrapper(g_appData, g_appData.map);
+        this.damageCalc = new DamageCalculatorWrapper(g_appData, g_appData.map, g_appData.globalBattleContext);
         this.weaponSkillCharWhiteList = "";
         this.supportSkillCharWhiteList = "";
         this.specialSkillCharWhiteList = "";
