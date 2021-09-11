@@ -56,39 +56,36 @@ const WeaponType = {
     All: 30,
 };
 
+const WeaponTypeAttackRangeDict = {};
+WeaponTypeAttackRangeDict[WeaponType.Sword] = 1;
+WeaponTypeAttackRangeDict[WeaponType.Lance] = 1;
+WeaponTypeAttackRangeDict[WeaponType.Axe] = 1;
+WeaponTypeAttackRangeDict[WeaponType.RedBreath] = 1;
+WeaponTypeAttackRangeDict[WeaponType.BlueBreath] = 1;
+WeaponTypeAttackRangeDict[WeaponType.GreenBreath] = 1;
+WeaponTypeAttackRangeDict[WeaponType.ColorlessBreath] = 1;
+WeaponTypeAttackRangeDict[WeaponType.RedBeast] = 1;
+WeaponTypeAttackRangeDict[WeaponType.BlueBeast] = 1;
+WeaponTypeAttackRangeDict[WeaponType.GreenBeast] = 1;
+WeaponTypeAttackRangeDict[WeaponType.ColorlessBeast] = 1;
+WeaponTypeAttackRangeDict[WeaponType.RedTome] = 2;
+WeaponTypeAttackRangeDict[WeaponType.BlueTome] = 2;
+WeaponTypeAttackRangeDict[WeaponType.GreenTome] = 2;
+WeaponTypeAttackRangeDict[WeaponType.ColorlessTome] = 2;
+WeaponTypeAttackRangeDict[WeaponType.RedBow] = 2;
+WeaponTypeAttackRangeDict[WeaponType.BlueBow] = 2;
+WeaponTypeAttackRangeDict[WeaponType.GreenBow] = 2;
+WeaponTypeAttackRangeDict[WeaponType.ColorlessBow] = 2;
+WeaponTypeAttackRangeDict[WeaponType.RedDagger] = 2;
+WeaponTypeAttackRangeDict[WeaponType.BlueDagger] = 2;
+WeaponTypeAttackRangeDict[WeaponType.GreenDagger] = 2;
+WeaponTypeAttackRangeDict[WeaponType.ColorlessDagger] = 2;
+WeaponTypeAttackRangeDict[WeaponType.Staff] = 2;
+WeaponTypeAttackRangeDict[WeaponType.None] = 0;
+
 /// 指定した武器種の射程を取得します。
 function getAttackRangeOfWeaponType(weaponType) {
-    switch (weaponType) {
-        case WeaponType.Sword:
-        case WeaponType.Lance:
-        case WeaponType.Axe:
-        case WeaponType.RedBreath:
-        case WeaponType.BlueBreath:
-        case WeaponType.GreenBreath:
-        case WeaponType.ColorlessBreath:
-        case WeaponType.RedBeast:
-        case WeaponType.BlueBeast:
-        case WeaponType.GreenBeast:
-        case WeaponType.ColorlessBeast:
-            return 1;
-        case WeaponType.RedTome:
-        case WeaponType.BlueTome:
-        case WeaponType.GreenTome:
-        case WeaponType.ColorlessTome:
-        case WeaponType.RedBow:
-        case WeaponType.BlueBow:
-        case WeaponType.GreenBow:
-        case WeaponType.ColorlessBow:
-        case WeaponType.RedDagger:
-        case WeaponType.BlueDagger:
-        case WeaponType.GreenDagger:
-        case WeaponType.ColorlessDagger:
-        case WeaponType.Staff:
-            return 2;
-        case WeaponType.None:
-        default:
-            return 0;
-    }
+    return WeaponTypeAttackRangeDict[weaponType];
 }
 
 function getWeaponTypeOrder(weaponType) {
@@ -2095,25 +2092,26 @@ const PassiveS = {
     TozokuNoGuzoOdori: 1402,
 };
 
+const PhysicalWeaponTypeDict = {};
+PhysicalWeaponTypeDict[WeaponType.Sword] = 0;
+PhysicalWeaponTypeDict[WeaponType.Lance] = 0;
+PhysicalWeaponTypeDict[WeaponType.Axe] = 0;
+PhysicalWeaponTypeDict[WeaponType.RedBeast] = 0;
+PhysicalWeaponTypeDict[WeaponType.BlueBeast] = 0;
+PhysicalWeaponTypeDict[WeaponType.GreenBeast] = 0;
+PhysicalWeaponTypeDict[WeaponType.ColorlessBeast] = 0;
+PhysicalWeaponTypeDict[WeaponType.RedBow] = 0;
+PhysicalWeaponTypeDict[WeaponType.BlueBow] = 0;
+PhysicalWeaponTypeDict[WeaponType.GreenBow] = 0;
+PhysicalWeaponTypeDict[WeaponType.ColorlessBow] = 0;
+PhysicalWeaponTypeDict[WeaponType.RedDagger] = 0;
+PhysicalWeaponTypeDict[WeaponType.BlueDagger] = 0;
+PhysicalWeaponTypeDict[WeaponType.GreenDagger] = 0;
+PhysicalWeaponTypeDict[WeaponType.ColorlessDagger] = 0;
+
 /// 武器タイプが物理系の武器であるかを判定します。
 function isPhysicalWeaponType(weaponType) {
-    if (isWeaponTypeBeast(weaponType)) {
-        return true;
-    }
-    if (isWeaponTypeDagger(weaponType)) {
-        return true;
-    }
-    if (isWeaponTypeBow(weaponType)) {
-        return true;
-    }
-    switch (weaponType) {
-        case WeaponType.Sword:
-        case WeaponType.Lance:
-        case WeaponType.Axe:
-            return true;
-        default:
-            return false;
-    }
+    return weaponType in PhysicalWeaponTypeDict;
 }
 
 /// 武器錬成タイプが特殊錬成であるかを判定します。
@@ -2127,21 +2125,19 @@ function isWeaponSpecialRefined(weaponRefinementType) {
     }
 }
 
+const FiresweepWeaponDict = {};
+FiresweepWeaponDict[Weapon.MiraiNoSeikishiNoYari] = 0;
+FiresweepWeaponDict[Weapon.FiresweepSword] = 0;
+FiresweepWeaponDict[Weapon.FiresweepSwordPlus] = 0;
+FiresweepWeaponDict[Weapon.FiresweepLance] = 0;
+FiresweepWeaponDict[Weapon.FiresweepLancePlus] = 0;
+FiresweepWeaponDict[Weapon.FiresweepBow] = 0;
+FiresweepWeaponDict[Weapon.FiresweepBowPlus] = 0;
+FiresweepWeaponDict[Weapon.FiresweepAxePlus] = 0;
+
 /// 自身、敵共に反撃不可になる武器であるかどうかを判定します。
 function isFiresweepWeapon(weapon) {
-    switch (weapon) {
-        case Weapon.MiraiNoSeikishiNoYari:
-        case Weapon.FiresweepSword:
-        case Weapon.FiresweepSwordPlus:
-        case Weapon.FiresweepLance:
-        case Weapon.FiresweepLancePlus:
-        case Weapon.FiresweepBow:
-        case Weapon.FiresweepBowPlus:
-        case Weapon.FiresweepAxePlus:
-            return true;
-        default:
-            return false;
-    }
+    return weapon in FiresweepWeaponDict;
 }
 
 /// 補助スキルの射程を取得します。
@@ -2268,95 +2264,89 @@ function getPrecombatHealThreshold(support) {
     }
 }
 
+const RangedAttackSpecialDict = {};
+RangedAttackSpecialDict[Special.GrowingFlame] = 0;
+RangedAttackSpecialDict[Special.GrowingLight] = 0;
+RangedAttackSpecialDict[Special.GrowingWind] = 0;
+RangedAttackSpecialDict[Special.GrowingThunder] = 0;
+RangedAttackSpecialDict[Special.BlazingFlame] = 0;
+RangedAttackSpecialDict[Special.BlazingLight] = 0;
+RangedAttackSpecialDict[Special.BlazingWind] = 0;
+RangedAttackSpecialDict[Special.BlazingThunder] = 0;
+RangedAttackSpecialDict[Special.RisingFlame] = 0;
+RangedAttackSpecialDict[Special.RisingLight] = 0;
+RangedAttackSpecialDict[Special.RisingWind] = 0;
+RangedAttackSpecialDict[Special.RisingThunder] = 0;
+RangedAttackSpecialDict[Special.GiftedMagic] = 0;
+
 /// 範囲奥義かどうかを判定します。
 function isRangedAttackSpecial(special) {
-    switch (special) {
-        case Special.GrowingFlame:
-        case Special.GrowingLight:
-        case Special.GrowingWind:
-        case Special.GrowingThunder:
-        case Special.BlazingFlame:
-        case Special.BlazingLight:
-        case Special.BlazingWind:
-        case Special.BlazingThunder:
-        case Special.RisingFlame:
-        case Special.RisingLight:
-        case Special.RisingWind:
-        case Special.RisingThunder:
-        case Special.GiftedMagic:
-            return true;
-        default:
-            return false;
-    }
+    return special in RangedAttackSpecialDict;
 }
+
+const DefenseSpecialDict = {};
+DefenseSpecialDict[Special.Nagatate] = 0;
+DefenseSpecialDict[Special.Otate] = 0;  // 大盾
+DefenseSpecialDict[Special.Kotate] = 0; // 小盾
+DefenseSpecialDict[Special.Seitate] = 0; // 聖盾
+DefenseSpecialDict[Special.Seii] = 0;  // 聖衣
+DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
+DefenseSpecialDict[Special.KoriNoSeikyo] = 0;
+DefenseSpecialDict[Special.IceMirror2] = 0;
+DefenseSpecialDict[Special.NegatingFang] = 0;
 
 /// 防御系の奥義かどうかを判定します。
 function isDefenseSpecial(special) {
-    switch (special) {
-        case Special.Nagatate:
-        case Special.Otate:  // 大盾
-        case Special.Kotate: // 小盾
-        case Special.Seitate: // 聖盾
-        case Special.Seii:  // 聖衣
-        case Special.Seikabuto: // 聖兜
-        case Special.KoriNoSeikyo:
-        case Special.IceMirror2:
-        case Special.NegatingFang:
-            return true;
-        default:
-            return false;
-    }
+    return special in DefenseSpecialDict;
 }
+
+const NormalAttackSpecialDict = {};
+NormalAttackSpecialDict[Special.Moonbow] = 0;
+NormalAttackSpecialDict[Special.Luna] = 0;
+NormalAttackSpecialDict[Special.Aether] = 0;
+NormalAttackSpecialDict[Special.LunaFlash] = 0;
+NormalAttackSpecialDict[Special.Glimmer] = 0;
+NormalAttackSpecialDict[Special.Deadeye] = 0;
+NormalAttackSpecialDict[Special.Astra] = 0;
+NormalAttackSpecialDict[Special.Bonfire] = 0;
+NormalAttackSpecialDict[Special.Ignis] = 0;
+NormalAttackSpecialDict[Special.Iceberg] = 0;
+NormalAttackSpecialDict[Special.Glacies] = 0;
+NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
+NormalAttackSpecialDict[Special.DraconicAura] = 0;
+NormalAttackSpecialDict[Special.DragonFang] = 0;
+NormalAttackSpecialDict[Special.Sirius] = 0; // 天狼
+NormalAttackSpecialDict[Special.RupturedSky] = 0; // 破天
+NormalAttackSpecialDict[Special.TwinBlades] = 0; // 双刃
+NormalAttackSpecialDict[Special.Taiyo] = 0;
+NormalAttackSpecialDict[Special.Yuyo] = 0;
+NormalAttackSpecialDict[Special.RegnalAstra] = 0; // 剣姫の流星
+NormalAttackSpecialDict[Special.ImperialAstra] = 0; // 剣皇の流星
+NormalAttackSpecialDict[Special.OpenTheFuture] = 0; // 開世
+NormalAttackSpecialDict[Special.Fukusyu] = 0; // 復讐
+NormalAttackSpecialDict[Special.Kessyu] = 0; // 血讐
+NormalAttackSpecialDict[Special.Kagetsuki] = 0; // 影月
+NormalAttackSpecialDict[Special.Setsujoku] = 0; // 雪辱
+NormalAttackSpecialDict[Special.Hyouten] = 0; // 氷点
+NormalAttackSpecialDict[Special.Youkage] = 0; // 陽影
+NormalAttackSpecialDict[Special.Hotarubi] = 0; // 蛍火
+NormalAttackSpecialDict[Special.ShiningEmblem] = 0; // 光炎の紋章
+NormalAttackSpecialDict[Special.HonoNoMonsyo] = 0; // 炎の紋章
+NormalAttackSpecialDict[Special.HerosBlood] = 0;
+NormalAttackSpecialDict[Special.KuroNoGekko] = 0; // 黒の月光
+NormalAttackSpecialDict[Special.AoNoTenku] = 0; // 蒼の天空
+NormalAttackSpecialDict[Special.RadiantAether2] = 0; // 蒼の天空・承
+NormalAttackSpecialDict[Special.MayhemAether] = 0; // 暴の天空
+NormalAttackSpecialDict[Special.Hoshikage] = 0; // 星影
+NormalAttackSpecialDict[Special.Fukuryu] = 0; // 伏竜
+NormalAttackSpecialDict[Special.BlueFrame] = 0; // ブルーフレイム
+NormalAttackSpecialDict[Special.SeidrShell] = 0; // 魔弾
+NormalAttackSpecialDict[Special.RighteousWind] = 0;
+NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
-    switch (special) {
-        case Special.Moonbow:
-        case Special.Luna:
-        case Special.Aether:
-        case Special.LunaFlash:
-        case Special.Glimmer:
-        case Special.Deadeye:
-        case Special.Astra:
-        case Special.Bonfire:
-        case Special.Ignis:
-        case Special.Iceberg:
-        case Special.Glacies:
-        case Special.HolyKnightAura:
-        case Special.DraconicAura:
-        case Special.DragonFang:
-        case Special.Sirius: // 天狼
-        case Special.RupturedSky: // 破天
-        case Special.TwinBlades: // 双刃
-        case Special.Taiyo:
-        case Special.Yuyo:
-        case Special.RegnalAstra: // 剣姫の流星
-        case Special.ImperialAstra: // 剣皇の流星
-        case Special.OpenTheFuture: // 開世
-        case Special.Fukusyu: // 復讐
-        case Special.Kessyu: // 血讐
-        case Special.Kagetsuki: // 影月
-        case Special.Setsujoku: // 雪辱
-        case Special.Hyouten: // 氷点
-        case Special.Youkage: // 陽影
-        case Special.Hotarubi: // 蛍火
-        case Special.ShiningEmblem: // 光炎の紋章
-        case Special.HonoNoMonsyo: // 炎の紋章
-        case Special.HerosBlood:
-        case Special.KuroNoGekko: // 黒の月光
-        case Special.AoNoTenku: // 蒼の天空
-        case Special.RadiantAether2: // 蒼の天空・承
-        case Special.MayhemAether: // 暴の天空
-        case Special.Hoshikage: // 星影
-        case Special.Fukuryu: // 伏竜
-        case Special.BlueFrame: // ブルーフレイム
-        case Special.SeidrShell: // 魔弾
-        case Special.RighteousWind:
-        case Special.SublimeHeaven:
-            return true;
-        default:
-            return false;
-    }
+    return special in NormalAttackSpecialDict;
 }
 
 /// 再行動補助スキルかどうかを判定します。
@@ -2601,33 +2591,31 @@ function isPrecombatSpecial(special) {
     return isRangedAttackSpecial(special);
 }
 
+// 二分探索したいだけで値はどうでもいいので0を入れておきます
+const TeleportationSkillDict = {};
+TeleportationSkillDict[Weapon.FlowerLance] = 0;
+TeleportationSkillDict[Weapon.FujinYumi] = 0;
+TeleportationSkillDict[Weapon.Gurimowaru] = 0;
+TeleportationSkillDict[Weapon.ApotheosisSpear] = 0;
+TeleportationSkillDict[Weapon.AstralBreath] = 0;
+TeleportationSkillDict[Weapon.Noatun] = 0;
+TeleportationSkillDict[Weapon.HinokaNoKounagitou] = 0;
+TeleportationSkillDict[Weapon.IzunNoKajitsu] = 0;
+TeleportationSkillDict[PassiveB.TeniNoKona] = 0;
+TeleportationSkillDict[PassiveB.Kyuen2] = 0;
+TeleportationSkillDict[PassiveB.Kyuen3] = 0;
+TeleportationSkillDict[PassiveB.Ridatsu3] = 0;
+TeleportationSkillDict[PassiveB.KyokugiHiKo1] = 0;
+TeleportationSkillDict[PassiveB.KyokugiHiKo2] = 0;
+TeleportationSkillDict[PassiveB.KyokugiHiKo3] = 0;
+TeleportationSkillDict[PassiveB.HentaiHiko1] = 0;
+TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
+TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
+TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
+TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
 /// テレポート効果を持つスキルであるかどうかを判定します。
 function isTeleportationSkill(skillId) {
-    switch (skillId) {
-        case Weapon.FlowerLance:
-        case Weapon.FujinYumi:
-        case Weapon.Gurimowaru:
-        case Weapon.ApotheosisSpear:
-        case Weapon.AstralBreath:
-        case Weapon.Noatun:
-        case Weapon.HinokaNoKounagitou:
-        case Weapon.IzunNoKajitsu:
-        case PassiveB.TeniNoKona:
-        case PassiveB.Kyuen2:
-        case PassiveB.Kyuen3:
-        case PassiveB.Ridatsu3:
-        case PassiveB.KyokugiHiKo1:
-        case PassiveB.KyokugiHiKo2:
-        case PassiveB.KyokugiHiKo3:
-        case PassiveB.HentaiHiko1:
-        case PassiveB.HentaiHiko2:
-        case PassiveB.HentaiHiko3:
-        case PassiveC.SorakaranoSendo3:
-        case PassiveC.HikonoSendo3:
-            return true;
-        default:
-            return false;
-    }
+    return skillId in TeleportationSkillDict;
 }
 
 /// 天駆の道の効果を持つスキルかどうか
