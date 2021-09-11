@@ -25,11 +25,13 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     calclator.isLogEnabled = false;
     // calclator.disableProfile();
 
-    for (let info of heroDatabase.enumerateHeroInfos()) {
+    atkUnit.weaponRefinement = WeaponRefinementType.Special;
+    for (let atkUnitInfo of heroDatabase.enumerateHeroInfos()) {
       // テストのために攻撃側だけ特殊錬成にしておく
-      atkUnit.weaponRefinement = WeaponRefinementType.Special;
-      heroDatabase.initUnit(atkUnit, info.name);
-      heroDatabase.initUnit(defUnit, info.name);
+      heroDatabase.initUnit(atkUnit, atkUnitInfo.name);
+
+      let defUnitInfo = atkUnitInfo;
+      heroDatabase.initUnit(defUnit, defUnitInfo.name);
       calclator.calcDamage(atkUnit, defUnit);
     }
 

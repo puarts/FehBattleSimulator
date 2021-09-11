@@ -71,7 +71,7 @@ class DamageCalculatorWrapper {
     }
 
     get isLogEnabled() {
-        this._damageCalc.isLogEnabled;
+        return this._damageCalc.isLogEnabled;
     }
 
     set isLogEnabled(value) {
