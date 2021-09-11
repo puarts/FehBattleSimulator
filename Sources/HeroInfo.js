@@ -96,15 +96,16 @@ function calcGrowthValue(growthRate, rarity, level) {
     return Math.floor((level - 1) * rate);
 }
 
+const StatusRankTable = [];
+StatusRankTable[StatusType.Hp] = 4;
+StatusRankTable[StatusType.Atk] = 3;
+StatusRankTable[StatusType.Spd] = 2;
+StatusRankTable[StatusType.Def] = 1;
+StatusRankTable[StatusType.Res] = 0;
+
 /// 値が同じ場合の優先度を取得します。
 function __getStatusRankValue(statusType) {
-    switch (statusType) {
-        case StatusType.Hp: return 4;
-        case StatusType.Atk: return 3;
-        case StatusType.Spd: return 2;
-        case StatusType.Def: return 1;
-        case StatusType.Res: return 0;
-    }
+    return StatusRankTable[statusType];
 }
 
 /// 純粋成長率(%)から★5成長値を取得します。
@@ -408,47 +409,47 @@ class HeroInfo {
 
     getHpLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star1: return this.hpLv1ForStar1;
-            case UnitRarity.Star2: return this.hpLv1ForStar2;
-            case UnitRarity.Star3: return this.hpLv1ForStar3;
-            case UnitRarity.Star4: return this.hpLv1ForStar4;
             case UnitRarity.Star5: return this.hpLv1;
+            case UnitRarity.Star4: return this.hpLv1ForStar4;
+            case UnitRarity.Star3: return this.hpLv1ForStar3;
+            case UnitRarity.Star2: return this.hpLv1ForStar2;
+            case UnitRarity.Star1: return this.hpLv1ForStar1;
         }
     }
     getAtkLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star1: return this.atkLv1ForStar1;
-            case UnitRarity.Star2: return this.atkLv1ForStar2;
-            case UnitRarity.Star3: return this.atkLv1ForStar3;
-            case UnitRarity.Star4: return this.atkLv1ForStar4;
             case UnitRarity.Star5: return this.atkLv1;
+            case UnitRarity.Star4: return this.atkLv1ForStar4;
+            case UnitRarity.Star3: return this.atkLv1ForStar3;
+            case UnitRarity.Star2: return this.atkLv1ForStar2;
+            case UnitRarity.Star1: return this.atkLv1ForStar1;
         }
     }
     getSpdLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star1: return this.spdLv1ForStar1;
-            case UnitRarity.Star2: return this.spdLv1ForStar2;
-            case UnitRarity.Star3: return this.spdLv1ForStar3;
-            case UnitRarity.Star4: return this.spdLv1ForStar4;
             case UnitRarity.Star5: return this.spdLv1;
+            case UnitRarity.Star4: return this.spdLv1ForStar4;
+            case UnitRarity.Star3: return this.spdLv1ForStar3;
+            case UnitRarity.Star2: return this.spdLv1ForStar2;
+            case UnitRarity.Star1: return this.spdLv1ForStar1;
         }
     }
     getDefLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star1: return this.defLv1ForStar1;
-            case UnitRarity.Star2: return this.defLv1ForStar2;
-            case UnitRarity.Star3: return this.defLv1ForStar3;
-            case UnitRarity.Star4: return this.defLv1ForStar4;
             case UnitRarity.Star5: return this.defLv1;
+            case UnitRarity.Star4: return this.defLv1ForStar4;
+            case UnitRarity.Star3: return this.defLv1ForStar3;
+            case UnitRarity.Star2: return this.defLv1ForStar2;
+            case UnitRarity.Star1: return this.defLv1ForStar1;
         }
     }
     getResLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star1: return this.resLv1ForStar1;
-            case UnitRarity.Star2: return this.resLv1ForStar2;
-            case UnitRarity.Star3: return this.resLv1ForStar3;
-            case UnitRarity.Star4: return this.resLv1ForStar4;
             case UnitRarity.Star5: return this.resLv1;
+            case UnitRarity.Star4: return this.resLv1ForStar4;
+            case UnitRarity.Star3: return this.resLv1ForStar3;
+            case UnitRarity.Star2: return this.resLv1ForStar2;
+            case UnitRarity.Star1: return this.resLv1ForStar1;
         }
     }
 

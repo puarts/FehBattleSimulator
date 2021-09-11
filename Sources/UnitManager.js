@@ -32,12 +32,11 @@ class UnitManager {
         return this.enumerateUnitsWithPredicator(x => x.groupId == groupId);
     }
 
-    * enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
-        for (let unit of this.enumerateUnitsInSpecifiedGroup(targetUnit.groupId)) {
-            if (withTargetUnit || unit != targetUnit) {
-                yield unit;
-            }
-        }
+    enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
+        return this.enumerateUnitsWithPredicator(x =>
+            x.groupId == targetUnit.groupId
+            && (withTargetUnit || x != targetUnit)
+        );
     }
 
     enumerateUnitsInDifferentGroup(targetUnit) {
@@ -45,12 +44,12 @@ class UnitManager {
         return this.enumerateUnitsInSpecifiedGroup(targetGroup);
     }
 
-    * enumerateUnitsInTheSameGroupOnMap(targetUnit, withTargetUnit = false) {
-        for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit)) {
-            if (unit.isOnMap) {
-                yield unit;
-            }
-        }
+    enumerateUnitsInTheSameGroupOnMap(targetUnit, withTargetUnit = false) {
+        return this.enumerateUnitsWithPredicator(x =>
+            x.groupId == targetUnit.groupId
+            && x.isOnMap
+            && (withTargetUnit || x != targetUnit)
+        );
     }
 
     * enumerateUnitsInDifferentGroupOnMap(targetUnit) {
