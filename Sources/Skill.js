@@ -2483,35 +2483,33 @@ function isInheritableWeaponType(targetType, types) {
     return false;
 }
 
+const WeaponTypeToColorType = {};
+WeaponTypeToColorType[WeaponType.Sword] = ColorType.Red;
+WeaponTypeToColorType[WeaponType.RedTome] = ColorType.Red;
+WeaponTypeToColorType[WeaponType.RedBreath] = ColorType.Red;
+WeaponTypeToColorType[WeaponType.RedBeast] = ColorType.Red;
+WeaponTypeToColorType[WeaponType.RedBow] = ColorType.Red;
+WeaponTypeToColorType[WeaponType.RedDagger] = ColorType.Red;
+WeaponTypeToColorType[WeaponType.Lance] = ColorType.Blue;
+WeaponTypeToColorType[WeaponType.BlueTome] = ColorType.Blue;
+WeaponTypeToColorType[WeaponType.BlueBreath] = ColorType.Blue;
+WeaponTypeToColorType[WeaponType.BlueBeast] = ColorType.Blue;
+WeaponTypeToColorType[WeaponType.BlueBow] = ColorType.Blue;
+WeaponTypeToColorType[WeaponType.BlueDagger] = ColorType.Blue;
+WeaponTypeToColorType[WeaponType.Axe] = ColorType.Green;
+WeaponTypeToColorType[WeaponType.GreenTome] = ColorType.Green;
+WeaponTypeToColorType[WeaponType.GreenBreath] = ColorType.Green;
+WeaponTypeToColorType[WeaponType.GreenBeast] = ColorType.Green;
+WeaponTypeToColorType[WeaponType.GreenBow] = ColorType.Green;
+WeaponTypeToColorType[WeaponType.GreenDagger] = ColorType.Green;
+WeaponTypeToColorType[WeaponType.Staff] = ColorType.Colorless;
+WeaponTypeToColorType[WeaponType.ColorlessTome] = ColorType.Colorless;
+WeaponTypeToColorType[WeaponType.ColorlessBreath] = ColorType.Colorless;
+WeaponTypeToColorType[WeaponType.ColorlessBeast] = ColorType.Colorless;
+WeaponTypeToColorType[WeaponType.ColorlessBow] = ColorType.Colorless;
+WeaponTypeToColorType[WeaponType.ColorlessDagger] = ColorType.Colorless;
 function getColorFromWeaponType(weaponType) {
-    switch (weaponType) {
-        case WeaponType.Sword: return ColorType.Red;
-        case WeaponType.RedTome: return ColorType.Red;
-        case WeaponType.RedBreath: return ColorType.Red;
-        case WeaponType.RedBeast: return ColorType.Red;
-        case WeaponType.RedBow: return ColorType.Red;
-        case WeaponType.RedDagger: return ColorType.Red;
-        case WeaponType.Lance: return ColorType.Blue;
-        case WeaponType.BlueTome: return ColorType.Blue;
-        case WeaponType.BlueBreath: return ColorType.Blue;
-        case WeaponType.BlueBeast: return ColorType.Blue;
-        case WeaponType.BlueBow: return ColorType.Blue;
-        case WeaponType.BlueDagger: return ColorType.Blue;
-        case WeaponType.Axe: return ColorType.Green;
-        case WeaponType.GreenTome: return ColorType.Green;
-        case WeaponType.GreenBreath: return ColorType.Green;
-        case WeaponType.GreenBeast: return ColorType.Green;
-        case WeaponType.GreenBow: return ColorType.Green;
-        case WeaponType.GreenDagger: return ColorType.Green;
-        case WeaponType.Staff: return ColorType.Colorless;
-        case WeaponType.ColorlessTome: return ColorType.Colorless;
-        case WeaponType.ColorlessBreath: return ColorType.Colorless;
-        case WeaponType.ColorlessBeast: return ColorType.Colorless;
-        case WeaponType.ColorlessBow: return ColorType.Colorless;
-        case WeaponType.ColorlessDagger: return ColorType.Colorless;
-        default:
-            throw new Error("Unexpected weapon type");
-    }
+    return WeaponTypeToColorType[weaponType];
 }
 
 function stringToWeaponType(input) {

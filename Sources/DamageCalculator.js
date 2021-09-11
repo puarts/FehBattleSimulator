@@ -1,12 +1,6 @@
 /// @file
 /// @brief DamageCalculator クラスとそれに関連するクラスや関数等の定義です。
 
-var TriangleAdvantage = {
-    None: 0,
-    Advantageous: 1,
-    Disadvantageous: 2,
-};
-
 /// ダメージ計算時の1回攻撃分のログです。
 class DamageLog {
     constructor(attackUnit, attackedUnit, damageDealt) {

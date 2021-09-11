@@ -1181,16 +1181,14 @@ class Unit {
 
     __calcMoveCountForCanto() {
         let moveCountForCanto = 0;
-        for (let skillId of this.enumerateSkills()) {
-            // 同系統効果複数時、最大値適用
-            switch (skillId) {
-                case Weapon.Lyngheior:
-                    moveCountForCanto = Math.max(moveCountForCanto, 3);
-                    break;
-                case Weapon.FlowerLance:
-                    moveCountForCanto = Math.max(moveCountForCanto, 2);
-                    break;
-            }
+        // 同系統効果複数時、最大値適用
+        switch (this.weapon) {
+            case Weapon.Lyngheior:
+                moveCountForCanto = Math.max(moveCountForCanto, 3);
+                break;
+            case Weapon.FlowerLance:
+                moveCountForCanto = Math.max(moveCountForCanto, 2);
+                break;
         }
         return moveCountForCanto;
     }
@@ -1213,7 +1211,7 @@ class Unit {
     }
 
     __calcAppliedGrowthRate(growthRate) {
-        return calcAppliedGrowthRate(growthRate, this.rarity);
+        return calcAppliedGrowthRate_Optimized(growthRate, this.rarity);
     }
 
     __calcGrowthValue(growthRate) {
@@ -4322,10 +4320,13 @@ class Unit {
 
     /// 神罰の杖を無効化できるか調べます。
     canInvalidateWrathfulStaff() {
-        for (let skillId of this.enumerateSkills()) {
+        switch (this.weapon) {
+            case Weapon.SplashyBucketPlus:
+                return true;
+        }
+        for (let skillId of [this.passiveB, this.passiveS]) {
             switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:
-                case Weapon.SplashyBucketPlus:
                     return true;
             }
         }
@@ -4366,28 +4367,16 @@ class Unit {
         let dist = diffX + diffY;
         return dist <= spaces;
     }
-}
 
-/// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
-function canDisableAttackOrderSwapSkill(unit, restHpPercentage) {
-    for (let skillId of unit.enumerateSkills()) {
-        switch (skillId) {
+
+    /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
+    canDisableAttackOrderSwapSkill(restHpPercentage) {
+        switch (this.weapon) {
             case Weapon.StudiedForblaze:
                 if (restHpPercentage >= 25) {
                     return true;
                 }
                 break;
-            case PassiveS.HardyBearing1:
-                if (restHpPercentage == 100) {
-                    return true;
-                }
-                break;
-            case PassiveS.HardyBearing2:
-                if (restHpPercentage >= 50) {
-                    return true;
-                }
-                break;
-            case PassiveS.HardyBearing3:
             case Weapon.DawnSuzu:
             case Weapon.YoiyamiNoDanougi:
             case Weapon.YoiyamiNoDanougiPlus:
@@ -4399,9 +4388,24 @@ function canDisableAttackOrderSwapSkill(unit, restHpPercentage) {
             case Weapon.CaltropDaggerPlus:
                 return true;
         }
+        switch (this.passiveS) {
+            case PassiveS.HardyBearing1:
+                if (restHpPercentage == 100) {
+                    return true;
+                }
+                break;
+            case PassiveS.HardyBearing2:
+                if (restHpPercentage >= 50) {
+                    return true;
+                }
+                break;
+            case PassiveS.HardyBearing3:
+                return true;
+        }
+        return false;
     }
-    return false;
 }
+
 
 function calcBuffAmount(assistUnit, targetUnit) {
     let totalBuffAmount = 0;
@@ -4523,74 +4527,82 @@ function isDebufferTier1(attackUnit, targetUnit) {
 
 /// Tier 2 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier2(attackUnit, targetUnit) {
-    for (let skillId of attackUnit.enumerateSkills()) {
-        switch (skillId) {
-            case Weapon.RogueDagger:
-            case Weapon.RogueDaggerPlus:
-                if (attackUnit.weaponRefinement == WeaponRefinementType.None) {
-                    return true;
-                }
-                break;
-            case Weapon.PoisonDagger:
-            case Weapon.PoisonDaggerPlus:
-                if (targetUnit.moveType == MoveType.Infantry) {
-                    return true;
-                }
-                break;
-            case Weapon.KittyPaddle:
-            case Weapon.KittyPaddlePlus:
-                if (isWeaponTypeTome(targetUnit.weapon)) {
-                    return true;
-                }
-                break;
-            case PassiveB.SealDef3:
-            case PassiveB.SealRes3:
-            case PassiveB.SealAtkDef2:
-            case PassiveB.SealAtkRes2:
-            case PassiveB.SealDefRes2:
-            case PassiveB.SealSpdDef2:
+    switch (attackUnit.weapon) {
+        case Weapon.RogueDagger:
+        case Weapon.RogueDaggerPlus:
+            if (attackUnit.weaponRefinement == WeaponRefinementType.None) {
                 return true;
-        }
+            }
+            break;
+        case Weapon.PoisonDagger:
+        case Weapon.PoisonDaggerPlus:
+            if (targetUnit.moveType == MoveType.Infantry) {
+                return true;
+            }
+            break;
+        case Weapon.KittyPaddle:
+        case Weapon.KittyPaddlePlus:
+            if (isWeaponTypeTome(targetUnit.weapon)) {
+                return true;
+            }
+            break;
+    }
+    switch (attackUnit.passiveB) {
+        case PassiveB.SealDef3:
+        case PassiveB.SealRes3:
+        case PassiveB.SealAtkDef2:
+        case PassiveB.SealAtkRes2:
+        case PassiveB.SealDefRes2:
+        case PassiveB.SealSpdDef2:
+            return true;
     }
     return false;
 }
 
 /// ユニットがアフリクターであるかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartH
 function isAfflictor(attackUnit, lossesInCombat) {
-    for (let skillId of attackUnit.enumerateSkills()) {
-        switch (skillId) {
-            case Weapon.TigerSpirit:
-                if (attackUnit.snapshot.restHpPercentage >= 25) {
-                    return true;
-                }
-                break;
-            case Weapon.FrostbiteBreath:
-                if (attackUnit.snapshot.restHpPercentage >= 25) {
-                    return true;
-                }
-                break;
-            case Weapon.Pain:
-            case Weapon.PainPlus:
-            case Weapon.Panic:
-            case Weapon.PanicPlus:
-            case Weapon.FlashPlus:
-            case Weapon.LegionsAxe:
-            case Weapon.LegionsAxePlus:
-            case Weapon.MonstrousBow:
-            case Weapon.MonstrousBowPlus:
-            case Weapon.DeathlyDagger:
+    switch (attackUnit.weapon) {
+        case Weapon.TigerSpirit:
+            if (attackUnit.snapshot.restHpPercentage >= 25) {
                 return true;
-            case PassiveC.PanicSmoke3:
+            }
+            break;
+        case Weapon.FrostbiteBreath:
+            if (attackUnit.snapshot.restHpPercentage >= 25) {
+                return true;
+            }
+            break;
+        case Weapon.Pain:
+        case Weapon.PainPlus:
+        case Weapon.Panic:
+        case Weapon.PanicPlus:
+        case Weapon.FlashPlus:
+        case Weapon.LegionsAxe:
+        case Weapon.LegionsAxePlus:
+        case Weapon.MonstrousBow:
+        case Weapon.MonstrousBowPlus:
+        case Weapon.DeathlyDagger:
+            return true;
+        case Weapon.GhostNoMadosyoPlus:
+            if (attackUnit.isWeaponRefined) {
+                return true;
+            }
+            return false;
+    }
+    switch (attackUnit.passiveC) {
+        case PassiveC.PanicSmoke3:
+            if (lossesInCombat) {
+                return false;
+            }
+            return true;
+    }
+    for (let skillId of [attackUnit.passiveB, attackUnit.passiveS]) {
+        switch (skillId) {
             case PassiveB.PoisonStrike3:
                 if (lossesInCombat) {
                     return false;
                 }
                 return true;
-            case Weapon.GhostNoMadosyoPlus:
-                if (attackUnit.isWeaponRefined) {
-                    return true;
-                }
-                return false;
         }
     }
     return false;

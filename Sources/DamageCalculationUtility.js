@@ -1,6 +1,23 @@
 /// @file
 /// @brief DamageCalculationUtility クラスの定義です。
 
+
+const TriangleAdvantage = {
+    None: 0,
+    Advantageous: 1,
+    Disadvantageous: 2,
+};
+
+/// 相性判定高速化のためのルックアップテーブルです。攻撃者、被攻撃者のColorTypeの整数値を行、列として相性を格納します。
+const ColorToTriangleAdvantageTable = [
+        // (被攻撃者)赤 青 緑 無
+/* 赤 */ TriangleAdvantage.None, TriangleAdvantage.Disadvantageous, TriangleAdvantage.Advantageous, TriangleAdvantage.None,
+/* 青 */ TriangleAdvantage.Advantageous, TriangleAdvantage.None, TriangleAdvantage.Disadvantageous, TriangleAdvantage.None,
+/* 緑 */ TriangleAdvantage.Disadvantageous, TriangleAdvantage.Advantageous, TriangleAdvantage.None, TriangleAdvantage.None,
+/* 無 */ TriangleAdvantage.None, TriangleAdvantage.None, TriangleAdvantage.None, TriangleAdvantage.None,
+];
+
+
 /// ダメージ計算用のユーティリティー関数です。
 class DamageCalculationUtility {
 
@@ -11,19 +28,19 @@ class DamageCalculationUtility {
         }
 
         switch (effective) {
-            case EffectiveType.Armor: return unit.moveType == MoveType.Armor;
-            case EffectiveType.Cavalry: return unit.moveType == MoveType.Cavalry;
-            case EffectiveType.Flying: return unit.moveType == MoveType.Flying;
-            case EffectiveType.Infantry: return unit.moveType == MoveType.Infantry;
+            case EffectiveType.Flying: return unit.moveType === MoveType.Flying;
+            case EffectiveType.Armor: return unit.moveType === MoveType.Armor;
+            case EffectiveType.Cavalry: return unit.moveType === MoveType.Cavalry;
             case EffectiveType.Dragon:
                 return isWeaponTypeBreath(unit.weaponType)
-                    || unit.weapon == Weapon.Roputous;
+                    || unit.weapon === Weapon.Roputous;
             case EffectiveType.Beast: return isWeaponTypeBeast(unit.weaponType);
             case EffectiveType.Tome: return isWeaponTypeTome(unit.weaponType);
-            case EffectiveType.Sword: return unit.weaponType == WeaponType.Sword;
-            case EffectiveType.Lance: return unit.weaponType == WeaponType.Lance;
-            case EffectiveType.Axe: return unit.weaponType == WeaponType.Axe;
-            case EffectiveType.ColorlessBow: return unit.weaponType == WeaponType.ColorlessBow;
+            case EffectiveType.Sword: return unit.weaponType === WeaponType.Sword;
+            case EffectiveType.Lance: return unit.weaponType === WeaponType.Lance;
+            case EffectiveType.Axe: return unit.weaponType === WeaponType.Axe;
+            case EffectiveType.ColorlessBow: return unit.weaponType === WeaponType.ColorlessBow;
+            case EffectiveType.Infantry: return unit.moveType === MoveType.Infantry;
         }
 
         return false;
@@ -38,50 +55,8 @@ class DamageCalculationUtility {
 
     /// 相性有利不利を判定して返します。
     static calcAttackerTriangleAdvantage(atkUnit, defUnit) {
-        if (atkUnit.color == ColorType.Red) {
-            if (defUnit.color == ColorType.Green) {
-                return TriangleAdvantage.Advantageous;
-            }
-            if (defUnit.color == ColorType.Blue) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        if (atkUnit.color == ColorType.Blue) {
-            if (defUnit.color == ColorType.Red) {
-                return TriangleAdvantage.Advantageous;
-            }
-            else if (defUnit.color == ColorType.Green) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        if (atkUnit.color == ColorType.Green) {
-            if (defUnit.color == ColorType.Blue) {
-                return TriangleAdvantage.Advantageous;
-            }
-            else if (defUnit.color == ColorType.Red) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        if (atkUnit.battleContext.isAdvantageForColorless
-            || atkUnit.isAdvantageForColorless(defUnit)
-        ) {
-            if (defUnit.color == ColorType.Colorless) {
-                return TriangleAdvantage.Advantageous;
-            }
-        }
-
-        if (defUnit.battleContext.isAdvantageForColorless
-            || defUnit.isAdvantageForColorless(atkUnit)
-        ) {
-            if (atkUnit.color == ColorType.Colorless) {
-                return TriangleAdvantage.Disadvantageous;
-            }
-        }
-
-        return TriangleAdvantage.None;
+        let tableIndex = atkUnit.color * 4 + defUnit.color;
+        return ColorToTriangleAdvantageTable[tableIndex];
     }
 
     /// 速さ比較で追撃可能かどうかを調べます。

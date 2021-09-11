@@ -154,11 +154,23 @@ test('DamageCalculator_Simple', () => test_executeTest(() => {
   atkUnit.atkWithSkills = 40;
   defUnit.defWithSkills = 30;
   defUnit.spdWithSkills = atkUnit.spdWithSkills - 5;
+  {
+    let result = test_calcDamage(atkUnit, defUnit, false);
 
-  let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_normalAttackDamage).toBe(10);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+  }
 
-  expect(result.atkUnit_normalAttackDamage).toBe(10);
-  expect(result.atkUnit_totalAttackCount).toBe(2);
+  // 色相性のテスト
+  {
+    atkUnit.weaponType = WeaponType.Sword;
+    defUnit.weaponType = WeaponType.Axe;
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    expect(result.atkUnit_normalAttackDamage).toBe(18);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+  }
+
 }));
 
 test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {

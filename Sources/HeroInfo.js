@@ -45,35 +45,31 @@ const IvType = {
     Flow: 2, // 不得意
 }
 
-/// ☆5の成長量から純粋成長率を計算します。
-function getGrowthRateOfStar5Impl(growthAmount) {
-    switch (growthAmount) {
-        case 8: return 0.2;
-        case 10: return 0.25;
-        case 13: return 0.30;
-        case 15: return 0.35;
-        case 17: return 0.40;
-        case 19: return 0.45;
-        case 22: return 0.50;
-        case 24: return 0.55;
-        case 26: return 0.60;
-        case 28: return 0.65;
-        case 30: return 0.70;
-        case 33: return 0.75;
-        case 35: return 0.80;
-        case 37: return 0.85;
-        case 39: return 0.90;
-        default:
-            return -1;
-    }
-}
+const GrowthRateOfStar5 = {};
+GrowthRateOfStar5[8] = 0.2;
+GrowthRateOfStar5[10] = 0.25;
+GrowthRateOfStar5[13] = 0.30;
+GrowthRateOfStar5[15] = 0.35;
+GrowthRateOfStar5[17] = 0.40;
+GrowthRateOfStar5[19] = 0.45;
+GrowthRateOfStar5[22] = 0.50;
+GrowthRateOfStar5[24] = 0.55;
+GrowthRateOfStar5[26] = 0.60;
+GrowthRateOfStar5[28] = 0.65;
+GrowthRateOfStar5[30] = 0.70;
+GrowthRateOfStar5[33] = 0.75;
+GrowthRateOfStar5[35] = 0.80;
+GrowthRateOfStar5[37] = 0.85;
+GrowthRateOfStar5[39] = 0.90;
 
+/// ☆5の成長量から純粋成長率を計算します。
 function getGrowthRateOfStar5(growthAmount) {
-    let rate = getGrowthRateOfStar5Impl(growthAmount);
-    if (rate < 0) {
-        throw new Error("Invalid growth amount " + growthAmount);
+    let growthRate = GrowthRateOfStar5[growthAmount];
+    if (growthRate) {
+        return growthRate;
     }
-    return rate;
+
+    throw new Error("Invalid growth amount " + growthAmount);
 }
 
 function calcAppliedGrowthRate(growthRate, rarity) {
@@ -81,6 +77,19 @@ function calcAppliedGrowthRate(growthRate, rarity) {
     let rate = Math.floor(100 * growthRate * (0.79 + (0.07 * rarity))) * 0.01;
     return rate;
 }
+
+const AppliedGrowthRateCoef = {};
+AppliedGrowthRateCoef[5] = (0.79 + (0.07 * 5)) * 100;
+AppliedGrowthRateCoef[4] = (0.79 + (0.07 * 4)) * 100;
+AppliedGrowthRateCoef[3] = (0.79 + (0.07 * 3)) * 100;
+AppliedGrowthRateCoef[2] = (0.79 + (0.07 * 2)) * 100;
+AppliedGrowthRateCoef[1] = (0.79 + (0.07 * 1)) * 100;
+function calcAppliedGrowthRate_Optimized(growthRate, rarity) {
+    // let rate = growthRate * (0.79 + (0.07 * this.rarity));
+    let rate = Math.floor(growthRate * AppliedGrowthRateCoef[rarity]) * 0.01;
+    return rate;
+}
+
 
 function calcGrowthValue(growthRate, rarity, level) {
     let rate = calcAppliedGrowthRate(growthRate, rarity);

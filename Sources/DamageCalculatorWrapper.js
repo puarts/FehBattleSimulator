@@ -6853,8 +6853,8 @@ class DamageCalculatorWrapper {
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit);
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(defUnit, atkUnit);
 
-        if (!canDisableAttackOrderSwapSkill(atkUnit, atkUnit.snapshot.restHpPercentage)
-            && !canDisableAttackOrderSwapSkill(defUnit, defUnit.snapshot.restHpPercentage)
+        if (!atkUnit.canDisableAttackOrderSwapSkill(atkUnit.snapshot.restHpPercentage)
+            && !defUnit.canDisableAttackOrderSwapSkill(defUnit.snapshot.restHpPercentage)
         ) {
             atkUnit.battleContext.isDesperationActivated = atkUnit.battleContext.isDesperationActivatable || atkUnit.hasStatusEffect(StatusEffectType.Desperation);
             defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantabeActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
@@ -6916,37 +6916,37 @@ class DamageCalculatorWrapper {
                 }
                 break;
         }
-        for (let skillId of targetUnit.enumeratePassiveSkills()) {
-            switch (skillId) {
-                case PassiveB.BlackEagleRule:
-                    if (!targetUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 25) {
-                        targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveB.SeikishiNoKago:
-                    if (isRangedWeaponType(enemyUnit.weaponType)) {
-                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveS.RengekiBogyoKenYariOno3:
-                    if (enemyUnit.weaponType == WeaponType.Sword ||
-                        enemyUnit.weaponType == WeaponType.Lance ||
-                        enemyUnit.weaponType == WeaponType.Axe) {
-                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveS.RengekiBogyoYumiAnki3:
-                    if (isWeaponTypeBow(enemyUnit.weaponType) ||
-                        isWeaponTypeDagger(enemyUnit.weaponType)) {
-                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-                case PassiveS.RengekiBogyoMado3:
-                    if (isWeaponTypeTome(enemyUnit.weaponType)) {
-                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    }
-                    break;
-            }
+        switch (targetUnit.passiveB) {
+            case PassiveB.BlackEagleRule:
+                if (!targetUnit.battleContext.initiatesCombat && targetUnit.snapshot.restHpPercentage >= 25) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+                }
+                break;
+            case PassiveB.SeikishiNoKago:
+                if (isRangedWeaponType(enemyUnit.weaponType)) {
+                    targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                }
+                break;
+        }
+        switch (targetUnit.passiveS) {
+            case PassiveS.RengekiBogyoKenYariOno3:
+                if (enemyUnit.weaponType == WeaponType.Sword ||
+                    enemyUnit.weaponType == WeaponType.Lance ||
+                    enemyUnit.weaponType == WeaponType.Axe) {
+                    targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                }
+                break;
+            case PassiveS.RengekiBogyoYumiAnki3:
+                if (isWeaponTypeBow(enemyUnit.weaponType) ||
+                    isWeaponTypeDagger(enemyUnit.weaponType)) {
+                    targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                }
+                break;
+            case PassiveS.RengekiBogyoMado3:
+                if (isWeaponTypeTome(enemyUnit.weaponType)) {
+                    targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                }
+                break;
         }
     }
 
