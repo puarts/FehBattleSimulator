@@ -7756,7 +7756,7 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId in [targetUnit.passiveA, targetUnit.passiveS]) {
+            for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
                 if (skillId == NoneValue) { continue; }
                 switch (skillId) {
                     case PassiveA.AtkSpdBond4:
@@ -7951,7 +7951,7 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId in [targetUnit.passiveA, targetUnit.passiveS]) {
+            for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
                 if (skillId == NoneValue) { continue; }
                 switch (skillId) {
                     case PassiveA.AtkSpdSolo3:
@@ -8251,7 +8251,7 @@ class DamageCalculatorWrapper {
                         break;
                 }
 
-                for (let skillId in [targetUnit.passiveA, targetUnit.passiveS]) {
+                for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
                     if (skillId == NoneValue) { continue; }
                     switch (skillId) {
                         case PassiveA.SpdResForm3:
