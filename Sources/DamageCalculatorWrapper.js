@@ -362,7 +362,7 @@ class DamageCalculatorWrapper {
     __selectReferencingResOrDef(atkUnit, defUnit) {
         if (this.isLogEnabled) this.writeDebugLog("守備魔防参照の評価");
         let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
-            || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
+            || (defUnit.attackRange === 2 && isWeaponTypeBreath(atkUnit.weaponType)));
         if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
             if (this.isLogEnabled) this.writeDebugLog("守備魔防の低い方でダメージ計算");
             let defInCombat = defUnit.getDefInCombat(atkUnit);
@@ -397,7 +397,7 @@ class DamageCalculatorWrapper {
     __getSaverUnitIfPossible(atkUnit, defUnit) {
         let saverUnit = null;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false)) {
-            if (defUnit.placedTile == null
+            if ((defUnit.placedTile === null || defUnit.placedTile === undefined)
                 || !defUnit.placedTile.isMovableTileForUnit(unit)
             ) {
                 continue;
@@ -775,7 +775,7 @@ class DamageCalculatorWrapper {
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.BenihimeNoOno] = (atkUnit, defUnit, calcPotentialDamage) => {
             if (atkUnit.isWeaponSpecialRefined) {
-                if (defUnit.snapshot.restHpPercentage == 100) {
+                if (defUnit.snapshot.restHpPercentage === 100) {
                     atkUnit.atkSpur += 5;
                     atkUnit.defSpur += 5;
                     atkUnit.battleContext.increaseCooldownCountForBoth();
@@ -783,7 +783,7 @@ class DamageCalculatorWrapper {
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.KurooujiNoYari] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (defUnit.snapshot.restHpPercentage == 100) {
+            if (defUnit.snapshot.restHpPercentage === 100) {
                 atkUnit.atkSpur += 5;
                 atkUnit.defSpur += 5;
                 atkUnit.resSpur += 5;
@@ -802,13 +802,13 @@ class DamageCalculatorWrapper {
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.WhitedownSpear] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (self.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying) >= 3) {
+            if (self.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
                 defUnit.atkSpur -= 4;
                 defUnit.defSpur -= 4;
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[PassiveB.BeliefInLove] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (defUnit.snapshot.restHpPercentage == 100) {
+            if (defUnit.snapshot.restHpPercentage === 100) {
                 defUnit.atkSpur -= 5;
                 defUnit.defSpur -= 5;
             }
@@ -832,12 +832,12 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForAtkUnitFuncDict[Weapon.HadesuOmega] = (atkUnit, defUnit, calcPotentialDamage) => {
             atkUnit.atkSpur += 4;
             atkUnit.spdSpur += 4;
-            if (atkUnit.hasSpecial && atkUnit.tmpSpecialCount == 0) {
+            if (atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0) {
                 atkUnit.atkSpur += 6;
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.ZekkaiNoSoukyu] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (defUnit.snapshot.restHpPercentage == 100) {
+            if (defUnit.snapshot.restHpPercentage === 100) {
                 atkUnit.addAllSpur(4);
             }
         };
@@ -876,7 +876,7 @@ class DamageCalculatorWrapper {
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.Yatonokami] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (atkUnit.weaponRefinement == WeaponRefinementType.None) {
+            if (atkUnit.weaponRefinement === WeaponRefinementType.None) {
                 atkUnit.spdSpur += 4;
             }
         };
@@ -1030,9 +1030,9 @@ class DamageCalculatorWrapper {
             atkUnit.defSpur += 4; atkUnit.resSpur += 4;
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.Sogun] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (defUnit.weaponType == WeaponType.Sword
-                || defUnit.weaponType == WeaponType.Lance
-                || defUnit.weaponType == WeaponType.Axe
+            if (defUnit.weaponType === WeaponType.Sword
+                || defUnit.weaponType === WeaponType.Lance
+                || defUnit.weaponType === WeaponType.Axe
                 || isWeaponTypeBreath(defUnit.weaponType)) {
                 atkUnit.atkSpur += 4;
                 atkUnit.spdSpur += 4;
@@ -1179,16 +1179,16 @@ class DamageCalculatorWrapper {
         };
         self._applySkillEffectForDefUnitFuncDict[Weapon.Vidofuniru] = (defUnit, atkUnit, calcPotentialDamage) => {
             if (!defUnit.isWeaponRefined) {
-                if (atkUnit.weaponType == WeaponType.Sword
-                    || atkUnit.weaponType == WeaponType.Lance
-                    || atkUnit.weaponType == WeaponType.Axe
+                if (atkUnit.weaponType === WeaponType.Sword
+                    || atkUnit.weaponType === WeaponType.Lance
+                    || atkUnit.weaponType === WeaponType.Axe
                 ) {
                     defUnit.defSpur += 7;
                 }
             } else {
-                if (atkUnit.weaponType == WeaponType.Sword
-                    || atkUnit.weaponType == WeaponType.Lance
-                    || atkUnit.weaponType == WeaponType.Axe
+                if (atkUnit.weaponType === WeaponType.Sword
+                    || atkUnit.weaponType === WeaponType.Lance
+                    || atkUnit.weaponType === WeaponType.Axe
                     || isWeaponTypeBreath(atkUnit.weaponType)
                     || isWeaponTypeBeast(atkUnit.weaponType)
                 ) {
@@ -1211,9 +1211,9 @@ class DamageCalculatorWrapper {
             defUnit.battleContext.increaseCooldownCountForDefense = true;
         };
         self._applySkillEffectForDefUnitFuncDict[Weapon.FurorinaNoSeisou] = (defUnit, atkUnit, calcPotentialDamage) => {
-            if (atkUnit.weaponType == WeaponType.Sword
-                || atkUnit.weaponType == WeaponType.Lance
-                || atkUnit.weaponType == WeaponType.Axe
+            if (atkUnit.weaponType === WeaponType.Sword
+                || atkUnit.weaponType === WeaponType.Lance
+                || atkUnit.weaponType === WeaponType.Axe
                 || isWeaponTypeBreathOrBeast(atkUnit.weaponType)
             ) {
                 defUnit.addAllSpur(4);
@@ -1288,7 +1288,7 @@ class DamageCalculatorWrapper {
             defUnit.resSpur += 4;
         };
         self._applySkillEffectForDefUnitFuncDict[Weapon.BerkutsLancePlus] = (defUnit, atkUnit, calcPotentialDamage) => {
-            if (defUnit.weaponRefinement == WeaponRefinementType.None) {
+            if (defUnit.weaponRefinement === WeaponRefinementType.None) {
                 defUnit.resSpur += 4;
             } else {
                 defUnit.resSpur += 7;
@@ -1822,11 +1822,11 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.FeatherSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.battleContext.initiatesCombat) {
                 if (targetUnit.snapshot.restHpPercentage <= 75
-                    || enemyUnit.weaponType == WeaponType.Sword
-                    || enemyUnit.weaponType == WeaponType.Lance
-                    || enemyUnit.weaponType == WeaponType.Axe
-                    || enemyUnit.weaponType == WeaponType.ColorlessBow
-                    || enemyUnit.moveType == MoveType.Armor
+                    || enemyUnit.weaponType === WeaponType.Sword
+                    || enemyUnit.weaponType === WeaponType.Lance
+                    || enemyUnit.weaponType === WeaponType.Axe
+                    || enemyUnit.weaponType === WeaponType.ColorlessBow
+                    || enemyUnit.moveType === MoveType.Armor
                 ) {
                     targetUnit.battleContext.isVantabeActivatable = true;
                 }
@@ -2199,13 +2199,13 @@ class DamageCalculatorWrapper {
                 let allyCount = self.__countAlliesWithinSpecifiedSpaces(
                     targetUnit, 2);
                 let buffAmount = 0;
-                if (allyCount == 0) {
+                if (allyCount === 0) {
                     buffAmount = 6;
                 }
-                else if (allyCount == 1) {
+                else if (allyCount === 1) {
                     buffAmount = 4;
                 }
-                else if (allyCount == 2) {
+                else if (allyCount === 2) {
                     buffAmount = 2;
                 }
                 targetUnit.atkSpur += buffAmount;
@@ -2335,13 +2335,13 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfGrado] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.battleContext.initiatesCombat
-                || enemyUnit.snapshot.restHpPercentage == 100
+                || enemyUnit.snapshot.restHpPercentage === 100
             ) {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.resSpur -= 6;
                 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
                 targetUnit.battleContext.invalidatesOwnResDebuff = true;
-                if (enemyUnit.attackRange == 2) {
+                if (enemyUnit.attackRange === 2) {
                     targetUnit.battleContext.isAdvantageForColorless = true;
                 }
             }
@@ -2365,13 +2365,13 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.HotshotLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.snapshot.restHpPercentage >= 25) {
                 let buffAmount = 4;
-                if (targetUnit.dragonflower == 3) {
+                if (targetUnit.dragonflower === 3) {
                     buffAmount = 5;
                 }
-                else if (targetUnit.dragonflower == 4) {
+                else if (targetUnit.dragonflower === 4) {
                     buffAmount = 6;
                 }
-                else if (targetUnit.dragonflower == 5) {
+                else if (targetUnit.dragonflower === 5) {
                     buffAmount = 7;
                 }
                 targetUnit.addAllSpur(buffAmount);
@@ -2449,7 +2449,7 @@ class DamageCalculatorWrapper {
                 enemyUnit.resSpur -= 6;
 
                 if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3,
-                    x => x.moveType == MoveType.Cavalry || x.moveType == MoveType.Flying)
+                    x => x.moveType === MoveType.Cavalry || x.moveType === MoveType.Flying)
                 ) {
                     targetUnit.battleContext.followupAttackPriorityIncrement++;
                     targetUnit.battleContext.healedHpByAttack = 5;
@@ -2825,21 +2825,21 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.PrimordialBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage == 100) {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.increaseCooldownCountForAttack = true;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ArmorsmasherPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
-                if (enemyUnit.moveType == MoveType.Armor) {
+                if (enemyUnit.moveType === MoveType.Armor) {
                     targetUnit.battleContext.invalidateAllBuffs();
                 }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.KeenGronnwolfPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
-                if (enemyUnit.moveType == MoveType.Cavalry) {
+                if (enemyUnit.moveType === MoveType.Cavalry) {
                     targetUnit.battleContext.invalidateAllBuffs();
                 }
             }
@@ -2916,7 +2916,7 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SunsPercussors] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
-                || enemyUnit.snapshot.restHpPercentage == 100
+                || enemyUnit.snapshot.restHpPercentage === 100
             ) {
                 targetUnit.atkSpur += 5;
                 targetUnit.spdSpur += 5;
@@ -3005,11 +3005,11 @@ class DamageCalculatorWrapper {
             {
                 let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x => true);
                 let spur = 0;
-                if (count == 0) {
+                if (count === 0) {
                     spur = 5;
-                } else if (count == 1) {
+                } else if (count === 1) {
                     spur = 3;
-                } else if (count == 2) {
+                } else if (count === 2) {
                     spur = 1;
                 }
                 targetUnit.addAllSpur(spur);
@@ -3032,7 +3032,7 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.AkaiRyukishiNoOno] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.snapshot.restHpPercentage == 100) {
+            if (enemyUnit.snapshot.restHpPercentage === 100) {
                 targetUnit.addAllSpur(4);
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
@@ -3046,7 +3046,7 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TenmaNoNinjinPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
+            if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) === TriangleAdvantage.Advantageous) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         };
@@ -3094,14 +3094,14 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Randgrior] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.snapshot.restHpPercentage == 100) {
+            if (enemyUnit.snapshot.restHpPercentage === 100) {
                 targetUnit.battleContext.invalidateAllOwnDebuffs();
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.defSpur -= 6;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Rigarublade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.snapshot.restHpPercentage == 100) {
+            if (enemyUnit.snapshot.restHpPercentage === 100) {
                 if (targetUnit.isWeaponRefined) {
                     targetUnit.atkSpur += 3;
                     targetUnit.spdSpur += 3;
@@ -3132,7 +3132,7 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[Weapon.HikariNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
-                if (enemyUnit.snapshot.restHpPercentage == 100) {
+                if (enemyUnit.snapshot.restHpPercentage === 100) {
                     targetUnit.spdSpur += 4;
                     targetUnit.defSpur += 4;
                 }
@@ -3185,7 +3185,7 @@ class DamageCalculatorWrapper {
                 }
             }
             else {
-                if (enemyUnit.moveType == MoveType.Armor || enemyUnit.moveType == MoveType.Cavalry) {
+                if (enemyUnit.moveType === MoveType.Armor || enemyUnit.moveType === MoveType.Cavalry) {
                     if (enemyUnit.isRangedWeaponType()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                     }
@@ -3193,7 +3193,7 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Gureipuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.snapshot.restHpPercentage == 100) {
+            if (enemyUnit.snapshot.restHpPercentage === 100) {
                 targetUnit.atkSpur += 3;
                 targetUnit.spdSpur += 3;
                 if (targetUnit.isWeaponSpecialRefined) {
@@ -3218,7 +3218,7 @@ class DamageCalculatorWrapper {
                 }
             }
             else {
-                if (enemyUnit.snapshot.restHpPercentage == 100) {
+                if (enemyUnit.snapshot.restHpPercentage === 100) {
                     targetUnit.atkSpur += 3;
                     targetUnit.spdSpur += 3;
                 }
@@ -3240,7 +3240,7 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.KiriNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                    x.weaponType == WeaponType.Sword || isWeaponTypeBreath(x.weaponType))
+                    x.weaponType === WeaponType.Sword || isWeaponTypeBreath(x.weaponType))
                 ) {
                     targetUnit.atkSpur += 5;
                     targetUnit.defSpur += 5;
@@ -3337,13 +3337,13 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.BoranNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             {
                 let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x => true);
-                if (count == 0) {
+                if (count === 0) {
                     targetUnit.addAllSpur(6);
                 }
-                else if (count == 1) {
+                else if (count === 1) {
                     targetUnit.addAllSpur(4);
                 }
-                else if (count == 2) {
+                else if (count === 2) {
                     targetUnit.addAllSpur(2);
                 }
             }
@@ -3451,9 +3451,9 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ChisouGeiborugu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.moveType == MoveType.Infantry
-                || enemyUnit.moveType == MoveType.Armor
-                || enemyUnit.moveType == MoveType.Cavalry
+            if (enemyUnit.moveType === MoveType.Infantry
+                || enemyUnit.moveType === MoveType.Armor
+                || enemyUnit.moveType === MoveType.Cavalry
             ) {
                 enemyUnit.atkSpur -= 5;
                 enemyUnit.defSpur -= 5;
@@ -3704,9 +3704,9 @@ class DamageCalculatorWrapper {
             if (targetUnit.hp >= enemyUnit.hp + 3) { targetUnit.resSpur += 6; }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.GaeBolg] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.moveType == MoveType.Armor
-                || enemyUnit.moveType == MoveType.Cavalry
-                || enemyUnit.moveType == MoveType.Infantry
+            if (enemyUnit.moveType === MoveType.Armor
+                || enemyUnit.moveType === MoveType.Cavalry
+                || enemyUnit.moveType === MoveType.Infantry
             ) {
                 targetUnit.atkSpur += 5;
                 targetUnit.defSpur += 5;
@@ -3776,7 +3776,7 @@ class DamageCalculatorWrapper {
             }
             if (targetUnit.isWeaponSpecialRefined) {
                 if (!targetUnit.battleContext.initiatesCombat
-                    || enemyUnit.snapshot.restHpPercentage == 100) {
+                    || enemyUnit.snapshot.restHpPercentage === 100) {
                     enemyUnit.atkSpur -= 6;
                     enemyUnit.defSpur -= 6;
                 }
@@ -3948,7 +3948,7 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidatesResBuff = true;
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.BeokuNoKago] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.moveType == MoveType.Cavalry || enemyUnit.moveType == MoveType.Flying) {
+            if (enemyUnit.moveType === MoveType.Cavalry || enemyUnit.moveType === MoveType.Flying) {
                 targetUnit.battleContext.invalidateAllBuffs();
             }
         };
@@ -3970,7 +3970,7 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.Cancel1] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.snapshot.restHpPercentage == 100) {
+            if (targetUnit.snapshot.restHpPercentage === 100) {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         };
@@ -4138,7 +4138,7 @@ class DamageCalculatorWrapper {
         }
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
-                if (!targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage == 100) {
+                if (!targetUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage === 100) {
                     targetUnit.battleContext.invalidateAllOwnDebuffs();
                     enemyUnit.atkSpur -= 5;
                     enemyUnit.spdSpur -= 5;
@@ -4175,7 +4175,7 @@ class DamageCalculatorWrapper {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
-                        x.moveType == MoveType.Flying) >= 2
+                        x.moveType === MoveType.Flying) >= 2
                     ) {
                         targetUnit.addAllSpur(3);
                     }
@@ -4187,7 +4187,7 @@ class DamageCalculatorWrapper {
         }
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
-                if (enemyUnit.snapshot.restHpPercentage == 100) {
+                if (enemyUnit.snapshot.restHpPercentage === 100) {
                     targetUnit.addAllSpur(2);
                 }
             };
@@ -4288,7 +4288,7 @@ class DamageCalculatorWrapper {
 
         let total = 0;
         for (let i = 0; i < 3; ++i) {
-            if (i == units.length) {
+            if (i === units.length) {
                 break;
             }
 
@@ -4392,13 +4392,13 @@ class DamageCalculatorWrapper {
 
         switch (targetUnit.passiveA) {
             case PassiveA.AtkSpdCatch4:
-                if (enemyUnit.snapshot.restHpPercentage == 100
+                if (enemyUnit.snapshot.restHpPercentage === 100
                     || enemyUnit.hasNegativeStatusEffect()
                 ) {
                     targetUnit.atkSpur += 7;
                     targetUnit.spdSpur += 7;
 
-                    if (enemyUnit.snapshot.restHpPercentage == 100
+                    if (enemyUnit.snapshot.restHpPercentage === 100
                         && enemyUnit.hasNegativeStatusEffect()
                     ) {
                         targetUnit.atkSpur += 2;
@@ -4407,13 +4407,13 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case PassiveA.AtkDefCatch4:
-                if (enemyUnit.snapshot.restHpPercentage == 100
+                if (enemyUnit.snapshot.restHpPercentage === 100
                     || enemyUnit.hasNegativeStatusEffect()
                 ) {
                     targetUnit.atkSpur += 7;
                     targetUnit.defSpur += 7;
 
-                    if (enemyUnit.snapshot.restHpPercentage == 100
+                    if (enemyUnit.snapshot.restHpPercentage === 100
                         && enemyUnit.hasNegativeStatusEffect()
                     ) {
                         targetUnit.atkSpur += 2;
@@ -4422,13 +4422,13 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case PassiveA.DefResCatch4:
-                if (enemyUnit.snapshot.restHpPercentage == 100
+                if (enemyUnit.snapshot.restHpPercentage === 100
                     || enemyUnit.hasNegativeStatusEffect()
                 ) {
                     targetUnit.defSpur += 7;
                     targetUnit.resSpur += 7;
 
-                    if (enemyUnit.snapshot.restHpPercentage == 100
+                    if (enemyUnit.snapshot.restHpPercentage === 100
                         && enemyUnit.hasNegativeStatusEffect()
                     ) {
                         targetUnit.defSpur += 2;
@@ -4755,7 +4755,7 @@ class DamageCalculatorWrapper {
 
         switch (targetUnit.passiveA) {
             case PassiveA.AsherasChosen:
-                if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) == false) {
+                if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false) {
                     targetUnit.atkSpur += 6;
                     targetUnit.defSpur += 6;
                 }
@@ -4765,8 +4765,8 @@ class DamageCalculatorWrapper {
 
     __isThereAllyExceptDragonAndBeastWithin1Space(unit) {
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1)) {
-            if (isWeaponTypeBreath(allyUnit.weaponType) == false
-                && isWeaponTypeBeast(allyUnit.weaponType) == false) {
+            if (isWeaponTypeBreath(allyUnit.weaponType) === false
+                && isWeaponTypeBeast(allyUnit.weaponType) === false) {
                 return true;
             }
         }
@@ -4810,7 +4810,7 @@ class DamageCalculatorWrapper {
         switch (targetUnit.weapon) {
             case Weapon.FalcionEchoes:
                 if (targetUnit.battleContext.initiatesCombat && targetUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.snapshot.restHpPercentage == 100) {
+                    if (targetUnit.snapshot.restHpPercentage === 100) {
                         targetUnit.battleContext.attackCount = 2;
                     }
                 }
@@ -4818,7 +4818,7 @@ class DamageCalculatorWrapper {
             case Weapon.WhitedownSpear:
                 if (targetUnit.battleContext.initiatesCombat
                     && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
-                        x.moveType == MoveType.Flying) >= 2
+                        x.moveType === MoveType.Flying) >= 2
                 ) {
                     targetUnit.battleContext.attackCount = 2;
                 }
@@ -4829,7 +4829,7 @@ class DamageCalculatorWrapper {
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.initiatesCombat
                         && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
-                            x.moveType == MoveType.Flying) >= 2
+                            x.moveType === MoveType.Flying) >= 2
                     ) {
                         targetUnit.battleContext.attackCount = 2;
                     }
@@ -4839,10 +4839,10 @@ class DamageCalculatorWrapper {
             case Weapon.MogyuNoKen:
                 if (targetUnit.battleContext.initiatesCombat
                     && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                        x.moveType == MoveType.Cavalry
-                        && (x.weaponType == WeaponType.Sword
-                            || x.weaponType == WeaponType.Lance
-                            || x.weaponType == WeaponType.Axe)
+                        x.moveType === MoveType.Cavalry
+                        && (x.weaponType === WeaponType.Sword
+                            || x.weaponType === WeaponType.Lance
+                            || x.weaponType === WeaponType.Axe)
                     )) {
                     targetUnit.battleContext.attackCount = 2;
                 }
@@ -4852,10 +4852,10 @@ class DamageCalculatorWrapper {
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (!targetUnit.battleContext.initiatesCombat
                         && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                            x.moveType == MoveType.Cavalry
-                            && (x.weaponType == WeaponType.Sword
-                                || x.weaponType == WeaponType.Lance
-                                || x.weaponType == WeaponType.Axe)
+                            x.moveType === MoveType.Cavalry
+                            && (x.weaponType === WeaponType.Sword
+                                || x.weaponType === WeaponType.Lance
+                                || x.weaponType === WeaponType.Axe)
                         )) {
                         targetUnit.battleContext.counterattackCount = 2;
                     }
@@ -4923,14 +4923,14 @@ class DamageCalculatorWrapper {
         // 神罰の杖
         if ((atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
             || (passiveBInfo != null && passiveBInfo.wrathfulStaff)
-            || (atkUnit.weaponRefinement == WeaponRefinementType.WrathfulStaff)
+            || (atkUnit.weaponRefinement === WeaponRefinementType.WrathfulStaff)
         ) {
             atkUnit.battleContext.wrathfulStaff = true;
         }
     }
 
     __setEffectiveAttackEnabledIfPossible(atkUnit, defUnit) {
-        if (atkUnit.weaponInfo == null) {
+        if (atkUnit.weaponInfo === null || atkUnit.weaponInfo === undefined) {
             return;
         }
 
@@ -5295,11 +5295,11 @@ class DamageCalculatorWrapper {
     }
 
     static __applyIdealEffect(targetUnit, enemyUnit, buffFunc) {
-        if (targetUnit.snapshot.restHpPercentage == 100
+        if (targetUnit.snapshot.restHpPercentage === 100
             || targetUnit.hasPositiveStatusEffect(enemyUnit)
         ) {
             buffFunc(targetUnit, 7);
-            if (targetUnit.snapshot.restHpPercentage == 100
+            if (targetUnit.snapshot.restHpPercentage === 100
                 && targetUnit.hasPositiveStatusEffect(enemyUnit)
             ) {
                 buffFunc(targetUnit, 2);
@@ -5346,7 +5346,7 @@ class DamageCalculatorWrapper {
                 case Weapon.MermaidBow:
                     if (targetUnit.snapshot.restHpPercentage >= 25 &&
                         targetUnit.battleContext.initiatesCombat) {
-                        if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) == TriangleAdvantage.Advantageous) {
+                        if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) === TriangleAdvantage.Advantageous) {
                             if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
                                 targetUnit.battleContext.attackCount = 2;
                             }
@@ -5402,9 +5402,9 @@ class DamageCalculatorWrapper {
                     DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
                     break;
                 case Weapon.FoxkitFang:
-                    if (enemyUnit.weaponType == WeaponType.Sword
-                        || enemyUnit.weaponType == WeaponType.Lance
-                        || enemyUnit.weaponType == WeaponType.Axe
+                    if (enemyUnit.weaponType === WeaponType.Sword
+                        || enemyUnit.weaponType === WeaponType.Lance
+                        || enemyUnit.weaponType === WeaponType.Axe
                         || isWeaponTypeBreath(enemyUnit.weaponType)
                         || isWeaponTypeBeast(enemyUnit.weaponType)) {
                         let atkRes = targetUnit.getResInCombat(enemyUnit);
@@ -5474,12 +5474,12 @@ class DamageCalculatorWrapper {
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
             switch (unit.passiveC) {
                 case PassiveC.HokoNoGogeki3:
-                    if (targetUnit.moveType == MoveType.Infantry) {
+                    if (targetUnit.moveType === MoveType.Infantry) {
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
                     }
                     break;
                 case PassiveC.HokoNoJugeki3:
-                    if (targetUnit.moveType == MoveType.Infantry) {
+                    if (targetUnit.moveType === MoveType.Infantry) {
                         DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                     }
                     break;
@@ -5488,7 +5488,7 @@ class DamageCalculatorWrapper {
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 1, false)) {
             switch (unit.passiveC) {
                 case PassiveC.HokoNoKokyu3:
-                    if (targetUnit.moveType == MoveType.Infantry
+                    if (targetUnit.moveType === MoveType.Infantry
                         && targetUnit.isPhysicalAttacker()
                     ) {
                         targetUnit.defSpur += 2;
@@ -5498,7 +5498,7 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveC.HokoNoMajin3:
                     if (!calcPotentialDamage) {
-                        if (targetUnit.moveType == MoveType.Infantry
+                        if (targetUnit.moveType === MoveType.Infantry
                             && targetUnit.isPhysicalAttacker()
                         ) {
                             targetUnit.atkSpur += 2;
@@ -5957,7 +5957,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.WhitedownSpear:
-                    if (this.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType == MoveType.Flying) >= 3) {
+                    if (this.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
                         ++followupAttackPriority;
                     }
                     break;
@@ -6148,7 +6148,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.MasterBow:
-                    if (atkUnit.groupId == UnitGroupType.Ally) {
+                    if (atkUnit.groupId === UnitGroupType.Ally) {
                         --followupAttackPriority;
                     }
                     break;
@@ -6305,16 +6305,16 @@ class DamageCalculatorWrapper {
         let passiveBInfo = atkUnit.passiveBInfo;
         if ((atkWeaponInfo != null && atkWeaponInfo.disableCounterattack)
             || (passiveBInfo != null && passiveBInfo.disableCounterattack)
-            || (atkUnit.weaponRefinement == WeaponRefinementType.DazzlingStaff)
-            || (atkUnit.passiveB == PassiveB.SacaesBlessing
-                && (defUnit.weaponType == WeaponType.Sword || defUnit.weaponType == WeaponType.Lance || defUnit.weaponType == WeaponType.Axe))
+            || (atkUnit.weaponRefinement === WeaponRefinementType.DazzlingStaff)
+            || (atkUnit.passiveB === PassiveB.SacaesBlessing
+                && (defUnit.weaponType === WeaponType.Sword || defUnit.weaponType === WeaponType.Lance || defUnit.weaponType === WeaponType.Axe))
             || (atkUnit.hasPassiveSkill(PassiveB.Kazenagi3)
                 && atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)
                 && isPhysicalWeaponType(defUnit.weaponType))
             || (atkUnit.hasPassiveSkill(PassiveB.Mizunagi3)
                 && atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)
                 && !isPhysicalWeaponType(defUnit.weaponType))
-            || (atkUnit.passiveB == PassiveB.FuinNoTate && isWeaponTypeBreath(defUnit.weaponType))
+            || (atkUnit.passiveB === PassiveB.FuinNoTate && isWeaponTypeBreath(defUnit.weaponType))
         ) {
             return true;
         }
@@ -6330,7 +6330,7 @@ class DamageCalculatorWrapper {
             return true;
         }
 
-        if (atkUnit.attackRange == defUnit.attackRange) {
+        if (atkUnit.attackRange === defUnit.attackRange) {
             return true;
         }
 
@@ -6345,7 +6345,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveA.DistantWard:
-                    if (atkUnit.weaponType == WeaponType.Staff
+                    if (atkUnit.weaponType === WeaponType.Staff
                         || isWeaponTypeBreath(atkUnit.weaponType)
                         || isWeaponTypeTome(atkUnit.weaponType)) {
                         return true;
@@ -6378,9 +6378,9 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.KinsekiNoSyo:
                     if (defUnit.isWeaponSpecialRefined) {
-                        if (atkUnit.weaponType == WeaponType.Sword
-                            || atkUnit.weaponType == WeaponType.Lance
-                            || atkUnit.weaponType == WeaponType.Axe
+                        if (atkUnit.weaponType === WeaponType.Sword
+                            || atkUnit.weaponType === WeaponType.Lance
+                            || atkUnit.weaponType === WeaponType.Axe
                             || isWeaponTypeBeast(atkUnit.weaponType)
                         ) {
                             return true;
@@ -6472,7 +6472,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.KouketsuNoSensou:
-                    if ((atkUnit.snapshot.restHpPercentage == 100 && defUnit.snapshot.restHpPercentage == 100)
+                    if ((atkUnit.snapshot.restHpPercentage === 100 && defUnit.snapshot.restHpPercentage === 100)
                         || (atkUnit.snapshot.restHpPercentage < 100 && defUnit.snapshot.restHpPercentage < 100)
                     ) {
                         ++followupAttackPriority;
@@ -6516,10 +6516,10 @@ class DamageCalculatorWrapper {
                 --followupAttackPriority;
             }
 
-            if (defUnit.hasStatusEffect(StatusEffectType.ResonantShield) && defUnit.isOneTimeActionActivatedForShieldEffect == false) {
+            if (defUnit.hasStatusEffect(StatusEffectType.ResonantShield) && defUnit.isOneTimeActionActivatedForShieldEffect === false) {
                 --followupAttackPriority;
             }
-            if (atkUnit.passiveB == PassiveB.WaryFighter3 && atkUnit.snapshot.restHpPercentage >= 50) {
+            if (atkUnit.passiveB === PassiveB.WaryFighter3 && atkUnit.snapshot.restHpPercentage >= 50) {
                 --followupAttackPriority;
             }
             if (DamageCalculatorWrapper.canActivateBreakerSkill(defUnit, atkUnit)) {
@@ -6530,7 +6530,7 @@ class DamageCalculatorWrapper {
                 case Weapon.Marute:
                     if (defUnit.isWeaponSpecialRefined) {
                         if (!defUnit.battleContext.initiatesCombat
-                            || atkUnit.snapshot.restHpPercentage == 100) {
+                            || atkUnit.snapshot.restHpPercentage === 100) {
                             --followupAttackPriority;
                         }
                     }
@@ -6643,7 +6643,7 @@ class DamageCalculatorWrapper {
             case Special.Seikabuto:
             case Special.Seii:
             case Special.IceMirror:
-                if (attackRange == 2) {
+                if (attackRange === 2) {
                     defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
                 }
                 break;
@@ -6653,18 +6653,18 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Special.Seitate:
-                if (attackRange == 2) {
+                if (attackRange === 2) {
                     defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
                 }
                 break;
             case Special.Kotate:
             case Special.Nagatate:
-                if (attackRange == 1) {
+                if (attackRange === 1) {
                     defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
                 }
                 break;
             case Special.Otate:
-                if (attackRange == 1) {
+                if (attackRange === 1) {
                     defUnit.battleContext.damageReductionRatioBySpecial = 0.5;
                 }
                 break;
@@ -6962,14 +6962,16 @@ class DamageCalculatorWrapper {
             defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantabeActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
             defUnit.battleContext.isDefDesperationActivated = defUnit.battleContext.isDefDesperationActivatable;
 
-            if (defUnit.battleContext.isDefDesperationActivated) {
-                if (this.isLogEnabled) this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
-            }
-            if (atkUnit.battleContext.isDesperationActivated) {
-                if (this.isLogEnabled) this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動、攻撃の直後に追撃");
-            }
-            if (defUnit.battleContext.isVantageActivated) {
-                if (this.isLogEnabled) this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
+            if (this.isLogEnabled) {
+                if (defUnit.battleContext.isDefDesperationActivated) {
+                    this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は攻撃の直後に追撃");
+                }
+                if (atkUnit.battleContext.isDesperationActivated) {
+                    this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "は攻め立て効果発動、攻撃の直後に追撃");
+                }
+                if (defUnit.battleContext.isVantageActivated) {
+                    this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
+                }
             }
         }
         else {
@@ -7032,9 +7034,9 @@ class DamageCalculatorWrapper {
         }
         switch (targetUnit.passiveS) {
             case PassiveS.RengekiBogyoKenYariOno3:
-                if (enemyUnit.weaponType == WeaponType.Sword ||
-                    enemyUnit.weaponType == WeaponType.Lance ||
-                    enemyUnit.weaponType == WeaponType.Axe) {
+                if (enemyUnit.weaponType === WeaponType.Sword ||
+                    enemyUnit.weaponType === WeaponType.Lance ||
+                    enemyUnit.weaponType === WeaponType.Axe) {
                     targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
                 }
                 break;
@@ -7124,7 +7126,7 @@ class DamageCalculatorWrapper {
     __isTherePartnerInSpace3(unit) {
         return this.__isThereAnyAllyUnit(unit,
             x => unit.calculateDistanceToUnit(x) <= 3
-                && unit.partnerHeroIndex == x.heroIndex);
+                && unit.partnerHeroIndex === x.heroIndex);
     }
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
@@ -7170,37 +7172,37 @@ class DamageCalculatorWrapper {
                     targetUnit.resSpur += 3;
                     break;
                 case PassiveC.WardArmor:
-                    if (targetUnit.moveType == MoveType.Armor) {
+                    if (targetUnit.moveType === MoveType.Armor) {
                         targetUnit.defSpur += 4;
                         targetUnit.resSpur += 4;
                     }
                     break;
                 case PassiveC.GoadArmor:
-                    if (targetUnit.moveType == MoveType.Armor) {
+                    if (targetUnit.moveType === MoveType.Armor) {
                         targetUnit.atkSpur += 4;
                         targetUnit.spdSpur += 4;
                     }
                     break;
                 case PassiveC.WardFliers:
-                    if (targetUnit.moveType == MoveType.Flying) {
+                    if (targetUnit.moveType === MoveType.Flying) {
                         targetUnit.defSpur += 4;
                         targetUnit.resSpur += 4;
                     }
                     break;
                 case PassiveC.GoadFliers:
-                    if (targetUnit.moveType == MoveType.Flying) {
+                    if (targetUnit.moveType === MoveType.Flying) {
                         targetUnit.atkSpur += 4;
                         targetUnit.spdSpur += 4;
                     }
                     break;
                 case PassiveC.WardCavalry:
-                    if (targetUnit.moveType == MoveType.Cavalry) {
+                    if (targetUnit.moveType === MoveType.Cavalry) {
                         targetUnit.defSpur += 4;
                         targetUnit.resSpur += 4;
                     }
                     break;
                 case PassiveC.GoadCavalry:
-                    if (targetUnit.moveType == MoveType.Cavalry) {
+                    if (targetUnit.moveType === MoveType.Cavalry) {
                         targetUnit.atkSpur += 4;
                         targetUnit.spdSpur += 4;
                     }
@@ -7271,7 +7273,7 @@ class DamageCalculatorWrapper {
                 break;
             case Weapon.KamiraNoEnfu:
                 if (allyUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.moveType == MoveType.Flying || targetUnit.moveType == MoveType.Cavalry) {
+                    if (targetUnit.moveType === MoveType.Flying || targetUnit.moveType === MoveType.Cavalry) {
                         targetUnit.atkSpur += 3;
                         targetUnit.spdSpur += 3;
                     }
@@ -7308,7 +7310,7 @@ class DamageCalculatorWrapper {
                 break;
             case Weapon.Yatonokami:
                 if (allyUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.partnerHeroIndex == allyUnit.heroIndex) {
+                    if (targetUnit.partnerHeroIndex === allyUnit.heroIndex) {
                         targetUnit.addAllSpur(4);
                     }
                 }
@@ -7460,10 +7462,10 @@ class DamageCalculatorWrapper {
         if (count <= 2) {
             return 10;
         }
-        else if (count == 3) {
+        else if (count === 3) {
             return 7;
         }
-        else if (count == 4) {
+        else if (count === 4) {
             return 4;
         }
         else {
@@ -7476,10 +7478,10 @@ class DamageCalculatorWrapper {
         if (count >= 5) {
             return 10;
         }
-        else if (count == 4) {
+        else if (count === 4) {
             return 7;
         }
-        else if (count == 3) {
+        else if (count === 3) {
             return 4;
         }
         else {
@@ -7767,7 +7769,7 @@ class DamageCalculatorWrapper {
             let nearestPartner = null;
             let nearestDist = 1000;
             for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (targetUnit.partnerHeroIndex == unit.heroIndex) {
+                if (targetUnit.partnerHeroIndex === unit.heroIndex) {
                     let dist = calcDistance(targetUnit.posX, targetUnit.posY, unit.posX, unit.posY);
                     if (dist < nearestDist) {
                         nearestPartner = unit;
@@ -7865,7 +7867,7 @@ class DamageCalculatorWrapper {
             }
 
             for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
-                if (skillId == NoneValue) { continue; }
+                if (skillId === NoneValue) { continue; }
                 switch (skillId) {
                     case PassiveA.AtkSpdBond4:
                         targetUnit.atkSpur += 7;
@@ -8060,7 +8062,7 @@ class DamageCalculatorWrapper {
             }
 
             for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
-                if (skillId == NoneValue) { continue; }
+                if (skillId === NoneValue) { continue; }
                 switch (skillId) {
                     case PassiveA.AtkSpdSolo3:
                         targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
@@ -8188,7 +8190,7 @@ class DamageCalculatorWrapper {
                     case Weapon.Rigarublade:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                                x => isWeaponTypeTome(x.weaponType) && x.moveType == MoveType.Infantry)
+                                x => isWeaponTypeTome(x.weaponType) && x.moveType === MoveType.Infantry)
                             ) {
                                 targetUnit.addAllSpur(3);
                             }
@@ -8197,7 +8199,7 @@ class DamageCalculatorWrapper {
                     case Weapon.Vidofuniru:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                                x => x.moveType == MoveType.Armor || x.moveType == MoveType.Infantry)
+                                x => x.moveType === MoveType.Armor || x.moveType === MoveType.Infantry)
                             ) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.spdSpur += 5;
@@ -8206,7 +8208,7 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.HinokaNoKounagitou:
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                            x => x.moveType == MoveType.Flying || x.moveType == MoveType.Infantry)
+                            x => x.moveType === MoveType.Flying || x.moveType === MoveType.Infantry)
                         ) {
                             targetUnit.atkSpur += 5;
                             targetUnit.spdSpur += 5;
@@ -8214,7 +8216,7 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.KamiraNoEnfu:
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                            x => x.moveType == MoveType.Flying || x.moveType == MoveType.Cavalry)
+                            x => x.moveType === MoveType.Flying || x.moveType === MoveType.Cavalry)
                         ) {
                             targetUnit.atkSpur += 5;
                             targetUnit.spdSpur += 5;
@@ -8223,7 +8225,7 @@ class DamageCalculatorWrapper {
                     case Weapon.Simuberin:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                                x => x.moveType == MoveType.Flying)
+                                x => x.moveType === MoveType.Flying)
                             ) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.resSpur += 5;
@@ -8233,7 +8235,7 @@ class DamageCalculatorWrapper {
                     case Weapon.Ora:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                                x => x.weaponType == WeaponType.Staff || isWeaponTypeTome(x.weaponType))
+                                x => x.weaponType === WeaponType.Staff || isWeaponTypeTome(x.weaponType))
                             ) {
                                 targetUnit.atkSpur += 5;
                                 targetUnit.spdSpur += 5;
@@ -8253,7 +8255,7 @@ class DamageCalculatorWrapper {
                     case Weapon.Excalibur:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                                x.weaponType == WeaponType.Staff || isWeaponTypeTome(x.weaponType))
+                                x.weaponType === WeaponType.Staff || isWeaponTypeTome(x.weaponType))
                             ) {
                                 targetUnit.atkSpur += 4;
                                 targetUnit.spdSpur += 4;
@@ -8263,7 +8265,7 @@ class DamageCalculatorWrapper {
                     case Weapon.KentoushiNoGoken:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                                x.moveType == MoveType.Infantry || x.moveType == MoveType.Flying)
+                                x.moveType === MoveType.Infantry || x.moveType === MoveType.Flying)
                             ) {
                                 targetUnit.atkSpur += 4;
                                 targetUnit.spdSpur += 4;
@@ -8274,8 +8276,8 @@ class DamageCalculatorWrapper {
                         if (targetUnit.isWeaponSpecialRefined) {
                             let isAvailable = false;
                             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                                if (unit.moveType == MoveType.Infantry
-                                    || unit.moveType == MoveType.Cavalry) {
+                                if (unit.moveType === MoveType.Infantry
+                                    || unit.moveType === MoveType.Cavalry) {
                                     unit.atkSpur += 3;
                                     unit.defSpur += 3;
                                     isAvailable = true;
@@ -8291,8 +8293,8 @@ class DamageCalculatorWrapper {
                         if (targetUnit.isWeaponSpecialRefined) {
                             let isAvailable = false;
                             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                                if (unit.moveType == MoveType.Infantry
-                                    || unit.moveType == MoveType.Cavalry) {
+                                if (unit.moveType === MoveType.Infantry
+                                    || unit.moveType === MoveType.Cavalry) {
                                     unit.atkSpur += 3;
                                     unit.spdSpur += 3;
                                     isAvailable = true;
@@ -8360,7 +8362,7 @@ class DamageCalculatorWrapper {
                 }
 
                 for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
-                    if (skillId == NoneValue) { continue; }
+                    if (skillId === NoneValue) { continue; }
                     switch (skillId) {
                         case PassiveA.SpdResForm3:
                             this.__applyFormSkill(targetUnit,
@@ -8413,7 +8415,7 @@ class DamageCalculatorWrapper {
     __isTherePartnerInSpace2(unit) {
         return this.__isThereAnyAllyUnit(unit,
             x => unit.calculateDistanceToUnit(x) <= 2
-                && unit.partnerHeroIndex == x.heroIndex);
+                && unit.partnerHeroIndex === x.heroIndex);
     }
 
     __isThereAnyPartnerPairsIn3Spaces(targetUnit) {

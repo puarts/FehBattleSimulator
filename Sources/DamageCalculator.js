@@ -33,6 +33,14 @@ class DamageCalcContext {
     }
 }
 
+class OneAttackResult {
+    constructor(damage, specialDamage, atkCountPerOneAttack) {
+        this.damagePerAttack = damage;
+        this.specialDamagePerAttack = specialDamage;
+        this.attackCount = atkCountPerOneAttack;
+    }
+}
+
 /// ダメージ計算結果を表すクラスです。
 class DamageCalcResult {
     constructor() {
@@ -372,7 +380,6 @@ class DamageCalculator {
         let atkCountPerOneAttack = context.isCounterattack ? atkUnit.battleContext.counterattackCount : atkUnit.battleContext.attackCount;
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.specialAddDamage;
-        let reduceAtkHalf = !atkUnit.battleContext.wrathfulStaff && atkUnit.weaponType === WeaponType.Staff;
 
         let mitHp = defUnit.restHp;
         let defInCombat = defUnit.getDefInCombat(atkUnit);
@@ -464,7 +471,8 @@ class DamageCalculator {
         }
 
         let damageReduceRatio = 1.0;
-        if (reduceAtkHalf) {
+        let reduceDamageHalf = !atkUnit.battleContext.wrathfulStaff && atkUnit.weaponType === WeaponType.Staff;
+        if (reduceDamageHalf) {
             damageReduceRatio *= 0.5;
         }
 
@@ -561,11 +569,8 @@ class DamageCalculator {
                 }
             }
         }
-        let result = new Object();
-        result.damagePerAttack = damage;
-        result.specialDamagePerAttack = specialDamage;
-        result.attackCount = atkCountPerOneAttack;
-        return result;
+
+        return new OneAttackResult(damage, specialAddDamage, atkCountPerOneAttack);
     }
 
 
