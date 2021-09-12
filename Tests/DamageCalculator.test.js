@@ -1,8 +1,40 @@
 
+test('DamageCalculator_SaveSkillTest', () => test_executeTest(() => {
+  let heroDatabase = new test_HeroDatabase(
+    heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+    passiveSInfos);
+
+  let atkUnit = heroDatabase.createUnit("アルフォンス");
+  let defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+  let saverUnit = heroDatabase.createUnit("ドゥドゥー", UnitGroupType.Enemy);
+  atkUnit.placedTile.posX = 0;
+  atkUnit.placedTile.posY = 1;
+
+  defUnit.placedTile.posX = 0;
+  defUnit.placedTile.posY = 0;
+  saverUnit.placedTile.posX = 1;
+  saverUnit.placedTile.posY = 0;
+
+  let calclator = new test_DamageCalculator();
+  calclator.isLogEnabled = false;
+  calclator.unitManager.units = [atkUnit, defUnit, saverUnit];
+
+  let result = calclator.calcDamage(atkUnit, defUnit);
+
+  let atackerAtk = (atkUnit.atkWithSkills + 6) + Math.floor((atkUnit.atkWithSkills + 6) * 0.2);
+  let saverDef = saverUnit.defWithSkills + 4 + 5 + 6;
+  expect(result.atkUnit_normalAttackDamage).toBe(atackerAtk - saverDef);
+  expect(result.atkUnit_totalAttackCount).toBe(2);
+
+  if (calclator.isLogEnabled) {
+    console.log(calclator.damageCalc.rawLog);
+  }
+  calclator.damageCalc.clearLog();
+}));
+
 test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
   let log = "";
-  let heroDatabase = null;
-  heroDatabase = new test_HeroDatabase(
+  let heroDatabase = new test_HeroDatabase(
     heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
     passiveSInfos);
 

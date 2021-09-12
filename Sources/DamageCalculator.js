@@ -111,9 +111,6 @@ class DamageCalculator {
         this._rawLog += log + "\n";
     }
     writeRestHpLog(unit) {
-        if (!this.isLogEnabled) {
-            return;
-        }
         if (this.isLogEnabled) this.writeLog(unit.name + "の残りHP " + unit.restHp + "/" + unit.maxHpWithSkills);
     }
 
@@ -363,17 +360,17 @@ class DamageCalculator {
     }
 
     __calcCombatDamage(atkUnit, defUnit, context) {
-        if (!this.__isDead(atkUnit)) {
-            if (this.isLogEnabled) this.writeDebugLog("----");
+        if (!this.__isDead(atkUnit) && this.isLogEnabled) {
+            this.writeDebugLog("----");
             if (context.isCounterattack) {
-                if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
+                this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
             }
             else {
                 if (context.isFollowupAttack) {
-                    if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に追撃");
+                    this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に追撃");
                 }
                 else {
-                    if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "を攻撃");
+                    this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "を攻撃");
                 }
             }
         }
@@ -401,8 +398,6 @@ class DamageCalculator {
         if (atkUnit.battleContext.wrathfulStaff) {
             reduceAtkHalf = false;
         }
-
-        let effectiveAtk = atkUnit.battleContext.isEffectiveToOpponent;
 
         let mitHp = defUnit.restHp;
         let totalMit = 0;
@@ -562,7 +557,7 @@ class DamageCalculator {
 
         if (this.isLogEnabled) this.writeDebugLog("補正前の攻撃:" + totalAtk + `(${totalAtkDetailLog})`);
         let finalAtk = totalAtk;
-        if (effectiveAtk) {
+        if (atkUnit.battleContext.isEffectiveToOpponent) {
             // 特効
             finalAtk = floorNumberWithFloatError(finalAtk * 1.5);
             if (this.isLogEnabled) this.writeDebugLog("特効補正値: 1.5");
@@ -655,7 +650,7 @@ class DamageCalculator {
         }
 
         if (this.isLogEnabled) this.writeLog("範囲奥義によるダメージ" + totalDamage);
-        this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>範囲奥義によるダメージ" + totalDamage);
+        if (this.isLogEnabled) this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>範囲奥義によるダメージ" + totalDamage);
         this.__restoreMaxSpecialCount(atkUnit);
 
         defUnit.restHp = defUnit.restHp - totalDamage;

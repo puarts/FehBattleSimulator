@@ -170,6 +170,7 @@ class DamageCalculatorWrapper {
         if (!calcPotentialDamage) {
             let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
             if (saverUnit != null) {
+                if (this.isLogEnabled) this.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
                 // 戦闘後効果の適用処理が間に挟まるので、restoreOriginalTile() はこの関数の外で行わなければならない
                 saverUnit.saveOriginalTile();
 
