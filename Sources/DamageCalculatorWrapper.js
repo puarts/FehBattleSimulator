@@ -65,13 +65,14 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForAtkUnitFuncDict = {};
         this._applySkillEffectForDefUnitFuncDict = {};
         this._applySkillEffectForUnitFuncDict = {};
+        this._applySpecialSkillEffectFuncDict = {};
 
         this.__init__applySkillEffectForAtkUnitFuncDict();
         this.__init__applySkillEffectForDefUnitFuncDict();
         this.__init__applySkillEffectForUnitFuncDict();
+        this.__init__applySpecialSkillEffect();
     }
 
-    // ログ関連のAPIがとっ散らかってるので、Logger的なものを作って一元管理したい
     get log() {
         return this._damageCalc.log;
     }
@@ -350,7 +351,7 @@ class DamageCalculatorWrapper {
 
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
-        result = self._damageCalc.calcCombatResult(atkUnit, defUnit);
+        result = self._damageCalc.calcCombatResult(atkUnit, defUnit, calcPotentialDamage);
         // });
         return result;
     }
@@ -364,7 +365,9 @@ class DamageCalculatorWrapper {
             || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
         if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
             if (this.isLogEnabled) this.writeDebugLog("守備魔防の低い方でダメージ計算");
-            atkUnit.battleContext.refersRes = defUnit.getResInCombat(atkUnit) < defUnit.getDefInCombat(atkUnit);
+            let defInCombat = defUnit.getDefInCombat(atkUnit);
+            let resInCombat = defUnit.getResInCombat(atkUnit);
+            atkUnit.battleContext.refersRes = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
         }
         else if (atkUnit.weapon === Weapon.FlameLance) {
             atkUnit.battleContext.refersRes = atkUnit.snapshot.restHpPercentage >= 50;
@@ -375,6 +378,19 @@ class DamageCalculatorWrapper {
         else {
             if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${atkUnit.isPhysicalAttacker() ? "物理" : "魔法"}ユニット`);
             atkUnit.battleContext.refersRes = !atkUnit.isPhysicalAttacker();
+        }
+
+        atkUnit.battleContext.refersResForSpecial = atkUnit.battleContext.refersRes;
+        switch (atkUnit.special) {
+            case Special.SeidrShell:
+                if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
+                    if (this.isLogEnabled) this.writeDebugLog("魔弾により守備魔防の低い方でダメージ計算");
+
+                    let defInCombat = defUnit.getDefInCombat(atkUnit);
+                    let resInCombat = defUnit.getResInCombat(atkUnit);
+                    atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                }
+                break;
         }
     }
 
@@ -6706,181 +6722,230 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applySpecialSkillEffect(targetUnit, enemyUnit) {
-        switch (targetUnit.special) {
-            case Special.Taiyo:
-                targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
-                break;
-            case Special.Youkage:
-            case Special.Yuyo:
+    __init__applySpecialSkillEffect() {
+        this._applySpecialSkillEffectFuncDict[Special.Taiyo] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
+        };
+        {
+            let func = (targetUnit, enemyUnit) => {
                 targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
-                break;
-            case Special.Kagetsuki:
-            case Special.Moonbow:
+            };
+            this._applySpecialSkillEffectFuncDict[Special.Youkage] = func;
+            this._applySpecialSkillEffectFuncDict[Special.Yuyo] = func;
+        }
+        {
+            let func = (targetUnit, enemyUnit) => {
                 // 月虹
                 targetUnit.battleContext.specialSufferPercentage = 30;
-                break;
-            case Special.Luna:
-                // 月光
-                targetUnit.battleContext.specialSufferPercentage = 50;
-                break;
-            case Special.KuroNoGekko:
-                targetUnit.battleContext.specialSufferPercentage = 80;
-                break;
-            case Special.Aether:
-            case Special.AoNoTenku:
-            case Special.RadiantAether2:
-            case Special.MayhemAether:
+            };
+
+            this._applySpecialSkillEffectFuncDict[Special.Kagetsuki] = func;
+            this._applySpecialSkillEffectFuncDict[Special.Moonbow] = func;
+        }
+
+        this._applySpecialSkillEffectFuncDict[Special.Luna] = (targetUnit, enemyUnit) => {
+            // 月光
+            targetUnit.battleContext.specialSufferPercentage = 50;
+        };
+        this._applySpecialSkillEffectFuncDict[Special.KuroNoGekko] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialSufferPercentage = 80;
+        };
+        {
+            let func = (targetUnit, enemyUnit) => {
                 // 天空
                 targetUnit.battleContext.specialSufferPercentage = 50;
                 targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
-                break;
-            case Special.LunaFlash: {
+            };
+            this._applySpecialSkillEffectFuncDict[Special.Aether] = func;
+            this._applySpecialSkillEffectFuncDict[Special.AoNoTenku] = func;
+            this._applySpecialSkillEffectFuncDict[Special.RadiantAether2] = func;
+            this._applySpecialSkillEffectFuncDict[Special.MayhemAether] = func;
+        }
+
+
+        this._applySpecialSkillEffectFuncDict[Special.LunaFlash] = (targetUnit, enemyUnit) => {
+            {
                 // 月光閃
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.2);
                 targetUnit.battleContext.specialSufferPercentage = 20;
-                break;
             }
+        };
 
-            case Special.Hoshikage:
-            case Special.Glimmer:
+        {
+            let func = (targetUnit, enemyUnit) => {
                 // 凶星
                 targetUnit.battleContext.specialMultDamage = 1.5;
-                break;
-            case Special.Deadeye:
-                targetUnit.battleContext.specialMultDamage = 2;
-                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                break;
-            case Special.Astra: {
-                // 流星
-                targetUnit.battleContext.specialMultDamage = 2.5;
-                break;
-            }
-            case Special.Hotarubi:
-            case Special.Bonfire:
+            };
+            this._applySpecialSkillEffectFuncDict[Special.Hoshikage] = func;
+            this._applySpecialSkillEffectFuncDict[Special.Glimmer] = func;
+        }
+
+        this._applySpecialSkillEffectFuncDict[Special.Deadeye] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialMultDamage = 2;
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        };
+        this._applySpecialSkillEffectFuncDict[Special.Astra] = (targetUnit, enemyUnit) => {
+            // 流星
+            targetUnit.battleContext.specialMultDamage = 2.5;
+        };
+
+        {
+            let func = (targetUnit, enemyUnit) => {
                 // 緋炎
                 {
                     let totalDef = targetUnit.getDefInCombat(enemyUnit);
                     targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
                 }
-                break;
-            case Special.Ignis:
-                // 華炎
-                {
-                    let totalDef = targetUnit.getDefInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.8);
-                }
-                break;
-            case Special.Hyouten:
-            case Special.Iceberg:
+            };
+            this._applySpecialSkillEffectFuncDict[Special.Hotarubi] = func;
+            this._applySpecialSkillEffectFuncDict[Special.Bonfire] = func;
+        }
+
+        this._applySpecialSkillEffectFuncDict[Special.Ignis] = (targetUnit, enemyUnit) => {
+            // 華炎
+            {
+                let totalDef = targetUnit.getDefInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.8);
+            }
+        };
+
+        {
+            let func = (targetUnit, enemyUnit) => {
                 // 氷蒼
                 {
                     let totalRes = targetUnit.getResInCombat(enemyUnit);
                     targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.5);
                 }
-                break;
-            case Special.Glacies:
-                // 氷華
-                {
-                    let totalRes = targetUnit.getResInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.8);
-                }
-                break;
-            case Special.HolyKnightAura:
-                // グランベルの聖騎士
-                {
-                    let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.25);
-                }
-                break;
-            case Special.Fukuryu:
-            case Special.DraconicAura:
+            };
+            this._applySpecialSkillEffectFuncDict[Special.Hyouten] = func;
+            this._applySpecialSkillEffectFuncDict[Special.Iceberg] = func;
+        }
+
+        this._applySpecialSkillEffectFuncDict[Special.Glacies] = (targetUnit, enemyUnit) => {
+            // 氷華
+            {
+                let totalRes = targetUnit.getResInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.8);
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.HolyKnightAura] = (targetUnit, enemyUnit) => {
+            // グランベルの聖騎士
+            {
+                let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.25);
+            }
+        };
+
+        {
+            let func = (targetUnit, enemyUnit) => {
                 // 竜裂
                 {
                     let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
                     targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.3);
                 }
-                break;
-            case Special.DragonFang: {
+            };
+            this._applySpecialSkillEffectFuncDict[Special.Fukuryu] = func;
+            this._applySpecialSkillEffectFuncDict[Special.DraconicAura] = func;
+        }
+
+        this._applySpecialSkillEffectFuncDict[Special.DragonFang] = (targetUnit, enemyUnit) => {
+            {
                 // 竜穿
                 let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.5);
-                break;
             }
-            case Special.ShiningEmblem:
-                {
-                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.35);
-                }
-                break;
-            case Special.HonoNoMonsyo:
-            case Special.HerosBlood:
-                {
-                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
-                }
-                break;
-            case Special.RighteousWind:
-                // 聖風
-                {
-                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
-                }
-                break;
-            case Special.Sirius:
-                // 天狼
-                {
-                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
-                    targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
-                }
-                break;
-            case Special.TwinBlades: // 双刃
-                {
-                    let totalRes = targetUnit.getResInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
-                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                }
-                break;
-            case Special.RupturedSky: {
-                if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.4);
-                }
-                else {
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.2);
-                }
-                break;
+        };
+        this._applySpecialSkillEffectFuncDict[Special.ShiningEmblem] = (targetUnit, enemyUnit) => {
+            {
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.35);
             }
-            case Special.SublimeHeaven:
-                if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.5);
+        };
+        {
+            let func = (targetUnit, enemyUnit) => {
+                {
+                    let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
                 }
-                else {
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.25);
-                }
+            };
+            this._applySpecialSkillEffectFuncDict[Special.HonoNoMonsyo] = func;
+            this._applySpecialSkillEffectFuncDict[Special.HerosBlood] = func;
+        }
+
+        this._applySpecialSkillEffectFuncDict[Special.RighteousWind] = (targetUnit, enemyUnit) => {
+            // 聖風
+            {
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.Sirius] = (targetUnit, enemyUnit) => {
+            // 天狼
+            {
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
+                targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.TwinBlades] = (targetUnit, enemyUnit) => {
+            // 双刃
+            {
+                let totalRes = targetUnit.getResInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
                 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                break;
-            case Special.RegnalAstra:
-            case Special.ImperialAstra:
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.RupturedSky] = (targetUnit, enemyUnit) => {
+            if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
+                targetUnit.battleContext.specialAddDamage = Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.4);
+            }
+            else {
+                targetUnit.battleContext.specialAddDamage = Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.2);
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.SublimeHeaven] = (targetUnit, enemyUnit) => {
+            if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
+                targetUnit.battleContext.specialAddDamage = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.5);
+            }
+            else {
+                targetUnit.battleContext.specialAddDamage = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.25);
+            }
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        };
+        {
+            let func = (targetUnit, enemyUnit) => {
                 {
                     let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
                     targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.4);
                 }
-                break;
-            case Special.OpenTheFuture:
-                {
-                    let totalDef = targetUnit.getDefInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
-                    targetUnit.battleContext.specialDamageRatioToHeal = 0.25;
-                }
-                break;
-            case Special.BlueFrame:
-                targetUnit.battleContext.specialAddDamage = 10;
-                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                    targetUnit.battleContext.specialAddDamage += 15;
-                }
-                break;
+            };
+            this._applySpecialSkillEffectFuncDict[Special.RegnalAstra] = func;
+            this._applySpecialSkillEffectFuncDict[Special.ImperialAstra] = func;
+        }
+
+        this._applySpecialSkillEffectFuncDict[Special.OpenTheFuture] = (targetUnit, enemyUnit) => {
+            {
+                let totalDef = targetUnit.getDefInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
+                targetUnit.battleContext.specialDamageRatioToHeal = 0.25;
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.BlueFrame] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialAddDamage = 10;
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                targetUnit.battleContext.specialAddDamage += 15;
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.SeidrShell] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialAddDamage += 15;
+        };
+    }
+
+    __applySpecialSkillEffect(targetUnit, enemyUnit) {
+        let func = this._applySpecialSkillEffectFuncDict[targetUnit.special];
+        if (func) {
+            func(targetUnit, enemyUnit);
         }
     }
 

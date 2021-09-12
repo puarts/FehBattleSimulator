@@ -20,7 +20,7 @@ class DamageCalcContext {
 
     isFirstAttack(atkUnit) {
         for (let log of this.damageHistory) {
-            if (log.attackUnit == atkUnit) {
+            if (log.attackUnit === atkUnit) {
                 return false;
             }
         }
@@ -29,7 +29,7 @@ class DamageCalcContext {
     }
 
     isConsecutiveAttack(atkUnit) {
-        return this.damageHistory[this.damageHistory.length - 1].attackUnit == atkUnit;
+        return this.damageHistory[this.damageHistory.length - 1].attackUnit === atkUnit;
     }
 }
 
@@ -66,7 +66,7 @@ class DamageCalcResult {
 /// ダメージ計算を行うためのクラスです。
 class DamageCalculator {
     /**
-     * @param  {Logger} logger=null
+     * @param  {LoggerBase} logger
      */
     constructor(logger) {
         this._logger = logger;
@@ -111,10 +111,13 @@ class DamageCalculator {
         this._logger.clearLog();
     }
 
-    /// ダメージ計算を行います。
-    /// @param {Unit} atkUnit 攻撃をするユニットです。
-    /// @param {Unit} defUnit 攻撃を受けるユニットです。
-    calcCombatResult(atkUnit, defUnit) {
+    /**
+     * ダメージ計算を行います。
+     * @param  {Unit} atkUnit 攻撃をするユニットです。
+     * @param  {Unit} defUnit 攻撃を受けるユニットです。
+     * @param  {boolean} calcPotentialDamage 潜在ダメージ計算かどうかを指定します。
+     */
+    calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
         // 初期化
         let context = new DamageCalcContext();
         let result = new DamageCalcResult();
@@ -132,110 +135,98 @@ class DamageCalculator {
         // 戦闘中ダメージ計算
         if (this.isLogEnabled) this.writeDebugLog("戦闘中ダメージ計算..");
 
-        if (defUnit.battleContext.isVantageActivated) {
-            // 反撃
-            this.__counterattack(atkUnit, defUnit, result, context);
-            // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-            if (defUnit.battleContext.isDefDesperationActivated) {
-                // 反撃の追撃
-                this.__followupCounterattack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                // 攻撃
-                this.__attack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                // 攻撃の追撃
-                this.__followupAttack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-            }
-            else {
-                // 攻撃
-                this.__attack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                if (atkUnit.battleContext.isDesperationActivated) {
-                    // 攻撃の追撃
-                    this.__followupAttack(atkUnit, defUnit, result, context);
-                    // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                    // 反撃の追撃
-                    this.__followupCounterattack(atkUnit, defUnit, result, context);
-                    // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-                }
-                else {
-                    // 反撃の追撃
-                    this.__followupCounterattack(atkUnit, defUnit, result, context);
-                    // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                    // 攻撃の追撃
-                    this.__followupAttack(atkUnit, defUnit, result, context);
-                    // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-                }
-            }
-        }
-        else {
-            // 攻撃
-            this.__attack(atkUnit, defUnit, result, context);
-            // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-            if (atkUnit.battleContext.isDesperationActivated) {
-                // 攻撃の追撃
-                this.__followupAttack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                // 反撃
-                this.__counterattack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                // 反撃の追撃
-                this.__followupCounterattack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-            } else {
-                // 反撃
-                this.__counterattack(atkUnit, defUnit, result, context);
-                // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                if (defUnit.battleContext.isDefDesperationActivated) {
-                    // 反撃の追撃
-                    this.__followupCounterattack(atkUnit, defUnit, result, context);
-
-                    // 攻撃の追撃
-                    this.__followupAttack(atkUnit, defUnit, result, context);
-                    // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-                }
-                else {
-                    // 攻撃の追撃
-                    this.__followupAttack(atkUnit, defUnit, result, context);
-                    // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-
-                    // 反撃の追撃
-                    this.__followupCounterattack(atkUnit, defUnit, result, context);
-                    // if (this.__isAnyoneDead(atkUnit, defUnit)) { return result; }
-                }
-            }
+        for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
+            func();
+            if (!calcPotentialDamage && this.__isAnyoneDead(atkUnit, defUnit)) { break; }
         }
 
         result.damageHistory = context.damageHistory;
         return result;
     }
 
-    __isDead(unit) {
-        if (unit.restHp == 0) {
-            return true;
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {DamageCalcResult} result
+     * @param  {DamageCalcContext} context
+     */
+    *__enumerateCombatFuncs(atkUnit, defUnit, result, context) {
+        let self = this;
+        if (defUnit.battleContext.isVantageActivated) {
+            // 反撃
+            yield () => self.__counterattack(atkUnit, defUnit, result, context);
+
+            if (defUnit.battleContext.isDefDesperationActivated) {
+                // 反撃の追撃
+                yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                // 攻撃
+                yield () => self.__attack(atkUnit, defUnit, result, context);
+
+                // 攻撃の追撃
+                yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+            }
+            else {
+                // 攻撃
+                yield () => self.__attack(atkUnit, defUnit, result, context);
+
+                if (atkUnit.battleContext.isDesperationActivated) {
+                    // 攻撃の追撃
+                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                    // 反撃の追撃
+                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+                }
+                else {
+                    // 反撃の追撃
+                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の追撃
+                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+                }
+            }
         }
-        return false;
+        else {
+            // 攻撃
+            yield () => self.__attack(atkUnit, defUnit, result, context);
+
+            if (atkUnit.battleContext.isDesperationActivated) {
+                // 攻撃の追撃
+                yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                // 反撃
+                yield () => self.__counterattack(atkUnit, defUnit, result, context);
+
+                // 反撃の追撃
+                yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+            } else {
+                // 反撃
+                yield () => self.__counterattack(atkUnit, defUnit, result, context);
+
+                if (defUnit.battleContext.isDefDesperationActivated) {
+                    // 反撃の追撃
+                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の追撃
+                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+                }
+                else {
+                    // 攻撃の追撃
+                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                    // 反撃の追撃
+                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+                }
+            }
+        }
+    }
+
+    __isDead(unit) {
+        return unit.restHp === 0;
     }
 
     __isAnyoneDead(atkUnit, defUnit) {
-        if (this.__isDead(atkUnit)) {
-            return true;
-        }
-        if (this.__isDead(defUnit)) {
-            return true;
-        }
-        return false;
+        return this.__isDead(atkUnit) || this.__isDead(defUnit);
     }
 
     __attack(atkUnit, defUnit, result, context) {
@@ -274,7 +265,7 @@ class DamageCalculator {
                 result.defUnit_actualTotalAttackCount += combatResult.attackCount;
             }
 
-            if (atkUnit.restHp == 0) {
+            if (atkUnit.restHp === 0) {
                 if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "は戦闘不能");
                 return result;
             }
@@ -350,8 +341,8 @@ class DamageCalculator {
         return `魔防${unit.resWithSkills}、強化${unit.getResBuffInCombat(enemyUnit)}、弱化${unit.getResDebuffInCombat()}、戦闘中強化${unit.resSpur}`;
     }
 
-    __calcCombatDamage(atkUnit, defUnit, context) {
-        if (!this.__isDead(atkUnit) && this.isLogEnabled) {
+    __logAttackerAndAttackee() {
+        if (!this.__isDead(atkUnit)) {
             this.writeDebugLog("----");
             if (context.isCounterattack) {
                 this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
@@ -365,74 +356,30 @@ class DamageCalculator {
                 }
             }
         }
+    }
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {DamageCalcContext} context
+     */
+    __calcCombatDamage(atkUnit, defUnit, context) {
+        if (this.isLogEnabled) this.__logAttackerAndAttackee();
 
-        this.__calcAndSetCooldownCount(atkUnit, defUnit,
-            [atkUnit.passiveA, atkUnit.passiveS],
-            [defUnit.passiveA, defUnit.passiveS]);
+        this.__calcAndSetCooldownCount(atkUnit, defUnit);
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 
-        let totalAtkDetailLog = this.__getAtkInCombatDetail(atkUnit, defUnit);
-
-        let atkDamageAdd = 0;
-        let atkCountPerOneAttack = 1;
-        if (context.isCounterattack) {
-            atkCountPerOneAttack = atkUnit.battleContext.counterattackCount;
-        } else {
-            atkCountPerOneAttack = atkUnit.battleContext.attackCount;
-        }
-
-        let atkCount = atkCountPerOneAttack;
+        let atkCountPerOneAttack = context.isCounterattack ? atkUnit.battleContext.counterattackCount : atkUnit.battleContext.attackCount;
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.specialAddDamage;
-        let reduceAtkHalf = atkUnit.weaponType == WeaponType.Staff;
-        if (atkUnit.battleContext.wrathfulStaff) {
-            reduceAtkHalf = false;
-        }
+        let reduceAtkHalf = !atkUnit.battleContext.wrathfulStaff && atkUnit.weaponType === WeaponType.Staff;
 
         let mitHp = defUnit.restHp;
-        let totalMit = 0;
+        let defInCombat = defUnit.getDefInCombat(atkUnit);
+        let resInCombat = defUnit.getResInCombat(atkUnit);
 
-        let totalMitDefailLog = "";
-        let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
-            || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
-        if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
-            if (this.isLogEnabled) this.writeDebugLog("守備魔防の低い方でダメージ計算");
-            let defInCombat = defUnit.getDefInCombat(atkUnit);
-            let resInCombat = defUnit.getResInCombat(atkUnit);
-            totalMit = Math.min(defInCombat, resInCombat);
-            atkUnit.battleContext.refersRes = resInCombat < defInCombat;
-        }
-        else if (atkUnit.weapon === Weapon.FlameLance) {
-            if (atkUnit.snapshot.restHpPercentage >= 50) {
-                atkUnit.battleContext.refersRes = true;
-            }
-        }
-        else if ((atkUnit.weapon == Weapon.HelsReaper)) {
-            if (isWeaponTypeTome(defUnit.weaponType) || defUnit.weaponType == WeaponType.Staff) {
-                atkUnit.battleContext.refersRes = false;
-            }
-            else {
-                atkUnit.battleContext.refersRes = true;
-            }
-        }
-        else {
-            atkUnit.battleContext.refersRes = !atkUnit.isPhysicalAttacker();
-        }
-
-        if (atkUnit.battleContext.refersRes) {
-            if (this.isLogEnabled) this.writeDebugLog("魔防参照");
-            totalMit = defUnit.getResInCombat(atkUnit);
-            totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
-        }
-        else {
-            if (this.isLogEnabled) this.writeDebugLog("守備参照");
-            totalMit = defUnit.getDefInCombat(atkUnit);
-            totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
-        }
-
-        let specialTotalMit = totalMit; // 攻撃側の奥義発動時の防御力
-        let specialTotalMitDefailLog = "";
+        let totalMit = atkUnit.battleContext.refersRes ? resInCombat : defInCombat;
+        let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
@@ -459,28 +406,12 @@ class DamageCalculator {
                     atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
-            case Special.SeidrShell:
-                specialAddDamage = 15;
-                if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
-                    if (this.isLogEnabled) this.writeDebugLog("魔弾の守備魔防の低い方でダメージ計算");
-                    let defInCombat = defUnit.getDefInCombat(atkUnit);
-                    let resInCombat = defUnit.getResInCombat(atkUnit);
-                    specialTotalMit = Math.min(defInCombat, resInCombat);
-                    if (resInCombat < defInCombat) {
-                        specialTotalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
-                    }
-                    else {
-                        specialTotalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
-                    }
-                }
-                break;
             default:
                 break;
         }
 
         let attackAdvRatio = 0;
         {
-            if (this.isLogEnabled) this.writeDebugLog("[相性判定] 攻撃属性:" + colorTypeToString(atkUnit.color) + "、防御属性:" + colorTypeToString(defUnit.color));
             let attackTriangleAdv = DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit);
             let triangleAdeptRate = 0;
             let triangleMult = 0;
@@ -524,12 +455,11 @@ class DamageCalculator {
             }
             let triangleReviseRate = triangleAdeptRate + additionalRatio;
             attackAdvRatio = triangleMult * triangleReviseRate;
-            if (this.isLogEnabled) this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio.toFixed(2));
+
         }
 
         let mitAdvRatio = 0.0;
         if (defUnit.battleContext.isOnDefensiveTile) {
-            if (this.isLogEnabled) this.writeDebugLog(defUnit.getNameWithGroup() + "は防御地形補正 1.3");
             mitAdvRatio = 0.3;
         }
 
@@ -538,89 +468,117 @@ class DamageCalculator {
             damageReduceRatio *= 0.5;
         }
 
-
-        if (this.isLogEnabled) this.writeDebugLog("補正前の攻撃:" + totalAtk + `(${totalAtkDetailLog})`);
         let finalAtk = totalAtk;
         if (atkUnit.battleContext.isEffectiveToOpponent) {
             // 特効
             finalAtk = floorNumberWithFloatError(finalAtk * 1.5);
-            if (this.isLogEnabled) this.writeDebugLog("特効補正値: 1.5");
         }
 
         let addAdjustAtk = truncNumberWithFloatError(finalAtk * attackAdvRatio);
-        if (this.isLogEnabled) this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
         finalAtk = finalAtk + addAdjustAtk;
 
-        if (this.isLogEnabled) this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDefailLog})`);
-        if (totalMit != specialTotalMit) {
-            if (this.isLogEnabled) this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDefailLog})`);
-        }
         let finalMit = floorNumberWithFloatError(totalMit + totalMit * mitAdvRatio);
-        if (this.isLogEnabled) this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
-        let damage = truncNumberWithFloatError((finalAtk - finalMit) * damageReduceRatio) + atkDamageAdd;
+        let damage = truncNumberWithFloatError((finalAtk - finalMit) * damageReduceRatio);
         if (damage < 0) {
             damage = 0;
         }
-        if (this.isLogEnabled) this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
         damage += fixedAddDamage;
 
         let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
         let sufferRatio = (specialSuffer / 100.0);
-        if (sufferRatio > 0) {
-            if (this.isLogEnabled) this.writeDebugLog(`守備、魔防－${floorNumberWithFloatError(sufferRatio * 100)}%扱い`);
-        }
-
         let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * sufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
-        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage + atkDamageAdd;
+        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage;
         if (specialDamage < 0) {
             specialDamage = 0;
         }
         specialDamage += fixedAddDamage;
-        if (this.isLogEnabled) this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
         specialDamage += fixedSpecialAddDamage;
-        if (this.isLogEnabled) this.writeDebugLog(
-            `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCount}`);
-
         let totalDamage = this.__calcAttackTotalDamage(
             context,
             atkUnit,
             defUnit,
-            atkCount,
+            atkCountPerOneAttack,
             damage,
             specialDamage,
             invalidatesDamageReductionExceptSpecialOnSpecialActivation
         );
 
-        if (!this.__isDead(atkUnit)) {
-            if (this.isLogEnabled) this.writeDebugLog(`合計ダメージ:${totalDamage}`);
+        if (this.isLogEnabled) {
+            let resInCombatDetail = this.__getResInCombatDetail(defUnit, atkUnit);
+            let defInCombatDetail = this.__getResInCombatDetail(defUnit, atkUnit);
+            let totalMitDefailLog = atkUnit.battleContext.refersRes ? resInCombatDetail : defInCombatDetail;
+            if (atkUnit.battleContext.refersRes) {
+                this.writeDebugLog("通常攻撃時は魔防参照")
+            }
+            else {
+                this.writeDebugLog("通常攻撃時は守備参照");
+            }
 
+            let specialTotalMitDefailLog = atkUnit.battleContext.refersResForSpecial ? resInCombatDetail : defInCombatDetail;
+            if (atkUnit.battleContext.refersRes != atkUnit.battleContext.refersResForSpecial) {
+                if (atkUnit.battleContext.refersResForSpecial) {
+                    this.writeDebugLog("奥義発動時は魔防参照")
+                }
+                else {
+                    this.writeDebugLog("奥義発動時は守備参照");
+                }
+            }
+
+            this.writeDebugLog("[相性判定] 攻撃属性:" + colorTypeToString(atkUnit.color) + "、防御属性:" + colorTypeToString(defUnit.color));
+            this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio.toFixed(2));
+            if (defUnit.battleContext.isOnDefensiveTile) {
+                this.writeDebugLog(defUnit.getNameWithGroup() + "は防御地形補正 1.3");
+            }
+            this.writeDebugLog("補正前の攻撃:" + totalAtk + `(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`);
+            if (atkUnit.battleContext.isEffectiveToOpponent) {
+                this.writeDebugLog("特効補正値: 1.5");
+            }
+            this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
+            this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDefailLog})`);
+            if (totalMit != specialTotalMit) {
+                this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDefailLog})`);
+            }
+            this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
+            this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
+            if (sufferRatio > 0) {
+                this.writeDebugLog(`守備、魔防－${floorNumberWithFloatError(sufferRatio * 100)}%扱い`);
+            }
+            this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
+            this.writeDebugLog(
+                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerOneAttack}`);
+            this.writeDebugLog(`合計ダメージ:${totalDamage}`);
+        }
+
+        if (!this.__isDead(atkUnit)) {
             // 攻撃側が倒されていたらダメージを反映しない(潜在ダメージ計算のためにダメージ計算は必要)
             let restHp = Math.max(0, mitHp - totalDamage);
             defUnit.restHp = restHp;
-            if (this.isLogEnabled) this.writeLog(defUnit.getNameWithGroup() + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
-            if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "の残りHP " + atkUnit.restHp + "/" + atkUnit.maxHpWithSkills);
-            if (this.__isDead(defUnit)) {
-                if (this.isLogEnabled) this.writeLog(defUnit.getNameWithGroup() + "は戦闘不能");
+            if (this.isLogEnabled) {
+                this.writeLog(defUnit.getNameWithGroup() + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
+                this.writeLog(atkUnit.getNameWithGroup() + "の残りHP " + atkUnit.restHp + "/" + atkUnit.maxHpWithSkills);
+                if (this.__isDead(defUnit)) {
+                    this.writeLog(defUnit.getNameWithGroup() + "は戦闘不能");
+                }
             }
         }
         let result = new Object();
         result.damagePerAttack = damage;
         result.specialDamagePerAttack = specialDamage;
-        result.attackCount = atkCount;
+        result.attackCount = atkCountPerOneAttack;
         return result;
     }
 
 
     calcPrecombatSpecialResult(atkUnit, defUnit) {
         if (this.isLogEnabled) this.writeDebugLog("戦闘前ダメージ計算..");
-        if (isPrecombatSpecial(atkUnit.special) == false) {
+        if (isPrecombatSpecial(atkUnit.special) === false) {
             if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を持たない`);
             return;
         }
 
         let isSpecialActivated = false;
         if (atkUnit.maxSpecialCount > 0) {
-            if (atkUnit.tmpSpecialCount == 0) {
+            if (atkUnit.tmpSpecialCount === 0) {
                 isSpecialActivated = true;
             }
         }
@@ -680,7 +638,7 @@ class DamageCalculator {
     }
 
 
-    __calcAndSetCooldownCount(atkUnit, defUnit, atkUnitSkillIds, defUnitSkillIds) {
+    __calcAndSetCooldownCount(atkUnit, defUnit) {
         atkUnit.battleContext.cooldownCountForAttack = 1;
         defUnit.battleContext.cooldownCountForAttack = 1;
         atkUnit.battleContext.cooldownCountForDefense = 1;
@@ -723,13 +681,13 @@ class DamageCalculator {
             if (isDefUnitAlreadyDead) {
                 return totalDamage;
             }
-            let isAtkUnitalreadyDead = atkUnit.restHp == 0;
+            let isAtkUnitalreadyDead = atkUnit.restHp === 0;
             if (isAtkUnitalreadyDead) {
                 return totalDamage;
             }
 
-            let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount == 0;
-            let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount == 0;
+            let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
+            let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0;
             let damageReductionRatio = 1.0;
             let damageReductionValue = 0;
 
@@ -768,7 +726,7 @@ class DamageCalculator {
                 }
 
                 if (isDefenderSpecialActivated) {
-                    if (defUnit.passiveB == PassiveB.TateNoKodo3) {
+                    if (defUnit.passiveB === PassiveB.TateNoKodo3) {
                         damageReductionValue = 5;
                     }
                     this.__restoreMaxSpecialCount(defUnit);
@@ -796,7 +754,7 @@ class DamageCalculator {
                     let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
                     healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * atkUnit.battleContext.maxHpRatioToHealBySpecial);
 
-                    if (atkUnit.passiveB == PassiveB.TaiyoNoUdewa) {
+                    if (atkUnit.passiveB === PassiveB.TaiyoNoUdewa) {
                         healedHp += floorNumberWithFloatError(actualDamage * 0.3);
                     }
 
@@ -832,7 +790,7 @@ class DamageCalculator {
                     defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
                 }
                 totalDamage = defUnit.restHp - 1;
-                if (defUnit.special == Special.Miracle) {
+                if (defUnit.special === Special.Miracle) {
                     this.__restoreMaxSpecialCount(defUnit);
                 }
             }
