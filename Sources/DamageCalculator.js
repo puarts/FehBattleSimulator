@@ -349,7 +349,7 @@ class DamageCalculator {
         return `魔防${unit.resWithSkills}、強化${unit.getResBuffInCombat(enemyUnit)}、弱化${unit.getResDebuffInCombat()}、戦闘中強化${unit.resSpur}`;
     }
 
-    __logAttackerAndAttackee() {
+    __logAttackerAndAttackee(atkUnit, defUnit, context) {
         if (!this.__isDead(atkUnit)) {
             this.writeDebugLog("----");
             if (context.isCounterattack) {
@@ -371,7 +371,7 @@ class DamageCalculator {
      * @param  {DamageCalcContext} context
      */
     __calcCombatDamage(atkUnit, defUnit, context) {
-        if (this.isLogEnabled) this.__logAttackerAndAttackee();
+        if (this.isLogEnabled) this.__logAttackerAndAttackee(atkUnit, defUnit, context);
 
         this.__calcAndSetCooldownCount(atkUnit, defUnit);
 
