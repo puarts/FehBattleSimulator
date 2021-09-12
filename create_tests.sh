@@ -3,6 +3,7 @@
 SOURCE_FILE_NAMES=(
     GlobalDefinitions
     Utilities
+    Logger
     Skill
     Tile
     Structures

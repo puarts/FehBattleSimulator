@@ -87,15 +87,70 @@ function createDefaultUnit(name, groupId = UnitGroupType.Ally) {
     return unit;
 }
 
+
+class DamageCalcHeroDatabase extends HeroDatabase {
+    constructor(inputHeroInfos, weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
+        super(inputHeroInfos);
+        this.skillDatabase = new SkillDatabase();
+        this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
+    }
+    /**
+     * @param  {String} heroName
+     * @param  {UnitGroupType} groupId=UnitGroupType.Ally
+     * @returns {Unit}
+     */
+    createUnit(name, heroName, groupId = UnitGroupType.Ally) {
+        let unit = createDefaultUnit(name, groupId);
+        this.initUnit(unit, heroName);
+        return unit;
+    }
+
+    initUnit(unit, heroName) {
+        let heroInfo = this.findInfo(heroName);
+        unit.initByHeroInfo(heroInfo);
+
+        unit.level = 40;
+        unit.merge = 0;
+        unit.dragonflower = 0;
+        unit.initializeSkillsToDefault();
+        this.skillDatabase.updateUnitSkillInfo(unit);
+        unit.setMoveCountFromMoveType();
+        unit.isBonusChar = false;
+        if (!unit.heroInfo.isResplendent) {
+            unit.isResplendent = true;
+        }
+
+        unit.updateStatusBySkillsAndMerges(true);
+
+        unit.resetMaxSpecialCount();
+        unit.specialCount = unit.maxSpecialCount;
+        unit.hp = unit.maxHpWithSkills;
+    }
+}
+
 class DamageCalcData {
     constructor() {
-        this.damageCalc = new DamageCalculatorWrapper();
+        this.unitManager = new UnitManager();
+        this.map = new BattleMap("", MapType.None, 0);
+        this.battleContext = new GlobalBattleContext();
+        this.damageCalc = new DamageCalculatorWrapper(
+            this.unitManager,
+            this.map,
+            this.battleContext,
+            new HtmlLogger()
+        );
+        this.heroDatabase = new DamageCalcHeroDatabase(
+            heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+            passiveSInfos);
+
         this.mode = DamageCalcMode.Simple;
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
         this.attackerTriangleAdvantage = TriangleAdvantage.None;
         this.triangleAdeptType = TriangleAdeptType.None;
         this.atkUnit = createDefaultUnit("攻撃者");
+        this.atkUnit.weaponInfo = weaponInfos[0];
         this.defUnit = createDefaultUnit("被攻撃者", UnitGroupType.Enemy);
+        this.defUnit.weaponInfo = weaponInfos[0];
         this.basicDamageDealt = 0;
         this.actualDamageDealt = 0;
         this.log = "";

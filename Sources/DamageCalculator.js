@@ -65,22 +65,30 @@ class DamageCalcResult {
 
 /// ダメージ計算を行うためのクラスです。
 class DamageCalculator {
-    constructor() {
+    /**
+     * @param  {Logger} logger=null
+     */
+    constructor(logger) {
+        this._logger = logger;
+
         this._rawLog = "";
         this._log = "";
         this._simpleLog = "";
-        this.isLogEnabled = true;
     }
 
-    get rawLog() {
-        return this._rawLog;
+    get isLogEnabled() {
+        return this._logger.isLogEnabled;
+    }
+
+    set isLogEnabled(value) {
+        this._logger.isLogEnabled = value;
     }
 
     get log() {
-        return this._log;
+        return this._logger.log;
     }
     get simpleLog() {
-        return this._simpleLog.substring(0, this._simpleLog.length - "<br/>".length);
+        return this._logger.simpleLog;
     }
 
     examinesCanFollowupAttack(atkUnit, defUnit) {
@@ -90,34 +98,26 @@ class DamageCalculator {
     }
 
     writeSimpleLog(log) {
-        if (!this.isLogEnabled) {
-            return;
-        }
-        this._simpleLog += log + "<br/>";
+        this._logger.writeSimpleLog(log);
+        // this._simpleLog += log + "<br/>";
     }
 
     writeLog(log) {
-        if (!this.isLogEnabled) {
-            return;
-        }
-        this._log += log + "<br/>";
-        this._rawLog += log + "\n";
+        this._logger.writeLog(log);
+        // this._log += log + "<br/>";
+        // this._rawLog += log + "\n";
     }
     writeDebugLog(log) {
-        if (!this.isLogEnabled) {
-            return;
-        }
-        this._log += "<span style='font-size:10px; color:#666666'>" + log + "</span><br/>";
-        this._rawLog += log + "\n";
+        this._logger.writeDebugLog(log);
+        // this._log += "<span style='font-size:10px; color:#666666'>" + log + "</span><br/>";
+        // this._rawLog += log + "\n";
     }
     writeRestHpLog(unit) {
         if (this.isLogEnabled) this.writeLog(unit.name + "の残りHP " + unit.restHp + "/" + unit.maxHpWithSkills);
     }
 
     clearLog() {
-        this._log = "";
-        this._simpleLog = "";
-        this._rawLog = "";
+        this._logger.clearLog();
     }
 
     /// ダメージ計算を行います。
@@ -594,7 +594,8 @@ class DamageCalculator {
         specialDamage += fixedAddDamage;
         if (this.isLogEnabled) this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
         specialDamage += fixedSpecialAddDamage;
-        if (this.isLogEnabled) this.writeDebugLog("通常ダメージ=" + damage + ", 奥義ダメージ=" + specialDamage);
+        if (this.isLogEnabled) this.writeDebugLog(
+            `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCount}`);
 
         let totalDamage = this.__calcAttackTotalDamage(
             context,
@@ -607,6 +608,8 @@ class DamageCalculator {
         );
 
         if (!this.__isDead(atkUnit)) {
+            if (this.isLogEnabled) this.writeDebugLog(`合計ダメージ:${totalDamage}`);
+
             // 攻撃側が倒されていたらダメージを反映しない(潜在ダメージ計算のためにダメージ計算は必要)
             let restHp = Math.max(0, mitHp - totalDamage);
             defUnit.restHp = restHp;

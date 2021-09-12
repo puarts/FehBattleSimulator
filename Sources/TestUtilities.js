@@ -72,7 +72,8 @@ class test_DamageCalculator {
         this.damageCalc = new DamageCalculatorWrapper(
             this.unitManager,
             this.map,
-            this.battleContext
+            this.battleContext,
+            new SimpleLogger()
         );
         this.isLogEnabled = false;
     }

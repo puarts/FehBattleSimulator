@@ -54,11 +54,11 @@ class ScopedTileChanger {
 
 class DamageCalculatorWrapper {
     /// @param {UnitManager} unitManager ユニットマネージャーのインスタンス
-    constructor(unitManager, map, globalBattleContext) {
+    constructor(unitManager, map, globalBattleContext, logger) {
         this._unitManager = unitManager;
         this.map = map;
         this.globalBattleContext = globalBattleContext;
-        this._damageCalc = new DamageCalculator();
+        this._damageCalc = new DamageCalculator(logger);
         this.profiler = new PerformanceProfile();
 
         // 高速化用
