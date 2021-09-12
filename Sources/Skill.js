@@ -2366,62 +2366,87 @@ function isRefreshSupportSkill(skillId) {
     }
 }
 
-/// 範囲奥義かどうかを判定します。
+const BowWeaponTypeTable = {}
+BowWeaponTypeTable[WeaponType.RedBow] = 0;
+BowWeaponTypeTable[WeaponType.BlueBow] = 0;
+BowWeaponTypeTable[WeaponType.GreenBow] = 0;
+BowWeaponTypeTable[WeaponType.ColorlessBow] = 0;
+BowWeaponTypeTable[WeaponType.Bow] = 0;
+
+/// 武器タイプが弓であるかを判定します。
 function isWeaponTypeBow(type) {
-    return type == WeaponType.RedBow
-        || type == WeaponType.BlueBow
-        || type == WeaponType.GreenBow
-        || type == WeaponType.ColorlessBow;
+    return type in BowWeaponTypeTable;
 }
+
+const DaggerWeaponTypeTable = {}
+DaggerWeaponTypeTable[WeaponType.RedDagger] = 0;
+DaggerWeaponTypeTable[WeaponType.BlueDagger] = 0;
+DaggerWeaponTypeTable[WeaponType.GreenDagger] = 0;
+DaggerWeaponTypeTable[WeaponType.ColorlessDagger] = 0;
+DaggerWeaponTypeTable[WeaponType.Dagger] = 0;
 
 /// 武器タイプが暗器であるかを判定します。
 function isWeaponTypeDagger(type) {
-    return type == WeaponType.RedDagger
-        || type == WeaponType.BlueDagger
-        || type == WeaponType.GreenDagger
-        || type == WeaponType.ColorlessDagger;
+    return type in DaggerWeaponTypeTable;
 }
+
+const TomeWeaponTypeTable = {}
+TomeWeaponTypeTable[WeaponType.RedTome] = 0;
+TomeWeaponTypeTable[WeaponType.BlueTome] = 0;
+TomeWeaponTypeTable[WeaponType.GreenTome] = 0;
+TomeWeaponTypeTable[WeaponType.ColorlessTome] = 0;
+TomeWeaponTypeTable[WeaponType.Tome] = 0;
 
 /// 武器タイプが魔法であるかを判定します。
 function isWeaponTypeTome(type) {
-    return type == WeaponType.RedTome
-        || type == WeaponType.BlueTome
-        || type == WeaponType.GreenTome
-        || type == WeaponType.ColorlessTome;
+    return type in TomeWeaponTypeTable;
 }
+
+const BreathWeaponTypeTable = {}
+BreathWeaponTypeTable[WeaponType.RedBreath] = 0;
+BreathWeaponTypeTable[WeaponType.BlueBreath] = 0;
+BreathWeaponTypeTable[WeaponType.GreenBreath] = 0;
+BreathWeaponTypeTable[WeaponType.ColorlessBreath] = 0;
+BreathWeaponTypeTable[WeaponType.Breath] = 0;
 
 /// 武器タイプが竜であるかを判定します。
 function isWeaponTypeBreath(type) {
-    return type == WeaponType.RedBreath
-        || type == WeaponType.BlueBreath
-        || type == WeaponType.GreenBreath
-        || type == WeaponType.ColorlessBreath
-        || type == WeaponType.Breath;
+    return type in BreathWeaponTypeTable;
 }
+
+const BeastWeaponTypeTable = {}
+BeastWeaponTypeTable[WeaponType.RedBeast] = 0;
+BeastWeaponTypeTable[WeaponType.BlueBeast] = 0;
+BeastWeaponTypeTable[WeaponType.GreenBeast] = 0;
+BeastWeaponTypeTable[WeaponType.ColorlessBeast] = 0;
+BeastWeaponTypeTable[WeaponType.Beast] = 0;
 
 /// 武器タイプが獣であるかを判定します。
 function isWeaponTypeBeast(type) {
-    return type == WeaponType.RedBeast
-        || type == WeaponType.BlueBeast
-        || type == WeaponType.GreenBeast
-        || type == WeaponType.ColorlessBeast
-        || type == WeaponType.Beast;
+    return type in BeastWeaponTypeTable;
 }
 
 /// 武器タイプが2距離射程の武器であるかを判定します。
 function isRangedWeaponType(weaponType) {
-    return isWeaponTypeDagger(weaponType)
-        || isWeaponTypeTome(weaponType)
-        || isWeaponTypeBow(weaponType)
-        || weaponType == WeaponType.Staff;
+    return !isMeleeWeaponType(weaponType);
 }
+
+const MeleeWeaponTypeTable = {};
+MeleeWeaponTypeTable[WeaponType.Sword] = 0;
+MeleeWeaponTypeTable[WeaponType.Axe] = 0;
+MeleeWeaponTypeTable[WeaponType.Lance] = 0;
+MeleeWeaponTypeTable[WeaponType.RedBeast] = 0;
+MeleeWeaponTypeTable[WeaponType.BlueBeast] = 0;
+MeleeWeaponTypeTable[WeaponType.GreenBeast] = 0;
+MeleeWeaponTypeTable[WeaponType.ColorlessBeast] = 0;
+MeleeWeaponTypeTable[WeaponType.RedBreath] = 0;
+MeleeWeaponTypeTable[WeaponType.BlueBreath] = 0;
+MeleeWeaponTypeTable[WeaponType.GreenBreath] = 0;
+MeleeWeaponTypeTable[WeaponType.ColorlessBreath] = 0;
 
 /// 武器タイプが1距離射程の武器であるかを判定します。
 function isMeleeWeaponType(weaponType) {
-    return isWeaponTypeBreathOrBeast(weaponType)
-        || weaponType == WeaponType.Sword
-        || weaponType == WeaponType.Axe
-        || weaponType == WeaponType.Lance;
+    return weaponType in MeleeWeaponTypeTable;
 }
 
 /// 武器タイプが竜、もしくは獣であるかを判定します。

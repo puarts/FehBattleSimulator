@@ -4298,6 +4298,15 @@ class Unit {
         }
         return false;
     }
+
+    /**
+     * @param  {boolean} initiatesCombat
+     */
+    initBattleContext(initiatesCombat) {
+        this.battleContext.clear();
+        this.battleContext.hpBeforeCombat = this.hp;
+        this.battleContext.initiatesCombat = initiatesCombat;
+    }
 }
 
 

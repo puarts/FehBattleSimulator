@@ -3193,24 +3193,24 @@ class AetherRaidTacticsBoard {
         tileToAttack = null,
         calcPotentialDamage = false
     ) {
-        return this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        let result = this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        this.damageCalc.updateUnitSpur(atkUnit, false);
+        this.damageCalc.updateUnitSpur(defUnit, false);
+        return result;
     }
 
-    /// 一時的に戦闘のダメージを計算します。
     calcDamageTemporary(
         atkUnit,
         defUnit,
         tileToAttack = null,
         calcPotentialDamage = false
     ) {
-        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
-        if (defUnit != result.defUnit) {
-            // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
+        let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        this.damageCalc.updateUnitSpur(atkUnit, false);
+        this.damageCalc.updateUnitSpur(defUnit, false);
+        if (result.defUnit != defUnit) {
             let saverUnit = result.defUnit;
-            let tile = saverUnit.placedTile;
-            saverUnit.restoreOriginalTile();
-            this.updateAllUnitSpur();
-            tile.setUnit(defUnit);
+            this.updateUnitSpur(saverUnit, false);
         }
         return result;
     }

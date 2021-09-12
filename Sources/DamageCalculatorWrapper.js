@@ -27,6 +27,31 @@ class PerformanceProfile {
     }
 }
 
+class ScopedTileChanger {
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Tile} tileToAttack
+     */
+    constructor(atkUnit, tileToAttack, tileChangedFunc = null) {
+        this._origTile = atkUnit.placedTile;
+        this._atkUnit = atkUnit;
+        let isTileChanged = tileToAttack !== this._origTile;
+        if (tileToAttack !== null && isTileChanged) {
+            tileToAttack.setUnit(atkUnit);
+            if (tileChangedFunc !== null) {
+                tileChangedFunc();
+            }
+        }
+    }
+
+    dispose() {
+        if (this._origTile !== this._atkUnit.placedTile) {
+            // ユニットの位置を元に戻す
+            setUnitToTile(this._atkUnit, this._origTile);
+        }
+    }
+}
+
 class DamageCalculatorWrapper {
     /// @param {UnitManager} unitManager ユニットマネージャーのインスタンス
     constructor(unitManager, map, globalBattleContext) {
@@ -86,12 +111,40 @@ class DamageCalculatorWrapper {
         this._damageCalc.writeDebugLog(message);
     }
 
+
+    /**
+     *  一時的に戦闘のダメージを計算します。
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Tile} tileToAttack=null
+     * @param  {boolean} calcPotentialDamage=false
+     * @returns {DamageCalcResult}
+     */
+    calcDamageTemporary(
+        atkUnit,
+        defUnit,
+        tileToAttack = null,
+        calcPotentialDamage = false
+    ) {
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        if (defUnit != result.defUnit) {
+            // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
+            let saverUnit = result.defUnit;
+            let tile = saverUnit.placedTile;
+            saverUnit.restoreOriginalTile();
+            tile.setUnit(defUnit);
+        }
+
+        return result;
+    }
+
     /**
      * 戦闘のダメージを計算します。
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {boolean} calcPotentialDamage=false
+     * @returns {DamageCalcResult}
      */
     calcDamage(
         atkUnit,
@@ -100,117 +153,84 @@ class DamageCalculatorWrapper {
         calcPotentialDamage = false
     ) {
         let self = this;
-        let origTile = atkUnit.placedTile;
-        let isUpdateSpurRequired = true; // 戦闘中強化をリセットするために必ず必要
-
-        // self.profile.profile("pre calcPrecombatSpecialResult", () => {
-
-        // self.profile.profile("pre calcPrecombatSpecialResult 1", () => {
-        atkUnit.battleContext.clear();
-        defUnit.battleContext.clear();
-        atkUnit.battleContext.hpBeforeCombat = atkUnit.hp;
-        defUnit.battleContext.hpBeforeCombat = defUnit.hp;
-        atkUnit.battleContext.initiatesCombat = true;
-        defUnit.battleContext.initiatesCombat = false;
-
-        if (tileToAttack != null) {
-            // 攻撃ユニットの位置を一時的に変更
-            // self.writeDebugLogLine(atkUnit.getNameWithGroup() + "の位置を(" + tileToAttack.posX + ", " + tileToAttack.posY + ")に変更");
-            tileToAttack.setUnit(atkUnit);
-
-            isUpdateSpurRequired = true;
-        }
-
-        if (isUpdateSpurRequired) {
+        let result;
+        using(new ScopedTileChanger(atkUnit, tileToAttack, () => {
             self.updateUnitSpur(atkUnit, calcPotentialDamage);
             self.updateUnitSpur(defUnit, calcPotentialDamage);
-        }
-        // });
+        }), () => {
+            atkUnit.initBattleContext(true);
+            defUnit.initBattleContext(false);
 
-
-        // self.profile.profile("pre calcPrecombatSpecialResult 2", () => {
-        // 戦闘前奥義の計算に影響するマップ関連の設定
-        {
-            atkUnit.battleContext.isOnDefensiveTile = atkUnit.isOnMap && atkUnit.placedTile.isDefensiveTile;
-            defUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
-        }
-
-        atkUnit.saveCurrentHpAndSpecialCount();
-        defUnit.saveCurrentHpAndSpecialCount();
-        // });
-        // self.profile.profile("pre calcPrecombatSpecialResult 3", () => {
-        atkUnit.createSnapshot();
-        defUnit.createSnapshot();
-        // });
-        // });
-
-        self.clearLog();
-
-        // 戦闘前ダメージ計算
-        let preCombatDamage = 0;
-        // self.profile.profile("calcPrecombatSpecialResult", () => {
-        // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
-        self.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
-        self.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
-
-        if (!calcPotentialDamage) {
-            preCombatDamage = self.calcPrecombatSpecialResult(atkUnit, defUnit);
-        }
-        // });
-
-        let actualDefUnit = defUnit;
-        // self.profile.profile("pre calcCombatResult", () => {
-        atkUnit.battleContext.clearPrecombatState();
-        defUnit.battleContext.clearPrecombatState();
-
-        // 戦闘開始時の状態を保存
-        atkUnit.createSnapshot();
-        defUnit.createSnapshot();
-
-        if (!calcPotentialDamage) {
-            let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
-            if (saverUnit != null) {
-                if (this.isLogEnabled) this.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
-                // 戦闘後効果の適用処理が間に挟まるので、restoreOriginalTile() はこの関数の外で行わなければならない
-                saverUnit.saveOriginalTile();
-
-                // Tile.placedUnit に本当は配置ユニットが設定されないといけないが、
-                // 1マスに複数ユニットが配置される状況は考慮していなかった。
-                // おそらく戦闘中だけの設定であれば不要だと思われるので一旦設定無視してる。
-                // todo: 必要になったら、Tile.placedUnit を複数設定できるよう対応する
-                saverUnit.placedTile = defUnit.placedTile;
-                saverUnit.setPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
-
-                saverUnit.battleContext.clear();
-                saverUnit.battleContext.hpBeforeCombat = defUnit.hp;
-                saverUnit.battleContext.initiatesCombat = defUnit.battleContext.initiatesCombat;
-                saverUnit.battleContext.isSaviorActivated = true;
-                saverUnit.saveCurrentHpAndSpecialCount();
-                saverUnit.createSnapshot();
-
-                actualDefUnit = saverUnit;
-                self.updateAllUnitSpur(calcPotentialDamage);
+            // 戦闘前奥義の計算に影響するマップ関連の設定
+            {
+                atkUnit.battleContext.isOnDefensiveTile = atkUnit.isOnMap && atkUnit.placedTile.isDefensiveTile;
+                defUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
             }
-        }
-        // });
 
-        let result;
-        result = self.calcCombatResult(atkUnit, actualDefUnit, calcPotentialDamage);
+            atkUnit.saveCurrentHpAndSpecialCount();
+            defUnit.saveCurrentHpAndSpecialCount();
 
-        result.preCombatDamage = preCombatDamage;
+            atkUnit.createSnapshot();
+            defUnit.createSnapshot();
 
-        // self.profile.profile("post calcCombatResult", () => {
-        if (tileToAttack != null) {
-            // ユニットの位置を元に戻す
-            setUnitToTile(atkUnit, origTile);
-        }
+            self.clearLog();
 
-        // 計算のために変更した紋章値をリセット
-        if (isUpdateSpurRequired) {
-            self.updateAllUnitSpur();
-        }
-        // });
+            // 戦闘前ダメージ計算
+            let preCombatDamage = 0;
+
+            // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
+            self.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
+            self.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
+
+            if (!calcPotentialDamage) {
+                preCombatDamage = self.calcPrecombatSpecialResult(atkUnit, defUnit);
+            }
+
+
+            atkUnit.battleContext.clearPrecombatState();
+            defUnit.battleContext.clearPrecombatState();
+
+            let actualDefUnit = defUnit;
+            if (!calcPotentialDamage) {
+                let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
+                if (saverUnit != null) {
+                    if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
+                    self.__initSaverUnit(saverUnit, defUnit);
+                    actualDefUnit = saverUnit;
+                }
+            }
+
+            // 戦闘開始時の状態を保存
+            atkUnit.createSnapshot();
+            actualDefUnit.createSnapshot();
+
+            result = self.calcCombatResult(atkUnit, actualDefUnit, calcPotentialDamage);
+            result.preCombatDamage = preCombatDamage;
+        });
+
         return result;
+    }
+
+    /**
+     * @param  {Unit} saverUnit
+     * @param  {Unit} defUnit
+     */
+    __initSaverUnit(saverUnit, defUnit) {
+        // 戦闘後効果の適用処理が間に挟まるので、restoreOriginalTile() はこの関数の外で行わなければならない
+        saverUnit.saveOriginalTile();
+
+        // Tile.placedUnit に本当は配置ユニットが設定されないといけないが、
+        // 1マスに複数ユニットが配置される状況は考慮していなかった。
+        // おそらく戦闘中だけの設定であれば不要だと思われるので一旦設定無視してる。
+        // todo: 必要になったら、Tile.placedUnit を複数設定できるよう対応する
+        saverUnit.placedTile = defUnit.placedTile;
+        saverUnit.setPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
+
+        saverUnit.initBattleContext(defUnit.battleContext.initiatesCombat);
+        saverUnit.battleContext.isSaviorActivated = true;
+        saverUnit.saveCurrentHpAndSpecialCount();
+
+        this.updateUnitSpur(saverUnit, false);
     }
 
     calcPrecombatSpecialDamage(atkUnit, defUnit) {

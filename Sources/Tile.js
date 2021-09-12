@@ -42,7 +42,11 @@ for (let key in TileType) {
 const CanNotReachTile = 1000000;
 const ObstructTile = 10000; // 進軍阻止されているタイルのウェイト
 
-/// ユニットをタイルに配置します。
+/**
+ * ユニットをタイルに配置します。
+ * @param  {Unit} unit
+ * @param  {Tile} tile
+ */
 function setUnitToTile(unit, tile) {
     if (unit.placedTile != null) {
         unit.placedTile.placedUnit = null;

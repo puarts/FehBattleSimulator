@@ -457,8 +457,6 @@ class AppData extends UnitManager {
 
         this.globalBattleContext = new GlobalBattleContext();
 
-        this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
-
         {
             // 生成順を変えるとIDが変わってしまうので注意
             this.defenseStructureStorage = new ObjectStorage(g_idGenerator.generate());
