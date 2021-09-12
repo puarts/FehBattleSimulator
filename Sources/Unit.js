@@ -399,6 +399,9 @@ class BattleContext {
         // 守備魔防の低い方でダメージ計算
         this.refersMinOfDefOrRes = false;
 
+        // true なら戦闘時に守備、falseなら魔防を参照します。
+        this.refersRes = false;
+
         // 氷の聖鏡発動時などの軽減ダメージ保持用
         this.reducedDamageForNextAttack = 0;
 
@@ -541,6 +544,7 @@ class BattleContext {
         this.invalidatesOwnResDebuff = false;
 
         this.refersMinOfDefOrRes = false;
+        this.refersRes = false;
         this.reducedDamageForNextAttack = 0;
         this.nextAttackEffectAfterSpecialActivated = false;
 

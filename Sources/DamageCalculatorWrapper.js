@@ -80,10 +80,6 @@ class DamageCalculatorWrapper {
         return this._damageCalc.simpleLog;
     }
 
-    get rawLog() {
-        return this._damageCalc.rawLog;
-    }
-
     get currentTurn() {
         return this.globalBattleContext.currentTurn;
     }
@@ -349,11 +345,37 @@ class DamageCalculatorWrapper {
         self.__setSkillEffetToContext(atkUnit, defUnit);
         // });
 
+        self.__selectReferencingResOrDef(atkUnit, defUnit);
+        self.__selectReferencingResOrDef(defUnit, atkUnit);
+
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
         result = self._damageCalc.calcCombatResult(atkUnit, defUnit);
         // });
         return result;
+    }
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
+    __selectReferencingResOrDef(atkUnit, defUnit) {
+        if (this.isLogEnabled) this.writeDebugLog("守備魔防参照の評価");
+        let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
+            || (defUnit.attackRange == 2 && isWeaponTypeBreath(atkUnit.weaponType)));
+        if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
+            if (this.isLogEnabled) this.writeDebugLog("守備魔防の低い方でダメージ計算");
+            atkUnit.battleContext.refersRes = defUnit.getResInCombat(atkUnit) < defUnit.getDefInCombat(atkUnit);
+        }
+        else if (atkUnit.weapon === Weapon.FlameLance) {
+            atkUnit.battleContext.refersRes = atkUnit.snapshot.restHpPercentage >= 50;
+        }
+        else if (atkUnit.weapon === Weapon.HelsReaper) {
+            atkUnit.battleContext.refersRes = isWeaponTypeTome(defUnit.weaponType) || defUnit.weaponType === WeaponType.Staff;
+        }
+        else {
+            if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${atkUnit.isPhysicalAttacker() ? "物理" : "魔法"}ユニット`);
+            atkUnit.battleContext.refersRes = !atkUnit.isPhysicalAttacker();
+        }
     }
 
     __getSaverUnitIfPossible(atkUnit, defUnit) {

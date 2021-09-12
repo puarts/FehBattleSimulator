@@ -70,10 +70,6 @@ class DamageCalculator {
      */
     constructor(logger) {
         this._logger = logger;
-
-        this._rawLog = "";
-        this._log = "";
-        this._simpleLog = "";
     }
 
     get isLogEnabled() {
@@ -99,18 +95,13 @@ class DamageCalculator {
 
     writeSimpleLog(log) {
         this._logger.writeSimpleLog(log);
-        // this._simpleLog += log + "<br/>";
     }
 
     writeLog(log) {
         this._logger.writeLog(log);
-        // this._log += log + "<br/>";
-        // this._rawLog += log + "\n";
     }
     writeDebugLog(log) {
         this._logger.writeDebugLog(log);
-        // this._log += "<span style='font-size:10px; color:#666666'>" + log + "</span><br/>";
-        // this._rawLog += log + "\n";
     }
     writeRestHpLog(unit) {
         if (this.isLogEnabled) this.writeLog(unit.name + "の残りHP " + unit.restHp + "/" + unit.maxHpWithSkills);
@@ -410,41 +401,34 @@ class DamageCalculator {
             let defInCombat = defUnit.getDefInCombat(atkUnit);
             let resInCombat = defUnit.getResInCombat(atkUnit);
             totalMit = Math.min(defInCombat, resInCombat);
-            if (resInCombat < defInCombat) {
-                totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
-            }
-            else {
-                totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
-            }
+            atkUnit.battleContext.refersRes = resInCombat < defInCombat;
         }
         else if (atkUnit.weapon === Weapon.FlameLance) {
             if (atkUnit.snapshot.restHpPercentage >= 50) {
-                if (this.isLogEnabled) this.writeDebugLog("魔防参照");
-                totalMit = defUnit.getResInCombat(atkUnit);
-                totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
+                atkUnit.battleContext.refersRes = true;
             }
         }
         else if ((atkUnit.weapon == Weapon.HelsReaper)) {
             if (isWeaponTypeTome(defUnit.weaponType) || defUnit.weaponType == WeaponType.Staff) {
-                if (this.isLogEnabled) this.writeDebugLog("守備参照");
-                totalMit = defUnit.getDefInCombat(atkUnit);
-                totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
+                atkUnit.battleContext.refersRes = false;
             }
             else {
-                if (this.isLogEnabled) this.writeDebugLog("魔防参照");
-                totalMit = defUnit.getResInCombat(atkUnit);
-                totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
+                atkUnit.battleContext.refersRes = true;
             }
         }
-        else if (atkUnit.isPhysicalAttacker()) {
-            if (this.isLogEnabled) this.writeDebugLog("守備参照");
-            totalMit = defUnit.getDefInCombat(atkUnit);
-            totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
-        }
         else {
+            atkUnit.battleContext.refersRes = !atkUnit.isPhysicalAttacker();
+        }
+
+        if (atkUnit.battleContext.refersRes) {
             if (this.isLogEnabled) this.writeDebugLog("魔防参照");
             totalMit = defUnit.getResInCombat(atkUnit);
             totalMitDefailLog = this.__getResInCombatDetail(defUnit, atkUnit);
+        }
+        else {
+            if (this.isLogEnabled) this.writeDebugLog("守備参照");
+            totalMit = defUnit.getDefInCombat(atkUnit);
+            totalMitDefailLog = this.__getDefInCombatDetail(defUnit, atkUnit);
         }
 
         let specialTotalMit = totalMit; // 攻撃側の奥義発動時の防御力

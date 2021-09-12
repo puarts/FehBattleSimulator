@@ -75,7 +75,14 @@ class test_DamageCalculator {
             this.battleContext,
             new SimpleLogger()
         );
-        this.isLogEnabled = false;
+    }
+
+    get isLogEnabled() {
+        return this.damageCalc.isLogEnabled;
+    }
+
+    set isLogEnabled(value) {
+        this.damageCalc.isLogEnabled = value;
     }
 
     disableProfile() {
@@ -95,7 +102,7 @@ class test_DamageCalculator {
         this.damageCalc.isLogEnabled = this.isLogEnabled;
         let result = this.damageCalc.calcDamage(atkUnit, defUnit, null, false);
         if (this.isLogEnabled) {
-            console.log(this.damageCalc.rawLog);
+            console.log(this.damageCalc.log);
         }
         this.damageCalc.clearLog();
         atkUnit.hp = atkUnit.restHp;

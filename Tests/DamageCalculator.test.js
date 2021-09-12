@@ -1,5 +1,6 @@
 
-test('DamageCalculator_SaveSkillTest', () => test_executeTest(() => {
+/// 護り手のテストです。
+test('DamageCalculator_SaverSkillTest', () => test_executeTest(() => {
   let heroDatabase = new test_HeroDatabase(
     heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
     passiveSInfos);
@@ -27,7 +28,7 @@ test('DamageCalculator_SaveSkillTest', () => test_executeTest(() => {
   expect(result.atkUnit_totalAttackCount).toBe(2);
 
   if (calclator.isLogEnabled) {
-    console.log(calclator.damageCalc.rawLog);
+    console.log(calclator.damageCalc.log);
   }
   calclator.damageCalc.clearLog();
 }));
@@ -70,6 +71,26 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     log += calclator.getProfileLog();
   });
   return log;
+}));
+
+/// 守備、魔防低い方を参照するテスト
+test('DamageCalculator_ReferencingMinOfDefOrResTest', () => test_executeTest(() => {
+  let atkUnit = test_createDefaultUnit();
+  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+  atkUnit.weaponType = WeaponType.Breath;
+  atkUnit.atkWithSkills = 40;
+  defUnit.defWithSkills = 20;
+  defUnit.resWithSkills = 30;
+  {
+    defUnit.weaponType = WeaponType.ColorlessDagger;
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_normalAttackDamage).toBe(20);
+  }
+  {
+    defUnit.weaponType = WeaponType.Sword;
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(result.atkUnit_normalAttackDamage).toBe(10);
+  }
 }));
 
 test('DamageCalculator_DebuffBladeTest', () => test_executeTest(() => {
