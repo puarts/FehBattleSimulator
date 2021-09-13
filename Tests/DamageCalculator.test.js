@@ -238,18 +238,34 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
 
   defUnit.passiveB = PassiveB.Vantage3;
   defUnit.defWithSkills = 30;
-  defUnit.ResWithSkills = 50;
+  defUnit.resWithSkills = 39;
 
   // 範囲奥義も守備魔防の低い方を参照することをテスト
   atkUnit.weaponType = WeaponType.RedBreath;
+  defUnit.weaponType = WeaponType.ColorlessDagger;
+  defUnit.passiveA = PassiveA.CloseCounter;
 
-  let result = test_calcDamage(atkUnit, defUnit, false);
+  {
+    let result = test_calcDamage(atkUnit, defUnit, false);
 
-  // 待ち伏せが発動して攻撃を受けた側から攻撃するはず
-  expect(result.damageHistory[0].attackUnit).toBe(defUnit);
+    // 待ち伏せが発動して攻撃を受けた側から攻撃するはず
+    expect(result.damageHistory[0].attackUnit).toBe(defUnit);
 
-  expect(defUnit.currentDamage).toBe(25);
-  expect(result.preCombatDamage).toBe(15);
-  expect(result.atkUnit_normalAttackDamage).toBe(10);
-  expect(result.atkUnit_totalAttackCount).toBe(1);
+    expect(defUnit.currentDamage).toBe(25);
+    expect(result.preCombatDamage).toBe(15);
+    expect(result.atkUnit_normalAttackDamage).toBe(10);
+    expect(result.atkUnit_totalAttackCount).toBe(1);
+  }
+
+  // 生命の護符の効果で戦闘前奥義発動時に「敵の守備か魔防の低い方でダメージ計算」を無効化できるかテスト
+  {
+    defUnit.passiveS = PassiveB.SeimeiNoGofu3;
+    atkUnit.specialCount = 0;
+    atkUnit.healFull();
+    defUnit.healFull();
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+    expect(atkUnit.battleContext.isSpecialActivated).toBe(true);
+    expect(result.preCombatDamage).toBe(1);
+  }
 }));

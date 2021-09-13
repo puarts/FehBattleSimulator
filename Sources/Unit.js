@@ -2614,6 +2614,10 @@ class Unit {
         this.hp = hp;
     }
 
+    healFull() {
+        this.heal(99);
+    }
+
     heal(healAmount) {
         if (this.hasStatusEffect(StatusEffectType.DeepWounds)) {
             return 0;
@@ -4314,6 +4318,10 @@ class Unit {
         this.battleContext.clear();
         this.battleContext.hpBeforeCombat = this.hp;
         this.battleContext.initiatesCombat = initiatesCombat;
+    }
+
+    canActivatePrecombatSpecial() {
+        return isPrecombatSpecial(this.special) && this.specialCount === 0;
     }
 }
 

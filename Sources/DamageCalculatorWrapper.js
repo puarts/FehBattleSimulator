@@ -179,7 +179,7 @@ class DamageCalculatorWrapper {
             self.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, calcPotentialDamage);
             self.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
-            if (!calcPotentialDamage) {
+            if (!calcPotentialDamage && atkUnit.canActivatePrecombatSpecial()) {
                 preCombatDamage = self.calcPrecombatSpecialResult(atkUnit, defUnit);
             }
 
@@ -239,8 +239,11 @@ class DamageCalculatorWrapper {
         this.__applyPrecombatSpecialDamageMult(atkUnit);
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
         this.__calcFixedAddDamage(atkUnit, defUnit, true);
-        this.__selectReferencingResOrDef(atkUnit, defUnit);
         DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit);
+
+        // 守備、魔防のどちらを参照するか決定
+        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
+        this.__selectReferencingResOrDef(atkUnit, defUnit);
 
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
@@ -346,8 +349,13 @@ class DamageCalculatorWrapper {
         self.__setSkillEffetToContext(atkUnit, defUnit);
         // });
 
-        self.__selectReferencingResOrDef(atkUnit, defUnit);
-        self.__selectReferencingResOrDef(defUnit, atkUnit);
+        {
+            // 守備、魔防のどちらを参照するか決定
+            atkUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
+            defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
+            self.__selectReferencingResOrDef(atkUnit, defUnit);
+            self.__selectReferencingResOrDef(defUnit, atkUnit);
+        }
 
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
@@ -355,12 +363,56 @@ class DamageCalculatorWrapper {
         // });
         return result;
     }
+
+    __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit) {
+        let self = this;
+        switch (targetUnit.passiveA) {
+            case PassiveA.CloseWard:
+                if (!isPhysicalWeaponType(enemyUnit.weaponType)) {
+                    return true;
+                }
+                break;
+        }
+
+        for (let skillId of [targetUnit.passiveB, targetUnit.passiveS]) {
+            switch (skillId) {
+                case PassiveB.SeimeiNoGofu3:
+                case PassiveB.HikariToYamito:
+                    return true;
+            }
+        }
+        switch (targetUnit.weapon) {
+            case Weapon.SplashyBucketPlus:
+                return true;
+            case Weapon.Aureola:
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    return true;
+                }
+                break;
+            case Weapon.Naga:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (isWeaponTypeBreath(enemyUnit.weaponType)) {
+                        return true;
+                    }
+                }
+                break;
+            case Weapon.SeisyoNaga:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    return true;
+                }
+                break;
+        }
+
+        return false;
+    }
+
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
     __selectReferencingResOrDef(atkUnit, defUnit) {
-        if (this.isLogEnabled) this.writeDebugLog("守備魔防参照の評価");
+        if (this.isLogEnabled) this.writeDebugLog(`守備魔防参照の評価: invalidatesReferenceLowerMit=${defUnit.battleContext.invalidatesReferenceLowerMit}`);
+
         let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
             || (defUnit.attackRange === 2 && isWeaponTypeBreath(atkUnit.weaponType)));
         if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
@@ -1157,7 +1209,6 @@ class DamageCalculatorWrapper {
             if (!isPhysicalWeaponType(atkUnit.weaponType)) {
                 defUnit.atkSpur += 5;
                 defUnit.resSpur += 5;
-                defUnit.battleContext.invalidatesReferenceLowerMit = true;
             }
         };
         self._applySkillEffectForDefUnitFuncDict[Weapon.KokyousyaNoYari] = (defUnit, atkUnit, calcPotentialDamage) => {
@@ -1725,9 +1776,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
-        };
-        this._applySkillEffectForUnitFuncDict[PassiveB.SeimeiNoGofu3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.invalidatesReferenceLowerMit = true;
         };
         this._applySkillEffectForUnitFuncDict[Weapon.VirtuousTyrfing] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.battleContext.initiatesCombat
@@ -2654,7 +2702,6 @@ class DamageCalculatorWrapper {
                 targetUnit.atkSpur += 5;
                 targetUnit.spdSpur += 5;
                 targetUnit.resSpur += 5;
-                targetUnit.battleContext.invalidatesReferenceLowerMit = true;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TigerRoarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -3219,7 +3266,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.Naga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (isWeaponTypeBreath(enemyUnit.weaponType)) {
-                    targetUnit.battleContext.invalidatesReferenceLowerMit = true;
                     targetUnit.battleContext.canCounterattackToAllDistance = true;
                 }
             }
@@ -3610,7 +3656,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.SeisyoNaga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidateAllBuffs();
             if (targetUnit.isWeaponSpecialRefined) {
-                targetUnit.battleContext.invalidatesReferenceLowerMit = true;
                 if (targetUnit.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + 3) {
                     targetUnit.addAllSpur(3);
                 }
@@ -3644,8 +3689,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.HikariToYamito] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addAllSpur(-2);
             targetUnit.battleContext.invalidateAllBuffs();
-            targetUnit.battleContext.invalidatesReferenceLowerMit = true;
-
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ShiseiNaga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
@@ -5339,9 +5382,10 @@ class DamageCalculatorWrapper {
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
                     ) {
-                        targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalSpdInCombat() * 0.2);
-                        targetUnit.battleContext.invalidatesCounterattack = true;
                         targetUnit.spdSpur += 6;
+                        if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + 5) {
+                            targetUnit.battleContext.invalidatesCounterattack = true;
+                        }
                     }
                     break;
                 case Weapon.PlegianAxePlus:
@@ -5707,7 +5751,7 @@ class DamageCalculatorWrapper {
                 if (atkUnit.battleContext.initiatesCombat
                     || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)
                 ) {
-                    targetUnit.battleContext.additionalDamage +=
+                    atkUnit.battleContext.additionalDamage +=
                         floorNumberWithFloatError(DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) * 0.2);
                 }
                 break;
@@ -5878,20 +5922,16 @@ class DamageCalculatorWrapper {
 
 
     static __getAtk(atkUnit, defUnit, isPrecombat) {
-        if (isPrecombat) {
-            return atkUnit.getAtkInPrecombat();
-        }
-        else {
-            return atkUnit.getAtkInCombat(defUnit);
-        }
+        return isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);
     }
     static __getSpd(atkUnit, defUnit, isPrecombat) {
-        if (isPrecombat) {
-            return atkUnit.getSpdInPrecombat();
-        }
-        else {
-            return atkUnit.getSpdInCombat(defUnit);
-        }
+        return isPrecombat ? atkUnit.getSpdInPrecombat() : atkUnit.getSpdInCombat(defUnit);
+    }
+    static __getDef(atkUnit, defUnit, isPrecombat) {
+        return isPrecombat ? atkUnit.getDefInPrecombat() : atkUnit.getDefInCombat(defUnit);
+    }
+    static __getRes(atkUnit, defUnit, isPrecombat) {
+        return isPrecombat ? atkUnit.getResInPrecombat() : atkUnit.getResInCombat(defUnit);
     }
 
     static __calcAddDamageForDiffOf70Percent(atkUnit, defUnit, isPrecombat, getPrecombatFunc, getCombatFunc) {
@@ -6998,11 +7038,6 @@ class DamageCalculatorWrapper {
                     if (targetUnit.isWeaponSpecialRefined) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
                     }
-                }
-                break;
-            case Weapon.SplashyBucketPlus:
-                {
-                    targetUnit.battleContext.invalidatesReferenceLowerMit = true;
                 }
                 break;
         }

@@ -581,18 +581,16 @@ class DamageCalculator {
         return new OneAttackResult(damage, specialAddDamage, atkCountPerOneAttack);
     }
 
-
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
     calcPrecombatSpecialResult(atkUnit, defUnit) {
-        if (isPrecombatSpecial(atkUnit.special) === false) {
-            return;
+        if (!atkUnit.canActivatePrecombatSpecial()) {
+            return 0;
         }
-
-        if (this.isLogEnabled) this.writeDebugLog("戦闘前ダメージ計算..");
-        let isSpecialActivated = atkUnit.tmpSpecialCount === 0;
-
-        if (!isSpecialActivated) {
-            if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は範囲奥義を発動できない(発動カウント${atkUnit.tmpSpecialCount})`);
-            return false;
+        if (this.isLogEnabled) {
+            this.writeDebugLog("戦闘前ダメージ計算..");
         }
 
         atkUnit.battleContext.isSpecialActivated = true;
@@ -604,8 +602,10 @@ class DamageCalculator {
         defUnit.restHp = defUnit.restHp - totalDamage;
 
         if (this.isLogEnabled) {
+            this.writeDebugLog("戦闘前ダメージ計算..");
             this.writeLog("範囲奥義によるダメージ" + totalDamage);
-            this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>範囲奥義によるダメージ" + totalDamage);
+            this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup());
+            this.writeSimpleLog("範囲奥義によるダメージ" + totalDamage);
             this.writeLog(defUnit.name + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
         }
         return totalDamage;
@@ -631,10 +631,10 @@ class DamageCalculator {
 
         if (this.isLogEnabled) {
             if (atkUnit.battleContext.refersRes) {
-                this.writeDebugLog("魔防参照");
+                this.writeDebugLog(`魔防参照:魔防=${tmpMit}`);
             }
             else {
-                this.writeDebugLog("守備参照");
+                this.writeDebugLog(`守備参照:守備=${tmpMit}`);
             }
 
             if (damageReductionRatio > 0.0) {
