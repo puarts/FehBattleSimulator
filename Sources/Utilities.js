@@ -1025,21 +1025,21 @@ function dateStrToNumber(dateStr) {
     return Number(numStr);
 }
 
+const ErrorCorrectionValue = 1.0 / 100000;
+
 /// 浮動小数の誤差を加味して floor します。
 function floorNumberWithFloatError(value) {
-    const errorCorrectionValue = 1.0 / 100000;
-    return Math.floor(value + errorCorrectionValue);
+    return Math.floor(value + ErrorCorrectionValue);
 }
 
 /// 浮動小数の誤差を加味して trunc します。
 function truncNumberWithFloatError(value) {
-    const errorCorrectionValue = 1.0 / 100000;
     let revisedValue = value;
     if (value < 0) {
-        revisedValue -= errorCorrectionValue;
+        revisedValue -= ErrorCorrectionValue;
     }
     else {
-        revisedValue += errorCorrectionValue;
+        revisedValue += ErrorCorrectionValue;
     }
     return Math.trunc(revisedValue);
 }

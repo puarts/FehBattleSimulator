@@ -238,6 +238,10 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
 
   defUnit.passiveB = PassiveB.Vantage3;
   defUnit.defWithSkills = 30;
+  defUnit.ResWithSkills = 50;
+
+  // 範囲奥義も守備魔防の低い方を参照することをテスト
+  atkUnit.weaponType = WeaponType.RedBreath;
 
   let result = test_calcDamage(atkUnit, defUnit, false);
 

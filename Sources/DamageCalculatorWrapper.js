@@ -236,11 +236,10 @@ class DamageCalculatorWrapper {
 
     calcPrecombatSpecialResult(atkUnit, defUnit) {
         // 戦闘前ダメージ計算に影響するスキル効果の評価
-        this.__applySkillEffectForPrecombat(atkUnit, defUnit);
-        this.__applySkillEffectForPrecombat(defUnit, atkUnit);
         this.__applyPrecombatSpecialDamageMult(atkUnit);
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
         this.__calcFixedAddDamage(atkUnit, defUnit, true);
+        this.__selectReferencingResOrDef(atkUnit, defUnit);
 
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
@@ -586,19 +585,6 @@ class DamageCalculatorWrapper {
                 }
                 break;
             default:
-                break;
-        }
-    }
-
-    /// 戦闘前奥義のみの効果の実装
-    __applySkillEffectForPrecombat(targetUnit, enemyUnit) {
-        switch (targetUnit.weapon) {
-            case Weapon.Luin:
-                if (targetUnit.battleContext.initiatesCombat
-                    || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
-                ) {
-                    targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
-                }
                 break;
         }
     }
@@ -4324,11 +4310,6 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.weapon) {
-            case Weapon.MakenMistoruthin:
-                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
-                    targetUnit.battleContext.additionalDamageOfSpecial += 7;
-                }
-                break;
             case Weapon.ResolvedFang:
             case Weapon.RenewedFang:
             case Weapon.JinroMusumeNoTsumekiba:
@@ -5711,18 +5692,22 @@ class DamageCalculatorWrapper {
         switch (atkUnit.weapon) {
             case Weapon.MakenMistoruthin:
                 if (atkUnit.isWeaponSpecialRefined) {
-                    if (isPrecombat) {
-                        if (defUnit.restHpPercentage >= 75) {
+                    if (defUnit.restHpPercentage >= 75) {
+                        if (isPrecombat) {
                             atkUnit.battleContext.additionalDamage += 7;
+                        }
+                        else {
+                            targetUnit.battleContext.additionalDamageOfSpecial += 7;
                         }
                     }
                 }
                 break;
-            case Weapon.Ginnungagap:
-                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
-                    atkUnit.battleContext.additionalDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+            case Weapon.Luin:
+                if (atkUnit.battleContext.initiatesCombat
+                    || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)
+                ) {
+                    targetUnit.battleContext.additionalDamage +=
+                        floorNumberWithFloatError(DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) * 0.2);
                 }
                 break;
             case Weapon.FairFuryAxe:
