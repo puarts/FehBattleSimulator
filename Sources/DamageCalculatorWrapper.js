@@ -53,7 +53,12 @@ class ScopedTileChanger {
 }
 
 class DamageCalculatorWrapper {
-    /// @param {UnitManager} unitManager ユニットマネージャーのインスタンス
+    /**
+     * @param  {UnitManager} unitManager
+     * @param  {BattleMap} map
+     * @param  {GlobalBattleContext} globalBattleContext
+     * @param  {LoggerBase} logger
+     */
     constructor(unitManager, map, globalBattleContext, logger) {
         this._unitManager = unitManager;
         this.map = map;
@@ -611,35 +616,7 @@ class DamageCalculatorWrapper {
     }
 
     __applyPrecombatSpecialDamageMult(atkUnit) {
-        switch (atkUnit.special) {
-            case Special.BlazingFlame:
-            case Special.BlazingWind:
-            case Special.BlazingLight:
-            case Special.BlazingThunder:
-                {
-                    atkUnit.battleContext.precombatSpecialDamageMult = 1.5;
-                }
-                break;
-            case Special.RisingFrame:
-            case Special.RisingLight:
-            case Special.RisingWind:
-            case Special.RisingThunder:
-            case Special.GrowingFlame:
-            case Special.GrowingWind:
-            case Special.GrowingLight:
-            case Special.GrowingThunder:
-                {
-                    atkUnit.battleContext.precombatSpecialDamageMult = 1.0;
-                }
-                break;
-            case Special.GiftedMagic:
-                {
-                    atkUnit.battleContext.precombatSpecialDamageMult = 0.8;
-                }
-                break;
-            default:
-                break;
-        }
+        atkUnit.battleContext.precombatSpecialDamageMult = getRangedAttackSpecialDamageRate(atkUnit.special);
     }
 
     __setBattleContextRelatedToMap(targetUnit, enemyUnit, calcPotentialDamage) {

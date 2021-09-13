@@ -2284,6 +2284,29 @@ function isRangedAttackSpecial(special) {
     return special in RangedAttackSpecialDict;
 }
 
+const RangedAttackSpecialDamageRateDict = {};
+RangedAttackSpecialDamageRateDict[Special.GrowingFlame] = 1;
+RangedAttackSpecialDamageRateDict[Special.GrowingLight] = 1;
+RangedAttackSpecialDamageRateDict[Special.GrowingWind] = 1;
+RangedAttackSpecialDamageRateDict[Special.GrowingThunder] = 1;
+RangedAttackSpecialDamageRateDict[Special.BlazingFlame] = 1.5;
+RangedAttackSpecialDamageRateDict[Special.BlazingLight] = 1.5;
+RangedAttackSpecialDamageRateDict[Special.BlazingWind] = 1.5;
+RangedAttackSpecialDamageRateDict[Special.BlazingThunder] = 1.5;
+RangedAttackSpecialDamageRateDict[Special.RisingFlame] = 1;
+RangedAttackSpecialDamageRateDict[Special.RisingLight] = 1;
+RangedAttackSpecialDamageRateDict[Special.RisingWind] = 1;
+RangedAttackSpecialDamageRateDict[Special.RisingThunder] = 1;
+RangedAttackSpecialDamageRateDict[Special.GiftedMagic] = 0.8;
+
+function getRangedAttackSpecialDamageRate(special) {
+    let rate = RangedAttackSpecialDamageRateDict[special];
+    if (rate) {
+        return rate;
+    }
+    return 0;
+}
+
 const DefenseSpecialDict = {};
 DefenseSpecialDict[Special.Nagatate] = 0;
 DefenseSpecialDict[Special.Otate] = 0;  // 大盾
