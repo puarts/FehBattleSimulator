@@ -495,10 +495,10 @@ class BattleContext {
     }
 
     clearPrecombatState() {
+        // 戦闘前奥義と戦闘中の両方で参照する設定だけ戦闘前奥義発動後に再評価が必要なのでクリアする
         this.damageReductionRatio = 0;
         this.additionalDamage = 0;
-        this.precombatSpecialDamageMult = 0;
-        this.damageReductionRatioForPrecombat = 0;
+        this.additionalDamageOfSpecial = 0;
     }
 
     clear() {

@@ -826,7 +826,7 @@ const Weapon = {
     Gurgurant: 1317, // グルグラント
     BridesFang: 1318, // 狼花嫁の牙
     PledgedBladePlus: 1320, // 花嫁の護刀+
-    GroomsWings: 1322, // 白鷺花嫁の翼
+    GroomsWings: 1322, // 白鷺花婿の翼
     JoyfulVows: 1323, // 幸せの誓約
     HugeFanPlus: 1324, // 大きな扇子+
     DaichiBoshiNoBreath: 1350, // 大地母神のブレス

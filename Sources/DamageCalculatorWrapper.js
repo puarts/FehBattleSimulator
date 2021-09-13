@@ -240,6 +240,7 @@ class DamageCalculatorWrapper {
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
         this.__calcFixedAddDamage(atkUnit, defUnit, true);
         this.__selectReferencingResOrDef(atkUnit, defUnit);
+        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit);
 
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
