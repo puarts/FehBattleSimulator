@@ -4999,9 +4999,10 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case Weapon.DemonicTome:
             case PassiveC.HajimariNoKodo3:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-                    this.writeDebugLogLine(skillOwner.getNameWithGroup() + "は始まりの鼓動3発動");
+                    this.writeDebugLogLine(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;

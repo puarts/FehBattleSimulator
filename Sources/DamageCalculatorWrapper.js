@@ -1670,6 +1670,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DemonicTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.resSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AgneasArrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.atkSpur += 6;

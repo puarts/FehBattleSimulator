@@ -1133,6 +1133,7 @@ const Weapon = {
 
     HonorableBlade: 1839, // 義侠の戦刃
     AgneasArrow: 1842, // アグネアの矢
+    DemonicTome: 1844, // 魔獣の書
 }
 
 const Support = {
