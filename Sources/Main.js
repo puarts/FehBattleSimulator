@@ -9965,6 +9965,7 @@ class AetherRaidTacticsBoard {
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
+            case Support.FoulPlay:
             case Support.FutureVision:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
             case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
@@ -10334,6 +10335,7 @@ class AetherRaidTacticsBoard {
             case Support.Rescue:
             case Support.Drawback:
                 return this.__findTileAfterDrawback(unit, target, tile);
+            case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:
                 return this.__findTileAfterSwap(unit, target, tile);

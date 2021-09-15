@@ -1142,6 +1142,7 @@ const Support = {
     Shove: 424, // 体当たり
     Swap: 416, // 入れ替え
     FutureVision: 433, // 未来を移す瞳
+    FoulPlay: 1840, // トリック
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
 
@@ -2150,6 +2151,8 @@ function getAssistRange(support) {
         case Support.Physic:
         case Support.PhysicPlus:
             return 2;
+        case Support.FoulPlay:
+            return 3;
         default: return 1;
     }
 }
