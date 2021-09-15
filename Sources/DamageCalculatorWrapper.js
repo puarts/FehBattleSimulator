@@ -1670,6 +1670,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FlamelickBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesHeal = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DemonicTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.snapshot.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;

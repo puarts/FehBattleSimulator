@@ -3549,6 +3549,13 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FlamelickBreath:
+                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.DeepWounds);
+                        }
+                    }
+                    break;
                 case Weapon.TigerSpirit:
                     if (attackUnit.snapshot.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
