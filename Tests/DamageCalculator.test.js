@@ -269,3 +269,12 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
     expect(result.preCombatDamage).toBe(1);
   }
 }));
+
+test('DamageCalculator_CreateSnapshot', () => test_executeTest(() => {
+  let atkUnit = test_createDefaultUnit();
+  atkUnit.restHp = atkUnit.maxHpWithSkills;
+  let snapshot = atkUnit.createSnapshot();
+  atkUnit.restHp = 1;
+  expect(atkUnit.restHp).toBe(1);
+  expect(snapshot.restHp).toBe(40);
+}));

@@ -5,7 +5,10 @@ function test_createDefaultSkillInfo() {
         300, true, [], [], false, false
     );
 }
-
+/**
+ * @param  {UnitGroupType} groupId=UnitGroupType.Ally
+ * @returns {Unit}
+ */
 function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
     let unit = new Unit("", "テストユニット", groupId);
     unit.placedTile = new Tile(0, 0);

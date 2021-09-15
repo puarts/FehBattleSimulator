@@ -1865,14 +1865,11 @@ class Unit {
      * @returns {Unit}
      */
     createSnapshot() {
-        // Object.create() は不完全なクローンだが、スナップショット作成には十分そう
-        this.snapshot = Object.create(this);
-        // this.snapshot = this.__createSnapshotOldImpl();
+        this.snapshot = this.__createSnapshotImpl();
         return this.snapshot;
     }
 
-    /// createSnapshot() の旧実装。この実装はかなり重いので現実装で特に問題がない事が分かったら消す
-    __createSnapshotOldImpl() {
+    __createSnapshotImpl() {
         this.snapshot = new Unit();
         this.snapshot._id = this._id;
         this.snapshot.maxSpecialCount = this.maxSpecialCount;

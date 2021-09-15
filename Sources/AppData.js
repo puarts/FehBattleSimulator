@@ -733,6 +733,11 @@ class AppData extends UnitManager {
             unit.resetStatusMult();
         }
 
+        // 神装英雄じゃない場合は神装補正をリセット
+        if (!unit.heroInfo.isResplendent) {
+            unit.isResplendent = false;
+        }
+
         if (initEditableAttrs) {
             unit.level = 40;
             unit.merge = 0;
@@ -740,10 +745,8 @@ class AppData extends UnitManager {
             unit.initializeSkillsToDefault();
             unit.setMoveCountFromMoveType();
             unit.reserveCurrentSkills();
+            unit.isResplendent = false;
             unit.isBonusChar = false;
-            if (!unit.heroInfo.isResplendent) {
-                unit.isResplendent = false;
-            }
             unit.updatePureGrowthRate();
         }
         this.__updateStatusBySkillsAndMerges(unit, false);
