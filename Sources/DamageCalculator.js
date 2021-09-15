@@ -397,6 +397,9 @@ class DamageCalculator {
         let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
+        if (context.isFirstAttack(atkUnit)) {
+            fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
+        }
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);

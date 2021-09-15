@@ -1670,6 +1670,38 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FlamelickBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesHeal = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DemonicTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.snapshot.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.resSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AgneasArrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                if (this.isOddTurn) {
+                    targetUnit.battleContext.invalidatesSpdBuff = true;
+                    targetUnit.battleContext.invalidatesResBuff = true;
+                } else {
+                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HonorableBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DuskDragonstone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(4);
@@ -1956,6 +1988,12 @@ class DamageCalculatorWrapper {
             if (targetUnit.snapshot.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
                 targetUnit.resSpur += 6;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveC.DomainOfFlame] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 4;
+                targetUnit.defSpur += 4;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.DomainOfIce] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -2324,6 +2362,10 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 3;
             enemyUnit.defSpur -= 3;
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkSpdFarTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 3;
+            enemyUnit.spdSpur -= 3;
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefFarTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.atkSpur -= 3;
@@ -4423,6 +4465,21 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveA.AtkResCatch4:
+                if (enemyUnit.snapshot.restHpPercentage === 100
+                    || enemyUnit.hasNegativeStatusEffect()
+                ) {
+                    targetUnit.atkSpur += 7;
+                    targetUnit.resSpur += 7;
+
+                    if (enemyUnit.snapshot.restHpPercentage === 100
+                        && enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 2;
+                        targetUnit.resSpur += 2;
+                    }
+                }
+                break;
             case PassiveA.DefResCatch4:
                 if (enemyUnit.snapshot.restHpPercentage === 100
                     || enemyUnit.hasNegativeStatusEffect()
@@ -5436,8 +5493,14 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
+            for (let skillId of [targetUnit.passiveA, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
+                    case PassiveC.DomainOfFlame:
+                        if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                            let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+                        }
+                        break;
                     case PassiveA.Kyokazohuku3:
                         DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
                         break;
@@ -5476,6 +5539,11 @@ class DamageCalculatorWrapper {
 
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
             switch (unit.passiveC) {
+                case PassiveC.DomainOfFlame: {
+                    let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                    targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+                }
+                    break;
                 case PassiveC.HokoNoGogeki3:
                     if (targetUnit.moveType === MoveType.Infantry) {
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
@@ -7129,6 +7197,10 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
             switch (skillId) {
+                case PassiveC.DomainOfFlame:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.defSpur += 4;
+                    break;
                 case PassiveC.DomainOfIce:
                     targetUnit.spdSpur += 4;
                     targetUnit.resSpur += 4;
@@ -8173,6 +8245,12 @@ class DamageCalculatorWrapper {
                     let spurAmount = this.__calcBojosen4SpurAmount();
                     targetUnit.atkSpur += spurAmount;
                     targetUnit.spdSpur += spurAmount;
+                }
+                    break;
+                case PassiveA.DefResBojosen4: {
+                    let spurAmount = this.__calcBojosen4SpurAmount();
+                    targetUnit.defSpur += spurAmount;
+                    targetUnit.resSpur += spurAmount;
                 }
                     break;
             }

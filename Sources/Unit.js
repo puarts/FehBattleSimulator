@@ -437,6 +437,9 @@ class BattleContext {
         // 攻撃時の追加ダメージ
         this.additionalDamage = 0;
 
+        // 最初の攻撃の追加ダメージ
+        this.additionalDamageOfFirstAttack = 0;
+
         // 奥義発動時の追加ダメージ
         this.additionalDamageOfSpecial = 0;
 
@@ -563,6 +566,8 @@ class BattleContext {
         this.followupAttackPriorityDecrement = 0;
 
         this.isSaviorActivated = false;
+
+        this.additionalDamageOfFirstAttack = 0;
 
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;

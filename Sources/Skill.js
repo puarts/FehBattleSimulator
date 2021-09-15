@@ -1130,6 +1130,12 @@ const Weapon = {
     // 2021年9月 武器錬成
     DuskDragonstone: 1829, // 暗夜の竜石
     StaffOfTwelvePlus: 1837, // 聖祭の杖+
+
+    // 深淵を照らす灯火＆ムスペル
+    HonorableBlade: 1839, // 義侠の戦刃
+    AgneasArrow: 1842, // アグネアの矢
+    DemonicTome: 1844, // 魔獣の書
+    FlamelickBreath: 1846, // 絶炎のブレス
 }
 
 const Support = {
@@ -1140,6 +1146,7 @@ const Support = {
     Shove: 424, // 体当たり
     Swap: 416, // 入れ替え
     FutureVision: 433, // 未来を移す瞳
+    FoulPlay: 1840, // トリック
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
 
@@ -1537,6 +1544,7 @@ const PassiveA = {
     SpdResBojosen3: 962,
     AtkDefBojosen3: 1008,
     AtkSpdBojosen4: 1773,
+    DefResBojosen4: 1847,
 
     // 攻城戦
     AtkDefKojosen3: 883,
@@ -1551,6 +1559,7 @@ const PassiveA = {
     // 機先
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
     AtkDefCatch4: 1703, // 攻撃守備の機先4
+    AtkResCatch4: 1845, // 攻撃魔防の機先4
     DefResCatch4: 1761, // 守備魔防の機先4
 
     // 万全
@@ -1810,6 +1819,7 @@ const PassiveB = {
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
+    AtkSpdFarTrace3: 1843, // 攻撃速さの遠影3
     AtkDefFarTrace3: 1715, // 攻撃守備の遠影3
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
@@ -2065,6 +2075,7 @@ const PassiveC = {
     WingsOfLight: 1622, // 光輝く翼
     OrdersRestraint: 1724, // 束縛、秩序、安定
     DomainOfIce: 1774, // 絶氷結界
+    DomainOfFlame: 1848, // 絶炎結界
 };
 
 const PassiveS = {
@@ -2148,6 +2159,8 @@ function getAssistRange(support) {
         case Support.Physic:
         case Support.PhysicPlus:
             return 2;
+        case Support.FoulPlay:
+            return 3;
         default: return 1;
     }
 }

@@ -3549,6 +3549,13 @@ class AetherRaidTacticsBoard {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FlamelickBreath:
+                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.DeepWounds);
+                        }
+                    }
+                    break;
                 case Weapon.TigerSpirit:
                     if (attackUnit.snapshot.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
@@ -4389,6 +4396,9 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.HonorableBlade:
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                break;
             case Weapon.Sangurizuru:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
@@ -4996,9 +5006,10 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            case Weapon.DemonicTome:
             case PassiveC.HajimariNoKodo3:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-                    this.writeDebugLogLine(skillOwner.getNameWithGroup() + "は始まりの鼓動3発動");
+                    this.writeDebugLogLine(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;
@@ -8167,6 +8178,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.HonorableBlade:
                 case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
@@ -8175,6 +8187,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.FlowerLance:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
+                case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
                 case PassiveB.SpdResFarTrace3:
@@ -8194,6 +8207,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case Weapon.HonorableBlade:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
@@ -8209,6 +8223,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SpdDefNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
                     break;
+                case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
                 case PassiveB.SpdResFarTrace3:
@@ -9960,6 +9975,7 @@ class AetherRaidTacticsBoard {
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
+            case Support.FoulPlay:
             case Support.FutureVision:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
             case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
@@ -10329,6 +10345,7 @@ class AetherRaidTacticsBoard {
             case Support.Rescue:
             case Support.Drawback:
                 return this.__findTileAfterDrawback(unit, target, tile);
+            case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:
                 return this.__findTileAfterSwap(unit, target, tile);
