@@ -1130,6 +1130,8 @@ const Weapon = {
     // 2021年9月 武器錬成
     DuskDragonstone: 1829, // 暗夜の竜石
     StaffOfTwelvePlus: 1837, // 聖祭の杖+
+
+    HonorableBlade: 1839, // 義侠の戦刃
 }
 
 const Support = {

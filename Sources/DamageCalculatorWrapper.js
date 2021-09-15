@@ -1670,6 +1670,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HonorableBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DuskDragonstone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.snapshot.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(4);

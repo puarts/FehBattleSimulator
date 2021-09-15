@@ -4389,6 +4389,9 @@ class AetherRaidTacticsBoard {
         }
 
         switch (skillId) {
+            case Weapon.HonorableBlade:
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                break;
             case Weapon.Sangurizuru:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInDifferentGroup(skillOwner)) {
@@ -8167,6 +8170,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.HonorableBlade:
                 case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
@@ -8194,6 +8198,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case Weapon.HonorableBlade:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
