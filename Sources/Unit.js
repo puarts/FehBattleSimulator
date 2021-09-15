@@ -338,7 +338,9 @@ function groupIdToString(groupId) {
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
     constructor() {
+        this.maxHpWithSkills = 0;
         this.hpBeforeCombat = 0;
+        this.restHp = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
         this.isVantabeActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
@@ -506,7 +508,9 @@ class BattleContext {
 
     clear() {
         this.clearPrecombatState();
-
+        this.maxHpWithSkills = 0;
+        this.hpBeforeCombat = 0;
+        this.restHp = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
         this.isVantabeActivatable = false;
@@ -591,6 +595,18 @@ class BattleContext {
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
     get isSolo() {
         return !this.isThereAllyOnAdjacentTiles;
+    }
+
+    /// 戦闘のダメージ計算時の残りHPです。
+    get restHpPercentage() {
+        if (this.restHp === this.maxHpWithSkills) {
+            return 100;
+        }
+        return 100 * this.restHp / this.maxHpWithSkills;
+    }
+
+    get isRestHpFull() {
+        return this.restHp === this.maxHpWithSkills;
     }
 
     invalidateAllBuffs() {
@@ -1151,6 +1167,7 @@ class Unit {
 
     saveCurrentHpAndSpecialCount() {
         this.restHp = this.hp;
+        this.battleContext.restHp = this.restHp;
         this.tmpSpecialCount = this.specialCount;
     }
 
@@ -2703,7 +2720,7 @@ class Unit {
         if (this.restHp >= this.maxHpWithSkills) {
             return 100;
         }
-        return Math.round((100 * this.restHp / this.maxHpWithSkills) * 100) / 100;
+        return 100 * this.restHp / this.maxHpWithSkills;
     }
     get isRestHpFull() {
         return this.restHp >= this.maxHpWithSkills;
@@ -4318,7 +4335,9 @@ class Unit {
      */
     initBattleContext(initiatesCombat) {
         this.battleContext.clear();
+        this.battleContext.maxHpWithSkills = this.maxHpWithSkills;
         this.battleContext.hpBeforeCombat = this.hp;
+        this.battleContext.restHp = this.hp;
         this.battleContext.initiatesCombat = initiatesCombat;
     }
 
@@ -4480,16 +4499,20 @@ function isDebufferTier2(attackUnit, targetUnit) {
     return false;
 }
 
-/// ユニットがアフリクターであるかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartH
+/**
+ * ユニットがアフリクターであるかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartH
+ * @param  {Unit} attackUnit
+ * @param  {boolean} lossesInCombat
+ */
 function isAfflictor(attackUnit, lossesInCombat) {
     switch (attackUnit.weapon) {
         case Weapon.TigerSpirit:
-            if (attackUnit.snapshot.restHpPercentage >= 25) {
+            if (attackUnit.battleContext.restHpPercentage >= 25) {
                 return true;
             }
             break;
         case Weapon.FrostbiteBreath:
-            if (attackUnit.snapshot.restHpPercentage >= 25) {
+            if (attackUnit.battleContext.restHpPercentage >= 25) {
                 return true;
             }
             break;

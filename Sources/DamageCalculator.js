@@ -831,13 +831,13 @@ class DamageCalculator {
         switch (unit.weapon) {
             case Weapon.BowOfTwelve:
                 if (unit.battleContext.initiatesCombat ||
-                    (unit.snapshot.restHpPercentage >= 75 &&
+                    (unit.battleContext.restHpPercentage >= 75 &&
                         (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff))) {
                     return true;
                 }
                 break;
             case Weapon.Thirufingu:
-                if (unit.snapshot.restHpPercentage >= 50) return true;
+                if (unit.battleContext.restHpPercentage >= 50) return true;
                 break;
             case Weapon.HelsReaper:
                 if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
@@ -903,7 +903,7 @@ class DamageCalculator {
             case Weapon.Ginnungagap:
                 // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
                 if (!context.isFirstAttack(atkUnit)) break;
-                if (defUnit.snapshot.restHpPercentage >= 25) {
+                if (defUnit.battleContext.restHpPercentage >= 25) {
                     let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
                     if (defUnit.battleContext.initiatesCombat ||
                         (atkUnit.battleContext.initiatesCombat && isTomeOrStaff)) {

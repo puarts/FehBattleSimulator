@@ -3001,7 +3001,7 @@ class AetherRaidTacticsBoard {
             switch (skillId) {
                 case Weapon.TwinCrestPower:
                     if (!atkUnit.isOneTimeActionActivatedForWeapon
-                        && atkUnit.snapshot.restHpPercentage >= 25
+                        && atkUnit.battleContext.restHpPercentage >= 25
                         && atkUnit.isTransformed
                         && atkUnit.isActionDone
                     ) {
@@ -3271,13 +3271,13 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveB.ArmoredWall:
-                    if (targetUnit.snapshot.restHpPercentage >= 25) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);
                     }
                     break;
                 case Weapon.Ivarudhi:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (enemyUnit.snapshot.restHpPercentage >= 75) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 75) {
                             targetUnit.reserveHeal(7);
                         }
                     }
@@ -3310,7 +3310,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.OukeNoKen:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (targetUnit.snapshot.restHpPercentage >= 25) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
                             targetUnit.reserveHeal(7);
                             targetUnit.specialCount -= 1;
                         }
@@ -3439,7 +3439,7 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case PassiveB.Atrocity:
-                    if (enemyUnit.snapshot.restHpPercentage >= 50) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 50) {
                         this.writeDebugLogLine(targetUnit.getNameWithGroup() + "の無惨発動");
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                             this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
@@ -3550,21 +3550,21 @@ class AetherRaidTacticsBoard {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.FlamelickBreath:
-                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                    if (attackUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                             unit.addStatusEffect(StatusEffectType.DeepWounds);
                         }
                     }
                     break;
                 case Weapon.TigerSpirit:
-                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                    if (attackUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                             unit.addStatusEffect(StatusEffectType.Panic);
                         }
                     }
                     break;
                 case Weapon.FrostbiteBreath:
-                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                    if (attackUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                             unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                         }
@@ -3572,7 +3572,7 @@ class AetherRaidTacticsBoard {
                     break;
                 case Weapon.Scadi:
                     if (attackUnit.isWeaponSpecialRefined) {
-                        if (attackUnit.snapshot.restHpPercentage >= 25) {
+                        if (attackUnit.battleContext.restHpPercentage >= 25) {
                             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                                 unit.reserveTakeDamage(7);
                             }
@@ -3645,7 +3645,7 @@ class AetherRaidTacticsBoard {
                         unit.applyAllDebuff(amount);
                     }
                     if (!attackUnit.isWeaponSpecialRefined) break;
-                    if (attackUnit.snapshot.restHpPercentage >= 25) {
+                    if (attackUnit.battleContext.restHpPercentage >= 25) {
                         this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の特殊錬成ペシュカド発動");
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                             this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
@@ -3846,7 +3846,7 @@ class AetherRaidTacticsBoard {
                     attackUnit.specialCount += 2;
                     break;
                 case Weapon.Rifia:
-                    if (attackUnit.snapshot.restHpPercentage >= 50) {
+                    if (attackUnit.battleContext.restHpPercentage >= 50) {
                         attackUnit.reserveTakeDamage(4);
                     }
                     break;
