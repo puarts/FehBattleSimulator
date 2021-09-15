@@ -5539,9 +5539,10 @@ class DamageCalculatorWrapper {
 
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
             switch (unit.passiveC) {
-                case PassiveC.DomainOfFlame:
+                case PassiveC.DomainOfFlame: {
                     let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
                     targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+                }
                     break;
                 case PassiveC.HokoNoGogeki3:
                     if (targetUnit.moveType === MoveType.Infantry) {
@@ -8245,6 +8246,7 @@ class DamageCalculatorWrapper {
                     targetUnit.atkSpur += spurAmount;
                     targetUnit.spdSpur += spurAmount;
                 }
+                    break;
                 case PassiveA.DefResBojosen4: {
                     let spurAmount = this.__calcBojosen4SpurAmount();
                     targetUnit.defSpur += spurAmount;
