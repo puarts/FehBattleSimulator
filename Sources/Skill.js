@@ -1131,6 +1131,7 @@ const Weapon = {
     DuskDragonstone: 1829, // 暗夜の竜石
     StaffOfTwelvePlus: 1837, // 聖祭の杖+
 
+    // 深淵を照らす灯火＆ムスペル
     HonorableBlade: 1839, // 義侠の戦刃
     AgneasArrow: 1842, // アグネアの矢
     DemonicTome: 1844, // 魔獣の書
