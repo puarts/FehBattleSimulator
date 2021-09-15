@@ -8179,6 +8179,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.FlowerLance:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
+                case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
                 case PassiveB.SpdResFarTrace3:
@@ -8214,6 +8215,7 @@ class AetherRaidTacticsBoard {
                 case PassiveB.SpdDefNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
                     break;
+                case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
                 case PassiveB.SpdResFarTrace3:
