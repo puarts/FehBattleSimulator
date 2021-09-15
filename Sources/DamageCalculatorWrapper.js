@@ -1990,6 +1990,12 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 6;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveC.DomainOfFlame] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 4;
+                targetUnit.defSpur += 4;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveC.DomainOfIce] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
@@ -5487,8 +5493,14 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
+            for (let skillId of [targetUnit.passiveA, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
+                    case PassiveC.DomainOfFlame:
+                        if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                            let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+                        }
+                        break;
                     case PassiveA.Kyokazohuku3:
                         DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
                         break;
@@ -5527,6 +5539,10 @@ class DamageCalculatorWrapper {
 
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
             switch (unit.passiveC) {
+                case PassiveC.DomainOfFlame:
+                    let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                    targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+                    break;
                 case PassiveC.HokoNoGogeki3:
                     if (targetUnit.moveType === MoveType.Infantry) {
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
@@ -7180,6 +7196,10 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
             switch (skillId) {
+                case PassiveC.DomainOfFlame:
+                    targetUnit.atkSpur += 4;
+                    targetUnit.defSpur += 4;
+                    break;
                 case PassiveC.DomainOfIce:
                     targetUnit.spdSpur += 4;
                     targetUnit.resSpur += 4;

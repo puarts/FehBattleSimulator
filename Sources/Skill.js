@@ -2074,6 +2074,7 @@ const PassiveC = {
     WingsOfLight: 1622, // 光輝く翼
     OrdersRestraint: 1724, // 束縛、秩序、安定
     DomainOfIce: 1774, // 絶氷結界
+    DomainOfFlame: 1848, // 絶炎結界
 };
 
 const PassiveS = {
