@@ -4453,6 +4453,21 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveA.AtkResCatch4:
+                if (enemyUnit.snapshot.restHpPercentage === 100
+                    || enemyUnit.hasNegativeStatusEffect()
+                ) {
+                    targetUnit.atkSpur += 7;
+                    targetUnit.resSpur += 7;
+
+                    if (enemyUnit.snapshot.restHpPercentage === 100
+                        && enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.atkSpur += 2;
+                        targetUnit.resSpur += 2;
+                    }
+                }
+                break;
             case PassiveA.DefResCatch4:
                 if (enemyUnit.snapshot.restHpPercentage === 100
                     || enemyUnit.hasNegativeStatusEffect()
