@@ -8225,6 +8225,11 @@ class DamageCalculatorWrapper {
                     targetUnit.atkSpur += spurAmount;
                     targetUnit.spdSpur += spurAmount;
                 }
+                case PassiveA.DefResBojosen4: {
+                    let spurAmount = this.__calcBojosen4SpurAmount();
+                    targetUnit.defSpur += spurAmount;
+                    targetUnit.resSpur += spurAmount;
+                }
                     break;
             }
 

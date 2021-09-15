@@ -1543,6 +1543,7 @@ const PassiveA = {
     SpdResBojosen3: 962,
     AtkDefBojosen3: 1008,
     AtkSpdBojosen4: 1773,
+    DefResBojosen4: 1847,
 
     // 攻城戦
     AtkDefKojosen3: 883,
