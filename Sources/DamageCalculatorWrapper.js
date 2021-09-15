@@ -1670,6 +1670,20 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AgneasArrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                if (this.isOddTurn) {
+                    targetUnit.battleContext.invalidatesSpdBuff = true;
+                    targetUnit.battleContext.invalidatesResBuff = true;
+                } else {
+                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HonorableBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.snapshot.restHpPercentage >= 50) {
                 targetUnit.atkSpur += 6;

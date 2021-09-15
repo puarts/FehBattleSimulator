@@ -1132,6 +1132,7 @@ const Weapon = {
     StaffOfTwelvePlus: 1837, // 聖祭の杖+
 
     HonorableBlade: 1839, // 義侠の戦刃
+    AgneasArrow: 1842, // アグネアの矢
 }
 
 const Support = {
