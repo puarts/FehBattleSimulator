@@ -5410,6 +5410,12 @@ class AetherRaidTacticsBoard {
                         x.reserveToApplySpdDebuff(-4); x.reserveToApplyDefDebuff(-4);
                     });
                 break;
+            case PassiveC.ThreatenDefRes2:
+                this.__applyThreatenSkill(skillOwner,
+                    x => {
+                        x.reserveToApplyDefDebuff(-4); x.reserveToApplyResDebuff(-4);
+                    });
+                break;
             case PassiveC.ThreatenAtkDef2:
                 this.__applyThreatenSkill(skillOwner,
                     x => {
