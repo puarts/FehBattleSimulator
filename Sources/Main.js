@@ -3211,7 +3211,7 @@ class AetherRaidTacticsBoard {
         this.damageCalc.updateUnitSpur(defUnit, false);
         if (result.defUnit != defUnit) {
             let saverUnit = result.defUnit;
-            this.updateUnitSpur(saverUnit, false);
+            this.damageCalc.updateUnitSpur(saverUnit, false);
         }
         return result;
     }
@@ -5408,6 +5408,12 @@ class AetherRaidTacticsBoard {
                 this.__applyThreatenSkill(skillOwner,
                     x => {
                         x.reserveToApplySpdDebuff(-4); x.reserveToApplyDefDebuff(-4);
+                    });
+                break;
+            case PassiveC.ThreatenDefRes2:
+                this.__applyThreatenSkill(skillOwner,
+                    x => {
+                        x.reserveToApplyDefDebuff(-4); x.reserveToApplyResDebuff(-4);
                     });
                 break;
             case PassiveC.ThreatenAtkDef2:

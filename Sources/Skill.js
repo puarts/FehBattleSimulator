@@ -1136,6 +1136,7 @@ const Weapon = {
     AgneasArrow: 1842, // アグネアの矢
     DemonicTome: 1844, // 魔獣の書
     FlamelickBreath: 1846, // 絶炎のブレス
+    InstantAxePlus: 1849, // 瞬撃の斧+
 }
 
 const Support = {
@@ -1909,6 +1910,7 @@ const PassiveC = {
     ThreatenAtkDef3: 1124,
     ThreatenAtkRes2: 1691,
     ThreatenSpdDef2: 1758,
+    ThreatenDefRes2: 1851,
 
     KodoNoGenen3: 909, // 鼓動の幻煙3
 
