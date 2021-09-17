@@ -774,10 +774,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForAtkUnitFuncDict() {
         let self = this;
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantLancePlus] = (atkUnit, defUnit, calcPotentialDamage) => {
-            atkUnit.atkSpur += 4;
-            atkUnit.defSpur += 4;
-        };
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                atkUnit.atkSpur += 4;
+                atkUnit.defSpur += 4;
+            };
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantLancePlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantAxePlus] = func;
+        }
         self._applySkillEffectForAtkUnitFuncDict[Weapon.CourtlyFanPlus] = (atkUnit, defUnit, calcPotentialDamage) => {
             atkUnit.atkSpur += 5;
             atkUnit.spdSpur += 5;
@@ -6187,6 +6191,7 @@ class DamageCalculatorWrapper {
         if (!defUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
             switch (atkUnit.weapon) {
                 case Weapon.InstantLancePlus:
+                case Weapon.InstantAxePlus:
                     --followupAttackPriority;
                     break;
                 case Weapon.Rifia:
