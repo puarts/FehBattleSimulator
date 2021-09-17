@@ -3211,7 +3211,7 @@ class AetherRaidTacticsBoard {
         this.damageCalc.updateUnitSpur(defUnit, false);
         if (result.defUnit != defUnit) {
             let saverUnit = result.defUnit;
-            this.updateUnitSpur(saverUnit, false);
+            this.damageCalc.updateUnitSpur(saverUnit, false);
         }
         return result;
     }
