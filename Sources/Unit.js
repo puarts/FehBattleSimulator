@@ -2348,6 +2348,21 @@ class Unit {
         this.isCantoActivatedInCurrentTurn = false;
     }
 
+    setOnetimeActionActivated() {
+        // 最初の戦闘のみで発動する状態効果は、状態が付与されていない戦闘も最初の戦闘にカウントするので
+        // 強制的にtrueにする
+
+        this.isOneTimeActionActivatedForShieldEffect = true;
+        this.isOneTimeActionActivatedForFallenStar = true;
+
+        switch (this.passiveB) {
+            case PassiveB.ArmoredWall:
+            case PassiveB.GuardBearing3:
+                this.isOneTimeActionActivatedForPassiveB = true;
+                break;
+        }
+    }
+
     isOnInitPos() {
         return this.posX == this.initPosX && this.posY == this.initPosY;
     }

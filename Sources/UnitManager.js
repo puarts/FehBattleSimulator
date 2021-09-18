@@ -11,7 +11,6 @@ class UnitManager {
         for (let i = 0; i < MaxAllyUnitCount; ++i) {
             this.units.push(this.__createDefaultUnit("a" + i, UnitGroupType.Ally));
         }
-
     }
 
     *enumerateUnits() {
@@ -42,6 +41,10 @@ class UnitManager {
     enumerateUnitsInDifferentGroup(targetUnit) {
         let targetGroup = targetUnit.getEnemyGroupId();
         return this.enumerateUnitsInSpecifiedGroup(targetGroup);
+    }
+
+    enumerateAllUnitsOnMap() {
+        return this.enumerateUnitsWithPredicator(x => x.isOnMap);
     }
 
     enumerateUnitsInTheSameGroupOnMap(targetUnit, withTargetUnit = false) {

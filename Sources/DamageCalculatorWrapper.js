@@ -65,6 +65,7 @@ class DamageCalculatorWrapper {
         this.globalBattleContext = globalBattleContext;
         this._damageCalc = new DamageCalculator(logger);
         this.profiler = new PerformanceProfile();
+        this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
 
         // 高速化用
         this._applySkillEffectForAtkUnitFuncDict = {};
@@ -109,9 +110,75 @@ class DamageCalculatorWrapper {
         this._damageCalc.clearLog();
     }
 
+    writeLog(message) {
+        this._damageCalc.writeLog(message);
+    }
+
     writeDebugLog(message) {
         this._damageCalc.writeDebugLog(message);
     }
+
+    /**
+     * 戦闘ダメージを計算し、計算結果に基づき、ユニットの状態を更新します。戦闘後に発動するスキルの効果も反映されます。
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Tile} tileToAttack=null
+     * @returns {DamageCalcResult}
+     */
+    updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
+        // 攻撃対象以外の戦闘前の範囲奥義ダメージ
+        if (atkUnit.canActivatePrecombatSpecial()) {
+            // 範囲攻撃ダメージを周囲の敵に反映
+            for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+                if (tile.placedUnit != null
+                    && tile.placedUnit != defUnit
+                    && tile.placedUnit.groupId == defUnit.groupId
+                ) {
+                    let targetUnit = tile.placedUnit;
+                    let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit);
+                    this.writeLog(
+                        atkUnit.specialInfo.name + "により" +
+                        targetUnit.getNameWithGroup() + "に" + damage + "ダメージ");
+                    targetUnit.takeDamage(damage, true);
+                }
+            }
+        }
+
+        // 戦闘ダメージ計算
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, false);
+
+        // 戦闘の計算結果を反映させる
+        {
+            atkUnit.applyRestHpAndTemporarySpecialCount();
+            atkUnit.endAction();
+
+            defUnit.applyRestHpAndTemporarySpecialCount();
+
+            if (defUnit != result.defUnit) {
+                // 護り手で一時的に戦闘対象が入れ替わっているケース
+                result.defUnit.applyRestHpAndTemporarySpecialCount();
+
+                // 戦闘後スキル効果の対象外にしなければいけないので一旦マップ上から除外
+                defUnit.saveOriginalTile();
+                defUnit.placedTile = null;
+            }
+        }
+
+        // 戦闘後発動のスキル等を評価
+        this._combatHander.applyPostCombatProcess(atkUnit, result.defUnit, result);
+
+        if (defUnit != result.defUnit) {
+            // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
+            let saverUnit = result.defUnit;
+            if (!saverUnit.isDead) {
+                saverUnit.restoreOriginalTile();
+            }
+            defUnit.restoreOriginalTile();
+        }
+
+        return result;
+    }
+
 
 
     /**
