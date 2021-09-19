@@ -2,10 +2,12 @@
 const DamageCalcMode = {
     Simple: 0,
     SpecialDamageGraph: 1,
+    RoundRobin: 2,
 };
 
 const DamageCalcModeOptions = [
     { label: "与ダメージ計算", value: DamageCalcMode.Simple },
+    { label: "総当たり殲滅力", value: DamageCalcMode.RoundRobin },
     { label: "奥義ダメージグラフ", value: DamageCalcMode.SpecialDamageGraph },
 ];
 
@@ -87,6 +89,12 @@ function createDefaultUnit(name, groupId = UnitGroupType.Ally) {
     return unit;
 }
 
+class RoundRobinBattleResult {
+    constructor(winCount, drawCount) {
+        this.winCount = winCount;
+        this.drawCount = drawCount;
+    }
+}
 
 class DamageCalcHeroDatabase extends HeroDatabase {
     constructor(inputHeroInfos, weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
@@ -104,20 +112,45 @@ class DamageCalcHeroDatabase extends HeroDatabase {
         this.initUnit(unit, heroName);
         return unit;
     }
-
-    initUnit(unit, heroName) {
+    /**
+     * @param  {Unit} unit
+     * @param  {string} heroName
+     */
+    initUnit(unit, heroName, initEditableAttrs = true) {
         let heroInfo = this.findInfo(heroName);
         unit.initByHeroInfo(heroInfo);
-
-        unit.level = 40;
-        unit.merge = 0;
-        unit.dragonflower = 0;
         unit.initializeSkillsToDefault();
         this.skillDatabase.updateUnitSkillInfo(unit);
+        if (unit.hasWeapon) {
+            if (unit.weaponInfo.hasSpecialWeaponRefinement) {
+                if (unit.weaponInfo.specialRefineHpAdd === 3) {
+                    unit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+                }
+                else {
+                    unit.weaponRefinement = WeaponRefinementType.Special;
+                }
+            }
+            else if (unit.weaponInfo.hasStatusWeaponRefinement) {
+                if (unit.attackRange === 1) {
+                    unit.weaponRefinement = WeaponRefinementType.Hp5_Atk2;
+                }
+                else {
+                    unit.weaponRefinement = WeaponRefinementType.Hp2_Atk1;
+                }
+            }
+        }
+
         unit.setMoveCountFromMoveType();
-        unit.isBonusChar = false;
         if (!unit.heroInfo.isResplendent) {
-            unit.isResplendent = true;
+            unit.isResplendent = false;
+        }
+
+        if (initEditableAttrs) {
+            unit.level = 40;
+            unit.merge = 0;
+            unit.dragonflower = 0;
+            unit.isBonusChar = false;
+            unit.isResplendent = false;
         }
 
         unit.updateStatusBySkillsAndMerges(true);
@@ -130,20 +163,22 @@ class DamageCalcHeroDatabase extends HeroDatabase {
 
 class DamageCalcData {
     constructor() {
+        this.logger = new HtmlLogger();
         this.unitManager = new UnitManager();
+        this.unitManager.units = [];
         this.map = new BattleMap("", MapType.None, 0);
         this.battleContext = new GlobalBattleContext();
         this.damageCalc = new DamageCalculatorWrapper(
             this.unitManager,
             this.map,
             this.battleContext,
-            new HtmlLogger()
+            this.logger
         );
         this.heroDatabase = new DamageCalcHeroDatabase(
             heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
             passiveSInfos);
 
-        this.mode = DamageCalcMode.Simple;
+        this.mode = DamageCalcMode.RoundRobin;
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
         this.attackerTriangleAdvantage = TriangleAdvantage.None;
         this.triangleAdeptType = TriangleAdeptType.None;
@@ -369,6 +404,104 @@ class DamageCalcData {
             }
         });
     }
+    /**
+     * @param  {Tile} tile
+     * @returns {Unit[]}
+     */
+    __createAllHeroUnits(groupId, tile) {
+        let units = [];
+        for (let heroInfo of this.heroDatabase.enumerateHeroInfos()) {
+            let name = heroInfo.name;
+            let unit = new Unit("", name, groupId);
+            unit.placedTile = tile;
+            unit.level = 40;
+            unit.merge = 10;
+            unit.dragonflower = heroInfo.maxDragonflower;
+            unit.isBonusChar = false;
+            unit.isResplendent = heroInfo.isResplendent;
+            unit.blessingEffects.push(BlessingType.Hp5_Atk3);
+            unit.blessingEffects.push(BlessingType.Hp5_Spd4);
+            unit.blessingEffects.push(BlessingType.Hp5_Def5);
+            unit.blessingEffects.push(BlessingType.Hp5_Res5);
+            this.heroDatabase.initUnit(unit, heroInfo.name, false);
+            units.push(unit);
+        }
+        return units;
+    }
+
+    calcRoundRogin() {
+        let atkUnits = this.__createAllHeroUnits(UnitGroupType.Ally, this.map.getTile(0, 2));
+        let defUnits = this.__createAllHeroUnits(UnitGroupType.Enemy, this.map.getTile(0, 0));
+        let heroDatabase = this.heroDatabase;
+        let calclator = this.damageCalc;
+        let self = this;
+        let results = [];
+        let length = heroDatabase.length;
+        // length = 1;
+        let startTime = Date.now();
+        startProgressiveProcess(length,
+            function (iter) {
+                let atkUnit = atkUnits[iter];
+                // atkUnit = atkUnits.filter(x => x.heroInfo.name === "エルフィ")[0];
+                // console.log(atkUnit);
+                self.logger.isLogEnabled = false;
+
+                let winCount = 0;
+                let drawCount = 0;
+                for (let defUnit of defUnits) {
+                    calclator.updateUnitSpur(atkUnit);
+                    calclator.updateUnitSpur(defUnit);
+                    let result = calclator.calcDamage(atkUnit, defUnit);
+                    if (defUnit.restHp === 0) {
+                        ++winCount;
+                    }
+                    else if (atkUnit.restHp !== 0) {
+                        ++drawCount;
+                    }
+                }
+                let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount);
+                results.push({ atkUnit: atkUnit, result: roundRobinResult });
+                self.logger.isLogEnabled = true;
+            },
+            function (iter, iterMax) {
+                let lastIndex = results.length - 1;
+                let unit = results[lastIndex].atkUnit;
+                let result = results[lastIndex].result;
+                let winRate = Math.round(10000 * result.winCount / heroDatabase.length) / 100;
+                let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / heroDatabase.length) / 100;
+                self.logger.writeLog(`${iter} / ${iterMax}: ${unit.name} 勝率 ${result.winCount}/${defUnits.length}(${winRate}%), 生存率 ${result.winCount + result.drawCount}/${defUnits.length}(${aliveRate}%)`);
+                self.log = self.logger.log;
+            },
+            function () {
+                // self.damageCalc.isLogEnabled = true;
+                // self.vm.durabilityTestIsLogEnabled = durabilityTestLogEnabled;
+                results.sort((a, b) => {
+                    return b.result.winCount - a.result.winCount;
+                });
+                for (let i = 0; i < results.length; ++i) {
+                    let result = results[i].result;
+                    let unit = results[i].atkUnit;
+                    let winRate = result.winCount / defUnits.length;
+                    console.log(`${unit.heroInfo.name}: ${winRate}`);
+                    self.logger.writeLog(`${unit.heroInfo.name}\t${winRate}`);
+                }
+                const endTime = Date.now();
+                let diffSec = (endTime - startTime) * 0.001;
+                self.logger.writeLog(`テスト完了(${diffSec} sec)--------------------`);
+                self.log = self.logger.log;
+
+
+                // let originalDisableAllLogs = self.disableAllLogs;
+                // self.disableAllLogs = true;
+                // importSettingsFromString(serializedTurn);
+                // $("#progress").progressbar({ disabled: true });
+                // updateAllUi();
+                // self.disableAllLogs = originalDisableAllLogs;
+            });
+
+        // this.__writeLogLine(log);
+    }
+
 
 
     __getSpecialsForCurrentGraphMode() {
@@ -499,6 +632,9 @@ const g_damageCalcVm = new Vue({
         },
         updateDamageGraph: function () {
             g_damageCalcData.updateDamageGraph();
+        },
+        calcRoundRogin: function () {
+            g_damageCalcData.calcRoundRogin();
         },
     }
 });

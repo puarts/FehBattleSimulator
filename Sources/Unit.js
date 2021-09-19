@@ -3825,7 +3825,10 @@ class Unit {
         return this.heroInfo.detailPageUrl;
     }
 
-    /// データベースの英雄情報からユニットを初期化します。
+    /**
+     * データベースの英雄情報からユニットを初期化します。
+     * @param  {HeroInfo} heroInfo
+     */
     initByHeroInfo(heroInfo) {
         let isHeroInfoChanged = this.heroInf != heroInfo;
         if (!isHeroInfoChanged) {

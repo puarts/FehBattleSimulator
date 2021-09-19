@@ -5854,7 +5854,7 @@ class DamageCalculatorWrapper {
                             atkUnit.battleContext.additionalDamage += 7;
                         }
                         else {
-                            targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                            atkUnit.battleContext.additionalDamageOfSpecial += 7;
                         }
                     }
                 }

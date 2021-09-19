@@ -815,7 +815,9 @@ class DamageCalculator {
             }
             context.damageHistory.push(new DamageLog(atkUnit, defUnit, currentDamage));
 
-            if (this.isLogEnabled) this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + (defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
+            if (this.isLogEnabled) {
+                this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + Math.max(0, defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
+            }
         }
 
         return totalDamage;

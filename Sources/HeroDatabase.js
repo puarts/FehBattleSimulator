@@ -22,11 +22,16 @@ class HeroDatabase {
     get length() {
         return this._heroInfos.length;
     }
-
+    /**
+     * @param  {Number} index
+     * @returns {HeroInfo}
+     */
     get(index) {
         return this._heroInfos[index];
     }
-
+    /**
+     * @returns {HeroInfo[]}
+     */
     enumerateHeroInfos() {
         return this._heroInfos;
     }

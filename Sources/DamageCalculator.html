@@ -44,181 +44,187 @@
             </dd>
         </dl>
         <div style="clear:both"></div>
+        <div v-if="mode!==DamageCalcMode.RoundRobin">
 
-        <fieldset>
-            <legend>計算結果</legend>
-            <div v-if="mode==DamageCalcMode.Simple">
-                与ダメージ =
-                <span style="font-weight: bold;font-size: 20;">{{actualDamageDealt}}</span>
-            </div>
-            <div v-else-if="mode==DamageCalcMode.SpecialDamageGraph">
-                <p>守備/魔防の変化の応じたダメージのグラフです。</p>
-                <select v-model="specialGraphMode">
-                    <option v-for="option in SpecialDamageGraphModeOptions" v-bind:value="option.value">
-                        {{option.label}}
-                    </option>
-                </select>
-                <input type="button" value="グラフ更新" @click="updateDamageGraph">
-                <div><canvas id="damageGraphCanvas" height="300px" width="400px"></canvas></div>
-            </div>
-        </fieldset>
-        <div style="clear:both"></div>
-        <fieldset>
-            <legend>攻撃者の設定</legend>
-            <dl>
-                <dt>武器種</dt>
-                <dd>
-                    <select2 :options="WeaponTypeOptions" v-model="atkUnit.weaponType" class="skill"
-                        @input="updateDamageResult" style="width: 150;">
-                    </select2>
-                </dd>
+            <fieldset>
+                <legend>計算結果</legend>
+                <div v-if="mode===DamageCalcMode.Simple">
+                    与ダメージ =
+                    <span style="font-weight: bold;font-size: 20;">{{actualDamageDealt}}</span>
+                </div>
+                <div v-else-if="mode===DamageCalcMode.SpecialDamageGraph">
+                    <p>守備/魔防の変化の応じたダメージのグラフです。</p>
+                    <select v-model="specialGraphMode">
+                        <option v-for="option in SpecialDamageGraphModeOptions" v-bind:value="option.value">
+                            {{option.label}}
+                        </option>
+                    </select>
+                    <input type="button" value="グラフ更新" @click="updateDamageGraph">
+                    <div><canvas id="damageGraphCanvas" height="300px" width="400px"></canvas></div>
+                </div>
+            </fieldset>
+            <div style="clear:both"></div>
+            <fieldset>
+                <legend>攻撃者の設定</legend>
+                <dl>
+                    <dt>武器種</dt>
+                    <dd>
+                        <select2 :options="WeaponTypeOptions" v-model="atkUnit.weaponType" class="skill"
+                            @input="updateDamageResult" style="width: 150;">
+                        </select2>
+                    </dd>
 
-                <dt>攻撃</dt>
-                <dd>
-                    <input class="numeric" v-model="atkUnit.atkWithSkills" @change="updateDamageResult" type="number"
-                        min="1" max="99" step="1" />
-                    <input id="incrementAtk" type="button" value="＋">
-                    <input id="decrementAtk" type="button" value="－">
-                </dd>
+                    <dt>攻撃</dt>
+                    <dd>
+                        <input class="numeric" v-model="atkUnit.atkWithSkills" @change="updateDamageResult"
+                            type="number" min="1" max="99" step="1" />
+                        <input id="incrementAtk" type="button" value="＋">
+                        <input id="decrementAtk" type="button" value="－">
+                    </dd>
 
-                <dt>速さ</dt>
-                <dd>
-                    <input class="numeric" v-model="atkUnit.spdWithSkills" @change="updateDamageResult" type="number"
-                        min="1" max="99" step="1" />
-                    <input id="incrementSpd" type="button" value="＋">
-                    <input id="decrementSpd" type="button" value="－">
-                </dd>
+                    <dt>速さ</dt>
+                    <dd>
+                        <input class="numeric" v-model="atkUnit.spdWithSkills" @change="updateDamageResult"
+                            type="number" min="1" max="99" step="1" />
+                        <input id="incrementSpd" type="button" value="＋">
+                        <input id="decrementSpd" type="button" value="－">
+                    </dd>
 
-                <dt>守備/魔防</dt>
-                <dd>
-                    <input class="numeric" v-model="atkUnit.defWithSkills" @change="updateDamageResult" type="number"
-                        min="1" max="99" step="1" />
-                    <input id="incrementAttackerMit" type="button" value="＋">
-                    <input id="decrementAttackerMit" type="button" value="－">
-                </dd>
+                    <dt>守備/魔防</dt>
+                    <dd>
+                        <input class="numeric" v-model="atkUnit.defWithSkills" @change="updateDamageResult"
+                            type="number" min="1" max="99" step="1" />
+                        <input id="incrementAttackerMit" type="button" value="＋">
+                        <input id="decrementAttackerMit" type="button" value="－">
+                    </dd>
 
-                <dt><label for="effectiveness">特効</label></dt>
-                <dd>
-                    <input id="effectiveness" type="checkbox" v-model="atkUnit.battleContext.isEffectiveToOpponent"
-                        @change="updateDamageResult">
-                </dd>
+                    <dt><label for="effectiveness">特効</label></dt>
+                    <dd>
+                        <input id="effectiveness" type="checkbox" v-model="atkUnit.battleContext.isEffectiveToOpponent"
+                            @change="updateDamageResult">
+                    </dd>
 
-                <dt><label for="special">奥義</label></dt>
-                <dd>
-                    <select2 :options="specialOptins" v-model="atkUnit.special" class="skill"
-                        @input="updateDamageResult" style="width: 150;">
-                    </select2>
-                </dd>
-            </dl>
-        </fieldset>
-        <fieldset>
-            <legend>被攻撃者の設定</legend>
-            <dl>
+                    <dt><label for="special">奥義</label></dt>
+                    <dd>
+                        <select2 :options="specialOptins" v-model="atkUnit.special" class="skill"
+                            @input="updateDamageResult" style="width: 150;">
+                        </select2>
+                    </dd>
+                </dl>
+            </fieldset>
+            <fieldset>
+                <legend>被攻撃者の設定</legend>
+                <dl>
 
-                <dt>武器種</dt>
-                <dd>
-                    <select2 :options="WeaponTypeOptions" v-model="defUnit.weaponType" class="skill"
-                        @input="updateDamageResult" style="width: 150;">
-                    </select2>
-                </dd>
+                    <dt>武器種</dt>
+                    <dd>
+                        <select2 :options="WeaponTypeOptions" v-model="defUnit.weaponType" class="skill"
+                            @input="updateDamageResult" style="width: 150;">
+                        </select2>
+                    </dd>
 
-                <dt>守備/魔防</dt>
-                <dd>
-                    <input class="numeric" v-model="defUnit.defWithSkills" @change="updateDamageResult" type="number"
-                        min="1" max="99" step="1" value="50" />
-                    <input id="incrementMit" type="button" value="＋">
-                    <input id="decrementMit" type="button" value="－">
-                </dd>
-                <dt><label for="defensiveTile">防御地形</label></dt>
-                <dd>
-                    <input id="defensiveTile" type="checkbox" v-model="defUnit.battleContext.isOnDefensiveTile"
-                        @change="updateDamageResult">
-                </dd>
+                    <dt>守備/魔防</dt>
+                    <dd>
+                        <input class="numeric" v-model="defUnit.defWithSkills" @change="updateDamageResult"
+                            type="number" min="1" max="99" step="1" value="50" />
+                        <input id="incrementMit" type="button" value="＋">
+                        <input id="decrementMit" type="button" value="－">
+                    </dd>
+                    <dt><label for="defensiveTile">防御地形</label></dt>
+                    <dd>
+                        <input id="defensiveTile" type="checkbox" v-model="defUnit.battleContext.isOnDefensiveTile"
+                            @change="updateDamageResult">
+                    </dd>
 
-                <dt><label for="defensiveTile">ダメージ軽減</label></dt>
-                <dd>
-                    <input class="numeric" v-model="damageReductionPercentage" @change="updateDamageResult"
-                        type="number" min="0" max="100" step="1" value="0" />%
-                    <input id="incrementDamageReduction" type="button" value="＋">
-                    <input id="decrementDamageReduction" type="button" value="－">
-                </dd>
-            </dl>
-        </fieldset>
-        <fieldset>
-            <legend>その他の設定</legend>
-            <dl>
-                <dt>相性激化</dt>
-                <dd>
-                    <label class="normal" v-for="option in TriangleAdeptOptions">
-                        <input type="radio" v-model="triangleAdeptType" v-bind:value="option.value"
-                            @change="triangleAdvantageChanged">
-                        {{option.label}}
-                    </label>
-                </dd>
-            </dl>
-        </fieldset>
-        <div style="clear:both"></div>
-        <details open>
-            <summary>ダメージ計算式</summary>
-            ※一部奥義の計算は省略しています。
-            <dl>
-                <dt>攻撃力</dt>
-                <dd>
-                    = [攻撃]×[特攻補正] + [攻撃]×[特攻補正]×[相性補正]<br />
-                    = floor({{atkUnit.atkWithSkills}} × {{effectivenessFactor}}) +
-                    trunc(floor({{atkUnit.atkWithSkills}} ×
-                    {{effectivenessFactor}}) × {{attackerTriangleAdvantageFactor}})<br />
-                    = {{floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)}} +
-                    {{truncNumberWithFloatError(floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
-                    *
-                    attackerTriangleAdvantageFactor)}}<br />
-                    = <span
-                        style="font-weight: bold;font-size: 20;">{{floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
-                        +
+                    <dt><label for="defensiveTile">ダメージ軽減</label></dt>
+                    <dd>
+                        <input class="numeric" v-model="damageReductionPercentage" @change="updateDamageResult"
+                            type="number" min="0" max="100" step="1" value="0" />%
+                        <input id="incrementDamageReduction" type="button" value="＋">
+                        <input id="decrementDamageReduction" type="button" value="－">
+                    </dd>
+                </dl>
+            </fieldset>
+            <fieldset>
+                <legend>その他の設定</legend>
+                <dl>
+                    <dt>相性激化</dt>
+                    <dd>
+                        <label class="normal" v-for="option in TriangleAdeptOptions">
+                            <input type="radio" v-model="triangleAdeptType" v-bind:value="option.value"
+                                @change="triangleAdvantageChanged">
+                            {{option.label}}
+                        </label>
+                    </dd>
+                </dl>
+            </fieldset>
+            <div style="clear:both"></div>
+            <details open>
+                <summary>ダメージ計算式</summary>
+                ※一部奥義の計算は省略しています。
+                <dl>
+                    <dt>攻撃力</dt>
+                    <dd>
+                        = [攻撃]×[特攻補正] + [攻撃]×[特攻補正]×[相性補正]<br />
+                        = floor({{atkUnit.atkWithSkills}} × {{effectivenessFactor}}) +
+                        trunc(floor({{atkUnit.atkWithSkills}} ×
+                        {{effectivenessFactor}}) × {{attackerTriangleAdvantageFactor}})<br />
+                        = {{floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)}} +
+                        {{truncNumberWithFloatError(floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
+                        *
+                        attackerTriangleAdvantageFactor)}}<br />
+                        = <span
+                            style="font-weight: bold;font-size: 20;">{{floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
+                            +
+                            truncNumberWithFloatError(floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
+                            *
+                            attackerTriangleAdvantageFactor)}}</span>
+                    </dd>
+                    <dt>防御力</dt>
+                    <dd>
+                        = [守備/魔防] - [守備/魔防]×[防御軽減] + [守備/魔防]×[防御地形補正]<br />
+                        = {{defUnit.defWithSkills}} -
+                        floor({{defUnit.defWithSkills}} × {{specialSufferMitRatio}}) + floor({{defUnit.defWithSkills}} ×
+                        {{defensiveTileFactor}})<br />
+                        = {{defUnit.defWithSkills}} -
+                        {{floorNumberWithFloatError(defUnit.defWithSkills *
+                        specialSufferMitRatio)}} +
+                        {{floorNumberWithFloatError(defUnit.defWithSkills *
+                        defensiveTileFactor)}}<br />
+                        = <span style="font-weight: bold;font-size: 20;">{{defUnit.defWithSkills -
+                            floorNumberWithFloatError(defUnit.defWithSkills *
+                            specialSufferMitRatio) + floorNumberWithFloatError(defUnit.defWithSkills *
+                            defensiveTileFactor)}}</span>
+                    </dd>
+                    <dt>基本ダメージ</dt>
+                    <dd>= [攻撃力] - [防御力]<br />
+                        = {{floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor) +
                         truncNumberWithFloatError(floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
                         *
-                        attackerTriangleAdvantageFactor)}}</span>
-                </dd>
-                <dt>防御力</dt>
-                <dd>
-                    = [守備/魔防] - [守備/魔防]×[防御軽減] + [守備/魔防]×[防御地形補正]<br />
-                    = {{defUnit.defWithSkills}} -
-                    floor({{defUnit.defWithSkills}} × {{specialSufferMitRatio}}) + floor({{defUnit.defWithSkills}} ×
-                    {{defensiveTileFactor}})<br />
-                    = {{defUnit.defWithSkills}} -
-                    {{floorNumberWithFloatError(defUnit.defWithSkills *
-                    specialSufferMitRatio)}} +
-                    {{floorNumberWithFloatError(defUnit.defWithSkills *
-                    defensiveTileFactor)}}<br />
-                    = <span style="font-weight: bold;font-size: 20;">{{defUnit.defWithSkills -
+                        attackerTriangleAdvantageFactor)}} - {{defUnit.defWithSkills -
                         floorNumberWithFloatError(defUnit.defWithSkills *
                         specialSufferMitRatio) + floorNumberWithFloatError(defUnit.defWithSkills *
-                        defensiveTileFactor)}}</span>
-                </dd>
-                <dt>基本ダメージ</dt>
-                <dd>= [攻撃力] - [防御力]<br />
-                    = {{floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor) +
-                    truncNumberWithFloatError(floorNumberWithFloatError(atkUnit.atkWithSkills*effectivenessFactor)
-                    *
-                    attackerTriangleAdvantageFactor)}} - {{defUnit.defWithSkills -
-                    floorNumberWithFloatError(defUnit.defWithSkills *
-                    specialSufferMitRatio) + floorNumberWithFloatError(defUnit.defWithSkills *
-                    defensiveTileFactor)}}<br />
-                    = <span style="font-weight: bold;font-size: 20;">{{basicDamageDealt}}</span>
-                </dd>
+                        defensiveTileFactor)}}<br />
+                        = <span style="font-weight: bold;font-size: 20;">{{basicDamageDealt}}</span>
+                    </dd>
 
-                <dt>最終ダメージ</dt>
-                <dd>= [基本ダメージ] - [基本ダメージ]×[ダメージ軽減率]<br />
-                    = {{basicDamageDealt}} - floor({{basicDamageDealt}} × {{(damageReductionPercentage *
-                    0.01).toFixed(2)}})<br />
-                    = {{basicDamageDealt}} - {{floorNumberWithFloatError(basicDamageDealt *
-                    damageReductionPercentage *
-                    0.01)}}<br />
-                    = <span style="font-weight: bold;font-size: 20;">{{actualDamageDealt}}</span>
-                </dd>
+                    <dt>最終ダメージ</dt>
+                    <dd>= [基本ダメージ] - [基本ダメージ]×[ダメージ軽減率]<br />
+                        = {{basicDamageDealt}} - floor({{basicDamageDealt}} × {{(damageReductionPercentage *
+                        0.01).toFixed(2)}})<br />
+                        = {{basicDamageDealt}} - {{floorNumberWithFloatError(basicDamageDealt *
+                        damageReductionPercentage *
+                        0.01)}}<br />
+                        = <span style="font-weight: bold;font-size: 20;">{{actualDamageDealt}}</span>
+                    </dd>
 
-            </dl>
-        </details>
+                </dl>
+            </details>
+        </div>
+        <div v-else-if="mode===DamageCalcMode.RoundRobin">
+            <input type="button" value="計算開始" @click="calcRoundRogin">
+
+        </div>
         <div style="clear:both"></div>
         <details open>
             <summary>計算ログ</summary>
@@ -299,6 +305,7 @@
                 "HeroDatabase.js",
                 "DamageCalculationUtility.js",
                 "DamageCalculator.js",
+                "PostCombatSkillHander.js",
                 "DamageCalculatorWrapper.js",
                 "SampleSkillInfos.js",
                 "SampleHeroInfos.js",
