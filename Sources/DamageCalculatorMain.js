@@ -7,8 +7,18 @@ const DamageCalcMode = {
 
 const DamageCalcModeOptions = [
     { label: "与ダメージ計算", value: DamageCalcMode.Simple },
-    { label: "総当たり殲滅力", value: DamageCalcMode.RoundRobin },
     { label: "奥義ダメージグラフ", value: DamageCalcMode.SpecialDamageGraph },
+    { label: "総当たり", value: DamageCalcMode.RoundRobin },
+];
+
+const RoundRobinCombatMode = {
+    Offense: 0,
+    Defense: 1,
+};
+
+const RoundRobinCombatModeOptions = [
+    { label: "殲滅力", value: RoundRobinCombatMode.Offense },
+    { label: "耐久力", value: RoundRobinCombatMode.Defense },
 ];
 
 const SpecialDamageGraphMode = {
@@ -112,14 +122,17 @@ class DamageCalcHeroDatabase extends HeroDatabase {
         this.initUnit(unit, heroName);
         return unit;
     }
-    /**
-     * @param  {Unit} unit
-     * @param  {string} heroName
-     */
-    initUnit(unit, heroName, initEditableAttrs = true) {
+
+    initByHeroInfo(unit, heroName) {
         let heroInfo = this.findInfo(heroName);
         unit.initByHeroInfo(heroInfo);
-        unit.initializeSkillsToDefault();
+    }
+
+    updateUnitSkillInfo(unit) {
+        this.skillDatabase.updateUnitSkillInfo(unit);
+    }
+
+    initUnitStatus(unit, initEditableAttrs = true) {
         this.skillDatabase.updateUnitSkillInfo(unit);
         if (unit.hasWeapon) {
             if (unit.weaponInfo.hasSpecialWeaponRefinement) {
@@ -159,6 +172,32 @@ class DamageCalcHeroDatabase extends HeroDatabase {
         unit.specialCount = unit.maxSpecialCount;
         unit.hp = unit.maxHpWithSkills;
     }
+
+    /**
+     * @param  {Unit} unit
+     * @param  {string} heroName
+     */
+    initUnit(unit, heroName, initEditableAttrs = true) {
+        this.initByHeroInfo(unit, heroName);
+
+        unit.initializeSkillsToDefault();
+
+        this.initUnitStatus(unit, initEditableAttrs);
+    }
+}
+
+const MaxDragonFlower = -1;
+
+class RoundRobinParam {
+    constructor() {
+        this.merge = 10;
+        this.dragonflower = MaxDragonFlower;
+        this.special = Special.None;
+        this.passiveA = PassiveA.None;
+        this.passiveB = PassiveB.None;
+        this.passiveC = PassiveC.None;
+        this.passiveS = PassiveS.None;
+    }
 }
 
 class DamageCalcData {
@@ -178,7 +217,10 @@ class DamageCalcData {
             heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
             passiveSInfos);
 
+        this.mode = DamageCalcMode.Simple;
         this.mode = DamageCalcMode.RoundRobin;
+        this.roundRobinParam = new RoundRobinParam();
+        this.roundRobinCombatMode = RoundRobinCombatMode.Offense;
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
         this.attackerTriangleAdvantage = TriangleAdvantage.None;
         this.triangleAdeptType = TriangleAdeptType.None;
@@ -190,11 +232,35 @@ class DamageCalcData {
         this.actualDamageDealt = 0;
         this.log = "";
 
-        this.specialOptins = [];
-        this.specialOptins.push({ id: -1, text: "なし" });
+        this.specialOptions = [];
+        this.specialOptions.push({ id: -1, text: "なし" });
         for (let info of specialInfos) {
             if (isNormalAttackSpecial(info.id)) {
-                this.specialOptins.push({ id: info.id, text: info.name });
+                this.specialOptions.push({ id: info.id, text: info.name });
+            }
+        }
+
+        this.passiveAOptions = [];
+        this.passiveAOptions.push({ id: -1, text: "なし" });
+        for (let info of passiveAInfos) {
+            if (info.canInherit) {
+                this.passiveAOptions.push({ id: info.id, text: info.name });
+            }
+        }
+
+        this.passiveBOptions = [];
+        this.passiveBOptions.push({ id: -1, text: "なし" });
+        for (let info of passiveBInfos) {
+            if (info.canInherit) {
+                this.passiveBOptions.push({ id: info.id, text: info.name });
+            }
+        }
+
+        this.passiveCOptions = [];
+        this.passiveCOptions.push({ id: -1, text: "なし" });
+        for (let info of passiveCInfos) {
+            if (info.canInherit) {
+                this.passiveCOptions.push({ id: info.id, text: info.name });
             }
         }
 
@@ -335,7 +401,7 @@ class DamageCalcData {
         // ダメージ計算
         for (let special of targetSpecials) {
             this.atkUnit.special = special;
-            let specialName = this.specialOptins.filter(x => x.id == special)[0].text;
+            let specialName = this.specialOptions.filter(x => x.id == special)[0].text;
             let values = [];
             for (let mit = mitStart; mit <= mitEnd; mit += mitIncrement) {
                 this.defUnit.defWithSkills = mit;
@@ -415,8 +481,60 @@ class DamageCalcData {
             let unit = new Unit("", name, groupId);
             unit.placedTile = tile;
             unit.level = 40;
-            unit.merge = 10;
-            unit.dragonflower = heroInfo.maxDragonflower;
+            unit.merge = this.roundRobinParam.merge;
+            unit.dragonflower = this.roundRobinParam.dragonflower == MaxDragonFlower ?
+                heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
+            unit.isBonusChar = false;
+            unit.isResplendent = heroInfo.isResplendent;
+            unit.blessingEffects.push(BlessingType.Hp5_Atk3);
+            unit.blessingEffects.push(BlessingType.Hp5_Spd4);
+            unit.blessingEffects.push(BlessingType.Hp5_Def5);
+            unit.blessingEffects.push(BlessingType.Hp5_Res5);
+
+            unit.initByHeroInfo(heroInfo);
+            unit.initializeSkillsToDefault();
+            this.heroDatabase.updateUnitSkillInfo(unit);
+            if (unit.special === Special.None || unit.specialInfo.canInherit) {
+                if (this.roundRobinParam.special != Special.None) {
+                    unit.special = this.roundRobinParam.special;
+                }
+            }
+            if (unit.passiveA === PassiveA.None) {
+                if (this.roundRobinParam.passiveA != PassiveA.None) {
+                    unit.passiveA = this.roundRobinParam.passiveA;
+                }
+            }
+            if (unit.passiveB === PassiveB.None) {
+                if (this.roundRobinParam.passiveB != PassiveB.None) {
+                    unit.passiveB = this.roundRobinParam.passiveB;
+                }
+            }
+            if (unit.passiveC === PassiveC.None) {
+                if (this.roundRobinParam.passiveC != PassiveC.None) {
+                    unit.passiveC = this.roundRobinParam.passiveC;
+                }
+            }
+            this.heroDatabase.updateUnitSkillInfo(unit);
+            this.heroDatabase.initUnitStatus(unit, false);
+
+            units.push(unit);
+        }
+        return units;
+    }
+    /**
+     * @param  {Tile} tile
+     * @returns {Unit[]}
+     */
+    __createAllHeroUnitsForDefense(groupId, tile) {
+        let units = [];
+        for (let heroInfo of this.heroDatabase.enumerateHeroInfos()) {
+            let name = heroInfo.name;
+            let unit = new Unit("", name, groupId);
+            unit.placedTile = tile;
+            unit.level = 40;
+            unit.merge = this.roundRobinParam.merge;
+            unit.dragonflower = this.roundRobinParam.dragonflower == MaxDragonFlower ?
+                heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
             unit.isBonusChar = false;
             unit.isResplendent = heroInfo.isResplendent;
             unit.blessingEffects.push(BlessingType.Hp5_Atk3);
@@ -431,7 +549,7 @@ class DamageCalcData {
 
     calcRoundRogin() {
         let atkUnits = this.__createAllHeroUnits(UnitGroupType.Ally, this.map.getTile(0, 2));
-        let defUnits = this.__createAllHeroUnits(UnitGroupType.Enemy, this.map.getTile(0, 0));
+        let defUnits = this.__createAllHeroUnitsForDefense(UnitGroupType.Enemy, this.map.getTile(0, 0));
         let heroDatabase = this.heroDatabase;
         let calclator = this.damageCalc;
         let self = this;
@@ -439,65 +557,112 @@ class DamageCalcData {
         let length = heroDatabase.length;
         // length = 1;
         let startTime = Date.now();
-        startProgressiveProcess(length,
-            function (iter) {
-                let atkUnit = atkUnits[iter];
-                // atkUnit = atkUnits.filter(x => x.heroInfo.name === "エルフィ")[0];
-                // console.log(atkUnit);
-                self.logger.isLogEnabled = false;
+        if (this.roundRobinCombatMode === RoundRobinCombatMode.Offense) {
+            startProgressiveProcess(length,
+                function (iter) {
+                    let atkUnit = atkUnits[iter];
+                    // atkUnit = atkUnits.filter(x => x.heroInfo.name === "総選挙エイリーク")[0];
+                    // console.log(atkUnit);
+                    self.logger.isLogEnabled = false;
 
-                let winCount = 0;
-                let drawCount = 0;
-                for (let defUnit of defUnits) {
-                    calclator.updateUnitSpur(atkUnit);
-                    calclator.updateUnitSpur(defUnit);
-                    let result = calclator.calcDamage(atkUnit, defUnit);
-                    if (defUnit.restHp === 0) {
-                        ++winCount;
+                    let winCount = 0;
+                    let drawCount = 0;
+                    for (let defUnit of defUnits) {
+                        calclator.updateUnitSpur(atkUnit);
+                        calclator.updateUnitSpur(defUnit);
+                        let result = calclator.calcDamage(atkUnit, defUnit);
+                        if (defUnit.restHp === 0) {
+                            ++winCount;
+                        }
+                        else if (atkUnit.restHp !== 0) {
+                            ++drawCount;
+                        }
                     }
-                    else if (atkUnit.restHp !== 0) {
-                        ++drawCount;
+                    let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount);
+                    results.push({ unit: atkUnit, result: roundRobinResult });
+                    self.logger.isLogEnabled = true;
+                },
+                function (iter, iterMax) {
+                    let lastIndex = results.length - 1;
+                    let unit = results[lastIndex].unit;
+                    let result = results[lastIndex].result;
+                    let winRate = Math.round(10000 * result.winCount / heroDatabase.length) / 100;
+                    let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / heroDatabase.length) / 100;
+                    self.logger.writeLog(`${iter} / ${iterMax}: ${unit.name} 勝率 ${result.winCount}/${defUnits.length}(${winRate}%), 生存率 ${result.winCount + result.drawCount}/${defUnits.length}(${aliveRate}%)`);
+                    self.log = self.logger.log;
+                },
+                function () {
+                    results.sort((a, b) => {
+                        return b.result.winCount - a.result.winCount;
+                    });
+                    for (let i = 0; i < results.length; ++i) {
+                        let result = results[i].result;
+                        let unit = results[i].unit;
+                        let winRate = result.winCount / defUnits.length;
+                        console.log(`${unit.heroInfo.name}: ${winRate}`);
+                        self.logger.writeLog(`${unit.heroInfo.name}\t${winRate}`);
                     }
-                }
-                let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount);
-                results.push({ atkUnit: atkUnit, result: roundRobinResult });
-                self.logger.isLogEnabled = true;
-            },
-            function (iter, iterMax) {
-                let lastIndex = results.length - 1;
-                let unit = results[lastIndex].atkUnit;
-                let result = results[lastIndex].result;
-                let winRate = Math.round(10000 * result.winCount / heroDatabase.length) / 100;
-                let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / heroDatabase.length) / 100;
-                self.logger.writeLog(`${iter} / ${iterMax}: ${unit.name} 勝率 ${result.winCount}/${defUnits.length}(${winRate}%), 生存率 ${result.winCount + result.drawCount}/${defUnits.length}(${aliveRate}%)`);
-                self.log = self.logger.log;
-            },
-            function () {
-                // self.damageCalc.isLogEnabled = true;
-                // self.vm.durabilityTestIsLogEnabled = durabilityTestLogEnabled;
-                results.sort((a, b) => {
-                    return b.result.winCount - a.result.winCount;
+                    const endTime = Date.now();
+                    let diffSec = (endTime - startTime) * 0.001;
+                    self.logger.writeLog(`テスト完了(${diffSec} sec)--------------------`);
+                    self.log = self.logger.log;
+
                 });
-                for (let i = 0; i < results.length; ++i) {
-                    let result = results[i].result;
-                    let unit = results[i].atkUnit;
-                    let winRate = result.winCount / defUnits.length;
-                    console.log(`${unit.heroInfo.name}: ${winRate}`);
-                    self.logger.writeLog(`${unit.heroInfo.name}\t${winRate}`);
-                }
-                const endTime = Date.now();
-                let diffSec = (endTime - startTime) * 0.001;
-                self.logger.writeLog(`テスト完了(${diffSec} sec)--------------------`);
-                self.log = self.logger.log;
+        }
+        else {
+            startProgressiveProcess(length,
+                function (iter) {
+                    let defUnit = defUnits[iter];
+                    // atkUnit = atkUnits.filter(x => x.heroInfo.name === "エルフィ")[0];
+                    // console.log(atkUnit);
+                    self.logger.isLogEnabled = false;
+
+                    let winCount = 0;
+                    let drawCount = 0;
+                    for (let atkUnit of atkUnits) {
+                        calclator.updateUnitSpur(defUnit);
+                        calclator.updateUnitSpur(atkUnit);
+                        let result = calclator.calcDamage(atkUnit, defUnit);
+                        if (atkUnit.restHp === 0) {
+                            ++winCount;
+                        }
+                        else if (defUnit.restHp !== 0) {
+                            ++drawCount;
+                        }
+                    }
+                    let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount);
+                    results.push({ unit: defUnit, result: roundRobinResult });
+                    self.logger.isLogEnabled = true;
+                },
+                function (iter, iterMax) {
+                    let lastIndex = results.length - 1;
+                    let unit = results[lastIndex].unit;
+                    let result = results[lastIndex].result;
+                    let winRate = Math.round(10000 * result.winCount / heroDatabase.length) / 100;
+                    let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / heroDatabase.length) / 100;
+                    self.logger.writeLog(`${iter} / ${iterMax}: ${unit.name} 勝率 ${result.winCount}/${defUnits.length}(${winRate}%), 生存率 ${result.winCount + result.drawCount}/${defUnits.length}(${aliveRate}%)`);
+                    self.log = self.logger.log;
+                },
+                function () {
+                    results.sort((a, b) => {
+                        return b.result.winCount - a.result.winCount;
+                    });
+                    for (let i = 0; i < results.length; ++i) {
+                        let result = results[i].result;
+                        let unit = results[i].unit;
+                        let winRate = result.winCount / defUnits.length;
+                        console.log(`${unit.heroInfo.name}: ${winRate}`);
+                        self.logger.writeLog(`${unit.heroInfo.name}\t${winRate}`);
+                    }
+                    const endTime = Date.now();
+                    let diffSec = (endTime - startTime) * 0.001;
+                    self.logger.writeLog(`テスト完了(${diffSec} sec)--------------------`);
+                    self.log = self.logger.log;
 
 
-                // let originalDisableAllLogs = self.disableAllLogs;
-                // self.disableAllLogs = true;
-                // importSettingsFromString(serializedTurn);
-                // $("#progress").progressbar({ disabled: true });
-                // updateAllUi();
-                // self.disableAllLogs = originalDisableAllLogs;
-            });
+                });
+
+        }
 
         // this.__writeLogLine(log);
     }
@@ -635,7 +800,7 @@ const g_damageCalcVm = new Vue({
         },
         calcRoundRogin: function () {
             g_damageCalcData.calcRoundRogin();
-        },
+        }
     }
 });
 

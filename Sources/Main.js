@@ -2554,22 +2554,17 @@ class AetherRaidTacticsBoard {
                 let moveType = heroInfo.moveType;
                 this.__registerInheritableWeapons(heroInfo);
                 this.__registerInheritableSkills(heroInfo.supportOptions, this.vm.supportOptions, [g_appData.supportInfos],
-                    x => (!x.canInherit && heroInfo.supports.includes(x.id))
-                        || this.__isInheritableSkill(weaponType, moveType, x));
+                    x => heroInfo.canEquipSkill(x));
                 this.__registerInheritableSkills(heroInfo.specialOptions, this.vm.specialOptions, [g_appData.specialInfos],
-                    x => (!x.canInherit && heroInfo.specials.includes(x.id))
-                        || this.__isInheritableSkill(weaponType, moveType, x));
+                    x => heroInfo.canEquipSkill(x));
                 this.__registerInheritableSkills(heroInfo.passiveAOptions, this.vm.passiveAOptions, [g_appData.passiveAInfos],
-                    x => (!x.canInherit && heroInfo.passiveAs.includes(x.id))
-                        || this.__isInheritableSkill(weaponType, moveType, x));
+                    x => heroInfo.canEquipSkill(x));
                 this.__registerInheritableSkills(heroInfo.passiveBOptions, this.vm.passiveBOptions, [g_appData.passiveBInfos],
-                    x => (!x.canInherit && heroInfo.passiveBs.includes(x.id))
-                        || this.__isInheritableSkill(weaponType, moveType, x));
+                    x => heroInfo.canEquipSkill(x));
                 this.__registerInheritableSkills(heroInfo.passiveCOptions, this.vm.passiveCOptions, [g_appData.passiveCInfos],
-                    x => (!x.canInherit && heroInfo.passiveCs.includes(x.id))
-                        || this.__isInheritableSkill(weaponType, moveType, x));
+                    x => heroInfo.canEquipSkill(x));
                 this.__registerInheritableSkills(heroInfo.passiveSOptions, this.vm.passiveSOptions, [g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
-                    x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && this.__isInheritableSkill(weaponType, moveType, x));
+                    x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && heroInfo.canEquipSkill(x));
 
                 // this.__markUnsupportedSkills(heroInfo.weaponOptions, [Weapon], [g_appData.weaponInfos]);
                 // this.__markUnsupportedSkills(heroInfo.supportOptions, [Support], [g_appData.supportInfos]);
@@ -2584,9 +2579,7 @@ class AetherRaidTacticsBoard {
             g_appData.initHeroInfos(heroInfos);
         });
     }
-    __isInheritableSkill(weaponType, moveType, skillInfo) {
-        return isInheritableWeaponType(weaponType, skillInfo.inheritableWeaponTypes) && skillInfo.inheritableMoveTypes.includes(moveType);
-    }
+
     __registerInheritableSkills(options, allOptions, allInfos, canInheritFunc) {
         let noneOption = allOptions[0];
         options.push(noneOption);
@@ -2600,13 +2593,15 @@ class AetherRaidTacticsBoard {
         }
         // this.__sortSkillOptionsAlphabetically(options);
     }
-
+    /**
+     * @param  {HeroInfo} heroInfo
+     */
     __registerInheritableWeapons(heroInfo) {
         // 装備可能な武器の設定
         heroInfo.weaponOptions = [];
         heroInfo.weaponOptions.push(this.vm.weaponOptions[0]);
         for (let info of g_appData.weaponInfos) {
-            if (!this.__canEquipWeapon(info, heroInfo)) {
+            if (!heroInfo.canEquipSkill(info)) {
                 continue;
             }
 
@@ -2632,25 +2627,6 @@ class AetherRaidTacticsBoard {
         }
         return false;
     }
-
-    __canEquipWeapon(weaponInfo, heroInfo) {
-        if (!weaponInfo.canInherit) {
-            return heroInfo.weapons.includes(weaponInfo.id);
-        }
-
-        if (heroInfo.weaponType == weaponTypeToString(weaponInfo.weaponType)
-            || (heroInfo.weaponType.includes("暗器") > 0 && isWeaponTypeDagger(weaponInfo.weaponType))
-            || (heroInfo.weaponType.includes("弓") > 0 && isWeaponTypeBow(weaponInfo.weaponType))
-            || (heroInfo.weaponType.includes("竜") > 0 && isWeaponTypeBreath(weaponInfo.weaponType))
-            || (heroInfo.weaponType.includes("獣") > 0 && isWeaponTypeBeast(weaponInfo.weaponType))
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-
 
     * __enumerateElemOfArrays(arrays) {
         for (let array of arrays) {
@@ -2787,27 +2763,21 @@ class AetherRaidTacticsBoard {
                 }
             }
             for (let info of g_appData.skillDatabase.supportInfos) {
-                info.type = SkillType.Support;
                 self.supportSkillCharWhiteList += info.name;
             }
             for (let info of g_appData.skillDatabase.specialInfos) {
-                info.type = SkillType.Special;
                 self.specialSkillCharWhiteList += info.name;
             }
             for (let info of g_appData.skillDatabase.passiveAInfos) {
-                info.type = SkillType.PassiveA;
                 self.passiveSkillCharWhiteList += info.name;
             }
             for (let info of g_appData.skillDatabase.passiveBInfos) {
-                info.type = SkillType.PassiveB;
                 self.passiveSkillCharWhiteList += info.name;
             }
             for (let info of g_appData.skillDatabase.passiveCInfos) {
-                info.type = SkillType.PassiveC;
                 self.passiveSkillCharWhiteList += info.name;
             }
             for (let info of g_appData.skillDatabase.passiveSInfos) {
-                info.type = SkillType.PassiveS;
                 self.passiveSkillCharWhiteList += info.name;
             }
 

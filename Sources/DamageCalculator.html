@@ -44,7 +44,7 @@
             </dd>
         </dl>
         <div style="clear:both"></div>
-        <div v-if="mode!==DamageCalcMode.RoundRobin">
+        <div v-show="mode!==DamageCalcMode.RoundRobin">
 
             <fieldset>
                 <legend>計算結果</legend>
@@ -106,7 +106,7 @@
 
                     <dt><label for="special">奥義</label></dt>
                     <dd>
-                        <select2 :options="specialOptins" v-model="atkUnit.special" class="skill"
+                        <select2 :options="specialOptions" v-model="atkUnit.special" class="skill"
                             @input="updateDamageResult" style="width: 150;">
                         </select2>
                     </dd>
@@ -221,7 +221,55 @@
                 </dl>
             </details>
         </div>
-        <div v-else-if="mode===DamageCalcMode.RoundRobin">
+        <div v-show="mode===DamageCalcMode.RoundRobin">
+            <fieldset>
+                <legend>設定</legend>
+
+                <dl>
+                    <dt>総当たりモード:</dt>
+                    <dd>
+                        <select v-model="roundRobinCombatMode">
+                            <option v-for="option in RoundRobinCombatModeOptions" v-bind:value="option.value">
+                                {{option.label}}
+                            </option>
+                        </select>
+                    </dd>
+                    <dt>限界突破:</dt>
+                    <dd>
+                        <input type="number" v-model="roundRobinParam.merge">
+                    </dd>
+                    <dt>神竜の花(-1は各英雄の最大):</dt>
+                    <dd>
+                        <input type="number" v-model="roundRobinParam.dragonflower">
+                    </dd>
+                    <dt>奥義:</dt>
+                    <dd>
+                        <select2 :options="specialOptions" v-model="roundRobinParam.special" class="skill"
+                            style="width: 150;">
+                        </select2>
+                    </dd>
+                    <dt>A:</dt>
+                    <dd>
+                        <select2 :options="passiveAOptions" v-model="roundRobinParam.passiveA" class="skill"
+                            style="width: 150;">
+                        </select2>
+                    </dd>
+                    <dt>B:</dt>
+                    <dd>
+                        <select2 :options="passiveBOptions" v-model="roundRobinParam.passiveB" class="skill"
+                            style="width: 150;">
+                        </select2>
+                    </dd>
+                    <dt>C:</dt>
+                    <dd>
+                        <select2 :options="passiveCOptions" v-model="roundRobinParam.passiveC" class="skill"
+                            style="width: 150;">
+                        </select2>
+                    </dd>
+                </dl>
+            </fieldset>
+
+            <div style="clear:both"></div>
             <input type="button" value="計算開始" @click="calcRoundRogin">
 
         </div>
@@ -286,6 +334,20 @@
             });
         }
 
+        function addKeyRepeatEvents() {
+            addKeyRepeatEventById("incrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.min(g_damageCalcData.atkUnit.atkWithSkills + 1, 99));
+            addKeyRepeatEventById("decrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.max(g_damageCalcData.atkUnit.atkWithSkills - 1, 0));
+            addKeyRepeatEventById("incrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.min(g_damageCalcData.atkUnit.spdWithSkills + 1, 99));
+            addKeyRepeatEventById("decrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.max(g_damageCalcData.atkUnit.spdWithSkills - 1, 0));
+            addKeyRepeatEventById("incrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.min(g_damageCalcData.atkUnit.defWithSkills + 1, 99));
+            addKeyRepeatEventById("decrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.max(g_damageCalcData.atkUnit.defWithSkills - 1, 0));
+            addKeyRepeatEventById("incrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.min(g_damageCalcData.defUnit.defWithSkills + 1, 99));
+            addKeyRepeatEventById("decrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.max(g_damageCalcData.defUnit.defWithSkills - 1, 0));
+            addKeyRepeatEventById("incrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.min(g_damageCalcData.damageReductionPercentage + 1, 100));
+            addKeyRepeatEventById("decrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.max(g_damageCalcData.damageReductionPercentage - 1, 0));
+        }
+
+
         $(function () {
             const startTime = Date.now();
             loadScripts([
@@ -315,17 +377,7 @@
             ], () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
-
-                addKeyRepeatEventById("incrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.min(g_damageCalcData.atkUnit.atkWithSkills + 1, 99));
-                addKeyRepeatEventById("decrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.max(g_damageCalcData.atkUnit.atkWithSkills - 1, 0));
-                addKeyRepeatEventById("incrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.min(g_damageCalcData.atkUnit.spdWithSkills + 1, 99));
-                addKeyRepeatEventById("decrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.max(g_damageCalcData.atkUnit.spdWithSkills - 1, 0));
-                addKeyRepeatEventById("incrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.min(g_damageCalcData.atkUnit.defWithSkills + 1, 99));
-                addKeyRepeatEventById("decrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.max(g_damageCalcData.atkUnit.defWithSkills - 1, 0));
-                addKeyRepeatEventById("incrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.min(g_damageCalcData.defUnit.defWithSkills + 1, 99));
-                addKeyRepeatEventById("decrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.max(g_damageCalcData.defUnit.defWithSkills - 1, 0));
-                addKeyRepeatEventById("incrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.min(g_damageCalcData.damageReductionPercentage + 1, 100));
-                addKeyRepeatEventById("decrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.max(g_damageCalcData.damageReductionPercentage - 1, 0));
+                addKeyRepeatEvents();
             });
         });
     </script>

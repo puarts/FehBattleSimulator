@@ -453,6 +453,39 @@ class HeroInfo {
         }
     }
 
+    /**
+     * @param  {SkillInfo} skillInfo
+     */
+    canEquipSkill(skillInfo) {
+        if (!skillInfo.canInherit) {
+            switch (skillInfo.type) {
+                case SkillType.Weapon:
+                    return this.weapons.includes(skillInfo.id);
+                case SkillType.Support:
+                    return this.supports.includes(skillInfo.id);
+                case SkillType.Special:
+                    return this.specials.includes(skillInfo.id);
+                case SkillType.PassiveA:
+                    return this.passiveAs.includes(skillInfo.id);
+                case SkillType.PassiveB:
+                    return this.passiveBs.includes(skillInfo.id);
+                case SkillType.PassiveC:
+                    return this.passiveCs.includes(skillInfo.id);
+            }
+        }
+
+        if (skillInfo.type === SkillType.Weapon) {
+            return this.weaponType == weaponTypeToString(skillInfo.weaponType)
+                || (this.weaponType.includes("暗器") > 0 && isWeaponTypeDagger(skillInfo.weaponType))
+                || (this.weaponType.includes("弓") > 0 && isWeaponTypeBow(skillInfo.weaponType))
+                || (this.weaponType.includes("竜") > 0 && isWeaponTypeBreath(skillInfo.weaponType))
+                || (this.weaponType.includes("獣") > 0 && isWeaponTypeBeast(skillInfo.weaponType));
+        }
+
+        return isInheritableWeaponType(this.weaponTypeValue, skillInfo.inheritableWeaponTypes)
+            && skillInfo.inheritableMoveTypes.includes(this.moveType);
+    }
+
     __updateLv1Statuses() {
         // ★5のLV1ステータスから他のレアリティのLV1ステータスを以下のロジックから逆算して推定
         // (正しく推定できない場合もあるかもしれない)

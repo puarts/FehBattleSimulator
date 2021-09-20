@@ -21,6 +21,26 @@ class SkillDatabase {
         this.passiveCInfos = passiveCs;
         this.passiveSInfos = passiveSs;
 
+        // type は事前に設定されてないので登録時に同期
+        for (let info of this.supportInfos) {
+            info.type = SkillType.Support;
+        }
+        for (let info of this.specialInfos) {
+            info.type = SkillType.Special;
+        }
+        for (let info of this.passiveAInfos) {
+            info.type = SkillType.PassiveA;
+        }
+        for (let info of this.passiveBInfos) {
+            info.type = SkillType.PassiveB;
+        }
+        for (let info of this.passiveCInfos) {
+            info.type = SkillType.PassiveC;
+        }
+        for (let info of this.passiveSInfos) {
+            info.type = SkillType.PassiveS;
+        }
+
         this.__registerInfosToDict(weapons);
         this.__registerInfosToDict(supports);
         this.__registerInfosToDict(specials);
