@@ -16,6 +16,7 @@ SOURCE_FILE_NAMES=(
     GlobalBattleContext
     DamageCalculationUtility
     DamageCalculator
+    PostCombatSkillHander
     DamageCalculatorWrapper
     SkillDatabase
     HeroDatabase
