@@ -2787,13 +2787,15 @@ class AetherRaidTacticsBoard {
             distinctStr(self.weaponSkillCharWhiteList);
 
             // 対応してないスキルに目印×をつける
-            self.__markUnsupportedSkills(self.vm.weaponOptions, [Weapon], [g_appData.weaponInfos], () => ++self.vm.weaponCount, () => ++self.vm.weaponImplCount);
-            self.__markUnsupportedSkills(self.vm.supportOptions, [Support], [g_appData.supportInfos], () => ++self.vm.supportCount, () => ++self.vm.supportImplCount);
-            self.__markUnsupportedSkills(self.vm.specialOptions, [Special], [g_appData.specialInfos], () => ++self.vm.specialCount, () => ++self.vm.specialImplCount);
-            self.__markUnsupportedSkills(self.vm.passiveAOptions, [PassiveA], [g_appData.passiveAInfos], () => ++self.vm.passiveACount, () => ++self.vm.passiveAImplCount);
-            self.__markUnsupportedSkills(self.vm.passiveBOptions, [PassiveB], [g_appData.passiveBInfos], () => ++self.vm.passiveBCount, () => ++self.vm.passiveBImplCount);
-            self.__markUnsupportedSkills(self.vm.passiveCOptions, [PassiveC], [g_appData.passiveCInfos], () => ++self.vm.passiveCCount, () => ++self.vm.passiveCImplCount);
-            self.__markUnsupportedSkills(self.vm.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos], () => ++self.vm.passiveSCount, () => ++self.vm.passiveSImplCount);
+            self.__markUnsupportedSkills(self.vm.weaponOptions, [g_appData.weaponInfos], () => ++self.vm.weaponCount, () => ++self.vm.weaponImplCount);
+            self.__markUnsupportedSkills(self.vm.supportOptions, [g_appData.supportInfos], () => ++self.vm.supportCount, () => ++self.vm.supportImplCount);
+            self.__markUnsupportedSkills(self.vm.specialOptions, [g_appData.specialInfos], () => ++self.vm.specialCount, () => ++self.vm.specialImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveAOptions, [g_appData.passiveAInfos], () => ++self.vm.passiveACount, () => ++self.vm.passiveAImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveBOptions, [g_appData.passiveBInfos], () => ++self.vm.passiveBCount, () => ++self.vm.passiveBImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveCOptions, [g_appData.passiveCInfos], () => ++self.vm.passiveCCount, () => ++self.vm.passiveCImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveSOptions,
+                [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
+                () => ++self.vm.passiveSCount, () => ++self.vm.passiveSImplCount);
 
             // アルファベットソート(今は全スキルのオプションをメインで使ってないので速度優先でソートは無効化)
             // self.__sortSkillOptionsAlphabetically(self.vm.weaponOptions);
@@ -2862,7 +2864,7 @@ class AetherRaidTacticsBoard {
             return 0;
         });
     }
-    __markUnsupportedSkills(skillOptions, supportedSkillEnums, infoLists, countFunc = null, countImplFunc = null) {
+    __markUnsupportedSkills(skillOptions, infoLists, countFunc = null, countImplFunc = null) {
         for (let skill of skillOptions) {
             if (skill < 0) {
                 continue;
@@ -2871,7 +2873,7 @@ class AetherRaidTacticsBoard {
                 countFunc();
             }
 
-            let isImplemented = this.__isImplementedSkill(skill, supportedSkillEnums, infoLists);
+            let isImplemented = this.__isImplementedSkill(skill, infoLists);
             if (!isImplemented) {
                 skill.text = "×" + skill.text;
             }
@@ -2892,21 +2894,13 @@ class AetherRaidTacticsBoard {
         return option.text;
     }
 
-    __isImplementedSkill(skill, supportedSkillEnums, infoLists) {
-        let skillInfo = this.__findSkillInfoFromArrays(infoLists, skill.id);
-        let isImplRequired = (skillInfo == null || skillInfo.isAdditionalImplRequired)
-        return !isImplRequired || this.__isSupportedSkill(skill, supportedSkillEnums);
-    }
-
-    __isSupportedSkill(skill, supportedSkillEnums) {
-        for (let supportedSkillEnum of supportedSkillEnums) {
-            for (var key in supportedSkillEnum) {
-                if (skill.id == supportedSkillEnum[key]) {
-                    return true;
-                }
-            }
+    __isImplementedSkill(skill, infoLists) {
+        if (skill.id === NoneValue) {
+            return true;
         }
-        return false;
+
+        let skillInfo = this.__findSkillInfoFromArrays(infoLists, skill.id);
+        return skillInfo != null && skillInfo.isImplemented();
     }
 
     /**

@@ -2816,6 +2816,24 @@ function getBreakerSkillTargetWeaponType(breakerSkillId) {
     return BreakerSkillToTargetWeaponTypeTable[breakerSkillId];
 }
 
+/**
+ * 入力した連想配列の値をキーとすると連想配列を作ります。
+ * @param  {Object} sourceDict
+ */
+function __createValueDict(sourceDict) {
+    let valueDict = {};
+    Object.values(sourceDict).forEach((value, index, array) => valueDict[value] = value);
+    return valueDict;
+}
+
+const WeaponValueDict = __createValueDict(Weapon);
+const SupportValueDict = __createValueDict(Support);
+const SpecialValueDict = __createValueDict(Special);
+const PassiveAValueDict = __createValueDict(PassiveA);
+const PassiveBValueDict = __createValueDict(PassiveB);
+const PassiveCValueDict = __createValueDict(PassiveC);
+const PassiveSValueDict = __createValueDict(PassiveS);
+
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,
@@ -2878,12 +2896,40 @@ class SkillInfo {
         this.releaseDateAsNumber = 0;
     }
 
+    /**
+     * @returns {boolean}
+     */
     isDuel4() {
         return this.name.includes("死闘")
             && this.name.endsWith("4");
     }
+
+    /**
+     * @returns {boolean}
+     */
     isDuel3() {
         return this.name.includes("死闘")
             && this.name.endsWith("3");
+    }
+
+    /**
+     * 実装済みのスキルならtrue、そうでなければfalseを返します。
+     * @returns {boolean}
+     */
+    isImplemented() {
+        if (!this.isAdditionalImplRequired) {
+            return true;
+        }
+        switch (this.type) {
+            case SkillType.Weapon: return this.id in WeaponValueDict;
+            case SkillType.Support: return this.id in SupportValueDict;
+            case SkillType.Special: return this.id in SpecialValueDict;
+            case SkillType.PassiveA: return this.id in PassiveAValueDict;
+            case SkillType.PassiveB: return this.id in PassiveBValueDict;
+            case SkillType.PassiveC: return this.id in PassiveCValueDict;
+            case SkillType.PassiveS: return this.id in PassiveSValueDict;
+            default:
+                throw new Error("Invalid skill type");
+        }
     }
 }
