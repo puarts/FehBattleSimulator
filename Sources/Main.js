@@ -2540,7 +2540,9 @@ class AetherRaidTacticsBoard {
     findUnitById(id) {
         return g_appData.findUnitById(id);
     }
-
+    /**
+     * @param  {HeroInfo[]} heroInfos
+     */
     registerHeroOptions(heroInfos) {
         using(new ScopedStopwatch(time => this.writeDebugLogLine("英雄情報の登録: " + time + " ms")), () => {
             if (heroInfos.length == 0) {
@@ -2550,21 +2552,13 @@ class AetherRaidTacticsBoard {
             for (let i = 0; i < heroInfos.length; ++i) {
                 let heroInfo = heroInfos[i];
                 this.vm.heroOptions.push({ id: i, text: heroInfo.name });
-                let weaponType = stringToWeaponType(heroInfo.weaponType);
-                let moveType = heroInfo.moveType;
-                this.__registerInheritableWeapons(heroInfo);
-                this.__registerInheritableSkills(heroInfo.supportOptions, this.vm.supportOptions, [g_appData.supportInfos],
-                    x => heroInfo.canEquipSkill(x));
-                this.__registerInheritableSkills(heroInfo.specialOptions, this.vm.specialOptions, [g_appData.specialInfos],
-                    x => heroInfo.canEquipSkill(x));
-                this.__registerInheritableSkills(heroInfo.passiveAOptions, this.vm.passiveAOptions, [g_appData.passiveAInfos],
-                    x => heroInfo.canEquipSkill(x));
-                this.__registerInheritableSkills(heroInfo.passiveBOptions, this.vm.passiveBOptions, [g_appData.passiveBInfos],
-                    x => heroInfo.canEquipSkill(x));
-                this.__registerInheritableSkills(heroInfo.passiveCOptions, this.vm.passiveCOptions, [g_appData.passiveCInfos],
-                    x => heroInfo.canEquipSkill(x));
-                this.__registerInheritableSkills(heroInfo.passiveSOptions, this.vm.passiveSOptions, [g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
-                    x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && heroInfo.canEquipSkill(x));
+                heroInfo.registerWeaponOptions(g_appData.weaponInfos);
+                heroInfo.registerSupportOptions(g_appData.supportInfos);
+                heroInfo.registerSpecialOptions(g_appData.specialInfos);
+                heroInfo.registerPassiveAOptions(g_appData.passiveAInfos);
+                heroInfo.registerPassiveBOptions(g_appData.passiveBInfos);
+                heroInfo.registerPassiveCOptions(g_appData.passiveCInfos);
+                heroInfo.registerPassiveSOptions(g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos);
 
                 // this.__markUnsupportedSkills(heroInfo.weaponOptions, [Weapon], [g_appData.weaponInfos]);
                 // this.__markUnsupportedSkills(heroInfo.supportOptions, [Support], [g_appData.supportInfos]);
@@ -2578,44 +2572,6 @@ class AetherRaidTacticsBoard {
         using(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
             g_appData.initHeroInfos(heroInfos);
         });
-    }
-
-    __registerInheritableSkills(options, allOptions, allInfos, canInheritFunc) {
-        let noneOption = allOptions[0];
-        options.push(noneOption);
-        for (let infos of allInfos) {
-            for (let info of infos) {
-                if (canInheritFunc(info)) {
-                    let name = this.skillIdToNameDict[info.id];
-                    options.push({ id: info.id, text: name });
-                }
-            }
-        }
-        // this.__sortSkillOptionsAlphabetically(options);
-    }
-    /**
-     * @param  {HeroInfo} heroInfo
-     */
-    __registerInheritableWeapons(heroInfo) {
-        // 装備可能な武器の設定
-        heroInfo.weaponOptions = [];
-        heroInfo.weaponOptions.push(this.vm.weaponOptions[0]);
-        for (let info of g_appData.weaponInfos) {
-            if (!heroInfo.canEquipSkill(info)) {
-                continue;
-            }
-
-            // 上位武器がある武器を除外
-            // if (this.__isPlusWeaponAvailable(info.name)) {
-            //     continue;
-            // }
-
-            let name = this.skillIdToNameDict[info.id];
-            heroInfo.weaponOptions.push({ id: info.id, text: name });
-        }
-        // if (heroInfo.weaponOptions.length == 1) {
-        //     throw new Error(`Undefined weapon type "${heroInfo.weaponType}"`);
-        // }
     }
 
     __isPlusWeaponAvailable(weaponName) {
@@ -2702,7 +2658,11 @@ class AetherRaidTacticsBoard {
     __findSkillInfo(skillInfos, id) {
         return __findSkillInfo(skillInfos, id);
     }
-
+    /**
+     * @param  {SkillInfo[][]} skillInfoArrays
+     * @param  {Number} id
+     * @returns {SkillInfo}
+     */
     __findSkillInfoFromArrays(skillInfoArrays, id) {
         for (let skillInfos of skillInfoArrays) {
             for (let info of skillInfos) {
@@ -2872,13 +2832,13 @@ class AetherRaidTacticsBoard {
             if (countFunc != null) {
                 countFunc();
             }
-
-            let isImplemented = this.__isImplementedSkill(skill, infoLists);
-            if (!isImplemented) {
-                skill.text = "×" + skill.text;
-            }
-            else if (countImplFunc != null) {
+            let skillInfo = this.__findSkillInfoFromArrays(infoLists, skill.id);
+            let isImplemented = skill.id === NoneValue || (skillInfo != null && skillInfo.isImplemented());
+            if (isImplemented && countImplFunc != null) {
                 countImplFunc();
+            }
+            if (skillInfo != null) {
+                skill.text = skillInfo.getDisplayName();
             }
 
             this.skillIdToNameDict[skill.id] = skill.text;
@@ -2892,15 +2852,6 @@ class AetherRaidTacticsBoard {
         }
 
         return option.text;
-    }
-
-    __isImplementedSkill(skill, infoLists) {
-        if (skill.id === NoneValue) {
-            return true;
-        }
-
-        let skillInfo = this.__findSkillInfoFromArrays(infoLists, skill.id);
-        return skillInfo != null && skillInfo.isImplemented();
     }
 
     /**

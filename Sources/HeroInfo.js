@@ -486,6 +486,68 @@ class HeroInfo {
             && skillInfo.inheritableMoveTypes.includes(this.moveType);
     }
 
+    /**
+     * @param  {SkillInfo[]} infos
+     */
+    registerWeaponOptions(infos) {
+        this.__registerInheritableSkills(this.weaponOptions, [infos], x => this.canEquipSkill(x));
+    }
+
+    /**
+     * @param  {SkillInfo[]} infos
+     */
+    registerSupportOptions(infos) {
+        this.__registerInheritableSkills(this.supportOptions, [infos], x => this.canEquipSkill(x));
+    }
+    /**
+     * @param  {SkillInfo[]} infos
+     */
+    registerSpecialOptions(infos) {
+        this.__registerInheritableSkills(this.specialOptions, [infos], x => this.canEquipSkill(x));
+    }
+    /**
+     * @param  {SkillInfo[]} infos
+     */
+    registerPassiveAOptions(infos) {
+        this.__registerInheritableSkills(this.passiveAOptions, [infos], x => this.canEquipSkill(x));
+    }
+    /**
+     * @param  {SkillInfo[]} infos
+     */
+    registerPassiveBOptions(infos) {
+        this.__registerInheritableSkills(this.passiveBOptions, [infos], x => this.canEquipSkill(x));
+    }
+    /**
+     * @param  {SkillInfo[]} infos
+     */
+    registerPassiveCOptions(infos) {
+        this.__registerInheritableSkills(this.passiveCOptions, [infos], x => this.canEquipSkill(x));
+    }
+
+    /**
+     * @param  {SkillInfo[]} infos
+     */
+    registerPassiveSOptions(passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos) {
+        this.__registerInheritableSkills(this.passiveSOptions,
+            [passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos],
+            x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && this.canEquipSkill(x));
+    }
+
+    /**
+     * @param  {Object[]} options
+     * @param  {SkillInfo[][]} allInfos
+     */
+    __registerInheritableSkills(options, allInfos, canInheritFunc) {
+        options.push(NoneOption);
+        for (let infos of allInfos) {
+            for (let info of infos) {
+                if (canInheritFunc(info)) {
+                    options.push({ id: info.id, text: info.getDisplayName() });
+                }
+            }
+        }
+    }
+
     __updateLv1Statuses() {
         // ★5のLV1ステータスから他のレアリティのLV1ステータスを以下のロジックから逆算して推定
         // (正しく推定できない場合もあるかもしれない)

@@ -162,6 +162,8 @@ function weaponRefinementTypeToString(type) {
 // パフォーマンスに影響しやすくて、辞書にアクセスしたくない時に使う値型
 const NoneValue = -1;
 
+const NoneOption = { id: NoneValue, text: "なし" };
+
 const EffectiveType = {
     None: -1,
     Armor: 0,
@@ -2910,6 +2912,18 @@ class SkillInfo {
     isDuel3() {
         return this.name.includes("死闘")
             && this.name.endsWith("3");
+    }
+
+    /**
+     * @returns {String}
+     */
+    getDisplayName() {
+        if (this.isImplemented()) {
+            return this.name;
+        }
+        else {
+            return "×" + this.name;
+        }
     }
 
     /**
