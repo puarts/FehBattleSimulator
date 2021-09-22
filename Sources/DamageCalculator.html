@@ -266,6 +266,20 @@
                             style="width: 150;">
                         </select2>
                     </dd>
+                    <dt>S:</dt>
+                    <dd>
+                        <select2 :options="passiveSOptions" v-model="roundRobinParam.passiveS" class="skill"
+                            style="width: 150;">
+                        </select2>
+                    </dd>
+                    <dt>スキル置き換えモード:</dt>
+                    <dd>
+                        <select v-model="roundRobinParam.skillSwappingMode">
+                            <option v-for="option in SkillSwappingModeOptions" v-bind:value="option.value">
+                                {{option.label}}
+                            </option>
+                        </select>
+                    </dd>
                 </dl>
             </fieldset>
 
@@ -276,6 +290,7 @@
         <div style="clear:both"></div>
         <details open>
             <summary>計算ログ</summary>
+            <label><input type="checkbox" v-model="logger.isLogEnabled">ログ有効</label>
             <div v-html="log"
                 style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
             </div>

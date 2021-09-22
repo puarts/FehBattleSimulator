@@ -2124,8 +2124,8 @@ class AetherRaidTacticsBoard {
         startProgressiveProcess(g_appData.heroInfos.length,
             // startProgressiveProcess(dummyHeroIndices.length,
             function (iter) {
-                let heroInfo = g_appData.heroInfos.get(iter);
-                // let heroInfo = g_appData.heroInfos.get(dummyHeroIndices[iter]);
+                let heroInfo = g_appData.heroInfos.getHeroInfo(iter);
+                // let heroInfo = g_appData.heroInfos.getHeroInfo(dummyHeroIndices[iter]);
                 self.__durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit, false, reducedTargetSpecialCount);
                 self.__writeUnitStatusToDebugLog(targetUnit);
 
@@ -2544,31 +2544,6 @@ class AetherRaidTacticsBoard {
      * @param  {HeroInfo[]} heroInfos
      */
     registerHeroOptions(heroInfos) {
-        using(new ScopedStopwatch(time => this.writeDebugLogLine("英雄情報の登録: " + time + " ms")), () => {
-            if (heroInfos.length == 0) {
-                return;
-            }
-
-            for (let i = 0; i < heroInfos.length; ++i) {
-                let heroInfo = heroInfos[i];
-                this.vm.heroOptions.push({ id: i, text: heroInfo.name });
-                heroInfo.registerWeaponOptions(g_appData.weaponInfos);
-                heroInfo.registerSupportOptions(g_appData.supportInfos);
-                heroInfo.registerSpecialOptions(g_appData.specialInfos);
-                heroInfo.registerPassiveAOptions(g_appData.passiveAInfos);
-                heroInfo.registerPassiveBOptions(g_appData.passiveBInfos);
-                heroInfo.registerPassiveCOptions(g_appData.passiveCInfos);
-                heroInfo.registerPassiveSOptions(g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos);
-
-                // this.__markUnsupportedSkills(heroInfo.weaponOptions, [Weapon], [g_appData.weaponInfos]);
-                // this.__markUnsupportedSkills(heroInfo.supportOptions, [Support], [g_appData.supportInfos]);
-                // this.__markUnsupportedSkills(heroInfo.specialOptions, [Special], [g_appData.specialInfos]);
-                // this.__markUnsupportedSkills(heroInfo.passiveAOptions, [PassiveA], [g_appData.passiveAInfos]);
-                // this.__markUnsupportedSkills(heroInfo.passiveBOptions, [PassiveB], [g_appData.passiveBInfos]);
-                // this.__markUnsupportedSkills(heroInfo.passiveCOptions, [PassiveC], [g_appData.passiveCInfos]);
-                // this.__markUnsupportedSkills(heroInfo.passiveSOptions, [PassiveS, PassiveA, PassiveB, PassiveC], [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveSInfos]);
-            }
-        });
         using(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
             g_appData.initHeroInfos(heroInfos);
         });
@@ -5511,7 +5486,7 @@ class AetherRaidTacticsBoard {
         let elapsedMillisecForCombat = 0;
         let elapsedMillisecForInitUnit = 0;
         for (let i = 0; i < g_appData.heroInfos.length; ++i) {
-            let heroInfo = g_appData.heroInfos.get(i);
+            let heroInfo = g_appData.heroInfos.getHeroInfo(i);
 
             // 敵の初期化
             using(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {

@@ -558,6 +558,18 @@ class AppData extends UnitManager {
 
     initHeroInfos(heroInfos) {
         this.heroInfos = new HeroDatabase(heroInfos);
+        for (let i = 0; i < heroInfos.length; ++i) {
+            let heroInfo = heroInfos[i];
+            this.heroOptions.push({ id: i, text: heroInfo.name });
+            // this.heroOptions.push({ id: heroInfo.id, text: heroInfo.name });
+            heroInfo.registerWeaponOptions(this.weaponInfos);
+            heroInfo.registerSupportOptions(this.supportInfos);
+            heroInfo.registerSpecialOptions(this.specialInfos);
+            heroInfo.registerPassiveAOptions(this.passiveAInfos);
+            heroInfo.registerPassiveBOptions(this.passiveBInfos);
+            heroInfo.registerPassiveCOptions(this.passiveCInfos);
+            heroInfo.registerPassiveSOptions(this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos);
+        }
     }
 
     registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
@@ -717,7 +729,7 @@ class AppData extends UnitManager {
     }
 
     initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true) {
-        let heroInfo = this.heroInfos.get(heroIndex);
+        let heroInfo = this.heroInfos.getHeroInfo(heroIndex);
         if (heroInfo == null) {
             console.log("heroInfo was not found:" + heroIndex);
             return;

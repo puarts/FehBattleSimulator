@@ -26,7 +26,7 @@ class HeroDatabase {
      * @param  {Number} index
      * @returns {HeroInfo}
      */
-    get(index) {
+    getHeroInfo(index) {
         return this._heroInfos[index];
     }
     /**

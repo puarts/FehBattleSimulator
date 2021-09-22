@@ -4362,6 +4362,13 @@ class Unit {
     canActivatePrecombatSpecial() {
         return isPrecombatSpecial(this.special) && this.specialCount === 0;
     }
+
+    /**
+     * @param  {SkillInfo} skillInfo
+     */
+    canEquip(skillInfo) {
+        return this.heroInfo.canEquipSkill(skillInfo);
+    }
 }
 
 
