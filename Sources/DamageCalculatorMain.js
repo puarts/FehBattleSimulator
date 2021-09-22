@@ -379,6 +379,7 @@ class DamageCalcData {
     __applyTriangleAdeptToAtkUnit() {
         switch (this.triangleAdeptType) {
             case TriangleAdeptType.None:
+                this.atkUnit.passiveA = PassiveA.None;
                 break;
             case TriangleAdeptType.Adept1:
                 this.atkUnit.passiveA = PassiveA.AishoGekika1;
