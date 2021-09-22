@@ -135,6 +135,8 @@ class AppData extends UnitManager {
 
         this.audioManager = new AudioManager();
 
+        this.globalBattleContext = new GlobalBattleContext();
+
         // 査定
         this.arenaScore = 0;
         this.primeArenaScore = 0;
@@ -146,14 +148,6 @@ class AppData extends UnitManager {
         // 双界
         this.resonantBattleInterval = 1; // 双位
         this.resonantBattleItems = [];
-
-        // シーズン設定
-        this.isLightSeason = true;
-        this.isAstraSeason = false;
-        this.isFireSeason = false;
-        this.isEarthSeason = false;
-        this.isWindSeason = false;
-        this.isWaterSeason = false;
 
         // シリアライズ設定
         this.settingCompressMode = SettingCompressMode.None;
@@ -455,8 +449,6 @@ class AppData extends UnitManager {
         this.heroInfos = null;
         this.skillDatabase = new SkillDatabase();
 
-        this.globalBattleContext = new GlobalBattleContext();
-
         {
             // 生成順を変えるとIDが変わってしまうので注意
             this.defenseStructureStorage = new ObjectStorage(g_idGenerator.generate());
@@ -475,12 +467,12 @@ class AppData extends UnitManager {
     }
 
     setAllSeasonEnabled() {
-        this.isLightSeason = true;
-        this.isAstraSeason = true;
-        this.isFireSeason = true;
-        this.isEarthSeason = true;
-        this.isWindSeason = true;
-        this.isWaterSeason = true;
+        this.globalBattleContext.isLightSeason = true;
+        this.globalBattleContext.isAstraSeason = true;
+        this.globalBattleContext.isFireSeason = true;
+        this.globalBattleContext.isEarthSeason = true;
+        this.globalBattleContext.isWindSeason = true;
+        this.globalBattleContext.isWaterSeason = true;
     }
 
     getEnemyExpansionUnitOnMap() {
@@ -1293,27 +1285,8 @@ class AppData extends UnitManager {
         return false;
     }
 
-    *enumerateCurrentSeasons() {
-        if (this.isLightSeason) {
-            yield SeasonType.Light;
-            yield SeasonType.Dark;
-        }
-        if (this.isAstraSeason) {
-            yield SeasonType.Astra;
-            yield SeasonType.Anima;
-        }
-        if (this.isFireSeason) {
-            yield SeasonType.Fire;
-        }
-        if (this.isWaterSeason) {
-            yield SeasonType.Water;
-        }
-        if (this.isEarthSeason) {
-            yield SeasonType.Earth;
-        }
-        if (this.isWindSeason) {
-            yield SeasonType.Wind;
-        }
+    enumerateCurrentSeasons() {
+        return this.globalBattleContext.enumerateCurrentSeasons();
     }
 
     battileItemsToString() {
@@ -1372,12 +1345,12 @@ class AppData extends UnitManager {
 
     turnWideStatusToString() {
         return this.mapKind
-            + ValueDelimiter + boolToInt(this.isLightSeason)
-            + ValueDelimiter + boolToInt(this.isAstraSeason)
-            + ValueDelimiter + boolToInt(this.isFireSeason)
-            + ValueDelimiter + boolToInt(this.isWaterSeason)
-            + ValueDelimiter + boolToInt(this.isWindSeason)
-            + ValueDelimiter + boolToInt(this.isEarthSeason)
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isLightSeason)
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isAstraSeason)
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isFireSeason)
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isWaterSeason)
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isWindSeason)
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isEarthSeason)
             + ValueDelimiter + this.settingCompressMode
             + ValueDelimiter + this.gameMode
             + ValueDelimiter + this.resonantBattleInterval
@@ -1398,12 +1371,12 @@ class AppData extends UnitManager {
         let splited = value.split(ValueDelimiter);
         let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.mapKind = Number(splited[i]); ++i; }
-        this.isLightSeason = intToBool(Number(splited[i])); ++i;
-        this.isAstraSeason = intToBool(Number(splited[i])); ++i;
-        this.isFireSeason = intToBool(Number(splited[i])); ++i;
-        this.isWaterSeason = intToBool(Number(splited[i])); ++i;
-        this.isWindSeason = intToBool(Number(splited[i])); ++i;
-        this.isEarthSeason = intToBool(Number(splited[i])); ++i;
+        this.globalBattleContext.isLightSeason = intToBool(Number(splited[i])); ++i;
+        this.globalBattleContext.isAstraSeason = intToBool(Number(splited[i])); ++i;
+        this.globalBattleContext.isFireSeason = intToBool(Number(splited[i])); ++i;
+        this.globalBattleContext.isWaterSeason = intToBool(Number(splited[i])); ++i;
+        this.globalBattleContext.isWindSeason = intToBool(Number(splited[i])); ++i;
+        this.globalBattleContext.isEarthSeason = intToBool(Number(splited[i])); ++i;
         if (Number.isInteger(Number(splited[i]))) { this.settingCompressMode = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) {
             let newValue = Number(splited[i]);
@@ -1461,7 +1434,7 @@ class AppData extends UnitManager {
     }
 
     resetCurrentAetherRaidDefensePreset() {
-        if (this.isAstraSeason) {
+        if (this.globalBattleContext.isAstraSeason) {
             this.aetherRaidDefensePreset = AetherRaidDefensePresetOptions_AnimaSeason[0].id;
         }
         else {

@@ -66,6 +66,25 @@ class test_HeroDatabase extends HeroDatabase {
     }
 }
 
+class test_BeginningOfTurnSkillHandler {
+    constructor() {
+        this.unitManager = new UnitManager();
+        this.map = new BattleMap("", MapType.None, 0);
+        this.battleContext = new GlobalBattleContext();
+        this._beginningOfTurnSkillHandler = new BeginningOfTurnSkillHandler(
+            this.unitManager,
+            this.map,
+            this.battleContext,
+            new SimpleLogger(),
+            st => { }
+        );
+    }
+
+    applySkillsForBeginningOfTurn(unit) {
+        this._beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
+    }
+}
+
 /// テスト用のダメージ計算機です。
 class test_DamageCalculator {
     constructor() {

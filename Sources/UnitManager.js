@@ -30,6 +30,9 @@ class UnitManager {
     enumerateUnitsInSpecifiedGroup(groupId) {
         return this.enumerateUnitsWithPredicator(x => x.groupId == groupId);
     }
+    enumerateUnitsInSpecifiedGroupOnMap(groupId) {
+        return this.enumerateUnitsWithPredicator(x => x.isOnMap && x.groupId == groupId);
+    }
 
     enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
         return this.enumerateUnitsWithPredicator(x =>
@@ -86,6 +89,71 @@ class UnitManager {
         }
     }
 
+    * enumerateUnitsWithinSpecifiedRange(posX, posY, unitGroup, rangeHorLength, rangeVerLength) {
+        let halfHorLength = Math.floor(rangeHorLength / 2);
+        let xRangeBegin = posX - halfHorLength;
+        let xRangeEnd = posX + halfHorLength;
+        let halfVerLength = Math.floor(rangeVerLength / 2);
+        let yRangeBegin = posY - halfVerLength;
+        let yRangeEnd = posY + halfVerLength;
+        for (let unit of this.enumerateUnitsInSpecifiedGroupOnMap(unitGroup)) {
+            if (xRangeBegin <= unit.posX && unit.posX <= xRangeEnd
+                && yRangeBegin <= unit.posY && unit.posY <= yRangeEnd) {
+                yield unit;
+            }
+        }
+    }
+
+    /**
+     * @param  {UnitGroupType} unitGroup
+     * @param  {Function} getStatusFunc
+     * @param  {Unit} exceptUnit=null
+     */
+    findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnitFunc = null) {
+        let maxUnits = [];
+        let maxValue = -1;
+        for (let unit of this.enumerateUnitsInSpecifiedGroup(unitGroup)) {
+            if (exceptUnitFunc != null && exceptUnitFunc(unit)) {
+                continue;
+            }
+            if (!unit.isOnMap) {
+                continue;
+            }
+            let value = getStatusFunc(unit);
+            if (value > maxValue) {
+                maxValue = value;
+                maxUnits = [unit];
+            }
+            else if (value == maxValue) {
+                maxUnits.push(unit);
+            }
+        }
+        return maxUnits;
+    }
+
+    findMinStatusUnits(unitGroup, getStatusFunc, exceptUnitFunc = null) {
+        let minUnits = [];
+        let minValue = 100000;
+        for (let unit of this.enumerateUnitsInSpecifiedGroup(unitGroup)) {
+            if (exceptUnitFunc != null && exceptUnitFunc(unit)) {
+                continue;
+            }
+
+            if (!unit.isOnMap) {
+                continue;
+            }
+            let value = getStatusFunc(unit);
+            if (value < minValue) {
+                minValue = value;
+                minUnits = [unit];
+            }
+            else if (value == minValue) {
+                minUnits.push(unit);
+            }
+        }
+        return minUnits;
+    }
+
     isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
             if (predicator != null && !predicator(unit)) {
@@ -118,6 +186,13 @@ class UnitManager {
             }
         }
         return false;
+    }
+    /**
+     * @param  {Unit} skillOwnerUnit
+     */
+    isNextToOtherUnitsExceptDragonAndBeast(skillOwnerUnit) {
+        return this.isNextToAlliesExcept(skillOwnerUnit,
+            x => isWeaponTypeBreath(x.weaponType) || isWeaponTypeBeast(x.weaponType));
     }
 
     countUnitInSpecifiedGroupOnMap(groupId, predicateFunc) {
@@ -160,6 +235,31 @@ class UnitManager {
 
     __createDefaultUnit(id, unitGroupType) {
         return new Unit(id, "", unitGroupType, MoveType.Infantry, "");
+    }
+
+    findNearestEnemies(targetUnit, distLimit = 100) {
+        return this.__findNearestUnits(targetUnit, this.enumerateUnitsInDifferentGroupOnMap(targetUnit), distLimit);
+    }
+    findNearestAllies(targetUnit, distLimit = 100) {
+        return this.__findNearestUnits(targetUnit, this.enumerateUnitsInTheSameGroupOnMap(targetUnit), distLimit);
+    }
+
+    __findNearestUnits(targetUnit, candidateUnits, distLimit) {
+        let minDist = 1000;
+        let minUnits = [];
+        for (let unit of candidateUnits) {
+            let dist = calcDistance(unit.posX, unit.posY, targetUnit.posX, targetUnit.posY);
+            if (dist > distLimit) {
+                continue;
+            }
+            if (dist < minDist) {
+                minUnits = [unit];
+                minDist = dist;
+            } else if (dist == minDist) {
+                minUnits.push(unit);
+            }
+        }
+        return minUnits;
     }
 
 }

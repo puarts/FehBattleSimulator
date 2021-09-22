@@ -40,7 +40,7 @@ class PostCombatSkillHander {
     }
 
     __findNearestAllies(targetUnit, distLimit = 100) {
-        return this.__findNearestUnits(targetUnit, this.enumerateUnitsInTheSameGroupOnMap(targetUnit), distLimit);
+        return this._unitManager.findNearestAllies(targetUnit, distLimit);
     }
 
     __getStatusEvalUnit(unit) {

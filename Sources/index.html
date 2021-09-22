@@ -377,27 +377,28 @@
                                 シーズン:
                             </td>
                             <td>
-                                <input id="isLightSeason" type="checkbox" v-model="isLightSeason"
+                                <input id="isLightSeason" type="checkbox" v-model="globalBattleContext.isLightSeason"
                                     @change="lightSeasonChanged"><label class="normal" for="isLightSeason"><img
                                         src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Light.png" />
                                     <img
                                         src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Dark.png" /></label>
-                                <input id="isAstraSeason" type="checkbox" v-model="isAstraSeason"
+                                <input id="isAstraSeason" type="checkbox" v-model="globalBattleContext.isAstraSeason"
                                     @change="astraSeasonChanged"><label class="normal" for="isAstraSeason"><img
                                         src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Astra.png" />
                                     <img
                                         src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Anima.png" /></label>
-                                <input id="isFireSeason" type="checkbox" v-model="isFireSeason"
+                                <input id="isFireSeason" type="checkbox" v-model="globalBattleContext.isFireSeason"
                                     @change="seasonChanged"><label class="normal" for="isFireSeason"><img
                                         src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Fire.png" /></label>
-                                <input id="isWaterSeason" type="checkbox" v-model="isWaterSeason"
+                                <input id="isWaterSeason" type="checkbox" v-model="globalBattleContext.isWaterSeason"
                                     @change="seasonChanged"><label class="normal" for="isWaterSeason"><img
                                         src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Water.png" /></label>
-                                <input id="isWindSeason" type="checkbox" v-model="isWindSeason" @change="seasonChanged">
+                                <input id="isWindSeason" type="checkbox" v-model="globalBattleContext.isWindSeason"
+                                    @change="seasonChanged">
                                 <label class="normal" for="isWindSeason">
                                     <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Wind.png" />
                                 </label>
-                                <input id="isEarthSeason" type="checkbox" v-model="isEarthSeason"
+                                <input id="isEarthSeason" type="checkbox" v-model="globalBattleContext.isEarthSeason"
                                     @change="seasonChanged"><label class="normal" for="isEarthSeason"><img
                                         src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" /></label>
                             </td>
@@ -1178,7 +1179,7 @@
             <fieldset>
                 <legend>防衛マッププリセット</legend>
                 <p>
-                <div v-if="isLightSeason == true">
+                <div v-if="globalBattleContext.isLightSeason == true">
                     <select v-model="aetherRaidDefensePreset" @change="aetherRaidDefensePresetChanged">
                         <option v-for="option in AetherRaidDefensePresetOptions_DarkSeason" v-bind:value="option.id">
                             {{ option.text }}
@@ -1202,7 +1203,7 @@
             <fieldset>
                 <legend>攻撃編成プリセット</legend>
                 <p>
-                <div v-if="isLightSeason == true">
+                <div v-if="globalBattleContext.isLightSeason == true">
                     <select v-model="aetherRaidOffensePresetIndex" @change="aetherRaidOffensePresetChanged">
                         <option v-for="(option,index) in AetherRaidOffensePresetOptions_LightSeason"
                             v-bind:value="index">
@@ -2377,6 +2378,7 @@
                 "DamageCalculator.js",
                 "PostCombatSkillHander.js",
                 "DamageCalculatorWrapper.js",
+                "BeginningOfTurnSkillHandler.js",
                 "TurnSetting.js",
                 "AudioManager.js",
                 "AetherRaidDefensePresets.js",

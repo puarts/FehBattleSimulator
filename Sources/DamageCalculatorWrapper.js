@@ -7673,10 +7673,10 @@ class DamageCalculatorWrapper {
                         switch (unit.passiveC) {
                             case PassiveC.WingsOfLight:
                                 if (targetUnit.isMythicHero
-                                    && g_appData.currentTurn <= 5
+                                    && this.currentTurn <= 5
                                     && this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.isMythicHero) <= 3
                                 ) {
-                                    targetUnit.addAllSpur(2 + g_appData.currentTurn);
+                                    targetUnit.addAllSpur(2 + this.currentTurn);
                                 }
                                 break;
                         }

@@ -18,6 +18,7 @@ SOURCE_FILE_NAMES=(
     DamageCalculator
     PostCombatSkillHander
     DamageCalculatorWrapper
+    BeginningOfTurnSkillHandler
     SkillDatabase
     HeroDatabase
     SampleSkillInfos
@@ -27,6 +28,7 @@ SOURCE_FILE_NAMES=(
 TEST_FILE_NAMES=(
     DamageCalculator
     UnitManager
+    BeginningOfTurnSkillHandler
     )
 
 TARGET_FILE=All.test.js
