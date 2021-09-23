@@ -1,6 +1,12 @@
 /// @file
 /// @brief DamageCalculator クラスとそれに関連するクラスや関数等の定義です。
 
+const DamageType = {
+    ActualDamage: 0,
+    EstimatedDamage: 1,
+    PotentialDamage: 2,
+};
+
 /// ダメージ計算時の1回攻撃分のログです。
 class DamageLog {
     constructor(attackUnit, attackedUnit, damageDealt) {
@@ -120,9 +126,9 @@ class DamageCalculator {
      * ダメージ計算を行います。
      * @param  {Unit} atkUnit 攻撃をするユニットです。
      * @param  {Unit} defUnit 攻撃を受けるユニットです。
-     * @param  {boolean} calcPotentialDamage 潜在ダメージ計算かどうかを指定します。
+     * @param  {DamageType} 潜在ダメージ計算かどうかを指定します。
      */
-    calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+    calcCombatResult(atkUnit, defUnit, damageType) {
         // 初期化
         let context = new DamageCalcContext();
         let result = new DamageCalcResult();
@@ -142,7 +148,11 @@ class DamageCalculator {
 
         for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
             func();
-            if (!calcPotentialDamage && this.__isAnyoneDead(atkUnit, defUnit)) { break; }
+            if (damageType == DamageType.ActualDamage
+                && this.__isAnyoneDead(atkUnit, defUnit)
+            ) {
+                break;
+            }
         }
 
         result.damageHistory = context.damageHistory;

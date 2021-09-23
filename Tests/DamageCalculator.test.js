@@ -49,23 +49,28 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     expect(result.atkUnit_normalAttackDamage).toBe(25);
     expect(result.atkUnit_totalAttackCount).toBe(1);
   }
+  let atkAllyUnit = new Unit("", "atkAlly", UnitGroupType.Ally);
+  let defAllyUnit = new Unit("", "defAlly", UnitGroupType.Enemy);
 
   // 全ての英雄で戦闘を行って例外が出ない事を確認する
   using(new ScopedStopwatch(x => log += `${heroDatabase.length}回の戦闘の時間: ${x} ms\n`), () => {
     let calclator = new test_DamageCalculator();
-    calclator.unitManager.units = [atkUnit, defUnit];
-    // calclator.unitManager.units = [];
+    calclator.map.getTile(0, 2).setUnit(atkUnit);
+    calclator.map.getTile(0, 0).setUnit(defUnit);
+    calclator.map.getTile(2, 2).setUnit(atkAllyUnit);
+    calclator.map.getTile(2, 0).setUnit(defAllyUnit);
+    calclator.unitManager.units = [atkUnit, defUnit, atkAllyUnit, defAllyUnit];
     calclator.isLogEnabled = false;
     // calclator.disableProfile();
 
     atkUnit.weaponRefinement = WeaponRefinementType.Special;
+    defUnit.weaponRefinement = WeaponRefinementType.Special;
     for (let atkUnitInfo of heroDatabase.enumerateHeroInfos()) {
-      // テストのために攻撃側だけ特殊錬成にしておく
       heroDatabase.initUnit(atkUnit, atkUnitInfo.name);
 
       let defUnitInfo = atkUnitInfo;
       heroDatabase.initUnit(defUnit, defUnitInfo.name);
-      calclator.calcDamage(atkUnit, defUnit);
+      calclator.calcDamage(atkUnit, defUnit, false);
     }
 
     log += calclator.getProfileLog();

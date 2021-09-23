@@ -2225,7 +2225,10 @@ class AetherRaidTacticsBoard {
             yield unit;
         }
     }
-
+    /**
+     * @param  {Function} predicator=null
+     * @returns {Unit[]}
+     */
     * enumerateAllUnitsOnMap(predicator = null) {
         for (let unit of this.vm.units) {
             if (unit.isOnMap) {
@@ -2991,9 +2994,9 @@ class AetherRaidTacticsBoard {
         atkUnit,
         defUnit,
         tileToAttack = null,
-        calcPotentialDamage = false
+        damageType = DamageType.ActualDamage
     ) {
-        let result = this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        let result = this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, damageType);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);
         return result;
@@ -3003,9 +3006,9 @@ class AetherRaidTacticsBoard {
         atkUnit,
         defUnit,
         tileToAttack = null,
-        calcPotentialDamage = false
+        damageType = DamageType.EstimatedDamage
     ) {
-        let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, damageType);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);
         if (result.defUnit != defUnit) {
@@ -3263,7 +3266,9 @@ class AetherRaidTacticsBoard {
             this.damageCalc.updateUnitSpur(unit, calcPotentialDamage);
         }
     }
-
+    /**
+     * @param  {Unit[]} targetUnits
+     */
     __simulateBeginningOfTurn(targetUnits) {
         g_appData.isCombatOccuredInCurrentTurn = false;
 
@@ -3330,10 +3335,10 @@ class AetherRaidTacticsBoard {
             this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
         }
 
-        this.writeLog(this.beginningOfTurnSkillHandler.log);
-
         // ターン開始時効果によるダメージや回復を反映
-        this.__applyReservedHpForAllUnitsOnMap(true);
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+
+        this.writeLog(this.beginningOfTurnSkillHandler.log);
 
         for (let unit of targetUnits) {
             unit.deleteSnapshot();
@@ -3885,12 +3890,10 @@ class AetherRaidTacticsBoard {
 
         this.__initReservedHpForAllUnitsOnMap();
 
-        for (let skillId of targetUnit.enumerateSkills()) {
-            this.__applySkillForBeginningOfTurn(skillId, targetUnit);
-        }
+        this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(targetUnit);
 
         // ターン開始時効果によるダメージや回復を反映
-        this.__applyReservedHpForAllUnitsOnMap(true);
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
 
         this.disableAllLogs = originalDisableAllLogs;
     }
@@ -3943,7 +3946,8 @@ class AetherRaidTacticsBoard {
             let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
             using(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
                 for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
-                    let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null, this.vm.durabilityTestCalcPotentialDamage);
+                    let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null,
+                        this.vm.durabilityTestCalcPotentialDamage ? DamageType.PotentialDamage : DamageType.CombatDamage);
                     targetUnit.hp = targetUnit.restHp;
                     targetUnit.specialCount = targetUnit.tmpSpecialCount;
                     if (enemyUnit.restHp == 0) {
@@ -5116,7 +5120,7 @@ class AetherRaidTacticsBoard {
 
                         // todo: 攻撃対象の陣営の紋章バフは無効にしないといけない。あと周囲の味方の数で発動する系は必ず発動させないといけない
                         // 防御系奥義によるダメージ軽減も無視しないといけない
-                        let combatResult = this.calcDamageTemporary(evalUnit, allyUnit, null, true);
+                        let combatResult = this.calcDamageTemporary(evalUnit, allyUnit, null, DamageType.PotentialDamage);
                         if (this.vm.isPotentialDamageDetailEnabled) {
                             this.writeDebugLogLine("ダメージ計算ログ --------------------");
                             this.writeDebugLogLine(this.damageCalc.log);
@@ -6758,7 +6762,7 @@ class AetherRaidTacticsBoard {
         }
 
         if (appliesDamage) {
-            this.__applyReservedHpForAllUnitsOnMap(true);
+            this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
         }
     }
 
@@ -6772,7 +6776,9 @@ class AetherRaidTacticsBoard {
             if (g_appData.map.isObjAvailable(st)) { yield st; }
         }
     }
-
+    /**
+     * @param  {Unit} unit
+     */
     __initReservedHp(unit) {
         unit.initReservedDebuffs();
         unit.initReservedStatusEffects();
@@ -6783,21 +6789,6 @@ class AetherRaidTacticsBoard {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             this.__initReservedHp(unit);
         }
-    }
-    __applyReservedHpForAllUnitsOnMap(leavesOneHp) {
-        for (let unit of this.enumerateAllUnitsOnMap()) {
-            if (unit.isDead) {
-                continue;
-            }
-
-            this.__applyReservedHp(unit, leavesOneHp);
-        }
-    }
-
-    __applyReservedHp(unit, leavesOneHp) {
-        unit.applyReservedDebuffs();
-        unit.applyReservedStatusEffects();
-        unit.applyReservedHp(leavesOneHp);
     }
 
     executeStructure(structure, appliesDamage = true) {
@@ -6943,7 +6934,7 @@ class AetherRaidTacticsBoard {
         }
 
         if (appliesDamage) {
-            this.__applyReservedHpForAllUnitsOnMap(true);
+            this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
         }
     }
 

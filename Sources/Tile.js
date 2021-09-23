@@ -232,7 +232,9 @@ class Tile {
             this.obj.setPos(this.posX, this.posY);
         }
     }
-
+    /**
+     * @param  {Unit} unit
+     */
     setUnit(unit) {
         setUnitToTile(unit, this);
     }

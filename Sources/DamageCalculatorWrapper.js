@@ -145,7 +145,7 @@ class DamageCalculatorWrapper {
         }
 
         // 戦闘ダメージ計算
-        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, false);
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack);
 
         // 戦闘の計算結果を反映させる
         {
@@ -193,9 +193,9 @@ class DamageCalculatorWrapper {
         atkUnit,
         defUnit,
         tileToAttack = null,
-        calcPotentialDamage = false
+        damageType = DamageType.EstimatedDamage
     ) {
-        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, calcPotentialDamage);
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, damageType);
         if (defUnit != result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
@@ -212,15 +212,16 @@ class DamageCalculatorWrapper {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
-     * @param  {boolean} calcPotentialDamage=false
+     * @param  {DamageType} damageType=DamageType.ActualDamage
      * @returns {DamageCalcResult}
      */
     calcDamage(
         atkUnit,
         defUnit,
         tileToAttack = null,
-        calcPotentialDamage = false
+        damageType = DamageType.ActualDamage
     ) {
+        let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
         let result;
         using(new ScopedTileChanger(atkUnit, tileToAttack, () => {
@@ -263,7 +264,7 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            result = self.calcCombatResult(atkUnit, actualDefUnit, calcPotentialDamage);
+            result = self.calcCombatResult(atkUnit, actualDefUnit, damageType);
             result.preCombatDamage = preCombatDamage;
         });
 
@@ -314,7 +315,8 @@ class DamageCalculatorWrapper {
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
 
-    calcCombatResult(atkUnit, defUnit, calcPotentialDamage) {
+    calcCombatResult(atkUnit, defUnit, damageType) {
+        let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
 
@@ -425,7 +427,7 @@ class DamageCalculatorWrapper {
 
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
-        result = self._damageCalc.calcCombatResult(atkUnit, defUnit, calcPotentialDamage);
+        result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);
         // });
         return result;
     }

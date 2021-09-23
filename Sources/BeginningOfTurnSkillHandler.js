@@ -42,6 +42,22 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    applyReservedStateForAllUnitsOnMap(leavesOneHp) {
+        for (let unit of this._unitManager.enumerateAllUnitsOnMap()) {
+            if (unit.isDead) {
+                continue;
+            }
+
+            this.applyReservedState(unit, leavesOneHp);
+        }
+    }
+
+    applyReservedState(unit, leavesOneHp = true) {
+        unit.applyReservedDebuffs();
+        unit.applyReservedStatusEffects();
+        unit.applyReservedHp(leavesOneHp);
+    }
+
     /**
      * @param  {Number} skillId
      * @param  {Unit} skillOwner

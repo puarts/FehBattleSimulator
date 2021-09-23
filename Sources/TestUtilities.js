@@ -120,15 +120,19 @@ class test_DamageCalculator {
         return log;
     }
 
-    calcDamage(atkUnit, defUnit) {
+    calcDamage(atkUnit, defUnit, applyResultToHp = true) {
         this.damageCalc.isLogEnabled = this.isLogEnabled;
+        this.damageCalc.updateUnitSpur(atkUnit);
+        this.damageCalc.updateUnitSpur(defUnit);
         let result = this.damageCalc.calcDamage(atkUnit, defUnit, null, false);
         if (this.isLogEnabled) {
             console.log(this.damageCalc.log);
         }
         this.damageCalc.clearLog();
-        atkUnit.hp = atkUnit.restHp;
-        defUnit.hp = defUnit.restHp;
+        if (applyResultToHp) {
+            atkUnit.hp = atkUnit.restHp;
+            defUnit.hp = defUnit.restHp;
+        }
         return result;
     }
 }

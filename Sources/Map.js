@@ -2425,7 +2425,11 @@ class BattleMap {
     switchEnemyAttackRange() {
         this._showEnemyAttackRange = !this._showEnemyAttackRange;
     }
-
+    /**
+     * @param  {Number} x
+     * @param  {Number} y
+     * @returns {Tile}
+     */
     getTile(x, y) {
         if (!Number.isInteger(x) || !Number.isInteger(y)) {
             // throw new Error("invalid index: x = " + x + ", y = " + y);
