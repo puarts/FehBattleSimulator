@@ -5647,6 +5647,7 @@ class AetherRaidTacticsBoard {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
                     if (g_appData.currentTurn <= 4) {
                         return true;
@@ -5689,6 +5690,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.FlowerLance:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
                     break;
+                case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;

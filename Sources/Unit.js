@@ -1211,6 +1211,7 @@ class Unit {
         let moveCountForCanto = 0;
         // 同系統効果複数時、最大値適用
         switch (this.weapon) {
+            case Weapon.AutoLofnheior:
             case Weapon.Lyngheior:
                 moveCountForCanto = Math.max(moveCountForCanto, 3);
                 break;

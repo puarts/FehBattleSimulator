@@ -1139,6 +1139,9 @@ const Weapon = {
     DemonicTome: 1844, // 魔獣の書
     FlamelickBreath: 1846, // 絶炎のブレス
     InstantAxePlus: 1849, // 瞬撃の斧+
+
+    // 2021年9月 神階英雄オッテル
+    AutoLofnheior: 1852, // 機斧ロヴンヘイズ
 }
 
 const Support = {
