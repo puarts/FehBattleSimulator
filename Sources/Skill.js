@@ -2889,6 +2889,8 @@ class SkillInfo {
         this.isAdditionalImplRequired = !isNoAdditionalImplRequired;
         this.specialRefineHpAdd = specialRefineHpAdd;
         this.weaponType = weaponType;
+
+        /** @member {number} */
         this.sp = sp;
         this.canInherit = canInherit;
         this.inheritableWeaponTypes = inheritableWeaponTypes;

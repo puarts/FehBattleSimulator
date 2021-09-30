@@ -1,14 +1,14 @@
 
-const DamageCalcMode = {
+const DamageCalculatorMode = {
     Simple: 0,
     SpecialDamageGraph: 1,
     RoundRobin: 2,
 };
 
 const DamageCalcModeOptions = [
-    { label: "与ダメージ計算", value: DamageCalcMode.Simple },
-    { label: "奥義ダメージグラフ", value: DamageCalcMode.SpecialDamageGraph },
-    { label: "総当たり", value: DamageCalcMode.RoundRobin },
+    { label: "与ダメージ計算", value: DamageCalculatorMode.Simple },
+    { label: "奥義ダメージグラフ", value: DamageCalculatorMode.SpecialDamageGraph },
+    { label: "総当たり", value: DamageCalculatorMode.RoundRobin },
 ];
 
 const RoundRobinCombatMode = {
@@ -220,12 +220,14 @@ const SkillSwappingMode = {
     IfNone: 0,
     IfCanEquip: 1,
     IfCanEquipExceptExclusiveSkill: 2,
+    IfSpIsGreaterThanCurrentSkill: 3,
 };
 
 const SkillSwappingModeOptions = [
     { label: "なしの場合", value: SkillSwappingMode.IfNone },
     { label: "装備可能な場合", value: SkillSwappingMode.IfCanEquip },
     { label: "専用スキル以外", value: SkillSwappingMode.IfCanEquipExceptExclusiveSkill },
+    { label: "このスキルよりSPが少ない場合", value: SkillSwappingMode.IfSpIsGreaterThanCurrentSkill },
 ];
 
 
@@ -238,7 +240,12 @@ class RoundRobinParam {
         this.passiveB = PassiveB.None;
         this.passiveC = PassiveC.None;
         this.passiveS = PassiveS.None;
-        this.skillSwappingMode = SkillSwappingMode.IfNone;
+
+        this.special_skillSwappingMode = SkillSwappingMode.IfNone;
+        this.passiveA_skillSwappingMode = SkillSwappingMode.IfNone;
+        this.passiveB_skillSwappingMode = SkillSwappingMode.IfNone;
+        this.passiveC_skillSwappingMode = SkillSwappingMode.IfNone;
+        this.passiveS_skillSwappingMode = SkillSwappingMode.IfNone;
     }
 }
 
@@ -255,12 +262,19 @@ class DamageCalcData {
             this.battleContext,
             this.logger
         );
+        this.beginningOfTurnSkillHandler = new BeginningOfTurnSkillHandler(
+            this.unitManager,
+            this.map,
+            this.battleContext,
+            this.logger,
+            x => { }
+        );
         this.heroDatabase = new DamageCalcHeroDatabase(
             heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
             passiveSInfos);
 
-        this.mode = DamageCalcMode.Simple;
-        // this.mode = DamageCalcMode.RoundRobin;
+        this.mode = DamageCalculatorMode.Simple;
+        this.mode = DamageCalculatorMode.RoundRobin;
         this.roundRobinParam = new RoundRobinParam();
         this.roundRobinCombatMode = RoundRobinCombatMode.Offense;
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
@@ -327,6 +341,10 @@ class DamageCalcData {
         this.specialSufferMitRatio = 0;
 
         this.updateDamageDealt();
+    }
+
+    clearLog() {
+        this.log = "";
     }
 
     updateDamageDealt() {
@@ -538,12 +556,14 @@ class DamageCalcData {
      * @param  {Unit} unit
      * @param  {SkillInfo} skillInfo
      */
-    __canSwapSkill(unit, skillInfo, newSkillId) {
+    __canSwapSkill(unit, skillInfo, newSkillId, skillSwappingMode) {
+        let newSkillInfo = this.heroDatabase.skillDatabase.findSkillInfoByDict(newSkillId);
         return newSkillId != NoneValue
             && (
-                (this.roundRobinParam.skillSwappingMode === SkillSwappingMode.IfCanEquip)
-                || (this.roundRobinParam.skillSwappingMode === SkillSwappingMode.IfNone && skillInfo === null)
-                || (this.roundRobinParam.skillSwappingMode === SkillSwappingMode.IfCanEquipExceptExclusiveSkill && skillInfo != null && skillInfo.canInherit)
+                (skillSwappingMode === SkillSwappingMode.IfCanEquip)
+                || (skillSwappingMode === SkillSwappingMode.IfNone && skillInfo == null)
+                || (skillSwappingMode === SkillSwappingMode.IfCanEquipExceptExclusiveSkill && skillInfo != null && skillInfo.canInherit)
+                || (skillSwappingMode === SkillSwappingMode.IfSpIsGreaterThanCurrentSkill && (skillInfo == null || skillInfo.sp < newSkillInfo.sp))
             )
             && this.__canEquip(unit, newSkillId);
     }
@@ -557,35 +577,43 @@ class DamageCalcData {
         for (let heroInfo of this.heroDatabase.enumerateHeroInfos()) {
             let name = heroInfo.name;
             let unit = new Unit("", name, groupId);
-            unit.placedTile = tile;
+            tile.setUnit(unit);
+            unit.initByHeroInfo(heroInfo);
+
             unit.level = 40;
             unit.merge = this.roundRobinParam.merge;
             unit.dragonflower = this.roundRobinParam.dragonflower == MaxDragonFlower ?
                 heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
             unit.isBonusChar = false;
             unit.isResplendent = heroInfo.isResplendent;
-            unit.blessingEffects.push(BlessingType.Hp5_Atk3);
-            unit.blessingEffects.push(BlessingType.Hp5_Spd4);
-            unit.blessingEffects.push(BlessingType.Hp5_Def5);
-            unit.blessingEffects.push(BlessingType.Hp5_Res5);
+            if (!unit.isMythicHero) {
+                unit.blessingEffects.push(BlessingType.Hp5_Atk3);
+                unit.blessingEffects.push(BlessingType.Hp5_Spd4);
+                unit.blessingEffects.push(BlessingType.Hp5_Def5);
+                unit.blessingEffects.push(BlessingType.Hp5_Res5);
+            }
 
-            unit.initByHeroInfo(heroInfo);
             unit.initializeSkillsToDefault();
 
             this.heroDatabase.updateUnitSkillInfo(unit);
-            if (this.__canSwapSkill(unit, unit.specialInfo, this.roundRobinParam.special)) {
+            if (this.__canSwapSkill(unit, unit.specialInfo, this.roundRobinParam.special,
+                this.roundRobinParam.special_skillSwappingMode)) {
                 unit.special = this.roundRobinParam.special;
             }
-            if (this.__canSwapSkill(unit, unit.passiveAInfo, this.roundRobinParam.passiveA)) {
+            if (this.__canSwapSkill(unit, unit.passiveAInfo, this.roundRobinParam.passiveA,
+                this.roundRobinParam.passiveA_skillSwappingMode)) {
                 unit.passiveA = this.roundRobinParam.passiveA;
             }
-            if (this.__canSwapSkill(unit, unit.passiveBInfo, this.roundRobinParam.passiveB)) {
+            if (this.__canSwapSkill(unit, unit.passiveBInfo, this.roundRobinParam.passiveB,
+                this.roundRobinParam.passiveB_skillSwappingMode)) {
                 unit.passiveB = this.roundRobinParam.passiveB;
             }
-            if (this.__canSwapSkill(unit, unit.passiveCInfo, this.roundRobinParam.passiveC)) {
+            if (this.__canSwapSkill(unit, unit.passiveCInfo, this.roundRobinParam.passiveC,
+                this.roundRobinParam.passiveC_skillSwappingMode)) {
                 unit.passiveC = this.roundRobinParam.passiveC;
             }
-            if (this.__canSwapSkill(unit, unit.passiveSInfo, this.roundRobinParam.passiveS)) {
+            if (this.__canSwapSkill(unit, unit.passiveSInfo, this.roundRobinParam.passiveS,
+                this.roundRobinParam.passiveS_skillSwappingMode)) {
                 unit.passiveS = this.roundRobinParam.passiveS;
             }
             this.heroDatabase.updateUnitSkillInfo(unit);
@@ -604,28 +632,37 @@ class DamageCalcData {
         for (let heroInfo of this.heroDatabase.enumerateHeroInfos()) {
             let name = heroInfo.name;
             let unit = new Unit("", name, groupId);
-            unit.placedTile = tile;
+            tile.setUnit(unit);
             unit.level = 40;
             unit.merge = this.roundRobinParam.merge;
             unit.dragonflower = this.roundRobinParam.dragonflower == MaxDragonFlower ?
                 heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
             unit.isBonusChar = false;
             unit.isResplendent = heroInfo.isResplendent;
-            unit.blessingEffects.push(BlessingType.Hp5_Atk3);
-            unit.blessingEffects.push(BlessingType.Hp5_Spd4);
-            unit.blessingEffects.push(BlessingType.Hp5_Def5);
-            unit.blessingEffects.push(BlessingType.Hp5_Res5);
+            if (!unit.isMythicHero) {
+                unit.blessingEffects.push(BlessingType.Hp5_Atk3);
+                unit.blessingEffects.push(BlessingType.Hp5_Spd4);
+                unit.blessingEffects.push(BlessingType.Hp5_Def5);
+                unit.blessingEffects.push(BlessingType.Hp5_Res5);
+            }
             this.heroDatabase.initUnit(unit, heroInfo.name, false);
             units.push(unit);
         }
         return units;
     }
 
-    calcRoundRogin() {
+    calcRoundRobin() {
         let atkUnits = this.__createAllHeroUnits(UnitGroupType.Ally, this.map.getTile(0, 2));
         let defUnits = this.__createAllHeroUnitsForDefense(UnitGroupType.Enemy, this.map.getTile(0, 0));
+
+        let atkAllyUnit = new Unit("", "atkAlly", UnitGroupType.Ally);
+        this.map.getTile(2, 2).setUnit(atkAllyUnit);
+        let defAllyUnit = new Unit("", "defAlly", UnitGroupType.Enemy);
+        this.map.getTile(2, 0).setUnit(defAllyUnit);
+        this.unitManager.units = [atkAllyUnit, defAllyUnit];
+
         let heroDatabase = this.heroDatabase;
-        let calclator = this.damageCalc;
+        let calculator = this.damageCalc;
         let self = this;
         let results = [];
         let length = heroDatabase.length;
@@ -633,22 +670,34 @@ class DamageCalcData {
         let startTime = Date.now();
         let logEnabled = self.logger.isLogEnabled;
         if (this.roundRobinCombatMode === RoundRobinCombatMode.Offense) {
+            // console.profile();
+
             startProgressiveProcess(length,
                 function (iter) {
                     let atkUnit = atkUnits[iter];
-                    // atkUnit = atkUnits.filter(x => x.heroInfo.name === "伝承リリーナ")[0];
-                    // console.log(atkUnit);
+                    // atkUnit = atkUnits.filter(x => x.heroInfo.name === "アスタルテ")[0];
+                    if (self.unitManager.units.length === 3) {
+                        self.unitManager.units.pop();
+                    }
+                    self.unitManager.units.push(atkUnit);
                     self.logger.isLogEnabled = logEnabled;
-
+                    self.logger.isLogEnabled = false;
+                    self.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(atkUnit);
+                    self.beginningOfTurnSkillHandler.applyReservedState(atkUnit);
+                    atkUnit.applyAtkBuff(6);
+                    atkUnit.applySpdBuff(6);
+                    atkUnit.applyDefBuff(6);
+                    atkUnit.applyResBuff(6);
                     let winCount = 0;
                     let drawCount = 0;
+
                     for (let defUnit of defUnits) {
-                        if (atkUnit.heroInfo.id === 614) {
-                            atkUnit.specialCount = 0;
-                        }
-                        calclator.updateUnitSpur(atkUnit);
-                        calclator.updateUnitSpur(defUnit);
-                        let result = calclator.calcDamage(atkUnit, defUnit);
+                        atkUnit.initBattleContext();
+                        defUnit.initBattleContext();
+                        calculator.clearLog();
+                        calculator.updateUnitSpur(atkUnit);
+                        calculator.updateUnitSpur(defUnit);
+                        let result = calculator.calcDamage(atkUnit, defUnit);
                         if (defUnit.restHp === 0) {
                             ++winCount;
                         }
@@ -677,13 +726,13 @@ class DamageCalcData {
                         let result = results[i].result;
                         let unit = results[i].unit;
                         let winRate = result.winCount / defUnits.length;
-                        console.log(`${unit.heroInfo.name}: ${winRate}`);
                         self.logger.writeLog(`${unit.moveCount}&#009;${unit.attackRange}&#009;${unit.heroInfo.name}&#009;${winRate}`);
                     }
                     const endTime = Date.now();
                     let diffSec = (endTime - startTime) * 0.001;
                     self.logger.writeLog(`テスト完了(${diffSec} sec)--------------------`);
                     self.log = self.logger.log;
+                    // console.profileEnd();
 
                 });
         }
@@ -698,9 +747,9 @@ class DamageCalcData {
                     let winCount = 0;
                     let drawCount = 0;
                     for (let atkUnit of atkUnits) {
-                        calclator.updateUnitSpur(defUnit);
-                        calclator.updateUnitSpur(atkUnit);
-                        let result = calclator.calcDamage(atkUnit, defUnit);
+                        calculator.updateUnitSpur(defUnit);
+                        calculator.updateUnitSpur(atkUnit);
+                        let result = calculator.calcDamage(atkUnit, defUnit);
                         if (atkUnit.restHp === 0) {
                             ++winCount;
                         }
@@ -741,8 +790,6 @@ class DamageCalcData {
                 });
 
         }
-
-        // this.__writeLogLine(log);
     }
 
 
@@ -840,13 +887,16 @@ function addMultipleEventListener(element, events, handler) {
 }
 
 function addKeyRepeatEvent(elem, changeValueFunc) {
+    if (elem == null) {
+        return;
+    }
     addMultipleEventListener(elem, ['mousedown', 'mouseup', 'mouseleave'], (e) => {
         if (e.type == "mousedown") {
             g_keyRepeatHandler.startKeyRepeat(changeValueFunc);
         } else {
             g_keyRepeatHandler.stopKeyRepeat();
             g_damageCalcData.updateDamageDealt();
-            if (g_damageCalcData.mode == DamageCalcMode.SpecialDamageGraph) {
+            if (g_damageCalcData.mode == DamageCalculatorMode.SpecialDamageGraph) {
                 console.log("ダメージグラフ更新");
                 g_damageCalcData.updateDamageGraph();
             }
@@ -869,7 +919,7 @@ const g_damageCalcVm = new Vue({
         updateDamageResult: function () {
             console.log("ダメージ更新");
             g_damageCalcData.updateDamageDealt();
-            if (g_damageCalcData.mode == DamageCalcMode.SpecialDamageGraph) {
+            if (g_damageCalcData.mode == DamageCalculatorMode.SpecialDamageGraph) {
                 console.log("ダメージグラフ更新");
                 g_damageCalcData.updateDamageGraph();
             }
@@ -878,8 +928,8 @@ const g_damageCalcVm = new Vue({
             g_damageCalcData.updateDamageGraph();
         },
         calcRoundRogin: function () {
-            g_damageCalcData.calcRoundRogin();
-        }
+            g_damageCalcData.calcRoundRobin();
+        },
     }
 });
 

@@ -2841,6 +2841,8 @@ class AetherRaidTacticsBoard {
      * @param  {Tile} tileToAttack=null
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
+        this.damageCalc.clearLog();
+
         let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack);
 
         // this.clearSimpleLog();
@@ -2996,6 +2998,7 @@ class AetherRaidTacticsBoard {
         tileToAttack = null,
         damageType = DamageType.ActualDamage
     ) {
+        this.damageCalc.clearLog();
         let result = this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, damageType);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);
@@ -3008,6 +3011,7 @@ class AetherRaidTacticsBoard {
         tileToAttack = null,
         damageType = DamageType.EstimatedDamage
     ) {
+        this.damageCalc.clearLog();
         let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, damageType);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);

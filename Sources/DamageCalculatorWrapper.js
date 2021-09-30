@@ -240,8 +240,6 @@ class DamageCalculatorWrapper {
             atkUnit.saveCurrentHpAndSpecialCount();
             defUnit.saveCurrentHpAndSpecialCount();
 
-            self.clearLog();
-
             // 戦闘前ダメージ計算
             let preCombatDamage = 0;
 
