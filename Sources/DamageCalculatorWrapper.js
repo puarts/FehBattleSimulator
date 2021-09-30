@@ -1737,6 +1737,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AutoLofnheior] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FlamelickBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -7078,6 +7085,9 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.specialAddDamage += 15;
             }
         };
+        this._applySpecialSkillEffectFuncDict[Special.BrutalShell] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialSufferPercentage = 50;
+        }
         this._applySpecialSkillEffectFuncDict[Special.SeidrShell] = (targetUnit, enemyUnit) => {
             targetUnit.battleContext.specialAddDamage += 15;
         };

@@ -1139,6 +1139,9 @@ const Weapon = {
     DemonicTome: 1844, // 魔獣の書
     FlamelickBreath: 1846, // 絶炎のブレス
     InstantAxePlus: 1849, // 瞬撃の斧+
+
+    // 2021年9月 神階英雄オッテル
+    AutoLofnheior: 1852, // 機斧ロヴンヘイズ
 }
 
 const Support = {
@@ -1271,6 +1274,7 @@ const Special = {
     Fukuryu: 464, // 伏竜
     BlueFrame: 473, // ブルーフレイム
     SeidrShell: 1542, // 魔弾
+    BrutalShell: 1853, // 凶弾
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -2381,6 +2385,7 @@ NormalAttackSpecialDict[Special.Hoshikage] = 0; // 星影
 NormalAttackSpecialDict[Special.Fukuryu] = 0; // 伏竜
 NormalAttackSpecialDict[Special.BlueFrame] = 0; // ブルーフレイム
 NormalAttackSpecialDict[Special.SeidrShell] = 0; // 魔弾
+NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
 NormalAttackSpecialDict[Special.RighteousWind] = 0;
 NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 
