@@ -7085,6 +7085,9 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.specialAddDamage += 15;
             }
         };
+        this._applySpecialSkillEffectFuncDict[Special.BrutalShell] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialSufferPercentage = 50;
+        }
         this._applySpecialSkillEffectFuncDict[Special.SeidrShell] = (targetUnit, enemyUnit) => {
             targetUnit.battleContext.specialAddDamage += 15;
         };

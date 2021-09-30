@@ -386,6 +386,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
+            case Special.BrutalShell:
             case Special.SeidrShell:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(3);
