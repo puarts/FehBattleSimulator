@@ -7299,6 +7299,7 @@ class AetherRaidTacticsBoard {
             case Support.WhimsicalDream:
                 {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                        if (skillOwnerUnit === unit) continue;
                         unit.applyAtkBuff(5);
                     }
 
