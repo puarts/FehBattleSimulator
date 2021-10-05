@@ -316,9 +316,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.CancelAffinity:
             return g_imageRootPath + "StatusEffect_CancelAffinity.png";
         case StatusEffectType.NullFollowUp:
-            // @TODO: 画像を用意する
-            // return g_imageRootPath + "StatusEffect_NullFollowUp.png";
-            return g_imageRootPath + "StatusEffect_CancelAffinity.png";
+            return g_imageRootPath + "StatusEffect_NullFollowUp.png";
         default: return "";
     }
 }
