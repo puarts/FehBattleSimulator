@@ -1592,6 +1592,7 @@ const PassiveB = {
     QuickRiposte3: 599, // 切り返し3
     DragonWall3: 1621, // 竜鱗障壁3
     DragonsIre3: 1493, // 竜の逆鱗3
+    DragonsWrath: 1863, // 竜の魔鱗3
     Vantage3: 596, // 待ち伏せ3
     Desperation3: 597, // 攻め立て3
     Cancel1: 1286,//キャンセル1

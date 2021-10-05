@@ -136,6 +136,9 @@ targetUnit.battleContext.refersMinOfDefOrRes = true;
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
+戦闘中、最初に与える攻撃のダメージに...
+targetUnit.battleContext.additionalDamageOfFirstAttack += ...
+
 ダメージ+N(固定ダメージ)
 DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {

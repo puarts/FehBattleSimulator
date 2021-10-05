@@ -1736,6 +1736,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.EerieScripture] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(5);
@@ -5601,8 +5604,14 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId of [targetUnit.passiveA, targetUnit.passiveC, targetUnit.passiveS]) {
+            for (let skillId of [targetUnit.passiveA, targetUnit.passiveB, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
+                    case PassiveB.DragonsWrath:
+                        if (enemyUnit.battleContext.initiatesCombat) {
+                            let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.2);
+                        }
+                        break;
                     case PassiveC.DomainOfFlame:
                         if (this.__isThereAllyIn2Spaces(targetUnit)) {
                             let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
