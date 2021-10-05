@@ -541,6 +541,7 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
+            case PassiveC.ArNearSave3:
             case PassiveC.AdNearSave3:
             case PassiveC.DrNearSave3:
                 if (atkUnit.isMeleeWeaponType()) {
@@ -1735,6 +1736,45 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SpiderPlushPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.EerieScripture] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.LanternBreathPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WitchBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                targetUnit.atkSpur += 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 50) {
+                enemyUnit.atkSpur -= 6;
+                --enemyUnit.battleContext.followupAttackPriorityDecrement;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MoonstrikeBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AutoLofnheior] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.atkSpur += 6;
@@ -2634,6 +2674,12 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
                 targetUnit.addAllSpur(6);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveC.ArNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.atkSpur += 4;
+                targetUnit.resSpur += 4;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.AdNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5450,6 +5496,12 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.NullFollowUp)) {
+            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
 
         {
             switch (targetUnit.weapon) {
@@ -5565,8 +5617,14 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId of [targetUnit.passiveA, targetUnit.passiveC, targetUnit.passiveS]) {
+            for (let skillId of [targetUnit.passiveA, targetUnit.passiveB, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
+                    case PassiveB.DragonsWrath:
+                        if (enemyUnit.battleContext.initiatesCombat) {
+                            let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.2);
+                        }
+                        break;
                     case PassiveC.DomainOfFlame:
                         if (this.__isThereAllyIn2Spaces(targetUnit)) {
                             let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);

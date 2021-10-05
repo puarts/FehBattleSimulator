@@ -866,6 +866,14 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoSothis:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
+                    unit.addStatusEffect(StatusEffectType.NullFollowUp);
+                    if (this.__getStatusEvalUnit(unit).isSpecialCountMax) {
+                        unit.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Hero.DuoHinoka:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 3, 99)) {
                     if (unit.moveType === MoveType.Flying) {
@@ -3302,6 +3310,7 @@ class AetherRaidTacticsBoard {
             if (unit.heroIndex == Hero.YoungPalla
                 || unit.heroIndex == Hero.DuoSigurd
                 || unit.heroIndex == Hero.DuoEirika
+                || unit.heroIndex == Hero.DuoSothis
             ) {
                 if (this.isOddTurn) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;

@@ -37,6 +37,7 @@ const Hero = {
     HarmonizedCaeda: 688,
     DuoHinoka: 700,
     HarmonizedLeif: 711,
+    DuoSothis: 723,
 };
 
 function isThiefIndex(heroIndex) {
@@ -202,6 +203,7 @@ const StatusEffectType = {
     NullPanic: 23, // 見切り・パニック
     Stall: 24, // 空転
     CancelAffinity: 25, // 相性相殺
+    NullFollowUp: 26, // 見切り・追撃
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -312,6 +314,10 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.TriangleAdept:
             return g_imageRootPath + "StatusEffect_TriangleAdept.png";
         case StatusEffectType.CancelAffinity:
+            return g_imageRootPath + "StatusEffect_CancelAffinity.png";
+        case StatusEffectType.NullFollowUp:
+            // @TODO: 画像を用意する
+            // return g_imageRootPath + "StatusEffect_NullFollowUp.png";
             return g_imageRootPath + "StatusEffect_CancelAffinity.png";
         default: return "";
     }
@@ -2018,6 +2024,7 @@ class Unit {
                 || this.heroIndex == Hero.HarmonizedCaeda
                 || this.heroIndex == Hero.DuoHinoka
                 || this.heroIndex == Hero.HarmonizedLeif
+                || this.heroIndex == Hero.DuoSothis
             );
     }
 

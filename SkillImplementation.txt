@@ -43,8 +43,8 @@ __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
                 targetUnit.atkSpur += N;
 
 戦闘開始時、自身(敵)のHPがN%以上なら
-targetUnit.snapshot.restHpPercentage >= N
-enemyUnit.snapshot.restHpPercentage >= N
+targetUnit.battleContext.restHpPercentage >= N
+enemyUnit.battleContext.restHpPercentage >= N
 
 速さが敵よりN以上高い時
 __applySkillEffectForUnitAfterCombatStatusFixed() {
@@ -61,9 +61,7 @@ __setAttackCount(atkUnit, enemyUnit) {
 targetUnit.battleContext.followupAttackPriorityIncrement++;
 
 敵は追撃不可
-if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-    --enemyUnit.battleContext.followupAttackPriority;
-}
+enemyUnit.battleContext.followupAttackPriorityDecrement--;
 
 敵の絶対追撃を無効
 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
@@ -101,6 +99,9 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
 }
 
+戦闘中、奥義による攻撃でダメージを与えた時、自分の最大HPの30%回復(与えたダメージが0でも効果は発動)
+targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
+
 戦闘中と戦闘後、敵はHPを回復できない
 targetUnit.battleContext.invalidatesHeal= true;
 
@@ -134,6 +135,9 @@ targetUnit.battleContext.refersMinOfDefOrRes = true;
 
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+
+戦闘中、最初に与える攻撃のダメージに...
+targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
 ダメージ+N(固定ダメージ)
 DamageCalculator.js

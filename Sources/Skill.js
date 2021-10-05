@@ -1142,6 +1142,13 @@ const Weapon = {
 
     // 2021年9月 神階英雄オッテル
     AutoLofnheior: 1852, // 機斧ロヴンヘイズ
+
+    // 人と竜との収穫祭
+    MoonstrikeBreath: 1856, // 誰彼のブレス
+    WitchBreath: 1858, // 魔女のブレス
+    LanternBreathPlus: 1859, // 提灯の竜石+
+    EerieScripture: 1862, // 奇夜の福音
+    SpiderPlushPlus: 1864, // クモのぬいぐるみ+
 }
 
 const Support = {
@@ -1586,6 +1593,7 @@ const PassiveB = {
     QuickRiposte3: 599, // 切り返し3
     DragonWall3: 1621, // 竜鱗障壁3
     DragonsIre3: 1493, // 竜の逆鱗3
+    DragonsWrath: 1863, // 竜の魔鱗3
     Vantage3: 596, // 待ち伏せ3
     Desperation3: 597, // 攻め立て3
     Cancel1: 1286,//キャンセル1
@@ -2049,6 +2057,7 @@ const PassiveC = {
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrNearSave3: 1636, // 盾の護り手・近間3
     AdNearSave3: 1667, // 鎧の護り手・近間3
+    ArNearSave3: 1857, // 兜の護り手・近間3
 
     FatalSmoke3: 1631, // 不治の幻煙3
 
