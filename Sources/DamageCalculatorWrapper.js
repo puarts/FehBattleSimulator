@@ -1736,6 +1736,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WitchBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                targetUnit.atkSpur += 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 50) {
+                enemyUnit.atkSpur -= 6;
+                --enemyUnit.battleContext.followupAttackPriorityDecrement;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MoonstrikeBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.atkSpur += 6;

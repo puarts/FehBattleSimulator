@@ -43,8 +43,8 @@ __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
                 targetUnit.atkSpur += N;
 
 戦闘開始時、自身(敵)のHPがN%以上なら
-targetUnit.snapshot.restHpPercentage >= N
-enemyUnit.snapshot.restHpPercentage >= N
+targetUnit.battleContext.restHpPercentage >= N
+enemyUnit.battleContext.restHpPercentage >= N
 
 速さが敵よりN以上高い時
 __applySkillEffectForUnitAfterCombatStatusFixed() {
@@ -61,9 +61,7 @@ __setAttackCount(atkUnit, enemyUnit) {
 targetUnit.battleContext.followupAttackPriorityIncrement++;
 
 敵は追撃不可
-if (!this.__canInvalidateInvalidationOfFollowupAttack(enemyUnit, targetUnit)) {
-    --enemyUnit.battleContext.followupAttackPriority;
-}
+enemyUnit.battleContext.followupAttackPriorityDecrement--;
 
 敵の絶対追撃を無効
 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
