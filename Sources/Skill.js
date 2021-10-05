@@ -1148,6 +1148,7 @@ const Weapon = {
     WitchBreath: 1858, // 魔女のブレス
     LanternBreathPlus: 1859, // 提灯の竜石+
     EerieScripture: 1862, // 奇夜の福音
+    SpiderPlushPlus: 1864, // クモのぬいぐるみ+
 }
 
 const Support = {

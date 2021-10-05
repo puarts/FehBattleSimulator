@@ -1736,6 +1736,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SpiderPlushPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
         }
