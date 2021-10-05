@@ -1146,6 +1146,7 @@ const Weapon = {
     // 人と竜との収穫祭
     MoonstrikeBreath: 1856, // 誰彼のブレス
     WitchBreath: 1858, // 魔女のブレス
+    LanternBreathPlus: 1859, // 提灯の竜石+
 }
 
 const Support = {
