@@ -1147,6 +1147,7 @@ const Weapon = {
     MoonstrikeBreath: 1856, // 誰彼のブレス
     WitchBreath: 1858, // 魔女のブレス
     LanternBreathPlus: 1859, // 提灯の竜石+
+    EerieScripture: 1862, // 奇夜の福音
 }
 
 const Support = {
