@@ -1142,6 +1142,9 @@ const Weapon = {
 
     // 2021年9月 神階英雄オッテル
     AutoLofnheior: 1852, // 機斧ロヴンヘイズ
+
+    // 人と竜との収穫祭
+    MoonstrikeBreath: 1856, // 誰彼のブレス
 }
 
 const Support = {
