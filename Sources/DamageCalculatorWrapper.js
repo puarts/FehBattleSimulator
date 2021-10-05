@@ -5496,6 +5496,12 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.NullFollowUp)) {
+            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
 
         {
             switch (targetUnit.weapon) {
