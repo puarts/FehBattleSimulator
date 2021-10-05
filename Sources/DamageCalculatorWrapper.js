@@ -541,6 +541,7 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
+            case PassiveC.ArNearSave3:
             case PassiveC.AdNearSave3:
             case PassiveC.DrNearSave3:
                 if (atkUnit.isMeleeWeaponType()) {
@@ -2641,6 +2642,12 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
                 targetUnit.addAllSpur(6);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveC.ArNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.atkSpur += 4;
+                targetUnit.resSpur += 4;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.AdNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {

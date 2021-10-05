@@ -2052,6 +2052,7 @@ const PassiveC = {
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrNearSave3: 1636, // 盾の護り手・近間3
     AdNearSave3: 1667, // 鎧の護り手・近間3
+    ArNearSave3: 1857, // 兜の護り手・近間3
 
     FatalSmoke3: 1631, // 不治の幻煙3
 
