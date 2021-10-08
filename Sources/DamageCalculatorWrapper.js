@@ -555,6 +555,21 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.Roputous:
+                if (defUnit.isWeaponRefined) {
+                    if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                }
+                break;
             case Weapon.LilacJadeBreath:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
@@ -3355,8 +3370,21 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Roputous] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!enemyUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
-                enemyUnit.atkSpur -= 6;
+            if (!targetUnit.isWeaponRefined) {
+                if (!enemyUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                    enemyUnit.atkSpur -= 6;
+                }
+            } else {
+                if (!enemyUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                    enemyUnit.atkSpur -= 6;
+                    enemyUnit.resSpur -= 6;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.spdSpur -= 5;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Buryunhirude] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5784,6 +5812,22 @@ class DamageCalculatorWrapper {
             case Weapon.BloodTome:
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     return 0.5;
+                }
+                break;
+            case Weapon.Roputous:
+                if (defUnit.isWeaponRefined) {
+                    if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                        let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                            return percentage / 100.0;
+                        }
+                    }
                 }
                 break;
             case PassiveB.DragonWall3:

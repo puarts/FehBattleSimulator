@@ -75,6 +75,14 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.Roputous:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    this.__applySabotageSkill(skillOwner, unit => {
+                        unit.reserveToApplyAtkDebuff(-5);
+                        unit.reserveToApplyResDebuff(-5);
+                    }, 1);
+                }
+                break;
             case Weapon.Laevatein:
                 if (skillOwner.isWeaponSpecialRefined) {
                     let found = false;
