@@ -304,7 +304,7 @@ class DamageCalculatorWrapper {
         this.__applyPrecombatSpecialDamageMult(atkUnit);
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
         this.__calcFixedAddDamage(atkUnit, defUnit, true);
-        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit);
+        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
 
         // 守備、魔防のどちらを参照するか決定
         defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
@@ -555,6 +555,21 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.Roputous:
+                if (defUnit.isWeaponRefined) {
+                    if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
+                    }
+                }
+                break;
             case Weapon.LilacJadeBreath:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
@@ -1736,6 +1751,29 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Laevatein] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect()) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.defSpur += 5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SoleilsShine] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SpiderPlushPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 5;
@@ -3332,8 +3370,21 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Roputous] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!enemyUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
-                enemyUnit.atkSpur -= 6;
+            if (!targetUnit.isWeaponRefined) {
+                if (!enemyUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                    enemyUnit.atkSpur -= 6;
+                }
+            } else {
+                if (!enemyUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                    enemyUnit.atkSpur -= 6;
+                    enemyUnit.resSpur -= 6;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.spdSpur -= 5;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Buryunhirude] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -4428,13 +4479,6 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.CancelNoOnoPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.CancelNoOno] = func;
         }
-
-        this._applySkillEffectForUnitFuncDict[PassiveB.MoonlightBangle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            {
-                let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * ratio);
-            }
-        };
     }
     __applySkillEffectForUnitImpl_Optimized(skillId, targetUnit, enemyUnit, calcPotentialDamage) {
         let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
@@ -4464,16 +4508,19 @@ class DamageCalculatorWrapper {
         return total;
     }
 
-    static __calcFixedSpecialAddDamage(targetUnit, enemyUnit) {
+    static __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
         switch (targetUnit.passiveB) {
             case PassiveB.MoonlightBangle:
                 {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * ratio);
+                    let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * ratio);
                 }
                 break;
-            case PassiveB.RunaBracelet:
-                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * 0.5);
+            case PassiveB.RunaBracelet: {
+                let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
+                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.5);
+            }
                 break;
             case PassiveB.Bushido:
                 targetUnit.battleContext.additionalDamageOfSpecial += 10;
@@ -5525,6 +5572,18 @@ class DamageCalculatorWrapper {
                     if (!targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     }
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                            }
+                        }
+                    }
                     break;
                 case Weapon.MermaidBow:
                     if (targetUnit.battleContext.restHpPercentage >= 25 &&
@@ -5761,6 +5820,22 @@ class DamageCalculatorWrapper {
             case Weapon.BloodTome:
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     return 0.5;
+                }
+                break;
+            case Weapon.Roputous:
+                if (defUnit.isWeaponRefined) {
+                    if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                        let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                            return percentage / 100.0;
+                        }
+                    }
                 }
                 break;
             case PassiveB.DragonWall3:
@@ -7850,6 +7925,15 @@ class DamageCalculatorWrapper {
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     switch (unit.weapon) {
+                        case Weapon.MusuperuNoEnka:
+                            if (targetUnit.isWeaponSpecialRefined) {
+                                let l = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)).length;
+                                if (l === 0) break;
+                                let amount = Math.min(3, l) * 2;
+                                targetUnit.spdSpur -= amount;
+                                targetUnit.resSpur -= amount;
+                            }
+                            break;
                         case Weapon.Gurimowaru:
                             if (targetUnit.isWeaponSpecialRefined) {
                                 targetUnit.atkSpur -= 4;
@@ -8565,11 +8649,19 @@ class DamageCalculatorWrapper {
                             });
                         break;
                     case Weapon.MusuperuNoEnka:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.atkSpur += amount;
-                                unit.spdSpur += amount;
-                            });
+                        if (!targetUnit.isWeaponRefined) {
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.atkSpur += amount;
+                                    unit.spdSpur += amount;
+                                });
+                        } else {
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.atkSpur += amount;
+                                    unit.spdSpur += 5;
+                                }, 5, 3, 9);
+                        }
                         break;
                 }
 
