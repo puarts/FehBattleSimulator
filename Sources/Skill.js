@@ -1152,6 +1152,7 @@ const Weapon = {
 
     // 2021年10月 武器錬成
     SoleilsShine: 1855, // ソレイユの陽剣
+    Laevatein: 64, // レーヴァテイン
 }
 
 const Support = {

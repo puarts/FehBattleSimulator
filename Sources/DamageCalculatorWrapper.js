@@ -1736,6 +1736,20 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Laevatein] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect()) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.defSpur += 5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.defSpur += 5;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SoleilsShine] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.initiatesCombat) {

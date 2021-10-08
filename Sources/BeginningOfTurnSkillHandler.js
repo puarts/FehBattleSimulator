@@ -75,6 +75,22 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.Laevatein:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        found = true;
+                        if (skillOwner.partnerHeroIndex === unit.heroIndex) {
+                            unit.applyAtkBuff(6);
+                            unit.applyDefBuff(6);
+                        }
+                    }
+                    if (found) {
+                        skillOwner.applyAtkBuff(6);
+                        skillOwner.applyDefBuff(6);
+                    }
+                }
+                break;
             case Weapon.HonorableBlade:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;
