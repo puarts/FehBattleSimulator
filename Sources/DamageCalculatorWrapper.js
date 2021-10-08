@@ -7873,6 +7873,15 @@ class DamageCalculatorWrapper {
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     switch (unit.weapon) {
+                        case Weapon.MusuperuNoEnka:
+                            if (targetUnit.isWeaponSpecialRefined) {
+                                let l = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)).length;
+                                if (l === 0) break;
+                                let amount = Math.min(3, l) * 2;
+                                targetUnit.spdSpur -= amount;
+                                targetUnit.resSpur -= amount;
+                            }
+                            break;
                         case Weapon.Gurimowaru:
                             if (targetUnit.isWeaponSpecialRefined) {
                                 targetUnit.atkSpur -= 4;
@@ -8588,11 +8597,22 @@ class DamageCalculatorWrapper {
                             });
                         break;
                     case Weapon.MusuperuNoEnka:
-                        this.__applyFormSkill(targetUnit,
-                            (unit, amount) => {
-                                unit.atkSpur += amount;
-                                unit.spdSpur += amount;
-                            });
+                        if (!targetUnit.isWeaponRefined) {
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.atkSpur += amount;
+                                    unit.spdSpur += amount;
+                                });
+                        } else {
+                            this.__applyFormSkill(targetUnit,
+                                (unit, amount) => {
+                                    unit.atkSpur += amount;
+                                    unit.spdSpur += 5;
+                                }, 5, 3, 9);
+                            if (targetUnit.isWeaponSpecialRefined) {
+
+                            }
+                        }
                         break;
                 }
 
