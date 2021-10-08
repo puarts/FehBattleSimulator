@@ -8649,9 +8649,6 @@ class DamageCalculatorWrapper {
                                     unit.atkSpur += amount;
                                     unit.spdSpur += 5;
                                 }, 5, 3, 9);
-                            if (targetUnit.isWeaponSpecialRefined) {
-
-                            }
                         }
                         break;
                 }
