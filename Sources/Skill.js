@@ -1149,6 +1149,9 @@ const Weapon = {
     LanternBreathPlus: 1859, // 提灯の竜石+
     EerieScripture: 1862, // 奇夜の福音
     SpiderPlushPlus: 1864, // クモのぬいぐるみ+
+
+    // 2021年10月 武器錬成
+    SoleilsShine: 1855, // ソレイユの陽剣
 }
 
 const Support = {
@@ -2154,6 +2157,7 @@ function isWeaponSpecialRefined(weaponRefinementType) {
 }
 
 const FiresweepWeaponDict = {};
+FiresweepWeaponDict[Weapon.SoleilsShine] = 0;
 FiresweepWeaponDict[Weapon.MiraiNoSeikishiNoYari] = 0;
 FiresweepWeaponDict[Weapon.FiresweepSword] = 0;
 FiresweepWeaponDict[Weapon.FiresweepSwordPlus] = 0;

@@ -1736,6 +1736,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SoleilsShine] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SpiderPlushPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 5;
