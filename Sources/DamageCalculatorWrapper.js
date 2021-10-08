@@ -304,7 +304,7 @@ class DamageCalculatorWrapper {
         this.__applyPrecombatSpecialDamageMult(atkUnit);
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
         this.__calcFixedAddDamage(atkUnit, defUnit, true);
-        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit);
+        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
 
         // 守備、魔防のどちらを参照するか決定
         defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
@@ -4479,13 +4479,6 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.CancelNoOnoPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.CancelNoOno] = func;
         }
-
-        this._applySkillEffectForUnitFuncDict[PassiveB.MoonlightBangle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            {
-                let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * ratio);
-            }
-        };
     }
     __applySkillEffectForUnitImpl_Optimized(skillId, targetUnit, enemyUnit, calcPotentialDamage) {
         let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
@@ -4515,16 +4508,19 @@ class DamageCalculatorWrapper {
         return total;
     }
 
-    static __calcFixedSpecialAddDamage(targetUnit, enemyUnit) {
+    static __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
         switch (targetUnit.passiveB) {
             case PassiveB.MoonlightBangle:
                 {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * ratio);
+                    let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * ratio);
                 }
                 break;
-            case PassiveB.RunaBracelet:
-                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(enemyUnit.getDefInCombat(targetUnit) * 0.5);
+            case PassiveB.RunaBracelet: {
+                let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
+                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.5);
+            }
                 break;
             case PassiveB.Bushido:
                 targetUnit.battleContext.additionalDamageOfSpecial += 10;
