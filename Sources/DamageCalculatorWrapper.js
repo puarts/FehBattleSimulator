@@ -5572,6 +5572,18 @@ class DamageCalculatorWrapper {
                     if (!targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.increaseCooldownCountForDefense = true;
                     }
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                            targetUnit.atkSpur += 5;
+                            targetUnit.spdSpur += 5;
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                            }
+                        }
+                    }
                     break;
                 case Weapon.MermaidBow:
                     if (targetUnit.battleContext.restHpPercentage >= 25 &&

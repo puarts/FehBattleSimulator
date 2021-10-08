@@ -303,6 +303,11 @@ class DamageCalculator {
         let fixedAddDamage = 0;
 
         switch (atkUnit.weapon) {
+            case Weapon.Misteruthin:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    atkUnit.battleContext.additionalDamageOfSpecial += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
+                }
+                break;
             case Weapon.Ginnungagap:
                 if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
                     atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
