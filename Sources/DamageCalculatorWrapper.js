@@ -748,6 +748,11 @@ class DamageCalculatorWrapper {
 
         {
             switch (atkUnit.weapon) {
+                case Weapon.KeenCoyoteBow:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
                 case Weapon.NewDawn:
                 case Weapon.Thunderbrand:
                     if (defUnit.battleContext.restHpPercentage >= 50) {
@@ -1751,6 +1756,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KeenCoyoteBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Laevatein] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect()) {

@@ -57,6 +57,11 @@ __setAttackCount(atkUnit, enemyUnit) {
     atkUnit.battleContext.attackCount = 2;
 }
 
+追撃可能なら自分の攻撃の直後に追撃を行う(攻め立て)
+__applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
+    atkUnit.battleContext.isDesperationActivatable = true;
+}
+
 絶対追撃
 targetUnit.battleContext.followupAttackPriorityIncrement++;
 

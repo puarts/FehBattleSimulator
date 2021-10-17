@@ -1153,6 +1153,9 @@ const Weapon = {
     // 2021年10月 武器錬成
     SoleilsShine: 1855, // ソレイユの陽剣
     Laevatein: 64, // レーヴァテイン
+
+    // 新英雄＆開花フィヨルム
+    KeenCoyoteBow: 1866, // 猛き狼の弓
 }
 
 const Support = {
