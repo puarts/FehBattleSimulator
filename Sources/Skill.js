@@ -1159,6 +1159,7 @@ const Weapon = {
     SpendyScimitar: 1868, // 安くない曲刀
     StoutLancePlus: 1869, // 堅固の槍+
     NiflsBite: 1871, // 絶氷ニフル
+    UnboundAxePlus: 1873, // 孤絶の斧+
 }
 
 const Support = {
