@@ -3509,14 +3509,15 @@ class Unit {
             case StatusType.Res: resLv1IvChange = 1; break;
         }
 
-        switch (this.ascendedAsset) {
-            case StatusType.None: break;
-            case StatusType.Hp: hpLv1IvChange = 1; break;
-            case StatusType.Atk: atkLv1IvChange = 1; break;
-            case StatusType.Spd: spdLv1IvChange = 1; break;
-            case StatusType.Def: defLv1IvChange = 1; break;
-            case StatusType.Res: resLv1IvChange = 1; break;
-        }
+        // 開花得意は順序に影響しない
+        // switch (this.ascendedAsset) {
+        //     case StatusType.None: break;
+        //     case StatusType.Hp: hpLv1IvChange = 1; break;
+        //     case StatusType.Atk: atkLv1IvChange = 1; break;
+        //     case StatusType.Spd: spdLv1IvChange = 1; break;
+        //     case StatusType.Def: defLv1IvChange = 1; break;
+        //     case StatusType.Res: resLv1IvChange = 1; break;
+        // }
 
         switch (this.ivLowStat) {
             case StatusType.None: break;
