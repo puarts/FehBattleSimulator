@@ -121,6 +121,12 @@ __applyInvalidationSkillEffect() {
     defUnit.battleContext.reducesCooldownCount = false;
 }
 
+敵の奥義発動カウント変動量+を無効
+__applyInvalidationSkillEffect() {
+    defUnit.battleContext.increaseCooldownCountForAttack = false;
+    defUnit.battleContext.increaseCooldownCountForDefense = false;
+}
+
 戦闘中、自身の奥義発動カウント変動量+1
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
@@ -175,6 +181,9 @@ __calcMoveCountForCanto(unit) {}
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
+
+神竜の花を自身に使用した回数がN回
+targetUnit.dragonflower === N
 
 【XXX】の状態を付与
 Unit.js

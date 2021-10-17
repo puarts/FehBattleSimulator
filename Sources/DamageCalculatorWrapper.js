@@ -1756,6 +1756,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SpendyScimitar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                let amount = targetUnit.dragonflower >= 1 ? 6 : 4;
+                targetUnit.addAllSpur(amount);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.KeenCoyoteBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -6978,6 +6984,13 @@ class DamageCalculatorWrapper {
 
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         switch (atkUnit.weapon) {
+            case Weapon.SpendyScimitar:
+                if (atkUnit.battleContext.initiatesCombat && atkUnit.dragonflower >= 2) {
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                    defUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.WhirlingGrace:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     if (atkUnit.getEvalSpdInCombat() >= defUnit.getSpdInCombat() + 1) {
