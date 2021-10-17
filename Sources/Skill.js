@@ -1820,6 +1820,7 @@ const PassiveB = {
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
+    DefResSnag3: 1867, // 守備魔防の干渉3
 
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
