@@ -3019,18 +3019,17 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 5;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.CourtlyBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 5;
-                targetUnit.defSpur += 5;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.CourtlyCandlePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 5;
-                targetUnit.defSpur += 5;
-            }
-        };
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.defSpur += 5;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.StoutLancePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.CourtlyBowPlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.CourtlyCandlePlus] = func;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.CraftFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.battleContext.initiatesCombat
                 && targetUnit.battleContext.restHpPercentage >= 25
@@ -7300,6 +7299,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                 }
                 break;
+            case Weapon.StoutLancePlus:
             case Weapon.CourtlyMaskPlus:
             case Weapon.CourtlyBowPlus:
             case Weapon.CourtlyCandlePlus:

@@ -1157,6 +1157,7 @@ const Weapon = {
     // 新英雄＆開花フィヨルム
     KeenCoyoteBow: 1866, // 猛き狼の弓
     SpendyScimitar: 1868, // 安くない曲刀
+    StoutLancePlus: 1869, // 堅固の槍+
 }
 
 const Support = {
