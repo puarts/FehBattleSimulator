@@ -749,11 +749,15 @@ class DamageCalculator {
             if (activatesDefenderSpecial) {
                 if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
+                    if (defUnit.passiveB === PassiveB.HardyFighter3) {
+                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
+                    }
                     isDefenderSpecialActivated = true;
                 }
 
                 if (isDefenderSpecialActivated) {
-                    if (defUnit.passiveB === PassiveB.TateNoKodo3) {
+                    if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
+                        defUnit.passiveB === PassiveB.HardyFighter3) {
                         damageReductionValue = 5;
                     }
                     this.__restoreMaxSpecialCount(defUnit);

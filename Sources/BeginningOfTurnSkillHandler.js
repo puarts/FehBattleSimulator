@@ -590,6 +590,7 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reduceSpecialCount(2);
                 }
                 break;
+            case PassiveB.HardyFighter3:
             case PassiveB.TateNoKodo3:
                 if (this.globalBattleContext.currentTurn == 1) {
                     if (isDefenseSpecial(skillOwner.special)) {

@@ -1153,6 +1153,13 @@ const Weapon = {
     // 2021年10月 武器錬成
     SoleilsShine: 1855, // ソレイユの陽剣
     Laevatein: 64, // レーヴァテイン
+
+    // 新英雄＆開花フィヨルム
+    KeenCoyoteBow: 1866, // 猛き狼の弓
+    SpendyScimitar: 1868, // 安くない曲刀
+    StoutLancePlus: 1869, // 堅固の槍+
+    NiflsBite: 1871, // 絶氷ニフル
+    UnboundAxePlus: 1873, // 孤絶の斧+
 }
 
 const Support = {
@@ -1639,6 +1646,7 @@ const PassiveB = {
     SpecialFighter3: 603,// 奥義隊形3
     CraftFighter3: 1483, // 抑止隊形3
     SlickFighter3: 1497, // 正面隊形・自己3
+    HardyFighter3: 1872, // 盾壁隊形3
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     MikiriHangeki3: 810, // 見切り・反撃不可効果3
@@ -1817,6 +1825,7 @@ const PassiveB = {
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
+    DefResSnag3: 1867, // 守備魔防の干渉3
 
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3

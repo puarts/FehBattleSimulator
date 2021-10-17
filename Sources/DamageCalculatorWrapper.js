@@ -748,6 +748,11 @@ class DamageCalculatorWrapper {
 
         {
             switch (atkUnit.weapon) {
+                case Weapon.KeenCoyoteBow:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
                 case Weapon.NewDawn:
                 case Weapon.Thunderbrand:
                     if (defUnit.battleContext.restHpPercentage >= 50) {
@@ -1751,6 +1756,21 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.HardyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SpendyScimitar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                let amount = targetUnit.dragonflower >= 1 ? 6 : 4;
+                targetUnit.addAllSpur(amount);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.KeenCoyoteBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Laevatein] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect()) {
@@ -3002,18 +3022,17 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 5;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.CourtlyBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 5;
-                targetUnit.defSpur += 5;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.CourtlyCandlePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 5;
-                targetUnit.defSpur += 5;
-            }
-        };
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.defSpur += 5;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.StoutLancePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.CourtlyBowPlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.CourtlyCandlePlus] = func;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.CraftFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.battleContext.initiatesCombat
                 && targetUnit.battleContext.restHpPercentage >= 25
@@ -4320,6 +4339,7 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundBlade] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundBladePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UnboundAxePlus] = func;
         }
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6507,6 +6527,10 @@ class DamageCalculatorWrapper {
             return false;
         }
 
+        if (this.__isThereAllyIn2Spaces(defUnit) && atkUnit.isRangedWeaponType()) {
+            return false;
+        }
+
         if (defUnit.hasStatusEffect(StatusEffectType.CounterattacksDisrupted)) {
             return true;
         }
@@ -6967,6 +6991,13 @@ class DamageCalculatorWrapper {
 
     __applyInvalidationSkillEffect(atkUnit, defUnit) {
         switch (atkUnit.weapon) {
+            case Weapon.SpendyScimitar:
+                if (atkUnit.battleContext.initiatesCombat && atkUnit.dragonflower >= 2) {
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                    defUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.WhirlingGrace:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     if (atkUnit.getEvalSpdInCombat() >= defUnit.getSpdInCombat() + 1) {
@@ -7276,6 +7307,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                 }
                 break;
+            case Weapon.StoutLancePlus:
             case Weapon.CourtlyMaskPlus:
             case Weapon.CourtlyBowPlus:
             case Weapon.CourtlyCandlePlus:
@@ -7964,6 +7996,7 @@ class DamageCalculatorWrapper {
                     switch (unit.weapon) {
                         case Weapon.UnboundBlade:
                         case Weapon.UnboundBladePlus:
+                        case Weapon.UnboundAxePlus:
                             if (this.__isSolo(unit)) {
                                 targetUnit.atkSpur -= 5;
                                 targetUnit.defSpur -= 5;

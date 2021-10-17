@@ -304,6 +304,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.NiflsBite:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.DuskDragonstone:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
