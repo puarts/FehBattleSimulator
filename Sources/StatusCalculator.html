@@ -106,6 +106,12 @@
                                 {{ option.text }}
                             </option>
                         </select>
+                        <label class="normal">開花得意: </label>
+                        <select v-model="value.ascendedAsset" @change="updateStatus()">
+                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
                         <br />
                         <span v-if="value.groupId == UnitGroupType.Ally">
                             <label class="normal">召喚士との絆: </label>

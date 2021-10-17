@@ -1014,6 +1014,8 @@ class Unit {
 
         this.ivHighStat = StatusType.None;
         this.ivLowStat = StatusType.None;
+        //this.hasAscendedAsset = false; // 開花得意の有効無効(必要なかったら消す)
+        this.ascendedAsset = StatusType.None; // 開花得意の対象
 
         this.restHp = 1; // ダメージ計算で使うHP
         this.reservedDamage = 0;
@@ -1566,6 +1568,7 @@ class Unit {
             + ValueDelimiter + this.defGrowthRate
             + ValueDelimiter + this.resGrowthRate
             + ValueDelimiter + this.blessing6
+            + ValueDelimiter + this.ascendedAsset
             ;
     }
 
@@ -1652,6 +1655,7 @@ class Unit {
         if (Number.isFinite(Number(splited[i]))) { this.defGrowthRate = Number(splited[i]); ++i; }
         if (Number.isFinite(Number(splited[i]))) { this.resGrowthRate = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.blessing6 = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.ascendedAsset = Number(splited[i]); ++i; }
     }
 
     fromPerTurnStatusString(value) {
@@ -3378,6 +3382,15 @@ class Unit {
             case StatusType.Res: resLv1IvChange = 1; break;
         }
 
+        switch (this.ascendedAsset) {
+            case StatusType.None: break;
+            case StatusType.Hp: hpLv1IvChange = 1; break;
+            case StatusType.Atk: atkLv1IvChange = 1; break;
+            case StatusType.Spd: spdLv1IvChange = 1; break;
+            case StatusType.Def: defLv1IvChange = 1; break;
+            case StatusType.Res: resLv1IvChange = 1; break;
+        }
+
         if (this.merge == 0) {
             switch (this.ivLowStat) {
                 case StatusType.None: break;
@@ -3429,6 +3442,18 @@ class Unit {
             case StatusType.Res: this.resGrowthRate += 0.05; break;
         }
 
+        // if (this.hasAscendedAsset)
+        {
+            switch (this.ascendedAsset) {
+                case StatusType.None: break;
+                case StatusType.Hp: this.hpGrowthRate += 0.05; break;
+                case StatusType.Atk: this.atkGrowthRate += 0.05; break;
+                case StatusType.Spd: this.spdGrowthRate += 0.05; break;
+                case StatusType.Def: this.defGrowthRate += 0.05; break;
+                case StatusType.Res: this.resGrowthRate += 0.05; break;
+            }
+        }
+
         if (this.merge == 0) {
             switch (this.ivLowStat) {
                 case StatusType.None: break;
@@ -3470,13 +3495,21 @@ class Unit {
     }
 
     updateStatusByMergeAndDragonFlower() {
-        // todo: 本来はキャラ毎の個体値上昇値を参照
         let hpLv1IvChange = 0;
         let atkLv1IvChange = 0;
         let spdLv1IvChange = 0;
         let defLv1IvChange = 0;
         let resLv1IvChange = 0;
         switch (this.ivHighStat) {
+            case StatusType.None: break;
+            case StatusType.Hp: hpLv1IvChange = 1; break;
+            case StatusType.Atk: atkLv1IvChange = 1; break;
+            case StatusType.Spd: spdLv1IvChange = 1; break;
+            case StatusType.Def: defLv1IvChange = 1; break;
+            case StatusType.Res: resLv1IvChange = 1; break;
+        }
+
+        switch (this.ascendedAsset) {
             case StatusType.None: break;
             case StatusType.Hp: hpLv1IvChange = 1; break;
             case StatusType.Atk: atkLv1IvChange = 1; break;
@@ -3668,7 +3701,10 @@ class Unit {
             + Number(this.defGrowthRate)
             + Number(this.resGrowthRate);
     }
-
+    /**
+     * @param  {SeasonType} majorSeason=SeasonType.None
+     * @param  {SeasonType} minorSeason=SeasonType.None
+     */
     updateArenaScore(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
         if (this.heroIndex < 0) {
             this.weaponSp = 0;
