@@ -79,6 +79,11 @@ static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
 
+戦闘中、自分が受けている反撃不可を無効
+__canDisableCounterAttack(atkUnit, defUnit) {
+    return false;
+}
+
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
 __applyBonusDoubler(targetUnit, enemyUnit) {}
 

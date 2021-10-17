@@ -6523,6 +6523,10 @@ class DamageCalculatorWrapper {
             return false;
         }
 
+        if (this.__isThereAllyIn2Spaces(defUnit) && atkUnit.isRangedWeaponType()) {
+            return false;
+        }
+
         if (defUnit.hasStatusEffect(StatusEffectType.CounterattacksDisrupted)) {
             return true;
         }
