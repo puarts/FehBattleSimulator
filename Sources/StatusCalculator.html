@@ -94,19 +94,20 @@
                             @input="updateStatus()" style="width:50px" v-bind:max="value.maxDragonflower" />
                     </p>
                     <p>
-                        <label class="normal" for="ivHigh">得意: </label>
+                        <label class="normal">得意: </label>
                         <select v-model="value.ivHighStat" @change="updateStatus()">
                             <option v-for="option in IvStateOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
                         </select>
-                        <label class="normal" for="ivLow">苦手: </label>
+                        <label class="normal">苦手: </label>
                         <select v-model="value.ivLowStat" @change="updateStatus()">
                             <option v-for="option in IvStateOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
                         </select>
-                        <label class="normal">開花得意: </label>
+                        <label class="normal"><img src="/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
+                                height="20"></label>
                         <select v-model="value.ascendedAsset" @change="updateStatus()">
                             <option v-for="option in IvStateOptions" v-bind:value="option.id">
                                 {{ option.text }}
