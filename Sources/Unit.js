@@ -1012,10 +1012,14 @@ class Unit {
         this.resIncrement = 0;
         this.resDecrement = 0;
 
+        /** @member {StatusType} */
         this.ivHighStat = StatusType.None;
+
+        /** @member {StatusType} */
         this.ivLowStat = StatusType.None;
-        //this.hasAscendedAsset = false; // 開花得意の有効無効(必要なかったら消す)
-        this.ascendedAsset = StatusType.None; // 開花得意の対象
+
+        /** @member {StatusType} 開花得意の対象 */
+        this.ascendedAsset = StatusType.None;
 
         this.restHp = 1; // ダメージ計算で使うHP
         this.reservedDamage = 0;
@@ -3551,10 +3555,24 @@ class Unit {
             };
 
             if (this.merge > 0 && this.ivHighStat == StatusType.None) {
-                // 基準値で限界突破済み
-                updateStatus(0);
-                updateStatus(1);
-                updateStatus(2);
+                // 基準値で限界突破済みの場合
+                let updatedCount = 0;
+                let statIndex = 0;
+                do {
+                    let targetStatus = statusList[statIndex].type;
+                    if (targetStatus !== this.ascendedAsset) {
+                        // 開花得意は基準値の上昇ステータスから除外
+                        switch (targetStatus) {
+                            case StatusType.Hp: this._maxHpWithSkills += 1; break;
+                            case StatusType.Atk: this.atkWithSkills += 1; break;
+                            case StatusType.Spd: this.spdWithSkills += 1; break;
+                            case StatusType.Def: this.defWithSkills += 1; break;
+                            case StatusType.Res: this.resWithSkills += 1; break;
+                        }
+                        ++updatedCount;
+                    }
+                    ++statIndex;
+                } while (updatedCount !== 3);
             }
 
             // 限界突破
