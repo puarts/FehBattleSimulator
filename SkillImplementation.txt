@@ -57,6 +57,11 @@ __setAttackCount(atkUnit, enemyUnit) {
     atkUnit.battleContext.attackCount = 2;
 }
 
+追撃可能なら自分の攻撃の直後に追撃を行う(攻め立て)
+__applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
+    atkUnit.battleContext.isDesperationActivatable = true;
+}
+
 絶対追撃
 targetUnit.battleContext.followupAttackPriorityIncrement++;
 
@@ -72,6 +77,11 @@ targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 反撃不可
 static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
+}
+
+戦闘中、自分が受けている反撃不可を無効
+__canDisableCounterAttack(atkUnit, defUnit) {
+    return false;
 }
 
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
@@ -114,6 +124,12 @@ targetUnit.battleContext.reducesCooldownCount = true;
 自身の奥義発動カウント変動量-を無効
 __applyInvalidationSkillEffect() {
     defUnit.battleContext.reducesCooldownCount = false;
+}
+
+敵の奥義発動カウント変動量+を無効
+__applyInvalidationSkillEffect() {
+    defUnit.battleContext.increaseCooldownCountForAttack = false;
+    defUnit.battleContext.increaseCooldownCountForDefense = false;
 }
 
 戦闘中、自身の奥義発動カウント変動量+1
@@ -170,6 +186,9 @@ __calcMoveCountForCanto(unit) {}
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
+
+神竜の花を自身に使用した回数がN回
+targetUnit.dragonflower === N
 
 【XXX】の状態を付与
 Unit.js

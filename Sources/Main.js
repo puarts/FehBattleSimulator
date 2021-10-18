@@ -7218,6 +7218,16 @@ class AetherRaidTacticsBoard {
                         u.applyDefDebuff(-6);
                     }
                     break;
+                case PassiveB.DefResSnag3:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applyDefDebuff(-6);
+                        u.applyResDebuff(-6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applyDefDebuff(-6);
+                        u.applyResDebuff(-6);
+                    }
+                    break;
                 case Weapon.TrasenshiNoTsumekiba:
                     this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-4));
                     this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-4));
