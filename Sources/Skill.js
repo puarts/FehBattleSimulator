@@ -1160,6 +1160,7 @@ const Weapon = {
     StoutLancePlus: 1869, // 堅固の槍+
     NiflsBite: 1871, // 絶氷ニフル
     UnboundAxePlus: 1873, // 孤絶の斧+
+    InstantBowPlus: 1876, // 瞬撃の弓+
 }
 
 const Support = {

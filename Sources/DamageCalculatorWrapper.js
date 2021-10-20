@@ -867,6 +867,7 @@ class DamageCalculatorWrapper {
                 atkUnit.atkSpur += 4;
                 atkUnit.defSpur += 4;
             };
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantBowPlus] = func;
             self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantLancePlus] = func;
             self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantAxePlus] = func;
         }
@@ -6417,6 +6418,7 @@ class DamageCalculatorWrapper {
 
         if (!defUnit.battleContext.invalidatesInvalidationOfFollowupAttack) {
             switch (atkUnit.weapon) {
+                case Weapon.InstantBowPlus:
                 case Weapon.InstantLancePlus:
                 case Weapon.InstantAxePlus:
                     --followupAttackPriority;
