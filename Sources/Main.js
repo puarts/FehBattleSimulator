@@ -2871,33 +2871,38 @@ class AetherRaidTacticsBoard {
             moveUnitToTrashBox(atkUnit);
             this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
         }
-        else if (defUnit.hp == 0) {
-            this.audioManager.playSoundEffect(SoundEffectId.Dead);
-            switch (defUnit.passiveS) {
-                case PassiveS.TozokuNoGuzoRakurai:
-                    g_appData.resonantBattleItems.push(ItemType.RakuraiNoJufu);
-                    break;
-                case PassiveS.TozokuNoGuzoKobu:
-                    g_appData.resonantBattleItems.push(ItemType.KobuNoTsunobue);
-                    break;
-                case PassiveS.TozokuNoGuzoKogun:
-                    g_appData.resonantBattleItems.push(ItemType.KogunNoBoots);
-                    break;
-                case PassiveS.TozokuNoGuzoKusuri:
-                    g_appData.resonantBattleItems.push(ItemType.Tokkoyaku);
-                    break;
-                case PassiveS.TozokuNoGuzoOdori:
-                    g_appData.resonantBattleItems.push(ItemType.OdorikoNoVeru);
-                    break;
-                case PassiveS.TozokuNoGuzoOugi:
-                    g_appData.resonantBattleItems.push(ItemType.OugiNoYaiba);
-                    break;
-            }
-
+        else {
             // マップからの除外と追跡対象の更新
-            let updateRequiredTile = defUnit.placedTile;
-            moveUnitToTrashBox(defUnit);
-            this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
+            // 護り手ユニットが倒されている可能性もあるので全員見る
+            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(defUnit, true)) {
+                if (unit.hp == 0) {
+                    this.audioManager.playSoundEffect(SoundEffectId.Dead);
+                    switch (unit.passiveS) {
+                        case PassiveS.TozokuNoGuzoRakurai:
+                            g_appData.resonantBattleItems.push(ItemType.RakuraiNoJufu);
+                            break;
+                        case PassiveS.TozokuNoGuzoKobu:
+                            g_appData.resonantBattleItems.push(ItemType.KobuNoTsunobue);
+                            break;
+                        case PassiveS.TozokuNoGuzoKogun:
+                            g_appData.resonantBattleItems.push(ItemType.KogunNoBoots);
+                            break;
+                        case PassiveS.TozokuNoGuzoKusuri:
+                            g_appData.resonantBattleItems.push(ItemType.Tokkoyaku);
+                            break;
+                        case PassiveS.TozokuNoGuzoOdori:
+                            g_appData.resonantBattleItems.push(ItemType.OdorikoNoVeru);
+                            break;
+                        case PassiveS.TozokuNoGuzoOugi:
+                            g_appData.resonantBattleItems.push(ItemType.OugiNoYaiba);
+                            break;
+                    }
+
+                    let updateRequiredTile = unit.placedTile;
+                    moveUnitToTrashBox(unit);
+                    this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
+                }
+            }
         }
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
