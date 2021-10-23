@@ -2901,6 +2901,7 @@ class AetherRaidTacticsBoard {
                     let updateRequiredTile = unit.placedTile;
                     moveUnitToTrashBox(unit);
                     this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
+                    break;
                 }
             }
         }
