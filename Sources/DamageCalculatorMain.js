@@ -274,7 +274,6 @@ class DamageCalcData {
             passiveSInfos);
 
         this.mode = DamageCalculatorMode.Simple;
-        this.mode = DamageCalculatorMode.RoundRobin;
         this.roundRobinParam = new RoundRobinParam();
         this.roundRobinCombatMode = RoundRobinCombatMode.Offense;
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
@@ -616,7 +615,6 @@ class DamageCalcData {
                 this.roundRobinParam.passiveS_skillSwappingMode)) {
                 unit.passiveS = this.roundRobinParam.passiveS;
             }
-            this.heroDatabase.updateUnitSkillInfo(unit);
             this.heroDatabase.initUnitStatus(unit, false);
 
             units.push(unit);
@@ -633,6 +631,8 @@ class DamageCalcData {
             let name = heroInfo.name;
             let unit = new Unit("", name, groupId);
             tile.setUnit(unit);
+            unit.initByHeroInfo(heroInfo);
+
             unit.level = 40;
             unit.merge = this.roundRobinParam.merge;
             unit.dragonflower = this.roundRobinParam.dragonflower == MaxDragonFlower ?
@@ -645,7 +645,10 @@ class DamageCalcData {
                 unit.blessingEffects.push(BlessingType.Hp5_Def5);
                 unit.blessingEffects.push(BlessingType.Hp5_Res5);
             }
-            this.heroDatabase.initUnit(unit, heroInfo.name, false);
+
+            unit.initializeSkillsToDefault();
+            this.heroDatabase.initUnitStatus(unit, false);
+
             units.push(unit);
         }
         return units;
@@ -669,6 +672,7 @@ class DamageCalcData {
         // length = 1;
         let startTime = Date.now();
         let logEnabled = self.logger.isLogEnabled;
+        this.battleContext.currentTurn = 1;
         if (this.roundRobinCombatMode === RoundRobinCombatMode.Offense) {
             // console.profile();
 
@@ -726,7 +730,7 @@ class DamageCalcData {
                         let result = results[i].result;
                         let unit = results[i].unit;
                         let winRate = result.winCount / defUnits.length;
-                        self.logger.writeLog(`${unit.moveCount}&#009;${unit.attackRange}&#009;${unit.heroInfo.name}&#009;${winRate}`);
+                        self.logger.writeLog(`${unit.moveCount}_${unit.attackRange}&#009;${unit.heroInfo.name}&#009;${winRate}`);
                     }
                     const endTime = Date.now();
                     let diffSec = (endTime - startTime) * 0.001;
