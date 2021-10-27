@@ -860,6 +860,19 @@ class BeginningOfTurnSkillHandler {
                     otherUnit.applyResBuff(5);
                 }
                 break;
+            case PassiveC.WithEveryone2: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
+                    found = true;
+                    unit.applyDefBuff(6);
+                    unit.applyResBuff(6);
+                }
+                if (found) {
+                    skillOwner.applyDefBuff(6);
+                    skillOwner.applyResBuff(6);
+                }
+            }
+                break;
             case Weapon.Sinmara:
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     unit.reserveTakeDamage(20);
