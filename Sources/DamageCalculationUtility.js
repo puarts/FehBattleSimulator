@@ -60,6 +60,20 @@ class DamageCalculationUtility {
 
     /// 相性有利不利を判定して返します。
     static calcAttackerTriangleAdvantage(atkUnit, defUnit) {
+        // 無色に有利な効果を持つ場合
+        if (atkUnit.battleContext.isAdvantageForColorless || atkUnit.isAdvantageForColorless(defUnit)) {
+            if (defUnit.color === ColorType.Colorless) {
+                return TriangleAdvantage.Advantageous;
+            }
+        }
+
+        if (defUnit.battleContext.isAdvantageForColorless || defUnit.isAdvantageForColorless(atkUnit)) {
+            if (atkUnit.color === ColorType.Colorless) {
+                return TriangleAdvantage.Disadvantageous;
+            }
+        }
+
+        // 通常の有利判定
         let tableIndex = atkUnit.color * 4 + defUnit.color;
         return ColorToTriangleAdvantageTable[tableIndex];
     }
