@@ -6637,6 +6637,9 @@ class DamageCalculatorWrapper {
                 && atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)
                 && !isPhysicalWeaponType(defUnit.weaponType))
             || (atkUnit.passiveB === PassiveB.FuinNoTate && isWeaponTypeBreath(defUnit.weaponType))
+            || (atkUnit.passiveB === PassiveB.BindingShield2 &&
+                (isWeaponTypeBreath(defUnit.weaponType) ||
+                    atkUnit.getEvalSpdInCombat() >= defUnit.getEvalSpdInCombat() + 5))
         ) {
             return true;
         }
@@ -6744,6 +6747,11 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveB.FuinNoTate:
                     if (isWeaponTypeBreath(defUnit.weaponType)) {
+                        ++followupAttackPriority;
+                    }
+                    break;
+                case PassiveB.BindingShield2:
+                    if (isWeaponTypeBreath(defUnit.weaponType) || atkUnit.getEvalSpdInCombat() >= defUnit.getEvalSpdInCombat() + 5) {
                         ++followupAttackPriority;
                     }
                     break;
@@ -6939,6 +6947,11 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveB.FuinNoTate:
                     if (isWeaponTypeBreath(atkUnit.weaponType)) {
+                        --followupAttackPriority;
+                    }
+                    break;
+                case PassiveB.BindingShield2:
+                    if (isWeaponTypeBreath(atkUnit.weaponType) || defUnit.getEvalSpdInCombat() >= atkUnit.getEvalSpdInCombat() + 5) {
                         --followupAttackPriority;
                     }
                     break;

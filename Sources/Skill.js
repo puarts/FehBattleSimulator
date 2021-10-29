@@ -1805,6 +1805,7 @@ const PassiveB = {
     SolarBrace2: 1827, // 太陽の腕輪・承
     KyusyuTaikei3: 1072, // 急襲隊形3
     FuinNoTate: 666, // 封印の盾
+    BindingShield2: 1878, // 封印の盾・承
     TeniNoKona: 661, // 転移の粉
     TsuigekiRing: 658, // 追撃リング
     TateNoKodo3: 634, // 盾の鼓動3
