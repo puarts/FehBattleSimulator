@@ -75,6 +75,11 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Special.LifeUnending:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(5);
+                }
+                break;
             case Weapon.Roputous:
                 if (skillOwner.isWeaponSpecialRefined) {
                     this.__applySabotageSkill(skillOwner, unit => {
@@ -859,6 +864,19 @@ class BeginningOfTurnSkillHandler {
                     otherUnit.applyDefBuff(5);
                     otherUnit.applyResBuff(5);
                 }
+                break;
+            case PassiveC.WithEveryone2: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
+                    found = true;
+                    unit.applyDefBuff(6);
+                    unit.applyResBuff(6);
+                }
+                if (found) {
+                    skillOwner.applyDefBuff(6);
+                    skillOwner.applyResBuff(6);
+                }
+            }
                 break;
             case Weapon.Sinmara:
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 2)) {

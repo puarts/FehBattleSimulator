@@ -1161,6 +1161,9 @@ const Weapon = {
     NiflsBite: 1871, // 絶氷ニフル
     UnboundAxePlus: 1873, // 孤絶の斧+
     InstantBowPlus: 1876, // 瞬撃の弓+
+
+    // 2021年10月 伝承ファ
+    DazzlingBreath: 1882, // 光輝のブレス
 }
 
 const Support = {
@@ -1312,6 +1315,7 @@ const Special = {
     NjorunsZeal: 1021, // ノヴァの聖戦士
     Galeforce: 496, // 疾風迅雷
     Miracle: 497, // 祈り
+    LifeUnending: 1883, // 永遠を生きるもの
 
     Nagatate: 477, // 長盾
     Otate: 475, // 大盾
@@ -1351,6 +1355,7 @@ const PassiveA = {
     None: -1,
     CloseCounter: 561, // 近距離反撃
     CloseReversal: 1803, // 近反・金剛の構え
+    DistantStance: 1884, // 遠反・明鏡の構え
     DistantCounter: 562, // 遠距離反撃
     DistantPressure: 1795, // 遠反・速さの渾身
     DeathBlow3: 528, // 鬼神の一撃3
@@ -1805,6 +1810,7 @@ const PassiveB = {
     SolarBrace2: 1827, // 太陽の腕輪・承
     KyusyuTaikei3: 1072, // 急襲隊形3
     FuinNoTate: 666, // 封印の盾
+    BindingShield2: 1878, // 封印の盾・承
     TeniNoKona: 661, // 転移の粉
     TsuigekiRing: 658, // 追撃リング
     TateNoKodo3: 634, // 盾の鼓動3
@@ -2090,6 +2096,7 @@ const PassiveC = {
     SurtrsMenace: 767, // 炎王の威嚇
     SurtrsPortent: 1792, // 炎王の脅嚇
     WithEveryone: 754, // みんなと一緒に
+    WithEveryone2: 1879, // みんなと一緒に・承
     SolitaryDream: 898, // ひとりぼっちのゆめ
     DivineFang: 915, // 神竜王の牙
     KyokoNoKisaku3: 726, // 恐慌の奇策3

@@ -48,7 +48,7 @@ enemyUnit.battleContext.restHpPercentage >= N
 
 速さが敵よりN以上高い時
 __applySkillEffectForUnitAfterCombatStatusFixed() {
-    if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + N) {
+    if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + N) {
     }
 }
 

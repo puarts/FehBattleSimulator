@@ -817,6 +817,14 @@ class PostCombatSkillHander {
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Special.LifeUnending:
+                    if (attackUnit.battleContext.isSpecialActivated) {
+                        if (!attackUnit.isOncePerMapSpecialActivated) {
+                            attackUnit.isOncePerMapSpecialActivated = true;
+                            attackUnit.reserveHeal(99);
+                        }
+                    }
+                    break;
                 case Special.HolyKnightAura:
                     if (attackUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {

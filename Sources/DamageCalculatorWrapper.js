@@ -536,6 +536,7 @@ class DamageCalculatorWrapper {
 
     __canActivateSaveSkill(atkUnit, unit) {
         switch (unit.passiveC) {
+            case PassiveC.WithEveryone2:
             case PassiveC.ArFarSave3:
                 if (atkUnit.isRangedWeaponType()) {
                     return true;
@@ -1633,6 +1634,9 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseReversal] = (defUnit, atkUnit, calcPotentialDamage) => {
             defUnit.defSpur += 5;
         };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantStance] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 5;
+        };
     }
 
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
@@ -1757,6 +1761,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DazzlingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addAllSpur(-5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.HardyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
         }
@@ -2735,6 +2748,14 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveC.WithEveryone2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 4;
+                targetUnit.defSpur += 4;
+                targetUnit.resSpur += 4;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.ArNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.atkSpur += 4;
@@ -6628,6 +6649,9 @@ class DamageCalculatorWrapper {
                 && atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)
                 && !isPhysicalWeaponType(defUnit.weaponType))
             || (atkUnit.passiveB === PassiveB.FuinNoTate && isWeaponTypeBreath(defUnit.weaponType))
+            || (atkUnit.passiveB === PassiveB.BindingShield2 &&
+                (isWeaponTypeBreath(defUnit.weaponType) ||
+                    atkUnit.getEvalSpdInCombat() >= defUnit.getEvalSpdInCombat() + 5))
         ) {
             return true;
         }
@@ -6735,6 +6759,11 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveB.FuinNoTate:
                     if (isWeaponTypeBreath(defUnit.weaponType)) {
+                        ++followupAttackPriority;
+                    }
+                    break;
+                case PassiveB.BindingShield2:
+                    if (isWeaponTypeBreath(defUnit.weaponType) || atkUnit.getEvalSpdInCombat() >= defUnit.getEvalSpdInCombat() + 5) {
                         ++followupAttackPriority;
                     }
                     break;
@@ -6930,6 +6959,11 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveB.FuinNoTate:
                     if (isWeaponTypeBreath(atkUnit.weaponType)) {
+                        --followupAttackPriority;
+                    }
+                    break;
+                case PassiveB.BindingShield2:
+                    if (isWeaponTypeBreath(atkUnit.weaponType) || defUnit.getEvalSpdInCombat() >= atkUnit.getEvalSpdInCombat() + 5) {
                         --followupAttackPriority;
                     }
                     break;
