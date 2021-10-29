@@ -821,7 +821,9 @@ class DamageCalculator {
                     defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
                 }
                 totalDamage = defUnit.restHp - 1;
-                if (defUnit.special === Special.Miracle) {
+                if (defUnit.special === Special.Miracle ||
+                    defUnit.special === Special.LifeUnending) {
+                    defUnit.battleContext.isSpecialActivated = true;
                     this.__restoreMaxSpecialCount(defUnit);
                 }
             }
@@ -867,6 +869,7 @@ class DamageCalculator {
                 break;
         }
         switch (unit.special) {
+            case Special.LifeUnending:
             case Special.Miracle:
                 if (unit.tmpSpecialCount === 0) return true;
                 break;

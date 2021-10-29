@@ -75,6 +75,11 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Special.LifeUnending:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(5);
+                }
+                break;
             case Weapon.Roputous:
                 if (skillOwner.isWeaponSpecialRefined) {
                     this.__applySabotageSkill(skillOwner, unit => {

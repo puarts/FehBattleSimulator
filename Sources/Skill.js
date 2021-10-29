@@ -1315,6 +1315,7 @@ const Special = {
     NjorunsZeal: 1021, // ノヴァの聖戦士
     Galeforce: 496, // 疾風迅雷
     Miracle: 497, // 祈り
+    LifeUnending: 1883, // 永遠を生きるもの
 
     Nagatate: 477, // 長盾
     Otate: 475, // 大盾
