@@ -1763,7 +1763,7 @@ class DamageCalculatorWrapper {
         let self = this;
         this._applySkillEffectForUnitFuncDict[Weapon.DazzlingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAllSpur(5);
+                enemyUnit.addAllSpur(-5);
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
                 if (this.__isThereAllyIn2Spaces(targetUnit)) {
                     targetUnit.battleContext.reducesCooldownCount = true;
