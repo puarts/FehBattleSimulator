@@ -1634,6 +1634,9 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseReversal] = (defUnit, atkUnit, calcPotentialDamage) => {
             defUnit.defSpur += 5;
         };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantStance] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 5;
+        };
     }
 
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
