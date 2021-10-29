@@ -1758,6 +1758,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DazzlingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.HardyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
         }

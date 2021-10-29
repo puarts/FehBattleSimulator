@@ -1161,6 +1161,9 @@ const Weapon = {
     NiflsBite: 1871, // 絶氷ニフル
     UnboundAxePlus: 1873, // 孤絶の斧+
     InstantBowPlus: 1876, // 瞬撃の弓+
+
+    // 2021年10月　伝承ファ
+    DazzlingBreath: 1882, // 光輝のブレス
 }
 
 const Support = {
