@@ -1110,8 +1110,8 @@ class Unit {
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
 
-        // 奥義スキル「永遠を生きるもの」の回復効果が発動したかを記憶しておく
-        this.isLifeUnendingHealActivated = false;
+        // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
+        this.isOncePerMapSpecialActivated = false;
 
         // 比翼スキルを使用したか
         this.duoOrHarmonizedSkillActivationCount = 0;
@@ -1613,7 +1613,7 @@ class Unit {
             + ValueDelimiter + boolToInt(this.isCantoActivatedInCurrentTurn)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
             + ValueDelimiter + this.restMoveCount
-            + ValueDelimiter + boolToInt(this.isLifeUnendingHealActivated)
+            + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
             ;
     }
 
@@ -1702,7 +1702,7 @@ class Unit {
         if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isLifeUnendingHealActivated = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
     }
 
 

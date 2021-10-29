@@ -819,8 +819,8 @@ class PostCombatSkillHander {
             switch (skillId) {
                 case Special.LifeUnending:
                     if (attackUnit.battleContext.isSpecialActivated) {
-                        if (!attackUnit.isLifeUnendingHealActivated) {
-                            attackUnit.isLifeUnendingHealActivated = true;
+                        if (!attackUnit.isOncePerMapSpecialActivated) {
+                            attackUnit.isOncePerMapSpecialActivated = true;
                             attackUnit.reserveHeal(99);
                         }
                     }
