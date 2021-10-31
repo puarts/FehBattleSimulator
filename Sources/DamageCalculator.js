@@ -558,7 +558,7 @@ class DamageCalculator {
                 }
             }
 
-            this.writeDebugLog("[相性判定] 攻撃属性:" + colorTypeToString(atkUnit.color) + "、防御属性:" + colorTypeToString(defUnit.color));
+            this.writeDebugLog(`[相性判定] 攻撃属性:${this.getUnitColorLog(atkUnit)}、防御属性:${this.getUnitColorLog(defUnit)}`);
             this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio.toFixed(2));
             if (defUnit.battleContext.isOnDefensiveTile) {
                 this.writeDebugLog(defUnit.getNameWithGroup() + "は防御地形補正 1.3");
@@ -597,6 +597,14 @@ class DamageCalculator {
         }
 
         return new OneAttackResult(damage, specialAddDamage, atkCountPerOneAttack);
+    }
+
+    getUnitColorLog(unit) {
+        let result = colorTypeToString(unit.color);
+        if (unit.isAdvantageForColorless()) {
+            return result + "(無属性有利)";
+        }
+        return result;
     }
 
     /**

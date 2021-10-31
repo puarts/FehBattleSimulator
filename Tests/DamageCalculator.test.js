@@ -1,9 +1,42 @@
+const g_testHeroDatabase = new test_HeroDatabase(
+  heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+  passiveSInfos);
+
+/// 無属性有利のテスト
+test('DamageCalculator_ColorlessAdvantageousTest', () => test_executeTest(() => {
+  let heroDatabase = g_testHeroDatabase;
+  let atkUnit = heroDatabase.createUnit("闇リオン");
+  atkUnit.atkWithSkills = 40;
+
+  // 対無属性
+  {
+    let defUnit = heroDatabase.createUnit("クロード", UnitGroupType.Enemy);
+    defUnit.resWithSkills = 30;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    expect(result.atkUnit_normalAttackDamage).toBe(18);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+  }
+
+  // 無属性以外の相性なし
+  {
+    let defUnit = heroDatabase.createUnit("マリク", UnitGroupType.Enemy);
+    defUnit.resWithSkills = 30;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    expect(result.atkUnit_normalAttackDamage).toBe(10);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+  }
+
+}));
 
 /// 護り手のテストです。
 test('DamageCalculator_SaverSkillTest', () => test_executeTest(() => {
-  let heroDatabase = new test_HeroDatabase(
-    heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-    passiveSInfos);
+  let heroDatabase = g_testHeroDatabase;
 
   let atkUnit = heroDatabase.createUnit("アルフォンス");
   let defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
@@ -35,9 +68,7 @@ test('DamageCalculator_SaverSkillTest', () => test_executeTest(() => {
 
 test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
   let log = "";
-  let heroDatabase = new test_HeroDatabase(
-    heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-    passiveSInfos);
+  let heroDatabase = g_testHeroDatabase;
 
   // アルフォンスのデフォルト状態の戦闘結果がGUI上と同じ計算結果になる事を確認
   let atkUnit = null;

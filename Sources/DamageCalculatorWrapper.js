@@ -2579,10 +2579,11 @@ class DamageCalculatorWrapper {
                 enemyUnit.resSpur -= 6;
                 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
                 targetUnit.battleContext.invalidatesOwnResDebuff = true;
-                if (enemyUnit.attackRange === 2) {
-                    targetUnit.battleContext.isAdvantageForColorless = true;
-                }
+                targetUnit.battleContext.isAdvantageForColorless = isRangedWeaponType(enemyUnit.weaponType);
             }
+        };
+        this._applySkillEffectForUnitFuncDict[Weapon.BloodTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.isAdvantageForColorless = isRangedWeaponType(enemyUnit.weaponType);
         };
         this._applySkillEffectForUnitFuncDict[Weapon.StaffOfRausten] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {

@@ -2051,12 +2051,8 @@ class Unit {
         return this.hasSpecial && this.specialCount == 0;
     }
 
-    isAdvantageForColorless(enemyUnit) {
-        if (this.weapon == Weapon.BloodTome) {
-            return isRangedWeaponType(enemyUnit.weaponType) && enemyUnit.color == ColorType.Colorless;
-        }
-
-        return isAdvantageousForColorless(this.weapon);
+    isAdvantageForColorless() {
+        return isAdvantageousForColorless(this.weapon) || this.battleContext.isAdvantageForColorless;
     }
 
     getBuffTotalInCombat(enemyUnit) {
