@@ -38,6 +38,7 @@ const Hero = {
     DuoHinoka: 700,
     HarmonizedLeif: 711,
     DuoSothis: 723,
+    DuoCorrin: 735,
 };
 
 function isThiefIndex(heroIndex) {
@@ -1070,8 +1071,8 @@ class Unit {
         this.resAppliedGrowthRate = 0.0;
         this.defAppliedGrowthRate = 0.0;
 
-
         this.isActionDone = false;
+        this.isCombatDone = false;
         this.isBonusChar = false;
 
         this.statusEffects = [];
@@ -1614,6 +1615,7 @@ class Unit {
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
             + ValueDelimiter + this.restMoveCount
             + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
+            + ValueDelimiter + boolToInt(this.isCombatDone)
             ;
     }
 
@@ -1703,6 +1705,7 @@ class Unit {
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
     }
 
 
@@ -2036,6 +2039,7 @@ class Unit {
                 || this.heroIndex == Hero.DuoHinoka
                 || this.heroIndex == Hero.HarmonizedLeif
                 || this.heroIndex == Hero.DuoSothis
+                || this.heroIndex == Hero.DuoCorrin
             );
     }
 
@@ -2388,6 +2392,7 @@ class Unit {
         }
 
         this.isActionDone = false;
+        this.isCombatDone = false;
         this.resetBuffs();
         this.setMoveCountFromMoveType();
         this.clearPositiveStatusEffects();

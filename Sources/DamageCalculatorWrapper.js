@@ -376,6 +376,7 @@ class DamageCalculatorWrapper {
         self.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, calcPotentialDamage);
 
         self.__calcFixedAddDamage(atkUnit, defUnit, false);
+        self.__calcFixedAddDamage(defUnit, atkUnit, false);
         // });
 
         // self.profile.profile("__applySkillEffect 3", () => {
@@ -6036,6 +6037,32 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.NinjutsuScrolls:
+                if (atkUnit.battleContext.initiatesCombat) {
+                    atkUnit.battleContext.additionalDamage +=
+                        DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+                            atkUnit, defUnit, isPrecombat,
+                            x => x.getEvalSpdInPrecombat(),
+                            (x, y) => x.getEvalSpdInCombat(y),
+                            0.7,
+                            7
+                        );
+                }
+                break;
+            case Weapon.ShurikenCleaverPlus:
+            case Weapon.NinjaNaginataPlus:
+            case Weapon.NinjaYumiPlus:
+                if (atkUnit.battleContext.initiatesCombat) {
+                    atkUnit.battleContext.additionalDamage +=
+                        DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+                            atkUnit, defUnit, isPrecombat,
+                            x => x.getEvalSpdInPrecombat(),
+                            (x, y) => x.getEvalSpdInCombat(y),
+                            0.5,
+                            4
+                        );
+                }
+                break;
             case Weapon.MakenMistoruthin:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (defUnit.restHpPercentage >= 75) {
@@ -6164,19 +6191,21 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.NewFoxkitFang:
-                atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
                     atkUnit, defUnit, isPrecombat,
                     x => x.getEvalResInPrecombat(),
-                    (x, y) => x.getEvalResInCombat(y));
+                    (x, y) => x.getEvalResInCombat(y),
+                    0.7, 7);
                 break;
             case Weapon.KenhimeNoKatana:
                 if (atkUnit.isWeaponRefined) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.15);
                 } else {
-                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
                         atkUnit, defUnit, isPrecombat,
                         x => x.getEvalSpdInPrecombat(),
-                        (x, y) => x.getEvalSpdInCombat(y));
+                        (x, y) => x.getEvalSpdInCombat(y),
+                        0.7, 7);
                 }
                 break;
             case Weapon.KarasuOuNoHashizume:
@@ -6186,34 +6215,38 @@ class DamageCalculatorWrapper {
                 if (atkUnit.isWeaponRefined) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
                 } else {
-                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
                         atkUnit, defUnit, isPrecombat,
                         x => x.getEvalSpdInPrecombat(),
-                        (x, y) => x.getEvalSpdInCombat(y));
+                        (x, y) => x.getEvalSpdInCombat(y),
+                        0.7, 7);
                 }
                 break;
             case Weapon.KieiWayuNoKen:
                 if (atkUnit.isWeaponSpecialRefined) {
-                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
                         atkUnit, defUnit, isPrecombat,
                         x => x.getEvalSpdInPrecombat(),
-                        (x, y) => x.getEvalSpdInCombat(y));
+                        (x, y) => x.getEvalSpdInCombat(y),
+                        0.7, 7);
                 }
                 break;
             case Weapon.RefreshedFang:
                 if (defUnit.battleContext.restHpPercentage >= 75) {
-                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
                         atkUnit, defUnit, isPrecombat,
                         x => x.getEvalSpdInPrecombat(),
-                        (x, y) => x.getEvalSpdInCombat(y));
+                        (x, y) => x.getEvalSpdInCombat(y),
+                        0.7, 7);
                 }
                 break;
             case Weapon.ResolvedFang:
                 if (defUnit.battleContext.restHpPercentage >= 75) {
-                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOf70Percent(
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
                         atkUnit, defUnit, isPrecombat,
                         x => x.getEvalDefInPrecombat(),
-                        (x, y) => x.getEvalDefInCombat(y));
+                        (x, y) => x.getEvalDefInCombat(y),
+                        0.7, 7);
                 }
                 break;
             default:
@@ -6235,7 +6268,7 @@ class DamageCalculatorWrapper {
         return isPrecombat ? atkUnit.getResInPrecombat() : atkUnit.getResInCombat(defUnit);
     }
 
-    static __calcAddDamageForDiffOf70Percent(atkUnit, defUnit, isPrecombat, getPrecombatFunc, getCombatFunc) {
+    static __calcAddDamageForDiffOfNPercent(atkUnit, defUnit, isPrecombat, getPrecombatFunc, getCombatFunc, ratio, maxAddDamage) {
         let diff = 0;
         if (isPrecombat) {
             diff = getPrecombatFunc(atkUnit) - getPrecombatFunc(defUnit);
@@ -6244,9 +6277,9 @@ class DamageCalculatorWrapper {
             diff = getCombatFunc(atkUnit, defUnit) - getCombatFunc(defUnit, atkUnit);
         }
         if (diff > 0) {
-            let addDamage = Math.trunc(diff * 0.7);
-            if (addDamage > 7) {
-                addDamage = 7;
+            let addDamage = Math.trunc(diff * ratio);
+            if (addDamage > maxAddDamage) {
+                addDamage = maxAddDamage;
             }
             return addDamage;
         }

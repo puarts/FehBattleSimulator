@@ -767,8 +767,9 @@ class AetherRaidTacticsBoard {
         }
 
         switch (duoUnit.heroIndex) {
+            case Hero.DuoCorrin:
             case Hero.DuoLyn:
-                if (!duoUnit.isActionDone) {
+                if (!duoUnit.isActionDone || !duoUnit.isCombatDone) {
                     return false;
                 }
                 break;
@@ -980,6 +981,7 @@ class AetherRaidTacticsBoard {
                     duoUnit.addStatusEffect(StatusEffectType.Vantage);
                 }
                 break;
+            case Hero.DuoCorrin:
             case Hero.DuoLyn:
                 {
                     duoUnit.isActionDone = false;
@@ -2852,6 +2854,7 @@ class AetherRaidTacticsBoard {
         this.damageCalc.clearLog();
 
         let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack);
+        atkUnit.isCombatDone = true;
 
         // this.clearSimpleLog();
         this.writeSimpleLogLine(this.damageCalc.simpleLog);
@@ -6502,9 +6505,11 @@ class AetherRaidTacticsBoard {
         switch (assistUnit.support) {
             case Support.RallyUpAtk:
             case Support.RallyUpSpd:
+            case Support.RallyUpDef:
             case Support.RallyUpRes:
             case Support.RallyUpAtkPlus:
             case Support.RallyUpSpdPlus:
+            case Support.RallyUpDefPlus:
             case Support.RallyUpResPlus:
                 {
                     this.writeLogLine(assistUnit.supportInfo.name + "の間接的な補助対象を選択");
@@ -7856,6 +7861,8 @@ class AetherRaidTacticsBoard {
                     case Support.RallyUpAtkPlus:
                     case Support.RallyUpSpd:
                     case Support.RallyUpSpdPlus:
+                    case Support.RallyUpDef:
+                    case Support.RallyUpDefPlus:
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
                         return this.__applyRallyUp(supporterUnit, targetUnit);

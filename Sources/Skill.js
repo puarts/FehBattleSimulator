@@ -1164,6 +1164,13 @@ const Weapon = {
 
     // 2021年10月 伝承ファ
     DazzlingBreath: 1882, // 光輝のブレス
+
+    // 隠密に任務遂行中・・・
+    NabataKunai: 1885, // くの一の飛刀
+    NinjaYumiPlus: 1888, // 忍の和弓+
+    NinjaNaginataPlus: 1890, // 忍の薙刀+
+    NinjutsuScrolls: 1892, // 双風忍法帳
+    ShurikenCleaverPlus: 1895, // 忍の三叉斧+
 }
 
 const Support = {
@@ -1201,10 +1208,12 @@ const Support = {
     // 大応援
     RallyUpAtk: 435,
     RallyUpAtkPlus: 436,
-    RallyUpRes: 1154,
-    RallyUpResPlus: 1153,
     RallyUpSpd: 1501, // 速さの大応援
     RallyUpSpdPlus: 1499, // 速さの大応援+
+    RallyUpDef: 1894, // 守備の大応援
+    RallyUpDefPlus: 1893, // 守備の大応援+
+    RallyUpRes: 1154,
+    RallyUpResPlus: 1153,
 
     // 2種応援
     RallyAtkDefPlus: 876,
@@ -2212,6 +2221,8 @@ function isRallyUp(support) {
         case Support.RallyUpAtkPlus:
         case Support.RallyUpSpd:
         case Support.RallyUpSpdPlus:
+        case Support.RallyUpDef:
+        case Support.RallyUpDefPlus:
         case Support.RallyUpRes:
         case Support.RallyUpResPlus:
             return true;
@@ -2255,6 +2266,8 @@ function getSpdBuffAmount(support) {
 /// 応援スキルの守備の強化量を取得します。
 function getDefBuffAmount(support) {
     switch (support) {
+        case Support.RallyUpDef: return 4;
+        case Support.RallyUpDefPlus: return 6;
         case Support.RallyDefense: return 4;
         case Support.RallySpdDef: return 3;
         case Support.RallyAtkDef: return 3;
