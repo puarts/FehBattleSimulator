@@ -6037,6 +6037,7 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.NinjaNaginataPlus:
             case Weapon.NinjaYumiPlus:
                 if (atkUnit.battleContext.initiatesCombat) {
                     atkUnit.battleContext.additionalDamage +=

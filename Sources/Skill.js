@@ -1168,6 +1168,7 @@ const Weapon = {
     // 隠密に任務遂行中・・・
     NabataKunai: 1885, // くの一の飛刀
     NinjaYumiPlus: 1888, // 忍の和弓+
+    NinjaNaginataPlus: 1890, // 忍の薙刀+
 }
 
 const Support = {
