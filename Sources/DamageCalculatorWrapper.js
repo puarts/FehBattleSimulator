@@ -6049,6 +6049,7 @@ class DamageCalculatorWrapper {
                         );
                 }
                 break;
+            case Weapon.ShurikenCleaverPlus:
             case Weapon.NinjaNaginataPlus:
             case Weapon.NinjaYumiPlus:
                 if (atkUnit.battleContext.initiatesCombat) {

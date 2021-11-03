@@ -1170,6 +1170,7 @@ const Weapon = {
     NinjaYumiPlus: 1888, // 忍の和弓+
     NinjaNaginataPlus: 1890, // 忍の薙刀+
     NinjutsuScrolls: 1892, // 双風忍法帳
+    ShurikenCleaverPlus: 1895, // 忍の三叉斧+
 }
 
 const Support = {
