@@ -1164,6 +1164,9 @@ const Weapon = {
 
     // 2021年10月 伝承ファ
     DazzlingBreath: 1882, // 光輝のブレス
+
+    // 隠密に任務遂行中・・・
+    NabataKunai: 1885, // くの一の飛刀
 }
 
 const Support = {
