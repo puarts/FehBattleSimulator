@@ -52,6 +52,15 @@ __applySkillEffectForUnitAfterCombatStatusFixed() {
     }
 }
 
+速さが敵より高ければ、ダメージ+速さの差のN%(最大M)
+__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+        atkUnit, defUnit, isPrecombat,
+        x => x.getEvalSpdInPrecombat(),
+        (x, y) => x.getEvalSpdInCombat(y)
+        N / 100, M);
+}
+
 2回攻撃
 __setAttackCount(atkUnit, enemyUnit) {
     atkUnit.battleContext.attackCount = 2;
