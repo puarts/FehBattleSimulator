@@ -6037,6 +6037,18 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.NinjutsuScrolls:
+                if (atkUnit.battleContext.initiatesCombat) {
+                    atkUnit.battleContext.additionalDamage +=
+                        DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+                            atkUnit, defUnit, isPrecombat,
+                            x => x.getEvalSpdInPrecombat(),
+                            (x, y) => x.getEvalSpdInCombat(y),
+                            0.7,
+                            7
+                        );
+                }
+                break;
             case Weapon.NinjaNaginataPlus:
             case Weapon.NinjaYumiPlus:
                 if (atkUnit.battleContext.initiatesCombat) {

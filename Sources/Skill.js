@@ -1169,6 +1169,7 @@ const Weapon = {
     NabataKunai: 1885, // くの一の飛刀
     NinjaYumiPlus: 1888, // 忍の和弓+
     NinjaNaginataPlus: 1890, // 忍の薙刀+
+    NinjutsuScrolls: 1892, // 双風忍法帳
 }
 
 const Support = {
