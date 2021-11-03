@@ -6502,9 +6502,11 @@ class AetherRaidTacticsBoard {
         switch (assistUnit.support) {
             case Support.RallyUpAtk:
             case Support.RallyUpSpd:
+            case Support.RallyUpDef:
             case Support.RallyUpRes:
             case Support.RallyUpAtkPlus:
             case Support.RallyUpSpdPlus:
+            case Support.RallyUpDefPlus:
             case Support.RallyUpResPlus:
                 {
                     this.writeLogLine(assistUnit.supportInfo.name + "の間接的な補助対象を選択");
@@ -7856,6 +7858,8 @@ class AetherRaidTacticsBoard {
                     case Support.RallyUpAtkPlus:
                     case Support.RallyUpSpd:
                     case Support.RallyUpSpdPlus:
+                    case Support.RallyUpDef:
+                    case Support.RallyUpDefPlus:
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
                         return this.__applyRallyUp(supporterUnit, targetUnit);
