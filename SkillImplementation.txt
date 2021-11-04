@@ -218,7 +218,7 @@ function hasPathfinderEffect(skillId) {}
 targetUnit.dragonflower === N
 
 武器錬成
-if (targetUnit.isWeaponRefined) {
+if (!targetUnit.isWeaponRefined) {
 } else {
     if (targetUnit.isWeaponSpecialRefined) {
     }

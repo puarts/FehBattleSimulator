@@ -1762,6 +1762,21 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TenraiArumazu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    enemyUnit.atkSpur -= 5;
+                    enemyUnit.defSpur -= 5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DivineMist] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -6955,8 +6970,14 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.TenraiArumazu:
-                    if (this.__isAllyCountIsGreaterThanEnemyCount(defUnit, atkUnit, calcPotentialDamage)) {
-                        --followupAttackPriority;
+                    if (!defUnit.isWeaponRefined) {
+                        if (this.__isAllyCountIsGreaterThanEnemyCount(defUnit, atkUnit, calcPotentialDamage)) {
+                            --followupAttackPriority;
+                        }
+                    } else {
+                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                            --followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.AnkigoroshiNoYumi:
