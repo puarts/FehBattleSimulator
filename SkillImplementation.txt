@@ -217,6 +217,18 @@ function hasPathfinderEffect(skillId) {}
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
 
+武器錬成
+if (targetUnit.isWeaponRefined) {
+} else {
+    if (targetUnit.isWeaponSpecialRefined) {
+    }
+}
+武器錬成(錬成効果追加のみ)
+if (targetUnit.isWeaponRefined) {
+    if (targetUnit.isWeaponSpecialRefined) {
+    }
+}
+
 【XXX】の状態を付与
 Unit.js
 const StatusEffectType = {
