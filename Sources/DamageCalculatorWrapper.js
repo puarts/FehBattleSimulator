@@ -1762,6 +1762,20 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.IzunNoKajitsu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TenraiArumazu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -7676,6 +7690,14 @@ class DamageCalculatorWrapper {
             }
         }
         switch (allyUnit.weapon) {
+            case Weapon.IzunNoKajitsu:
+                if (allyUnit.isWeaponRefined) {
+                    if (allyUnit.isWeaponSpecialRefined) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                    }
+                }
+                break;
             case Weapon.LoveCandelabraPlus:
                 targetUnit.atkSpur += 4;
                 targetUnit.defSpur += 4;
@@ -7685,7 +7707,7 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 4;
                 break;
             case Weapon.GigaExcalibur:
-                if (targetUnit.isWeaponSpecialRefined) {
+                if (allyUnit.isWeaponSpecialRefined) {
                     targetUnit.atkSpur += 4;
                     targetUnit.spdSpur += 4;
                 }
