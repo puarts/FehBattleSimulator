@@ -104,6 +104,24 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 targetUnit.battleContext.invalidateAllOwnDebuffs();
 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
 
+自分が弱化を受けていれば、能力値が弱化の値の2倍だけ上昇(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7+14+4で、戦闘中、攻撃+11となる)
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    case Weapon.ShinkenFalcion:
+    case Weapon.ChaosRagnell:
+        {
+            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
+            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
+            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
+            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+            targetUnit.atkSpur += atkAdd;
+            targetUnit.spdSpur += spdAdd;
+            targetUnit.defSpur += defAdd;
+            targetUnit.resSpur += resAdd;
+        }
+        break;
+}
+
 敵が不利な状態異常を受けている時
 if (enemyUnit.hasNegativeStatusEffect())
 

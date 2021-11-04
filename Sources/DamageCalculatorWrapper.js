@@ -1762,6 +1762,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ShinkenFalcion] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DazzlingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.addAllSpur(-5);
@@ -5479,13 +5491,14 @@ class DamageCalculatorWrapper {
                     targetUnit.resSpur += Math.abs(enemyUnit.resDebuffTotal);
                 }
                 break;
+            case Weapon.ShinkenFalcion:
             case Weapon.ChaosRagnell:
                 {
                     let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
                     let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
                     let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
                     let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`混沌ラグネルにより攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
                     targetUnit.atkSpur += atkAdd;
                     targetUnit.spdSpur += spdAdd;
                     targetUnit.defSpur += defAdd;
