@@ -1762,6 +1762,20 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KazesNeedle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 4;
+                targetUnit.resSpur += 4;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                    targetUnit.resSpur += 4;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.IzunNoKajitsu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -5661,10 +5675,19 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.KazesNeedle:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + 1) {
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.RyukenFalcion:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25 && isPhysicalWeaponType(enemyUnit.weaponType)) {
-                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + 1) {
                                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                             }
                         }
@@ -6096,6 +6119,16 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.KazesNeedle:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
+                            DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+                            atkUnit.battleContext.additionalDamage += 5;
+                        }
+                    }
+                }
+                break;
             case Weapon.NinjutsuScrolls:
                 if (atkUnit.battleContext.initiatesCombat) {
                     atkUnit.battleContext.additionalDamage +=
