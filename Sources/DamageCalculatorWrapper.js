@@ -3552,8 +3552,20 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Arrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getAtkInPrecombat() <= enemyUnit.getAtkInPrecombat() - 5) {
-                targetUnit.addAllSpur(5);
+            if (!targetUnit.isWeaponRefined) {
+                if (targetUnit.getAtkInPrecombat() <= enemyUnit.getAtkInPrecombat() - 5) {
+                    targetUnit.addAllSpur(5);
+                }
+            } else {
+                if (targetUnit.getAtkInPrecombat() <= enemyUnit.getAtkInPrecombat() - 1) {
+                    targetUnit.addAllSpur(5);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Naga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6119,6 +6131,14 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.Arrow:
+                if (atkUnit.isWeaponRefined) {
+                    let defUnitAtk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                    if (DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat) < defUnitAtk) {
+                        atkUnit.battleContext.additionalDamage += Math.trunc(defUnitAtk * 0.15);
+                    }
+                }
+                break;
             case Weapon.KazesNeedle:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
