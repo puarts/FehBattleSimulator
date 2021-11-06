@@ -1762,6 +1762,47 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FangedBasilikos] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.spdSpur -= 5;
+                    enemyUnit.defSpur -= 5;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Byureisuto] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (self.globalBattleContext.isOddTurn || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.atkSpur += 5;
+                    enemyUnit.atkSpur -= 5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.atkSpur += 5;
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.KazesNeedle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 4;
+                targetUnit.resSpur += 4;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                    targetUnit.resSpur += 4;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.IzunNoKajitsu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -3538,8 +3579,20 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Arrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getAtkInPrecombat() <= enemyUnit.getAtkInPrecombat() - 5) {
-                targetUnit.addAllSpur(5);
+            if (!targetUnit.isWeaponRefined) {
+                if (targetUnit.getAtkInPrecombat() <= enemyUnit.getAtkInPrecombat() - 5) {
+                    targetUnit.addAllSpur(5);
+                }
+            } else {
+                if (targetUnit.getAtkInPrecombat() <= enemyUnit.getAtkInPrecombat() - 1) {
+                    targetUnit.addAllSpur(5);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Naga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5273,6 +5326,16 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.FangedBasilikos:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                            enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit) * 2;
+                            enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit) * 2;
+                        }
+                    }
+                }
+                break;
             case Weapon.DivineMist:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -5661,10 +5724,19 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.KazesNeedle:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + 1) {
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.RyukenFalcion:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25 && isPhysicalWeaponType(enemyUnit.weaponType)) {
-                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + 1) {
                                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                             }
                         }
@@ -6096,6 +6168,24 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.Arrow:
+                if (atkUnit.isWeaponRefined) {
+                    let defUnitAtk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                    if (DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat) < defUnitAtk) {
+                        atkUnit.battleContext.additionalDamage += Math.trunc(defUnitAtk * 0.15);
+                    }
+                }
+                break;
+            case Weapon.KazesNeedle:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
+                            DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+                            atkUnit.battleContext.additionalDamage += 5;
+                        }
+                    }
+                }
+                break;
             case Weapon.NinjutsuScrolls:
                 if (atkUnit.battleContext.initiatesCombat) {
                     atkUnit.battleContext.additionalDamage +=

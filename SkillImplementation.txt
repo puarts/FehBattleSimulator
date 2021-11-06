@@ -52,15 +52,6 @@ __applySkillEffectForUnitAfterCombatStatusFixed() {
     }
 }
 
-速さが敵より高ければ、ダメージ+速さの差のN%(最大M)
-__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
-    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
-        atkUnit, defUnit, isPrecombat,
-        x => x.getEvalSpdInPrecombat(),
-        (x, y) => x.getEvalSpdInCombat(y)
-        N / 100, M);
-}
-
 2回攻撃
 __setAttackCount(atkUnit, enemyUnit) {
     atkUnit.battleContext.attackCount = 2;
@@ -159,6 +150,9 @@ __applyInvalidationSkillEffect() {
     defUnit.battleContext.increaseCooldownCountForDefense = false;
 }
 
+自身の攻撃による奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
+atkUnit.battleContext.increaseCooldownCountForAttack = true;
+
 戦闘中、自身の奥義発動カウント変動量+1
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
@@ -186,9 +180,19 @@ targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // Nダメージ
-    fixedAddDamage += N;
-    // 速さの20%
-    fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+    atkUnit.battleContext.additionalDamage += N;
+    // 速さが敵より1以上高い時ダメージ+N(戦闘前奥義も含む)
+    if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
+        DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+        atkUnit.battleContext.additionalDamage += N;
+    }
+    // 速さが敵より高ければ、ダメージ+速さの差のN%(最大M)
+    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+        atkUnit, defUnit, isPrecombat,
+        x => x.getEvalSpdInPrecombat(),
+        (x, y) => x.getEvalSpdInCombat(y)
+        N / 100, M);
+    }
 }
 
 奥義によるダメージ+N

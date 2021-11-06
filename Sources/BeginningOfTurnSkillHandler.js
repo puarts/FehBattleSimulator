@@ -1198,7 +1198,15 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.EvenDefWave3: this.__applyWaveSkill(skillOwner, 0, x => { x.applyDefBuff(6); }); break;
             case PassiveC.EvenResWave3: this.__applyWaveSkill(skillOwner, 0, x => { x.applyResBuff(6); }); break;
             case Weapon.Byureisuto:
-                this.__applyWaveSkill(skillOwner, 1, x => { x.applyAllBuff(4); });
+                if (!skillOwner.isWeaponRefined) {
+                    this.__applyWaveSkill(skillOwner, 1, x => { x.applyAllBuff(4); });
+                } else {
+                    if (this.__findNearestEnemies(skillOwner, 4).length > 0 || this.globalBattleContext.isOddTurn) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.applyAllBuff(5);
+                        }
+                    }
+                }
                 break;
             case Weapon.Jikurinde:
                 if (skillOwner.isWeaponRefined) {

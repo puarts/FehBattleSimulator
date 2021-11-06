@@ -1171,6 +1171,10 @@ const Weapon = {
     NinjaNaginataPlus: 1890, // 忍の薙刀+
     NinjutsuScrolls: 1892, // 双風忍法帳
     ShurikenCleaverPlus: 1895, // 忍の三叉斧+
+
+    // 2021年11月 武器錬成
+    KazesNeedle: 1881, // スズカゼの疾風針
+    FangedBasilikos: 1880, // 狂牙バシリコス
 }
 
 const Support = {
