@@ -1762,6 +1762,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FangedBasilikos] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.spdSpur -= 5;
+                    enemyUnit.defSpur -= 5;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Byureisuto] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (self.globalBattleContext.isOddTurn || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -5314,6 +5326,16 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.FangedBasilikos:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                            enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit) * 2;
+                            enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit) * 2;
+                        }
+                    }
+                }
+                break;
             case Weapon.DivineMist:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
