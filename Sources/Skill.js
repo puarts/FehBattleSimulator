@@ -2533,6 +2533,8 @@ MeleeWeaponTypeTable[WeaponType.RedBreath] = 0;
 MeleeWeaponTypeTable[WeaponType.BlueBreath] = 0;
 MeleeWeaponTypeTable[WeaponType.GreenBreath] = 0;
 MeleeWeaponTypeTable[WeaponType.ColorlessBreath] = 0;
+MeleeWeaponTypeTable[WeaponType.Breath] = 0;
+MeleeWeaponTypeTable[WeaponType.Beast] = 0;
 
 /// 武器タイプが1距離射程の武器であるかを判定します。
 function isMeleeWeaponType(weaponType) {

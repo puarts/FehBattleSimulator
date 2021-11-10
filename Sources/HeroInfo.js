@@ -372,8 +372,8 @@ class HeroInfo {
 
         switch (this._moveType) {
             case MoveType.Infantry:
-                if (releaseDate < 20190101) {
-                    // リリース日で二分探索したところ、獣登場の2019年が境界だった
+                if (releaseDate < 20190220) {
+                    // 第2世代と第3世代が境界
                     return 20;
                 }
                 else {
