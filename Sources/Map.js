@@ -3254,8 +3254,14 @@ class BattleMap {
                         }
                         break;
                     case Weapon.IzunNoKajitsu:
-                        if (ally.hpPercentage >= 50) {
-                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                        if (!ally.isWeaponSpecialRefined) {
+                            if (ally.hpPercentage >= 50) {
+                                for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                    yield tile;
+                                }
+                            }
+                        } else {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
                                 yield tile;
                             }
                         }

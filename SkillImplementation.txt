@@ -52,15 +52,6 @@ __applySkillEffectForUnitAfterCombatStatusFixed() {
     }
 }
 
-速さが敵より高ければ、ダメージ+速さの差のN%(最大M)
-__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
-    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
-        atkUnit, defUnit, isPrecombat,
-        x => x.getEvalSpdInPrecombat(),
-        (x, y) => x.getEvalSpdInCombat(y)
-        N / 100, M);
-}
-
 2回攻撃
 __setAttackCount(atkUnit, enemyUnit) {
     atkUnit.battleContext.attackCount = 2;
@@ -104,6 +95,24 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 targetUnit.battleContext.invalidateAllOwnDebuffs();
 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
 
+自分が弱化を受けていれば、能力値が弱化の値の2倍だけ上昇(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7+14+4で、戦闘中、攻撃+11となる)
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    case Weapon.ShinkenFalcion:
+    case Weapon.ChaosRagnell:
+        {
+            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
+            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
+            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
+            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+            targetUnit.atkSpur += atkAdd;
+            targetUnit.spdSpur += spdAdd;
+            targetUnit.defSpur += defAdd;
+            targetUnit.resSpur += resAdd;
+        }
+        break;
+}
+
 敵が不利な状態異常を受けている時
 if (enemyUnit.hasNegativeStatusEffect())
 
@@ -141,6 +150,9 @@ __applyInvalidationSkillEffect() {
     defUnit.battleContext.increaseCooldownCountForDefense = false;
 }
 
+自身の攻撃による奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
+atkUnit.battleContext.increaseCooldownCountForAttack = true;
+
 戦闘中、自身の奥義発動カウント変動量+1
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
@@ -168,9 +180,19 @@ targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // Nダメージ
-    fixedAddDamage += N;
-    // 速さの20%
-    fixedAddDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
+    atkUnit.battleContext.additionalDamage += N;
+    // 速さが敵より1以上高い時ダメージ+N(戦闘前奥義も含む)
+    if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
+        DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+        atkUnit.battleContext.additionalDamage += N;
+    }
+    // 速さが敵より高ければ、ダメージ+速さの差のN%(最大M)
+    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+        atkUnit, defUnit, isPrecombat,
+        x => x.getEvalSpdInPrecombat(),
+        (x, y) => x.getEvalSpdInCombat(y)
+        N / 100, M);
+    }
 }
 
 奥義によるダメージ+N
@@ -198,6 +220,18 @@ function hasPathfinderEffect(skillId) {}
 
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
+
+武器錬成
+if (!targetUnit.isWeaponRefined) {
+} else {
+    if (targetUnit.isWeaponSpecialRefined) {
+    }
+}
+武器錬成(錬成効果追加のみ)
+if (targetUnit.isWeaponRefined) {
+    if (targetUnit.isWeaponSpecialRefined) {
+    }
+}
 
 【XXX】の状態を付与
 Unit.js
