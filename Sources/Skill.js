@@ -1305,6 +1305,7 @@ const Special = {
     HonoNoMonsyo: 466, // 炎の紋章
     HerosBlood: 1232, // 英雄の血脈
     KuroNoGekko: 471, // 黒の月光
+    Lethality: 1898, // 滅殺
     AoNoTenku: 472, // 蒼の天空
     RadiantAether2: 1628, // 蒼の天空・承
     MayhemAether: 1309, // 暴の天空
@@ -2430,6 +2431,7 @@ NormalAttackSpecialDict[Special.ShiningEmblem] = 0; // 光炎の紋章
 NormalAttackSpecialDict[Special.HonoNoMonsyo] = 0; // 炎の紋章
 NormalAttackSpecialDict[Special.HerosBlood] = 0;
 NormalAttackSpecialDict[Special.KuroNoGekko] = 0; // 黒の月光
+NormalAttackSpecialDict[Special.Lethality] = 0; // 滅殺
 NormalAttackSpecialDict[Special.AoNoTenku] = 0; // 蒼の天空
 NormalAttackSpecialDict[Special.RadiantAether2] = 0; // 蒼の天空・承
 NormalAttackSpecialDict[Special.MayhemAether] = 0; // 暴の天空

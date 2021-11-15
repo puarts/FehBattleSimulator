@@ -869,6 +869,7 @@ class DamageCalcData {
 
     __getCount4Specials() {
         return [
+            Special.Lethality, // 滅殺
         ];
     }
 

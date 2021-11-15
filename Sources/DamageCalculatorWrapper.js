@@ -7304,6 +7304,10 @@ class DamageCalculatorWrapper {
         this._applySpecialSkillEffectFuncDict[Special.KuroNoGekko] = (targetUnit, enemyUnit) => {
             targetUnit.battleContext.specialSufferPercentage = 80;
         };
+        this._applySpecialSkillEffectFuncDict[Special.Lethality] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialSufferPercentage = 75;
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        };
         {
             let func = (targetUnit, enemyUnit) => {
                 // 天空
