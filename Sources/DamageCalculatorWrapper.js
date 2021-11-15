@@ -402,8 +402,8 @@ class DamageCalculatorWrapper {
 
         // 効果を無効化するスキル
         {
-            self.__applyInvalidationSkillEffect(atkUnit, defUnit);
-            self.__applyInvalidationSkillEffect(defUnit, atkUnit);
+            self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
+            self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
         }
 
         // 奥義
@@ -1762,6 +1762,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FiremansHook] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FangedBasilikos] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 5;
@@ -7222,8 +7228,13 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applyInvalidationSkillEffect(atkUnit, defUnit) {
+    __applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         switch (atkUnit.weapon) {
+            case Weapon.FiremansHook:
+                if (atkUnit.battleContext.initiatesCombat || this.__isSolo(atkUnit) || calcPotentialDamage) {
+                    defUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.SpendyScimitar:
                 if (atkUnit.battleContext.initiatesCombat && atkUnit.dragonflower >= 2) {
                     defUnit.battleContext.increaseCooldownCountForAttack = false;

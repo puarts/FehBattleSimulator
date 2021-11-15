@@ -1175,6 +1175,9 @@ const Weapon = {
     // 2021年11月 武器錬成
     KazesNeedle: 1881, // スズカゼの疾風針
     FangedBasilikos: 1880, // 狂牙バシリコス
+
+    // 新英雄&開花レーギャルン
+    FiremansHook: 1897, // 火消しの暗刃
 }
 
 const Support = {
