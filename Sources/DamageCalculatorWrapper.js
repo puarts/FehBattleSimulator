@@ -4482,6 +4482,7 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundBlade] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundBladePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UnboundLancePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundAxePlus] = func;
         }
         {
@@ -8264,6 +8265,7 @@ class DamageCalculatorWrapper {
                     switch (unit.weapon) {
                         case Weapon.UnboundBlade:
                         case Weapon.UnboundBladePlus:
+                        case Weapon.UnboundLancePlus:
                         case Weapon.UnboundAxePlus:
                             if (this.__isSolo(unit)) {
                                 targetUnit.atkSpur -= 5;

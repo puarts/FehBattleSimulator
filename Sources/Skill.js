@@ -1179,6 +1179,7 @@ const Weapon = {
     // 新英雄&開花レーギャルン
     FiremansHook: 1897, // 火消しの暗刃
     DamiellBow: 1899, // ディアメル家の宝弓
+    UnboundLancePlus: 1901, // 孤絶の槍+
 }
 
 const Support = {
