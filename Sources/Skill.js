@@ -1180,6 +1180,7 @@ const Weapon = {
     FiremansHook: 1897, // 火消しの暗刃
     DamiellBow: 1899, // ディアメル家の宝弓
     UnboundLancePlus: 1901, // 孤絶の槍+
+    FlameOfMuspell: 1903, // 絶炎ムスペル
 }
 
 const Support = {

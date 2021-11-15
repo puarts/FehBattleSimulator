@@ -5345,6 +5345,21 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.FlameOfMuspell:
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.spdSpur += 6;
+                    let amount = 0;
+                    let buff = targetUnit.getBuffTotalInCombat(enemyUnit) + enemyUnit.getBuffTotalInCombat(targetUnit);
+                    amount = Math.min(Math.trunc(buff * 0.5), 12);
+                    if (amount > 0) {
+                        targetUnit.addAllSpur(amount);
+                    }
+                    if (buff >= 10) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                }
+                break;
             case Weapon.FangedBasilikos:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.isWeaponSpecialRefined) {
