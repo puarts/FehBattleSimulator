@@ -402,8 +402,8 @@ class DamageCalculatorWrapper {
 
         // 効果を無効化するスキル
         {
-            self.__applyInvalidationSkillEffect(atkUnit, defUnit);
-            self.__applyInvalidationSkillEffect(defUnit, atkUnit);
+            self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
+            self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
         }
 
         // 奥義
@@ -1762,6 +1762,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DamiellBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FiremansHook] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FangedBasilikos] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 5;
@@ -3414,6 +3426,12 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesOwnResDebuff = true;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefBond4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[Weapon.VezuruNoYoran] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                 targetUnit.battleContext.invalidateAllOwnDebuffs();
@@ -4464,6 +4482,7 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundBlade] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundBladePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UnboundLancePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundAxePlus] = func;
         }
         {
@@ -5326,6 +5345,21 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.FlameOfMuspell:
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.spdSpur += 6;
+                    let amount = 0;
+                    let buff = targetUnit.getBuffTotalInCombat(enemyUnit) + enemyUnit.getBuffTotalInCombat(targetUnit);
+                    amount = Math.min(Math.trunc(buff * 0.5), 12);
+                    if (amount > 0) {
+                        targetUnit.addAllSpur(amount);
+                    }
+                    if (buff >= 10) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                }
+                break;
             case Weapon.FangedBasilikos:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.isWeaponSpecialRefined) {
@@ -7222,8 +7256,13 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applyInvalidationSkillEffect(atkUnit, defUnit) {
+    __applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         switch (atkUnit.weapon) {
+            case Weapon.FiremansHook:
+                if (atkUnit.battleContext.initiatesCombat || this.__isSolo(atkUnit) || calcPotentialDamage) {
+                    defUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.SpendyScimitar:
                 if (atkUnit.battleContext.initiatesCombat && atkUnit.dragonflower >= 2) {
                     defUnit.battleContext.increaseCooldownCountForAttack = false;
@@ -7292,6 +7331,10 @@ class DamageCalculatorWrapper {
         };
         this._applySpecialSkillEffectFuncDict[Special.KuroNoGekko] = (targetUnit, enemyUnit) => {
             targetUnit.battleContext.specialSufferPercentage = 80;
+        };
+        this._applySpecialSkillEffectFuncDict[Special.Lethality] = (targetUnit, enemyUnit) => {
+            targetUnit.battleContext.specialSufferPercentage = 75;
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         };
         {
             let func = (targetUnit, enemyUnit) => {
@@ -8237,6 +8280,7 @@ class DamageCalculatorWrapper {
                     switch (unit.weapon) {
                         case Weapon.UnboundBlade:
                         case Weapon.UnboundBladePlus:
+                        case Weapon.UnboundLancePlus:
                         case Weapon.UnboundAxePlus:
                             if (this.__isSolo(unit)) {
                                 targetUnit.atkSpur -= 5;
@@ -8444,6 +8488,10 @@ class DamageCalculatorWrapper {
                     case PassiveA.AtkResBond4:
                         targetUnit.atkSpur += 7;
                         targetUnit.resSpur += 7;
+                        break;
+                    case PassiveA.SpdDefBond4:
+                        targetUnit.spdSpur += 7;
+                        targetUnit.defSpur += 7;
                         break;
                     case PassiveA.AtkSpdBond1:
                         targetUnit.atkSpur += 3;

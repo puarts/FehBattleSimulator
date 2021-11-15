@@ -1299,6 +1299,13 @@ class BeginningOfTurnSkillHandler {
                 if (this.__isSolo(skillOwner)) { skillOwner.applySpdBuff(6); skillOwner.applyResBuff(6); } break;
             case PassiveC.RouseSpdDef3:
                 if (this.__isSolo(skillOwner)) { skillOwner.applySpdBuff(6); skillOwner.applyDefBuff(6); } break;
+            case PassiveC.RouseAtkSpd4:
+                if (this.__isSolo(skillOwner)) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applySpdBuff(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+                break;
             case PassiveA.DefiantAtk1:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) { skillOwner.applyAtkBuff(3); }
                 break;

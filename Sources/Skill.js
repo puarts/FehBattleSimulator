@@ -1175,6 +1175,12 @@ const Weapon = {
     // 2021年11月 武器錬成
     KazesNeedle: 1881, // スズカゼの疾風針
     FangedBasilikos: 1880, // 狂牙バシリコス
+
+    // 新英雄&開花レーギャルン
+    FiremansHook: 1897, // 火消しの暗刃
+    DamiellBow: 1899, // ディアメル家の宝弓
+    UnboundLancePlus: 1901, // 孤絶の槍+
+    FlameOfMuspell: 1903, // 絶炎ムスペル
 }
 
 const Support = {
@@ -1302,6 +1308,7 @@ const Special = {
     HonoNoMonsyo: 466, // 炎の紋章
     HerosBlood: 1232, // 英雄の血脈
     KuroNoGekko: 471, // 黒の月光
+    Lethality: 1898, // 滅殺
     AoNoTenku: 472, // 蒼の天空
     RadiantAether2: 1628, // 蒼の天空・承
     MayhemAether: 1309, // 暴の天空
@@ -1413,6 +1420,7 @@ const PassiveA = {
     SpdDefBond1: 1331,
     SpdDefBond2: 1332,
     SpdDefBond3: 577,
+    SpdDefBond4: 1900, // 速さ守備の絆4
     SpdResBond1: 1333,
     SpdResBond2: 1334,
     SpdResBond3: 578,
@@ -2060,6 +2068,7 @@ const PassiveC = {
     RouseSpdRes3: 1127,
     RouseSpdDef3: 1157,
     RouseAtkRes3: 1314,
+    RouseAtkSpd4: 1904, // 攻撃速さの奮起4
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
@@ -2427,6 +2436,7 @@ NormalAttackSpecialDict[Special.ShiningEmblem] = 0; // 光炎の紋章
 NormalAttackSpecialDict[Special.HonoNoMonsyo] = 0; // 炎の紋章
 NormalAttackSpecialDict[Special.HerosBlood] = 0;
 NormalAttackSpecialDict[Special.KuroNoGekko] = 0; // 黒の月光
+NormalAttackSpecialDict[Special.Lethality] = 0; // 滅殺
 NormalAttackSpecialDict[Special.AoNoTenku] = 0; // 蒼の天空
 NormalAttackSpecialDict[Special.RadiantAether2] = 0; // 蒼の天空・承
 NormalAttackSpecialDict[Special.MayhemAether] = 0; // 暴の天空

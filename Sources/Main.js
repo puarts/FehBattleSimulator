@@ -7486,6 +7486,12 @@ class AetherRaidTacticsBoard {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DamiellBow:
+                    if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
+                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                        targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+                    }
+                    break;
                 case Weapon.Uchikudakumono:
                     if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
                         targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
