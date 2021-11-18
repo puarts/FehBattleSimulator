@@ -864,6 +864,7 @@ class DamageCalcData {
             Special.Ignis, // 華炎(+守備80%)
             Special.DragonFang, // 竜穿(+攻撃50%)
             Special.Astra, // 流星(2.5倍)
+            Special.Lethality, // 滅殺(守備魔防-75%)
         ];
     }
 
