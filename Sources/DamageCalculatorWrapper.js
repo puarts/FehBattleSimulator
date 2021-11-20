@@ -4468,6 +4468,8 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.invalidatesOwnDefDebuff = true;
                 }
             };
+            this._applySkillEffectForUnitFuncDict[Weapon.SteadfastSwordPlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.SteadfastSword] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SteadfastLancePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SteadfastLance] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SteadfastAxePlus] = func;
