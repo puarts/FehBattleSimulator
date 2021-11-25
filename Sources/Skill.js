@@ -1181,6 +1181,9 @@ const Weapon = {
     DamiellBow: 1899, // ディアメル家の宝弓
     UnboundLancePlus: 1901, // 孤絶の槍+
     FlameOfMuspell: 1903, // 絶炎ムスペル
+    SteadfastSwordPlus: 1905, // 護衛の剣+
+    SteadfastSword: 1906, // 護衛の剣
+    InstantSwordPlus: 1907, // 瞬撃の剣+
 }
 
 const Support = {
