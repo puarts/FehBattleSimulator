@@ -2911,6 +2911,22 @@ class Unit {
         this._res = value;
     }
 
+    get dragonflowerIcon() {
+        let root = g_siteRootPath + "blog/images/feh/";
+        switch (this.moveType) {
+            case MoveType.Infantry:
+                return root + "Dragonflower_Infantry.png";
+            case MoveType.Flying:
+                return root + "Dragonflower_Flying.png";
+            case MoveType.Cavalry:
+                return root + "Dragonflower_Cavalry.png";
+            case MoveType.Armor:
+                return root + "Dragonflower_Armored.png";
+            default:
+                return g_siteRootPath + "images/dummy.png";
+        }
+    }
+
     get icon() {
         if (this.heroInfo == null) {
             return g_siteRootPath + "images/dummy.png";
