@@ -5669,6 +5669,7 @@ class AetherRaidTacticsBoard {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GrimBrokkr:
                 case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
                     if (g_appData.currentTurn <= 4) {
@@ -5704,6 +5705,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case Weapon.GrimBrokkr:
                 case Weapon.HonorableBlade:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
