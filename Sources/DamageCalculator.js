@@ -302,19 +302,22 @@ class DamageCalculator {
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         let fixedAddDamage = 0;
 
-        switch (atkUnit.weapon) {
-            case Weapon.Misteruthin:
-                if (atkUnit.isWeaponSpecialRefined) {
-                    atkUnit.battleContext.additionalDamageOfSpecial += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
-                }
-                break;
-            case Weapon.Ginnungagap:
-                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
-                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                }
-                break;
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Misteruthin:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        atkUnit.battleContext.additionalDamageOfSpecial += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
+                    }
+                    break;
+                case PassiveB.DivineRecreation:
+                case Weapon.Ginnungagap:
+                    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                        fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                    }
+                    break;
+            }
         }
 
         if (atkUnit.hasStatusEffect(StatusEffectType.TotalPenaltyDamage)) {
@@ -931,19 +934,29 @@ class DamageCalculator {
                 }
                 break;
         }
-        switch (defUnit.weapon) {
-            case Weapon.Ginnungagap:
-                // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
-                if (!context.isFirstAttack(atkUnit)) break;
-                if (defUnit.battleContext.restHpPercentage >= 25) {
-                    let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
-                    if (defUnit.battleContext.initiatesCombat ||
-                        (atkUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
+
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Ginnungagap:
+                    // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
+                    if (!context.isFirstAttack(atkUnit)) break;
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
+                        if (defUnit.battleContext.initiatesCombat ||
+                            (atkUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
+                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                        }
+                    }
+                    break;
+                case PassiveB.DivineRecreation:
+                    if (!context.isFirstAttack(atkUnit)) break;
+                    if (atkUnit.battleContext.restHpPercentage >= 50) {
                         defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
                         defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                     }
-                }
-                break;
+                    break;
+            }
         }
         return currentDamage;
     }

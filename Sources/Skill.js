@@ -1878,6 +1878,7 @@ const PassiveB = {
     YngviAscendant: 1780, // ユングヴィの祖
     MoonlightBangle: 1798, // 華月の腕輪
     Prescience: 1822, // 未来を知る力
+    DivineRecreation: 1910, // それは興味深いね
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
