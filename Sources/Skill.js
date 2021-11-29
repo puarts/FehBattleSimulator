@@ -1187,6 +1187,7 @@ const Weapon = {
 
     // 2021年11月 伝承エイトリ、神階トール
     GrimBrokkr: 1909, // 魔銃ブロック
+    WarGodMjolnir: 1911, // 神槌ミョルニル
 }
 
 const Support = {
