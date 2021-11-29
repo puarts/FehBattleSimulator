@@ -1763,6 +1763,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveC.Worldbreaker] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.increaseCooldownCountForBoth();
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WarGodMjolnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -5133,6 +5136,9 @@ class DamageCalculatorWrapper {
                 }
                 for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
                     switch (skillId) {
+                        case PassiveC.Worldbreaker:
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                            break;
                         case PassiveC.DomainOfIce:
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                             break;
