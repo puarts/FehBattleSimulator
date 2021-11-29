@@ -1891,6 +1891,7 @@ const PassiveB = {
 
     // 怒涛
     FlowRefresh3: 1763, // 怒涛・再起3
+    FlowGuard3: 1912, // 怒涛・キャンセル3
 };
 
 const PassiveC = {

@@ -136,7 +136,7 @@ targetUnit.battleContext.invalidatesHeal= true;
 【回復不可】
 unit.addStatusEffect(StatusEffectType.DeepWounds);
 
-敵の奥義カウント変動量-1
+敵の奥義カウント変動量-1(キャンセル)
 targetUnit.battleContext.reducesCooldownCount = true;
 
 自身の奥義発動カウント変動量-を無効
