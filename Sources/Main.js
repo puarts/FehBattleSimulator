@@ -6281,8 +6281,9 @@ class AetherRaidTacticsBoard {
             this.writeDebugLogLine(`calc combat result of tile ${tile.positionToString()}`);
             let target = targetInfo.targetUnit;
             let result = this.calcDamageTemporary(attacker, target, tile);
-            let combatResult = this.__getCombatResult(attacker, target);
-            let targetDamage = (target.hp - target.restHp);
+            let defUnit = result.defUnit;
+            let combatResult = this.__getCombatResult(attacker, defUnit);
+            let targetDamage = (defUnit.hp - defUnit.restHp);
             let attackerDamage = (attacker.hp - attacker.restHp);
             let damageRatio = targetDamage * 3 - attackerDamage;
             targetInfo.combatResults[tile.id] = combatResult;
