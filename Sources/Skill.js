@@ -1184,6 +1184,10 @@ const Weapon = {
     SteadfastSwordPlus: 1905, // 護衛の剣+
     SteadfastSword: 1906, // 護衛の剣
     InstantSwordPlus: 1907, // 瞬撃の剣+
+
+    // 2021年11月 伝承エイトリ、神階トール
+    GrimBrokkr: 1909, // 魔銃ブロック
+    WarGodMjolnir: 1911, // 神槌ミョルニル
 }
 
 const Support = {
@@ -1875,6 +1879,7 @@ const PassiveB = {
     YngviAscendant: 1780, // ユングヴィの祖
     MoonlightBangle: 1798, // 華月の腕輪
     Prescience: 1822, // 未来を知る力
+    DivineRecreation: 1910, // それは興味深いね
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
@@ -1886,6 +1891,7 @@ const PassiveB = {
 
     // 怒涛
     FlowRefresh3: 1763, // 怒涛・再起3
+    FlowGuard3: 1912, // 怒涛・キャンセル3
 };
 
 const PassiveC = {
@@ -2140,6 +2146,7 @@ const PassiveC = {
     OrdersRestraint: 1724, // 束縛、秩序、安定
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
+    Worldbreaker: 1913, // 神槌大地を穿つ
 };
 
 const PassiveS = {

@@ -1763,6 +1763,32 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveC.Worldbreaker] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.increaseCooldownCountForBoth();
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WarGodMjolnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.battleContext.invalidateAllBuffs();
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.DivineRecreation] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                enemyUnit.addAllSpur(-4);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.GrimBrokkr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                enemyUnit.atkSpur -= 6;
+                enemyUnit.resSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DamiellBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -2295,6 +2321,12 @@ class DamageCalculatorWrapper {
                 enemyUnit.addAllSpur(-5);
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.FlowGuard3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.FlowRefresh3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -5104,6 +5136,9 @@ class DamageCalculatorWrapper {
                 }
                 for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
                     switch (skillId) {
+                        case PassiveC.Worldbreaker:
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                            break;
                         case PassiveC.DomainOfIce:
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                             break;
