@@ -2808,10 +2808,7 @@ EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
 /// 速さ比較時の速さ加算値を取得します。
 function getEvalSpdAdd(passiveS) {
     let value = EvalSpdAddDict[passiveS];
-    if (value) {
-        return value;
-    }
-    return 0;
+    return value ? value : 0;
 }
 
 const EvalResAddDict = {};
@@ -2821,7 +2818,8 @@ EvalResAddDict[PassiveS.MaboNoKyosei3] = 10;
 
 /// 魔防比較時の速さ加算値を取得します。
 function getEvalResAdd(passiveS) {
-    return passiveS in EvalResAddDict;
+    let value = EvalResAddDict[passiveS];
+    return value ? value : 0;
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
