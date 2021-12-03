@@ -574,6 +574,8 @@ class BattleContext {
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
 
+        this.damageReductionRatioForPrecombat = 0;
+
         this.isSaviorActivated = false;
 
         this.additionalDamageOfFirstAttack = 0;
