@@ -7304,7 +7304,9 @@ class AetherRaidTacticsBoard {
         switch (skillOwnerUnit.support) {
             case Support.Play:
                 if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
-                    this.__applyHyosyoNoBreath(skillOwnerUnit);
+                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
+                        unit.applyAllDebuff(-4);
+                    }
                 }
                 break;
             case Support.Urur:
