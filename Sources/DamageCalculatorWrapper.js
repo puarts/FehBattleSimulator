@@ -292,6 +292,15 @@ class DamageCalculatorWrapper {
     }
 
     calcPrecombatSpecialDamage(atkUnit, defUnit) {
+        // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
+        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, false);
+        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, false);
+
+        // 戦闘前ダメージ計算に影響するスキル効果の評価
+        this.__applyPrecombatSpecialDamageMult(atkUnit);
+        this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
+        this.__calcFixedAddDamage(atkUnit, defUnit, true);
+        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
         return this._damageCalc.calcPrecombatSpecialDamage(atkUnit, defUnit);
     }
 
