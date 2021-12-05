@@ -292,19 +292,15 @@ class DamageCalculatorWrapper {
     }
 
     calcPrecombatSpecialDamage(atkUnit, defUnit) {
-        // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
-        this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, false);
-        this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, false);
-
-        // 戦闘前ダメージ計算に影響するスキル効果の評価
-        this.__applyPrecombatSpecialDamageMult(atkUnit);
-        this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
-        this.__calcFixedAddDamage(atkUnit, defUnit, true);
-        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
+        this.__applyPrecombatSkills(atkUnit, defUnit);
         return this._damageCalc.calcPrecombatSpecialDamage(atkUnit, defUnit);
     }
 
-    calcPrecombatSpecialResult(atkUnit, defUnit) {
+    /**
+     * @param  {Unit} saverUnit
+     * @param  {Unit} defUnit
+     */
+    __applyPrecombatSkills(atkUnit, defUnit) {
         // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, false);
         this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, false);
@@ -318,10 +314,21 @@ class DamageCalculatorWrapper {
         // 守備、魔防のどちらを参照するか決定
         defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
         this.__selectReferencingResOrDef(atkUnit, defUnit);
-
-        return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
 
+    /**
+     * @param  {Unit} saverUnit
+     * @param  {Unit} defUnit
+     */
+    calcPrecombatSpecialResult(atkUnit, defUnit) {
+        this.__applyPrecombatSkills(atkUnit, defUnit);
+        return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
+    }
+    /**
+     * @param  {Unit} saverUnit
+     * @param  {Unit} defUnit
+     * @param  {DamageType} damageType
+     */
     calcCombatResult(atkUnit, defUnit, damageType) {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
