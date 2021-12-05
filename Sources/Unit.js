@@ -606,14 +606,14 @@ class BattleContext {
 
     /// 戦闘のダメージ計算時の残りHPです。
     get restHpPercentage() {
-        if (this.restHp === this.maxHpWithSkills) {
+        if (this.restHp == this.maxHpWithSkills) {
             return 100;
         }
         return 100 * this.restHp / this.maxHpWithSkills;
     }
 
     get isRestHpFull() {
-        return this.restHp === this.maxHpWithSkills;
+        return this.restHp == this.maxHpWithSkills;
     }
 
     invalidateAllBuffs() {
@@ -4446,7 +4446,7 @@ class Unit {
     }
 
     canActivatePrecombatSpecial() {
-        return isPrecombatSpecial(this.special) && this.specialCount === 0;
+        return isPrecombatSpecial(this.special) && Number(this.specialCount) === 0;
     }
 
     /**
