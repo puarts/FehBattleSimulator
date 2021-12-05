@@ -370,7 +370,7 @@ class DamageCalcData {
         this.log = this.damageCalc.log;
 
         // 計算式用のプロパティ設定
-        this.effectivenessFactor = this.atkUnit.battleContext.isEffectiveToOpponent ? 1.5 : 1.0;
+        this.effectivenessFactor = this.atkUnit.battleContext.isEffectiveToOpponentForciblly ? 1.5 : 1.0;
         this.defensiveTileFactor = this.defUnit.battleContext.isOnDefensiveTile ? 0.3 : 0;
         this.specialSufferMitRatio = this.atkUnit.battleContext.specialSufferPercentage * 0.01;
         this.attackerTriangleAdvantage = DamageCalculationUtility.calcAttackerTriangleAdvantage(this.atkUnit, this.defUnit);
@@ -385,11 +385,9 @@ class DamageCalcData {
     }
 
     __clearBattleContext() {
-        let isEffectiveToOpponent = this.atkUnit.battleContext.isEffectiveToOpponent;
         let isOnDefensiveTile = this.defUnit.battleContext.isOnDefensiveTile;
         this.atkUnit.battleContext.clear();
         this.defUnit.battleContext.clear();
-        this.atkUnit.battleContext.isEffectiveToOpponent = isEffectiveToOpponent;
         this.defUnit.battleContext.isOnDefensiveTile = isOnDefensiveTile;
     }
 

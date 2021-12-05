@@ -359,6 +359,7 @@ class BattleContext {
         this.damageReductionRatioOfFollowupAttack = 0;
         this.reductionRatioOfDamageReductionRatioExceptSpecial = 0; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
+        this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
         this.attackCount = 1;
         this.counterattackCount = 1;
         this.canCounterattackToAllDistance = false;

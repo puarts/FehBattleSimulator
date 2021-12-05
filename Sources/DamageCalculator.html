@@ -100,8 +100,8 @@
 
                     <dt><label for="effectiveness">特効</label></dt>
                     <dd>
-                        <input id="effectiveness" type="checkbox" v-model="atkUnit.battleContext.isEffectiveToOpponent"
-                            @change="updateDamageResult">
+                        <input id="effectiveness" type="checkbox"
+                            v-model="atkUnit.battleContext.isEffectiveToOpponentForciblly" @change="updateDamageResult">
                     </dd>
 
                     <dt><label for="special">奥義</label></dt>

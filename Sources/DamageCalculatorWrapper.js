@@ -5382,6 +5382,11 @@ class DamageCalculatorWrapper {
             return;
         }
 
+        if (atkUnit.battleContext.isEffectiveToOpponentForciblly) {
+            atkUnit.battleContext.isEffectiveToOpponent = true;
+            return;
+        }
+
         atkUnit.battleContext.isEffectiveToOpponent = false;
         for (let effective of atkUnit.weaponInfo.effectives) {
             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, effective)) {
