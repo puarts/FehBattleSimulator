@@ -640,6 +640,10 @@ class DamageCalculator {
         return totalDamage;
     }
 
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+    */
     calcPrecombatSpecialDamage(atkUnit, defUnit) {
         let tmpMit = atkUnit.battleContext.refersRes ? defUnit.getResInPrecombat() : defUnit.getDefInPrecombat();
         if (defUnit.battleContext.isOnDefensiveTile) {
