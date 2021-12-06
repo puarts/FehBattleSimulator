@@ -3728,11 +3728,28 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.OkamijoouNoKiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            {
+            if (!targetUnit.isWeaponRefined) {
                 let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x => true);
                 let amount = Math.min(6, count * 2);
                 targetUnit.atkSpur += amount;
                 targetUnit.spdSpur += amount;
+            } else {
+                let isOver75 = enemyUnit.battleContext.restHpPercentage >= 75;
+                let isThereThree = self.__isThereAllyInSpecifiedSpaces(targetUnit, 3);
+                if (isOver75 || isThereThree) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                }
+                if (isOver75 && isThereThree) {
+                    enemyUnit.atkSpur -= 5;
+                    enemyUnit.defSpur -= 5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.healedHpByAttack = 7;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.GuradoNoSenfu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -4758,11 +4775,16 @@ class DamageCalculatorWrapper {
             case Weapon.JinroMusumeNoTsumekiba:
             case Weapon.TrasenshiNoTsumekiba:
             case Weapon.JinroOuNoTsumekiba:
-            case Weapon.OkamijoouNoKiba:
             case Weapon.BridesFang:
             case Weapon.GroomsWings:
                 if (targetUnit.isTransformed) {
                     targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                }
+                break;
+            case Weapon.OkamijoouNoKiba:
+                if (targetUnit.isTransformed) {
+                    let amount = targetUnit.isWeaponRefined ? 7 : 10;
+                    targetUnit.battleContext.additionalDamageOfSpecial += amount;
                 }
                 break;
             case Weapon.Watou:

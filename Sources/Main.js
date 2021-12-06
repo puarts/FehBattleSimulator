@@ -5669,6 +5669,9 @@ class AetherRaidTacticsBoard {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.OkamijoouNoKiba:
+                    if (unit.isTransformed) return true;
+                    break;
                 case Weapon.GrimBrokkr:
                 case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
@@ -5717,6 +5720,11 @@ class AetherRaidTacticsBoard {
                 case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
+                    break;
+                case Weapon.OkamijoouNoKiba:
+                    if (unit.isTransformed) {
+                        moveCountForCanto = Math.max(moveCountForCanto, unit.restMoveCount + 1);
+                    }
                     break;
                 case PassiveB.MurderousLion:
                 case PassiveB.AtkDefNearTrace3:

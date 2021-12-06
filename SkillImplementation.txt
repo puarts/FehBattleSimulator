@@ -223,13 +223,18 @@ targetUnit.dragonflower === N
 
 武器錬成
 if (!targetUnit.isWeaponRefined) {
+    // <通常効果>
 } else {
+    // <錬成効果>
     if (targetUnit.isWeaponSpecialRefined) {
+        // <特殊錬成効果>
     }
 }
 武器錬成(錬成効果追加のみ)
 if (targetUnit.isWeaponRefined) {
+    // <錬成効果>
     if (targetUnit.isWeaponSpecialRefined) {
+        // <特殊錬成効果>
     }
 }
 
