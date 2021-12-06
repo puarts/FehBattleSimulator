@@ -7340,6 +7340,14 @@ class DamageCalculatorWrapper {
 
     __applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         switch (atkUnit.weapon) {
+            case Weapon.OkamijoouNoKiba:
+                if (!atkUnit.isWeaponRefined) break;
+                if (atkUnit.isTransformed) {
+                    defUnit.battleContext.reducesCooldownCount = false;
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+                break;
             case Weapon.FiremansHook:
                 if (atkUnit.battleContext.initiatesCombat || this.__isSolo(atkUnit) || calcPotentialDamage) {
                     defUnit.battleContext.reducesCooldownCount = false;
