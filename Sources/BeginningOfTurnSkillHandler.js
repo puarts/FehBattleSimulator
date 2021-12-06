@@ -453,16 +453,42 @@ class BeginningOfTurnSkillHandler {
                     unit => this.__getStatusEvalUnit(unit).hp < this.__getStatusEvalUnit(skillOwner).hp,
                     unit => unit.reserveToAddStatusEffect(StatusEffectType.Panic));
                 break;
-            case Weapon.Sekku:
-                for (let unit of this.enumerateUnitsWithinSpecifiedRange(
-                    skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, 1, 99)
-                ) {
-                    if (unit.isRangedWeaponType()
-                        && this.__getStatusEvalUnit(skillOwner).hp >= this.__getStatusEvalUnit(unit).hp + 3
-                    ) {
-                        unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
+            case Weapon.Sekku: {
+                let units = this.enumerateUnitsWithinSpecifiedRange(skillOwner.posX, skillOwner.posY,
+                    skillOwner.enemyGroupId, 1, 99);
+
+                if (!skillOwner.isWeaponRefined) {
+                    for (let unit of units) {
+                        let hpDiff = this.__getStatusEvalUnit(skillOwner).hp - this.__getStatusEvalUnit(unit).hp;
+                        if (unit.isRangedWeaponType() && hpDiff >= 3) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                } else {
+                    for (let unit of units) {
+                        let hpDiff = this.__getStatusEvalUnit(skillOwner).hp - this.__getStatusEvalUnit(unit).hp;
+                        if (unit.isMeleeWeaponType() && hpDiff >= 1) {
+                            unit.reserveToApplyAtkDebuff(-7);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Stall);
+                        }
+                        if (unit.isRangedWeaponType() && hpDiff >= 1) {
+                            unit.reserveToApplyResDebuff(-7);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                    if (skillOwner.isWeaponSpecialRefined) {
+                        for (let unit of this.__findMinStatusUnits(
+                            skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
+                            x => this.__getStatusEvalUnit(x).getSpdInPrecombat())
+                            ) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                            for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1)) {
+                                u.reserveToAddStatusEffect(StatusEffectType.Guard);
+                            }
+                        }
                     }
                 }
+            }
                 break;
             case Weapon.AnyaryuNoBreath:
                 if (this.globalBattleContext.currentTurn == 4) {
