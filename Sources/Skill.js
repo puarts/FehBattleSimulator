@@ -2150,6 +2150,7 @@ const PassiveC = {
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
     Worldbreaker: 1913, // 神槌大地を穿つ
+    OpeningRetainer: 1922, // 開神の眷属
 };
 
 const PassiveS = {
@@ -2757,6 +2758,7 @@ TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
 TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
 TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
+TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
 /// テレポート効果を持つスキルであるかどうかを判定します。
 function isTeleportationSkill(skillId) {
     return skillId in TeleportationSkillDict;

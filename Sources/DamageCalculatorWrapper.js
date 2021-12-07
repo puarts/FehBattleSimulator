@@ -1779,6 +1779,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveC.OpeningRetainer] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 4;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HornOfOpening] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let count = 0;
             for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
@@ -7834,6 +7839,9 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
             switch (skillId) {
+                case PassiveC.OpeningRetainer:
+                    targetUnit.atkSpur += 4;
+                    break;
                 case PassiveC.DomainOfFlame:
                     targetUnit.atkSpur += 4;
                     targetUnit.defSpur += 4;

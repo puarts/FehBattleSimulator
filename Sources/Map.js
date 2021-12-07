@@ -3244,6 +3244,11 @@ class BattleMap {
         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
             for (let skillId of ally.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveC.OpeningRetainer:
+                        for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                            yield tile;
+                        }
+                        break;
                     case Weapon.HinokaNoKounagitou:
                         if (ally.isWeaponSpecialRefined) {
                             if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Flying) {
