@@ -4051,8 +4051,20 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Vorufuberugu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (self.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
-                targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                if (self.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DevilAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {

@@ -75,6 +75,25 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.Vorufuberugu:
+                if (skillOwner.isWeaponRefined) {
+                    let found = false;
+                    for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
+                        found = true;
+                    }
+                    if (found) {
+                        skillOwner.applyAllBuff(4);
+                    }
+                    if (skillOwner.isWeaponSpecialRefined) {
+                        for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
+                            unit.reserveToApplyAtkDebuff(-7);
+                            unit.reserveToApplyDefDebuff(-7);
+                            unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                            found = true;
+                        }
+                    }
+                }
+                break;
             case Special.LifeUnending:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(5);
