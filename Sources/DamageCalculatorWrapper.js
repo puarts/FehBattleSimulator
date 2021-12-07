@@ -1779,6 +1779,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LionessBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AncientRagnell] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect()) {
                 enemyUnit.atkSpur -= 6;

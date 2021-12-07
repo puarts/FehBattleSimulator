@@ -1193,6 +1193,7 @@ const Weapon = {
     HornOfOpening: 1921, // 開く者の角
     InviolableAxe: 1914, // 美僧の戦斧
     AncientRagnell: 1915, // 末流ラグネル
+    LionessBlade: 1917, //  女傑の大剣
 }
 
 const Support = {
