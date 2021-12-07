@@ -1779,6 +1779,22 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HornOfOpening] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let count = 0;
+            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                count++;
+            }
+            if (count >= 1) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+            }
+            if (count >= 2) {
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+            if (count >= 3) {
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.Worldbreaker] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.increaseCooldownCountForBoth();
         }
@@ -4770,6 +4786,11 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.weapon) {
+            case Weapon.HornOfOpening:
+                if (targetUnit.isTransformed) {
+                    targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                }
+                break;
             case Weapon.ResolvedFang:
             case Weapon.RenewedFang:
             case Weapon.JinroMusumeNoTsumekiba:
@@ -7340,6 +7361,13 @@ class DamageCalculatorWrapper {
 
     __applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         switch (atkUnit.weapon) {
+            case Weapon.HornOfOpening:
+                if (atkUnit.isTransformed) {
+                    defUnit.battleContext.reducesCooldownCount = false;
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+                break;
             case Weapon.OkamijoouNoKiba:
                 if (!atkUnit.isWeaponRefined) break;
                 if (atkUnit.isTransformed) {

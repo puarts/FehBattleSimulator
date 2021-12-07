@@ -1188,6 +1188,9 @@ const Weapon = {
     // 2021年11月 伝承エイトリ、神階トール
     GrimBrokkr: 1909, // 魔銃ブロック
     WarGodMjolnir: 1911, // 神槌ミョルニル
+
+    // 第6部開幕記念 新英雄&アシュ
+    HornOfOpening: 1921, // 開く者の角
 }
 
 const Support = {
