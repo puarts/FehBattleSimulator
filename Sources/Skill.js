@@ -1191,6 +1191,7 @@ const Weapon = {
 
     // 第6部開幕記念 新英雄&アシュ
     HornOfOpening: 1921, // 開く者の角
+    InviolableAxe: 1914, // 美僧の戦斧
 }
 
 const Support = {

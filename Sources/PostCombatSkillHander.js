@@ -304,6 +304,15 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.InviolableAxe:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                                unit.reserveHeal(7);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.NiflsBite:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.reserveHeal(7);
