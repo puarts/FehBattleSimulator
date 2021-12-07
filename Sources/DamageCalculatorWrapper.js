@@ -309,7 +309,7 @@ class DamageCalculatorWrapper {
         this.__applyPrecombatSpecialDamageMult(atkUnit);
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
         this.__calcFixedAddDamage(atkUnit, defUnit, true);
-        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
+        this.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
 
         // 守備、魔防のどちらを参照するか決定
         defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
@@ -1764,7 +1764,7 @@ class DamageCalculatorWrapper {
             enemyUnit.battleContext.reducesCooldownCount = true;
         }
 
-        DamageCalculatorWrapper.__calcFixedSpecialAddDamage(targetUnit, enemyUnit);
+        this.__calcFixedSpecialAddDamage(targetUnit, enemyUnit);
 
         // 今のところ奥義にしかこの効果が存在しないので、重複しない。もし今後重複する場合は重複時の計算方法を調査して実装する
         targetUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(targetUnit.special);
@@ -1779,6 +1779,19 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ManatsuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.OpeningRetainer] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.atkSpur += 4;
@@ -4773,7 +4786,7 @@ class DamageCalculatorWrapper {
         return total;
     }
 
-    static __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
+    __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
         switch (targetUnit.passiveB) {
             case PassiveB.MoonlightBangle:
                 {
@@ -4803,6 +4816,15 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.weapon) {
+            case Weapon.ManatsuNoBreath:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                        let res = isPrecombat ? enemyUnit.getResInPrecombat() : enemyUnit.getResInCombat();
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(res * ratio);
+                    }
+                }
+                break;
             case Weapon.HornOfOpening:
                 if (targetUnit.isTransformed) {
                     targetUnit.battleContext.additionalDamageOfSpecial += 7;
