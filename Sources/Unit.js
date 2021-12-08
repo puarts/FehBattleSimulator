@@ -3722,6 +3722,14 @@ class Unit {
         }
     }
 
+    /**
+     * 暗闇スキルを装備しているかどうかを取得します。
+     * @return {boolean}
+     */
+    hasFeudSkill() {
+        return isFeudSkill(this.passiveC);
+    }
+
     __hasDuel3Skill() {
         if (this.passiveAInfo == null) {
             return false;

@@ -99,6 +99,10 @@ class test_DamageCalculator {
         );
     }
 
+    updateAllUnitSpur() {
+        this.damageCalc.updateAllUnitSpur();
+    }
+
     get isLogEnabled() {
         return this.damageCalc.isLogEnabled;
     }

@@ -2,6 +2,88 @@ const g_testHeroDatabase = new test_HeroDatabase(
   heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
   passiveSInfos);
 
+test('DamageCalculator_FeudTest', () => test_executeTest(() => {
+  let heroDatabase = g_testHeroDatabase;
+  let atkUnit = heroDatabase.createUnit("アルフォンス");
+  atkUnit.atkWithSkills = 40;
+  atkUnit.passiveA = PassiveA.None;
+  atkUnit.placedTile.posX = 0;
+  atkUnit.placedTile.posY = 1;
+
+  let atkAllyUnit = heroDatabase.createUnit("アルフォンス");
+  atkUnit.placedTile.posX = 0;
+  atkUnit.placedTile.posY = 2;
+
+  let calclator = new test_DamageCalculator();
+  calclator.isLogEnabled = false;
+
+  let enemyUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+  enemyUnit.placedTile.posX = 1;
+  enemyUnit.placedTile.posY = 0;
+
+  // 周囲の敵の全てのスキルを無効にするテスト
+  {
+    let defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+    enemyUnit.passiveC = PassiveC.SpurDef3;
+    defUnit.defWithSkills = 30;
+    defUnit.spdWithSkills = 0;
+    defUnit.placedTile.posX = 0;
+    defUnit.placedTile.posY = 0;
+
+    calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, enemyUnit];
+
+    // 暗闇なしでテスト
+    {
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+      expect(result.atkUnit_normalAttackDamage).toBe(10);
+    }
+
+    // 暗闇で守備-4、かつ、守備の紋章3が無効化
+    atkUnit.passiveC = PassiveC.RedFeud3;
+    {
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+      expect(result.atkUnit_normalAttackDamage).toBe(18);
+    }
+  }
+
+  // 周囲の特定の色の敵の効果だけを無効にするテスト
+  {
+    calclator.isLogEnabled = true;
+    let defUnit = heroDatabase.createUnit("リフ", UnitGroupType.Enemy);
+    let enemyUnit2 = heroDatabase.createUnit("シャロン", UnitGroupType.Enemy);
+    enemyUnit2.placedTile.posX = 1;
+    enemyUnit2.placedTile.posY = 1;
+
+    enemyUnit.passiveC = PassiveC.AtkSpdRein3;
+    enemyUnit2.passiveC = PassiveC.AtkSpdRein3;
+    defUnit.defWithSkills = 30;
+    defUnit.spdWithSkills = 0;
+    defUnit.placedTile.posX = 0;
+    defUnit.placedTile.posY = 0;
+
+    calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, enemyUnit, enemyUnit2];
+
+    atkUnit.passiveC = PassiveC.None;
+
+    // 暗闇なしでテスト
+    {
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+      expect(result.atkUnit_normalAttackDamage).toBe(6);
+    }
+
+    // 攻撃速さの牽制3の片方だけが無効化
+    atkUnit.passiveC = PassiveC.RedFeud3;
+    {
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+      expect(result.atkUnit_normalAttackDamage).toBe(10);
+    }
+  }
+}));
+
 /// 無属性有利のテスト
 test('DamageCalculator_ColorlessAdvantageousTest', () => test_executeTest(() => {
   let heroDatabase = g_testHeroDatabase;
