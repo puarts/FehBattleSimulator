@@ -1195,6 +1195,7 @@ const Weapon = {
     AncientRagnell: 1915, // 末流ラグネル
     LionessBlade: 1917, //  女傑の大剣
     SpiritedAxePlus: 1919, // 士気旺盛の斧+
+    BlarLionPlus: 1924, // ブラーライオン+
 }
 
 const Support = {

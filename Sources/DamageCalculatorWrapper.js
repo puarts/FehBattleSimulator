@@ -2219,12 +2219,17 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.RauarLionPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 5;
-                targetUnit.resSpur += 5;
-            }
-        };
+        // ライオン
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.resSpur += 5;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.RauarLionPlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.BlarLionPlus] = func;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BindingReginleif] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);

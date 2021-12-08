@@ -147,6 +147,7 @@ class BeginningOfTurnSkillHandler {
                 skillOwner.reserveHeal(10);
                 break;
             case Weapon.RauarLionPlus:
+            case Weapon.BlarLionPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
                     unit.applyAtkBuff(6);
                 }
