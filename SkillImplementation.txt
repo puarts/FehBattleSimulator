@@ -8,6 +8,9 @@ if (targetUnit.isWeaponSpecialRefined) {}
 化身状態なら
 if (targetUnit.isTransformed) {}
 
+敵が赤属性の時
+if (enemyUnit.color === ColorType.Red)
+
 自分から攻撃した時
 if (targetUnit.battleContext.initiatesCombat) {
 敵から攻撃された時
@@ -173,6 +176,9 @@ targetUnit.battleContext.refersMinOfDefOrRes = true;
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
+奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
+targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+
 戦闘中、最初に与える攻撃のダメージに...
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
@@ -223,13 +229,18 @@ targetUnit.dragonflower === N
 
 武器錬成
 if (!targetUnit.isWeaponRefined) {
+    // <通常効果>
 } else {
+    // <錬成効果>
     if (targetUnit.isWeaponSpecialRefined) {
+        // <特殊錬成効果>
     }
 }
 武器錬成(錬成効果追加のみ)
 if (targetUnit.isWeaponRefined) {
+    // <錬成効果>
     if (targetUnit.isWeaponSpecialRefined) {
+        // <特殊錬成効果>
     }
 }
 

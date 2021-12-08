@@ -1188,6 +1188,15 @@ const Weapon = {
     // 2021年11月 伝承エイトリ、神階トール
     GrimBrokkr: 1909, // 魔銃ブロック
     WarGodMjolnir: 1911, // 神槌ミョルニル
+
+    // 第6部開幕記念 新英雄&アシュ
+    HornOfOpening: 1921, // 開く者の角
+    InviolableAxe: 1914, // 美僧の戦斧
+    AncientRagnell: 1915, // 末流ラグネル
+    LionessBlade: 1917, //  女傑の大剣
+    SpiritedAxePlus: 1919, // 士気旺盛の斧+
+    BlarLionPlus: 1924, // ブラーライオン+
+    CarnageAmatsu: 1923, // 修羅アマツ
 }
 
 const Support = {
@@ -1623,6 +1632,7 @@ const PassiveA = {
     DefResCatch4: 1761, // 守備魔防の機先4
 
     // 万全
+    AtkSpdIdeal3: 1926, // 攻撃速さの万全3
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
     AtkDefIdeal4: 1705,
     AtkResIdeal4: 1723,
@@ -2078,6 +2088,7 @@ const PassiveC = {
     RouseSpdDef3: 1157,
     RouseAtkRes3: 1314,
     RouseAtkSpd4: 1904, // 攻撃速さの奮起4
+    RouseSpdDef4: 1916, // 速さ守備の奮起4
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
@@ -2121,6 +2132,9 @@ const PassiveC = {
 
     StallPloy3: 1789, // 空転の奇策3
 
+    // 暗闇
+    RedFeud3: 1918, // 赤への暗闇3
+
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
     ChaosNamed: 868, // 我が名は混沌
@@ -2147,6 +2161,7 @@ const PassiveC = {
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
     Worldbreaker: 1913, // 神槌大地を穿つ
+    OpeningRetainer: 1922, // 開神の眷属
 };
 
 const PassiveS = {
@@ -2754,6 +2769,7 @@ TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
 TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
 TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
+TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
 /// テレポート効果を持つスキルであるかどうかを判定します。
 function isTeleportationSkill(skillId) {
     return skillId in TeleportationSkillDict;
