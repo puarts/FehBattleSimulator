@@ -4623,6 +4623,7 @@ function isAfflictor(attackUnit, lossesInCombat) {
                 return true;
             }
             break;
+        case Weapon.FlamelickBreath:
         case Weapon.FrostbiteBreath:
             if (attackUnit.battleContext.restHpPercentage >= 25) {
                 return true;
