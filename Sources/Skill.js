@@ -1196,6 +1196,7 @@ const Weapon = {
     LionessBlade: 1917, //  女傑の大剣
     SpiritedAxePlus: 1919, // 士気旺盛の斧+
     BlarLionPlus: 1924, // ブラーライオン+
+    CarnageAmatsu: 1923, // 修羅アマツ
 }
 
 const Support = {

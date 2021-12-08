@@ -573,6 +573,12 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.CarnageAmatsu:
+                if (this.__isSolo(defUnit)) {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+                break;
             case Weapon.Roputous:
                 if (defUnit.isWeaponRefined) {
                     if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
@@ -6210,6 +6216,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.CarnageAmatsu:
+                if (this.__isSolo(defUnit)) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
             case Weapon.LilacJadeBreath:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
                     return 0.4;
