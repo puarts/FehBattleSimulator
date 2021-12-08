@@ -729,6 +729,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.passiveC) {
+            case PassiveC.RedFeud3:
+                if (enemyUnit.color === ColorType.Red) {
+                    return true;
+                }
+                break;
             case PassiveC.ImpenetrableDark:
                 return true;
         }
@@ -737,7 +742,14 @@ class DamageCalculatorWrapper {
 
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
         if (this.__canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage)) {
+            // 問答無用で周囲のキャラのスキルを無視する場合
             this.updateUnitSpur(enemyUnit, calcPotentialDamage, true);
+        } else {
+            // 周囲の赤属性のキャラのスキルだけを無視する場合
+            let ignoresSkillEffectFromRedAllies = targetUnit.passiveC === PassiveC.RedFeud3;
+            if (ignoresSkillEffectFromRedAllies) {
+                this.updateUnitSpur(enemyUnit, calcPotentialDamage, false, ignoresSkillEffectFromRedAllies);
+            }
         }
     }
 
@@ -1779,6 +1791,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveC.RedFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.color === ColorType.Red) {
+                enemyUnit.addAllSpur(-4);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.LionessBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -5189,7 +5206,9 @@ class DamageCalculatorWrapper {
             return;
         }
 
+        let ignoresSkillEffectFromRedAllies = atkUnit.PassiveC === PassiveC.RedFeud3;
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+            if (ignoresSkillEffectFromRedAllies && allyUnit.color === ColorType.Red) continue;
             switch (allyUnit.weapon) {
                 case Weapon.SunshadeStaff:
                     defUnit.battleContext.increaseCooldownCountForDefense = true;
@@ -5213,10 +5232,11 @@ class DamageCalculatorWrapper {
         if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
             return;
         }
-
+        let ignoresSkillEffectFromRedAllies = enemyUnit.passiveC === PassiveC.RedFeud3;
         // 2マス以内の味方からの効果
         if (!calcPotentialDamage) {
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                if (ignoresSkillEffectFromRedAllies && (allyUnit.color === ColorType.Red)) continue;
                 switch (allyUnit.weapon) {
                     case Weapon.ProfessorialText:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
@@ -8307,19 +8327,23 @@ class DamageCalculatorWrapper {
         }
     }
 
-    updateUnitSpur(targetUnit, calcPotentialDamage = false, ignoresSkillEffectFromAllies = false) {
+    updateUnitSpur(targetUnit, calcPotentialDamage = false,
+                   ignoresSkillEffectFromAllies = false,
+                   ignoresSkillEffectFromRedAllies = false) {
         let self = this;
         this.profiler.profile("updateUnitSpur", () => {
-            self.__updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies);
+            self.__updateUnitSpur(targetUnit, calcPotentialDamage,
+                ignoresSkillEffectFromAllies, ignoresSkillEffectFromRedAllies);
         });
     }
 
-    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies) {
+    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoresSkillEffectFromRedAllies) {
         targetUnit.resetSpurs();
 
         if (!calcPotentialDamage) {
             if (!ignoresSkillEffectFromAllies) {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (ignoresSkillEffectFromRedAllies && unit.color === ColorType.Red) continue;
                     // 距離に関係ないもの
                     {
                         switch (unit.passiveC) {
@@ -8421,6 +8445,7 @@ class DamageCalculatorWrapper {
             // 周囲の敵から受ける戦闘中弱化
             {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                    if (ignoresSkillEffectFromRedAllies && unit.color === ColorType.Red) continue;
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
                         switch (unit.weapon) {
@@ -8433,6 +8458,7 @@ class DamageCalculatorWrapper {
                 }
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                    if (ignoresSkillEffectFromRedAllies && unit.color === ColorType.Red) continue;
                     switch (unit.weapon) {
                         case Weapon.MusuperuNoEnka:
                             if (targetUnit.isWeaponSpecialRefined) {
@@ -8470,6 +8496,7 @@ class DamageCalculatorWrapper {
                 }
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                    if (ignoresSkillEffectFromRedAllies && unit.color === ColorType.Red) continue;
                     switch (unit.weapon) {
                         case Weapon.UnboundBlade:
                         case Weapon.UnboundBladePlus:
@@ -9259,6 +9286,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.passiveC) {
+            case PassiveC.RedFeud3:
+                if (enemyUnit.color === ColorType.Red) {
+                    return true;
+                }
+                break;
             case PassiveC.ImpenetrableDark:
                 return true;
         }

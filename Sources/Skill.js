@@ -2128,6 +2128,9 @@ const PassiveC = {
 
     StallPloy3: 1789, // 空転の奇策3
 
+    // 暗闇
+    RedFeud3: 1918, // 赤への暗闇3
+
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
     ChaosNamed: 868, // 我が名は混沌
