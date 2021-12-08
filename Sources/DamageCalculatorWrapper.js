@@ -5845,6 +5845,14 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.passiveA) {
+            case PassiveA.AtkSpdIdeal3:
+                DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
+                    (unit, value) => {
+                        unit.atkSpur += value;
+                        unit.spdSpur += value;
+                    },
+                    5, 0);
+                break;
             case PassiveA.AtkSpdIdeal4:
                 DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
                     (unit, value) => {
@@ -5919,15 +5927,11 @@ class DamageCalculatorWrapper {
         return this._unitManager.isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator);
     }
 
-    static __applyIdealEffect(targetUnit, enemyUnit, buffFunc) {
-        if (targetUnit.battleContext.restHpPercentage === 100
-            || targetUnit.hasPositiveStatusEffect(enemyUnit)
-        ) {
-            buffFunc(targetUnit, 7);
-            if (targetUnit.battleContext.restHpPercentage === 100
-                && targetUnit.hasPositiveStatusEffect(enemyUnit)
-            ) {
-                buffFunc(targetUnit, 2);
+    static __applyIdealEffect(targetUnit, enemyUnit, buffFunc, buffAmount = 7, additionalBuffAmount = 2) {
+        if (targetUnit.battleContext.restHpPercentage === 100 || targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+            buffFunc(targetUnit, buffAmount);
+            if (targetUnit.battleContext.restHpPercentage === 100 && targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                buffFunc(targetUnit, additionalBuffAmount);
             }
         }
     }

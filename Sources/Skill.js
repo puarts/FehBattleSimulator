@@ -1631,6 +1631,7 @@ const PassiveA = {
     DefResCatch4: 1761, // 守備魔防の機先4
 
     // 万全
+    AtkSpdIdeal3: 1926, // 攻撃速さの万全3
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
     AtkDefIdeal4: 1705,
     AtkResIdeal4: 1723,
