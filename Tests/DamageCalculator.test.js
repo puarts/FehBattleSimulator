@@ -50,7 +50,7 @@ test('DamageCalculator_FeudTest', () => test_executeTest(() => {
 
   // 周囲の特定の色の敵の効果だけを無効にするテスト
   {
-    calclator.isLogEnabled = true;
+    calclator.isLogEnabled = false;
     let defUnit = heroDatabase.createUnit("リフ", UnitGroupType.Enemy);
     let enemyUnit2 = heroDatabase.createUnit("シャロン", UnitGroupType.Enemy);
     enemyUnit2.placedTile.posX = 1;

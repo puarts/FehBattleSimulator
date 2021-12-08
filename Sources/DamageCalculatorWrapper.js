@@ -5226,9 +5226,10 @@ class DamageCalculatorWrapper {
             return;
         }
 
-        let ignoresSkillEffectFromRedAllies = atkUnit.PassiveC === PassiveC.RedFeud3;
+        let feudFunc = this.__getFeudConditionFunc(atkUnit);
+
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
-            if (ignoresSkillEffectFromRedAllies && allyUnit.color === ColorType.Red) continue;
+            if (feudFunc != null && feudFunc(allyUnit)) continue;
             switch (allyUnit.weapon) {
                 case Weapon.SunshadeStaff:
                     defUnit.battleContext.increaseCooldownCountForDefense = true;
@@ -5252,11 +5253,12 @@ class DamageCalculatorWrapper {
         if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
             return;
         }
-        let ignoresSkillEffectFromRedAllies = enemyUnit.passiveC === PassiveC.RedFeud3;
+
         // 2マス以内の味方からの効果
         if (!calcPotentialDamage) {
+            let feudFunc = this.__getFeudConditionFunc(enemyUnit);
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                if (ignoresSkillEffectFromRedAllies && (allyUnit.color === ColorType.Red)) continue;
+                if (feudFunc != null && feudFunc(allyUnit)) continue;
                 switch (allyUnit.weapon) {
                     case Weapon.ProfessorialText:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
@@ -8367,6 +8369,18 @@ class DamageCalculatorWrapper {
                 ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner);
         });
     }
+
+    __getFeudConditionFunc(feudSkillOwner) {
+        if (feudSkillOwner == null) {
+            return null;
+        }
+
+        switch (feudSkillOwner.passiveC) {
+            case PassiveC.RedFeud3:
+                return unit => unit.color === ColorType.Red;
+        }
+    }
+
     /**
      * @param  {Unit} targetUnit
      * @param  {boolean} calcPotentialDamage
@@ -8374,16 +8388,16 @@ class DamageCalculatorWrapper {
      * @param  {Unit} feudSkillOwner
      */
     __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner) {
-        let hasRedFeudSkill = feudSkillOwner != null && feudSkillOwner.passiveC === PassiveC.RedFeud3;
-        let ignoresSkillEffectFromRedAllies = hasRedFeudSkill && targetUnit.groupId !== feudSkillOwner.groupId;
-        let ignoresSkillEffectFromRedEnemies = hasRedFeudSkill && targetUnit.groupId === feudSkillOwner.groupId;
+        let feudFunc = this.__getFeudConditionFunc(feudSkillOwner);
+        let ignoresSkillEffectFromAlliesByFeudSkill = feudFunc != null && targetUnit.groupId !== feudSkillOwner.groupId;
+        let ignoresSkillEffectFromEnemiesByFeudSkill = feudFunc != null && targetUnit.groupId === feudSkillOwner.groupId;
 
         targetUnit.resetSpurs();
 
         if (!calcPotentialDamage) {
             if (!ignoresSkillEffectFromAllies) {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                    if (ignoresSkillEffectFromRedAllies && unit.color === ColorType.Red) continue;
+                    if (ignoresSkillEffectFromAlliesByFeudSkill && feudFunc(unit)) continue;
                     // 距離に関係ないもの
                     {
                         switch (unit.passiveC) {
@@ -8485,7 +8499,7 @@ class DamageCalculatorWrapper {
             // 周囲の敵から受ける戦闘中弱化
             if (!ignoreSkillEffectFromEnemies) {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-                    if (ignoresSkillEffectFromRedEnemies && unit.color === ColorType.Red) continue;
+                    if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
                     if (this.__isInCloss(unit, targetUnit)) {
                         // 十字方向
                         switch (unit.weapon) {
@@ -8498,7 +8512,7 @@ class DamageCalculatorWrapper {
                 }
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-                    if (ignoresSkillEffectFromRedEnemies && unit.color === ColorType.Red) continue;
+                    if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
                     switch (unit.weapon) {
                         case Weapon.MusuperuNoEnka:
                             if (targetUnit.isWeaponSpecialRefined) {
@@ -8536,7 +8550,7 @@ class DamageCalculatorWrapper {
                 }
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                    if (ignoresSkillEffectFromRedEnemies && unit.color === ColorType.Red) continue;
+                    if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
                     switch (unit.weapon) {
                         case Weapon.UnboundBlade:
                         case Weapon.UnboundBladePlus:
