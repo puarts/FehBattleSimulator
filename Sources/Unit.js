@@ -4633,13 +4633,23 @@ function isAfflictor(attackUnit, lossesInCombat) {
         case Weapon.Panic:
         case Weapon.PanicPlus:
         case Weapon.FlashPlus:
+        case Weapon.Candlelight:
+        case Weapon.CandlelightPlus:
+        case Weapon.Merankory:
+        case Weapon.MerankoryPlus:
+        case Weapon.CandyStaff:
+        case Weapon.CandyStaffPlus:
         case Weapon.LegionsAxe:
         case Weapon.LegionsAxePlus:
-        case Weapon.MonstrousBow:
-        case Weapon.MonstrousBowPlus:
+        case Weapon.SneeringAxe:
         case Weapon.DeathlyDagger:
+        case Weapon.SnipersBow:
+        case Weapon.DokuNoKen:
             return true;
+        case Weapon.MonstrousBowPlus:
         case Weapon.GhostNoMadosyoPlus:
+        case Weapon.Scadi:
+        case Weapon.ObsessiveCurse:
             if (attackUnit.isWeaponRefined) {
                 return true;
             }
@@ -4647,18 +4657,13 @@ function isAfflictor(attackUnit, lossesInCombat) {
     }
     switch (attackUnit.passiveC) {
         case PassiveC.PanicSmoke3:
-            if (lossesInCombat) {
-                return false;
-            }
-            return true;
+        case PassiveC.FatalSmoke3:
+            return !lossesInCombat;
     }
     for (let skillId of [attackUnit.passiveB, attackUnit.passiveS]) {
         switch (skillId) {
             case PassiveB.PoisonStrike3:
-                if (lossesInCombat) {
-                    return false;
-                }
-                return true;
+                return !lossesInCombat;
         }
     }
     return false;
