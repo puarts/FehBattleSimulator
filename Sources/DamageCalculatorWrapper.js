@@ -5066,6 +5066,7 @@ class DamageCalculatorWrapper {
                     targetUnit.resSpur += 6;
                 }
                 break;
+            case Weapon.SpiritedAxePlus:
             case Weapon.SpiritedSpearPlus:
                 if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                     targetUnit.atkSpur += 4;

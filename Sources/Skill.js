@@ -1194,6 +1194,7 @@ const Weapon = {
     InviolableAxe: 1914, // 美僧の戦斧
     AncientRagnell: 1915, // 末流ラグネル
     LionessBlade: 1917, //  女傑の大剣
+    SpiritedAxePlus: 1919, // 士気旺盛の斧+
 }
 
 const Support = {
