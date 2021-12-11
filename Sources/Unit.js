@@ -2772,6 +2772,22 @@ class Unit {
         return !this.canNullPanic() && this.hasPanic;
     }
 
+    maximizeMergeAndDragonflower() {
+        this.merge = 10;
+        this.dragonflower = this.maxDragonflower;
+        this.updateStatusByMergeAndDragonFlower();
+    }
+
+    maximizeDragonflower() {
+        this.dragonflower = this.maxDragonflower;
+        this.updateStatusByMergeAndDragonFlower();
+    }
+
+    maximizeMerge() {
+        this.merge = 10;
+        this.updateStatusByMergeAndDragonFlower();
+    }
+
     getNormalMoveCount() {
         switch (this.passiveS) {
             case PassiveS.GoeiNoGuzo:
@@ -3432,11 +3448,12 @@ class Unit {
             }
         }
 
-        this.hpLv1 = this.heroInfo.getHpLv1(this.rarity) + hpLv1IvChange;
-        this.atkLv1 = this.heroInfo.getAtkLv1(this.rarity) + atkLv1IvChange;
-        this.spdLv1 = this.heroInfo.getSpdLv1(this.rarity) + spdLv1IvChange;
-        this.defLv1 = this.heroInfo.getDefLv1(this.rarity) + defLv1IvChange;
-        this.resLv1 = this.heroInfo.getResLv1(this.rarity) + resLv1IvChange;
+        let rarity = Number(this.rarity);
+        this.hpLv1 = this.heroInfo.getHpLv1(rarity) + hpLv1IvChange;
+        this.atkLv1 = this.heroInfo.getAtkLv1(rarity) + atkLv1IvChange;
+        this.spdLv1 = this.heroInfo.getSpdLv1(rarity) + spdLv1IvChange;
+        this.defLv1 = this.heroInfo.getDefLv1(rarity) + defLv1IvChange;
+        this.resLv1 = this.heroInfo.getResLv1(rarity) + resLv1IvChange;
 
         this.__updateGrowth(updatesPureGrowthRate);
     }

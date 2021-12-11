@@ -6,10 +6,45 @@ let unit = new Unit();
 let vm = new Vue({
     el: "#app",
     data: {
+        /** @member {Unit} */
         value: unit,
         isWeaponEnabled: false
+    },
+    methods: {
+        reset() {
+            unit.rarity = 5;
+            unit.merge = 0;
+            unit.dragonflower = 0;
+            unit.ascendedAsset = StatusType.None;
+            unit.ivHighStat = StatusType.None;
+            unit.ivLowStat = StatusType.None;
+            unit.isBonusChar = false;
+            unit.isResplendent = false;
+            unit.clearBlessingEffects();
+            unit.summonerLevel = SummonerLevel.None;
+            this.isWeaponEnabled = false;
+            updateStatus();
+        },
+        maximaizeMergeAndDragonflower: function () {
+            unit.maximizeMergeAndDragonflower();
+        },
+        maximaizeMerge: function () {
+            unit.maximizeMerge();
+        },
+        maximaizeDragonflower: function () {
+            unit.maximizeDragonflower();
+        },
+        resetMerge: function () {
+            unit.merge = 0;
+            unit.updateStatusByMergeAndDragonFlower();
+        },
+        resetDragonflower: function () {
+            unit.dragonflower = 0;
+            unit.updateStatusByMergeAndDragonFlower();
+        },
     }
 });
+
 
 function updateStatus() {
     unit.updateBaseStatus();

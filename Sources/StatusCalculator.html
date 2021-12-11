@@ -2,7 +2,7 @@
 
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>飛空城シミュレーター</title>
+    <title>ステータス計算機</title>
     <link rel="stylesheet" href="../../css/main.css?20181201" type="text/css" />
     <script>
         const g_startTime = Date.now();
@@ -68,12 +68,20 @@
     <!-- vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
+    <style>
+        .button {
+            width: 120px
+        }
+    </style>
+
     <div id="app" style="text-align:center">
         <table border="0" style="border-style: none;">
             <tr>
                 <td>
                     <p>
-                        <img v-bind:src="value.icon" width="50" height="50" /> {{value.name}} ☆5<br />
+                        <img v-bind:src="value.icon" width="50" height="50" /> {{value.name}} ☆
+                        <input name="merge" type="number" v-model="value.rarity" min="1" max="5" @input="updateStatus()"
+                            style="width:50px" /><br />
                         LV.
                         <input name="merge" type="number" v-model="value.level" min="1" max="99" @input="updateStatus()"
                             style="width:50px" />
@@ -179,6 +187,16 @@
                             <th>総合</th>
                         </tr>
                         <tr>
+                            <th>能力値</th>
+                            <td>{{value.maxHpWithSkills}}</td>
+                            <td>{{value.atkWithSkills}}</td>
+                            <td>{{value.spdWithSkills}}</td>
+                            <td>{{value.defWithSkills}}</td>
+                            <td>{{value.resWithSkills}}</td>
+                            <td>{{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills}}
+                            </td>
+                        </tr>
+                        <tr>
                             <th>加算値</th>
                             <td>{{value.maxHpWithSkills - value.maxHp}}</td>
                             <td>{{value.atkWithSkills - value.atk}}</td>
@@ -188,17 +206,14 @@
                             <td>{{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills-value.maxHp-value.atk-value.spd-value.def-value.res}}
                             </td>
                         </tr>
-                        <tr>
-                            <th>ステータス</th>
-                            <td>{{value.maxHpWithSkills}}</td>
-                            <td>{{value.atkWithSkills}}</td>
-                            <td>{{value.spdWithSkills}}</td>
-                            <td>{{value.defWithSkills}}</td>
-                            <td>{{value.resWithSkills}}</td>
-                            <td>{{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills}}
-                            </td>
-                        </tr>
+
                     </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="button" class="button" value="凸と花を最大化" @click="maximaizeMergeAndDragonflower" />
+                    <input type="button" class="button" value="リセット" @click="reset" />
                 </td>
             </tr>
         </table>
