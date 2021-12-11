@@ -8379,6 +8379,8 @@ class DamageCalculatorWrapper {
             case PassiveC.RedFeud3:
                 return unit => unit.color === ColorType.Red;
         }
+
+        return null;
     }
 
     /**
