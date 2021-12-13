@@ -677,12 +677,24 @@ class BattleContext {
 
 /// 攻撃可能なユニット情報です。
 class AttackableUnitInfo {
+    /**
+     * @param  {Unit} targetUnit
+     */
     constructor(targetUnit) {
+        /** @type {Unit} **/
         this.targetUnit = targetUnit;
+
+        /** @type {Tile[]} **/
         this.tiles = [];
+
+        /** @type {Tile} **/
         this.bestTileToAttack = null;
         this.damageRatios = [];
+
+        /** @type {CombatResult[]} **/
         this.combatResults = [];
+
+        /** @type {DamageCalcResult[]} **/
         this.combatResultDetails = [];
     }
 
@@ -896,9 +908,17 @@ class ActionContext {
         this.isBlocker = false;
 
         // 攻撃者選択のコンテキスト
+
+        /** @type {AttackableUnitInfo[]} */
         this.attackableUnitInfos = [];
+
+        /** @type {Unit} */
         this.bestTargetToAttack = null;
+
+        /** @type {{Unit, AttackEvaluationContext}} */
         this.attackEvalContexts = {}; // key=target unit, value=AttackEvaluationContext
+
+        /** @type {Unit} */
         this.bestAttacker = null;
 
         // その他(オリジナルAI用)
@@ -1016,13 +1036,13 @@ class Unit {
         this.resIncrement = 0;
         this.resDecrement = 0;
 
-        /** @member {StatusType} */
+        /** @type {StatusType} */
         this.ivHighStat = StatusType.None;
 
-        /** @member {StatusType} */
+        /** @type {StatusType} */
         this.ivLowStat = StatusType.None;
 
-        /** @member {StatusType} 開花得意の対象 */
+        /** @type {StatusType} 開花得意の対象 */
         this.ascendedAsset = StatusType.None;
 
         this.restHp = 1; // ダメージ計算で使うHP
@@ -4640,6 +4660,7 @@ function isDebufferTier2(attackUnit, targetUnit) {
  * ユニットがアフリクターであるかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartH
  * @param  {Unit} attackUnit
  * @param  {boolean} lossesInCombat
+ * @return {boolean}
  */
 function isAfflictor(attackUnit, lossesInCombat) {
     switch (attackUnit.weapon) {

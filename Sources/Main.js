@@ -59,6 +59,8 @@ class AetherRaidTacticsBoard {
         this.tesseractLoadState = ModuleLoadState.NotLoaded;
 
         this.cropper = null;
+
+        /** @type {DamageCalculatorWrapper} **/
         this.damageCalc = new DamageCalculatorWrapper(
             g_appData, g_appData.map, g_appData.globalBattleContext, new HtmlLogger());
         this.beginningOfTurnSkillHandler = new BeginningOfTurnSkillHandler(
@@ -3021,7 +3023,13 @@ class AetherRaidTacticsBoard {
         this.damageCalc.updateUnitSpur(defUnit, false);
         return result;
     }
-
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Tile} tileToAttack=null
+     * @param  {DamageType} damageType=DamageType.EstimatedDamage
+     * @returns {DamageCalcResult}
+     */
     calcDamageTemporary(
         atkUnit,
         defUnit,
@@ -4666,8 +4674,17 @@ class AetherRaidTacticsBoard {
         }
         return false;
     }
-
-    __evalulateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt = false) {
+    /**
+     * @param  {Unit} unit
+     * @param  {Unit[]} enemyUnits
+     * @param  {boolean} ignores5DamageDealt=false
+     * @param  {boolean} evaluatesAfflictorDraw=false
+     * @return {boolean}
+     */
+    __evalulateIs5DamageDealtOrWin(
+        unit, enemyUnits, ignores5DamageDealt = false,
+        evaluatesAfflictorDraw = false
+    ) {
         this.__setAttackableUnitInfoAndBestTileToAttack(unit, enemyUnits);
         if (unit.actionContext.attackableUnitInfos.length > 0) {
             // 攻撃範囲に敵がいる
@@ -4675,7 +4692,8 @@ class AetherRaidTacticsBoard {
                 let tile = attackableUnitInfo.bestTileToAttack;
                 this.__updateCombatResultOfAttackableTargetInfo(attackableUnitInfo, unit, tile);
                 let combatResult = attackableUnitInfo.combatResultDetails[tile.id];
-                if (attackableUnitInfo.combatResults[tile.id] == CombatResult.Win) {
+                let result = attackableUnitInfo.combatResults[tile.id];
+                if (result == CombatResult.Win) {
                     this.writeDebugLogLine(unit.getNameWithGroup() + "は戦闘に勝利するので補助資格なし");
                     return true;
                 }
@@ -4687,6 +4705,12 @@ class AetherRaidTacticsBoard {
                     this.writeDebugLogLine(unit.getNameWithGroup() + "から" + attackableUnitInfo.targetUnit.getNameWithGroup() + "へのダメージ=" + damageDealt);
                     if (damageDealt >= 5) {
                         this.writeDebugLogLine(unit.getNameWithGroup() + "は5ダメージ以上与えられるので補助資格なし");
+                        return true;
+                    }
+                }
+
+                if (evaluatesAfflictorDraw) {
+                    if (isAfflictor(unit, result == CombatResult.Loss) && result == CombatResult.Draw) {
                         return true;
                     }
                 }
@@ -4912,7 +4936,7 @@ class AetherRaidTacticsBoard {
                 if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits)) { return false; }
                 return true;
             case AssistType.Rally:
-                if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits)) { return false; }
+                if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, false, true)) { return false; }
                 return true;
             case AssistType.Heal:
                 {
@@ -6299,7 +6323,11 @@ class AetherRaidTacticsBoard {
             targetInfo.combatResultDetails[tile.id] = result;
         }
     }
-
+    /**
+     * @param  {Unit} attacker
+     * @param  {Unit} target
+     * @return {CombatResult}
+     */
     __getCombatResult(attacker, target) {
         if (target.restHp == 0) {
             return CombatResult.Win;
