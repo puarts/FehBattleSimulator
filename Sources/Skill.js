@@ -1197,6 +1197,9 @@ const Weapon = {
     SpiritedAxePlus: 1919, // 士気旺盛の斧+
     BlarLionPlus: 1924, // ブラーライオン+
     CarnageAmatsu: 1923, // 修羅アマツ
+
+    // 冬祭りの使者は夢の中
+    Dreamflake: 1927, // 白き夢のかけら
 }
 
 const Support = {
@@ -2132,8 +2135,8 @@ const PassiveC = {
 
     StallPloy3: 1789, // 空転の奇策3
 
-    // 暗闇
-    RedFeud3: 1918, // 赤への暗闇3
+    // 暗闘
+    RedFeud3: 1918, // 赤への暗闘3
 
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
