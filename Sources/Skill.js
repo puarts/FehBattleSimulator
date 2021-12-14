@@ -1203,6 +1203,7 @@ const Weapon = {
     SnowGlobePlus: 1929, // スノードーム+
     WinterRapierPlus: 1932, // 冬祭の突剣+
     SweetYuleLog: 1934, // 幸運ぶ冬の聖菓
+    TannenbowPlus: 1936, // 聖樹の弓+
 }
 
 const Support = {
