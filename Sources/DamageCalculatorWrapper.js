@@ -555,6 +555,7 @@ class DamageCalculatorWrapper {
         switch (unit.passiveC) {
             case PassiveC.WithEveryone2:
             case PassiveC.ArFarSave3:
+            case PassiveC.DrFarSave3:
                 if (atkUnit.isRangedWeaponType()) {
                     return true;
                 }
@@ -3021,6 +3022,12 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveC.ArFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.atkSpur += 4;
+                targetUnit.resSpur += 4;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveC.DrFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.defSpur += 4;
                 targetUnit.resSpur += 4;
             }
         };
