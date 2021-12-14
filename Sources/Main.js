@@ -7428,6 +7428,11 @@ class AetherRaidTacticsBoard {
                         unit.applyAtkDebuff(-7);
                     }
                     break;
+                case PassiveB.SpdCantrip3:
+                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
+                        unit.applySpdDebuff(-7);
+                    }
+                    break;
                 case PassiveB.DefCantrip3:
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
                         unit.applyDefDebuff(-7);
