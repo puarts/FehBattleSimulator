@@ -1807,6 +1807,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         this._applySkillEffectForUnitFuncDict[PassiveC.RedFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.RedFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.color === ColorType.Red) {
                 enemyUnit.addAllSpur(-4);
             }
@@ -6002,6 +6008,16 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.SweetYuleLog:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let spdDiff = targetUnit.getEvalSpdInCombat() - enemyUnit.getEvalSpdInCombat();
+                        if (spdDiff <= 9) {
+                            targetUnit.battleContext.isDesperationActivatable = true;
+                        } else {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.KazesNeedle:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
