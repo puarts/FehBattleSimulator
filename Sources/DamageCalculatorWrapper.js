@@ -741,6 +741,11 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
+            case PassiveC.CFeud3:
+                if (enemyUnit.color === ColorType.Colorless) {
+                    return true;
+                }
+                break;
             case PassiveC.ImpenetrableDark:
                 return true;
         }
@@ -1812,8 +1817,14 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += 6;
             }
         }
+        // 暗闘
         this._applySkillEffectForUnitFuncDict[PassiveC.RedFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.color === ColorType.Red) {
+                enemyUnit.addAllSpur(-4);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.CFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.color === ColorType.Colorless) {
                 enemyUnit.addAllSpur(-4);
             }
         }
@@ -8423,6 +8434,8 @@ class DamageCalculatorWrapper {
         switch (feudSkillOwner.passiveC) {
             case PassiveC.RedFeud3:
                 return unit => unit.color === ColorType.Red;
+            case PassiveC.CFeud3:
+                return unit => unit.color === ColorType.Colorless;
         }
 
         return null;
@@ -9389,6 +9402,11 @@ class DamageCalculatorWrapper {
         switch (targetUnit.passiveC) {
             case PassiveC.RedFeud3:
                 if (enemyUnit.color === ColorType.Red) {
+                    return true;
+                }
+                break;
+            case PassiveC.CFeud3:
+                if (enemyUnit.color === ColorType.Colorless) {
                     return true;
                 }
                 break;

@@ -2143,6 +2143,7 @@ const PassiveC = {
 
     // 暗闘
     RedFeud3: 1918, // 赤への暗闘3
+    CFeud3: 1935, // 無への暗闇3
 
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
@@ -2904,6 +2905,7 @@ function isAdvantageousForColorless(weapon) {
 
 const FeudSkillTable = {};
 FeudSkillTable[PassiveC.RedFeud3] = 0;
+FeudSkillTable[PassiveC.CFeud3] = 0;
 
 /**
  * 暗闇スキルであるかどうかを取得します。
