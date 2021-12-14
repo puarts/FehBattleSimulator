@@ -5566,6 +5566,12 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.SnowGlobePlus:
+                if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    targetUnit.applyAtkUnity();
+                    targetUnit.applyResUnity();
+                }
+                break;
             case Weapon.FlameOfMuspell:
                 if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                     targetUnit.atkSpur += 6;
