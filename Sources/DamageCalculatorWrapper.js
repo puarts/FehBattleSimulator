@@ -5573,6 +5573,12 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.WinterRapierPlus:
+                if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    targetUnit.applyAtkUnity();
+                    targetUnit.applyDefUnity();
+                }
+                break;
             case Weapon.SnowGlobePlus:
                 if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                     targetUnit.applyAtkUnity();

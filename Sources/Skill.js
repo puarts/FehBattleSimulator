@@ -1201,6 +1201,7 @@ const Weapon = {
     // 冬祭りの使者は夢の中
     Dreamflake: 1927, // 白き夢のかけら
     SnowGlobePlus: 1929, // スノードーム+
+    WinterRapierPlus: 1932, // 冬祭の突剣+
 }
 
 const Support = {
