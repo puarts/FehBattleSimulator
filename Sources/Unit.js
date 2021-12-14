@@ -39,6 +39,7 @@ const Hero = {
     HarmonizedLeif: 711,
     DuoSothis: 723,
     DuoCorrin: 735,
+    HarmonizedLysithea: 754,
 };
 
 function isThiefIndex(heroIndex) {
@@ -2064,6 +2065,7 @@ class Unit {
                 || this.heroIndex == Hero.HarmonizedLeif
                 || this.heroIndex == Hero.DuoSothis
                 || this.heroIndex == Hero.DuoCorrin
+                || this.heroIndex == Hero.HarmonizedLysithea
             );
     }
 
