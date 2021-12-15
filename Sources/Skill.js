@@ -1197,6 +1197,13 @@ const Weapon = {
     SpiritedAxePlus: 1919, // 士気旺盛の斧+
     BlarLionPlus: 1924, // ブラーライオン+
     CarnageAmatsu: 1923, // 修羅アマツ
+
+    // 冬祭りの使者は夢の中
+    Dreamflake: 1927, // 白き夢のかけら
+    SnowGlobePlus: 1929, // スノードーム+
+    WinterRapierPlus: 1932, // 冬祭の突剣+
+    SweetYuleLog: 1934, // 幸運ぶ冬の聖菓
+    TannenbowPlus: 1936, // 聖樹の弓+
 }
 
 const Support = {
@@ -1721,6 +1728,7 @@ const PassiveB = {
 
     // 魅了
     AtkCantrip3: 1380, // 攻撃の魅了3
+    SpdCantrip3: 1928, // 速さの魅了3
     DefCantrip3: 1471,
     ResCantrip3: 1589,
 
@@ -2117,7 +2125,9 @@ const PassiveC = {
     EvenRecovery2: 1740, // 快癒・奇数2
     EvenRecovery3: 1741, // 快癒・奇数3
 
+    // 護り手
     ArFarSave3: 1634, // 兜の護り手・遠間3
+    DrFarSave3: 1931, // 盾の護り手・遠間3
     DrNearSave3: 1636, // 盾の護り手・近間3
     AdNearSave3: 1667, // 鎧の護り手・近間3
     ArNearSave3: 1857, // 兜の護り手・近間3
@@ -2132,8 +2142,9 @@ const PassiveC = {
 
     StallPloy3: 1789, // 空転の奇策3
 
-    // 暗闇
-    RedFeud3: 1918, // 赤への暗闇3
+    // 暗闘
+    RedFeud3: 1918, // 赤への暗闘3
+    CFeud3: 1935, // 無への暗闇3
 
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
@@ -2895,6 +2906,7 @@ function isAdvantageousForColorless(weapon) {
 
 const FeudSkillTable = {};
 FeudSkillTable[PassiveC.RedFeud3] = 0;
+FeudSkillTable[PassiveC.CFeud3] = 0;
 
 /**
  * 暗闇スキルであるかどうかを取得します。

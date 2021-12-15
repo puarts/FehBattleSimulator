@@ -555,6 +555,7 @@ class DamageCalculatorWrapper {
         switch (unit.passiveC) {
             case PassiveC.WithEveryone2:
             case PassiveC.ArFarSave3:
+            case PassiveC.DrFarSave3:
                 if (atkUnit.isRangedWeaponType()) {
                     return true;
                 }
@@ -737,6 +738,11 @@ class DamageCalculatorWrapper {
         switch (targetUnit.passiveC) {
             case PassiveC.RedFeud3:
                 if (enemyUnit.color === ColorType.Red) {
+                    return true;
+                }
+                break;
+            case PassiveC.CFeud3:
+                if (enemyUnit.color === ColorType.Colorless) {
                     return true;
                 }
                 break;
@@ -1805,8 +1811,20 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SweetYuleLog] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
+        // 暗闘
         this._applySkillEffectForUnitFuncDict[PassiveC.RedFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.color === ColorType.Red) {
+                enemyUnit.addAllSpur(-4);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.CFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.color === ColorType.Colorless) {
                 enemyUnit.addAllSpur(-4);
             }
         }
@@ -3021,6 +3039,12 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveC.ArFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.atkSpur += 4;
+                targetUnit.resSpur += 4;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveC.DrFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.defSpur += 4;
                 targetUnit.resSpur += 4;
             }
         };
@@ -4946,14 +4970,24 @@ class DamageCalculatorWrapper {
 
     __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+            // 縦3列以内
             if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
-                // 縦3列以内
                 switch (unit.weapon) {
                     case Weapon.FlowerOfEase:
                         if (targetUnit.hasNegativeStatusEffect()) {
                             targetUnit.atkSpur -= 3;
                             targetUnit.defSpur -= 3;
                             targetUnit.resSpur -= 3;
+                        }
+                        break;
+                }
+            }
+            // 縦3列と横3列
+            if (Math.abs(targetUnit.posX - unit.posX) <= 1 || Math.abs(targetUnit.posY - unit.posY) <= 1) {
+                switch (unit.weapon) {
+                    case Weapon.Dreamflake:
+                        if (targetUnit.hasNegativeStatusEffect()) {
+                            targetUnit.atkSpur -= 5;
                         }
                         break;
                 }
@@ -5556,6 +5590,19 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.TannenbowPlus:
+            case Weapon.WinterRapierPlus:
+                if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    targetUnit.applyAtkUnity();
+                    targetUnit.applyDefUnity();
+                }
+                break;
+            case Weapon.SnowGlobePlus:
+                if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    targetUnit.applyAtkUnity();
+                    targetUnit.applyResUnity();
+                }
+                break;
             case Weapon.FlameOfMuspell:
                 if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                     targetUnit.atkSpur += 6;
@@ -5973,6 +6020,16 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.SweetYuleLog:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let spdDiff = targetUnit.getEvalSpdInCombat() - enemyUnit.getEvalSpdInCombat();
+                        if (spdDiff <= 9) {
+                            targetUnit.battleContext.isDesperationActivatable = true;
+                        } else {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.KazesNeedle:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -8378,6 +8435,8 @@ class DamageCalculatorWrapper {
         switch (feudSkillOwner.passiveC) {
             case PassiveC.RedFeud3:
                 return unit => unit.color === ColorType.Red;
+            case PassiveC.CFeud3:
+                return unit => unit.color === ColorType.Colorless;
         }
 
         return null;
@@ -9344,6 +9403,11 @@ class DamageCalculatorWrapper {
         switch (targetUnit.passiveC) {
             case PassiveC.RedFeud3:
                 if (enemyUnit.color === ColorType.Red) {
+                    return true;
+                }
+                break;
+            case PassiveC.CFeud3:
+                if (enemyUnit.color === ColorType.Colorless) {
                     return true;
                 }
                 break;
