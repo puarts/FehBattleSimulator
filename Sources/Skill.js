@@ -2983,7 +2983,8 @@ class SkillInfo {
      * @param  {} inheritableMoveTypes
      * @param  {Boolean} hasSpecialWeaponRefinement
      * @param  {Boolean} hasStatusWeaponRefinement
-     * @param  {String} englishName
+     * @param  {String} iconName
+     * @param  {SkillType} skillType
      */
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,
         effectives,
@@ -3006,13 +3007,12 @@ class SkillInfo {
         inheritableMoveTypes,
         hasSpecialWeaponRefinement,
         hasStatusWeaponRefinement,
-        englishName
+        iconName,
+        skillType
     ) {
         this.id = id;
         this.detailPageUrl = "https://puarts.com/?fehskill=" + id;
         this.name = name;
-        /** @type {String} **/
-        this.englishName = englishName;
         this.might = might;
         this.mightRefine = mightRefine;
         this.specialCount = specialCount;
@@ -3035,7 +3035,7 @@ class SkillInfo {
         this.specialRefineHpAdd = specialRefineHpAdd;
         this.weaponType = weaponType;
 
-        /** @member {number} */
+        /** @type {number} */
         this.sp = sp;
         this.canInherit = canInherit;
         this.inheritableWeaponTypes = inheritableWeaponTypes;
@@ -3043,8 +3043,11 @@ class SkillInfo {
         this.hasSpecialWeaponRefinement = hasSpecialWeaponRefinement;
         this.hasStatusWeaponRefinement = hasStatusWeaponRefinement;
 
-        this.type = SkillType.Weapon;
+        this.type = skillType;
         this.weaponRefinementOptions = [];
+
+        /** @type {String} */
+        this.iconPath = this.__getSkillIconPath(iconName);
 
         // 英雄情報から必要に応じて設定する
         this.releaseDateAsNumber = 0;
@@ -3094,6 +3097,21 @@ class SkillInfo {
             case SkillType.PassiveB: return this.id in PassiveBValueDict;
             case SkillType.PassiveC: return this.id in PassiveCValueDict;
             case SkillType.PassiveS: return this.id in PassiveSValueDict;
+            default:
+                throw new Error("Invalid skill type");
+        }
+    }
+
+    __getSkillIconPath(iconName) {
+        const iconRoot = g_siteRootPath + "blog/images/FehSkillIcons/";
+        switch (this.type) {
+            case SkillType.Weapon: return iconRoot + "Weapon.png";
+            case SkillType.Support: return iconRoot + "Support.png";
+            case SkillType.Special: return iconRoot + "Special.png";
+            case SkillType.PassiveA: return iconRoot + "PassiveA/" + iconName + ".png";
+            case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName + ".png";
+            case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName + ".png";
+            case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName + ".png";
             default:
                 throw new Error("Invalid skill type");
         }
