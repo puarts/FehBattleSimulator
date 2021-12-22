@@ -2953,6 +2953,38 @@ const PassiveSValueDict = __createValueDict(PassiveS);
 
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
+    /**
+     * @param  {String} id
+     * @param  {String} name
+     * @param  {Number} might
+     * @param  {Number} specialCount
+     * @param  {Number} hp
+     * @param  {Number} atk
+     * @param  {Number} spd
+     * @param  {Number} def
+     * @param  {Number} res
+     * @param  {} effectives
+     * @param  {} invalidatedEffectives
+     * @param  {Number} cooldownCount
+     * @param  {Number} atkCount
+     * @param  {Number} counteratkCount
+     * @param  {Boolean} canCounterattackToAllDistance
+     * @param  {Boolean} isSacredSealAvailable
+     * @param  {Number} mightRefine
+     * @param  {Boolean} disableCounterattack
+     * @param  {Boolean} wrathfulStaff
+     * @param  {} assistType
+     * @param  {Boolean} isNoAdditionalImplRequired
+     * @param  {Number} specialRefineHpAdd
+     * @param  {} weaponType
+     * @param  {Number} sp
+     * @param  {Boolean} canInherit
+     * @param  {} inheritableWeaponTypes
+     * @param  {} inheritableMoveTypes
+     * @param  {Boolean} hasSpecialWeaponRefinement
+     * @param  {Boolean} hasStatusWeaponRefinement
+     * @param  {String} englishName
+     */
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,
         effectives,
         invalidatedEffectives,
@@ -2973,11 +3005,14 @@ class SkillInfo {
         inheritableWeaponTypes,
         inheritableMoveTypes,
         hasSpecialWeaponRefinement,
-        hasStatusWeaponRefinement
+        hasStatusWeaponRefinement,
+        englishName
     ) {
         this.id = id;
         this.detailPageUrl = "https://puarts.com/?fehskill=" + id;
         this.name = name;
+        /** @type {String} **/
+        this.englishName = englishName;
         this.might = might;
         this.mightRefine = mightRefine;
         this.specialCount = specialCount;
