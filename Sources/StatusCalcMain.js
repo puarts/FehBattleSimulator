@@ -27,20 +27,25 @@ let vm = new Vue({
         },
         maximaizeMergeAndDragonflower: function () {
             unit.maximizeMergeAndDragonflower();
+            updateStatus();
         },
         maximaizeMerge: function () {
             unit.maximizeMerge();
+            updateStatus();
         },
         maximaizeDragonflower: function () {
             unit.maximizeDragonflower();
+            updateStatus();
         },
         resetMerge: function () {
             unit.merge = 0;
             unit.updateStatusByMergeAndDragonFlower();
+            updateStatus();
         },
         resetDragonflower: function () {
             unit.dragonflower = 0;
             unit.updateStatusByMergeAndDragonFlower();
+            updateStatus();
         },
     }
 });

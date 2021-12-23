@@ -662,12 +662,18 @@ class AppData extends UnitManager {
     /**
      * @param  {Unit} unit
      * @param  {boolean} updatesPureGrowthRate=false
+     * @param  {boolean} updateBlessingEffects=true
      */
-    __updateStatusBySkillsAndMerges(unit, updatesPureGrowthRate = false) {
+    __updateStatusBySkillsAndMerges(
+        unit,
+        updatesPureGrowthRate = false,
+        updateBlessingEffects = true
+    ) {
         this.skillDatabase.updateUnitSkillInfo(unit);
 
         // 祝福効果の更新
-        {
+        if (updateBlessingEffects) {
+            console.log("update blessing effects");
             unit.clearBlessingEffects();
             for (let ally of this.enumerateUnitsInTheSameGroup(unit, false)) {
                 if (!this.isBlessingEffectEnabled(unit, ally)) {
@@ -681,7 +687,7 @@ class AppData extends UnitManager {
             }
         }
 
-        unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate);
+        unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate, updateBlessingEffects);
 
         // 砦レベル差
         {

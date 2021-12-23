@@ -1199,6 +1199,19 @@ class Unit {
         this.__updateNameWithGroup();
     }
 
+    /**
+     * @param  {StatusType} statusType
+     */
+    isAsset(statusType) {
+        return this.ivHighStat == statusType || (this.ascendedAsset == statusType && this.ivLowStat != statusType);
+    }
+    /**
+     * @param  {StatusType} statusType
+     */
+    isFlow(statusType) {
+        return this.ivLowStat == statusType && this.merge == 0 && this.ascendedAsset != statusType;
+    }
+
     __updateNameWithGroup() {
         this.nameWithGroup = this.name + "(" + groupIdToString(this.groupId) + ")";
     }
@@ -1527,17 +1540,23 @@ class Unit {
 
     clearBlessingEffects() {
         this.blessingEffects = [];
+        this.__clearBlessings();
     }
-    addBlessingEffect(blessingEffect) {
-        this.blessingEffects.push(blessingEffect);
-    }
-    __syncBlessingEffects() {
+
+    __clearBlessings() {
         this.blessing1 = BlessingType.None;
         this.blessing2 = BlessingType.None;
         this.blessing3 = BlessingType.None;
         this.blessing4 = BlessingType.None;
         this.blessing5 = BlessingType.None;
         this.blessing6 = BlessingType.None;
+    }
+
+    addBlessingEffect(blessingEffect) {
+        this.blessingEffects.push(blessingEffect);
+    }
+    __syncBlessingEffects() {
+        this.__clearBlessings();
         if (this.blessingEffects.length > 0) {
             this.blessing1 = this.blessingEffects[0];
         }
@@ -3391,8 +3410,10 @@ class Unit {
         }
     }
 
-    updateStatusByBlessing() {
-        this.__syncBlessingEffects();
+    updateStatusByBlessing(syncBlessingEffects = true) {
+        if (syncBlessingEffects) {
+            this.__syncBlessingEffects();
+        }
         this.__updateStatusByBlessing(this.blessing1);
         this.__updateStatusByBlessing(this.blessing2);
         this.__updateStatusByBlessing(this.blessing3);
@@ -4015,7 +4036,7 @@ class Unit {
         // this.updatePureGrowthRate();
     }
 
-    updateStatusBySkillsAndMerges(updatesPureGrowthRate = true) {
+    updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects = true) {
         this.updateBaseStatus(updatesPureGrowthRate);
 
         this.maxHpWithSkillsWithoutAdd = this.hpLvN;
@@ -4028,7 +4049,7 @@ class Unit {
         this.updateStatusByMergeAndDragonFlower();
 
         // 祝福によるステータス変化
-        this.updateStatusByBlessing();
+        this.updateStatusByBlessing(syncBlessingEffects);
 
         // 武器錬成
         this.updateStatusByWeaponRefinement();

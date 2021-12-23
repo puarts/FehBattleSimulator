@@ -3113,7 +3113,7 @@ class SkillInfo {
             case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName + ".png";
             case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName + ".png";
             default:
-                throw new Error("Invalid skill type");
+                return "";
         }
     }
 }
