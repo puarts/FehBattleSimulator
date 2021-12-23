@@ -45,6 +45,11 @@ __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
             case XXX.YYY:
                 targetUnit.atkSpur += N;
 
+周囲2マス以内の味方は、戦闘中、<バフ以外の効果>
+__applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+    // <バフ以外の効果>
+}
+
 戦闘開始時、自身(敵)のHPがN%以上なら
 targetUnit.battleContext.restHpPercentage >= N
 enemyUnit.battleContext.restHpPercentage >= N

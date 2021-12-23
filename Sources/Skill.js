@@ -1204,6 +1204,9 @@ const Weapon = {
     WinterRapierPlus: 1932, // 冬祭の突剣+
     SweetYuleLog: 1934, // 幸運ぶ冬の聖菓
     TannenbowPlus: 1936, // 聖樹の弓+
+
+    // 2021年12月 伝承ベレス
+    ProfessorialGuide: 1938, // 師の授けの書
 }
 
 const Support = {
