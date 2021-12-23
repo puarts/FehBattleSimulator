@@ -75,6 +75,14 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case PassiveC.GoddessBearer:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.applyAtkBuff(7);
+                    skillOwner.applySpdBuff(7);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+                }
+                break;
             case Weapon.Vorufuberugu:
                 if (skillOwner.isWeaponRefined) {
                     let found = false;
