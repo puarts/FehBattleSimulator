@@ -2176,6 +2176,7 @@ const PassiveC = {
     DomainOfFlame: 1848, // 絶炎結界
     Worldbreaker: 1913, // 神槌大地を穿つ
     OpeningRetainer: 1922, // 開神の眷属
+    GoddessBearer: 1939, // 女神を宿せし者
 };
 
 const PassiveS = {
