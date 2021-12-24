@@ -210,7 +210,7 @@
 
         .paramHeader {
             font-size: 14px;
-            padding: 0px;
+            padding: 2 0 3 0;
             text-align: left;
             font-weight: bold;
             /* background-color: #7fa1a0; */
@@ -230,6 +230,7 @@
 
         td.param {
             min-width: 40px;
+            padding: 0 0 2 0;
             text-align: right;
             font-size: 24px;
             color: lightyellow;
@@ -265,6 +266,11 @@
 
         .normal {
             font-size: 11px;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: bold;
         }
 
         tr.attackInfo {
@@ -376,480 +382,461 @@
         .select2-selection__rendered {
             font-size: 12px;
         }
+
+        .card {
+            float: left;
+            display: block;
+            /* background-color: #f33; */
+            width: 338;
+            padding: 10px;
+        }
+
+        hr {
+            padding: 0;
+            border: none;
+            border-top: medium double #333;
+            color: #333;
+            text-align: center;
+        }
     </style>
     <script type="text/x-template" id="unit-detail-template">
-        <table border='0' style='border-width: 0px;border-style:none;'>
-            <tr>
-                <td colspan="2">
+        <div>
+            <div class="unitStatusAndSkillContainer card" style="height:350px" >
+                <div class='paramHeader' style="text-align:left;">
+                    <img v-bind:src="value.icon" width="50" height="50" />
+                    ★
+                    <select v-model="value.rarity" @change="g_app.vm.ivChanged">
+                        <option v-for="item in UnitRarity" v-bind:value="item">
+                            {{ item}}
+                        </option>
+                    </select>
+                    <label class="normal" for="merge">LV.</label>
+                    <input name="level" type="number" v-model="value.level"
+                        min="1" max="99" class="numeric" @input="updateStatus(value);" />
+                    +
+                    <select v-model="value.merge" @change="updateStatus(value);">
+                        <option v-for="(value, i) in (10+1)" v-bind:value="i">
+                            {{ i }}
+                        </option>
+                    </select>
+
+                    <label class="normal" for="dragonflower">
+                        <img v-bind:src="value.dragonflowerIcon" width="25" height="25" />
+                    +</label>
+                    <select v-model="value.dragonflower" @change="g_app.vm.dragonflowerChanged">
+                        <option v-for="(value, i) in (value.maxDragonflower+1)" v-bind:value="i">
+                            {{ i }}
+                        </option>
+                    </select>
+                </div>
+                <div style="float:left;">
                     <table border='0' style='border-width: 0px;border-style:none;'>
                         <tr>
-                            <td>
-                                <dl>
-                                    <dt><label class="normal">英雄:</label></dt>
-                                    <dd>
-                                        <select2 :options="g_app.vm.heroOptions" v-model="value.heroIndex" class="hero"
-                                            @input="g_app.vm.heroIndexChanged">
-                                        </select2>
-                                        <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
-                                        <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.heroIndex}})</span>
-                                    </dd>
-                                </dl>
+                            <td class='paramHeader'>
+                            </td>
+                            <td class='paramHeader'>
                             </td>
                         </tr>
-                        <tr  v-bind:style="g_app.vm.debugMenuStyle">
-                            <td>
-                                id={{value.id}} 
-                                <label  class="normal" for="slotOrder">スロット番号: </label>
-                                <input   name="slotOrder" type="number" min="0" max="5" readonly="readonly"
-                                    v-model="value.slotOrder" class="statusInput"
-                                    @input="g_app.vm.slotOrderChanged" />
-                                <span class="debugInfo">
-                                    <label class="normal" for="moveCount">移動値: </label>
-                                    <input name="moveCount" type="number" readonly="readonly"
-                                        v-model="value.moveCount" class="statusInput"
-                                        @input="g_app.vm.moveCountChanged" />({{value.moveCountAtBeginningOfTurn}})
+                        <tr>
+                            <td class='paramHeader'>
+                                <span v-if="value.isAsset(StatusType.Hp)" class="assetStatus">
+                                HP
                                 </span>
-                                <label class="debugInfo" class="normal" for="moveCountAtBeginningOfTurn">ターン開始時の移動値: </label>
-                                <input class="debugInfo" name="moveCountAtBeginningOfTurn" type="number" readonly="readonly"
-                                    v-model="value.moveCountAtBeginningOfTurn" class="statusInput"
-                                   />
-                                <span v-if="value.heroInfo != null">
-                                <label  class="normal" for="origin">出典: </label>{{ value.heroInfo.origin }}
+                                <span v-else-if="value.isFlow(StatusType.Hp)" class="flowStatus">
+                                HP
+                                </span>                                        
+                                <span v-else>
+                                HP
+                                </span>
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.atkWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.maxHpWithSkillsWithoutAdd}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='paramHeader'>
+                                <span v-if="value.isAsset(StatusType.Atk)" class="assetStatus">
+                                攻撃
+                                </span>
+                                <span v-else-if="value.isFlow(StatusType.Atk)" class="flowStatus">
+                                攻撃
+                                </span>                                        
+                                <span v-else>
+                                攻撃
+                                </span>
+                            </td>
+                            <td class='param'>
+                                {{value.atkWithSkills-value.atkAdd}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='paramHeader'>
+                                <span v-if="value.isAsset(StatusType.Spd)" class="assetStatus">
+                                速さ
+                                </span>
+                                <span v-else-if="value.isFlow(StatusType.Spd)" class="flowStatus">
+                                速さ
+                                </span>                                        
+                                <span v-else>
+                                速さ
+                                </span>
+                                
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.spdWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.spdWithSkills-value.spdAdd}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='paramHeader'>
+                                <span v-if="value.isAsset(StatusType.Def)" class="assetStatus">
+                                守備
+                                </span>
+                                <span v-else-if="value.isFlow(StatusType.Def)" class="flowStatus">
+                                守備
+                                </span>                                        
+                                <span v-else>
+                                守備
+                                </span>
+                                
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.defWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.defWithSkills-value.defAdd}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='paramHeader'>
+                                <span v-if="value.isAsset(StatusType.Res)" class="assetStatus">
+                                魔防
+                                </span>
+                                <span v-else-if="value.isFlow(StatusType.Res)" class="flowStatus">
+                                魔防
+                                </span>                                        
+                                <span v-else>
+                                魔防
+                                </span>
+                                
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.resWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.resWithSkills-value.resAdd}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='paramHeader'>
+                                合計
+                            </td>
+                            <td class='param'>
+                                {{value.maxHpWithSkillsWithoutAdd + value.atkWithSkills+value.atkBuff+value.atkDebuff
+                                    +value.spdWithSkills+value.spdBuff+value.spdDebuff
+                                    +value.defWithSkills+value.defBuff+value.defDebuff
+                                    +value.resWithSkills+value.resBuff+value.resDebuff}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <hr />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class='paramHeader'>
+                                絆
+                            </td>
+                            <td class='param'>
+                                <select v-model="value.summonerLevel" @change="g_app.vm.summonerLevelChanged">
+                                    <option v-for="option in g_appData.summonerLevelOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='paramHeader'>
+                                <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
+                                    <label v-bind:for='"isResplendent"+value.id'>神装</label>
+                                </span>
+                            </td>
+                            <td class='param'>
+                                <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
+                                    <input v-bind:id='"isResplendent"+value.id' type="checkbox" v-model="value.isResplendent" @change="g_app.vm.isBonusCharChanged" />
                                 </span>
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <dl>
-                                    <dt><label class="normal">個性:</label></dt>
-                                    <dd>
-                                <label class="normal" for="ivHigh">得意 </label>
-                                <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged">
-                                    <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                        {{ option.text }}
-                                    </option>
-                                </select>
-                                <label class="normal" for="ivLow">苦手 </label>
-                                <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged">
-                                    <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                        {{ option.text }}
-                                    </option>
-                                </select>
-                                <label class="normal"><img
-                                        src="/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
-                                        height="20"></label>
-                                <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged">
-                                    <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                        {{ option.text }}
-                                    </option>
-                                </select>
-                                    </dd>
-                                </dl>
+                            <td class='paramHeader'>
+                                <label v-bind:for='"isBonusChar"+value.id'>ボナ補正</label>
+                            </td>
+                            <td class='param'>
+                                <input v-bind:id='"isBonusChar"+value.id' type="checkbox" v-model="value.isBonusChar" @change="g_app.vm.isBonusCharChanged" />
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <span v-if="value.providableBlessingSeason == SeasonType.None">
-                                    <dl>
-                                        <dt><label class="normal">祝福: </label></dt>
-                                        <dd>  
-                                            <select v-model="value.blessing1" @change="updateStatus(value);">
-                                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                                    {{ option.text }}
-                                                </option>
-                                            </select>
-                                            <select v-model="value.blessing2" @change="updateStatus(value);">
-                                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                                    {{ option.text }}
-                                                </option>
-                                            </select>
-                                            <select v-model="value.blessing3" @change="updateStatus(value);">
-                                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                                    {{ option.text }}
-                                                </option>
-                                            </select>
-                                            <select v-model="value.blessing4" @change="updateStatus(value);">
-                                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                                    {{ option.text }}
-                                                </option>
-                                            </select>
-                                            <select v-model="value.blessing5" @change="updateStatus(value);">
-                                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                                    {{ option.text }}
-                                                </option>
-                                            </select>
-                                        </dd>
-                                    </dl>
+                            <td class='paramHeader'>
+                                <span v-if="isWeaponTypeBeast(value.weaponType)">
+                                    <label class="paramHeader" v-bind:for='"isTransformed"+value.id'>化身</label>
+                                </span>
+                            </td>
+                            <td class='param'>
+                                <span v-if="isWeaponTypeBeast(value.weaponType)">
+                                    <input v-bind:id='"isTransformed"+value.id' type="checkbox" v-model="value.isTransformed" @change="updateStatus(value);" />
                                 </span>
                             </td>
                         </tr>
                     </table>
-                </td>
-            </tr>
-            <tr>
-                <td style="vertical-align:top">
-                    <div class="unitStatusAndSkillContainer" style="float:left;">
-                        <div class='paramHeader' style="text-align:left;">
-                            <img v-bind:src="value.icon" width="50" height="50" />
-                            ★
-                            <select v-model="value.rarity" @change="g_app.vm.ivChanged">
-                                <option v-for="item in UnitRarity" v-bind:value="item">
-                                    {{ item}}
-                                </option>
-                            </select>
-                            <label class="normal" for="merge">LV.</label>
-                            <input name="level" type="number" v-model="value.level"
-                                min="1" max="99" class="numeric" @input="updateStatus(value);" />
-                            +<input name="merge" type="number" v-model="value.merge"
-                                min="0" max="10" class="numeric" @input="updateStatus(value);" />
-                            <label class="normal" for="dragonflower">
-                                <img v-bind:src="value.dragonflowerIcon" width="25" height="25" />
-                            +</label>
-                            <input name="dragonflower" type="number"
-                                v-model="value.dragonflower" min="0" v-bind:max="value.maxDragonflower"
-                                class="numeric" @input="g_app.vm.dragonflowerChanged" />
-                        </div>
-                        <div style="float:left;">
-                            <table border='0' style='border-width: 0px;border-style:none;'>
-                                <tr>
-                                    <td class='paramHeader'>
-                                    </td>
-                                    <td class='paramHeader'>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <span v-if="value.isAsset(StatusType.Hp)" class="assetStatus">
-                                        HP
-                                        </span>
-                                        <span v-else-if="value.isFlow(StatusType.Hp)" class="flowStatus">
-                                        HP
-                                        </span>                                        
-                                        <span v-else>
-                                        HP
-                                        </span>
-                                    </td>
-                                    <td class='param'>
-                                        <!-- <input class='numeric' v-model="value.atkWithSkills"
-                                            type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                        {{value.maxHpWithSkillsWithoutAdd}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <span v-if="value.isAsset(StatusType.Atk)" class="assetStatus">
-                                        攻撃
-                                        </span>
-                                        <span v-else-if="value.isFlow(StatusType.Atk)" class="flowStatus">
-                                        攻撃
-                                        </span>                                        
-                                        <span v-else>
-                                        攻撃
-                                        </span>
-                                    </td>
-                                    <td class='param'>
-                                        {{value.atkWithSkills-value.atkAdd}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <span v-if="value.isAsset(StatusType.Spd)" class="assetStatus">
-                                        速さ
-                                        </span>
-                                        <span v-else-if="value.isFlow(StatusType.Spd)" class="flowStatus">
-                                        速さ
-                                        </span>                                        
-                                        <span v-else>
-                                        速さ
-                                        </span>
-                                        
-                                    </td>
-                                    <td class='param'>
-                                        <!-- <input class='numeric' v-model="value.spdWithSkills"
-                                            type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                        {{value.spdWithSkills-value.spdAdd}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <span v-if="value.isAsset(StatusType.Def)" class="assetStatus">
-                                        守備
-                                        </span>
-                                        <span v-else-if="value.isFlow(StatusType.Def)" class="flowStatus">
-                                        守備
-                                        </span>                                        
-                                        <span v-else>
-                                        守備
-                                        </span>
-                                        
-                                    </td>
-                                    <td class='param'>
-                                        <!-- <input class='numeric' v-model="value.defWithSkills"
-                                            type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                        {{value.defWithSkills-value.defAdd}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <span v-if="value.isAsset(StatusType.Res)" class="assetStatus">
-                                        魔防
-                                        </span>
-                                        <span v-else-if="value.isFlow(StatusType.Res)" class="flowStatus">
-                                        魔防
-                                        </span>                                        
-                                        <span v-else>
-                                        魔防
-                                        </span>
-                                        
-                                    </td>
-                                    <td class='param'>
-                                        <!-- <input class='numeric' v-model="value.resWithSkills"
-                                            type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                        {{value.resWithSkills-value.resAdd}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        総合値
-                                    </td>
-                                    <td class='param'>
-                                        {{value.maxHpWithSkillsWithoutAdd + value.atkWithSkills+value.atkBuff+value.atkDebuff
-                                            +value.spdWithSkills+value.spdBuff+value.spdDebuff
-                                            +value.defWithSkills+value.defBuff+value.defDebuff
-                                            +value.resWithSkills+value.resBuff+value.resDebuff}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10 0 0 0;">
-                                    </td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        絆
-                                    </td>
-                                    <td class='param'>
-                                        <select v-model="value.summonerLevel" @change="g_app.vm.summonerLevelChanged">
-                                            <option v-for="option in g_appData.summonerLevelOptions" v-bind:value="option.id">
-                                                {{ option.text }}
-                                            </option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
-                                            <label v-bind:for='"isResplendent"+value.id'>神装</label>
-                                        </span>
-                                    </td>
-                                    <td class='param'>
-                                        <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
-                                            <input v-bind:id='"isResplendent"+value.id' type="checkbox" v-model="value.isResplendent" @change="g_app.vm.isBonusCharChanged" />
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <label v-bind:for='"isBonusChar"+value.id'>ボナ補正</label>
-                                    </td>
-                                    <td class='param'>
-                                        <input v-bind:id='"isBonusChar"+value.id' type="checkbox" v-model="value.isBonusChar" @change="g_app.vm.isBonusCharChanged" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='paramHeader'>
-                                        <span v-if="isWeaponTypeBeast(value.weaponType)">
-                                            <label class="paramHeader" v-bind:for='"isTransformed"+value.id'>化身</label>
-                                        </span>
-                                    </td>
-                                    <td class='param'>
-                                        <span v-if="isWeaponTypeBeast(value.weaponType)">
-                                            <input v-bind:id='"isTransformed"+value.id' type="checkbox" v-model="value.isTransformed" @change="updateStatus(value);" />
-                                        </span>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div style="float:left;padding: 0 0 0 20;">
-                            <table border="0" style="border-style:none;">
-                                <tr>
-                                    <td class='skillHeader'>
-                                        <img src="https://puarts.com/AetherRaidTacticsBoard/images/Weapon.png" width="25" height="25" />
-                                    </td>
-                                    <td colspan="2">
-                                        <select2 :options="value.heroInfo.weaponOptions" v-model="value.weapon" v-bind:name="value.id+'-weapon'" v-if="value.heroInfo!=null"
-                                            @input="g_app.vm.weaponChanged" class="skill" >
-                                        </select2>
-                                        <a v-bind:href="value.weaponInfo.detailPageUrl" target="_blank" v-if="value.weaponInfo != null" >
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                </div>
+                <div style="float:left;padding: 0 0 0 20;">
+                    <table border="0" style="border-style:none;">
+                        <tr>
+                            <td class='skillHeader'>
+                                <img src="https://puarts.com/AetherRaidTacticsBoard/images/Weapon.png" width="25" height="25" />
+                            </td>
+                            <td colspan="2">
+                                <select2 :options="value.heroInfo.weaponOptions" v-model="value.weapon" v-bind:name="value.id+'-weapon'" v-if="value.heroInfo!=null"
+                                    @input="g_app.vm.weaponChanged" class="skill" >
+                                </select2>
+                                <a v-bind:href="value.weaponInfo.detailPageUrl" target="_blank" v-if="value.weaponInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
 
-                                        <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
-                                            ({{value.weapon}}) {{value.heroInfo!=null?value.heroInfo.weaponOptions.length:0}}, {{g_appData.weaponImplCount}}/{{g_appData.weaponCount}}({{Math.floor(100*g_appData.weaponImplCount/g_appData.weaponCount, 2)}}%)
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='skillHeader'>
-                                    </td>
-                                    <td colspan="2">
-                                        <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-if="g_app.vm.enableAllSkillOptions">
-                                            <option v-for="option in g_appData.weaponRefinementOptions" v-bind:value="option.id">
-                                                {{ option.text }}
-                                            </option>
-                                        </select>
-                                        <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-else-if="value.weaponInfo != null&&value.weaponInfo.weaponRefinementOptions.length > 1">
-                                            <option v-for="option in value.weaponInfo.weaponRefinementOptions" v-bind:value="option.id">
-                                                {{ option.text }}
-                                            </option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='skillHeader'>
-                                        <img src="https://puarts.com/AetherRaidTacticsBoard/images/Support.png" width="25" height="25" />
-                                    </td>
-                                    <td colspan="2">
-                                        <select2 :options="value.heroInfo.supportOptions" v-if="value.heroInfo!=null"
-                                        @input="g_app.vm.supportChanged"
-                                        v-bind:name="value.id+'-support'"
-                                            v-model="value.support" class="skill">
-                                        </select2>
-                                        <a v-bind:href="value.supportInfo.detailPageUrl" target="_blank" v-if="value.supportInfo != null" >
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.weapon}}) {{value.heroInfo!=null?value.heroInfo.weaponOptions.length:0}}, {{g_appData.weaponImplCount}}/{{g_appData.weaponCount}}({{Math.floor(100*g_appData.weaponImplCount/g_appData.weaponCount, 2)}}%)
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                            </td>
+                            <td colspan="2">
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-if="g_app.vm.enableAllSkillOptions">
+                                    <option v-for="option in g_appData.weaponRefinementOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-else-if="value.weaponInfo != null&&value.weaponInfo.weaponRefinementOptions.length > 1">
+                                    <option v-for="option in value.weaponInfo.weaponRefinementOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img src="https://puarts.com/AetherRaidTacticsBoard/images/Support.png" width="25" height="25" />
+                            </td>
+                            <td colspan="2">
+                                <select2 :options="value.heroInfo.supportOptions" v-if="value.heroInfo!=null"
+                                @input="g_app.vm.supportChanged"
+                                v-bind:name="value.id+'-support'"
+                                    v-model="value.support" class="skill">
+                                </select2>
+                                <a v-bind:href="value.supportInfo.detailPageUrl" target="_blank" v-if="value.supportInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
 
-                                        <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
-                                            ({{value.support}}) {{value.heroInfo!=null?value.heroInfo.supportOptions.length:0}}, {{g_appData.supportImplCount}}/{{g_appData.supportCount}}({{Math.floor(100*g_appData.supportImplCount/g_appData.supportCount, 2)}}%)</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='skillHeader'>
-                                        <img src="https://puarts.com/AetherRaidTacticsBoard/images/Special.png" width="25" height="25" />
-                                        <span v-if="value.specialInfo != null" class="skillTypeText">
-                                            {{value.maxSpecialCount}}
-                                        </span>
-                                    </td>
-                                    <td colspan="2">
-                                        <select2 :options="value.heroInfo.specialOptions" v-model="value.special" v-bind:name="value.id+'-special'" v-if="value.heroInfo!=null"
-                                            @input="g_app.vm.specialChanged" class="skill">
-                                        </select2>
-                                        <a v-bind:href="value.specialInfo.detailPageUrl" target="_blank" v-if="value.specialInfo != null" >
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
-                                        <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
-                                            ({{value.special}}) {{value.heroInfo!=null?value.heroInfo.specialOptions.length:0}}, {{g_appData.specialImplCount}}/{{g_appData.specialCount}}({{Math.floor(100*g_appData.specialImplCount/g_appData.specialCount, 2)}}%)</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='skillHeader'>
-                                        <img v-if="value.passiveAInfo != null" v-bind:src="value.passiveAInfo.iconPath" width="25" height="25" />
-                                        <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                        <img v-bind:src="g_imageRootPath + 'A.png'" class="skillTypeText" width="12" height="12" />
-                                    </td>
-                                    <td colspan="2">
-                                        <select2 :options="value.heroInfo.passiveAOptions" v-bind:name="value.id+'-passiveA'" v-if="value.heroInfo!=null"
-                                            v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
-                                        </select2>
-                                        <a v-bind:href="value.passiveAInfo.detailPageUrl" target="_blank" v-if="value.passiveAInfo != null" >
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.support}}) {{value.heroInfo!=null?value.heroInfo.supportOptions.length:0}}, {{g_appData.supportImplCount}}/{{g_appData.supportCount}}({{Math.floor(100*g_appData.supportImplCount/g_appData.supportCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img src="https://puarts.com/AetherRaidTacticsBoard/images/Special.png" width="25" height="25" />
+                                <span v-if="value.specialInfo != null" class="skillTypeText">
+                                    {{value.maxSpecialCount}}
+                                </span>
+                            </td>
+                            <td colspan="2">
+                                <select2 :options="value.heroInfo.specialOptions" v-model="value.special" v-bind:name="value.id+'-special'" v-if="value.heroInfo!=null"
+                                    @input="g_app.vm.specialChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.specialInfo.detailPageUrl" target="_blank" v-if="value.specialInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.special}}) {{value.heroInfo!=null?value.heroInfo.specialOptions.length:0}}, {{g_appData.specialImplCount}}/{{g_appData.specialCount}}({{Math.floor(100*g_appData.specialImplCount/g_appData.specialCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveAInfo != null" v-bind:src="value.passiveAInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'A.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td colspan="2">
+                                <select2 :options="value.heroInfo.passiveAOptions" v-bind:name="value.id+'-passiveA'" v-if="value.heroInfo!=null"
+                                    v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.passiveAInfo.detailPageUrl" target="_blank" v-if="value.passiveAInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
 
-                                        <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
-                                            ({{value.passiveA}}) {{value.heroInfo!=null?value.heroInfo.passiveAOptions.length:0}}, {{g_appData.passiveAImplCount}}/{{g_appData.passiveACount}}({{Math.floor(100*g_appData.passiveAImplCount/g_appData.passiveACount, 2)}}%)</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='skillHeader'>
-                                        <img v-if="value.passiveBInfo != null" v-bind:src="value.passiveBInfo.iconPath" width="25" height="25" />
-                                        <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                        <img v-bind:src="g_imageRootPath + 'B.png'" class="skillTypeText" width="12" height="12" />
-                                    </td>
-                                    <td colspan="2">
-                                        <select2 :options="value.heroInfo.passiveBOptions" v-bind:name="value.id+'-passiveB'" v-if="value.heroInfo!=null"
-                                            v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
-                                        </select2>
-                                        <a v-bind:href="value.passiveBInfo.detailPageUrl" target="_blank" v-if="value.passiveBInfo != null" >
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveA}}) {{value.heroInfo!=null?value.heroInfo.passiveAOptions.length:0}}, {{g_appData.passiveAImplCount}}/{{g_appData.passiveACount}}({{Math.floor(100*g_appData.passiveAImplCount/g_appData.passiveACount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveBInfo != null" v-bind:src="value.passiveBInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'B.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td colspan="2">
+                                <select2 :options="value.heroInfo.passiveBOptions" v-bind:name="value.id+'-passiveB'" v-if="value.heroInfo!=null"
+                                    v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
+                                </select2>
+                                <a v-bind:href="value.passiveBInfo.detailPageUrl" target="_blank" v-if="value.passiveBInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
 
-                                        <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
-                                            ({{value.passiveB}}) {{value.heroInfo!=null?value.heroInfo.passiveBOptions.length:0}}, {{g_appData.passiveBImplCount}}/{{g_appData.passiveBCount}}({{Math.floor(100*g_appData.passiveBImplCount/g_appData.passiveBCount, 2)}}%)</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='skillHeader'>
-                                        <img v-if="value.passiveCInfo != null" v-bind:src="value.passiveCInfo.iconPath" width="25" height="25" />
-                                        <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                        <img v-bind:src="g_imageRootPath + 'C.png'" class="skillTypeText" width="12" height="12" />
-                                    </td>
-                                    <td colspan="2">
-                                        <select2 :options="value.heroInfo.passiveCOptions" v-bind:name="value.id+'-passiveC'" v-if="value.heroInfo!=null"
-                                            v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
-                                        </select2>
-                                        <a v-bind:href="value.passiveCInfo.detailPageUrl" target="_blank" v-if="value.passiveCInfo != null" >
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveB}}) {{value.heroInfo!=null?value.heroInfo.passiveBOptions.length:0}}, {{g_appData.passiveBImplCount}}/{{g_appData.passiveBCount}}({{Math.floor(100*g_appData.passiveBImplCount/g_appData.passiveBCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveCInfo != null" v-bind:src="value.passiveCInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'C.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td colspan="2">
+                                <select2 :options="value.heroInfo.passiveCOptions" v-bind:name="value.id+'-passiveC'" v-if="value.heroInfo!=null"
+                                    v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.passiveCInfo.detailPageUrl" target="_blank" v-if="value.passiveCInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
 
-                                        <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
-                                            ({{value.passiveC}}) {{value.heroInfo!=null?value.heroInfo.passiveCOptions.length:0}}, {{g_appData.passiveCImplCount}}/{{g_appData.passiveCCount}}({{Math.floor(100*g_appData.passiveCImplCount/g_appData.passiveCCount, 2)}}%)</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class='skillHeader'>
-                                        <img v-if="value.passiveSInfo != null" v-bind:src="value.passiveSInfo.iconPath" width="25" height="25" />
-                                        <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                        <img v-bind:src="g_imageRootPath + 'S.png'" class="skillTypeText" width="12" height="12" />
-                                    </td>
-                                    <td colspan="2">
-                                        <select2 :options="value.heroInfo.passiveSOptions" v-bind:name="value.id+'-passiveS'" v-if="value.heroInfo!=null"
-                                            v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
-                                        </select2>
-                                        <a v-bind:href="value.passiveSInfo.detailPageUrl" target="_blank" v-if="value.passiveSInfo != null" >
-                                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveC}}) {{value.heroInfo!=null?value.heroInfo.passiveCOptions.length:0}}, {{g_appData.passiveCImplCount}}/{{g_appData.passiveCCount}}({{Math.floor(100*g_appData.passiveCImplCount/g_appData.passiveCCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveSInfo != null" v-bind:src="value.passiveSInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'S.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td colspan="2">
+                                <select2 :options="value.heroInfo.passiveSOptions" v-bind:name="value.id+'-passiveS'" v-if="value.heroInfo!=null"
+                                    v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.passiveSInfo.detailPageUrl" target="_blank" v-if="value.passiveSInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
 
-                                        <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
-                                            ({{value.passiveS}}) {{value.heroInfo!=null?value.heroInfo.passiveSOptions.length:0}}, {{g_appData.passiveSImplCount}}/{{g_appData.passiveSCount}}({{Math.floor(100*g_appData.passiveSImplCount/g_appData.passiveSCount, 2)}}%)</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td class='paramHeader'>
-                                        合計SP
-                                    </td>
-                                    <td class='param'>
-                                        {{value.totalSp}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td class='paramHeader'>
-                                        査定
-                                    </td>
-                                    <td class='param'>
-                                        {{value.arenaScore}} ({{value.arenaScore*2}})
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div style="clear:both;"></div>
-                    <div style="margin: 10px;">
-                        <input type="button" class="buttonUi" value="凸と花を最大化" @click="value.maximizeMergeAndDragonflower();updateStatus(value);" />
-                        <input type="button" class="buttonUi" value="リセット" @click="resetUnit(value)" />
-                        <input type="button" class="buttonUi" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();" >
-                        <input type="button" class="buttonUi" value="スキル全て外す" @click="value.clearReservedSkills();value.clearSkills();" >
-                        <input type="button" class="buttonUi" @click="g_app.setUnitToMaxArenaScore(value)" value="最大査定に設定"></input>
-                    </div>
-                    <!-- <fieldset style="font-size:12px;">
-                        <legend>闘技場スコア</legend>
-                        
-                        <span>スコア: {{value.arenaScore*2}}({{value.arenaScore}})</span><br/>
-                        <span style="color:#555">
-                        計算式: (150 + {{value.rarityScore}} + {{value.levelScore}} + ({{value.rating}} / 5) + ({{value.totalSp}} / 100) + ({{value.merge}} * 2)) * 2<br/>
-                        総合値: {{value.rating}}<br/>
-                        合計SP: {{value.totalSp}}({{value.weaponSp}}+{{value.supportSp}}+{{value.specialSp}}+{{value.passiveASp}}+{{value.passiveBSp}}+{{value.passiveCSp}}+{{value.passiveSSp}})</span><br/>
-                    </fieldset> -->
-                </td>
-            </tr>
-        </table>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveS}}) {{value.heroInfo!=null?value.heroInfo.passiveSOptions.length:0}}, {{g_appData.passiveSImplCount}}/{{g_appData.passiveSCount}}({{Math.floor(100*g_appData.passiveSImplCount/g_appData.passiveSCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10 0 0 0"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td class='paramHeader'>
+                                合計SP
+                            </td>
+                            <td class='param'>
+                                {{value.totalSp}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td class='paramHeader'>
+                                スコア
+                            </td>
+                            <td class='param'>
+                                {{value.arenaScore}} <span style='font-size: 16px;'>({{value.arenaScore*2}})</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <dl style="margin: 0;">
+                    <dt><label class="title">英雄:</label></dt>
+                    <dd>
+                        <select2 :options="g_app.vm.heroOptions" v-model="value.heroIndex" class="hero"
+                            @input="g_app.vm.heroIndexChanged">
+                        </select2>
+                        <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
+                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                        <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.heroIndex}})</span>
+                    </dd>
+
+                    <dt><label class="title">個性:</label></dt>
+                    <dd>
+                        <label class="normal" for="ivHigh">得意 </label>
+                        <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged">
+                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <label class="normal" for="ivLow">苦手 </label>
+                        <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged">
+                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <label class="normal"><img
+                                src="/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
+                                height="20"></label>
+                        <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged">
+                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                    </dd>
+                    <dt><label class="title">祝福: </label></dt>
+                    <dd>  
+                        <select v-model="value.blessing1" @change="updateStatus(value);">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing2" @change="updateStatus(value);">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing3" @change="updateStatus(value);">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing4" @change="updateStatus(value);">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <select v-model="value.blessing5" @change="updateStatus(value);">
+                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                    </dd>
+                </dl>
+            </div>
+            <div class="card">
+                <input type="button" class="buttonUi" value="凸と花を最大化" @click="value.maximizeMergeAndDragonflower();updateStatus(value);" />
+                <input type="button" class="buttonUi" value="リセット" @click="resetUnit(value)" />
+            </div>
+            <div class="card">
+                <input type="button" class="buttonUi" @click="g_app.setUnitToMaxArenaScore(value)" value="最大査定に設定"></input>
+                <input type="button" class="buttonUi" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();" >
+                <input type="button" class="buttonUi" value="スキル全て外す" @click="value.clearReservedSkills();value.clearSkills();" >
+            </div>
+            <div class="card">
+            <fieldset style="font-size:12px;">
+                <legend>闘技場スコア詳細</legend>
+                
+                <span>スコア: {{value.arenaScore}}({{value.arenaScore*2}})</span><br/>
+                <span style="color:#555">
+                計算式: (150 + {{value.rarityScore}} + {{value.levelScore}} + ({{value.rating}} / 5) + ({{value.totalSp}} / 100) + ({{value.merge}} * 2)) * 2<br/>
+                総合値: {{value.rating}}<br/>
+                合計SP: {{value.totalSp}}({{value.weaponSp}}+{{value.supportSp}}+{{value.specialSp}}+{{value.passiveASp}}+{{value.passiveBSp}}+{{value.passiveCSp}}+{{value.passiveSSp}})</span><br/>
+            </fieldset>
+            </div>
+        </div>
     </script>
 
     <script>
@@ -888,18 +875,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 
     <!-- jquery-ui -->
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css" media="print"
+    <!-- <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css" media="print"
         onload="this.media='all'">
-    <script async src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script async src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> -->
 
     <!-- vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
     <!-- sortable.js -->
-    <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+    <!-- <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script> -->
 
     <!-- vuedraggable.js -->
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script>
+    <!-- <script async src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script> -->
 
     <!-- クッキー(実際は使ってないので消してもいいかも) -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->
@@ -908,10 +895,10 @@
     <script async src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 
     <!-- 画像解析 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css" media="print"
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css" media="print"
         onload="this.media='all'">
     <script async type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
+        src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script> -->
 
     <!-- <script defer type="text/javascript" src="https://docs.opencv.org/4.2.0/opencv.js"></script> -->
 
@@ -983,17 +970,17 @@
                 "Main_MouseAndTouch.js",
                 "Main.js",
                 "VueComponents.js",
-                // "SampleSkillInfos.js",
-                // "SampleHeroInfos.js",
+                "SampleSkillInfos.js",
+                "SampleHeroInfos.js",
             ], () => {
-                const weaponInfos = [new SkillInfo(1, '鉄の剣', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false, AssistType.None, true, 0, WeaponType.Sword, 50, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Iron_Sword', SkillType.Weapon)];
-                const supportInfos = [new SkillInfo(411, '歌う', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.Refresh, false, 0, WeaponType.None, 150, false, [], [], false, false, 'Sing', SkillType.Support)];
-                const specialInfos = [new SkillInfo(450, '華炎', 0, 4, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 200, true, [WeaponType.ExceptStaff,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Ignis', SkillType.Special)];
-                const passiveAInfos = [new SkillInfo(508, 'HP3', 0, 0, 5, 0, 0, 0, 0, [], [], 0, 1, 1, false, true, 0, false, false, AssistType.None, false, 0, WeaponType.None, 160, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'HP_Plus_5', SkillType.PassiveA)];
-                const passiveBInfos = [new SkillInfo(588, '叩き込み', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 150, true, [WeaponType.Sword, WeaponType.Lance, WeaponType.Axe, WeaponType.Breath, WeaponType.Beast,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Knock_Back', SkillType.PassiveB)];
-                const passiveCInfos = [new SkillInfo(668, '生の息吹3', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, true, 0, false, false, AssistType.None, false, 0, WeaponType.None, 200, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Breath_of_Life_3', SkillType.PassiveC)];
-                const passiveSInfos = [];
-                var heroInfos = [new HeroInfo('ウェンディ', 'Gwendolyn.png', MoveType.Armor, '槍', 1, 49, 30, 24, 38, 28, 23, 8, 5, 12, 6, '0/0', '0/0', '0/0', '0/0', '0/0', 1307, -1, 477, -1, 590, 698, SeasonType.None, BlessingType.None, '可憐な重騎士', ['ウェンディ',], 0, [1307, 74,], [], 1, false, '封印の剣', 'ガチャ', '2017-02-02', [477,], [], [590,], [698,])];
+                // const weaponInfos = [new SkillInfo(1, '鉄の剣', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false, AssistType.None, true, 0, WeaponType.Sword, 50, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Iron_Sword', SkillType.Weapon)];
+                // const supportInfos = [new SkillInfo(411, '歌う', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.Refresh, false, 0, WeaponType.None, 150, false, [], [], false, false, 'Sing', SkillType.Support)];
+                // const specialInfos = [new SkillInfo(450, '華炎', 0, 4, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 200, true, [WeaponType.ExceptStaff,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Ignis', SkillType.Special)];
+                // const passiveAInfos = [new SkillInfo(508, 'HP3', 0, 0, 5, 0, 0, 0, 0, [], [], 0, 1, 1, false, true, 0, false, false, AssistType.None, false, 0, WeaponType.None, 160, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'HP_Plus_5', SkillType.PassiveA)];
+                // const passiveBInfos = [new SkillInfo(588, '叩き込み', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 150, true, [WeaponType.Sword, WeaponType.Lance, WeaponType.Axe, WeaponType.Breath, WeaponType.Beast,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Knock_Back', SkillType.PassiveB)];
+                // const passiveCInfos = [new SkillInfo(668, '生の息吹3', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, true, 0, false, false, AssistType.None, false, 0, WeaponType.None, 200, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Breath_of_Life_3', SkillType.PassiveC)];
+                // const passiveSInfos = [];
+                // var heroInfos = [new HeroInfo('ウェンディ', 'Gwendolyn.png', MoveType.Armor, '槍', 1, 49, 30, 24, 38, 28, 23, 8, 5, 12, 6, '0/0', '0/0', '0/0', '0/0', '0/0', 1307, -1, 477, -1, 590, 698, SeasonType.None, BlessingType.None, '可憐な重騎士', ['ウェンディ',], 0, [1307, 74,], [], 1, false, '封印の剣', 'ガチャ', '2017-02-02', [477,], [], [590,], [698,])];
 
 
                 const endTime = Date.now();
