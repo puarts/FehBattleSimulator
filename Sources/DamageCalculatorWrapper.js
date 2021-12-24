@@ -1811,6 +1811,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ProfessorialGuide] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SweetYuleLog] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -5294,6 +5299,13 @@ class DamageCalculatorWrapper {
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 switch (allyUnit.weapon) {
+                    case Weapon.ProfessorialGuide:
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                            enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                            enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                        }
+                        break;
                     case Weapon.ProfessorialText:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
                             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
@@ -7541,6 +7553,13 @@ class DamageCalculatorWrapper {
 
     __applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         switch (atkUnit.weapon) {
+            case Weapon.ProfessorialGuide:
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                    defUnit.battleContext.reducesCooldownCount = false;
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+                break;
             case Weapon.HornOfOpening:
                 if (atkUnit.isTransformed) {
                     defUnit.battleContext.reducesCooldownCount = false;
