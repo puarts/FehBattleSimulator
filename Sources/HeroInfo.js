@@ -486,6 +486,17 @@ class HeroInfo {
             && skillInfo.inheritableMoveTypes.includes(this.moveType);
     }
 
+    isSkillOptionRegistered() {
+        return this.weaponOptions.length > 0
+            && this.supportOptions.length > 0
+            && this.specialOptions.length > 0
+            && this.passiveAOptions.length > 0
+            && this.passiveBOptions.length > 0
+            && this.passiveCOptions.length > 0
+            && this.passiveSOptions.length > 0
+            ;
+    }
+
     /**
      * @param  {SkillInfo[]} infos
      */

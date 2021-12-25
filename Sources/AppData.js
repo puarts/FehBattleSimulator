@@ -547,21 +547,39 @@ class AppData extends UnitManager {
             + this.passiveCImplCount
             + this.passiveSImplCount;
     }
-
-    initHeroInfos(heroInfos) {
+    /**
+     * @param  {HeroInfo[]} heroInfos
+     * @param  {Boolean} registersSkillOption=true
+     */
+    initHeroInfos(
+        heroInfos,
+        registersSkillOption = true
+    ) {
         this.heroInfos = new HeroDatabase(heroInfos);
         for (let i = 0; i < heroInfos.length; ++i) {
             let heroInfo = heroInfos[i];
             this.heroOptions.push({ id: i, text: heroInfo.name });
             // this.heroOptions.push({ id: heroInfo.id, text: heroInfo.name });
-            heroInfo.registerWeaponOptions(this.weaponInfos);
-            heroInfo.registerSupportOptions(this.supportInfos);
-            heroInfo.registerSpecialOptions(this.specialInfos);
-            heroInfo.registerPassiveAOptions(this.passiveAInfos);
-            heroInfo.registerPassiveBOptions(this.passiveBInfos);
-            heroInfo.registerPassiveCOptions(this.passiveCInfos);
-            heroInfo.registerPassiveSOptions(this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos);
+            if (registersSkillOption) {
+                this.registerSkillInfos(heroInfo);
+            }
         }
+    }
+    /**
+     * @param  {HeroInfo} heroInfo
+     */
+    registerSkillInfos(heroInfo) {
+        if (heroInfo.isSkillOptionRegistered()) {
+            return;
+        }
+
+        heroInfo.registerWeaponOptions(this.weaponInfos);
+        heroInfo.registerSupportOptions(this.supportInfos);
+        heroInfo.registerSpecialOptions(this.specialInfos);
+        heroInfo.registerPassiveAOptions(this.passiveAInfos);
+        heroInfo.registerPassiveBOptions(this.passiveBInfos);
+        heroInfo.registerPassiveCOptions(this.passiveCInfos);
+        heroInfo.registerPassiveSOptions(this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos);
     }
 
     registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
@@ -732,6 +750,8 @@ class AppData extends UnitManager {
             console.log("heroInfo was not found:" + heroIndex);
             return;
         }
+
+        this.registerSkillInfos(heroInfo);
 
         unit.initByHeroInfo(heroInfo);
 
