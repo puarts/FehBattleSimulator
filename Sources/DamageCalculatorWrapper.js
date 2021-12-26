@@ -508,7 +508,7 @@ class DamageCalculatorWrapper {
             atkUnit.battleContext.refersRes = atkUnit.battleContext.restHpPercentage >= 50;
         }
         else if (atkUnit.weapon === Weapon.HelsReaper) {
-            atkUnit.battleContext.refersRes = isWeaponTypeTome(defUnit.weaponType) || defUnit.weaponType === WeaponType.Staff;
+            atkUnit.battleContext.refersRes = !isWeaponTypeTome(defUnit.weaponType) && defUnit.weaponType !== WeaponType.Staff;
         }
         else {
             if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${atkUnit.isPhysicalAttacker() ? "物理" : "魔法"}ユニット`);
