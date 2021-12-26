@@ -2570,10 +2570,11 @@ class AetherRaidTacticsBoard {
     }
     /**
      * @param  {HeroInfo[]} heroInfos
+     * @param  {Boolean} registersSkillOptions
      */
-    registerHeroOptions(heroInfos) {
+    registerHeroOptions(heroInfos, registersSkillOptions = true) {
         using(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
-            g_appData.initHeroInfos(heroInfos);
+            g_appData.initHeroInfos(heroInfos, registersSkillOptions);
         });
     }
 

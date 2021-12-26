@@ -1203,7 +1203,7 @@ class Unit {
      * @param  {StatusType} statusType
      */
     isAsset(statusType) {
-        return this.ivHighStat == statusType || (this.ascendedAsset == statusType && this.ivLowStat != statusType);
+        return this.ivHighStat == statusType || (this.ascendedAsset == statusType && (this.merge > 0 || this.ivLowStat != statusType));
     }
     /**
      * @param  {StatusType} statusType
