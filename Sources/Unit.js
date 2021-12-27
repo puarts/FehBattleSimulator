@@ -3939,12 +3939,6 @@ class Unit {
         let def = this.__calcStatusLvN(this.heroInfo.defLv1, this.heroInfo.def, this.__getIvType(StatusType.Def));
         let res = this.__calcStatusLvN(this.heroInfo.resLv1, this.heroInfo.res, this.__getIvType(StatusType.Res));
         let addValue = this.ivHighStat == StatusType.None && this.ivLowStat == StatusType.None && this.merge > 0 ? 3 : 0;
-        console.log(`hp = ${hp}`);
-        console.log(`atk = ${atk}`);
-        console.log(`spd = ${spd}`);
-        console.log(`def = ${def}`);
-        console.log(`res = ${res}`);
-        console.log(`addValue = ${addValue}`);
         return hp + atk + spd + def + res + addValue;
     }
 
