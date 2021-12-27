@@ -993,6 +993,8 @@ class Unit {
         this._placedTile = null;
         this._moveCount = 1;
         this.moveCountAtBeginningOfTurn = 1;
+
+        /** @type {HeroInfo} */
         this.heroInfo = null;
 
         this.level = 40;
@@ -1208,7 +1210,7 @@ class Unit {
     /**
      * @param  {StatusType} statusType
      */
-    isFlow(statusType) {
+    isFlaw(statusType) {
         return this.ivLowStat == statusType && this.merge == 0 && this.ascendedAsset != statusType;
     }
 
@@ -1296,8 +1298,7 @@ class Unit {
     }
 
     __calcGrowthValue(growthRate) {
-        let rate = this.__calcAppliedGrowthRate(growthRate);
-        return Math.floor((this.level - 1) * rate);
+        return calcGrowthValue(growthRate, this.rarity, this.level);
     }
 
     getGrowthRate(growthAmount, statusName) {
@@ -3498,7 +3499,42 @@ class Unit {
         this.defLv1 = this.heroInfo.getDefLv1(rarity) + defLv1IvChange;
         this.resLv1 = this.heroInfo.getResLv1(rarity) + resLv1IvChange;
 
-        this.__updateGrowth(updatesPureGrowthRate);
+        if (updatesPureGrowthRate) {
+            this.updatePureGrowthRate();
+        }
+
+        this.hpAppliedGrowthRate = this.__calcAppliedGrowthRate(this.hpGrowthRate);
+        this.atkAppliedGrowthRate = this.__calcAppliedGrowthRate(this.atkGrowthRate);
+        this.spdAppliedGrowthRate = this.__calcAppliedGrowthRate(this.spdGrowthRate);
+        this.defAppliedGrowthRate = this.__calcAppliedGrowthRate(this.defGrowthRate);
+        this.resAppliedGrowthRate = this.__calcAppliedGrowthRate(this.resGrowthRate);
+
+        this.hpLvN = this.hpLv1 + this.__calcGrowthValue(this.hpGrowthRate);
+        this.atkLvN = this.atkLv1 + this.__calcGrowthValue(this.atkGrowthRate);
+        this.spdLvN = this.spdLv1 + this.__calcGrowthValue(this.spdGrowthRate);
+        this.defLvN = this.defLv1 + this.__calcGrowthValue(this.defGrowthRate);
+        this.resLvN = this.resLv1 + this.__calcGrowthValue(this.resGrowthRate);
+    }
+
+    __calcStatusLvN(standardValueLv1, standardValueLv40, ivType) {
+        let growthValue = standardValueLv40 - standardValueLv1;
+        let valueLv1 = standardValueLv1;
+        let growthRate = getGrowthRateOfStar5(growthValue);
+        switch (ivType) {
+            case IvType.Asset:
+                valueLv1 += 1;
+                growthRate += 0.05;
+                break;
+            case IvType.Flaw:
+                if (this.merge == 0) {
+                    valueLv1 -= 1;
+                    growthRate -= 0.05;
+                }
+                break;
+            case IvType.None:
+                break;
+        }
+        return valueLv1 + this.__calcGrowthValue(growthRate);
     }
 
     updatePureGrowthRate() {
@@ -3532,7 +3568,6 @@ class Unit {
             case StatusType.Res: this.resGrowthRate += 0.05; break;
         }
 
-        // if (this.hasAscendedAsset)
         {
             switch (this.ascendedAsset) {
                 case StatusType.None: break;
@@ -3554,24 +3589,6 @@ class Unit {
                 case StatusType.Res: this.resGrowthRate -= 0.05; break;
             }
         }
-    }
-
-    __updateGrowth(updatesPureGrowthRate = true) {
-        if (updatesPureGrowthRate) {
-            this.updatePureGrowthRate();
-        }
-
-        this.hpAppliedGrowthRate = this.__calcAppliedGrowthRate(this.hpGrowthRate);
-        this.atkAppliedGrowthRate = this.__calcAppliedGrowthRate(this.atkGrowthRate);
-        this.spdAppliedGrowthRate = this.__calcAppliedGrowthRate(this.spdGrowthRate);
-        this.defAppliedGrowthRate = this.__calcAppliedGrowthRate(this.defGrowthRate);
-        this.resAppliedGrowthRate = this.__calcAppliedGrowthRate(this.resGrowthRate);
-
-        this.hpLvN = this.hpLv1 + this.__calcGrowthValue(this.hpGrowthRate);
-        this.atkLvN = this.atkLv1 + this.__calcGrowthValue(this.atkGrowthRate);
-        this.spdLvN = this.spdLv1 + this.__calcGrowthValue(this.spdGrowthRate);
-        this.defLvN = this.defLv1 + this.__calcGrowthValue(this.defGrowthRate);
-        this.resLvN = this.resLv1 + this.__calcGrowthValue(this.resGrowthRate);
     }
 
     /// 入力した成長率に対して、得意ステータスの上昇値を取得します。
@@ -3872,7 +3889,7 @@ class Unit {
             totalSp += this.passiveSInfo.sp;
         }
 
-        let rating = this.heroInfo.getStatusTotalOfLv40();
+        let rating = this.__getRating();
 
         this.weaponSp = weaponSp;
         this.supportSp = supportSp;
@@ -3915,6 +3932,28 @@ class Unit {
         this.arenaScore = score;
     }
 
+    __getRating() {
+        let hp = this.__calcStatusLvN(this.heroInfo.hpLv1, this.heroInfo.hp, this.__getIvType(StatusType.Hp));
+        let atk = this.__calcStatusLvN(this.heroInfo.atkLv1, this.heroInfo.atk, this.__getIvType(StatusType.Atk));
+        let spd = this.__calcStatusLvN(this.heroInfo.spdLv1, this.heroInfo.spd, this.__getIvType(StatusType.Spd));
+        let def = this.__calcStatusLvN(this.heroInfo.defLv1, this.heroInfo.def, this.__getIvType(StatusType.Def));
+        let res = this.__calcStatusLvN(this.heroInfo.resLv1, this.heroInfo.res, this.__getIvType(StatusType.Res));
+        let addValue = this.ivHighStat == StatusType.None && this.ivLowStat == StatusType.None && this.merge > 0 ? 3 : 0;
+        console.log(`hp = ${hp}`);
+        console.log(`atk = ${atk}`);
+        console.log(`spd = ${spd}`);
+        console.log(`def = ${def}`);
+        console.log(`res = ${res}`);
+        console.log(`addValue = ${addValue}`);
+        return hp + atk + spd + def + res + addValue;
+    }
+
+    __getIvType(statusType, includesAscendedAsset = false) {
+        return this.ivHighStat == statusType ?
+            IvType.Asset : this.ivLowStat == statusType ?
+                IvType.Flaw : includesAscendedAsset && this.ascendedAsset == statusType ? IvType.Asset : IvType.None;
+    }
+
     __calcArenaScore(rating, totalSp, rebirthCount, rarity = 5) {
         let base = 150;
         let rarityBase = rarity * 2 + 45;
@@ -3940,9 +3979,6 @@ class Unit {
         this.levelScore = levelScore;
 
         let baseStatusTotal = rating;
-        if (rebirthCount >= 1) {
-            baseStatusTotal += 3;
-        }
         this.rating = baseStatusTotal;
         return base + levelScore + rarityBase + Math.floor(baseStatusTotal / 5) + Math.floor((totalSp) / 100) + (rebirthCount * 2);
     }

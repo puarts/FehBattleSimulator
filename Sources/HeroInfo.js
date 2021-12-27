@@ -42,7 +42,7 @@ const SeasonType = {
 const IvType = {
     None: 0,
     Asset: 1, // 得意
-    Flow: 2, // 不得意
+    Flaw: 2, // 不得意
 }
 
 const GrowthRateOfStar5 = {};
@@ -84,16 +84,32 @@ AppliedGrowthRateCoef[4] = (0.79 + (0.07 * 4)) * 100;
 AppliedGrowthRateCoef[3] = (0.79 + (0.07 * 3)) * 100;
 AppliedGrowthRateCoef[2] = (0.79 + (0.07 * 2)) * 100;
 AppliedGrowthRateCoef[1] = (0.79 + (0.07 * 1)) * 100;
+/**
+ * @param  {Number} growthRate
+ * @param  {Number} rarity
+ */
 function calcAppliedGrowthRate_Optimized(growthRate, rarity) {
     // let rate = growthRate * (0.79 + (0.07 * this.rarity));
     let rate = Math.floor(growthRate * AppliedGrowthRateCoef[rarity]) * 0.01;
     return rate;
 }
-
-
+/**
+ * @param  {Number} growthRate
+ * @param  {Number} rarity
+ * @param  {Number} level
+ */
 function calcGrowthValue(growthRate, rarity, level) {
-    let rate = calcAppliedGrowthRate(growthRate, rarity);
+    let rate = calcAppliedGrowthRate_Optimized(growthRate, rarity);
     return Math.floor((level - 1) * rate);
+}
+/**
+ * @param  {Number} statusLv1
+ * @param  {Number} growthRate
+ * @param  {Number} rarity
+ * @param  {Number} level
+ */
+function calcStatusLvN(statusLv1, growthRate, rarity, level) {
+    return statusLv1 + calcGrowthValue(growthRate, rarity, level);
 }
 
 const StatusRankTable = [];
@@ -397,7 +413,7 @@ class HeroInfo {
             case IvType.Asset:
                 growthRate += 0.05;
                 break;
-            case IvType.Flow:
+            case IvType.Flaw:
                 growthRate -= 0.05;
                 break;
             case IvType.None:

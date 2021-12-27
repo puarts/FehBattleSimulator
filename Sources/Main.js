@@ -397,6 +397,7 @@ class AetherRaidTacticsBoard {
                     if (unit == null) { return; }
                     unit.updatePureGrowthRate();
                     g_appData.__updateStatusBySkillsAndMerges(unit);
+                    g_appData.updateArenaScore(unit);
                     updateAllUi();
                 },
                 addChanged: function () {

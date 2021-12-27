@@ -232,6 +232,14 @@
             text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
         }
 
+        .smallParam {
+            width: 25px;
+            text-align: left;
+            font-size: 12px;
+            color: rgb(192, 199, 190);
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
+
         td.param {
             min-width: 40px;
             padding: 0px 0px 2px 0px;
@@ -475,7 +483,7 @@
                                 <span v-if="value.isAsset(StatusType.Hp)" class="assetStatus">
                                 HP
                                 </span>
-                                <span v-else-if="value.isFlow(StatusType.Hp)" class="flowStatus">
+                                <span v-else-if="value.isFlaw(StatusType.Hp)" class="flowStatus">
                                 HP
                                 </span>                                        
                                 <span v-else>
@@ -487,13 +495,16 @@
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
                                 {{value.maxHpWithSkillsWithoutAdd}}
                             </td>
+                            <td class='smallParam'>
+                                ({{value.maxHpWithSkillsWithoutAdd-value.heroInfo.hp}})
+                            </td>
                         </tr>
                         <tr>
                             <td class='paramHeader'>
                                 <span v-if="value.isAsset(StatusType.Atk)" class="assetStatus">
                                 攻撃
                                 </span>
-                                <span v-else-if="value.isFlow(StatusType.Atk)" class="flowStatus">
+                                <span v-else-if="value.isFlaw(StatusType.Atk)" class="flowStatus">
                                 攻撃
                                 </span>                                        
                                 <span v-else>
@@ -503,13 +514,16 @@
                             <td class='param'>
                                 {{value.atkWithSkills-value.atkAdd}}
                             </td>
+                            <td class='smallParam'>
+                                ({{value.atkWithSkills-value.heroInfo.atk}})
+                            </td>
                         </tr>
                         <tr>
                             <td class='paramHeader'>
                                 <span v-if="value.isAsset(StatusType.Spd)" class="assetStatus">
                                 速さ
                                 </span>
-                                <span v-else-if="value.isFlow(StatusType.Spd)" class="flowStatus">
+                                <span v-else-if="value.isFlaw(StatusType.Spd)" class="flowStatus">
                                 速さ
                                 </span>                                        
                                 <span v-else>
@@ -522,13 +536,16 @@
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
                                 {{value.spdWithSkills-value.spdAdd}}
                             </td>
+                            <td class='smallParam'>
+                                ({{value.spdWithSkills-value.heroInfo.spd}})
+                            </td>
                         </tr>
                         <tr>
                             <td class='paramHeader'>
                                 <span v-if="value.isAsset(StatusType.Def)" class="assetStatus">
                                 守備
                                 </span>
-                                <span v-else-if="value.isFlow(StatusType.Def)" class="flowStatus">
+                                <span v-else-if="value.isFlaw(StatusType.Def)" class="flowStatus">
                                 守備
                                 </span>                                        
                                 <span v-else>
@@ -541,13 +558,16 @@
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
                                 {{value.defWithSkills-value.defAdd}}
                             </td>
+                            <td class='smallParam'>
+                                ({{value.defWithSkills-value.heroInfo.def}})
+                            </td>
                         </tr>
                         <tr>
                             <td class='paramHeader'>
                                 <span v-if="value.isAsset(StatusType.Res)" class="assetStatus">
                                 魔防
                                 </span>
-                                <span v-else-if="value.isFlow(StatusType.Res)" class="flowStatus">
+                                <span v-else-if="value.isFlaw(StatusType.Res)" class="flowStatus">
                                 魔防
                                 </span>                                        
                                 <span v-else>
@@ -560,6 +580,9 @@
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
                                 {{value.resWithSkills-value.resAdd}}
                             </td>
+                            <td class='smallParam'>
+                                ({{value.resWithSkills-value.heroInfo.res}})
+                            </td>
                         </tr>
                         <tr>
                             <td class='paramHeader'>
@@ -570,6 +593,10 @@
                                     +value.spdWithSkills+value.spdBuff+value.spdDebuff
                                     +value.defWithSkills+value.defBuff+value.defDebuff
                                     +value.resWithSkills+value.resBuff+value.resDebuff}}
+                            </td>
+                            <td class='smallParam'>
+                                ({{value.maxHpWithSkillsWithoutAdd+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills
+                                    -(value.heroInfo.getStatusTotalOfLv40())}})
                             </td>
                         </tr>
                         <tr>
@@ -624,7 +651,7 @@
                         </tr>
                     </table>
                 </div>
-                <div style="float:left;padding: 0px 0px 0px 20px;">
+                <div style="float:left;padding: 0px 0px 0px 0px;">
                     <table border="0" style="border-style:none;">
                         <tr>
                             <td class='skillHeader'>
@@ -875,6 +902,7 @@
 
         function updateStatus(unit) {
             g_appData.__updateStatusBySkillsAndMerges(unit, false, false);
+            unit.updateArenaScore();
         }
     </script>
 
