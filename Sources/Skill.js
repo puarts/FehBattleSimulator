@@ -1210,6 +1210,7 @@ const Weapon = {
 
     // 機械仕掛けの年明け
     NidavellirLots: 1940, // ニザヴェリルの箱
+    NidavellirSprig: 1942, // ニザヴェリルの花
 }
 
 const Support = {

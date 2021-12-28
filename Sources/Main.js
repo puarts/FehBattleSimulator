@@ -5709,6 +5709,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.OkamijoouNoKiba:
                     if (unit.isTransformed) return true;
                     break;
+                case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
                 case Weapon.GrimBrokkr:
                 case Weapon.AutoLofnheior:
@@ -5746,6 +5747,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
                 case Weapon.GrimBrokkr:
                 case Weapon.HonorableBlade:
