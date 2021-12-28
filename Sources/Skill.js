@@ -2108,6 +2108,7 @@ const PassiveC = {
     RouseSpdDef3: 1157,
     RouseAtkRes3: 1314,
     RouseAtkSpd4: 1904, // 攻撃速さの奮起4
+    RouseAtkDef4: 1943, // 攻撃守備の奮起4
     RouseSpdDef4: 1916, // 速さ守備の奮起4
 
     SeiNoIbuki3: 668, // 生の息吹3
