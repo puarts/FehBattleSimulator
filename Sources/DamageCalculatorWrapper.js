@@ -5020,10 +5020,16 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.passiveA) {
-            case PassiveA.AtkDefCatch3:
+            case PassiveA.AtkSpdCatch3:
                 if (enemyUnit.battleContext.restHpPercentage === 100 || enemyUnit.hasNegativeStatusEffect()) {
                     targetUnit.atkSpur += 5;
                     targetUnit.spdSpur += 5;
+                }
+                break;
+            case PassiveA.AtkDefCatch3:
+                if (enemyUnit.battleContext.restHpPercentage === 100 || enemyUnit.hasNegativeStatusEffect()) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.defSpur += 5;
                 }
                 break;
             case PassiveA.AtkSpdCatch4:

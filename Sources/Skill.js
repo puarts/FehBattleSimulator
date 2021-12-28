@@ -1640,6 +1640,7 @@ const PassiveA = {
     AtkResUnity: 1575, // 攻撃魔防の連帯
 
     // 機先
+    AtkSpdCatch3: 1648, // 攻撃速さの機先3
     AtkDefCatch3: 1875, // 攻撃守備の機先3
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
     AtkDefCatch4: 1703, // 攻撃守備の機先4
