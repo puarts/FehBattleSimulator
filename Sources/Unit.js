@@ -40,6 +40,7 @@ const Hero = {
     DuoSothis: 723,
     DuoCorrin: 735,
     HarmonizedLysithea: 754,
+    DuoDagr: 760,
 };
 
 function isThiefIndex(heroIndex) {
@@ -206,6 +207,7 @@ const StatusEffectType = {
     Stall: 24, // 空転
     CancelAffinity: 25, // 相性相殺
     NullFollowUp: 26, // 見切り・追撃
+    Pathfinder: 27, // 天駆の道
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -319,6 +321,10 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_CancelAffinity.png";
         case StatusEffectType.NullFollowUp:
             return g_imageRootPath + "StatusEffect_NullFollowUp.png";
+        case StatusEffectType.Pathfinder:
+            return g_imageRootPath + "StatusEffect_NullFollowUp.png";
+            // @TODO: 画像を用意する
+            // return g_imageRootPath + "StatusEffect_Pathfinder.png";
         default: return "";
     }
 }
@@ -2088,6 +2094,7 @@ class Unit {
                 || this.heroIndex == Hero.DuoSothis
                 || this.heroIndex == Hero.DuoCorrin
                 || this.heroIndex == Hero.HarmonizedLysithea
+                || this.heroIndex == Hero.DuoDagr
             );
     }
 
@@ -4376,6 +4383,9 @@ class Unit {
 
     /// 天駆の道の効果を持つか
     hasPathfinderEffect() {
+        if (this.hasStatusEffect(StatusEffectType.Pathfinder)) {
+            return true;
+        }
         for (let skillId of this.enumerateSkills()) {
             if (hasPathfinderEffect(skillId)) {
                 return true;

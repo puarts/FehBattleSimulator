@@ -870,6 +870,12 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoDagr:
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 5, 5)) {
+                    unit.applyAllBuff(6);
+                    unit.addStatusEffect(StatusEffectType.Pathfinder);
+                }
+                break;
             case Hero.HarmonizedLysithea: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
