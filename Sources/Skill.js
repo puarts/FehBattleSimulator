@@ -1212,6 +1212,7 @@ const Weapon = {
     NidavellirLots: 1940, // ニザヴェリルの箱
     NidavellirSprig: 1942, // ニザヴェリルの花
     SparklingFang: 1944, // 賀正の妹猫の爪牙
+    JotnarBow: 1945, // 巨人姉妹の弓
 }
 
 const Support = {
@@ -2801,6 +2802,7 @@ function isTeleportationSkill(skillId) {
 /// 天駆の道の効果を持つスキルかどうか
 function hasPathfinderEffect(skillId) {
     switch (skillId) {
+        case Weapon.JotnarBow:
         case Weapon.Hrimfaxi:
         case Weapon.Skinfaxi:
             return true;

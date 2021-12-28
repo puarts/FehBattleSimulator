@@ -1812,6 +1812,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.JotnarBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.atkSpur -= 5;
+                enemyUnit.spdSpur -= 5;
+                enemyUnit.defSpur -= 5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SparklingFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 6;
@@ -5628,6 +5635,13 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.JotnarBow:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    enemyUnit.atkSpur -= targetUnit.getAtkBuffInCombat(enemyUnit);
+                    enemyUnit.spdSpur -= targetUnit.getSpdBuffInCombat(enemyUnit);
+                    enemyUnit.defSpur -= targetUnit.getDefBuffInCombat(enemyUnit);
+                }
+                break;
             case Weapon.TannenbowPlus:
             case Weapon.WinterRapierPlus:
                 if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
