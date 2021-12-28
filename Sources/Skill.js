@@ -1213,6 +1213,7 @@ const Weapon = {
     NidavellirSprig: 1942, // ニザヴェリルの花
     SparklingFang: 1944, // 賀正の妹猫の爪牙
     JotnarBow: 1945, // 巨人姉妹の弓
+    PolishedFang: 1946, // 賀正の銀虎の爪牙
 }
 
 const Support = {
@@ -2865,6 +2866,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EbonPirateClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.CrossbonesClaw] = 0;

@@ -1812,6 +1812,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.PolishedFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                targetUnit.defSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.JotnarBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 enemyUnit.atkSpur -= 5;
@@ -4945,6 +4951,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case Weapon.PolishedFang:
             case Weapon.HornOfOpening:
                 if (targetUnit.isTransformed) {
                     targetUnit.battleContext.additionalDamageOfSpecial += 7;
@@ -6072,6 +6079,14 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.PolishedFang:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        // @TODO: もし頻繁に現れる効果なら__applyFlashingBladeSkillメソッドのようにメソッド化する
+                        if (targetUnit.getEvalDefInCombat(enemyUnit) > enemyUnit.getEvalDefInCombat(targetUnit)) {
+                            targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                        }
+                    }
+                    break;
                 case Weapon.SparklingFang:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
                         DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
@@ -7611,6 +7626,7 @@ class DamageCalculatorWrapper {
                     defUnit.battleContext.increaseCooldownCountForDefense = false;
                 }
                 break;
+            case Weapon.PolishedFang:
             case Weapon.HornOfOpening:
                 if (atkUnit.isTransformed) {
                     defUnit.battleContext.reducesCooldownCount = false;
