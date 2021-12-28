@@ -2866,6 +2866,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EbonPirateClaw] = 0;
