@@ -1207,6 +1207,13 @@ const Weapon = {
 
     // 2021年12月 伝承ベレス
     ProfessorialGuide: 1938, // 師の授けの書
+
+    // 機械仕掛けの年明け
+    NidavellirLots: 1940, // ニザヴェリルの箱
+    NidavellirSprig: 1942, // ニザヴェリルの花
+    SparklingFang: 1944, // 賀正の妹猫の爪牙
+    JotnarBow: 1945, // 巨人姉妹の弓
+    PolishedFang: 1946, // 賀正の銀虎の爪牙
 }
 
 const Support = {
@@ -1635,6 +1642,7 @@ const PassiveA = {
     AtkResUnity: 1575, // 攻撃魔防の連帯
 
     // 機先
+    AtkSpdCatch3: 1648, // 攻撃速さの機先3
     AtkDefCatch3: 1875, // 攻撃守備の機先3
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
     AtkDefCatch4: 1703, // 攻撃守備の機先4
@@ -1951,6 +1959,8 @@ const PassiveC = {
     JointDriveSpd: 1357, // 速さの相互大紋章
     JointDriveRes: 1454, // 魔防の相互大紋章
     JointDriveDef: 1805, // 守備の相互大紋章
+    // 十字紋章
+    CrossSpurAtk: 1941, // 攻撃の十字紋章
 
     GoadArmor: 686, // 重刃の紋章
     WardArmor: 687, // 重盾の紋章
@@ -2099,6 +2109,7 @@ const PassiveC = {
     RouseSpdDef3: 1157,
     RouseAtkRes3: 1314,
     RouseAtkSpd4: 1904, // 攻撃速さの奮起4
+    RouseAtkDef4: 1943, // 攻撃守備の奮起4
     RouseSpdDef4: 1916, // 速さ守備の奮起4
 
     SeiNoIbuki3: 668, // 生の息吹3
@@ -2793,6 +2804,7 @@ function isTeleportationSkill(skillId) {
 /// 天駆の道の効果を持つスキルかどうか
 function hasPathfinderEffect(skillId) {
     switch (skillId) {
+        case Weapon.JotnarBow:
         case Weapon.Hrimfaxi:
         case Weapon.Skinfaxi:
             return true;
@@ -2854,6 +2866,9 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EbonPirateClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.CrossbonesClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.ResolvedFang] = 0;

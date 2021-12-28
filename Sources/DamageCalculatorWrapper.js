@@ -1708,6 +1708,7 @@ class DamageCalculatorWrapper {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.SparklingFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RaydreamHorn:
                 case Weapon.BrightmareHorn:
@@ -1811,6 +1812,38 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.PolishedFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                targetUnit.defSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.JotnarBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.atkSpur -= 5;
+                enemyUnit.spdSpur -= 5;
+                enemyUnit.defSpur -= 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SparklingFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.NidavellirSprig] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.NidavellirLots] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ProfessorialGuide] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -4918,6 +4951,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case Weapon.PolishedFang:
             case Weapon.HornOfOpening:
                 if (targetUnit.isTransformed) {
                     targetUnit.battleContext.additionalDamageOfSpecial += 7;
@@ -5000,10 +5034,16 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.passiveA) {
-            case PassiveA.AtkDefCatch3:
+            case PassiveA.AtkSpdCatch3:
                 if (enemyUnit.battleContext.restHpPercentage === 100 || enemyUnit.hasNegativeStatusEffect()) {
                     targetUnit.atkSpur += 5;
                     targetUnit.spdSpur += 5;
+                }
+                break;
+            case PassiveA.AtkDefCatch3:
+                if (enemyUnit.battleContext.restHpPercentage === 100 || enemyUnit.hasNegativeStatusEffect()) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.defSpur += 5;
                 }
                 break;
             case PassiveA.AtkSpdCatch4:
@@ -5602,6 +5642,13 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.JotnarBow:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    enemyUnit.atkSpur -= targetUnit.getAtkBuffInCombat(enemyUnit);
+                    enemyUnit.spdSpur -= targetUnit.getSpdBuffInCombat(enemyUnit);
+                    enemyUnit.defSpur -= targetUnit.getDefBuffInCombat(enemyUnit);
+                }
+                break;
             case Weapon.TannenbowPlus:
             case Weapon.WinterRapierPlus:
                 if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
@@ -6032,6 +6079,19 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.PolishedFang:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        // @TODO: もし頻繁に現れる効果なら__applyFlashingBladeSkillメソッドのようにメソッド化する
+                        if (targetUnit.getEvalDefInCombat(enemyUnit) > enemyUnit.getEvalDefInCombat(targetUnit)) {
+                            targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                        }
+                    }
+                    break;
+                case Weapon.SparklingFang:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                    }
+                    break;
                 case Weapon.SweetYuleLog:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let spdDiff = targetUnit.getEvalSpdInCombat() - enemyUnit.getEvalSpdInCombat();
@@ -6491,6 +6551,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.SparklingFang:
+                if (defUnit.battleContext.restHpPercentage >= 75) {
+                    atkUnit.battleContext.additionalDamage += 5;
+                }
+                break;
             case Weapon.InviolableAxe:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     atkUnit.battleContext.additionalDamage += 7;
@@ -7021,6 +7086,7 @@ class DamageCalculatorWrapper {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.SparklingFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RaydreamHorn:
                 case Weapon.BrightmareHorn:
@@ -7560,6 +7626,7 @@ class DamageCalculatorWrapper {
                     defUnit.battleContext.increaseCooldownCountForDefense = false;
                 }
                 break;
+            case Weapon.PolishedFang:
             case Weapon.HornOfOpening:
                 if (atkUnit.isTransformed) {
                     defUnit.battleContext.reducesCooldownCount = false;
@@ -8561,6 +8628,11 @@ class DamageCalculatorWrapper {
                             case Weapon.FlowerOfJoy:
                                 targetUnit.atkSpur += 3;
                                 targetUnit.spdSpur += 3;
+                                break;
+                        }
+                        switch (unit.passiveC) {
+                            case PassiveC.CrossSpurAtk:
+                                targetUnit.atkSpur += 5;
                                 break;
                         }
                     }

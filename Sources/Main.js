@@ -870,6 +870,12 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoDagr:
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 5, 5)) {
+                    unit.applyAllBuff(6);
+                    unit.addStatusEffect(StatusEffectType.Pathfinder);
+                }
+                break;
             case Hero.HarmonizedLysithea: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
@@ -5709,6 +5715,8 @@ class AetherRaidTacticsBoard {
                 case Weapon.OkamijoouNoKiba:
                     if (unit.isTransformed) return true;
                     break;
+                case Weapon.NidavellirSprig:
+                case Weapon.NidavellirLots:
                 case Weapon.GrimBrokkr:
                 case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
@@ -5745,6 +5753,8 @@ class AetherRaidTacticsBoard {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case Weapon.NidavellirSprig:
+                case Weapon.NidavellirLots:
                 case Weapon.GrimBrokkr:
                 case Weapon.HonorableBlade:
                 case PassiveB.SolarBrace2:
