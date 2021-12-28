@@ -1207,6 +1207,9 @@ const Weapon = {
 
     // 2021年12月 伝承ベレス
     ProfessorialGuide: 1938, // 師の授けの書
+
+    // 機械仕掛けの年明け
+    NidavellirLots: 1940, // ニザヴェリルの箱
 }
 
 const Support = {

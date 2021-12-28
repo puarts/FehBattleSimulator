@@ -75,6 +75,11 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.NidavellirLots:
+                if (this.globalBattleContext.currentTurn === 4) {
+                    skillOwner.reduceSpecialCount(3);
+                }
+                break;
             case PassiveC.GoddessBearer:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.applyAtkBuff(7);
