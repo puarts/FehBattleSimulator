@@ -8569,6 +8569,11 @@ class DamageCalculatorWrapper {
                                 targetUnit.spdSpur += 3;
                                 break;
                         }
+                        switch (unit.passiveC) {
+                            case PassiveC.CrossSpurAtk:
+                                targetUnit.atkSpur += 5;
+                                break;
+                        }
                     }
 
                     if (this.__isInClossWithOffset(unit, targetUnit, 1)) {

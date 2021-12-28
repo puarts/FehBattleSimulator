@@ -1954,6 +1954,8 @@ const PassiveC = {
     JointDriveSpd: 1357, // 速さの相互大紋章
     JointDriveRes: 1454, // 魔防の相互大紋章
     JointDriveDef: 1805, // 守備の相互大紋章
+    // 十字紋章
+    CrossSpurAtk: 1941, // 攻撃の十字紋章
 
     GoadArmor: 686, // 重刃の紋章
     WardArmor: 687, // 重盾の紋章
