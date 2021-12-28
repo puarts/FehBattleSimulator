@@ -322,9 +322,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.NullFollowUp:
             return g_imageRootPath + "StatusEffect_NullFollowUp.png";
         case StatusEffectType.Pathfinder:
-            return g_imageRootPath + "StatusEffect_NullFollowUp.png";
-            // @TODO: 画像を用意する
-            // return g_imageRootPath + "StatusEffect_Pathfinder.png";
+            return g_imageRootPath + "StatusEffect_Pathfinder.png";
         default: return "";
     }
 }
