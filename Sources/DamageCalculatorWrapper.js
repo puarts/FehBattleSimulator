@@ -1708,6 +1708,7 @@ class DamageCalculatorWrapper {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.SparklingFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RaydreamHorn:
                 case Weapon.BrightmareHorn:
@@ -1811,6 +1812,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SparklingFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.NidavellirSprig] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.addAllSpur(5);
@@ -6045,6 +6052,11 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.SparklingFang:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                    }
+                    break;
                 case Weapon.SweetYuleLog:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let spdDiff = targetUnit.getEvalSpdInCombat() - enemyUnit.getEvalSpdInCombat();
@@ -6504,6 +6516,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.SparklingFang:
+                if (defUnit.battleContext.restHpPercentage >= 75) {
+                    atkUnit.battleContext.additionalDamage += 5;
+                }
+                break;
             case Weapon.InviolableAxe:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     atkUnit.battleContext.additionalDamage += 7;
@@ -7034,6 +7051,7 @@ class DamageCalculatorWrapper {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.SparklingFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RaydreamHorn:
                 case Weapon.BrightmareHorn:

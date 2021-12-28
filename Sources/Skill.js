@@ -1211,6 +1211,7 @@ const Weapon = {
     // 機械仕掛けの年明け
     NidavellirLots: 1940, // ニザヴェリルの箱
     NidavellirSprig: 1942, // ニザヴェリルの花
+    SparklingFang: 1944, // 賀正の妹猫の爪牙
 }
 
 const Support = {
@@ -2860,6 +2861,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EbonPirateClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.CrossbonesClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.ResolvedFang] = 0;
