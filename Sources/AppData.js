@@ -1129,17 +1129,19 @@ class AppData extends UnitManager {
 
         this.exportSettingText = this.compressSetting(settingText);
 
-        let location = window.location.href;
-        let split = location.split("s=");
-        if (split.length > 1) {
-            location = split[0];
-            let compressed = LZString.compressToEncodedURIComponent(settingText);
-            this.exportSettingUrl = location + "s=" + compressed;
-        }
-        else {
-            let prefix = location.includes("?") ? "&" : "?";
-            this.exportSettingUrl = location + prefix + "s=" + LZString.compressToEncodedURIComponent(settingText);
-        }
+		// #main-content とかがURLに含まれてると不正なURLになってしまうので、とりあえず決め打ちにしておく
+        // let location = window.location.href;
+        // let split = location.split("s=");
+        // if (split.length > 1) {
+        //     location = split[0];
+        //     let compressed = LZString.compressToEncodedURIComponent(settingText);
+        //     this.exportSettingUrl = location + "s=" + compressed;
+        // }
+        // else {
+        //     let prefix = location.includes("?") ? "&" : "?";
+        //     this.exportSettingUrl = location + prefix + "s=" + LZString.compressToEncodedURIComponent(settingText);
+        // }
+        this.exportSettingUrl = "https://puarts.com/?pid=1469&s=" + LZString.compressToEncodedURIComponent(settingText);
     }
 
     decompressSettingAutomatically(inputText) {
