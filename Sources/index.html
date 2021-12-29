@@ -1061,6 +1061,12 @@
                     <br />
                     <textarea id="exportText" rows="4" cols="43" readonly="true" v-model="exportSettingText"></textarea>
                 </div>
+                <div>
+                    共有URL:<br />
+                    <input type="button" value="コピー" class="dialog-button" onclick="copyExportUrlToClipboard()">
+                    <br />
+                    <textarea id="exportUrl" rows="4" cols="43" readonly="true" v-model="exportSettingUrl"></textarea>
+                </div>
             </div>
         </div>
         <div id="importDialog">
@@ -2161,6 +2167,7 @@
                 title: title,
                 width: width,
                 height: height,
+                resizable: true,
                 closeText: "",
                 position: {
                     my: "left top",
@@ -2255,6 +2262,12 @@
             selectText("debugLogPanel");
             document.execCommand("copy");
         }
+        function copyExportUrlToClipboard() {
+            var textarea = $("#exportUrl")[0];
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); /*For mobile devices*/
+            document.execCommand("copy");
+        }
         function copyExportTextToClipboard() {
             var textarea = $("#exportText")[0];
             textarea.select();
@@ -2271,7 +2284,7 @@
             var textarea = $("#importText")[0];
             textarea.value = '';
         }
-        function importText() {
+        function importTextFromInputText(text, compressMode = null) {
             var loadsEnemySettings = $("#loadsEnemySettings")[0].checked;
             var loadsAllySettings = $("#loadsAllySettings")[0].checked;
             var loadsDefenceSettings = $("#loadsDefenceSettings")[0].checked;
@@ -2279,17 +2292,36 @@
             var loadsMapSettings = $("#loadsMapSettings")[0].checked;
             var textarea = $("#importText")[0];
             importSettingsFromString(
-                textarea.value,
+                text,
                 loadsAllySettings,
                 loadsEnemySettings,
                 loadsOffenceSettings,
                 loadsDefenceSettings,
-                loadsMapSettings);
+                loadsMapSettings,
+                compressMode);
             updateAllUi();
             var closeDialog = $("#closesDialogAfterImport")[0].checked;
             if (closeDialog) {
                 $("#importDialog").dialog('close');
             }
+        }
+        function importText() {
+            importTextFromInputText(textarea.value);
+        }
+
+        function importUrl(url) {
+            if (url == "" || url == null) {
+                return;
+            }
+            console.log(url);
+            let splited = url.split("s=");
+            if (splited.length != 2) {
+                console.log(`invalid url "${url}"`);
+                return;
+            }
+
+            let compressedSetting = splited[1];
+            importTextFromInputText(compressedSetting, SettingCompressMode.Uri);
         }
     </script>
 
@@ -2392,8 +2424,8 @@
                 "AetherRaidDefensePresets.js",
                 "SkillDatabase.js",
                 "HeroDatabase.js",
-                "AppData.js",
                 "SettingManager.js",
+                "AppData.js",
                 "Main_ImageProcessing.js",
                 "Main_OriginalAi.js",
                 "Main_MouseAndTouch.js",
@@ -2418,6 +2450,8 @@
             let diffTime = endTime - g_startTime;
             g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
             initAetherRaidBoard(heroInfos);
+
+            importUrl(location.search);
         });
     </script>
 </body>

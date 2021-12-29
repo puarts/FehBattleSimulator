@@ -82,7 +82,6 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        this.settings = new SettingManager();
         this._imageProcessor = new ImageProcessor();
         this.origAi = new OriginalAi();
 
@@ -2140,7 +2139,7 @@ class AetherRaidTacticsBoard {
         this.writeLogLine(`テスト対象: ${targetUnit.getNameWithGroup()}、敵: ${enemyUnit.getNameWithGroup()}`);
 
         // 元の状態を保存
-        let serializedTurn = exportSettingsAsString();
+        let serializedTurn = g_appData.exportSettingsAsString();
 
         let self = this;
         let results = [];
@@ -2216,7 +2215,7 @@ class AetherRaidTacticsBoard {
         this.writeLogLine(`テスト対象: ${targetUnit.getNameWithGroup()}、敵: ${enemyUnit.getNameWithGroup()}`);
 
         // 元の状態を保存
-        let serializedTurn = exportSettingsAsString();
+        let serializedTurn = g_appData.exportSettingsAsString();
 
         this.__durabilityTest_simulate(targetUnit, enemyUnit);
 
@@ -2238,7 +2237,7 @@ class AetherRaidTacticsBoard {
         this.writeLogLine(`テスト対象: ${targetUnit.getNameWithGroup()}、敵: ${enemyUnit.getNameWithGroup()}`);
 
         // 元の状態を保存
-        let serializedTurn = exportSettingsAsString();
+        let serializedTurn = g_appData.exportSettingsAsString();
 
         this.__plotDamageImpl(targetUnit, enemyUnit);
 
@@ -8548,7 +8547,7 @@ function __updateChaseTargetTilesForAllUnits() {
 function loadSettings() {
     console.log("loading..");
     console.log("current cookie:" + document.cookie);
-    g_app.settings.loadSettings();
+    g_appData.settings.loadSettings();
     if (g_appData.gameMode == GameMode.ResonantBattles) {
         g_app.__setUnitsForResonantBattles();
     }
@@ -8571,7 +8570,7 @@ function loadSettingsFromDict(
     clearsAllFirst = true,
     updatesChaseTarget = true,
 ) {
-    g_app.settings.loadSettingsFromDict(settingDict,
+    g_appData.settings.loadSettingsFromDict(settingDict,
         loadsAllySettings,
         loadsEnemySettings,
         loadsOffenceSettings,
@@ -8586,29 +8585,15 @@ function loadSettingsFromDict(
 
 function saveSettings() {
     console.log("saving..");
-    g_app.settings.saveSettings();
+    g_appData.settings.saveSettings();
     console.log("current cookie:" + document.cookie);
     g_app.writeSimpleLogLine("ターン" + g_appData.currentTurn + "の設定を保存しました。");
-}
-
-function exportSettingsAsString(
-    loadsAllies = true, loadsEnemies = true, loadsOffenceStructures = true, loadsDefenseStructures = true,
-    exportsMapSettings = false,
-) {
-    let dict = g_app.settings.convertCurrentSettingsToDict(loadsAllies, loadsEnemies, loadsOffenceStructures, loadsDefenseStructures, exportsMapSettings);
-    let result = "";
-    for (let key in dict) {
-        let settingText = dict[key];
-        result += key + "=" + settingText + ";";
-    }
-
-    return g_appData.compressSetting(result);
 }
 
 function exportPerTurnSettingAsString(
     loadsAllies = true, loadsEnemies = true, loadsOffenceStructures = true, loadsDefenseStructures = true
 ) {
-    let turnSetting = g_app.settings.convertToPerTurnSetting(loadsAllies, loadsEnemies, loadsOffenceStructures, loadsDefenseStructures);
+    let turnSetting = g_appData.settings.convertToPerTurnSetting(loadsAllies, loadsEnemies, loadsOffenceStructures, loadsDefenseStructures);
     return turnSetting.perTurnStatusToString();
 }
 
@@ -8626,12 +8611,19 @@ function importSettingsFromString(
     loadsEnemySettings = true,
     loadsOffenceSettings = true,
     loadsDefenceSettings = true,
-    loadsMapSettings = false
+    loadsMapSettings = false,
+    compressMode = null
 ) {
     console.log("loadsAllySettings = " + loadsAllySettings);
     console.log("loadsEnemySettings = " + loadsEnemySettings);
 
-    let decompressed = g_appData.decompressSettingAutomatically(inputText);
+    let decompressed = "";
+    if (compressMode == null) {
+        decompressed = g_appData.decompressSettingAutomatically(inputText);
+    }
+    else {
+        decompressed = g_appData.decompressSettingByCompressMode(inputText, compressMode);
+    }
     console.log(`decompressed: ${decompressed}`);
     let settings = decompressed.split(';');
     let dict = {};

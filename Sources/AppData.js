@@ -133,6 +133,7 @@ class AppData extends UnitManager {
         ];
         this.aetherRaidMenuStyle = "";
 
+        this.settings = new SettingManager(this);
         this.audioManager = new AudioManager();
 
         this.globalBattleContext = new GlobalBattleContext();
@@ -158,6 +159,7 @@ class AppData extends UnitManager {
             { id: SettingCompressMode.Uri, text: "URIで使用可能な形式" },
         ];
         this.exportSettingText = "";
+        this.exportSettingUrl = "";
         this.exportsEnemySettings = true;
         this.exportsAllySettings = true;
         this.exportsDefenceSettings = true;
@@ -1118,12 +1120,26 @@ class AppData extends UnitManager {
     }
 
     updateExportText() {
-        this.exportSettingText = exportSettingsAsString(
+        let settingText = this.getUncompressedSettingsAsString(
             this.exportsAllySettings,
             this.exportsEnemySettings,
             this.exportsOffenceSettings,
             this.exportsDefenceSettings,
             this.exportsMapSettings);
+
+        this.exportSettingText = this.compressSetting(settingText);
+
+        let location = window.location.href;
+        let split = location.split("s=");
+        if (split.length > 1) {
+            location = split[0];
+            let compressed = LZString.compressToEncodedURIComponent(settingText);
+            this.exportSettingUrl = location + "s=" + compressed;
+        }
+        else {
+            let prefix = location.includes("?") ? "&" : "?";
+            this.exportSettingUrl = location + prefix + "s=" + LZString.compressToEncodedURIComponent(settingText);
+        }
     }
 
     decompressSettingAutomatically(inputText) {
@@ -1143,7 +1159,11 @@ class AppData extends UnitManager {
     }
 
     decompressSetting(inputText) {
-        switch (this.settingCompressMode) {
+        return this.decompressSettingByCompressMode(inputText, this.settingCompressMode);
+    }
+
+    decompressSettingByCompressMode(inputText, compressMode) {
+        switch (compressMode) {
             case SettingCompressMode.Utf16:
                 return LZString.decompressFromUTF16(inputText);
             case SettingCompressMode.Base64:
@@ -1168,6 +1188,41 @@ class AppData extends UnitManager {
             default:
                 return inputText;
         }
+    }
+
+    getUncompressedSettingsAsString(
+        loadsAllies = true,
+        loadsEnemies = true,
+        loadsOffenceStructures = true,
+        loadsDefenseStructures = true,
+        exportsMapSettings = false,
+    ) {
+        let dict = this.settings.convertCurrentSettingsToDict(loadsAllies, loadsEnemies, loadsOffenceStructures, loadsDefenseStructures, exportsMapSettings);
+        let result = "";
+        for (let key in dict) {
+            let settingText = dict[key];
+            result += key + "=" + settingText + ";";
+        }
+
+        return result;
+    }
+
+    exportSettingsAsString(
+        loadsAllies = true,
+        loadsEnemies = true,
+        loadsOffenceStructures = true,
+        loadsDefenseStructures = true,
+        exportsMapSettings = false,
+    ) {
+        let result = this.getUncompressedSettingsAsString(
+            loadsAllies,
+            loadsEnemies,
+            loadsOffenceStructures,
+            loadsDefenseStructures,
+            exportsMapSettings
+        );
+
+        return this.compressSetting(result);
     }
 
     getSelectedItems() {

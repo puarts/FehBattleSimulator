@@ -19,12 +19,16 @@ function changeCurrentUnitTab(tabIndex) {
 
 /// シリアライズ可能なシミュレーターの設定を管理するクラスです。
 class SettingManager {
-    constructor() {
+    /**
+     * @param  {AppData} appData
+     */
+    constructor(appData) {
+        this._appData = appData;
         this._cookieWriter = new CookieWriter();
     }
 
     __examineOwnerTypeOfUnit(unit) {
-        if (g_appData.map.isUnitAvailable(unit)) {
+        if (this._appData.map.isUnitAvailable(unit)) {
             return OwnerType.Map;
         }
         else {
@@ -33,7 +37,7 @@ class SettingManager {
     }
 
     __examineOwnerTypeOfStructure(structure) {
-        if (g_appData.map.isObjAvailable(structure)) {
+        if (this._appData.map.isObjAvailable(structure)) {
             return OwnerType.Map;
         }
         if (g_deffenceStructureContainer.isAvailable(structure.id)) {
@@ -63,7 +67,7 @@ class SettingManager {
 
     __setSerialSettingToUnit(unit) {
         // console.log("saving unit (" + unit.name + ", " + unit.posX + ", " + unit.posY + ")");
-        let heroIndex = g_appData.heroInfos.findIndexOfInfo(unit.name);
+        let heroIndex = this._appData.heroInfos.findIndexOfInfo(unit.name);
         if (heroIndex < 0) {
             console.error(unit.id + ' was not found in database.');
             return;
@@ -96,12 +100,12 @@ class SettingManager {
                 {
                     let posX = evalUnit.posX;
                     let posY = evalUnit.posY;
-                    let targetTile = g_appData.map.getTile(posX, posY);
+                    let targetTile = this._appData.map.getTile(posX, posY);
                     if (targetTile != null && targetTile.placedUnit != null) {
                         moveUnitToTrashBox(targetTile.placedUnit);
                     }
 
-                    let success = g_appData.map.moveUnitForcibly(unit, posX, posY);
+                    let success = this._appData.map.moveUnitForcibly(unit, posX, posY);
                     if (!success) {
                         unit.posX = -1;
                         unit.posY = -1;
@@ -122,12 +126,12 @@ class SettingManager {
     }
 
     __findStructure(id) {
-        let structure = g_appData.defenseStructureStorage.findById(id);
+        let structure = this._appData.defenseStructureStorage.findById(id);
         if (structure != null) {
             return structure;
         }
 
-        structure = g_appData.offenceStructureStorage.findById(id);
+        structure = this._appData.offenceStructureStorage.findById(id);
         return structure;
     }
 
@@ -137,7 +141,7 @@ class SettingManager {
                 {
                     let posX = structure.posX;
                     let posY = structure.posY;
-                    let targetTile = g_appData.map.getTile(posX, posY);
+                    let targetTile = this._appData.map.getTile(posX, posY);
                     if (targetTile.isObjPlaceableByNature()) {
                         if (targetTile != null && targetTile.obj != null) {
                             moveStructureToTrashBox(targetTile.obj);
@@ -168,18 +172,18 @@ class SettingManager {
         loadsDefenseStructures = true,
         exportsMapSettings = false
     ) {
-        let currentTurn = g_appData.currentTurn;
+        let currentTurn = this._appData.currentTurn;
         let turnSetting = new TurnSetting(currentTurn);
 
         // ユニットの設定を保存
         if (loadsEnemies) {
-            for (let unit of g_appData.enumerateEnemyUnits()) {
+            for (let unit of this._appData.enumerateEnemyUnits()) {
                 this.__setSerialSettingToUnit(unit);
                 turnSetting.pushUnit(unit);
             }
         }
         if (loadsAllies) {
-            for (let unit of g_appData.enumerateAllyUnits()) {
+            for (let unit of this._appData.enumerateAllyUnits()) {
                 this.__setSerialSettingToUnit(unit);
                 turnSetting.pushUnit(unit);
             }
@@ -187,9 +191,9 @@ class SettingManager {
 
         // 防衛施設の設定
         if (loadsDefenseStructures) {
-            turnSetting.setAppData(g_appData);
+            turnSetting.setAppData(this._appData);
             // console.log("saving defense structures");
-            for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
+            for (let structure of this._appData.defenseStructureStorage.enumerateAllObjs()) {
                 let setting = this.__setSerialSettingToStructure(structure);
                 if (setting != null) {
                     turnSetting.pushStructure(setting);
@@ -198,7 +202,7 @@ class SettingManager {
 
             // マップオブジェクトの設定
             // console.log("saving map objects");
-            for (let structure of g_appData.map.enumerateBreakableWallsOfCurrentMapType()) {
+            for (let structure of this._appData.map.enumerateBreakableWallsOfCurrentMapType()) {
                 let setting = this.__setSerialSettingToStructure(structure);
                 if (setting != null) {
                     turnSetting.pushStructure(setting);
@@ -209,7 +213,7 @@ class SettingManager {
         // 攻撃施設の設定
         if (loadsOffenceStructures) {
             // console.log("saving offence structures");
-            for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
+            for (let structure of this._appData.offenceStructureStorage.enumerateAllObjs()) {
                 let setting = this.__setSerialSettingToStructure(structure);
                 if (setting != null) {
                     turnSetting.pushStructure(setting);
@@ -218,14 +222,14 @@ class SettingManager {
         }
 
         if (exportsMapSettings) {
-            for (let structure of g_appData.map.enumerateWallsOnMap()) {
+            for (let structure of this._appData.map.enumerateWallsOnMap()) {
                 let setting = this.__setSerialSettingToStructure(structure);
                 if (setting != null) {
                     turnSetting.pushStructure(setting);
                 }
             }
 
-            for (let tile of g_appData.map.enumerateTiles()) {
+            for (let tile of this._appData.map.enumerateTiles()) {
                 turnSetting.pushTile(tile);
             }
         }
@@ -249,7 +253,7 @@ class SettingManager {
     }
 
     saveSettings() {
-        let savesMap = g_appData.mapKind == MapType.ResonantBattles_Default;
+        let savesMap = this._appData.mapKind == MapType.ResonantBattles_Default;
         let dict = this.convertCurrentSettingsToDict(true, true, true, true, savesMap);
         for (let key in dict) {
             console.log("delete " + key + "..");
@@ -276,76 +280,76 @@ class SettingManager {
     ) {
         try {
             g_disableUpdateUi = true;
-            let currentTurn = g_appData.currentTurn;
+            let currentTurn = this._appData.currentTurn;
             let turnSetting = new TurnSetting(currentTurn);
             if (loadsDefenceSettings) {
-                turnSetting.setAppData(g_appData);
+                turnSetting.setAppData(this._appData);
             }
 
             if (clearsAllFirst) {
                 if (settingDict[turnSetting.serialId]) {
                     if (loadsDefenceSettings) {
                         // リセット位置が重なって不定になるのを防ぐために最初に取り除く
-                        for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
+                        for (let structure of this._appData.defenseStructureStorage.enumerateAllObjs()) {
                             moveStructureToDefenceStorage(structure);
                         }
                     }
                     if (loadsOffenceSettings) {
                         // リセット位置が重なって不定になるのを防ぐために最初に取り除く
-                        for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
+                        for (let structure of this._appData.offenceStructureStorage.enumerateAllObjs()) {
                             moveStructureToOffenceStorage(structure);
                         }
                     }
                     if (loadsEnemySettings) {
-                        for (let unit of g_appData.enumerateEnemyUnits()) {
+                        for (let unit of this._appData.enumerateEnemyUnits()) {
                             moveUnitToTrashBox(unit);
                         }
                     }
                     if (loadsAllySettings) {
-                        for (let unit of g_appData.enumerateAllyUnits()) {
+                        for (let unit of this._appData.enumerateAllyUnits()) {
                             moveUnitToTrashBox(unit);
                         }
                     }
 
-                    g_appData.map.resetPlacement();
+                    this._appData.map.resetPlacement();
                 }
             }
 
             if (loadsEnemySettings) {
-                for (let unit of g_appData.enumerateAllEnemyUnits()) {
+                for (let unit of this._appData.enumerateAllEnemyUnits()) {
                     turnSetting.pushUnit(unit);
                 }
             }
             if (loadsAllySettings) {
-                for (let unit of g_appData.enumerateAllAllyUnits()) {
+                for (let unit of this._appData.enumerateAllAllyUnits()) {
                     turnSetting.pushUnit(unit);
                 }
             }
             if (loadsOffenceSettings) {
-                for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
+                for (let structure of this._appData.offenceStructureStorage.enumerateAllObjs()) {
                     turnSetting.pushStructure(structure);
                 }
             }
             if (loadsDefenceSettings) {
-                for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
+                for (let structure of this._appData.defenseStructureStorage.enumerateAllObjs()) {
                     turnSetting.pushStructure(structure);
                 }
-                for (let structure of g_appData.map.enumerateBreakableWalls()) {
+                for (let structure of this._appData.map.enumerateBreakableWalls()) {
                     turnSetting.pushStructure(structure);
                 }
             }
             if (loadsMapSettings) {
-                for (let structure of g_appData.map.enumerateWalls()) {
+                for (let structure of this._appData.map.enumerateWalls()) {
                     turnSetting.pushStructure(structure);
                 }
-                for (let tile of g_appData.map.enumerateTiles()) {
+                for (let tile of this._appData.map.enumerateTiles()) {
                     turnSetting.pushTile(tile);
                 }
             }
 
             // heroIndexChangedイベントが走ってスキルなどが上書きされないよう
             // 現在のユニットを未設定にしておく
-            g_appData.clearCurrentItemSelection();
+            this._appData.clearCurrentItemSelection();
             changeCurrentUnitTab(-1);
 
             if (settingDict[turnSetting.serialId] == null && settingDict[TurnWideCookieId] == null) {
@@ -359,19 +363,19 @@ class SettingManager {
                 turnSetting.fromTurnWideStatusString(settingDict[TurnWideCookieId]);
                 if (loadsDefenceSettings) {
                     // マップ種類
-                    g_appData.map.changeMapKind(g_appData.mapKind, g_appData.gameVersion);
+                    this._appData.map.changeMapKind(this._appData.mapKind, this._appData.gameVersion);
                 }
 
                 if (loadsEnemySettings) {
                     // console.log("敵の設定をロード");
-                    for (let unit of g_appData.enumerateEnemyUnits()) {
-                        g_appData.initializeByHeroInfo(unit, unit.heroIndex, false);
+                    for (let unit of this._appData.enumerateEnemyUnits()) {
+                        this._appData.initializeByHeroInfo(unit, unit.heroIndex, false);
                     }
                 }
                 if (loadsAllySettings) {
                     // console.log("味方の設定をロード");
-                    for (let unit of g_appData.enumerateAllyUnits()) {
-                        g_appData.initializeByHeroInfo(unit, unit.heroIndex, false);
+                    for (let unit of this._appData.enumerateAllyUnits()) {
+                        this._appData.initializeByHeroInfo(unit, unit.heroIndex, false);
                     }
                 }
             }
@@ -383,8 +387,8 @@ class SettingManager {
                 if (loadsDefenceSettings) {
                     // マップオブジェクトのロード
                     // console.log("loading map objects");
-                    // console.log("map object count: " + g_appData.map.breakableObjCountOfCurrentMapType);
-                    for (let structure of g_appData.map.enumerateBreakableWallsOfCurrentMapType()) {
+                    // console.log("map object count: " + this._appData.map.breakableObjCountOfCurrentMapType);
+                    for (let structure of this._appData.map.enumerateBreakableWallsOfCurrentMapType()) {
                         // console.log(structure.id);
                         if (!turnSetting.isDeserialized(structure)) { continue; }
                         // console.log(structure.id + " is deserialized");
@@ -396,7 +400,7 @@ class SettingManager {
                     }
 
                     // console.log("loading deffence structures");
-                    for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
+                    for (let structure of this._appData.defenseStructureStorage.enumerateAllObjs()) {
                         if (!turnSetting.isDeserialized(structure)) { continue; }
                         try {
                             this.__setStructureFromSerialSetting(structure);
@@ -408,7 +412,7 @@ class SettingManager {
 
                 if (loadsOffenceSettings) {
                     // console.log("loading offence structures");
-                    for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
+                    for (let structure of this._appData.offenceStructureStorage.enumerateAllObjs()) {
                         if (!turnSetting.isDeserialized(structure)) { continue; }
                         try {
                             this.__setStructureFromSerialSetting(structure);
@@ -420,19 +424,19 @@ class SettingManager {
 
                 if (loadsEnemySettings) {
                     // console.log("敵の設定をロード");
-                    for (let unit of g_appData.enumerateEnemyUnits()) {
+                    for (let unit of this._appData.enumerateEnemyUnits()) {
                         this.__setUnitFromSerialSetting(unit);
                     }
                 }
                 if (loadsAllySettings) {
                     // console.log("味方の設定をロード");
-                    for (let unit of g_appData.enumerateAllyUnits()) {
+                    for (let unit of this._appData.enumerateAllyUnits()) {
                         this.__setUnitFromSerialSetting(unit);
                     }
                 }
 
                 if (loadsMapSettings) {
-                    for (let structure of g_appData.map.enumerateWalls()) {
+                    for (let structure of this._appData.map.enumerateWalls()) {
                         // console.log(structure.id);
                         if (!turnSetting.isDeserialized(structure)) {
                             removeFromAll(structure);
@@ -452,16 +456,16 @@ class SettingManager {
             g_disableUpdateUi = false;
         }
 
-        g_appData.sortUnitsBySlotOrder();
+        this._appData.sortUnitsBySlotOrder();
 
         // 祝福を反映させるために更新が必要
-        g_appData.__updateStatusBySkillsAndMergeForAllHeroes(false);
+        this._appData.__updateStatusBySkillsAndMergeForAllHeroes(false);
 
-        g_appData.map.createTileSnapshots();
+        this._appData.map.createTileSnapshots();
     }
 
     loadSettings() {
-        let currentTurn = g_appData.currentTurn;
+        let currentTurn = this._appData.currentTurn;
         let turnSetting = new TurnSetting(currentTurn);
         let dict = {};
         dict[TurnWideCookieId] = null;
@@ -476,7 +480,7 @@ class SettingManager {
             console.log("ターン" + currentTurn + "の設定なし");
             return;
         }
-        let loadsMap = g_appData.mapKind == MapType.ResonantBattles_Default;
+        let loadsMap = this._appData.mapKind == MapType.ResonantBattles_Default;
         this.loadSettingsFromDict(dict, true, true, true, true, loadsMap);
     }
 }
