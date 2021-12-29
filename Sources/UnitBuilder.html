@@ -350,6 +350,10 @@
         input[class="fehButton"]:not(:checked)+label {
             filter: grayscale(100%);
         }
+
+        .detailsDefault {
+            text-align: left;
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -357,6 +361,7 @@
     <link rel="preconnect" href="//code.jquery.com">
 
     <div id="app">
+
         <table style="border-style: none;">
             <tr>
                 <td>
@@ -378,6 +383,20 @@
             <tr v-bind:style="debugMenuStyle">
                 <td>
                     currentItemIndex={{currentItemIndex}}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <details open style="padding: 5;" class="detailsDefault">
+                        <summary>設定の共有</summary>
+                        以下のURLで設定を再現する事ができます。<br />
+                        <input type="button" value="コピー" @click="copyUrl">
+                        <!-- <input type="button" value="インポート" @click="importUrl(g_appData.currentUrl)"> -->
+                        <br />
+                        <textarea id="urlTextArea" v-model="exportSettingUrl" style="width: 400px;height: 50px;"
+                            readonly></textarea>
+                    </details>
+
                 </td>
             </tr>
             <tr>
@@ -439,7 +458,7 @@
                             </td>
                             <td class="paramHeader">
                                 ★
-                                <select v-model="value.rarity" @change="g_app.vm.ivChanged">
+                                <select v-model="value.rarity" @change="g_app.vm.ivChanged(); updateUrl();">
                                     <option v-for="item in UnitRarity" v-bind:value="item">
                                         {{ item}}
                                     </option>
@@ -461,7 +480,7 @@
                                 <label class="normal" for="dragonflower">
                                     <img v-bind:src="value.dragonflowerIcon" width="25" height="25" />
                                 +</label>
-                                <select v-model="value.dragonflower" @change="g_app.vm.dragonflowerChanged">
+                                <select v-model="value.dragonflower" @change="g_app.vm.dragonflowerChanged(); updateUrl();">
                                     <option v-for="(value, i) in (value.maxDragonflower+1)" v-bind:value="i">
                                         {{ i }}
                                     </option>
@@ -610,7 +629,7 @@
                                 絆
                             </td>
                             <td class='param'>
-                                <select v-model="value.summonerLevel" @change="g_app.vm.summonerLevelChanged">
+                                <select v-model="value.summonerLevel" @change="g_app.vm.summonerLevelChanged(); updateUrl();">
                                     <option v-for="option in g_appData.summonerLevelOptions" v-bind:value="option.id">
                                         {{ option.text }}
                                     </option>
@@ -625,7 +644,7 @@
                             </td>
                             <td class='param'>
                                 <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
-                                    <input v-bind:id='"isResplendent"+value.id' type="checkbox" v-model="value.isResplendent" @change="g_app.vm.isBonusCharChanged" />
+                                    <input v-bind:id='"isResplendent"+value.id' type="checkbox" v-model="value.isResplendent" @change="g_app.vm.isBonusCharChanged(); updateUrl();" />
                                 </span>
                             </td>
                         </tr>
@@ -634,7 +653,7 @@
                                 <label v-bind:for='"isBonusChar"+value.id'>ボナ</label>
                             </td>
                             <td class='param'>
-                                <input v-bind:id='"isBonusChar"+value.id' type="checkbox" v-model="value.isBonusChar" @change="g_app.vm.isBonusCharChanged" />
+                                <input v-bind:id='"isBonusChar"+value.id' type="checkbox" v-model="value.isBonusChar" @change="g_app.vm.isBonusCharChanged(); updateUrl();" />
                             </td>
                         </tr>
                         <tr>
@@ -659,7 +678,7 @@
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.weaponOptions" v-model="value.weapon" v-bind:name="value.id+'-weapon'" v-if="value.heroInfo!=null"
-                                    @input="g_app.vm.weaponChanged" class="skill" >
+                                    @input="g_app.vm.weaponChanged(); updateUrl();" class="skill" >
                                 </select2>
                                 <a v-bind:href="value.weaponInfo.detailPageUrl" target="_blank" v-if="value.weaponInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -669,7 +688,7 @@
                             <td class='skillHeader'>
                             </td>
                             <td colspan="2">
-                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" >
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged(); updateUrl();" >
                                     <option v-for="option in (value.weaponInfo != null ? value.weaponInfo.weaponRefinementOptions : [])" v-bind:value="option.id">
                                         {{ option.text }}
                                     </option>
@@ -682,7 +701,7 @@
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.supportOptions" v-if="value.heroInfo!=null"
-                                @input="g_app.vm.supportChanged"
+                                @input="g_app.vm.supportChanged(); updateUrl();"
                                 v-bind:name="value.id+'-support'"
                                     v-model="value.support" class="skill">
                                 </select2>
@@ -699,7 +718,7 @@
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.specialOptions" v-model="value.special" v-bind:name="value.id+'-special'" v-if="value.heroInfo!=null"
-                                    @input="g_app.vm.specialChanged" class="skill">
+                                    @input="g_app.vm.specialChanged(); updateUrl();" class="skill">
                                 </select2>
                                 <a v-bind:href="value.specialInfo.detailPageUrl" target="_blank" v-if="value.specialInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -713,7 +732,7 @@
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.passiveAOptions" v-bind:name="value.id+'-passiveA'" v-if="value.heroInfo!=null"
-                                    v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
+                                    v-model="value.passiveA" @input="g_app.vm.passiveAChanged(); updateUrl();" class="skill">
                                 </select2>
                                 <a v-bind:href="value.passiveAInfo.detailPageUrl" target="_blank" v-if="value.passiveAInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -728,7 +747,7 @@
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.passiveBOptions" v-bind:name="value.id+'-passiveB'" v-if="value.heroInfo!=null"
-                                    v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
+                                    v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged(); updateUrl();">
                                 </select2>
                                 <a v-bind:href="value.passiveBInfo.detailPageUrl" target="_blank" v-if="value.passiveBInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -743,7 +762,7 @@
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.passiveCOptions" v-bind:name="value.id+'-passiveC'" v-if="value.heroInfo!=null"
-                                    v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
+                                    v-model="value.passiveC" @input="g_app.vm.passiveCChanged(); updateUrl();" class="skill">
                                 </select2>
                                 <a v-bind:href="value.passiveCInfo.detailPageUrl" target="_blank" v-if="value.passiveCInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -758,7 +777,7 @@
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.passiveSOptions" v-bind:name="value.id+'-passiveS'" v-if="value.heroInfo!=null"
-                                    v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
+                                    v-model="value.passiveS" @input="g_app.vm.passiveSChanged(); updateUrl();" class="skill">
                                 </select2>
                                 <a v-bind:href="value.passiveSInfo.detailPageUrl" target="_blank" v-if="value.passiveSInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -797,7 +816,7 @@
                     <dt><label class="title">英雄:</label></dt>
                     <dd>
                         <select2 :options="g_app.vm.heroOptions" v-model="value.heroIndex" class="hero"
-                            @input="g_app.vm.heroIndexChanged">
+                            @input="g_app.vm.heroIndexChanged(); updateUrl();">
                         </select2>
                         <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
                             <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -807,13 +826,13 @@
                     <dt><label class="title">個性:</label></dt>
                     <dd>
                         <label class="normal" for="ivHigh">得意 </label>
-                        <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged">
+                        <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged(); updateUrl();">
                             <option v-for="option in IvStateOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
                         </select>
                         <label class="normal" for="ivLow">苦手 </label>
-                        <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged">
+                        <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged(); updateUrl();">
                             <option v-for="option in IvStateOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
@@ -821,7 +840,7 @@
                         <label class="normal"><img
                                 src="/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
                                 height="20"></label>
-                        <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged">
+                        <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged(); updateUrl();">
                             <option v-for="option in IvStateOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
@@ -863,8 +882,8 @@
             </div>
             <div class="card">
                 <input type="button" class="buttonUi" @click="g_app.setUnitToMaxArenaScore(value)" value="最大査定に設定"></input>
-                <input type="button" class="buttonUi" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();" >
-                <input type="button" class="buttonUi" value="スキル全て外す" @click="value.clearReservedSkills();value.clearSkills();" >
+                <input type="button" class="buttonUi" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();updateUrl();" >
+                <input type="button" class="buttonUi" value="スキル全て外す" @click="value.clearReservedSkills();value.clearSkills();updateUrl();" >
             </div>
             <div class="card">
             <fieldset style="font-size:12px;">
@@ -886,6 +905,41 @@
             document.execCommand("copy");
         }
 
+        function copyUrl() {
+            var textarea = $("#urlTextArea")[0];
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); /*For mobile devices*/
+            document.execCommand("copy");
+        }
+
+        function importUrl(url) {
+            console.log("url:" + url);
+            if (url == "" || url == null) {
+                return;
+            }
+            console.log(url);
+            let splited = url.split("s=");
+            if (splited.length != 2) {
+                console.log(`invalid url "${url}"`);
+                return;
+            }
+
+            let settingText = splited[1];
+            let decompressed = LZString.decompressFromEncodedURIComponent(settingText);
+            let unit = g_appData.currentUnit;
+            unit.fromTurnWideStatusString(decompressed);
+            g_appData.initializeByHeroInfo(unit, unit.heroIndex);
+            unit.fromTurnWideStatusString(decompressed);
+            g_appData.__updateStatusBySkillsAndMergeForAllHeroes(false);
+        }
+
+        function updateUrl() {
+            let settingText = g_appData.currentUnit.turnWideStatusToString();
+            g_appData.exportSettingUrl = "https://puarts.com/?pid=1736&s=" + LZString.compressToEncodedURIComponent(settingText);
+            let textarea = $("#urlTextArea")[0];
+            textarea.textContent = settingText;
+        }
+
         function resetUnit(unit) {
             unit.rarity = 5;
             unit.merge = 0;
@@ -903,6 +957,7 @@
         function updateStatus(unit) {
             g_appData.__updateStatusBySkillsAndMerges(unit, true, false);
             unit.updateArenaScore();
+            updateUrl();
         }
     </script>
 
@@ -1005,8 +1060,8 @@
                 "AetherRaidDefensePresets.js",
                 "SkillDatabase.js",
                 "HeroDatabase.js",
-                "AppData.js",
                 "SettingManager.js",
+                "AppData.js",
                 "Main_ImageProcessing.js",
                 "Main_OriginalAi.js",
                 "Main_MouseAndTouch.js",
@@ -1049,6 +1104,8 @@
 
             let elem = document.getElementById("initMessage");
             elem.textContent = "";
+            updateUrl();
+            importUrl(location.search);
         });
     </script>
 </body>
