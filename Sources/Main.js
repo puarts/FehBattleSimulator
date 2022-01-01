@@ -7511,6 +7511,7 @@ class AetherRaidTacticsBoard {
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
             case Support.FoulPlay:
             case Support.FutureVision:
+            case Support.FutureVision2:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
             case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
             case Support.NudgePlus:
@@ -7789,9 +7790,20 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Support.FutureVision:
+                case Support.FutureVision2:
                     if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                         supporterUnit.isActionDone = false;
                         supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    }
+                    if (supporterUnit.support === Support.FutureVision2) {
+                        for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
+                            unit.applyAtkDebuff(-7);
+                            unit.applyDefDebuff(-7);
+                        }
+                        for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                            unit.applyAtkDebuff(-7);
+                            unit.applyDefDebuff(-7);
+                        }
                     }
                     break;
             }
@@ -7888,6 +7900,7 @@ class AetherRaidTacticsBoard {
             case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:
+            case Support.FutureVision2:
                 return this.__findTileAfterSwap(unit, target, tile);
             case Support.Pivot:
                 return this.__findTileAfterPivot(unit, target, tile);

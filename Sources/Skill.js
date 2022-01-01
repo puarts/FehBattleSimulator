@@ -1224,6 +1224,7 @@ const Support = {
     Shove: 424, // 体当たり
     Swap: 416, // 入れ替え
     FutureVision: 433, // 未来を移す瞳
+    FutureVision2: 1948, // 未来を映す瞳・承
     FoulPlay: 1840, // トリック
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
