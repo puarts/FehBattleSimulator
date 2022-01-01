@@ -1812,6 +1812,10 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.LunarBrace2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PolishedFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 6;
@@ -6526,6 +6530,11 @@ class DamageCalculatorWrapper {
 
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         switch (atkUnit.passiveB) {
+            case PassiveB.LunarBrace2: {
+                let def = isPrecombat ? defUnit.getEvalDefInPrecombat() : defUnit.getEvalDefInCombat(atkUnit);
+                atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);
+            }
+                break;
             case PassiveB.Atrocity:
                 if (defUnit.battleContext.restHpPercentage >= 50) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getAtkInCombat() * 0.25);

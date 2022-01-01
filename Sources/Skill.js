@@ -1842,6 +1842,7 @@ const PassiveB = {
     Wanakaijo3: 858, // 罠解除3
 
     RunaBracelet: 667, // 月の腕輪
+    LunarBrace2: 1947, // 月の腕輪・承
     SeimeiNoGofu3: 772, // 生命の護符
 
     ShisyaNoChojiriwo: 1114, // 死者の帳尻を

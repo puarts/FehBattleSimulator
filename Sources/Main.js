@@ -5723,6 +5723,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveB.LunarBrace2:
                 case Weapon.HonorableBlade:
                 case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
@@ -5752,6 +5753,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
                 case Weapon.GrimBrokkr:
