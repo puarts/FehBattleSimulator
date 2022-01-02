@@ -5343,6 +5343,9 @@ class DamageCalculatorWrapper {
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 switch (allyUnit.weapon) {
+                    case Weapon.TannenbatonPlus:
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                        break;
                     case Weapon.ProfessorialGuide:
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                             enemyUnit.battleContext.reducesCooldownCount = false;
@@ -8244,7 +8247,6 @@ class DamageCalculatorWrapper {
             case Weapon.TannenbatonPlus:
                 targetUnit.defSpur += 2;
                 targetUnit.resSpur += 2;
-                targetUnit.battleContext.reducesCooldownCount = true;
                 break;
             case Weapon.SpearOfAssal:
                 targetUnit.atkSpur += 4;
