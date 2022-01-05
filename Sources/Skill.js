@@ -2167,6 +2167,8 @@ const PassiveC = {
 
     // 暗闘
     RedFeud3: 1918, // 赤への暗闘3
+    // BlueFeud3: -1, // 青への暗闘3
+    GreenFeud3: 1958, // 緑への暗闘3
     CFeud3: 1935, // 無への暗闇3
 
     // 専用
@@ -2934,6 +2936,8 @@ function isAdvantageousForColorless(weapon) {
 
 const FeudSkillTable = {};
 FeudSkillTable[PassiveC.RedFeud3] = 0;
+// FeudSkillTable[PassiveC.BlueFeud3] = 0;
+FeudSkillTable[PassiveC.GreenFeud3] = 0;
 FeudSkillTable[PassiveC.CFeud3] = 0;
 
 /**

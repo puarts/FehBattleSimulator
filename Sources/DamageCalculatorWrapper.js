@@ -741,6 +741,16 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
+            // case PassiveC.BlueFeud3:
+            //     if (enemyUnit.color === ColorType.Blue) {
+            //         return true;
+            //     }
+            //     break;
+            case PassiveC.GreenFeud3:
+                if (enemyUnit.color === ColorType.Green) {
+                    return true;
+                }
+                break;
             case PassiveC.CFeud3:
                 if (enemyUnit.color === ColorType.Colorless) {
                     return true;
@@ -1886,6 +1896,16 @@ class DamageCalculatorWrapper {
         // 暗闘
         this._applySkillEffectForUnitFuncDict[PassiveC.RedFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.color === ColorType.Red) {
+                enemyUnit.addAllSpur(-4);
+            }
+        }
+        // this._applySkillEffectForUnitFuncDict[PassiveC.BlueFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        //     if (enemyUnit.color === ColorType.Blue) {
+        //         enemyUnit.addAllSpur(-4);
+        //     }
+        // }
+        this._applySkillEffectForUnitFuncDict[PassiveC.GreenFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.color === ColorType.Green) {
                 enemyUnit.addAllSpur(-4);
             }
         }
@@ -8579,6 +8599,10 @@ class DamageCalculatorWrapper {
         switch (feudSkillOwner.passiveC) {
             case PassiveC.RedFeud3:
                 return unit => unit.color === ColorType.Red;
+            // case PassiveC.BlueFeud3:
+            //     return unit => unit.color === ColorType.Blue;
+            case PassiveC.GreenFeud3:
+                return unit => unit.color === ColorType.Green;
             case PassiveC.CFeud3:
                 return unit => unit.color === ColorType.Colorless;
         }
@@ -9556,6 +9580,16 @@ class DamageCalculatorWrapper {
         switch (targetUnit.passiveC) {
             case PassiveC.RedFeud3:
                 if (enemyUnit.color === ColorType.Red) {
+                    return true;
+                }
+                break;
+            // case PassiveC.BlueFeud3:
+            //     if (enemyUnit.color === ColorType.Blue) {
+            //         return true;
+            //     }
+            //     break;
+            case PassiveC.GreenFeud3:
+                if (enemyUnit.color === ColorType.Green) {
                     return true;
                 }
                 break;
