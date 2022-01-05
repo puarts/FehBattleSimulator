@@ -75,6 +75,11 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.QuickDaggerPlus:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                break;
             case Weapon.RapidCrierBow:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat() + this.__getStatusEvalUnit(x).getSpdInPrecombat(),

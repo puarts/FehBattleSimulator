@@ -1218,6 +1218,7 @@ const Weapon = {
     // 新英雄&開花ヨシュア
     RapidCrierBow: 1951, // 涙目の速射弓
     ViciousDaggerPlus: 1953, // 猛攻の暗器+
+    QuickDaggerPlus: 1955, // 奥義発動の暗器+
 }
 
 const Support = {
