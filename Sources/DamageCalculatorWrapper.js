@@ -1812,6 +1812,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.RapidCrierBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let found = false;
+            let maxBuff = 0;
+            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
+                found = true;
+                maxBuff = Math.max(unit.atkBuff + unit.spdBuff, maxBuff);
+            }
+            targetUnit.atkSpur += maxBuff;
+            if (found) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.LunarBrace2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;

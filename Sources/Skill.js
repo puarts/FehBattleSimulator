@@ -1214,6 +1214,9 @@ const Weapon = {
     SparklingFang: 1944, // 賀正の妹猫の爪牙
     JotnarBow: 1945, // 巨人姉妹の弓
     PolishedFang: 1946, // 賀正の銀虎の爪牙
+
+    // 新英雄&開花ヨシュア
+    RapidCrierBow: 1951, // 涙目の速射弓
 }
 
 const Support = {
