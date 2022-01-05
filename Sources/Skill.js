@@ -1461,6 +1461,7 @@ const PassiveA = {
     SpdResBond1: 1333,
     SpdResBond2: 1334,
     SpdResBond3: 578,
+    SpdResBond4: 1952, // 速さ魔防の絆4
     DefResBond1: 1335,
     DefResBond2: 1336,
     DefResBond3: 775,
