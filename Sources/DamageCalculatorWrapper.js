@@ -1816,6 +1816,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BladeOfJehanna] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.spdSpur -= 6;
+                enemyUnit.defSpur -= 6;
+                targetUnit.battleContext.invalidatesSpdBuff = true;
+                targetUnit.battleContext.invalidatesDefBuff = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RapidCrierBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let found = false;
             let maxBuff = 0;
@@ -6585,6 +6593,15 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.BladeOfJehanna:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    const isCross = atkUnit.posX === defUnit.posX || atkUnit.posY === defUnit.posY;
+                    if (!isCross) {
+                        let defUnitAtk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(defUnitAtk * 0.15);
+                    }
+                }
+                break;
             case Weapon.SparklingFang:
                 if (defUnit.battleContext.restHpPercentage >= 75) {
                     atkUnit.battleContext.additionalDamage += 5;
@@ -7183,6 +7200,14 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.BladeOfJehanna:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    const isCross = atkUnit.posX === defUnit.posX || atkUnit.posY === defUnit.posY;
+                    if (isCross) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.RyukenFalcion:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.restHpPercentage >= 25 && isPhysicalWeaponType(defUnit.weaponType)) {

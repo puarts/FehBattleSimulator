@@ -1219,6 +1219,7 @@ const Weapon = {
     RapidCrierBow: 1951, // 涙目の速射弓
     ViciousDaggerPlus: 1953, // 猛攻の暗器+
     QuickDaggerPlus: 1955, // 奥義発動の暗器+
+    BladeOfJehanna: 1957, // ジャハナ王の砂刃
 }
 
 const Support = {
