@@ -922,11 +922,15 @@ class DamageCalculatorWrapper {
             self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantLancePlus] = func;
             self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantAxePlus] = func;
         }
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.CourtlyFanPlus] = (atkUnit, defUnit, calcPotentialDamage) => {
-            atkUnit.atkSpur += 5;
-            atkUnit.spdSpur += 5;
-            atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-        };
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                atkUnit.atkSpur += 5;
+                atkUnit.spdSpur += 5;
+                atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            };
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.CourtlyFanPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.ViciousDaggerPlus] = func;
+        }
         self._applySkillEffectForAtkUnitFuncDict[Weapon.BenihimeNoOno] = (atkUnit, defUnit, calcPotentialDamage) => {
             if (atkUnit.isWeaponSpecialRefined) {
                 if (defUnit.battleContext.restHpPercentage === 100) {
