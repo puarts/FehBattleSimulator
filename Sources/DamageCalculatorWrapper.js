@@ -741,6 +741,16 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
+            // case PassiveC.BlueFeud3:
+            //     if (enemyUnit.color === ColorType.Blue) {
+            //         return true;
+            //     }
+            //     break;
+            case PassiveC.GreenFeud3:
+                if (enemyUnit.color === ColorType.Green) {
+                    return true;
+                }
+                break;
             case PassiveC.CFeud3:
                 if (enemyUnit.color === ColorType.Colorless) {
                     return true;
@@ -922,11 +932,15 @@ class DamageCalculatorWrapper {
             self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantLancePlus] = func;
             self._applySkillEffectForAtkUnitFuncDict[Weapon.InstantAxePlus] = func;
         }
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.CourtlyFanPlus] = (atkUnit, defUnit, calcPotentialDamage) => {
-            atkUnit.atkSpur += 5;
-            atkUnit.spdSpur += 5;
-            atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-        };
+        {
+            let func = (atkUnit, defUnit, calcPotentialDamage) => {
+                atkUnit.atkSpur += 5;
+                atkUnit.spdSpur += 5;
+                atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            };
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.CourtlyFanPlus] = func;
+            self._applySkillEffectForAtkUnitFuncDict[Weapon.ViciousDaggerPlus] = func;
+        }
         self._applySkillEffectForAtkUnitFuncDict[Weapon.BenihimeNoOno] = (atkUnit, defUnit, calcPotentialDamage) => {
             if (atkUnit.isWeaponSpecialRefined) {
                 if (defUnit.battleContext.restHpPercentage === 100) {
@@ -1812,6 +1826,26 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BladeOfJehanna] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.spdSpur -= 6;
+                enemyUnit.defSpur -= 6;
+                targetUnit.battleContext.invalidatesSpdBuff = true;
+                targetUnit.battleContext.invalidatesDefBuff = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.RapidCrierBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let found = false;
+            let maxBuff = 0;
+            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
+                found = true;
+                maxBuff = Math.max(unit.atkBuff + unit.spdBuff, maxBuff);
+            }
+            targetUnit.atkSpur += maxBuff;
+            if (found) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.LunarBrace2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -1862,6 +1896,16 @@ class DamageCalculatorWrapper {
         // 暗闘
         this._applySkillEffectForUnitFuncDict[PassiveC.RedFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.color === ColorType.Red) {
+                enemyUnit.addAllSpur(-4);
+            }
+        }
+        // this._applySkillEffectForUnitFuncDict[PassiveC.BlueFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        //     if (enemyUnit.color === ColorType.Blue) {
+        //         enemyUnit.addAllSpur(-4);
+        //     }
+        // }
+        this._applySkillEffectForUnitFuncDict[PassiveC.GreenFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.color === ColorType.Green) {
                 enemyUnit.addAllSpur(-4);
             }
         }
@@ -3643,6 +3687,12 @@ class DamageCalculatorWrapper {
             if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                 targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
                 targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveA.SpdResBond4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                targetUnit.battleContext.invalidatesOwnResDebuff = true;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.VezuruNoYoran] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6563,6 +6613,15 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.BladeOfJehanna:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    const isCross = atkUnit.posX === defUnit.posX || atkUnit.posY === defUnit.posY;
+                    if (!isCross) {
+                        let defUnitAtk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(defUnitAtk * 0.15);
+                    }
+                }
+                break;
             case Weapon.SparklingFang:
                 if (defUnit.battleContext.restHpPercentage >= 75) {
                     atkUnit.battleContext.additionalDamage += 5;
@@ -7161,6 +7220,14 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.BladeOfJehanna:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    const isCross = atkUnit.posX === defUnit.posX || atkUnit.posY === defUnit.posY;
+                    if (isCross) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.RyukenFalcion:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.restHpPercentage >= 25 && isPhysicalWeaponType(defUnit.weaponType)) {
@@ -8532,6 +8599,10 @@ class DamageCalculatorWrapper {
         switch (feudSkillOwner.passiveC) {
             case PassiveC.RedFeud3:
                 return unit => unit.color === ColorType.Red;
+            // case PassiveC.BlueFeud3:
+            //     return unit => unit.color === ColorType.Blue;
+            case PassiveC.GreenFeud3:
+                return unit => unit.color === ColorType.Green;
             case PassiveC.CFeud3:
                 return unit => unit.color === ColorType.Colorless;
         }
@@ -8929,6 +9000,10 @@ class DamageCalculatorWrapper {
                     case PassiveA.SpdDefBond4:
                         targetUnit.spdSpur += 7;
                         targetUnit.defSpur += 7;
+                        break;
+                    case PassiveA.SpdResBond4:
+                        targetUnit.spdSpur += 7;
+                        targetUnit.resSpur += 7;
                         break;
                     case PassiveA.AtkSpdBond1:
                         targetUnit.atkSpur += 3;
@@ -9505,6 +9580,16 @@ class DamageCalculatorWrapper {
         switch (targetUnit.passiveC) {
             case PassiveC.RedFeud3:
                 if (enemyUnit.color === ColorType.Red) {
+                    return true;
+                }
+                break;
+            // case PassiveC.BlueFeud3:
+            //     if (enemyUnit.color === ColorType.Blue) {
+            //         return true;
+            //     }
+            //     break;
+            case PassiveC.GreenFeud3:
+                if (enemyUnit.color === ColorType.Green) {
                     return true;
                 }
                 break;

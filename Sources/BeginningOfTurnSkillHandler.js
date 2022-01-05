@@ -75,6 +75,17 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.QuickDaggerPlus:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                break;
+            case Weapon.RapidCrierBow:
+                this.__applyOpeningSkill(skillOwner,
+                    x => this.__getStatusEvalUnit(x).getAtkInPrecombat() + this.__getStatusEvalUnit(x).getSpdInPrecombat(),
+                    x => { x.applyAtkBuff(6); x.applySpdBuff(6); }
+                );
+                break;
             case Weapon.NidavellirLots:
                 if (this.globalBattleContext.currentTurn === 4) {
                     skillOwner.reduceSpecialCount(3);
