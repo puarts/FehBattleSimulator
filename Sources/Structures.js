@@ -46,6 +46,9 @@ const OrnamentSettings = [
     { label: "ニザヴェリルの歯車塊", icon: "NisavellirGear.png" },
     { label: "ニザヴェリルの鏡", icon: "NisavellirMirror.png" },
     { label: "グリンブルスティの像", icon: "GullinburstiStatue.png" },
+    { label: "アシュの石像", icon: "Structure_Ash_Statue.png" },
+    { label: "エルムの石像", icon: "Structure_Elm_Statue.png" },
+    { label: "エンブラ帝国旗", icon: "Structure_Flag_of_Embla.png" },
 ];
 
 function findOrnamentTypeIndexByIcon(icon) {
