@@ -202,7 +202,7 @@ const StatusEffectType = {
     FollowUpAttackMinus: 19, // 追撃不可
     Dodge: 20, // 回避
     TriangleAttack: 21, // トライアングルアタック
-    FollowUpAttackPlus: 22, // 絶対追撃
+    FollowUpAttackPlus: 22, // 自分から攻撃した時、絶対追撃
     NullPanic: 23, // 見切り・パニック
     Stall: 24, // 空転
     CancelAffinity: 25, // 相性相殺

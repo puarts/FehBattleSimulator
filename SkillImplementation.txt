@@ -4,6 +4,22 @@
 if (targetUnit.isWeaponRefined) {}
 <特殊錬成武器判定>
 if (targetUnit.isWeaponSpecialRefined) {}
+武器錬成テンプレ
+if (!targetUnit.isWeaponRefined) {
+    // <通常効果>
+} else {
+    // <錬成効果>
+    if (targetUnit.isWeaponSpecialRefined) {
+        // <特殊錬成効果>
+    }
+}
+武器錬成(錬成効果追加のみ)
+if (targetUnit.isWeaponRefined) {
+    // <錬成効果>
+    if (targetUnit.isWeaponSpecialRefined) {
+        // <特殊錬成効果>
+    }
+}
 
 化身状態なら
 if (targetUnit.isTransformed) {}
@@ -178,8 +194,24 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
+回避
+戦闘前
+__applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+    {
+        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+    }
+}
+戦闘中
+__getDamageReductionRatio(skillId, atkUnit, defUnit) {
+    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+}
+
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+
+敵から受けた追撃のダメージを80%軽減(追撃:通常の武器は、2回目の攻撃、「2回攻撃」の武器は、3～4回目の攻撃)
+targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
 
 奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
@@ -188,7 +220,7 @@ targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivat
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
 ダメージ+N(固定ダメージ)
-DamageCalculator.js
+DamageCalculatorWrapper.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // Nダメージ
     atkUnit.battleContext.additionalDamage += N;
@@ -231,23 +263,6 @@ function hasPathfinderEffect(skillId) {}
 
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
-
-武器錬成
-if (!targetUnit.isWeaponRefined) {
-    // <通常効果>
-} else {
-    // <錬成効果>
-    if (targetUnit.isWeaponSpecialRefined) {
-        // <特殊錬成効果>
-    }
-}
-武器錬成(錬成効果追加のみ)
-if (targetUnit.isWeaponRefined) {
-    // <錬成効果>
-    if (targetUnit.isWeaponSpecialRefined) {
-        // <特殊錬成効果>
-    }
-}
 
 【XXX】の状態を付与
 Unit.js

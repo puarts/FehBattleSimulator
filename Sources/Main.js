@@ -7252,6 +7252,12 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Sogun:
+                    if (unit.isWeaponRefined) {
+                        unit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                        targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                    }
+                    break;
                 case PassiveB.AtkSpdSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applyAtkDebuff(-6);
