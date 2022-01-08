@@ -194,6 +194,19 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
+回避
+戦闘前
+__applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+    {
+        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+    }
+}
+戦闘中
+__getDamageReductionRatio(skillId, atkUnit, defUnit) {
+    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+}
+
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
