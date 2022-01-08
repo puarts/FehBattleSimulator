@@ -3976,9 +3976,25 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MizuNoHimatsu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (self.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (self.__isAllyCountIsGreaterThanEnemyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MugenNoSyo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
