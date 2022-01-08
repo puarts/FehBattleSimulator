@@ -5723,6 +5723,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case PassiveB.LunarBrace2:
                 case Weapon.HonorableBlade:
                 case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
@@ -5752,6 +5753,7 @@ class AetherRaidTacticsBoard {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
                 case Weapon.GrimBrokkr:
@@ -7250,6 +7252,12 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Sogun:
+                    if (unit.isWeaponRefined) {
+                        unit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                        targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                    }
+                    break;
                 case PassiveB.AtkSpdSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applyAtkDebuff(-6);
@@ -7509,6 +7517,7 @@ class AetherRaidTacticsBoard {
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
             case Support.FoulPlay:
             case Support.FutureVision:
+            case Support.FutureVision2:
             case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
             case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
             case Support.NudgePlus:
@@ -7787,9 +7796,20 @@ class AetherRaidTacticsBoard {
                     }
                     break;
                 case Support.FutureVision:
+                case Support.FutureVision2:
                     if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                         supporterUnit.isActionDone = false;
                         supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    }
+                    if (supporterUnit.support === Support.FutureVision2) {
+                        for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
+                            unit.applyAtkDebuff(-7);
+                            unit.applyDefDebuff(-7);
+                        }
+                        for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                            unit.applyAtkDebuff(-7);
+                            unit.applyDefDebuff(-7);
+                        }
                     }
                     break;
             }
@@ -7886,6 +7906,7 @@ class AetherRaidTacticsBoard {
             case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:
+            case Support.FutureVision2:
                 return this.__findTileAfterSwap(unit, target, tile);
             case Support.Pivot:
                 return this.__findTileAfterPivot(unit, target, tile);

@@ -1214,6 +1214,17 @@ const Weapon = {
     SparklingFang: 1944, // 賀正の妹猫の爪牙
     JotnarBow: 1945, // 巨人姉妹の弓
     PolishedFang: 1946, // 賀正の銀虎の爪牙
+
+    // 新英雄&開花ヨシュア
+    RapidCrierBow: 1951, // 涙目の速射弓
+    ViciousDaggerPlus: 1953, // 猛攻の暗器+
+    QuickDaggerPlus: 1955, // 奥義発動の暗器+
+    BladeOfJehanna: 1957, // ジャハナ王の砂刃
+
+    // 2022年1月 武器錬成
+    AncientCodex: 1949, // 古代魔道の稀書
+    SwornLance: 1950, // 騎士の誓いの槍
+    ArgentAura: 1959, // アルジローレ
 }
 
 const Support = {
@@ -1224,6 +1235,7 @@ const Support = {
     Shove: 424, // 体当たり
     Swap: 416, // 入れ替え
     FutureVision: 433, // 未来を移す瞳
+    FutureVision2: 1948, // 未来を映す瞳・承
     FoulPlay: 1840, // トリック
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
@@ -1457,6 +1469,7 @@ const PassiveA = {
     SpdResBond1: 1333,
     SpdResBond2: 1334,
     SpdResBond3: 578,
+    SpdResBond4: 1952, // 速さ魔防の絆4
     DefResBond1: 1335,
     DefResBond2: 1336,
     DefResBond3: 775,
@@ -1842,6 +1855,7 @@ const PassiveB = {
     Wanakaijo3: 858, // 罠解除3
 
     RunaBracelet: 667, // 月の腕輪
+    LunarBrace2: 1947, // 月の腕輪・承
     SeimeiNoGofu3: 772, // 生命の護符
 
     ShisyaNoChojiriwo: 1114, // 死者の帳尻を
@@ -2158,6 +2172,8 @@ const PassiveC = {
 
     // 暗闘
     RedFeud3: 1918, // 赤への暗闘3
+    // BlueFeud3: -1, // 青への暗闘3
+    GreenFeud3: 1958, // 緑への暗闘3
     CFeud3: 1935, // 無への暗闇3
 
     // 専用
@@ -2925,6 +2941,8 @@ function isAdvantageousForColorless(weapon) {
 
 const FeudSkillTable = {};
 FeudSkillTable[PassiveC.RedFeud3] = 0;
+// FeudSkillTable[PassiveC.BlueFeud3] = 0;
+FeudSkillTable[PassiveC.GreenFeud3] = 0;
 FeudSkillTable[PassiveC.CFeud3] = 0;
 
 /**
