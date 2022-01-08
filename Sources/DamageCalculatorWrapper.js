@@ -5975,6 +5975,14 @@ class DamageCalculatorWrapper {
                     },
                     5, 0);
                 break;
+            case PassiveA.AtkResIdeal3:
+                DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
+                    (unit, value) => {
+                        unit.atkSpur += value;
+                        unit.resSpur += value;
+                    },
+                    5, 0);
+                break;
             case PassiveA.AtkSpdIdeal4:
                 DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
                     (unit, value) => {

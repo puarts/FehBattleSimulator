@@ -515,7 +515,7 @@
                                 {{value.maxHpWithSkillsWithoutAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.maxHpWithSkillsWithoutAdd-value.heroInfo.hp}})
+                                ({{value.heroInfo != null ? value.maxHpWithSkillsWithoutAdd-value.heroInfo.hp : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -534,7 +534,7 @@
                                 {{value.atkWithSkills-value.atkAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.atkWithSkills-value.heroInfo.atk}})
+                                ({{value.heroInfo != null ? value.atkWithSkills-value.heroInfo.atk : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -556,7 +556,7 @@
                                 {{value.spdWithSkills-value.spdAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.spdWithSkills-value.heroInfo.spd}})
+                                ({{value.heroInfo != null ? value.spdWithSkills-value.heroInfo.spd : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -578,7 +578,7 @@
                                 {{value.defWithSkills-value.defAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.defWithSkills-value.heroInfo.def}})
+                                ({{value.heroInfo != null ? value.defWithSkills-value.heroInfo.def : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -600,7 +600,7 @@
                                 {{value.resWithSkills-value.resAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.resWithSkills-value.heroInfo.res}})
+                                ({{value.heroInfo != null ? value.resWithSkills-value.heroInfo.res : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -614,8 +614,8 @@
                                     +value.resWithSkills+value.resBuff+value.resDebuff}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.maxHpWithSkillsWithoutAdd+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills
-                                    -(value.heroInfo.getStatusTotalOfLv40())}})
+                                ({{value.heroInfo != null ? value.maxHpWithSkillsWithoutAdd+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills
+                                    -(value.heroInfo.getStatusTotalOfLv40()) : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -915,12 +915,14 @@
         function importUrl(url) {
             console.log("url:" + url);
             if (url == "" || url == null) {
+                loadSettings();
                 return;
             }
             console.log(url);
             let splited = url.split("s=");
             if (splited.length != 2) {
                 console.log(`invalid url "${url}"`);
+                loadSettings();
                 return;
             }
 
@@ -928,13 +930,23 @@
             let decompressed = LZString.decompressFromEncodedURIComponent(settingText);
             let unit = g_appData.currentUnit;
             unit.fromTurnWideStatusString(decompressed);
-            g_appData.initializeByHeroInfo(unit, unit.heroIndex);
+            g_appData.initializeByHeroInfo(unit, unit.heroIndex, false);
             unit.fromTurnWideStatusString(decompressed);
-            g_appData.__updateStatusBySkillsAndMergeForAllHeroes(false);
+            g_appData.__updateUnitSkillInfo(unit);
+            g_appData.__updateStatusBySkillsAndMerges(unit, true);
+            // unit.fromTurnWideStatusString(decompressed);
+            // g_appData.__updateStatusBySkillsAndMerges(unit, true);
+
+            g_app.setCurrentUnit(unit.id);
         }
 
         function updateUrl() {
-            let settingText = g_appData.currentUnit.turnWideStatusToString();
+            let unit = g_appData.currentUnit;
+            if (unit == null) {
+                unit = g_appData.allyUnits[0];
+                g_app.setCurrentUnit(unit.id);
+            }
+            let settingText = unit.turnWideStatusToString();
             g_appData.exportSettingUrl = "https://puarts.com/?pid=1736&s=" + LZString.compressToEncodedURIComponent(settingText);
             let textarea = $("#urlTextArea")[0];
             textarea.textContent = settingText;
@@ -1086,26 +1098,22 @@
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos);
                 g_app.registerHeroOptions(heroInfos, false);
-                initAetherRaidBoard(heroInfos);
 
                 loadLazyImages();
             });
         });
         window.addEventListener('load', (event) => {
-            // let endTime = Date.now();
-            // let diffTime = endTime - g_startTime;
-            // g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
-
             let unit = g_appData.allyUnits[0];
-            unit.updateArenaScore();
             g_app.setCurrentUnit(unit.id);
             g_appData.isDebugMenuEnabled = false;
             g_appData.applyDebugMenuVisibility();
 
             let elem = document.getElementById("initMessage");
             elem.textContent = "";
-            updateUrl();
             importUrl(location.search);
+            updateUrl();
+            g_app.setCurrentUnit(unit.id);
+            unit.updateArenaScore();
         });
     </script>
 </body>
