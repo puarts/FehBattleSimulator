@@ -1822,6 +1822,28 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SwornLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 5;
+                targetUnit.defSpur += 5;
+                let activatesSkillEffect = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
+                    if (unit.heroIndex === targetUnit.partnerHeroIndex) activatesSkillEffect = true;
+                }
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (unit.heroIndex === targetUnit.partnerHeroIndex) {
+                        if (unit.battleContext.restHpPercentage <= 80) {
+                            activatesSkillEffect = true;
+                        }
+                    }
+                }
+                if (activatesSkillEffect) {
+                    targetUnit.atkSpur += 7;
+                    targetUnit.defSpur += 7;
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AncientCodex] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.atkSpur += 5;

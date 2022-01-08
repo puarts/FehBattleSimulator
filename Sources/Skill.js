@@ -1223,6 +1223,7 @@ const Weapon = {
 
     // 2022年1月 武器錬成
     AncientCodex: 1949, // 古代魔道の稀書
+    SwornLance: 1950, // 騎士の誓いの槍
 }
 
 const Support = {
