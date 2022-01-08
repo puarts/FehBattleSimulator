@@ -1197,18 +1197,6 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForAtkUnitFuncDict[PassiveA.KongoMeikyoNoIchigeki2] = (atkUnit, defUnit, calcPotentialDamage) => {
             atkUnit.defSpur += 4; atkUnit.resSpur += 4;
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.Sogun] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (defUnit.weaponType === WeaponType.Sword
-                || defUnit.weaponType === WeaponType.Lance
-                || defUnit.weaponType === WeaponType.Axe
-                || isWeaponTypeBreath(defUnit.weaponType)) {
-                atkUnit.atkSpur += 4;
-                atkUnit.spdSpur += 4;
-                atkUnit.defSpur += 4;
-                atkUnit.resSpur += 4;
-            }
-        };
-
         {
             let func = (atkUnit, defUnit, calcPotentialDamage) => {
                 defUnit.addAllSpur(-4);
@@ -1826,6 +1814,35 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Sogun] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (enemyUnit.weaponType === WeaponType.Sword ||
+                        enemyUnit.weaponType === WeaponType.Lance ||
+                        enemyUnit.weaponType === WeaponType.Axe ||
+                        isWeaponTypeBreath(enemyUnit.weaponType)) {
+                        targetUnit.atkSpur += 4;
+                        targetUnit.spdSpur += 4;
+                        targetUnit.defSpur += 4;
+                        targetUnit.resSpur += 4;
+                    }
+                }
+            } else {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                    targetUnit.defSpur += 4;
+                    targetUnit.resSpur += 4;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.spdSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                }
+            }
+        };
         this._applySkillEffectForUnitFuncDict[Weapon.BladeOfJehanna] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.spdSpur -= 6;
@@ -5699,6 +5716,15 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         switch (targetUnit.weapon) {
+            case Weapon.Sogun:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                        enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                    }
+                }
+                break;
             case Weapon.JotnarBow:
                 if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                     enemyUnit.atkSpur -= targetUnit.getAtkBuffInCombat(enemyUnit);
@@ -7397,7 +7423,9 @@ class DamageCalculatorWrapper {
             }
 
             if (atkUnit.hasStatusEffect(StatusEffectType.FollowUpAttackPlus)) {
-                ++followupAttackPriority;
+                if (atkUnit.battleContext.initiatesCombat) {
+                    ++followupAttackPriority;
+                }
             }
 
             switch (atkUnit.passiveB) {
