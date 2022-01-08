@@ -75,6 +75,14 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.ArgentAura:
+                for (let unit of this.__findMinStatusUnits(skillOwner.enemyGroupId, x => this.__getStatusEvalUnit(x).getSpdInPrecombat())) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyAllDebuff(-5);
+                        u.reserveToAddStatusEffect(StatusEffectType.Stall);
+                    }
+                }
+                break;
             case Weapon.AncientCodex:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.globalBattleContext.currentTurn <= 3) {
