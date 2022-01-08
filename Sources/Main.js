@@ -7257,6 +7257,7 @@ class AetherRaidTacticsBoard {
                         unit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
                         targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
                     }
+                    break;
                 case PassiveB.AtkSpdSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applyAtkDebuff(-6);
