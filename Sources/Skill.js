@@ -1666,6 +1666,7 @@ const PassiveA = {
     AtkSpdIdeal3: 1926, // 攻撃速さの万全3
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
     AtkDefIdeal4: 1705,
+    AtkResIdeal3: 1960,
     AtkResIdeal4: 1723,
     DefResIdeal4: 1791, // 守備魔防の万全4
 
