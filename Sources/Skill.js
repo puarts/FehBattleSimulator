@@ -1220,6 +1220,9 @@ const Weapon = {
     ViciousDaggerPlus: 1953, // 猛攻の暗器+
     QuickDaggerPlus: 1955, // 奥義発動の暗器+
     BladeOfJehanna: 1957, // ジャハナ王の砂刃
+
+    // 2022年1月 武器錬成
+    AncientCodex: 1949, // 古代魔道の稀書
 }
 
 const Support = {

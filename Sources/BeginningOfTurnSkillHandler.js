@@ -75,6 +75,13 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.AncientCodex:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.globalBattleContext.currentTurn <= 3) {
+                        skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Weapon.QuickDaggerPlus:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(2);

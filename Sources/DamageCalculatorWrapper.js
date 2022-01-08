@@ -1822,6 +1822,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AncientCodex] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.atkSpur += 5;
+                targetUnit.resSpur += 5;
+                if (targetUnit.isWeaponRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.resSpur += 5;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SeireiNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -6695,6 +6707,14 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.AncientCodex:
+                if (this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
+                    let atkRes = isPrecombat ? atkUnit.getEvalResInPrecombat() : atkUnit.getEvalResInCombat(defUnit);
+                    let defRes = isPrecombat ? defUnit.getEvalResInPrecombat() : defUnit.getEvalResInCombat(atkUnit);
+                    let res = Math.max(atkRes, defRes);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(res * 0.2);
+                }
+                break;
             case Weapon.BladeOfJehanna:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     const isCross = atkUnit.posX === defUnit.posX || atkUnit.posY === defUnit.posY;

@@ -220,7 +220,7 @@ targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivat
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
 ダメージ+N(固定ダメージ)
-DamageCalculator.js
+DamageCalculatorWrapper.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // Nダメージ
     atkUnit.battleContext.additionalDamage += N;
