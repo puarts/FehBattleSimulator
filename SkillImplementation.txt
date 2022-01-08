@@ -210,6 +210,9 @@ __getDamageReductionRatio(skillId, atkUnit, defUnit) {
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
+敵から受けた追撃のダメージを80%軽減(追撃:通常の武器は、2回目の攻撃、「2回攻撃」の武器は、3～4回目の攻撃)
+targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+
 奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
 

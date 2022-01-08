@@ -1822,6 +1822,32 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SeireiNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getDefInPrecombat() >= enemyUnit.getDefInPrecombat() + 5) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.getDefInPrecombat() >= enemyUnit.getDefInPrecombat() + 1 ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.atkSpur += 5;
+                    enemyUnit.atkSpur -= 5;
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.atkSpur += 5;
+                        enemyUnit.atkSpur -= 5;
+                        if (enemyUnit.battleContext.initiatesCombat) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.7, enemyUnit);
+                        }
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Sogun] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.initiatesCombat) {
@@ -6992,11 +7018,6 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.Jikumunt:
                     if (atkUnit.battleContext.restHpPercentage >= 90) {
-                        ++followupAttackPriority;
-                    }
-                    break;
-                case Weapon.SeireiNoBreath:
-                    if (atkUnit.getDefInPrecombat() >= defUnit.getDefInPrecombat() + 5) {
                         ++followupAttackPriority;
                     }
                     break;
