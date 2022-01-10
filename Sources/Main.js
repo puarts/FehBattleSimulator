@@ -2705,9 +2705,6 @@ class AetherRaidTacticsBoard {
                     }
                     else {
                         info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special, text: "特殊" });
-
-                        // 間違ってるものが多いのでHP+3もとりあえず出しておく
-                        info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special_Hp3, text: "特殊、HP+3" });
                     }
                 }
 
