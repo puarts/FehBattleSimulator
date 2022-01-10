@@ -403,7 +403,10 @@ class Tile {
     calculateDistanceTo(posX, posY) {
         return Math.abs(this.posX - posX) + Math.abs(this.posY - posY);
     }
-
+    /**
+     * @param  {Tile} targetTile
+     * @returns {Number}
+     */
     calculateDistance(targetTile) {
         return this.calculateDistanceTo(targetTile.posX, targetTile.posY);
     }

@@ -481,7 +481,9 @@ class BattleMap {
         this._id = id;
         this._height = 0;
         this._width = 0;
+        /** @type {Tile[]} */
         this._tiles = [];
+        /** @type {Unit[]} */
         this._units = [];
         this._breakableWalls = [];
         this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
@@ -2629,7 +2631,11 @@ class BattleMap {
             }
         }
     }
-
+    /**
+     * @param  {Tile} targetTile
+     * @param  {Number} targetDistance
+     * @returns {Tile[]}
+     */
     *enumerateTilesWithinSpecifiedDistance(targetTile, targetDistance) {
         for (let y = 0; y < this._height; ++y) {
             for (let x = 0; x < this._width; ++x) {
@@ -3089,7 +3095,7 @@ class BattleMap {
                 case Weapon.NabataKunai:
                 case Weapon.LanceOfFrelia:
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                        for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                        for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
                             yield tile;
                         }
                     }
@@ -3097,7 +3103,7 @@ class BattleMap {
                 case Weapon.Gurimowaru:
                     if (unit.isWeaponRefined) {
                         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                            for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
                                 yield tile;
                             }
                         }
@@ -3245,7 +3251,7 @@ class BattleMap {
             for (let skillId of ally.enumerateSkills()) {
                 switch (skillId) {
                     case PassiveC.OpeningRetainer:
-                        for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                        for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
                             yield tile;
                         }
                         break;
@@ -3291,6 +3297,20 @@ class BattleMap {
                         }
                         break;
                 }
+            }
+        }
+    }
+
+    /**
+     * @param  {Tile} fromTile
+     * @param  {Unit} unit
+     * @param  {Number} distance
+     * @returns {Tile[]}
+     */
+    *__enumeratePlacableTilesWithinSpecifiedSpaces(fromTile, unit, distance) {
+        for (let tile of this.enumerateTilesWithinSpecifiedDistance(fromTile, distance)) {
+            if (tile.isUnitPlacableForUnit(unit)) {
+                yield tile;
             }
         }
     }
@@ -3736,7 +3756,11 @@ class BattleMap {
         }
     }
 
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Number} spaces
+     * @returns {Unit[]}
+     */
     * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit)) {
             let dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);

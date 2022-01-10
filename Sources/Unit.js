@@ -3045,9 +3045,15 @@ class Unit {
         this._posY = value;
     }
 
+    /**
+     * @returns {Tile}
+     */
     get placedTile() {
         return this._placedTile;
     }
+    /**
+     * @param  {Tile} value
+     */
     set placedTile(value) {
         this._placedTile = value;
     }
