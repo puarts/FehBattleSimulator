@@ -365,7 +365,7 @@ class DamageCalcData {
 
         this.damageCalc.clearLog();
         let result = this.damageCalc.calcCombatResult(this.atkUnit, this.defUnit);
-        this.basicDamageDealt = result.atkUnit_specialAttackDamage;
+        this.basicDamageDealt = result.atkUnit_normalAttackDamage;
         this.actualDamageDealt = result.damageHistory[0].damageDealt;
         this.log = this.damageCalc.log;
 
