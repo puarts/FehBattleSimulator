@@ -24,6 +24,13 @@ if (targetUnit.isWeaponRefined) {
 化身状態なら
 if (targetUnit.isTransformed) {}
 
+獣の共通の化身スキル
+const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
+const BeastCommonSkillMap =
+    new Map([
+            [Weapon.XXX, BeastCommonSkillType.YYY],
+
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 

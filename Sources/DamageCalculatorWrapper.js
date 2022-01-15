@@ -5089,6 +5089,23 @@ class DamageCalculatorWrapper {
     }
 
     __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
+        {
+            let damage = 0;
+            switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
+                case BeastCommonSkillType.InfantryMelee2:
+                    damage = 7;
+                    break;
+                case BeastCommonSkillType.InfantryMelee:
+                    damage = 10;
+                    break;
+                case BeastCommonSkillType.InfantryMelee2IfRefined:
+                    damage = targetUnit.isWeaponRefined ? 7 : 10;
+                    break;
+            }
+            if (targetUnit.isTransformed) {
+                targetUnit.battleContext.additionalDamageOfSpecial += damage;
+            }
+        }
         switch (targetUnit.passiveB) {
             case PassiveB.MoonlightBangle:
                 {
@@ -5125,29 +5142,6 @@ class DamageCalculatorWrapper {
                         let res = isPrecombat ? enemyUnit.getResInPrecombat() : enemyUnit.getResInCombat();
                         targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(res * ratio);
                     }
-                }
-                break;
-            case Weapon.PolishedFang:
-            case Weapon.HornOfOpening:
-                if (targetUnit.isTransformed) {
-                    targetUnit.battleContext.additionalDamageOfSpecial += 7;
-                }
-                break;
-            case Weapon.ResolvedFang:
-            case Weapon.RenewedFang:
-            case Weapon.JinroMusumeNoTsumekiba:
-            case Weapon.TrasenshiNoTsumekiba:
-            case Weapon.JinroOuNoTsumekiba:
-            case Weapon.BridesFang:
-            case Weapon.GroomsWings:
-                if (targetUnit.isTransformed) {
-                    targetUnit.battleContext.additionalDamageOfSpecial += 10;
-                }
-                break;
-            case Weapon.OkamijoouNoKiba:
-                if (targetUnit.isTransformed) {
-                    let amount = targetUnit.isWeaponRefined ? 7 : 10;
-                    targetUnit.battleContext.additionalDamageOfSpecial += amount;
                 }
                 break;
             case Weapon.Watou:
@@ -7848,25 +7842,27 @@ class DamageCalculatorWrapper {
     }
 
     __applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage) {
+        // 獣の共通武器スキル
+        switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
+            case BeastCommonSkillType.InfantryMelee2:
+                if (atkUnit.isTransformed) {
+                    defUnit.battleContext.reducesCooldownCount = false;
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+                break;
+            case BeastCommonSkillType.InfantryMelee2IfRefined:
+                if (!atkUnit.isWeaponRefined) break;
+                if (atkUnit.isTransformed) {
+                    defUnit.battleContext.reducesCooldownCount = false;
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+                break;
+        }
         switch (atkUnit.weapon) {
             case Weapon.ProfessorialGuide:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
-                    defUnit.battleContext.reducesCooldownCount = false;
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
-                }
-                break;
-            case Weapon.PolishedFang:
-            case Weapon.HornOfOpening:
-                if (atkUnit.isTransformed) {
-                    defUnit.battleContext.reducesCooldownCount = false;
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
-                }
-                break;
-            case Weapon.OkamijoouNoKiba:
-                if (!atkUnit.isWeaponRefined) break;
-                if (atkUnit.isTransformed) {
                     defUnit.battleContext.reducesCooldownCount = false;
                     defUnit.battleContext.increaseCooldownCountForAttack = false;
                     defUnit.battleContext.increaseCooldownCountForDefense = false;
