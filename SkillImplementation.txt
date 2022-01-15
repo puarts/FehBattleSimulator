@@ -245,6 +245,11 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     }
 }
 
+奥義発動時、ダメージ+N
+__calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
+    targetUnit.battleContext.additionalDamageOfSpecial += N
+}
+
 奥義によるダメージ+N
 __calcFixedSpecialAddDamage() {
     fixedSpecialAddDamage += N;
