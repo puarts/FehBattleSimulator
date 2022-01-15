@@ -1371,7 +1371,7 @@ const Special = {
     BlazingLight: 482,
     BlazingWind: 483,
     BlazingThunder: 484,
-    RisingFrame: 489, // 砕火
+    RisingFlame: 489, // 砕火
     RisingLight: 490,
     RisingWind: 491,
     RisingThunder: 492,
