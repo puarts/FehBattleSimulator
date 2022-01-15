@@ -2415,14 +2415,22 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.Taiyo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.healedHpByAttack += 10;
         };
-        this._applySkillEffectForUnitFuncDict[PassiveA.SurgeSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat) {
-                let healRatio = 0.1 + (targetUnit.maxSpecialCount * 0.2);
-                targetUnit.battleContext.maxHpRatioToHealBySpecial += healRatio;
+        // 迫撃
+        {
+            let func = spurFunc => {
+                return (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let healRatio = 0.1 + (targetUnit.maxSpecialCount * 0.2);
+                        targetUnit.battleContext.maxHpRatioToHealBySpecial += healRatio;
+                        spurFunc(targetUnit);
+                    }
+                };
+            };
+            this._applySkillEffectForUnitFuncDict[PassiveA.SurgeSparrow] = func(targetUnit => {
                 targetUnit.atkSpur += 7;
                 targetUnit.spdSpur += 7;
-            }
-        };
+            });
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MoonlessBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
