@@ -1225,6 +1225,9 @@ const Weapon = {
     AncientCodex: 1949, // 古代魔道の稀書
     SwornLance: 1950, // 騎士の誓いの槍
     ArgentAura: 1959, // アルジローレ
+
+    // 超英雄 幻の国の女王
+    RoyalHatariFang: 1961, // 砂漠の狼女王の牙
 }
 
 const Support = {
@@ -2883,6 +2886,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
@@ -2930,6 +2934,7 @@ const BeastCommonSkillType = {
 const BeastCommonSkillMap =
     new Map(
         [
+            [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
 
