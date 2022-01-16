@@ -1822,6 +1822,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BoneCarverPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DancingFlames] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;

@@ -1231,6 +1231,7 @@ const Weapon = {
     DrybladeLance: 1963, // 砂漠の剣姫の槍
     SerpentineStaffPlus: 1964, // 蛇の杖+
     DancingFlames: 1966, // 響き渡る合唱の祭器
+    BoneCarverPlus: 1968, // 骨の暗器+
 }
 
 const Support = {

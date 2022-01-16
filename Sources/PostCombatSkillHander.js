@@ -544,6 +544,13 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BoneCarverPlus:
+                    if (attackUnit.battleContext.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.reserveTakeDamage(7);
+                        }
+                    }
+                    break;
                 case Weapon.SerpentineStaffPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.addStatusEffect(StatusEffectType.DeepWounds);
