@@ -869,6 +869,10 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedAzura:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__refreshHighestHpUnitsInSameOrigin(duoUnit);
+                break;
             case Hero.DuoDagr:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 5, 5)) {
                     unit.applyAllBuff(6);
