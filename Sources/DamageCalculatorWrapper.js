@@ -8904,6 +8904,9 @@ class DamageCalculatorWrapper {
                             case PassiveC.CrossSpurAtk:
                                 targetUnit.atkSpur += 5;
                                 break;
+                            case PassiveC.CrossSpurRes:
+                                targetUnit.resSpur += 5;
+                                break;
                         }
                     }
 
