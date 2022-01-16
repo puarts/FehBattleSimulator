@@ -1807,8 +1807,6 @@ class DamageCalculatorWrapper {
             enemyUnit.battleContext.reducesCooldownCount = true;
         }
 
-        this.__calcFixedSpecialAddDamage(targetUnit, enemyUnit);
-
         // 今のところ奥義にしかこの効果が存在しないので、重複しない。もし今後重複する場合は重複時の計算方法を調査して実装する
         targetUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(targetUnit.special);
 
@@ -1818,10 +1816,40 @@ class DamageCalculatorWrapper {
                 skillFunc(targetUnit, enemyUnit, calcPotentialDamage);
             }
         }
+
+        this.__calcFixedSpecialAddDamage(targetUnit, enemyUnit);
     }
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BoneCarverPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DancingFlames] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SerpentineStaffPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidatesHeal= true;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DrybladeLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.RoyalHatariFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArgentAura] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 6;
@@ -2429,6 +2457,10 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[PassiveA.SurgeSparrow] = func(targetUnit => {
                 targetUnit.atkSpur += 7;
                 targetUnit.spdSpur += 7;
+            });
+            this._applySkillEffectForUnitFuncDict[PassiveA.SturdySurge] = func(targetUnit => {
+                targetUnit.atkSpur += 7;
+                targetUnit.defSpur += 10;
             });
         }
         this._applySkillEffectForUnitFuncDict[Weapon.MoonlessBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5143,6 +5175,13 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.weapon) {
+            case Weapon.DrybladeLance:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                    let spd = isPrecombat ? targetUnit.getEvalSpdInPrecombat() : targetUnit.getEvalSpdInCombat();
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                }
+                break;
             case Weapon.ManatsuNoBreath:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -8870,6 +8909,9 @@ class DamageCalculatorWrapper {
                         switch (unit.passiveC) {
                             case PassiveC.CrossSpurAtk:
                                 targetUnit.atkSpur += 5;
+                                break;
+                            case PassiveC.CrossSpurRes:
+                                targetUnit.resSpur += 5;
                                 break;
                         }
                     }

@@ -1225,6 +1225,13 @@ const Weapon = {
     AncientCodex: 1949, // 古代魔道の稀書
     SwornLance: 1950, // 騎士の誓いの槍
     ArgentAura: 1959, // アルジローレ
+
+    // 超英雄 幻の国の女王
+    RoyalHatariFang: 1961, // 砂漠の狼女王の牙
+    DrybladeLance: 1963, // 砂漠の剣姫の槍
+    SerpentineStaffPlus: 1964, // 蛇の杖+
+    DancingFlames: 1966, // 響き渡る合唱の祭器
+    BoneCarverPlus: 1968, // 骨の暗器+
 }
 
 const Support = {
@@ -1672,6 +1679,7 @@ const PassiveA = {
 
     // 迫撃
     SurgeSparrow: 1797, // 鬼神飛燕の迫撃
+    SturdySurge: 1962, // 鬼神金剛の迫撃
 };
 
 const PassiveB = {
@@ -1976,6 +1984,7 @@ const PassiveC = {
     JointDriveDef: 1805, // 守備の相互大紋章
     // 十字紋章
     CrossSpurAtk: 1941, // 攻撃の十字紋章
+    CrossSpurRes: 1967, // 魔防の十字紋章
 
     GoadArmor: 686, // 重刃の紋章
     WardArmor: 687, // 重盾の紋章
@@ -2883,6 +2892,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
@@ -2930,6 +2940,7 @@ const BeastCommonSkillType = {
 const BeastCommonSkillMap =
     new Map(
         [
+            [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
 
