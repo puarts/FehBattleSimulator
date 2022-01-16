@@ -2961,14 +2961,14 @@ class BattleMap {
 
     * __enumerateRangedSpecialTiles(targetTile, special) {
         switch (special) {
-            case Special.RisingFrame:
+            case Special.RisingFlame:
             case Special.BlazingFlame:
                 for (let x = targetTile.posX - 2; x <= targetTile.posX + 2; ++x) {
                     yield this.getTile(x, targetTile.posY);
                 }
                 break;
             case Special.GrowingFlame:
-                for (let tile of this.__enumerateRangedSpecialTiles(targetTile, Special.RisingFrame)) {
+                for (let tile of this.__enumerateRangedSpecialTiles(targetTile, Special.RisingFlame)) {
                     yield tile;
                 }
                 for (let x = targetTile.posX - 1; x <= targetTile.posX + 1; x += 2) {

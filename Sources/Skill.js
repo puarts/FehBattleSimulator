@@ -1371,7 +1371,7 @@ const Special = {
     BlazingLight: 482,
     BlazingWind: 483,
     BlazingThunder: 484,
-    RisingFrame: 489, // 砕火
+    RisingFlame: 489, // 砕火
     RisingLight: 490,
     RisingWind: 491,
     RisingThunder: 492,
@@ -2919,6 +2919,30 @@ WeaponTypesAddAtk2AfterTransform[Weapon.TwinCrestPower] = 0;
 function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
     return weapon in WeaponTypesAddAtk2AfterTransform;
 }
+
+// 化身による共通の効果
+// TODO 残りも実装する
+const BeastCommonSkillType = {
+    InfantryMelee: 0, // 初期の歩行近接
+    InfantryMelee2: 1, // アシュ以降の歩行近接
+    InfantryMelee2IfRefined: 2, // 錬成して次世代になる歩行近接
+}
+const BeastCommonSkillMap =
+    new Map(
+        [
+            [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
+            [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
+
+            [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
+
+            [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
+            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee],
+            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee],
+            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee],
+            [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
+            [Weapon.GroomsWings, BeastCommonSkillType.InfantryMelee],
+        ]
+    );
 
 const AdvantageousAgainstColorlessWeaponTable = {};
 AdvantageousAgainstColorlessWeaponTable[Weapon.EtherealBreath] = 0;

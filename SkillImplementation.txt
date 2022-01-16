@@ -24,6 +24,13 @@ if (targetUnit.isWeaponRefined) {
 化身状態なら
 if (targetUnit.isTransformed) {}
 
+獣の共通の化身スキル
+const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
+const BeastCommonSkillMap =
+    new Map([
+            [Weapon.XXX, BeastCommonSkillType.YYY],
+
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 
@@ -236,6 +243,11 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         (x, y) => x.getEvalSpdInCombat(y)
         N / 100, M);
     }
+}
+
+奥義発動時、ダメージ+N
+__calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
+    targetUnit.battleContext.additionalDamageOfSpecial += N
 }
 
 奥義によるダメージ+N
