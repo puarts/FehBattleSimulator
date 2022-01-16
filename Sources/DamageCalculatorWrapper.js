@@ -1822,6 +1822,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DrybladeLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RoyalHatariFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -5154,6 +5160,13 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.weapon) {
+            case Weapon.DrybladeLance:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                    let spd = isPrecombat ? targetUnit.getEvalSpdInPrecombat() : targetUnit.getEvalSpdInCombat();
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                }
+                break;
             case Weapon.ManatsuNoBreath:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {

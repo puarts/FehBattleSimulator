@@ -1228,6 +1228,7 @@ const Weapon = {
 
     // 超英雄 幻の国の女王
     RoyalHatariFang: 1961, // 砂漠の狼女王の牙
+    DrybladeLance: 1963, // 砂漠の剣姫の槍
 }
 
 const Support = {
