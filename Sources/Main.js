@@ -7381,6 +7381,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DancingFlames:
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 1)) {
+                        unit.applyAllBuff(6);
+                    }
+                    break;
                 case Weapon.Veruzandhi:
                     targetUnit.applyAllBuff(4);
                     break;

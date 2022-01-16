@@ -263,6 +263,9 @@ __canActivateMiracle() {
 戦闘中に攻撃していれば
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
 
+「歌う」「踊る」使用時
+__applyRefresh(skillOwnerUnit, targetUnit) {}
+
 上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
 targetUnit.isOneTimeActionActivatedForWeapon
 

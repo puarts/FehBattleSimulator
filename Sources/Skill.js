@@ -1230,6 +1230,7 @@ const Weapon = {
     RoyalHatariFang: 1961, // 砂漠の狼女王の牙
     DrybladeLance: 1963, // 砂漠の剣姫の槍
     SerpentineStaffPlus: 1964, // 蛇の杖+
+    DancingFlames: 1966, // 響き渡る合唱の祭器
 }
 
 const Support = {
