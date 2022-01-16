@@ -2437,6 +2437,10 @@ class DamageCalculatorWrapper {
                 targetUnit.atkSpur += 7;
                 targetUnit.spdSpur += 7;
             });
+            this._applySkillEffectForUnitFuncDict[PassiveA.SturdySurge] = func(targetUnit => {
+                targetUnit.atkSpur += 7;
+                targetUnit.defSpur += 10;
+            });
         }
         this._applySkillEffectForUnitFuncDict[Weapon.MoonlessBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {

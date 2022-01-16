@@ -1675,6 +1675,7 @@ const PassiveA = {
 
     // 迫撃
     SurgeSparrow: 1797, // 鬼神飛燕の迫撃
+    SturdySurge: 1962, // 鬼神金剛の迫撃
 };
 
 const PassiveB = {
