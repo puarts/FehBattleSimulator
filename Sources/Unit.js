@@ -4552,6 +4552,54 @@ class Unit {
     canEquip(skillInfo) {
         return this.heroInfo.canEquipSkill(skillInfo);
     }
+
+    /**
+     * 再移動の移動数を計算します。
+     */
+    calcMoveCountForCanto() {
+        let moveCountForCanto = 0;
+        for (let skillId of this.enumerateSkills()) {
+            // 同系統効果複数時、最大値適用
+            switch (skillId) {
+                case Weapon.BowOfTwelve:
+                    moveCountForCanto = Math.max(moveCountForCanto, 1);
+                    break;
+                case PassiveB.LunarBrace2:
+                case Weapon.NidavellirSprig:
+                case Weapon.NidavellirLots:
+                case Weapon.GrimBrokkr:
+                case Weapon.HonorableBlade:
+                case PassiveB.SolarBrace2:
+                case PassiveB.MoonlightBangle:
+                case Weapon.DolphinDiveAxe:
+                case Weapon.Ladyblade:
+                case Weapon.FlowerLance:
+                    moveCountForCanto = Math.max(moveCountForCanto, 2);
+                    break;
+                case Weapon.AutoLofnheior:
+                case Weapon.Lyngheior:
+                    moveCountForCanto = Math.max(moveCountForCanto, 3);
+                    break;
+                case Weapon.OkamijoouNoKiba:
+                    if (this.isTransformed) {
+                        moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
+                    }
+                    break;
+                case PassiveB.MurderousLion:
+                case PassiveB.AtkDefNearTrace3:
+                case PassiveB.SpdDefNearTrace3:
+                    moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
+                    break;
+                case PassiveB.AtkSpdFarTrace3:
+                case PassiveB.AtkDefFarTrace3:
+                case PassiveB.AtkResFarTrace3:
+                case PassiveB.SpdResFarTrace3:
+                    moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount);
+                    break;
+            }
+        }
+        return moveCountForCanto;
+    }
 }
 
 

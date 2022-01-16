@@ -268,7 +268,7 @@ targetUnit.isOneTimeActionActivatedForWeapon
 
 再移動(N)
 __canActivateCanto(unit) {}
-__calcMoveCountForCanto(unit) {}
+unit.calcMoveCountForCanto() {}
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
