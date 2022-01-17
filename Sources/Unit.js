@@ -41,6 +41,7 @@ const Hero = {
     DuoCorrin: 735,
     HarmonizedLysithea: 754,
     DuoDagr: 760,
+    HarmonizedAzura: 770,
 };
 
 function isThiefIndex(heroIndex) {
@@ -2048,34 +2049,8 @@ class Unit {
     }
 
     get isDuoHero() {
-        return this.heroInfo != null
-            && (this.heroIndex == Hero.HaloweenHector
-                || this.heroIndex == Hero.DuoEphraim
-                || this.heroIndex == Hero.ChristmasMarth
-                || this.heroIndex == Hero.NewYearAlfonse
-                || this.heroIndex == Hero.ValentineAlm
-                || this.heroIndex == Hero.SpringIdunn
-                || this.heroIndex == Hero.YoungPalla
-                || this.heroIndex == Hero.BridalMicaiah
-                || this.heroIndex == Hero.SummerByleth
-                || this.heroIndex == Hero.DuoSigurd
-                || this.heroIndex == Hero.DuoLyn
-                || this.heroIndex == Hero.DuoAltina
-                || this.heroIndex == Hero.DuoPeony
-                || this.heroIndex == Hero.PlegianDorothea
-                || this.heroIndex == Hero.DuoLif
-                || this.heroIndex == Hero.HarmonizedMyrrh
-                || this.heroIndex == Hero.DuoEirika
-                || this.heroIndex == Hero.HarmonizedCatria
-                || this.heroIndex == Hero.DuoHilda
-                || this.heroIndex == Hero.HarmonizedCaeda
-                || this.heroIndex == Hero.DuoHinoka
-                || this.heroIndex == Hero.HarmonizedLeif
-                || this.heroIndex == Hero.DuoSothis
-                || this.heroIndex == Hero.DuoCorrin
-                || this.heroIndex == Hero.HarmonizedLysithea
-                || this.heroIndex == Hero.DuoDagr
-            );
+        let isDuo = Object.values(Hero).includes(this.heroIndex);
+        return this.heroInfo != null && isDuo;
     }
 
     get hasWeapon() {

@@ -869,6 +869,10 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedAzura:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__refreshHighestHpUnitsInSameOrigin(duoUnit);
+                break;
             case Hero.DuoDagr:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 5, 5)) {
                     unit.applyAllBuff(6);
@@ -7381,6 +7385,11 @@ class AetherRaidTacticsBoard {
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DancingFlames:
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 1)) {
+                        unit.applyAllBuff(6);
+                    }
+                    break;
                 case Weapon.Veruzandhi:
                     targetUnit.applyAllBuff(4);
                     break;

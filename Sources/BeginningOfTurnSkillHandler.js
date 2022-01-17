@@ -75,6 +75,11 @@ class BeginningOfTurnSkillHandler {
         }
 
         switch (skillId) {
+            case Weapon.DrybladeLance:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                break;
             case Weapon.ArgentAura:
                 for (let unit of this.__findMinStatusUnits(skillOwner.enemyGroupId, x => this.__getStatusEvalUnit(x).getSpdInPrecombat())) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
