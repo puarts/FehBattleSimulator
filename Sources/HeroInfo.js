@@ -286,6 +286,10 @@ class HeroInfo {
         this.__updateLv1Statuses();
     }
 
+    get totalStatus() {
+        return this.hp + this.atk + this.spd + this.def + this.res;
+    }
+
     get totalGrowthValue() {
         return this.hpGrowthValue + this.atkGrowthValue + this.spdGrowthValue + this.defGrowthValue +
             this.resGrowthValue;

@@ -1,3 +1,5 @@
+/// @file
+/// @brief DamageCalculator.html の実装に必要なクラスや関数等の定義です。
 
 const DamageCalculatorMode = {
     Simple: 0,

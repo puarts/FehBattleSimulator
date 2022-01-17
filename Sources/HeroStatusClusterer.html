@@ -1,0 +1,280 @@
+<html>
+
+<head>
+    <title>英雄ステータス分類器</title>
+</head>
+
+<body>
+
+    <style>
+        .button {
+            width: 100px;
+            margin: 5px;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        .tabs {
+            overflow: hidden;
+        }
+
+        .tabs li,
+        .tabs label {
+            float: left;
+            font-size: 10px;
+            padding: 5px;
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .tabs li.active,
+        .tabs :checked+label {
+            background-color: #000;
+            border-color: #000;
+            color: #fff;
+            cursor: auto;
+        }
+
+        .contents {
+            overflow: hidden;
+            margin-top: -1px;
+        }
+
+        .contents li {
+            /* width: 320px; */
+            /* padding: 20px; */
+            border: 1px solid #ccc;
+        }
+
+        .jquery .contents li {
+            display: none;
+        }
+
+        .jquery .contents li.active {
+            display: block;
+        }
+
+        .vue_radio input {
+            display: none;
+        }
+
+        .tabContent {
+            padding: 10px;
+        }
+
+        .arrowButton {
+            border-style: none;
+            background-color: transparent;
+            width: 30px;
+            height: 30px;
+            background-size: 100%;
+        }
+
+        .box {
+            display: table-cell;
+            vertical-align: middle;
+
+            background-color: #66b6d5;
+            width: 300px;
+            height: 200px;
+        }
+    </style>
+    <div id="heroStatusClusterer">
+        <ul class="tabs" style="clear:both">
+            <li v-for="(item, index) in TabLabels" v-on:click="changeTab(item.id)"
+                v-bind:class="{'active': activeTabIndex === item.id}">{{item.label}}</li>
+        </ul>
+        <ul class="contents">
+            <li v-show="activeTabIndex === TabId.Basic">
+                <div class="tabContent">
+                    <dl>
+                        <dt>分類する兵種</dt>
+                        <dd>
+                            <select v-model="clusteringHeroType" @change="clusteringTargetChanged">
+                                <option v-for="option in ClusteringHeroTypeOptions" v-bind:value="option.value">
+                                    {{option.label}}
+                                </option>
+                            </select>
+                        </dd>
+                        <dt>現在の分類数</dt>
+                        <dd>{{clusters.length}}</dd>
+                    </dl>
+                </div>
+            </li>
+            <li v-show="activeTabIndex === TabId.Advanced">
+                <div class="tabContent">
+                    <dl>
+                        <dt>分類法</dt>
+                        <dd>
+                            <select v-model="clusteringAlgorithm">
+                                <option v-for="key in Object.keys(ClusteringAlgorithm)"
+                                    v-bind:value="ClusteringAlgorithm[key]">
+                                    {{key}}
+                                </option>
+                            </select>
+                        </dd>
+                        <dt>目標の分類数</dt>
+                        <dd><input type="number" v-model="targetClusterCount"></dd>
+                        <dt>許容する最大標準偏差</dt>
+                        <dd><input type="number" v-model="maxStandardDeviation"></dd>
+                        <dt>許容する最大偏差</dt>
+                        <dd><input type="number" v-model="maxMaxDeviation"></dd>
+                        <dt>デバッグモード</dt>
+                        <dd><input type="checkbox" v-model="isDebugMode"></dd>
+                    </dl>
+                    <div if="clusteringAlgorithm == ClusteringAlgorithm.Ward">
+                        <dl>
+                            <dt>1度の結合で評価するクラスター数</dt>
+                            <dd>
+                                <input type="number" v-model="saveMinClusterPairCountForWard">
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <input type="button" value="分類開始" @click="mergeClusters" class="button">
+
+        <div>
+            <table border="1">
+                <tr>
+                    <th @click="g_heroStatusClustererData.sortClusters(0)">HP</th>
+                    <th @click="g_heroStatusClustererData.sortClusters(1)">攻撃</th>
+                    <th @click="g_heroStatusClustererData.sortClusters(2)">速さ</th>
+                    <th @click="g_heroStatusClustererData.sortClusters(3)">守備</th>
+                    <th @click="g_heroStatusClustererData.sortClusters(4)">魔防</th>
+                    <th v-if="isDebugMode">標準偏差</th>
+                    <th v-if="isDebugMode">最大偏差</th>
+                    <th></th>
+                </tr>
+                <tr v-for="(cluster, index) in clusters">
+                    <td v-for="(value, index) in cluster.averages">
+                        {{cluster.actualAverages[index].toFixed(1)}}<br />({{value.toFixed(1)}})
+                    </td>
+                    <td v-if="isDebugMode">{{cluster.standardDeviation.toFixed(1)}}</td>
+                    <td v-if="isDebugMode">{{cluster.maxDeviation.toFixed(1)}}</td>
+                    <td>
+                        <div v-for="heroInfo in cluster.heroInfos" style="float:left;">
+                            <img v-bind:src="heroInfo.iconUrl" width="50" height="50">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div v-for="(cluster, index) in clusters">
+            <fieldset>
+                <legend>{{cluster.name}} {{index}}(ID:{{cluster.id}})</legend>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <th>HP</th>
+                        <th>攻撃</th>
+                        <th>速さ</th>
+                        <th>守備</th>
+                        <th>魔防</th>
+                    </tr>
+                    <tr v-for="heroInfo in cluster.heroInfos">
+                        <td>
+                            <img v-bind:src="heroInfo.iconUrl" width="50" height="50">
+                        </td>
+                        <td>{{heroInfo.originalHp}}<br />({{heroInfo.hp.toFixed(1)}})</td>
+                        <td>{{heroInfo.originalAtk}}<br />({{heroInfo.atk.toFixed(1)}})</td>
+                        <td>{{heroInfo.originalSpd}}<br />({{heroInfo.spd.toFixed(1)}})</td>
+                        <td>{{heroInfo.originalDef}}<br />({{heroInfo.def.toFixed(1)}})</td>
+                        <td>{{heroInfo.originalRes}}<br />({{heroInfo.res.toFixed(1)}})</td>
+                    </tr>
+                    <tr>
+                        <td>平均</td>
+                        <td v-for="value in cluster.averages">{{value.toFixed(1)}}</td>
+                    </tr>
+                </table>
+                <dl>
+                    <dt>標準偏差</dt>
+                    <dd>{{cluster.standardDeviation}}</dd>
+                </dl>
+
+
+            </fieldset>
+        </div>
+    </div>
+    <!-- jquery -->
+    <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <!-- select2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+    <!-- jquery-ui -->
+    <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+
+    <script>
+
+        function createScriptElement(src, onloadFunc) {
+            let element = document.createElement("script");
+            element.type = "text/javascript";
+            element.src = src;
+            element.onload = onloadFunc;
+            // document.body.appendChild(element);
+            let headElement = document.getElementsByTagName('head')[0];
+            headElement.appendChild(element);
+        }
+
+        let rootPath = "";
+        // rootPath = "/AetherRaidTacticsBoard/Release2/";
+
+        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
+            if (index == scriptFileNames.length) {
+                allScriptLoaded();
+                return;
+            }
+
+            let reloadSuffix = "20200513";
+            let scriptFileName = rootPath + scriptFileNames[index];
+            let src = scriptFileName + "?" + reloadSuffix;
+            const startTime = Date.now();
+            createScriptElement(src, x => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load ${src}`);
+                loadScripts(scriptFileNames, allScriptLoaded, ++index);
+            });
+        }
+
+        $(function () {
+            const startTime = Date.now();
+            loadScripts([
+                "GlobalDefinitions_Debug.js",
+                "Utilities.js",
+                "Skill.js",
+                "GlobalBattleContext.js",
+                "HeroInfo.js",
+                "Unit.js",
+                "UnitManager.js",
+                "HeroDatabase.js",
+                "SampleHeroInfos.js",
+                "VueComponents.js",
+                "HeroStatusClustererMain.js",
+            ], () => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load all scripts`);
+            });
+        });
+    </script>
+</body>
+
+</html>
