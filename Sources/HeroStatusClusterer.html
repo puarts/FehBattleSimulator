@@ -166,7 +166,8 @@
                     <td v-if="isDebugMode">{{cluster.maxDeviation.toFixed(1)}}</td>
                     <td>
                         <div v-for="heroInfo in cluster.heroInfos" style="float:left;">
-                            <img v-bind:src="heroInfo.iconUrl" width="50" height="50">
+                            <a v-bind:href="heroInfo.detailPageUrl" v-bind:title="heroInfo.name+'の詳細情報'">
+                                <img v-bind:src="heroInfo.iconUrl" width="50" height="50"></a>
                         </div>
                     </td>
                 </tr>
@@ -187,7 +188,8 @@
                     </tr>
                     <tr v-for="heroInfo in cluster.heroInfos">
                         <td>
-                            <img v-bind:src="heroInfo.iconUrl" width="50" height="50">
+                            <a v-bind:href="heroInfo.detailPageUrl" v-bind:title="heroInfo.name+'の詳細情報'">
+                                <img v-bind:src="heroInfo.iconUrl" width="50" height="50"></a>
                         </td>
                         <td>{{heroInfo.originalHp}}<br />({{heroInfo.hp.toFixed(1)}})</td>
                         <td>{{heroInfo.originalAtk}}<br />({{heroInfo.atk.toFixed(1)}})</td>

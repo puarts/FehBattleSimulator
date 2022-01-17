@@ -359,6 +359,10 @@ class ClusteringHeroInfo {
         return this.heroInfo.name;
     }
 
+    get detailPageUrl() {
+        return this.heroInfo.detailPageUrl;
+    }
+
     get iconUrl() {
         return this.heroInfo.iconUrl;
     }
