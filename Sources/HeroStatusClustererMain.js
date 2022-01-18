@@ -629,20 +629,24 @@ class HeroStatusClustererData extends HeroDatabase {
     }
 }
 
-const g_heroStatusClustererData = new HeroStatusClustererData(heroInfos);
-const g_heroStatusClustererViewModel = new Vue({
-    el: "#heroStatusClusterer",
-    data: g_heroStatusClustererData,
-    methods: {
-        mergeClusters() {
-            g_heroStatusClustererData.initClusters();
-            g_heroStatusClustererData.mergeClusters();
-        },
-        clusteringTargetChanged() {
-            g_heroStatusClustererData.initClusters();
-        },
-        changeTab(index) {
-            this.activeTabIndex = index;
-        },
-    }
-});
+let g_heroStatusClustererData = null;
+let g_heroStatusClustererViewModel = null;
+function initializeStatusClusterer(heroInfos) {
+    g_heroStatusClustererData = new HeroStatusClustererData(heroInfos);
+    g_heroStatusClustererViewModel = new Vue({
+        el: "#heroStatusClusterer",
+        data: g_heroStatusClustererData,
+        methods: {
+            mergeClusters() {
+                g_heroStatusClustererData.initClusters();
+                g_heroStatusClustererData.mergeClusters();
+            },
+            clusteringTargetChanged() {
+                g_heroStatusClustererData.initClusters();
+            },
+            changeTab(index) {
+                this.activeTabIndex = index;
+            },
+        }
+    });
+}

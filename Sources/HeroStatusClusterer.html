@@ -274,6 +274,8 @@
             ], () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
+
+                initializeStatusClusterer(heroInfos);
             });
         });
     </script>
