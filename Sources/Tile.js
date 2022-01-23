@@ -94,6 +94,7 @@ class Tile {
         this.borderWidth = "1px";
         this.overrideText = "";
 
+        /** @type {Tile} */
         this.snapshot = null;
     }
 
@@ -103,7 +104,9 @@ class Tile {
         tile._allyDangerLevel = this._allyDangerLevel;
         this.snapshot = tile;
     }
-
+    /**
+     * @returns {Tile}
+     */
     __getEvalTile() {
         if (this.snapshot != null) {
             return this.snapshot;
@@ -177,7 +180,9 @@ class Tile {
     get isDefensiveTile() {
         return this.type == TileType.DefensiveTile || this.type == TileType.DefensiveTrench || this.type == TileType.DefensiveForest;
     }
-
+    /**
+     * @returns {String}
+     */
     positionToString() {
         return "(" + this.posX + ", " + this.posY + ")";
     }
@@ -189,9 +194,12 @@ class Tile {
     set closestDistanceToEnemy(value) {
         this._closestDistanceToEnemy = value;
     }
-
-    getEnemyThreatFor(groupId) {
-        let tile = this.__getEvalTile();
+    /**
+     * @param  {UnitGroupType} groupId
+     * @param  {Boolean} ignoresSnapshot
+     */
+    getEnemyThreatFor(groupId, ignoresSnapshot = false) {
+        let tile = ignoresSnapshot ? this : this.__getEvalTile();
         switch (groupId) {
             case UnitGroupType.Enemy: return tile.dangerLevel;
             case UnitGroupType.Ally: return tile.allyDangerLevel;
@@ -200,10 +208,16 @@ class Tile {
         }
     }
 
+    /**
+     * @returns {Number}
+     */
     get dangerLevel() {
         return this._dangerLevel;
     }
 
+    /**
+     * @returns {Number}
+     */
     get allyDangerLevel() {
         return this._allyDangerLevel;
     }
@@ -701,6 +715,10 @@ class Tile {
 
 /// マスの優先度を評価する際に使用するコンテキストです。
 class TilePriorityContext {
+    /**
+     * @param  {Tile} tile
+     * @param  {Unit} unit
+     */
     constructor(tile, unit) {
         this.unit = unit;
         this.tile = tile;

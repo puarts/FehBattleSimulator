@@ -33,9 +33,17 @@ const MoveResult = {
 }
 
 class MovementAssistResult {
+    /**
+     * @param  {Boolean} success
+     * @param  {Tile} assistUnitTileAfterAssist
+     * @param  {Tile} targetUnitTileAfterAssist
+     */
     constructor(success, assistUnitTileAfterAssist, targetUnitTileAfterAssist) {
+        /** @type {Boolean} */
         this.success = success;
+        /** @type {Tile} */
         this.assistUnitTileAfterAssist = assistUnitTileAfterAssist;
+        /** @type {Tile} */
         this.targetUnitTileAfterAssist = targetUnitTileAfterAssist;
     }
 }
@@ -7453,20 +7461,40 @@ class AetherRaidTacticsBoard {
 
         return true;
     }
-
+    /**
+     * @param  {Unit} unit
+     * @param  {Unit} targetUnit
+     * @param  {Tile} assistTile
+     */
     __canBeMovedIntoLessEnemyThreat(unit, targetUnit, assistTile) {
         let beforeTileThreat = targetUnit.placedTile.getEnemyThreatFor(unit.groupId);
-        let afterTileThreat = this.__calcTargetUnitTileThreatAfterMoveAssist(unit, targetUnit, assistTile);
+        let result = this.__getTargetUnitTileAfterMoveAssist(unit, targetUnit, assistTile);
+        if (!result.success) {
+            return false;
+        }
+
+        let canPlace = result.assistUnitTileAfterAssist.isMovableTileForUnit(unit)
+            && result.targetUnitTileAfterAssist.isMovableTileForUnit(targetUnit);
+        if (!canPlace) {
+            return false;
+        }
+
+        let afterTileThreat = result.targetUnitTileAfterAssist.getEnemyThreatFor(unit.groupId);
         this.writeDebugLogLine(targetUnit.getNameWithGroup() + " "
-            + "現在の脅威数=" + beforeTileThreat + ", "
-            + "移動後の脅威数=" + afterTileThreat);
+            + "現在の脅威数=" + beforeTileThreat + `(${targetUnit.placedTile.positionToString()}), `
+            + "移動後の脅威数=" + afterTileThreat + `(${result.targetUnitTileAfterAssist.positionToString()})`);
         if (afterTileThreat < 0) {
             return false;
         }
         return afterTileThreat < beforeTileThreat;
     }
-
-    __calcTargetUnitTileThreatAfterMoveAssist(unit, targetUnit, assistTile) {
+    /**
+     * @param  {Unit} unit
+     * @param  {Unit} targetUnit
+     * @param  {Tile} assistTile
+     * @returns {MovementAssistResult}
+     */
+    __getTargetUnitTileAfterMoveAssist(unit, targetUnit, assistTile) {
         let result = null;
         switch (unit.support) {
             case Support.RescuePlus:
@@ -7489,19 +7517,7 @@ class AetherRaidTacticsBoard {
                 this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
                 return -1;
         }
-
-
-        if (!result.success) {
-            return -1;
-        }
-
-        let canPlace = result.assistUnitTileAfterAssist.isMovableTileForUnit(unit)
-            && result.targetUnitTileAfterAssist.isMovableTileForUnit(targetUnit);
-        if (!canPlace) {
-            return -1;
-        }
-
-        return result.targetUnitTileAfterAssist.getEnemyThreatFor(unit.groupId);
+        return result;
     }
 
     __applyRally(supporterUnit, targetUnit) {

@@ -1423,8 +1423,8 @@ class DamageCalculatorWrapper {
             if (!calcPotentialDamage) {
                 let count = self.__countEnemiesActionDone(defUnit);
                 let amount = Math.max(3, 9 - count * 3);
-                atkUnit.defSpur += amount;
-                atkUnit.resSpur += amount;
+                defUnit.defSpur += amount;
+                defUnit.resSpur += amount;
             }
         };
         self._applySkillEffectForDefUnitFuncDict[Weapon.Balmung] = (defUnit, atkUnit, calcPotentialDamage) => {

@@ -852,9 +852,16 @@ class AssistableUnitInfo {
             assistedWithTeleportSkillPriority = 1;
         }
 
+        // ワユ教授の資料だとpost combatだとこの条件になっているが、ステータス合計は評価されないっぽい？
+        // return assistedWithTeleportSkillPriority * 1000000
+        //     + this.visibleStatTotal * 500
+        //     - this.requiredMovementCount * 10
+        //     + this.slotOrder;
+
         return assistedWithTeleportSkillPriority * 1000000
-            + this.visibleStatTotal * 500
             - this.requiredMovementCount * 10
+            // todo: 隣接するブロックされた敵のスロット順がここに入る
+            //       (Offensive Movement Assistのみで参照されるはずなので実装しなくてもそんなに実害ない)
             + this.slotOrder;
     }
 
