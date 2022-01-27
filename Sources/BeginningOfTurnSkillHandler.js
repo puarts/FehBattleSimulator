@@ -88,6 +88,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.StaffOfTheSaint:
+                for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    u.applyDefBuff(6);
+                    u.applyResBuff(6);
+                }
+                this.__applySkillToEnemiesInCross(skillOwner,
+                    unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= this.__getStatusEvalUnit(skillOwner).getEvalResInPrecombat() - 1,
+                    unit => unit.reserveToAddStatusEffect(StatusEffectType.FalseStart));
+                break;
             case Weapon.DrybladeLance:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(2);
