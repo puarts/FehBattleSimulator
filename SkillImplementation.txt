@@ -24,6 +24,13 @@ if (targetUnit.isWeaponRefined) {
 化身状態なら
 if (targetUnit.isTransformed) {}
 
+ターン開始時(通常)
+applySkillForBeginningOfTurn(skillId, skillOwner) {}
+ターン開始時(回復)
+applyHealSkillForBeginningOfTurn(skillId, skillOwner) {}
+ターン開始時(ダメージ)
+applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
+
 獣の共通の化身スキル
 const WeaponTypesAddAtk2AfterTransform = {};
 WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
