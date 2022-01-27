@@ -1232,6 +1232,9 @@ const Weapon = {
     SerpentineStaffPlus: 1964, // 蛇の杖+
     DancingFlames: 1966, // 響き渡る合唱の祭器
     BoneCarverPlus: 1968, // 骨の暗器+
+
+    // 2022年1月 神階エリミーヌ
+    StaffOfTheSaint: 1976, // 聖女の杖
 }
 
 const Support = {
@@ -2214,6 +2217,7 @@ const PassiveC = {
     Worldbreaker: 1913, // 神槌大地を穿つ
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者
+    HolyGround: 1977, // 地上の最後の女神
 };
 
 const PassiveS = {

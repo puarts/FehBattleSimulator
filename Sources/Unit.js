@@ -209,6 +209,7 @@ const StatusEffectType = {
     CancelAffinity: 25, // 相性相殺
     NullFollowUp: 26, // 見切り・追撃
     Pathfinder: 27, // 天駆の道
+    FalseStart: 28, // ターン開始スキル不可
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -258,6 +259,7 @@ NegativeStatusEffectTable[StatusEffectType.Guard] = 0;
 NegativeStatusEffectTable[StatusEffectType.Isolation] = 0;
 NegativeStatusEffectTable[StatusEffectType.DeepWounds] = 0;
 NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
+NegativeStatusEffectTable[StatusEffectType.FalseStart] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -324,6 +326,10 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_NullFollowUp.png";
         case StatusEffectType.Pathfinder:
             return g_imageRootPath + "StatusEffect_Pathfinder.png";
+        case StatusEffectType.FalseStart:
+            return g_imageRootPath + "StatusEffect_Pathfinder.png";
+            // @TODO: 画像を用意する
+            // return g_imageRootPath + "StatusEffect_FalseStart.png";
         default: return "";
     }
 }

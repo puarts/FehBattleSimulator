@@ -5610,6 +5610,11 @@ class DamageCalculatorWrapper {
                 }
                 for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
                     switch (skillId) {
+                        case PassiveC.HolyGround:
+                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            targetUnit.defSpur += 4;
+                            targetUnit.resSpur += 4;
+                            break;
                         case PassiveC.Worldbreaker:
                             targetUnit.battleContext.increaseCooldownCountForBoth();
                             break;
