@@ -42,6 +42,15 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    /**
+     * @param  {Unit} unit
+     */
+    applyHpSkillsForBeginningOfTurn(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            this.applyHpSkillForBeginningOfTurn(skillId, unit);
+        }
+    }
+
     applyReservedStateForAllUnitsOnMap(leavesOneHp) {
         for (let unit of this._unitManager.enumerateAllUnitsOnMap()) {
             if (unit.isDead) {
@@ -66,6 +75,7 @@ class BeginningOfTurnSkillHandler {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
                 skillOwner.isTransformed = true;
+                // TODO: ターン開始スキル不可状態で移動+1が発動するのか確認する
                 if (skillOwner.moveType === MoveType.Flying && isWeaponTypeBeast(skillOwner.weaponType)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
@@ -73,6 +83,9 @@ class BeginningOfTurnSkillHandler {
                 skillOwner.isTransformed = false;
             }
         }
+
+        // 戦闘開始スキル不可である場合は処理を終える
+        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
             case Weapon.DrybladeLance:
@@ -185,10 +198,6 @@ class BeginningOfTurnSkillHandler {
                 if (skillOwner.isWeaponRefined) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
-                break;
-            case Weapon.DriftingGracePlus:
-            case Weapon.LuminousGracePlus:
-                skillOwner.reserveHeal(10);
                 break;
             case Weapon.RauarLionPlus:
             case Weapon.BlarLionPlus:
@@ -418,19 +427,11 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;
-            case Weapon.Hrist:
-                if (this.__getStatusEvalUnit(skillOwner).hpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                        unit.reserveTakeDamage(1);
-                    }
-                }
-                break;
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.reserveToResetDebuffs();
                         unit.reserveToClearNegativeStatusEffects();
-                        unit.reserveHeal(5);
                     }
                 }
                 break;
@@ -439,7 +440,6 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.reserveToResetDebuffs();
                         unit.reserveToClearNegativeStatusEffects();
-                        unit.reserveHeal(10);
                     }
                 }
                 break;
@@ -448,7 +448,6 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.reserveToResetDebuffs();
                         unit.reserveToClearNegativeStatusEffects();
-                        unit.reserveHeal(20);
                     }
                 }
                 break;
@@ -457,7 +456,6 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.reserveToResetDebuffs();
                         unit.reserveToClearNegativeStatusEffects();
-                        unit.reserveHeal(5);
                     }
                 }
                 break;
@@ -466,7 +464,6 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.reserveToResetDebuffs();
                         unit.reserveToClearNegativeStatusEffects();
-                        unit.reserveHeal(10);
                     }
                 }
                 break;
@@ -475,7 +472,6 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         unit.reserveToResetDebuffs();
                         unit.reserveToClearNegativeStatusEffects();
-                        unit.reserveHeal(20);
                     }
                 }
                 break;
@@ -554,26 +550,15 @@ class BeginningOfTurnSkillHandler {
                 }
             }
                 break;
-            case Weapon.AnyaryuNoBreath:
-                if (this.globalBattleContext.currentTurn == 4) {
-                    let count = 0;
-                    for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
-                        unit.reserveTakeDamage(10);
-                        ++count;
-                    }
-                    skillOwner.reserveHeal(count * 5);
-                }
-                break;
             case Weapon.Mafu:
                 if (this.globalBattleContext.currentTurn == 3) {
-                    for (let unit of this.enumerateUnitsWithinSpecifiedRange(
-                        skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, 5, 99)
-                    ) {
+                    let units = this.enumerateUnitsWithinSpecifiedRange(
+                        skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, 5, 99);
+                    for (let unit of units) {
                         if (isWeaponTypeTome(unit.weaponType)) {
                             continue;
                         }
                         unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                        unit.reserveTakeDamage(5);
                     }
                 }
                 break;
@@ -647,7 +632,6 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.Scadi: {
-                let damageAmount = skillOwner.isWeaponRefined ? 7 : 10;
                 let turnCond = skillOwner.isWeaponRefined ?
                     this.globalBattleContext.currentTurn === 2 || this.globalBattleContext.currentTurn === 3 :
                     this.globalBattleContext.currentTurn === 3;
@@ -656,11 +640,10 @@ class BeginningOfTurnSkillHandler {
                     if (skillOwner.groupId == UnitGroupType.Enemy) {
                         groupId = UnitGroupType.Ally;
                     }
-                    for (let unit of this.enumerateUnitsWithinSpecifiedRange(
-                        skillOwner.posX, skillOwner.posY, groupId, 3, 99)
-                    ) {
+                    let units = this.enumerateUnitsWithinSpecifiedRange(
+                        skillOwner.posX, skillOwner.posY, groupId, 3, 99);
+                    for (let unit of units) {
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
-                        unit.reserveTakeDamage(damageAmount);
                     }
                 }
                 break;
@@ -753,58 +736,7 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
                 }
                 break;
-            case PassiveB.Recovering:
-                skillOwner.reserveHeal(10);
-                break;
-            case Weapon.FalchionRefined:
-            case Weapon.FalcionEchoes:
-            case Weapon.FalchionAwakening:
-            case Weapon.KiriNoBreath:
-            case PassiveB.Renewal1:
-                if ((this.globalBattleContext.currentTurn + 1) % 4 == 0) {
-                    skillOwner.reserveHeal(10);
-                }
-                break;
-            case PassiveB.Renewal2:
-                if ((this.globalBattleContext.currentTurn + 1) % 3 == 0) {
-                    skillOwner.reserveHeal(10);
-                }
-                break;
-            case PassiveB.Renewal3:
-                if ((this.globalBattleContext.currentTurn + 1) % 2 == 0) {
-                    skillOwner.reserveHeal(10);
-                }
-                break;
-            case Weapon.TamagoNoTsuePlus:
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, true)) {
-                    unit.reserveHeal(7);
-                }
-                break;
-            case Weapon.ShirasagiNoTsubasa:
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
-                    unit.reserveHeal(7);
-                }
-                break;
             case Weapon.StaffOfTwelvePlus:
-            case PassiveC.SeimeiNoKagayaki:
-                {
-                    let targetUnits = [];
-                    let maxDamage = 0;
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
-                        let damage = this.__getStatusEvalUnit(unit).currentDamage;
-                        if (damage > maxDamage) {
-                            maxDamage = damage;
-                            targetUnits = [unit];
-                        }
-                        else if (damage == maxDamage) {
-                            targetUnits.push(unit);
-                        }
-                    }
-                    for (let unit of targetUnits) {
-                        unit.reserveHeal(10);
-                    }
-                }
-                break;
             case Weapon.DemonicTome:
             case PassiveC.HajimariNoKodo3:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
@@ -896,9 +828,6 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.DefResOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applyResBuff(5); }); break;
             case PassiveC.Upheaval:
                 if (this.globalBattleContext.currentTurn == 1) {
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                        unit.reserveTakeDamage(7);
-                    }
                     if (this.globalBattleContext.isAstraSeason) {
                         if (skillOwner.groupId == UnitGroupType.Enemy) {
                             for (let st of this.map.enumerateObjs(x => x instanceof OffenceStructureBase && x.isBreakable)) {
@@ -967,11 +896,6 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.applyResBuff(6);
                 }
             }
-                break;
-            case Weapon.Sinmara:
-                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                    unit.reserveTakeDamage(20);
-                }
                 break;
             case PassiveC.SurtrsMenace:
                 {
@@ -1073,7 +997,6 @@ class BeginningOfTurnSkillHandler {
             case PassiveB.SDrink:
                 if (this.globalBattleContext.currentTurn == 1) {
                     skillOwner.reduceSpecialCount(1);
-                    skillOwner.reserveHeal(99);
                 }
                 break;
             case PassiveS.OgiNoKodou:
@@ -1470,11 +1393,6 @@ class BeginningOfTurnSkillHandler {
                     this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                         unit => { return this.__getStatusEvalUnit(unit).getResInPrecombat() },
                         unit => { unit.reserveToApplyResDebuff(-7); });
-                    if (skillOwner.isWeaponSpecialRefined) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                            unit.reserveHeal(7);
-                        }
-                    }
                 } else {
                     if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
                         this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
@@ -1585,6 +1503,188 @@ class BeginningOfTurnSkillHandler {
                     if (isAllyAvailable) {
                         skillOwner.applyAllBuff(5);
                     }
+                }
+                break;
+        }
+    }
+
+    applyHpSkillForBeginningOfTurn(skillId, skillOwner) {
+        this.applyHealSkillForBeginningOfTurn(skillId, skillOwner);
+        this.applyDamageSkillForBeginningOfTurn(skillId, skillOwner);
+    }
+
+    applyHealSkillForBeginningOfTurn(skillId, skillOwner) {
+        switch (skillId) {
+            case Weapon.DriftingGracePlus:
+            case Weapon.LuminousGracePlus:
+                skillOwner.reserveHeal(10);
+                break;
+            case PassiveC.OddRecovery1:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveHeal(5);
+                    }
+                }
+                break;
+            case PassiveC.OddRecovery2:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveHeal(10);
+                    }
+                }
+                break;
+            case PassiveC.OddRecovery3:
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveHeal(20);
+                    }
+                }
+                break;
+            case PassiveC.EvenRecovery1:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveHeal(5);
+                    }
+                }
+                break;
+            case PassiveC.EvenRecovery2:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveHeal(10);
+                    }
+                }
+                break;
+            case PassiveC.EvenRecovery3:
+                if (!this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveHeal(20);
+                    }
+                }
+                break;
+            case Weapon.AnyaryuNoBreath:
+                if (this.globalBattleContext.currentTurn == 4) {
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                        unit.reserveTakeDamage(10);
+                        ++count;
+                    }
+                    skillOwner.reserveHeal(count * 5);
+                }
+                break;
+            case PassiveB.Recovering:
+                skillOwner.reserveHeal(10);
+                break;
+            case Weapon.FalchionRefined:
+            case Weapon.FalcionEchoes:
+            case Weapon.FalchionAwakening:
+            case Weapon.KiriNoBreath:
+            case PassiveB.Renewal1:
+                if ((this.globalBattleContext.currentTurn + 1) % 4 == 0) {
+                    skillOwner.reserveHeal(10);
+                }
+                break;
+            case PassiveB.Renewal2:
+                if ((this.globalBattleContext.currentTurn + 1) % 3 == 0) {
+                    skillOwner.reserveHeal(10);
+                }
+                break;
+            case PassiveB.Renewal3:
+                if ((this.globalBattleContext.currentTurn + 1) % 2 == 0) {
+                    skillOwner.reserveHeal(10);
+                }
+                break;
+            case Weapon.TamagoNoTsuePlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, true)) {
+                    unit.reserveHeal(7);
+                }
+                break;
+            case Weapon.ShirasagiNoTsubasa:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
+                    unit.reserveHeal(7);
+                }
+                break;
+            case PassiveC.SeimeiNoKagayaki: {
+                let targetUnits = [];
+                let maxDamage = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
+                    let damage = this.__getStatusEvalUnit(unit).currentDamage;
+                    if (damage > maxDamage) {
+                        maxDamage = damage;
+                        targetUnits = [unit];
+                    }
+                    else if (damage == maxDamage) {
+                        targetUnits.push(unit);
+                    }
+                }
+                for (let unit of targetUnits) {
+                    unit.reserveHeal(10);
+                }
+            }
+                break;
+            case PassiveB.SDrink:
+                if (this.globalBattleContext.currentTurn == 1) {
+                    skillOwner.reserveHeal(99);
+                }
+                break;
+            case Weapon.MuninNoMaran:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveHeal(7);
+                    }
+                }
+                break;
+        }
+    }
+
+    applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {
+        switch (skillId) {
+            case Weapon.Hrist:
+                if (this.__getStatusEvalUnit(skillOwner).hpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveTakeDamage(1);
+                    }
+                }
+                break;
+            case Weapon.Mafu:
+                if (this.globalBattleContext.currentTurn == 3) {
+                    let units = this.enumerateUnitsWithinSpecifiedRange(
+                        skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, 5, 99);
+                    for (let unit of units) {
+                        if (isWeaponTypeTome(unit.weaponType)) {
+                            continue;
+                        }
+                        unit.reserveTakeDamage(5);
+                    }
+                }
+                break;
+            case Weapon.Scadi: {
+                let damageAmount = skillOwner.isWeaponRefined ? 7 : 10;
+                let turnCond = skillOwner.isWeaponRefined ?
+                    this.globalBattleContext.currentTurn === 2 || this.globalBattleContext.currentTurn === 3 :
+                    this.globalBattleContext.currentTurn === 3;
+                if (turnCond) {
+                    let groupId = UnitGroupType.Enemy;
+                    if (skillOwner.groupId == UnitGroupType.Enemy) {
+                        groupId = UnitGroupType.Ally;
+                    }
+                    let units = this.enumerateUnitsWithinSpecifiedRange(
+                        skillOwner.posX, skillOwner.posY, groupId, 3, 99);
+                    for (let unit of units) {
+                        unit.reserveTakeDamage(damageAmount);
+                    }
+                }
+                break;
+            }
+            case PassiveC.Upheaval:
+                if (this.globalBattleContext.currentTurn == 1) {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        unit.reserveTakeDamage(7);
+                    }
+                }
+                break;
+            case Weapon.Sinmara:
+                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    unit.reserveTakeDamage(20);
                 }
                 break;
         }

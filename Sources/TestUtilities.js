@@ -82,6 +82,7 @@ class test_BeginningOfTurnSkillHandler {
 
     applySkillsForBeginningOfTurn(unit) {
         this._beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
+        this._beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(unit);
     }
 }
 
