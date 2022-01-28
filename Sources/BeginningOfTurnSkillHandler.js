@@ -75,8 +75,9 @@ class BeginningOfTurnSkillHandler {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
                 skillOwner.isTransformed = true;
-                // TODO: ターン開始スキル不可状態で移動+1が発動するのか確認する
-                if (skillOwner.moveType === MoveType.Flying && isWeaponTypeBeast(skillOwner.weaponType)) {
+                if (skillOwner.moveType === MoveType.Flying &&
+                    isWeaponTypeBeast(skillOwner.weaponType) &&
+                    !skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
             } else {
