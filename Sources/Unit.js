@@ -327,9 +327,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.Pathfinder:
             return g_imageRootPath + "StatusEffect_Pathfinder.png";
         case StatusEffectType.FalseStart:
-            return g_imageRootPath + "StatusEffect_Pathfinder.png";
-            // @TODO: 画像を用意する
-            // return g_imageRootPath + "StatusEffect_FalseStart.png";
+            return g_imageRootPath + "StatusEffect_FalseStart.png";
         default: return "";
     }
 }
