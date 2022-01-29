@@ -85,7 +85,7 @@ class BeginningOfTurnSkillHandler {
             }
         }
 
-        // 戦闘開始スキル不可である場合は処理を終える
+        // ターン開始スキル不可である場合は処理を終える
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
@@ -1519,6 +1519,8 @@ class BeginningOfTurnSkillHandler {
     }
 
     applyHpSkillForBeginningOfTurn(skillId, skillOwner) {
+        // ターン開始スキル不可である場合は処理を終える
+        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
         this.applyHealSkillForBeginningOfTurn(skillId, skillOwner);
         this.applyDamageSkillForBeginningOfTurn(skillId, skillOwner);
     }

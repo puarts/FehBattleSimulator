@@ -687,6 +687,7 @@ class DamageCalcData {
                     self.logger.isLogEnabled = logEnabled;
                     self.logger.isLogEnabled = false;
                     self.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(atkUnit);
+                    self.beginningOfTurnSkillHandler.applyReservedState(atkUnit);
                     self.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(atkUnit);
                     self.beginningOfTurnSkillHandler.applyReservedState(atkUnit);
                     atkUnit.applyAtkBuff(6);
