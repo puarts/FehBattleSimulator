@@ -3392,12 +3392,14 @@ class AetherRaidTacticsBoard {
             this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動スキルを適用..");
             this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
         }
+        // ターン開始時効果(通常)による効果を反映
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+
         // ターン開始時スキル(回復・ダメージ)
         for (let unit of targetUnits) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動HPスキルを適用..");
             this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(unit);
         }
-
         // ターン開始時効果によるダメージや回復を反映
         this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
 
@@ -3953,9 +3955,13 @@ class AetherRaidTacticsBoard {
 
         this.__initReservedHpForAllUnitsOnMap();
 
+        // ターン開始スキル(通常)
         this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(targetUnit);
-        this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(targetUnit);
+        // ターン開始時効果(通常)による効果を反映
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
 
+        // ターン開始スキル(回復・ダメージ等)
+        this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(targetUnit);
         // ターン開始時効果によるダメージや回復を反映
         this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
 
