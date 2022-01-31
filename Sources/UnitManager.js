@@ -41,11 +41,16 @@ class UnitManager {
         );
     }
 
+    /**
+     * @returns {Unit[]}
+     */
     enumerateUnitsInDifferentGroup(targetUnit) {
         let targetGroup = targetUnit.getEnemyGroupId();
         return this.enumerateUnitsInSpecifiedGroup(targetGroup);
     }
-
+    /**
+     * @returns {Unit[]}
+     */
     enumerateAllUnitsOnMap() {
         return this.enumerateUnitsWithPredicator(x => x.isOnMap);
     }

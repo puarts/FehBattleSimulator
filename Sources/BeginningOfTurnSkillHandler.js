@@ -8,10 +8,15 @@ class BeginningOfTurnSkillHandler {
      * @param  {Function} moveStructureToTrashBox
      */
     constructor(unitManager, map, globalBattleContext, logger, moveStructureToTrashBox) {
+        /** @type {UnitManager} */
         this._unitManager = unitManager;
+        /** @type {Map} */
         this.map = map;
+        /** @type {GlobalBattleContext} */
         this.globalBattleContext = globalBattleContext;
+        /** @type {LoggerBase} */
         this._logger = logger;
+        /** @type {Function} */
         this.moveStructureToTrashBox = moveStructureToTrashBox;
     }
     get isOddTurn() {
@@ -60,7 +65,9 @@ class BeginningOfTurnSkillHandler {
             this.applyReservedState(unit);
         }
     }
-
+    /**
+     * @param  {Boolean} leavesOneHp
+     */
     applyReservedHpForAllUnitsOnMap(leavesOneHp) {
         for (let unit of this._unitManager.enumerateAllUnitsOnMap()) {
             if (unit.isDead) {
@@ -70,7 +77,9 @@ class BeginningOfTurnSkillHandler {
             unit.applyReservedHp(leavesOneHp);
         }
     }
-
+    /**
+     * @param  {Unit} unit
+     */
     applyReservedState(unit) {
         unit.applyReservedDebuffs();
         unit.applyReservedStatusEffects();

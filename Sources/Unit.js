@@ -2637,12 +2637,20 @@ class Unit {
         this.spdDebuff = this.reservedSpdDebuff;
         this.defDebuff = this.reservedDefDebuff;
         this.resDebuff = this.reservedResDebuff;
+
+        this.reservedAtkDebuff = 0;
+        this.reservedSpdDebuff = 0;
+        this.reservedDefDebuff = 0;
+        this.reservedResDebuff = 0;
     }
 
     applyReservedStatusEffects() {
         this.statusEffects = this.reservedStatusEffects;
+        this.reservedStatusEffects = [];
     }
-
+    /**
+     * @param  {Boolean} leavesOneHp
+     */
     applyReservedHp(leavesOneHp) {
         let healHp = this.reservedHeal;
         if (this.hasStatusEffect(StatusEffectType.DeepWounds)) {
@@ -2650,6 +2658,9 @@ class Unit {
         }
         this.hp = Number(this.hp) - this.reservedDamage + healHp;
         this.modifyHp(leavesOneHp);
+
+        this.reservedDamage = 0;
+        this.reservedHeal = 0;
     }
 
     reserveTakeDamage(damageAmount) {
