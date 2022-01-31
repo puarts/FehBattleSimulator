@@ -3393,7 +3393,7 @@ class AetherRaidTacticsBoard {
             this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
         }
         // ターン開始時効果(通常)による効果を反映
-        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
 
         // ターン開始時スキル(回復・ダメージ)
         for (let unit of targetUnits) {
@@ -3401,7 +3401,7 @@ class AetherRaidTacticsBoard {
             this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(unit);
         }
         // ターン開始時効果によるダメージや回復を反映
-        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+        this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
 
         this.writeLog(this.beginningOfTurnSkillHandler.log);
 

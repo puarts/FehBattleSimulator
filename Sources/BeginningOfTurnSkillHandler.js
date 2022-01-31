@@ -51,20 +51,29 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
-    applyReservedStateForAllUnitsOnMap(leavesOneHp) {
+    applyReservedStateForAllUnitsOnMap() {
         for (let unit of this._unitManager.enumerateAllUnitsOnMap()) {
             if (unit.isDead) {
                 continue;
             }
 
-            this.applyReservedState(unit, leavesOneHp);
+            this.applyReservedState(unit);
         }
     }
 
-    applyReservedState(unit, leavesOneHp = true) {
+    applyReservedHpForAllUnitsOnMap(leavesOneHp) {
+        for (let unit of this._unitManager.enumerateAllUnitsOnMap()) {
+            if (unit.isDead) {
+                continue;
+            }
+
+            unit.applyReservedHp(leavesOneHp);
+        }
+    }
+
+    applyReservedState(unit) {
         unit.applyReservedDebuffs();
         unit.applyReservedStatusEffects();
-        unit.applyReservedHp(leavesOneHp);
     }
 
     /**
@@ -550,7 +559,7 @@ class BeginningOfTurnSkillHandler {
                         for (let unit of this.__findMinStatusUnits(
                             skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
                             x => this.__getStatusEvalUnit(x).getSpdInPrecombat())
-                            ) {
+                        ) {
                             unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                             for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1)) {
                                 u.reserveToAddStatusEffect(StatusEffectType.Guard);
