@@ -3958,12 +3958,12 @@ class AetherRaidTacticsBoard {
         // ターン開始スキル(通常)
         this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(targetUnit);
         // ターン開始時効果(通常)による効果を反映
-        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
 
         // ターン開始スキル(回復・ダメージ等)
         this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(targetUnit);
         // ターン開始時効果によるダメージや回復を反映
-        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+        this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
 
         this.disableAllLogs = originalDisableAllLogs;
     }
@@ -6828,7 +6828,8 @@ class AetherRaidTacticsBoard {
         }
 
         if (appliesDamage) {
-            this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+            this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
+            this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
         }
     }
 
@@ -7000,7 +7001,8 @@ class AetherRaidTacticsBoard {
         }
 
         if (appliesDamage) {
-            this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true);
+            this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
+            this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
         }
     }
 
