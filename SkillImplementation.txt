@@ -314,3 +314,12 @@ Main.js
 ターン毎のインポート、エクスポート設定
 fromPerTurnStatusString(value) {}
 perTurnStatusToString() {}
+
+新マップ追加
+1. MapTypeに新マップを追加
+2. mapKindOptionsにオプションを追加
+3. AetherRaidMapImageFilesに画像を追加
+4. tileTypeToThumbを修正
+5. getMapBackgroundImage
+6. breakableObjCountOfCurrentMapTypeを修正
+7. resetPlacementで特殊なタイルを設定
