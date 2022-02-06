@@ -210,6 +210,7 @@ const StatusEffectType = {
     NullFollowUp: 26, // 見切り・追撃
     Pathfinder: 27, // 天駆の道
     FalseStart: 28, // ターン開始スキル不可
+    NeutralizesFoesBonusesDuringCombat: 29, // 敵の強化の+を無効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -328,6 +329,10 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Pathfinder.png";
         case StatusEffectType.FalseStart:
             return g_imageRootPath + "StatusEffect_FalseStart.png";
+        case StatusEffectType.NeutralizesFoesBonusesDuringCombat:
+            return g_imageRootPath + "StatusEffect_Pathfinder.png";
+            // TODO: 画像を追加する
+            // return g_imageRootPath + "StatusEffect_NeutralizesFoesBonusesDuringCombat.png";
         default: return "";
     }
 }
@@ -3195,29 +3200,41 @@ class Unit {
     }
 
     getAtkBuffInCombat(enemyUnit) {
+        let invalidates = enemyUnit !== null &&
+            enemyUnit.battleContext.invalidatesAtkBuff ||
+            enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
         return this.__getBuffInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesAtkBuff,
+            () => invalidates,
             () => Number(this.atkBuff),
             () => this.battleContext.invalidatesOwnAtkDebuff
         );
     }
     getSpdBuffInCombat(enemyUnit) {
+        let invalidates = enemyUnit !== null &&
+            enemyUnit.battleContext.invalidatesSpdBuff ||
+            enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
         return this.__getBuffInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesSpdBuff,
+            () => enemyUnit == null ? false : invalidates,
             () => Number(this.spdBuff),
             () => this.battleContext.invalidatesOwnSpdDebuff
         );
     }
     getResBuffInCombat(enemyUnit) {
+        let invalidates = enemyUnit !== null &&
+            enemyUnit.battleContext.invalidatesResBuff ||
+            enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
         return this.__getBuffInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesResBuff,
+            () => enemyUnit == null ? false : invalidates,
             () => Number(this.resBuff),
             () => this.battleContext.invalidatesOwnResDebuff
         );
     }
     getDefBuffInCombat(enemyUnit) {
+        let invalidates = enemyUnit !== null &&
+            enemyUnit.battleContext.invalidatesDefBuff ||
+            enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
         return this.__getBuffInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesDefBuff,
+            () => enemyUnit == null ? false : invalidates,
             () => Number(this.defBuff),
             () => this.battleContext.invalidatesOwnDefDebuff
         );
@@ -3231,24 +3248,33 @@ class Unit {
     }
 
     getAtkInCombat(enemyUnit = null) {
+        let invalidates = enemyUnit !== null &&
+            (enemyUnit.battleContext.invalidatesAtkBuff ||
+                enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat));
         return this.__getStatusInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesAtkBuff,
+            () => invalidates,
             () => this.__getAtkInCombatWithoutBuff(),
             () => Number(this.atkBuff),
             () => this.battleContext.invalidatesOwnAtkDebuff
         );
     }
     getSpdInCombat(enemyUnit = null) {
+        let invalidates = enemyUnit !== null &&
+            (enemyUnit.battleContext.invalidatesSpdBuff ||
+                enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat));
         return this.__getStatusInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesSpdBuff,
+            () => invalidates,
             () => this.__getSpdInCombatWithoutBuff(),
             () => Number(this.spdBuff),
             () => this.battleContext.invalidatesOwnSpdDebuff
         );
     }
     getDefInCombat(enemyUnit = null) {
+        let invalidates = enemyUnit !== null &&
+            (enemyUnit.battleContext.invalidatesDefBuff ||
+                enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat));
         return this.__getStatusInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesDefBuff,
+            () => invalidates,
             () => this.__getDefInCombatWithoutBuff(),
             () => Number(this.defBuff),
             () => this.battleContext.invalidatesOwnDefDebuff
@@ -3256,8 +3282,11 @@ class Unit {
     }
 
     getResInCombat(enemyUnit = null) {
+        let invalidates = enemyUnit !== null &&
+            (enemyUnit.battleContext.invalidatesResBuff ||
+                enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat));
         return this.__getStatusInCombat(
-            () => enemyUnit == null ? false : enemyUnit.battleContext.invalidatesResBuff,
+            () => invalidates,
             () => this.__getResInCombatWithoutBuff(),
             () => Number(this.resBuff),
             () => this.battleContext.invalidatesOwnResDebuff
