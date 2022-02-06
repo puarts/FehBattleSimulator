@@ -5928,6 +5928,17 @@ class DamageCalculatorWrapper {
     }
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
+            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
+            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
+            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
+            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`神軍師の策により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+            targetUnit.atkSpur += atkAdd;
+            targetUnit.spdSpur += spdAdd;
+            targetUnit.defSpur += defAdd;
+            targetUnit.resSpur += resAdd;
+        }
         switch (targetUnit.weapon) {
             case Weapon.Sogun:
                 if (targetUnit.isWeaponSpecialRefined) {

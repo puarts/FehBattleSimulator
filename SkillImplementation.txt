@@ -309,11 +309,13 @@ const StatusEffectType = {
     XXX: YYY, // XXX
 }
 function statusEffectTypeToIconFilePath(value) {
-    case StatusEffectType.Dodge:
+    case StatusEffectType.XXX:
     return g_imageRootPath + "XXX.png";
 }
-/// ステータス効果が不利なステータス効果であるかどうかを判定
+/// ステータス効果が不利なステータス効果であるかどうかを判定(不利なステータス異常の場合はNegativeStatusEffectTableに登録すること)
 function isNegativeStatusEffect(type) {}
+
+ステータス付与
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
 

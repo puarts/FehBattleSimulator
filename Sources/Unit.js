@@ -211,6 +211,7 @@ const StatusEffectType = {
     Pathfinder: 27, // 天駆の道
     FalseStart: 28, // ターン開始スキル不可
     NeutralizesFoesBonusesDuringCombat: 29, // 敵の強化の+を無効
+    GrandStrategy: 30, // 神軍師の策
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -333,6 +334,10 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Pathfinder.png";
             // TODO: 画像を追加する
             // return g_imageRootPath + "StatusEffect_NeutralizesFoesBonusesDuringCombat.png";
+        case StatusEffectType.GrandStrategy:
+            return g_imageRootPath + "StatusEffect_Pathfinder.png";
+            // TODO: 画像を追加する
+            // return g_imageRootPath + "StatusEffect_GrandStrategy.png";
         default: return "";
     }
 }
@@ -2156,6 +2161,9 @@ class Unit {
         this.statusEffects = this.getPositiveStatusEffects();
     }
     clearPositiveStatusEffects() {
+        if (this.statusEffects.includes(StatusEffectType.GrandStrategy)) {
+            this.resetDebuffs();
+        }
         this.statusEffects = this.getNegativeStatusEffects();
     }
 
@@ -2434,7 +2442,9 @@ class Unit {
         if (this.isMovementRestricted) {
             this.setMoveCountFromMoveType();
         }
-        this.resetDebuffs();
+        if (!this.hasStatusEffect(StatusEffectType.GrandStrategy)) {
+            this.resetDebuffs();
+        }
         this.clearNegativeStatusEffects();
     }
 
