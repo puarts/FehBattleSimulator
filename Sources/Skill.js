@@ -1235,6 +1235,9 @@ const Weapon = {
 
     // 2022年1月 神階エリミーヌ
     StaffOfTheSaint: 1976, // 聖女の杖
+
+    // 超英雄 あなたがいるだけで
+    GerberaAxe: 1990, // ガーベラの斧
 }
 
 const Support = {

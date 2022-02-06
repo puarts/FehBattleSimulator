@@ -273,6 +273,9 @@ __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTar
 「歌う」「踊る」使用時
 __applyRefresh(skillOwnerUnit, targetUnit) {}
 
+移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
+__applyMovementAssistSkill() {}
+
 上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
 targetUnit.isOneTimeActionActivatedForWeapon
 

@@ -7231,6 +7231,10 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GerberaAxe:
+                    unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                    targetUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                    break;
                 case Weapon.Sogun:
                     if (unit.isWeaponRefined) {
                         unit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
