@@ -1235,6 +1235,13 @@ const Weapon = {
 
     // 2022年1月 神階エリミーヌ
     StaffOfTheSaint: 1976, // 聖女の杖
+
+    // 超英雄 あなたがいるだけで
+    GerberaAxe: 1990, // ガーベラの斧
+    AchimenesFurl: 1992, // アキメネスの花冠
+    PiercingTributePlus: 1978, // 感謝の花の槍+
+    DestinysBow: 1980, // 運命変える絆弓
+    StaffOfTributePlus: 1982, // 感謝の花の杖+
 }
 
 const Support = {
@@ -1433,6 +1440,7 @@ const PassiveA = {
     DistantStance: 1884, // 遠反・明鏡の構え
     DistantCounter: 562, // 遠距離反撃
     DistantPressure: 1795, // 遠反・速さの渾身
+    CloseSalvo: 1981, // 近反・攻撃の渾身
     DeathBlow3: 528, // 鬼神の一撃3
     DeathBlow4: 529, // 鬼神の一撃4
     HienNoIchigeki1: 1149,
@@ -1735,6 +1743,7 @@ const PassiveB = {
     CraftFighter3: 1483, // 抑止隊形3
     SlickFighter3: 1497, // 正面隊形・自己3
     HardyFighter3: 1872, // 盾壁隊形3
+    SavvyFighter3: 1991, // 慧眼隊形3
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     MikiriHangeki3: 810, // 見切り・反撃不可効果3

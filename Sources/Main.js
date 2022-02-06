@@ -877,6 +877,12 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoChrom:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
+                    unit.applyAllDebuff(-5);
+                    unit.addStatusEffect(StatusEffectType.GrandStrategy);
+                }
+                break;
             case Hero.HarmonizedAzura:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__refreshHighestHpUnitsInSameOrigin(duoUnit);
@@ -7231,6 +7237,19 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DestinysBow:
+                    if (g_appData.currentTurn <= 4) {
+                        if (!unit.isOneTimeActionActivatedForWeapon) {
+                            unit.reduceSpecialCount(1);
+                            targetUnit.reduceSpecialCount(1);
+                            unit.isOneTimeActionActivatedForWeapon = true;
+                        }
+                    }
+                    break;
+                case Weapon.GerberaAxe:
+                    unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                    targetUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                    break;
                 case Weapon.Sogun:
                     if (unit.isWeaponRefined) {
                         unit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);

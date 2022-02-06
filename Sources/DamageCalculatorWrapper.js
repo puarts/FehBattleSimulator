@@ -1822,6 +1822,49 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.StaffOfTributePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.defSpur += 6;
+                targetUnit.resSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DestinysBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.PiercingTributePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AchimenesFurl] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let types = new Set();
+            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                types.add(otherUnit.moveType);
+            }
+            if (types.size >= 2) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+            if (types.size >= 3) {
+                targetUnit.battleContext.healedHpByAttack = 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.GerberaAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BoneCarverPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 5;
@@ -4722,6 +4765,9 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveA.DistantPressure] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) { targetUnit.spdSpur += 5; }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveA.CloseSalvo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) { targetUnit.atkSpur += 5; }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveA.BrazenAtkSpd3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage <= 80) { targetUnit.atkSpur += 7; targetUnit.spdSpur += 7; }
         };
@@ -5550,8 +5596,8 @@ class DamageCalculatorWrapper {
             return;
         }
 
-        // 2マス以内の味方からの効果
         if (!calcPotentialDamage) {
+            // 2マス以内の味方からの効果
             let feudFunc = this.__getFeudConditionFunc(enemyUnit);
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
@@ -5658,6 +5704,23 @@ class DamageCalculatorWrapper {
                                 targetUnit.defSpur += 4;
                                 targetUnit.resSpur += 4;
                             }
+                            break;
+                    }
+                }
+            }
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                if (feudFunc != null && feudFunc(allyUnit)) continue;
+                for (let skill of allyUnit.enumerateSkills()) {
+                    switch (skill) {
+                        case Weapon.AchimenesFurl: {
+                            let types = new Set();
+                            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
+                                types.add(otherUnit.moveType);
+                            }
+                            if (types.size >= 3) {
+                                targetUnit.battleContext.healedHpByAttack = 5;
+                            }
+                        }
                             break;
                     }
                 }
@@ -5866,6 +5929,17 @@ class DamageCalculatorWrapper {
     }
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
+            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
+            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
+            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
+            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
+            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`神軍師の策により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+            targetUnit.atkSpur += atkAdd;
+            targetUnit.spdSpur += spdAdd;
+            targetUnit.defSpur += defAdd;
+            targetUnit.resSpur += resAdd;
+        }
         switch (targetUnit.weapon) {
             case Weapon.Sogun:
                 if (targetUnit.isWeaponSpecialRefined) {
@@ -6465,6 +6539,13 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.SavvyFighter3:
+                    if (enemyUnit.battleContext.initiatesCombat) {
+                        if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInPrecombat() - 4) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
+                    break;
                 case PassiveB.BoldFighter3:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.increaseCooldownCountForAttack = true;
@@ -8950,6 +9031,18 @@ class DamageCalculatorWrapper {
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
                     switch (unit.weapon) {
+                        case Weapon.AchimenesFurl: {
+                            let types = new Set();
+                            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
+                                types.add(otherUnit.moveType);
+                            }
+                            if (types.size >= 1) {
+                                targetUnit.atkSpur -= 5;
+                                targetUnit.defSpur -= 5;
+                                targetUnit.resSpur -= 5;
+                            }
+                        }
+                            break;
                         case Weapon.MusuperuNoEnka:
                             if (targetUnit.isWeaponSpecialRefined) {
                                 let l = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)).length;

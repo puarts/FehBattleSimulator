@@ -304,6 +304,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.StaffOfTributePlus:
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                        unit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.InviolableAxe:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -469,6 +474,7 @@ class PostCombatSkillHander {
                     }
                     break;
                 case PassiveA.DistantPressure:
+                case PassiveA.CloseSalvo:
                 case PassiveA.AtkSpdPush4:
                 case PassiveA.AtkResPush4:
                 case PassiveA.AtkDefPush4:
