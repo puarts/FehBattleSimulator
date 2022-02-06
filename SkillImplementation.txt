@@ -286,7 +286,7 @@ function hasPathfinderEffect(skillId) {}
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
 
-【XXX】の状態を付与
+【XXX】の状態を付与(ステータス追加)
 Unit.js
 const StatusEffectType = {
     XXX: YYY, // XXX
