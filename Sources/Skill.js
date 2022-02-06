@@ -1241,6 +1241,7 @@ const Weapon = {
     AchimenesFurl: 1992, // アキメネスの花冠
     PiercingTributePlus: 1978, // 感謝の花の槍+
     DestinysBow: 1980, // 運命変える絆弓
+    StaffOfTributePlus: 1982, // 感謝の花の杖+
 }
 
 const Support = {
