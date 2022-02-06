@@ -1822,6 +1822,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AchimenesFurl] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let types = new Set();
+            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                types.add(otherUnit.moveType);
+            }
+            if (types.size >= 2) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+            if (types.size >= 3) {
+                targetUnit.battleContext.healedHpByAttack = 5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
@@ -5562,8 +5574,8 @@ class DamageCalculatorWrapper {
             return;
         }
 
-        // 2マス以内の味方からの効果
         if (!calcPotentialDamage) {
+            // 2マス以内の味方からの効果
             let feudFunc = this.__getFeudConditionFunc(enemyUnit);
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
@@ -5669,6 +5681,22 @@ class DamageCalculatorWrapper {
                             if (enemyUnit.isRangedWeaponType()) {
                                 targetUnit.defSpur += 4;
                                 targetUnit.resSpur += 4;
+                            }
+                            break;
+                    }
+                }
+            }
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                if (feudFunc != null && feudFunc(allyUnit)) continue;
+                for (let skill of allyUnit.enumerateSkills()) {
+                    switch (skill) {
+                        case Weapon.AchimenesFurl:
+                            let types = new Set();
+                            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
+                                types.add(otherUnit.moveType);
+                            }
+                            if (types.size >= 3) {
+                                targetUnit.battleContext.healedHpByAttack = 5;
                             }
                             break;
                     }
@@ -8969,6 +8997,18 @@ class DamageCalculatorWrapper {
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
                     switch (unit.weapon) {
+                        case Weapon.AchimenesFurl: {
+                            let types = new Set();
+                            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
+                                types.add(otherUnit.moveType);
+                            }
+                            if (types.size >= 1) {
+                                targetUnit.atkSpur -= 5;
+                                targetUnit.defSpur -= 5;
+                                targetUnit.resSpur -= 5;
+                            }
+                        }
+                            break;
                         case Weapon.MusuperuNoEnka:
                             if (targetUnit.isWeaponSpecialRefined) {
                                 let l = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)).length;
