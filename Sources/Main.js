@@ -7231,6 +7231,15 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DestinysBow:
+                    if (g_appData.currentTurn <= 4) {
+                        if (!unit.isOneTimeActionActivatedForWeapon) {
+                            unit.reduceSpecialCount(1);
+                            targetUnit.reduceSpecialCount(1);
+                            unit.isOneTimeActionActivatedForWeapon = true;
+                        }
+                    }
+                    break;
                 case Weapon.GerberaAxe:
                     unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                     targetUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
