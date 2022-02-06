@@ -1822,6 +1822,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.PiercingTributePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AchimenesFurl] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let types = new Set();
             for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {

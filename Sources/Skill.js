@@ -1239,6 +1239,7 @@ const Weapon = {
     // 超英雄 あなたがいるだけで
     GerberaAxe: 1990, // ガーベラの斧
     AchimenesFurl: 1992, // アキメネスの花冠
+    PiercingTributePlus: 1978, // 感謝の花の槍+
 }
 
 const Support = {
