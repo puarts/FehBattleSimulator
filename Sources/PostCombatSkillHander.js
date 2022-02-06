@@ -469,6 +469,7 @@ class PostCombatSkillHander {
                     }
                     break;
                 case PassiveA.DistantPressure:
+                case PassiveA.CloseSalvo:
                 case PassiveA.AtkSpdPush4:
                 case PassiveA.AtkResPush4:
                 case PassiveA.AtkDefPush4:
