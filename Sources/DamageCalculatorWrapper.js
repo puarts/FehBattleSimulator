@@ -5712,7 +5712,7 @@ class DamageCalculatorWrapper {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 for (let skill of allyUnit.enumerateSkills()) {
                     switch (skill) {
-                        case Weapon.AchimenesFurl:
+                        case Weapon.AchimenesFurl: {
                             let types = new Set();
                             for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
                                 types.add(otherUnit.moveType);
@@ -5720,6 +5720,7 @@ class DamageCalculatorWrapper {
                             if (types.size >= 3) {
                                 targetUnit.battleContext.healedHpByAttack = 5;
                             }
+                        }
                             break;
                     }
                 }
