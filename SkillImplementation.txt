@@ -87,6 +87,9 @@ __updateUnitSpur() {
     }
 }
 
+<ステータス>+N (距離に関係の無い)
+__updateUnitSpur() {}
+
 戦闘開始時、自身(敵)のHPがN%以上なら
 targetUnit.battleContext.restHpPercentage >= N
 enemyUnit.battleContext.restHpPercentage >= N

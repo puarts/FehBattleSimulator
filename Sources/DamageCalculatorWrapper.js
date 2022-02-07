@@ -8936,6 +8936,11 @@ class DamageCalculatorWrapper {
                     // 距離に関係ないもの
                     {
                         switch (unit.passiveC) {
+                            case PassiveC.SparklingBoostPlus:
+                                if (targetUnit.battleContext.restHpPercentage >= 50) {
+                                    targetUnit.resSpur += 5;
+                                }
+                                break;
                             case PassiveC.WingsOfLight:
                                 if (targetUnit.isMythicHero
                                     && this.currentTurn <= 5

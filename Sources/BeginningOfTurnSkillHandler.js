@@ -1633,7 +1633,8 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveHeal(7);
                 }
                 break;
-            case PassiveC.SeimeiNoKagayaki: {
+            case PassiveC.SeimeiNoKagayaki:
+            case PassiveC.SparklingBoostPlus: {
                 let targetUnits = [];
                 let maxDamage = 0;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
@@ -1647,7 +1648,8 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 for (let unit of targetUnits) {
-                    unit.reserveHeal(10);
+                    let amount = skillId === PassiveC.SeimeiNoKagayaki ? 10 : 20;
+                    unit.reserveHeal(amount);
                 }
             }
                 break;
