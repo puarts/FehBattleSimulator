@@ -4120,9 +4120,23 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Rifia] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 4;
-                targetUnit.spdSpur += 4;
+            if (!targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                }
+            } else {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                        let amount = Math.trunc(targetUnit.battleContext.restHp * 0.2);
+                        targetUnit.atkSpur += amount;
+                        targetUnit.atkSpur += amount;
+                    }
+                }
             }
         };
 
@@ -6395,6 +6409,16 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.Rifia:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                            (targetUnit.battleContext.initiatesCombat ||
+                                targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit))) {
+                            enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
                 case Weapon.PolishedFang:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
                         // @TODO: もし頻繁に現れる効果なら__applyFlashingBladeSkillメソッドのようにメソッド化する
@@ -7375,8 +7399,10 @@ class DamageCalculatorWrapper {
                     --followupAttackPriority;
                     break;
                 case Weapon.Rifia:
-                    if (atkUnit.battleContext.restHpPercentage >= 50) {
-                        --followupAttackPriority;
+                    if (!atkUnit.isWeaponRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 50) {
+                            --followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.HewnLance:
