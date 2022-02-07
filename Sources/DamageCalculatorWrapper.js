@@ -574,6 +574,14 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.HurricaneDagger:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 3, 30);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                }
+                break;
             case Weapon.RaikenJikurinde:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -1822,6 +1830,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HurricaneDagger] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.StaffOfTributePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.defSpur += 6;
@@ -5401,6 +5417,12 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.weapon) {
+            case Weapon.HurricaneDagger:
+                if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasPositiveStatusEffect(targetUnit)) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                }
+                break;
             case Weapon.Gyorru:
                 if (targetUnit.isWeaponRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25 || enemyUnit.
@@ -6247,14 +6269,10 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case Weapon.HurricaneDagger:
             case Weapon.SyukuseiNoAnki:
             case Weapon.SyukuseiNoAnkiPlus:
-                {
-                    let buff = enemyUnit.getBuffTotalInCombat(targetUnit);
-                    if (buff > 0) {
-                        targetUnit.atkSpur += buff;
-                    }
-                }
+                targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);
                 break;
             case Weapon.Faraflame:
             case Weapon.GunshinNoSyo:
@@ -6722,16 +6740,23 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.HurricaneDagger:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 3, 30);
+                    }
+                }
+                break;
             case Weapon.RaikenJikurinde:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 25) {
-                        return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                        return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
                     }
                 }
                 break;
             case Weapon.CarnageAmatsu:
                 if (this.__isSolo(defUnit)) {
-                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
                 }
                 break;
             case Weapon.LilacJadeBreath:
@@ -6824,13 +6849,13 @@ class DamageCalculatorWrapper {
                 break;
             case PassiveB.MoonTwinWing:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
-                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
                 }
                 break;
             case Weapon.NinissIceLance:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
-                        return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                        return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
                     }
                 }
                 break;
@@ -6839,7 +6864,7 @@ class DamageCalculatorWrapper {
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
-                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
             case PassiveB.BlueLionRule:
                 {
                     let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
@@ -6870,7 +6895,7 @@ class DamageCalculatorWrapper {
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
-            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
             if (ratio > 0) {
                 defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
             }

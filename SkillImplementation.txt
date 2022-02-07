@@ -169,8 +169,15 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
 }
 
-敵が不利な状態異常を受けている時
+敵が受けている強化の合計値を攻撃に加算[敵ブレード]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);
+}
+
+
+敵が[有利/不利]な状態異常を受けている時
 __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
+   if (enemyUnit.hasPositiveStatusEffect(targetUnit)) {}
    if (enemyUnit.hasNegativeStatusEffect()) {}
 }
 
@@ -228,11 +235,11 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
-回避
+受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×N%軽減(最大M)[回避]
 戦闘前
 __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
     {
-        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, N, M);
         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
     }
 }
