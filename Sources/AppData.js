@@ -130,9 +130,8 @@ class AppData extends UnitManager {
             { label: "忘れられた城", value: MapType.Wasurerareta },
             { label: "夏草の城", value: MapType.Natsukusa },
             { label: "灼熱の城", value: MapType.Syakunetsu },
-            // TODO: 正しい名前に修正する
-            { label: "4部マップ1", value: MapType.Map4_1 },
-            { label: "4部マップ2", value: MapType.Map4_2 },
+            { label: "夢の国の城", value: MapType.DreamCastle },
+            { label: "悪夢の国の城", value: MapType.NightmareCastle },
         ];
         this.aetherRaidMenuStyle = "";
 

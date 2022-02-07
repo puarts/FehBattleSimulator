@@ -18,10 +18,8 @@ const MapType = {
     Wasurerareta: 7,
     Natsukusa: 8,
     Syakunetsu: 9,
-    // 4部マップ
-    // TODO: 正式な名前がわかったらリネームする
-    Map4_1: 10,
-    Map4_2: 11,
+    DreamCastle: 10,
+    NightmareCastle: 11,
 
     // 闘技場
     // https://feheroes.gamepedia.com/List_of_Arena_maps
@@ -99,9 +97,8 @@ const AetherRaidMapImageFiles = [
     { id: MapType.Syakunetsu, fileName: "Syakunetsu.png" },
     { id: MapType.Wasurerareta, fileName: "Wasurerareta.png" },
     { id: MapType.Yukigesho, fileName: "Yukigesyo.png" },
-    // TODO: 正しい画像に修正する
-    { id: MapType.Map4_1, fileName: "Izumi.png" },
-    { id: MapType.Map4_2, fileName: "Wasurerareta.png" },
+    { id: MapType.DreamCastle, fileName: "DreamCastle.png" },
+    { id: MapType.NightmareCastle, fileName: "NightmareCastle.png" },
 ];
 const ArenaMapImageFiles = [
     { id: MapType.Arena_1, fileName: "Arena_1.jpg" },
@@ -435,9 +432,8 @@ function getMapBackgroundImage(mapKind) {
         case MapType.Syakunetsu: return root + "Syakunetsu.png";
         case MapType.Wasurerareta: return root + "Wasurerareta.png";
         case MapType.Yukigesho: return root + "Yukigesyo.png";
-        // TODO: 正しい画像を指定する
-        case MapType.Map4_1: return root + "Izumi.png";
-        case MapType.Map4_2: return root + "Wasurerareta.png";
+        case MapType.DreamCastle: return root + "DreamCastle.png";
+        case MapType.NightmareCastle: return root + "NightmareCastle.png";
         case MapType.Arena_1: return arenaRoot + "Arena_1.jpg";
         case MapType.Arena_2: return arenaRoot + "Arena_2.png";
         case MapType.Arena_3: return arenaRoot + "Arena_3.jpg";
@@ -845,12 +841,12 @@ class BattleMap {
                     this.setTileType(2, 5, TileType.Flier);
                 }
                 break;
-            case MapType.Map4_1: {
+            case MapType.DreamCastle: {
                 this.setTileType(0, 3, TileType.Flier);
                 this.setTileType(5, 3, TileType.Flier);
             }
                 break;
-            case MapType.Map4_2: {
+            case MapType.NightmareCastle: {
                 this.setTileType(0, 5, TileType.DefensiveForest);
                 this.setTileType(2, 2, TileType.DefensiveForest);
                 this.setTileType(3, 2, TileType.DefensiveForest);
