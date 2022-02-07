@@ -143,7 +143,7 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 targetUnit.battleContext.invalidateAllOwnDebuffs();
 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
 
-自分が弱化を受けていれば、能力値が弱化の値の2倍だけ上昇(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7+14+4で、戦闘中、攻撃+11となる)
+自分が弱化を受けていれば、能力値が弱化の値の2倍だけ上昇(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7+14+4で、戦闘中、攻撃+11となる)[弱化反転]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     case Weapon.ShinkenFalcion:
     case Weapon.ChaosRagnell:
@@ -161,8 +161,18 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
         break;
 }
 
+強化の値の2倍だけ減少[強化反転]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
+    enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit), 0) * 2;
+    enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit), 0) * 2;
+    enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
+}
+
 敵が不利な状態異常を受けている時
-if (enemyUnit.hasNegativeStatusEffect())
+__applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
+   if (enemyUnit.hasNegativeStatusEffect()) {}
+}
 
 HP N回復
 targetUnit.reserveHeal(N);

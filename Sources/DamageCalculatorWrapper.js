@@ -5401,6 +5401,15 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.weapon) {
+            case Weapon.Gyorru:
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25 || enemyUnit.
+                    hasNegativeStatusEffect()) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                }
+                break;
             case Weapon.FukenFalcion:
                 if (targetUnit.isWeaponRefined) {
                     if (targetUnit.battleContext.restHpPercentage < 100
@@ -5955,6 +5964,17 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.Gyorru: {
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                        enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit), 0) * 2;
+                    }
+                }
+            }
+                break;
             case Weapon.Sogun:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
