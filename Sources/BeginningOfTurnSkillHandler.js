@@ -714,11 +714,23 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.__findMinStatusUnits(
                         skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
                         x => this.__getStatusEvalUnit(x).getResInPrecombat())
-                    ) {
+                        ) {
                         unit.reserveToApplyAtkDebuff(-6);
                         unit.reserveToApplySpdDebuff(-6);
                     }
                 }
+                break;
+            case PassiveB.FreezingSeal2: {
+                let group = skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let minUnits = this.__findMinStatusUnits(group, x => this.__getStatusEvalUnit(x).getResInPrecombat());
+                for (let unit of minUnits) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyAtkDebuff(-7);
+                        u.reserveToApplyDefDebuff(-7);
+                        u.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                }
+            }
                 break;
             case PassiveB.KoriNoHuin:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= 50) {

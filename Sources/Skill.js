@@ -1834,6 +1834,7 @@ const PassiveB = {
     KoriNoHuin: 660, // 氷の封印
     ChillingSeal2: 1692, // 氷の封印・承
     ToketsuNoHuin: 770, // 凍結の封印
+    FreezingSeal2: 1986, // 凍結の封印・承
 
     Ikari3: 637, // 怒り3
     Renewal1: 1258, // 回復1
