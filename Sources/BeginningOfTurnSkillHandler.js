@@ -107,6 +107,23 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.TomeOfReason:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                    }
+                }
+                break;
+            case Weapon.MugenNoSyo:
+                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyAtkDebuff(-5);
+                        u.reserveToApplyDefDebuff(-5);
+                        u.reserveToApplyResDebuff(-5);
+                    }
+                }
+                break;
             case Weapon.StaffOfTheSaint:
                 for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     u.applyDefBuff(6);
@@ -714,11 +731,23 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.__findMinStatusUnits(
                         skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
                         x => this.__getStatusEvalUnit(x).getResInPrecombat())
-                    ) {
+                        ) {
                         unit.reserveToApplyAtkDebuff(-6);
                         unit.reserveToApplySpdDebuff(-6);
                     }
                 }
+                break;
+            case PassiveB.FreezingSeal2: {
+                let group = skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let minUnits = this.__findMinStatusUnits(group, x => this.__getStatusEvalUnit(x).getResInPrecombat());
+                for (let unit of minUnits) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyAtkDebuff(-7);
+                        u.reserveToApplyDefDebuff(-7);
+                        u.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                }
+            }
                 break;
             case PassiveB.KoriNoHuin:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= 50) {
@@ -1633,7 +1662,8 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveHeal(7);
                 }
                 break;
-            case PassiveC.SeimeiNoKagayaki: {
+            case PassiveC.SeimeiNoKagayaki:
+            case PassiveC.SparklingBoostPlus: {
                 let targetUnits = [];
                 let maxDamage = 0;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
@@ -1647,7 +1677,8 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 for (let unit of targetUnits) {
-                    unit.reserveHeal(10);
+                    let amount = skillId === PassiveC.SeimeiNoKagayaki ? 10 : 20;
+                    unit.reserveHeal(amount);
                 }
             }
                 break;

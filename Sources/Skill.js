@@ -1242,6 +1242,11 @@ const Weapon = {
     PiercingTributePlus: 1978, // 感謝の花の槍+
     DestinysBow: 1980, // 運命変える絆弓
     StaffOfTributePlus: 1982, // 感謝の花の杖+
+
+    // 2022年2月 武器錬成
+    HurricaneDagger: 1989, // 疾風の暗器
+    BowOfVerdane: 1988, // ヴェルダンの荒弓
+    TomeOfReason: 1987, // 純理の書
 }
 
 const Support = {
@@ -1834,6 +1839,7 @@ const PassiveB = {
     KoriNoHuin: 660, // 氷の封印
     ChillingSeal2: 1692, // 氷の封印・承
     ToketsuNoHuin: 770, // 凍結の封印
+    FreezingSeal2: 1986, // 凍結の封印・承
 
     Ikari3: 637, // 怒り3
     Renewal1: 1258, // 回復1
@@ -2176,6 +2182,7 @@ const PassiveC = {
     EvenRecovery3: 1741, // 快癒・奇数3
 
     // 護り手
+    AdFarSave3: 1993, // 鎧の護り手・遠間3
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrFarSave3: 1931, // 盾の護り手・遠間3
     DrNearSave3: 1636, // 盾の護り手・近間3
@@ -2200,6 +2207,7 @@ const PassiveC = {
 
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
+    SparklingBoostPlus: 1985, // 生命の輝き・神
     ChaosNamed: 868, // 我が名は混沌
     SurtrsMenace: 767, // 炎王の威嚇
     SurtrsPortent: 1792, // 炎王の脅嚇
