@@ -4138,8 +4138,21 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MugenNoSyo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (self.__isNextToOtherUnits(targetUnit)) {
-                enemyUnit.addAllSpur(-4);
+            if (!targetUnit.isWeaponRefined) {
+                if (self.__isNextToOtherUnits(targetUnit)) {
+                    enemyUnit.addAllSpur(-4);
+                }
+            } else {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    enemyUnit.addAllSpur(-4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.atkSpur += 5;
+                        targetUnit.spdSpur += 5;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Syurugu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6980,6 +6993,14 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.MugenNoSyo:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let amount = isPrecombat ? atkUnit.getEvalAtkInCombat(defUnit) : atkUnit.getEvalAtkInCombat(defUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(amount * 0.15);
+                    }
+                }
+                break;
             case Weapon.AncientCodex:
                 if (this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
                     let atkRes = isPrecombat ? atkUnit.getEvalResInPrecombat() : atkUnit.getEvalResInCombat(defUnit);

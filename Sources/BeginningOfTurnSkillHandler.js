@@ -107,6 +107,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.MugenNoSyo:
+                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyAtkDebuff(-5);
+                        u.reserveToApplyDefDebuff(-5);
+                        u.reserveToApplyResDebuff(-5);
+                    }
+                }
+                break;
             case Weapon.StaffOfTheSaint:
                 for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     u.applyDefBuff(6);

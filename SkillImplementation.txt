@@ -55,6 +55,9 @@ if (this.__isThereAllyInSpecifiedSpaces(targetUnit, N)) {}
 周囲1マス以内に味方がいない時(孤軍)
 if (this.__isSolo(targetUnit) || calcPotentialDamage) {}
 
+周囲Nマス以内にいる、最も近い敵
+for (let unit of this.__findNearestEnemies(<unit>, <N>)) {}
+
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
