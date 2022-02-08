@@ -107,6 +107,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.TomeOfReason:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                    }
+                }
+                break;
             case Weapon.MugenNoSyo:
                 for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
