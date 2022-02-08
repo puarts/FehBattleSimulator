@@ -55,6 +55,9 @@ if (this.__isThereAllyInSpecifiedSpaces(targetUnit, N)) {}
 周囲1マス以内に味方がいない時(孤軍)
 if (this.__isSolo(targetUnit) || calcPotentialDamage) {}
 
+周囲Nマス以内にいる、最も近い敵
+for (let unit of this.__findNearestEnemies(<unit>, <N>)) {}
+
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
@@ -87,6 +90,9 @@ __updateUnitSpur() {
     }
 }
 
+<ステータス>+N (距離に関係の無い)
+__updateUnitSpur() {}
+
 戦闘開始時、自身(敵)のHPがN%以上なら
 targetUnit.battleContext.restHpPercentage >= N
 enemyUnit.battleContext.restHpPercentage >= N
@@ -99,7 +105,10 @@ __applySkillEffectForUnitAfterCombatStatusFixed() {
 
 2回攻撃
 __setAttackCount(atkUnit, enemyUnit) {
+    // 攻撃時
     atkUnit.battleContext.attackCount = 2;
+    // 攻撃を受けた時
+    atkUnit.battleContext.counterattackCount = 2;
 }
 
 追撃可能なら自分の攻撃の直後に追撃を行う(攻め立て)
@@ -140,7 +149,7 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 targetUnit.battleContext.invalidateAllOwnDebuffs();
 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
 
-自分が弱化を受けていれば、能力値が弱化の値の2倍だけ上昇(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7+14+4で、戦闘中、攻撃+11となる)
+自分が弱化を受けていれば、能力値が弱化の値の2倍だけ上昇(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7+14+4で、戦闘中、攻撃+11となる)[弱化反転]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     case Weapon.ShinkenFalcion:
     case Weapon.ChaosRagnell:
@@ -158,8 +167,25 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
         break;
 }
 
-敵が不利な状態異常を受けている時
-if (enemyUnit.hasNegativeStatusEffect())
+強化の値の2倍だけ減少[強化反転]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
+    enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit), 0) * 2;
+    enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit), 0) * 2;
+    enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
+}
+
+敵が受けている強化の合計値を攻撃に加算[敵ブレード]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);
+}
+
+
+敵が[有利/不利]な状態異常を受けている時
+__applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
+   if (enemyUnit.hasPositiveStatusEffect(targetUnit)) {}
+   if (enemyUnit.hasNegativeStatusEffect()) {}
+}
 
 HP N回復
 targetUnit.reserveHeal(N);
@@ -215,11 +241,11 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
-回避
+受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×N%軽減(最大M)[回避]
 戦闘前
 __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
     {
-        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, N, M);
         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
     }
 }

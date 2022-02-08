@@ -82,33 +82,14 @@ class DamageCalculationUtility {
     }
 
     /// 戦闘前奥義の回避効果によるダメージ軽減率を取得します。
-    static getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit) {
+    static getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, percentage = 4, maxPercentage = 40) {
         let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-        if (diff > 0) {
-            let percentage = diff * 4;
-            if (percentage > 40) {
-                percentage = 40;
-            }
-
-            return percentage / 100.0;
-        }
-        return 0;
+        return diff > 0 ? Math.min(diff * percentage, maxPercentage) / 100.0 : 0;
     }
 
     /// 回避効果によるダメージ軽減率を取得します。
-    static getDodgeDamageReductionRatio(atkUnit, defUnit) {
-        let defUnitSpd = defUnit.getEvalSpdInCombat(atkUnit);
-        let atkUnitSpd = atkUnit.getEvalSpdInCombat(defUnit);
-        let diff = defUnitSpd - atkUnitSpd;
-        if (diff > 0) {
-            let percentage = diff * 4;
-            if (percentage > 40) {
-                percentage = 40;
-            }
-
-            return percentage / 100.0;
-        }
-
-        return 0;
+    static getDodgeDamageReductionRatio(atkUnit, defUnit, percentage = 4, maxPercentage = 40) {
+        let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
+        return diff > 0 ? Math.min(diff * percentage, maxPercentage) / 100.0 : 0;
     }
 }

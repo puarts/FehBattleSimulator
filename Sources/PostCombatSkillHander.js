@@ -237,8 +237,10 @@ class PostCombatSkillHander {
                     attackUnit.specialCount += 2;
                     break;
                 case Weapon.Rifia:
-                    if (attackUnit.battleContext.restHpPercentage >= 50) {
-                        attackUnit.reserveTakeDamage(4);
+                    if (!attackUnit.isWeaponRefined) {
+                        if (attackUnit.battleContext.restHpPercentage >= 50) {
+                            attackUnit.reserveTakeDamage(4);
+                        }
                     }
                     break;
                 case Weapon.Death:
@@ -304,6 +306,22 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GousouJikumunto:
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 75 || self.__isSolo(targetUnit)) {
+                            targetUnit.reserveHeal(7);
+                        }
+                    }
+                    break;
+                case Weapon.Rifia:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                                unit.reserveHeal(7);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.StaffOfTributePlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
                         unit.reserveHeal(7);

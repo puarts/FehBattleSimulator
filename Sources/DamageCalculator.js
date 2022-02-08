@@ -304,6 +304,16 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HurricaneDagger:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
+                                DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+                                atkUnit.battleContext.additionalDamage += 5;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Misteruthin:
                     if (atkUnit.isWeaponSpecialRefined) {
                         atkUnit.battleContext.additionalDamageOfSpecial += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
