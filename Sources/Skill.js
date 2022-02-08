@@ -1245,6 +1245,7 @@ const Weapon = {
 
     // 2022年2月 武器錬成
     HurricaneDagger: 1989, // 疾風の暗器
+    BowOfVerdane: 1988, // ヴェルダンの荒弓
 }
 
 const Support = {
