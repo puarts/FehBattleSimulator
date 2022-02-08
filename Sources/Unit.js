@@ -332,13 +332,9 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.FalseStart:
             return g_imageRootPath + "StatusEffect_FalseStart.png";
         case StatusEffectType.NeutralizesFoesBonusesDuringCombat:
-            return g_imageRootPath + "StatusEffect_Pathfinder.png";
-            // TODO: 画像を追加する
-            // return g_imageRootPath + "StatusEffect_NeutralizesFoesBonusesDuringCombat.png";
+            return g_imageRootPath + "StatusEffect_NeutralizeFoeBonuses.png";
         case StatusEffectType.GrandStrategy:
-            return g_imageRootPath + "StatusEffect_Pathfinder.png";
-            // TODO: 画像を追加する
-            // return g_imageRootPath + "StatusEffect_GrandStrategy.png";
+            return g_imageRootPath + "StatusEffect_GrandStrategy.png";
         default: return "";
     }
 }
