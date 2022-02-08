@@ -7018,7 +7018,7 @@ class DamageCalculatorWrapper {
         switch (atkUnit.weapon) {
             case Weapon.MugenNoSyo:
                 if (atkUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let amount = isPrecombat ? atkUnit.getEvalAtkInCombat(defUnit) : atkUnit.getEvalAtkInCombat(defUnit);
                         atkUnit.battleContext.additionalDamage += Math.trunc(amount * 0.15);
                     }
