@@ -1830,6 +1830,19 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.GousouJikumunto] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75 || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAllSpur(5);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= 5;
+                        enemyUnit.defSpur -= 5;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HurricaneDagger] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -6447,6 +6460,18 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.GousouJikumunto:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            if (enemyUnit.battleContext.initiatesCombat) {
+                                let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalAtkInCombat(targetUnit);
+                                if (diff > 0) {
+                                    targetUnit.battleContext.counterattackCount = 2;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Rifia:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25 &&
@@ -9539,6 +9564,10 @@ class DamageCalculatorWrapper {
                     targetUnit.addAllSpur(5);
                     break;
                 case Weapon.GousouJikumunto:
+                    if (!targetUnit.isWeaponRefined) {
+                        targetUnit.addAllSpur(4);
+                    }
+                    break;
                 case Weapon.KokkiNoKosou:
                 case Weapon.MaritaNoKen:
                     targetUnit.addAllSpur(4);

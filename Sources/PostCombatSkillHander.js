@@ -306,6 +306,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GousouJikumunto:
+                    if (targetUnit.isWeaponRefined) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 75 || self.__isSolo(targetUnit)) {
+                            targetUnit.reserveHeal(7);
+                        }
+                    }
+                    break;
                 case Weapon.Rifia:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
