@@ -253,7 +253,7 @@ class DamageCalculatorWrapper {
 
             if (!calcPotentialDamage && atkUnit.canActivatePrecombatSpecial()) {
                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit);
-                atkUnit.battleContext.clearPrecombatState();
+                // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();
 
                 // 戦闘開始時のHPを保存
@@ -264,8 +264,25 @@ class DamageCalculatorWrapper {
             if (!calcPotentialDamage) {
                 let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
                 if (saverUnit != null) {
+                    // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
+                    preCombatDamage = 0;
+                    preCombatDamageWithOverkill = 0;
                     if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
                     self.__initSaverUnit(saverUnit, defUnit);
+                    if (atkUnit.canActivatePrecombatSpecial()) {
+                        // NOTE: 護られるユニットの防御床情報を護り手に入れる
+                        saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
+                        // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
+                        for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+                            if (tile.placedUnit === saverUnit) {
+                                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit);
+                                saverUnit.battleContext.clearPrecombatState();
+                                saverUnit.battleContext.restHp = saverUnit.restHp;
+                            }
+                        }
+                        // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
+                        atkUnit.battleContext.clearPrecombatState();
+                    }
                     actualDefUnit = saverUnit;
                 }
             }
