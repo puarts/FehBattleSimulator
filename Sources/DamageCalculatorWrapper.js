@@ -127,6 +127,7 @@ class DamageCalculatorWrapper {
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
         // 攻撃対象以外の戦闘前の範囲奥義ダメージ
+        let precombatDamages = new Map();
         if (atkUnit.canActivatePrecombatSpecial()) {
             // 範囲攻撃ダメージを周囲の敵に反映
             for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
@@ -136,11 +137,17 @@ class DamageCalculatorWrapper {
                 ) {
                     let targetUnit = tile.placedUnit;
                     let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit);
-                    this.writeLog(
-                        atkUnit.specialInfo.name + "により" +
-                        targetUnit.getNameWithGroup() + "に" + damage + "ダメージ");
+                    precombatDamages.set(targetUnit, damage);
+                    this.writeLog(`${atkUnit.specialInfo.name}により${targetUnit.getNameWithGroup()}に${damage}ダメージ`);
                     targetUnit.takeDamage(damage, true);
                 }
+            }
+            if (precombatDamages.size > 0) {
+                let damageLog = '';
+                for (let [unit, damage] of precombatDamages) {
+                    damageLog += `${unit.name}に${damage}、`;
+                }
+                this._damageCalc.writeSimpleLog(`${atkUnit.specialInfo.name}により周囲の${damageLog.slice(0, -1)}のダメージ`);
             }
         }
 
