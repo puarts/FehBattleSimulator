@@ -71,6 +71,7 @@ class DamageCalcResult {
         this.defUnit_res = 0;
 
         this.preCombatDamage = 0;
+        this.preCombatDamageWithOverkill = 0;
 
         // 護り手ユニットかそうでないかを後で区別できるよう結果に戦ったユニットを記録しておく
         this.defUnit = null;
@@ -626,15 +627,15 @@ class DamageCalculator {
      */
     calcPrecombatSpecialResult(atkUnit, defUnit) {
         if (!atkUnit.canActivatePrecombatSpecial()) {
-            return 0;
+            return [0, 0];
         }
         if (this.isLogEnabled) {
             this.writeDebugLog("戦闘前ダメージ計算..");
         }
 
         atkUnit.battleContext.isSpecialActivated = true;
-        let totalDamage = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
-        totalDamage = Math.min(totalDamage, defUnit.restHp - 1);
+        let totalDamageWithOverkill = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
+        let totalDamage = Math.min(totalDamageWithOverkill, defUnit.restHp - 1);
 
         this.__restoreMaxSpecialCount(atkUnit);
 
@@ -642,12 +643,12 @@ class DamageCalculator {
 
         if (this.isLogEnabled) {
             this.writeDebugLog("戦闘前ダメージ計算..");
-            this.writeLog("範囲奥義によるダメージ" + totalDamage);
+            this.writeLog(`範囲奥義によるダメージ${totalDamageWithOverkill}(HP: → ${defUnit.restHp})`);
             this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup());
-            this.writeSimpleLog("範囲奥義によるダメージ" + totalDamage);
+            this.writeSimpleLog(`範囲奥義によるダメージ${totalDamageWithOverkill}(HP: → ${defUnit.restHp})`);
             this.writeLog(defUnit.name + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
         }
-        return totalDamage;
+        return [totalDamage, totalDamageWithOverkill];
     }
 
     /**

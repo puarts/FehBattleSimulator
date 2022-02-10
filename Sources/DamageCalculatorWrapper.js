@@ -242,9 +242,10 @@ class DamageCalculatorWrapper {
 
             // 戦闘前ダメージ計算
             let preCombatDamage = 0;
+            let preCombatDamageWithOverkill = 0;
 
             if (!calcPotentialDamage && atkUnit.canActivatePrecombatSpecial()) {
-                preCombatDamage = self.calcPrecombatSpecialResult(atkUnit, defUnit);
+                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit);
                 atkUnit.battleContext.clearPrecombatState();
                 defUnit.battleContext.clearPrecombatState();
 
@@ -264,6 +265,7 @@ class DamageCalculatorWrapper {
 
             result = self.calcCombatResult(atkUnit, actualDefUnit, damageType);
             result.preCombatDamage = preCombatDamage;
+            result.preCombatDamageWithOverkill = preCombatDamageWithOverkill;
         });
 
         return result;
