@@ -127,6 +127,7 @@ class DamageCalculatorWrapper {
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
         // 攻撃対象以外の戦闘前の範囲奥義ダメージ
+        let precombatDamages = new Map();
         if (atkUnit.canActivatePrecombatSpecial()) {
             // 範囲攻撃ダメージを周囲の敵に反映
             for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
@@ -136,11 +137,17 @@ class DamageCalculatorWrapper {
                 ) {
                     let targetUnit = tile.placedUnit;
                     let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit);
-                    this.writeLog(
-                        atkUnit.specialInfo.name + "により" +
-                        targetUnit.getNameWithGroup() + "に" + damage + "ダメージ");
+                    precombatDamages.set(targetUnit, damage);
+                    this.writeLog(`${atkUnit.specialInfo.name}により${targetUnit.getNameWithGroup()}に${damage}ダメージ`);
                     targetUnit.takeDamage(damage, true);
                 }
+            }
+            if (precombatDamages.size > 0) {
+                let damageLog = '';
+                for (let [unit, damage] of precombatDamages) {
+                    damageLog += `${unit.name}に${damage}、`;
+                }
+                this._damageCalc.writeSimpleLog(`${atkUnit.specialInfo.name}により周囲の${damageLog.slice(0, -1)}のダメージ`);
             }
         }
 
@@ -242,10 +249,11 @@ class DamageCalculatorWrapper {
 
             // 戦闘前ダメージ計算
             let preCombatDamage = 0;
+            let preCombatDamageWithOverkill = 0;
 
             if (!calcPotentialDamage && atkUnit.canActivatePrecombatSpecial()) {
-                preCombatDamage = self.calcPrecombatSpecialResult(atkUnit, defUnit);
-                atkUnit.battleContext.clearPrecombatState();
+                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit);
+                // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();
 
                 // 戦闘開始時のHPを保存
@@ -256,14 +264,32 @@ class DamageCalculatorWrapper {
             if (!calcPotentialDamage) {
                 let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
                 if (saverUnit != null) {
+                    // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
+                    preCombatDamage = 0;
+                    preCombatDamageWithOverkill = 0;
                     if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
                     self.__initSaverUnit(saverUnit, defUnit);
+                    if (atkUnit.canActivatePrecombatSpecial()) {
+                        // NOTE: 護られるユニットの防御床情報を護り手に入れる
+                        saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
+                        // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
+                        for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+                            if (tile.placedUnit === saverUnit) {
+                                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit);
+                                saverUnit.battleContext.clearPrecombatState();
+                                saverUnit.battleContext.restHp = saverUnit.restHp;
+                            }
+                        }
+                        // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
+                        atkUnit.battleContext.clearPrecombatState();
+                    }
                     actualDefUnit = saverUnit;
                 }
             }
 
             result = self.calcCombatResult(atkUnit, actualDefUnit, damageType);
             result.preCombatDamage = preCombatDamage;
+            result.preCombatDamageWithOverkill = preCombatDamageWithOverkill;
         });
 
         return result;
