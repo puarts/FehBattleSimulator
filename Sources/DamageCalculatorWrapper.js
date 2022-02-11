@@ -1956,7 +1956,7 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SerpentineStaffPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.invalidatesHeal= true;
+            targetUnit.battleContext.invalidatesHeal = true;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DrybladeLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -5507,7 +5507,7 @@ class DamageCalculatorWrapper {
             case Weapon.Gyorru:
                 if (targetUnit.isWeaponRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25 || enemyUnit.
-                    hasNegativeStatusEffect()) {
+                        hasNegativeStatusEffect()) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.defSpur -= 5;
                     }
@@ -9051,7 +9051,12 @@ class DamageCalculatorWrapper {
             this.updateUnitSpur(unit, calcPotentialDamage);
         }
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {boolean} calcPotentialDamage=false
+     * @param  {boolean} ignoresSkillEffectFromAllies=false
+     * @param  {boolean} ignoreSkillEffectFromEnemies=false
+     */
     updateUnitSpur(targetUnit, calcPotentialDamage = false,
         ignoresSkillEffectFromAllies = false,
         ignoreSkillEffectFromEnemies = false,

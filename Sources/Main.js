@@ -5826,7 +5826,7 @@ class AetherRaidTacticsBoard {
                         moveUnit(unit, tileToMove, unit.groupId == UnitGroupType.Ally);
                     }
 
-                    self.updateSpurForSpecifiedGroupUnits(unit.groupId);
+                    self.updateAllUnitSpur();
                 }
 
                 if (!unit.isActionDone && endAction) {
