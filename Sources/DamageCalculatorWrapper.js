@@ -235,6 +235,8 @@ class DamageCalculatorWrapper {
             self.updateUnitSpur(atkUnit, calcPotentialDamage);
             self.updateUnitSpur(defUnit, calcPotentialDamage);
         }), () => {
+            self.updateUnitSpur(atkUnit, calcPotentialDamage);
+            self.updateUnitSpur(defUnit, calcPotentialDamage);
             atkUnit.initBattleContext(true);
             defUnit.initBattleContext(false);
 
