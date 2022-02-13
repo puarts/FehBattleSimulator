@@ -3242,8 +3242,13 @@ class AetherRaidTacticsBoard {
     enumerateUnitsInSpecifiedGroup(groupId) {
         return g_appData.enumerateUnitsInSpecifiedGroup(groupId);
     }
-
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Tile} attackTile
+     */
     showDamageCalcSummary(atkUnit, defUnit, attackTile) {
+        atkUnit.createSnapshotIfNull();
         let result = this.calcDamageTemporary(atkUnit, defUnit, attackTile);
         this.setDamageCalcSummary(
             atkUnit,
@@ -3272,7 +3277,16 @@ class AetherRaidTacticsBoard {
         this.vm.attackTargetUnitIndex = -1;
         g_appData.__showStatusToAttackerInfo();
     }
-
+    /**
+     * @param  {Unit} unit
+     * @param  {Number} preCombatDamage
+     * @param  {Number} damage
+     * @param  {Number} attackCount
+     * @param  {Number} atk
+     * @param  {Number} spd
+     * @param  {Number} def
+     * @param  {Number} res
+     */
     __createDamageCalcSummaryHtml(unit, preCombatDamage, damage, attackCount,
         atk, spd, def, res
     ) {
@@ -3295,7 +3309,11 @@ class AetherRaidTacticsBoard {
             }
             html += "<br/>";
         }
-        html += `(攻${atk},速${spd},守${def},魔${res})`;
+        html += `(攻${atk},速${spd},守${def},魔${res})<br/>`;
+        let snapshot = unit.snapshot;
+        if (snapshot != null) {
+            html += `(攻+${snapshot.atkSpur},速+${snapshot.spdSpur},守+${snapshot.defSpur},魔+${snapshot.resSpur})`;
+        }
 
         return html;
     }

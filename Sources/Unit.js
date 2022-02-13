@@ -1168,6 +1168,7 @@ class Unit {
         this.isDuoOrHarmonicSkillActivatedInThisTurn = false;
 
         // Unitの情報を記録しておく用
+        /** @type {Unit} */
         this.snapshot = null;
 
         this.isSelected = false;
@@ -1954,6 +1955,19 @@ class Unit {
     /**
      * @returns {Unit}
      */
+    createSnapshotIfNull() {
+        if (this.snapshot !== null) {
+            return this.snapshot;
+        }
+
+        this.snapshot = this.__createSnapshotImpl();
+        return this.snapshot;
+    }
+
+
+    /**
+     * @returns {Unit}
+     */
     createSnapshot() {
         this.snapshot = this.__createSnapshotImpl();
         return this.snapshot;
@@ -2365,6 +2379,17 @@ class Unit {
         this.spdSpur = 0;
         this.defSpur = 0;
         this.resSpur = 0;
+    }
+
+    copySpursToSnapshot() {
+        if (this.snapshot === null) {
+            return;
+        }
+
+        this.snapshot.atkSpur = this.atkSpur;
+        this.snapshot.spdSpur = this.spdSpur;
+        this.snapshot.defSpur = this.defSpur;
+        this.snapshot.resSpur = this.resSpur;
     }
 
     resetBuffs() {

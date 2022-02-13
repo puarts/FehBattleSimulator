@@ -290,6 +290,10 @@ class DamageCalculatorWrapper {
             result = self.calcCombatResult(atkUnit, actualDefUnit, damageType);
             result.preCombatDamage = preCombatDamage;
             result.preCombatDamageWithOverkill = preCombatDamageWithOverkill;
+
+            // ダメージプレビュー用にスナップショットに戦闘中バフ値をコピー
+            atkUnit.copySpursToSnapshot();
+            actualDefUnit.copySpursToSnapshot();
         });
 
         return result;
