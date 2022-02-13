@@ -1050,3 +1050,10 @@ function roundFloat(value, precision = 6) {
     const revertFactor = 1.0 / factor;
     return Math.round(value * factor) * revertFactor;
 }
+
+/**
+ * @param  {Number} number
+ */
+function numberToSignedString(number) {
+    return number < 0 ? number : "+" + number;
+}

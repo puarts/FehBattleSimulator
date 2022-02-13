@@ -68,9 +68,23 @@ class DamageCalculatorWrapper {
         this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
 
         // 高速化用
+        /**
+         * @callback skillEffectFuncWithPotentialDamage
+         * @param {Unit} targetUnit
+         * @param {Unit} enemyUnit
+         * @param {Boolean} calcPotentialDamage
+         * 
+         * @callback skillEffectFunc
+         * @param {Unit} targetUnit
+         * @param {Unit} enemyUnit
+        */
+        /** @type {Object.<string, skillEffectFuncWithPotentialDamage} */
         this._applySkillEffectForAtkUnitFuncDict = {};
+        /** @type {Object.<string, skillEffectFuncWithPotentialDamage} */
         this._applySkillEffectForDefUnitFuncDict = {};
+        /** @type {Object.<string, skillEffectFuncWithPotentialDamage} */
         this._applySkillEffectForUnitFuncDict = {};
+        /** @type {Object.<string, skillEffectFunc} */
         this._applySpecialSkillEffectFuncDict = {};
 
         this.__init__applySkillEffectForAtkUnitFuncDict();

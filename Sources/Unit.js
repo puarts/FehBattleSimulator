@@ -939,7 +939,7 @@ class ActionContext {
         /** @type {Unit} */
         this.bestTargetToAttack = null;
 
-        /** @type {{Unit, AttackEvaluationContext}} */
+        /** @type  {Object.<Unit, AttackEvaluationContext} */
         this.attackEvalContexts = {}; // key=target unit, value=AttackEvaluationContext
 
         /** @type {Unit} */
@@ -2390,7 +2390,36 @@ class Unit {
         this.snapshot.spdSpur = this.spdSpur;
         this.snapshot.defSpur = this.defSpur;
         this.snapshot.resSpur = this.resSpur;
+        this.snapshot.battleContext.invalidatesAtkBuff = this.battleContext.invalidatesAtkBuff;
+        this.snapshot.battleContext.invalidatesSpdBuff = this.battleContext.invalidatesSpdBuff;
+        this.snapshot.battleContext.invalidatesDefBuff = this.battleContext.invalidatesDefBuff;
+        this.snapshot.battleContext.invalidatesResBuff = this.battleContext.invalidatesResBuff;
     }
+    /**
+     * @param  {Unit} enemyUnit
+     */
+    getAtkIncrementInCombat(enemyUnit) {
+        return this.getAtkInCombat(enemyUnit) - this.getAtkInPrecombat();
+    }
+    /**
+     * @param  {Unit} enemyUnit
+     */
+    getSpdIncrementInCombat(enemyUnit) {
+        return this.getSpdInCombat(enemyUnit) - this.getSpdInPrecombat();
+    }
+    /**
+     * @param  {Unit} enemyUnit
+     */
+    getDefIncrementInCombat(enemyUnit) {
+        return this.getDefInCombat(enemyUnit) - this.getDefInPrecombat();
+    }
+    /**
+     * @param  {Unit} enemyUnit
+     */
+    getResIncrementInCombat(enemyUnit) {
+        return this.getResInCombat(enemyUnit) - this.getResInPrecombat();
+    }
+
 
     resetBuffs() {
         this.atkBuff = 0;

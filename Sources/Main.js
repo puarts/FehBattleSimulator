@@ -3253,14 +3253,18 @@ class AetherRaidTacticsBoard {
         this.setDamageCalcSummary(
             atkUnit,
             result.defUnit,
-            this.__createDamageCalcSummaryHtml(atkUnit,
+            this.__createDamageCalcSummaryHtml(
+                atkUnit,
+                result.defUnit,
                 result.preCombatDamageWithOverkill,
                 result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
                 result.atkUnit_atk,
                 result.atkUnit_spd,
                 result.atkUnit_def,
                 result.atkUnit_res),
-            this.__createDamageCalcSummaryHtml(result.defUnit,
+            this.__createDamageCalcSummaryHtml(
+                result.defUnit,
+                atkUnit,
                 -1,
                 result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
                 result.defUnit_atk,
@@ -3279,6 +3283,7 @@ class AetherRaidTacticsBoard {
     }
     /**
      * @param  {Unit} unit
+     * @param  {Unit} enemyUnit
      * @param  {Number} preCombatDamage
      * @param  {Number} damage
      * @param  {Number} attackCount
@@ -3287,7 +3292,7 @@ class AetherRaidTacticsBoard {
      * @param  {Number} def
      * @param  {Number} res
      */
-    __createDamageCalcSummaryHtml(unit, preCombatDamage, damage, attackCount,
+    __createDamageCalcSummaryHtml(unit, enemyUnit, preCombatDamage, damage, attackCount,
         atk, spd, def, res
     ) {
         let html = "HP: " + unit.hp + " → ";
@@ -3312,7 +3317,15 @@ class AetherRaidTacticsBoard {
         html += `(攻${atk},速${spd},守${def},魔${res})<br/>`;
         let snapshot = unit.snapshot;
         if (snapshot != null) {
-            html += `(攻+${snapshot.atkSpur},速+${snapshot.spdSpur},守+${snapshot.defSpur},魔+${snapshot.resSpur})`;
+            let enemySnapshot = enemyUnit.snapshot;
+            let atkInc = snapshot.getAtkIncrementInCombat(enemySnapshot);
+            let spdInc = snapshot.getSpdIncrementInCombat(enemySnapshot);
+            let defInc = snapshot.getDefIncrementInCombat(enemySnapshot);
+            let resInc = snapshot.getResIncrementInCombat(enemySnapshot);
+            html += `(攻${numberToSignedString(atkInc)},`
+                + `速${numberToSignedString(spdInc)},`
+                + `守${numberToSignedString(defInc)},`
+                + `魔${numberToSignedString(resInc)})`;
         }
 
         return html;
@@ -6177,7 +6190,10 @@ class AetherRaidTacticsBoard {
         // 最適なタイルが存在しない対象を除外
         unit.actionContext.removeAttackableUnitInfosWhereBestTileIsEmpty();
     }
-
+    /**
+     * @param  {Unit[]} enemyUnits
+     * @param  {Unit[]} allyUnits
+     */
     simulateAttack(enemyUnits, allyUnits) {
         // コンテキスト初期化
         for (let unit of enemyUnits) {
