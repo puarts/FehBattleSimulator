@@ -1,18 +1,4 @@
 
-class test_UnitManager extends UnitManager {
-    constructor() {
-        super();
-    }
-
-    * enumerateUnitsInSpecifiedGroup(groupId) {
-        for (let unit of this.enumerateUnits()) {
-            if (unit.groupId == groupId) {
-                yield unit;
-            }
-        }
-    }
-}
-
 test('UnitManager_EnumerateUnits', () => {
     let manager = new test_UnitManager();
 

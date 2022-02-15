@@ -25,6 +25,9 @@ SOURCE_FILE_NAMES=(
     SampleHeroInfos
     TestUtilities
     )
+TEST_UTIL_FILE_NAMES=(
+    TestGlobals
+    )
 TEST_FILE_NAMES=(
     DamageCalculator
     UnitManager
@@ -37,6 +40,10 @@ cp /dev/null ./$TARGET_FILE
 
 for name in ${SOURCE_FILE_NAMES[@]}; do
     cat ./Sources/${name}.js >> ./$TARGET_FILE
+done
+
+for name in ${TEST_UTIL_FILE_NAMES[@]}; do
+    cat ./Tests/${name}.js >> ./$TARGET_FILE
 done
 
 for name in ${TEST_FILE_NAMES[@]}; do

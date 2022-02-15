@@ -1,6 +1,4 @@
-const g_testHeroDatabase = new test_HeroDatabase(
-  heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-  passiveSInfos);
+
 
 test('DamageCalculator_FeudTest', () => test_executeTest(() => {
   let heroDatabase = g_testHeroDatabase;
