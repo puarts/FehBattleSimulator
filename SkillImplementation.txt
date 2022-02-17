@@ -139,7 +139,9 @@ __canDisableCounterAttack(atkUnit, defUnit) {
 }
 
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
-__applyBonusDoubler(targetUnit, enemyUnit) {}
+__applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+}
 
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();

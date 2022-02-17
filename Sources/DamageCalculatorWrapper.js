@@ -1875,6 +1875,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SellSpellTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let amount = Math.min(7, Math.max(targetUnit.dragonflower + 2, 4));
+                targetUnit.addAllSpur(amount);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfReason] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(4);
@@ -6556,6 +6562,11 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.SellSpellTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25 && targetUnit.dragonflower >= 3) {
+                        DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+                    }
+                    break;
                 case Weapon.BowOfVerdane:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let diff = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInPrecombat(targetUnit);

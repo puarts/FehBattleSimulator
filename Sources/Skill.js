@@ -1247,6 +1247,9 @@ const Weapon = {
     HurricaneDagger: 1989, // 疾風の暗器
     BowOfVerdane: 1988, // ヴェルダンの荒弓
     TomeOfReason: 1987, // 純理の書
+
+    // 新英雄&開花イドゥン
+    SellSpellTome: 1996, // 雇われ魔道士の書
 }
 
 const Support = {
