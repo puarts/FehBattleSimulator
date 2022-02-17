@@ -169,6 +169,14 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
         break;
 }
 
+弱化を受けていれば、戦闘中、敵の弱化の値だけ減少(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7-7で、戦闘中、攻撃-14となる)[弱化増幅]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+    enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+}
+
 強化の値の2倍だけ減少[強化反転]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;

@@ -1250,6 +1250,7 @@ const Weapon = {
 
     // 新英雄&開花イドゥン
     SellSpellTome: 1996, // 雇われ魔道士の書
+    HvitrvulturePlus: 1998, // ヒータバルチャー+
 }
 
 const Support = {
