@@ -1875,6 +1875,31 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.WilyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25 && enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.invalidateAllBuffs();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DewDragonstone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addAllSpur(-5);
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                enemyUnit.atkSpur -= 5;
+                enemyUnit.resSpur -= 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SellSpellTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let amount = Math.min(7, Math.max(targetUnit.dragonflower + 2, 4));
+                targetUnit.addAllSpur(amount);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfReason] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(4);
@@ -6085,6 +6110,12 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.HvitrvulturePlus:
+                if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                    enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                }
+                break;
             case Weapon.TomeOfReason:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -6470,6 +6501,12 @@ class DamageCalculatorWrapper {
                         unit.atkSpur += value; unit.resSpur += value;
                     });
                 break;
+            case PassiveA.SpdDefIdeal4:
+                DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
+                    (unit, value) => {
+                        unit.spdSpur += value; unit.defSpur += value;
+                    });
+                break;
             case PassiveA.DefResIdeal4:
                 DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
                     (unit, value) => {
@@ -6556,6 +6593,11 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.SellSpellTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25 && targetUnit.dragonflower >= 3) {
+                        DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+                    }
+                    break;
                 case Weapon.BowOfVerdane:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let diff = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInPrecombat(targetUnit);

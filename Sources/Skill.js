@@ -1247,6 +1247,12 @@ const Weapon = {
     HurricaneDagger: 1989, // 疾風の暗器
     BowOfVerdane: 1988, // ヴェルダンの荒弓
     TomeOfReason: 1987, // 純理の書
+
+    // 新英雄&開花イドゥン
+    SellSpellTome: 1996, // 雇われ魔道士の書
+    HvitrvulturePlus: 1998, // ヒータバルチャー+
+    ArmorpinDaggerPlus: 2000, // 鎧殺の暗器+
+    DewDragonstone: 2002, // 芽生えし心の竜石
 }
 
 const Support = {
@@ -1691,6 +1697,7 @@ const PassiveA = {
     AtkDefIdeal4: 1705,
     AtkResIdeal3: 1960,
     AtkResIdeal4: 1723,
+    SpdDefIdeal4: 1997, // 速さ守備の万全4
     DefResIdeal4: 1791, // 守備魔防の万全4
 
     // 迫撃
@@ -1747,6 +1754,7 @@ const PassiveB = {
     SpecialFighter3: 603,// 奥義隊形3
     CraftFighter3: 1483, // 抑止隊形3
     SlickFighter3: 1497, // 正面隊形・自己3
+    WilyFighter3: 2003, //正面隊形・敵方3
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
 

@@ -4590,6 +4590,7 @@ class Unit {
                     return true;
                 }
                 break;
+            case Weapon.ArmorpinDaggerPlus:
             case Weapon.DawnSuzu:
             case Weapon.YoiyamiNoDanougi:
             case Weapon.YoiyamiNoDanougiPlus:

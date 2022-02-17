@@ -116,6 +116,12 @@ __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
     atkUnit.battleContext.isDesperationActivatable = true;
 }
 
+自身の戦闘順入替スキル(待ち伏せ、攻め立て等)無効、敵の戦闘順入替スキル(待ち伏せ、攻め立て等)無効[不動の姿勢]
+canDisableAttackOrderSwapSkill(restHpPercentage) {
+    return true;
+}
+
+
 絶対追撃
 targetUnit.battleContext.followupAttackPriorityIncrement++;
 
@@ -139,7 +145,9 @@ __canDisableCounterAttack(atkUnit, defUnit) {
 }
 
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
-__applyBonusDoubler(targetUnit, enemyUnit) {}
+__applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+}
 
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
@@ -165,6 +173,14 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
             targetUnit.resSpur += resAdd;
         }
         break;
+}
+
+弱化を受けていれば、戦闘中、敵の弱化の値だけ減少(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7-7で、戦闘中、攻撃-14となる)[弱化増幅]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+    enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
 }
 
 強化の値の2倍だけ減少[強化反転]
