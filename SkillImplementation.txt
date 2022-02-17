@@ -116,6 +116,12 @@ __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
     atkUnit.battleContext.isDesperationActivatable = true;
 }
 
+自身の戦闘順入替スキル(待ち伏せ、攻め立て等)無効、敵の戦闘順入替スキル(待ち伏せ、攻め立て等)無効[不動の姿勢]
+canDisableAttackOrderSwapSkill(restHpPercentage) {
+    return true;
+}
+
+
 絶対追撃
 targetUnit.battleContext.followupAttackPriorityIncrement++;
 
