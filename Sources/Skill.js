@@ -1252,6 +1252,7 @@ const Weapon = {
     SellSpellTome: 1996, // 雇われ魔道士の書
     HvitrvulturePlus: 1998, // ヒータバルチャー+
     ArmorpinDaggerPlus: 2000, // 鎧殺の暗器+
+    DewDragonstone: 2002, // 芽生えし心の竜石
 }
 
 const Support = {

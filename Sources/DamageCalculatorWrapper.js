@@ -1875,6 +1875,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DewDragonstone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addAllSpur(-5);
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isSolo(targetUnit) || calcPotentialDamage) {
                 enemyUnit.atkSpur -= 5;
