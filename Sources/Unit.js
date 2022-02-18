@@ -598,6 +598,7 @@ class BattleContext {
 
         this.additionalDamageOfFirstAttack = 0;
 
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
