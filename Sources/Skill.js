@@ -1253,6 +1253,8 @@ const Weapon = {
     HvitrvulturePlus: 1998, // ヒータバルチャー+
     ArmorpinDaggerPlus: 2000, // 鎧殺の暗器+
     DewDragonstone: 2002, // 芽生えし心の竜石
+    ReinAxe: 2005, // 牽制の斧
+    ReinAxePlus: 2004, // 牽制の斧+
 }
 
 const Support = {
