@@ -2052,6 +2052,7 @@ const PassiveC = {
     ThreatenRes1: 1417,
     ThreatenRes2: 1418,
     ThreatenRes3: 721,
+    ThreatenAtkSpd2: 1766,
     ThreatenAtkSpd3: 979,
     ThreatenAtkRes3: 1068,
     ThreatenAtkDef2: 1487,

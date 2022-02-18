@@ -1162,6 +1162,12 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.ThreatenRes1: this.__applyThreatenSkill(skillOwner, x => x.reserveToApplyResDebuff(-3)); break;
             case PassiveC.ThreatenRes2: this.__applyThreatenSkill(skillOwner, x => x.reserveToApplyResDebuff(-4)); break;
             case PassiveC.ThreatenRes3: this.__applyThreatenSkill(skillOwner, x => x.reserveToApplyResDebuff(-5)); break;
+            case PassiveC.ThreatenAtkSpd2:
+                this.__applyThreatenSkill(skillOwner,
+                    x => {
+                        x.reserveToApplyAtkDebuff(-4); x.reserveToApplySpdDebuff(-4);
+                    });
+                break;
             case PassiveC.ThreatenAtkSpd3:
                 this.__applyThreatenSkill(skillOwner,
                     x => {
