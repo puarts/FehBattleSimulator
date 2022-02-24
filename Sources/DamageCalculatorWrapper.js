@@ -4921,6 +4921,9 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPush4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) { targetUnit.atkSpur += 7; targetUnit.spdSpur += 7; }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveA.DistantStorm] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) { targetUnit.atkSpur += 5; }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveA.DistantPressure] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) { targetUnit.spdSpur += 5; }
         };

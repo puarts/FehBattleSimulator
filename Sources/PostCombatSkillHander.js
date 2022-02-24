@@ -491,6 +491,7 @@ class PostCombatSkillHander {
                         targetUnit.reserveTakeDamage(1);
                     }
                     break;
+                case PassiveA.DistantStorm:
                 case PassiveA.DistantPressure:
                 case PassiveA.CloseSalvo:
                 case PassiveA.AtkSpdPush4:
