@@ -196,6 +196,21 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);
 }
 
+敵が強化を受けていれば、戦闘中、自身の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ上昇(能力値ごとに計算)[敵強化増幅]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
+    targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
+    targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+    targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+}
+
+敵の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ減少(能力値ごとに計算)[敵強化減少]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
+    targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
+    targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+    targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+}
 
 敵が[有利/不利]な状態異常を受けている時
 __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {

@@ -1875,6 +1875,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WingLeftedSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.WilyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25 && enemyUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -6110,6 +6115,19 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.WingLeftedSpear:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
+                    targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
+                    targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+                    targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+
+                    enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
+                    enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
+                    enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                    enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                }
+                break;
             case Weapon.HvitrvulturePlus:
                 if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                     enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);

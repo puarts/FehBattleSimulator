@@ -4653,6 +4653,7 @@ class Unit {
                 case Weapon.BowOfTwelve:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:

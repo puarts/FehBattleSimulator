@@ -1255,6 +1255,9 @@ const Weapon = {
     DewDragonstone: 2002, // 芽生えし心の竜石
     ReinAxe: 2005, // 牽制の斧
     ReinAxePlus: 2004, // 牽制の斧+
+
+    // 2022年2月 伝承シーダ
+    WingLeftedSpear: 2014, // 扶翼ウイングスピア
 }
 
 const Support = {
