@@ -306,6 +306,9 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FaithfulLoyalty:
+                    targetUnit.addStatusEffect(StatusEffectType.Vantage);
+                    break;
                 case Weapon.GousouJikumunto:
                     if (targetUnit.isWeaponRefined) {
                         if (enemyUnit.battleContext.restHpPercentage >= 75 || self.__isSolo(targetUnit)) {

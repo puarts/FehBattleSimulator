@@ -365,7 +365,7 @@ class BattleContext {
         this.restHp = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
-        this.isVantabeActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
+        this.isVantageActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
         this.isVantageActivated = false; // 待ち伏せが実際に発動するか(敵の戦闘順入替スキルを加味した有効無効)
         this.isDesperationActivatable = false; // 攻め立てが発動条件を満たすか
         this.isDesperationActivated = false; // 攻め立てが実際に発動するか
@@ -536,7 +536,7 @@ class BattleContext {
         this.restHp = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
-        this.isVantabeActivatable = false;
+        this.isVantageActivatable = false;
         this.isVantageActivated = false; // 待ち伏せ
         this.isDesperationActivatable = false;
         this.isDesperationActivated = false; // 攻め立て

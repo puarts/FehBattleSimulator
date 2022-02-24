@@ -1940,6 +1940,7 @@ const PassiveB = {
     OddPulseTie3: 1321, // 鼓動の封緘・奇数3
 
     BeliefInLove: 1235, // 愛を信じますか?
+    FaithfulLoyalty: 2016, // 信じつづける誓い
     RagingStorm: 1303, // 狂嵐
 
     // 干渉

@@ -1875,6 +1875,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.FaithfulLoyalty] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.moveType === MoveType.Armor || enemyUnit.moveType === MoveType.Cavalry) {
+                targetUnit.battleContext.isVantageActivatable = true;
+            }
+            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WingLeftedSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -2703,7 +2709,8 @@ class DamageCalculatorWrapper {
                     || enemyUnit.weaponType === WeaponType.ColorlessBow
                     || enemyUnit.moveType === MoveType.Armor
                 ) {
-                    targetUnit.battleContext.isVantabeActivatable = true;
+                    targetUnit.battleContext.isVantageActivatable = true;
+
                 }
             }
         };
@@ -2720,7 +2727,8 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.healedHpByAttack = 5;
                 }
                 if (buffTotal >= 60) {
-                    targetUnit.battleContext.isVantabeActivatable = true;
+                    targetUnit.battleContext.isVantageActivatable = true;
+
                 }
             }
         };
@@ -4545,7 +4553,8 @@ class DamageCalculatorWrapper {
                 targetUnit.atkSpur += 5;
                 targetUnit.spdSpur += 5;
                 if (!targetUnit.battleContext.initiatesCombat) {
-                    targetUnit.battleContext.isVantabeActivatable = true;
+                    targetUnit.battleContext.isVantageActivatable = true;
+
                 }
             }
         };
@@ -5057,7 +5066,8 @@ class DamageCalculatorWrapper {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
                 if (!targetUnit.battleContext.initiatesCombat) {
                     if (targetUnit.battleContext.restHpPercentage <= 75) {
-                        targetUnit.battleContext.isVantabeActivatable = true;
+                        targetUnit.battleContext.isVantageActivatable = true;
+
                     }
                 }
             };
@@ -8581,7 +8591,8 @@ class DamageCalculatorWrapper {
             && !defUnit.canDisableAttackOrderSwapSkill(defUnit.battleContext.restHpPercentage)
         ) {
             atkUnit.battleContext.isDesperationActivated = atkUnit.battleContext.isDesperationActivatable || atkUnit.hasStatusEffect(StatusEffectType.Desperation);
-            defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantabeActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
+            defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantageActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
+
             defUnit.battleContext.isDefDesperationActivated = defUnit.battleContext.isDefDesperationActivatable;
 
             if (this.isLogEnabled) {

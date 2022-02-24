@@ -41,6 +41,12 @@ const BeastCommonSkillMap =
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 
+敵が歩行、飛行、騎馬、重装の時
+if (enemyUnit.moveType === MoveType.Infantry) {}
+if (enemyUnit.moveType === MoveType.Flying) {}
+if (enemyUnit.moveType === MoveType.Cavalry) {}
+if (enemyUnit.moveType === MoveType.Armor:) {}
+
 自分から攻撃した時
 if (targetUnit.battleContext.initiatesCombat) {
 敵から攻撃された時
@@ -115,6 +121,9 @@ __setAttackCount(atkUnit, enemyUnit) {
 __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
     atkUnit.battleContext.isDesperationActivatable = true;
 }
+
+敵から攻撃された時、先制攻撃[待ち伏せ]
+targetUnit.battleContext.isVantageActivatable = true;
 
 自身の戦闘順入替スキル(待ち伏せ、攻め立て等)無効、敵の戦闘順入替スキル(待ち伏せ、攻め立て等)無効[不動の姿勢]
 canDisableAttackOrderSwapSkill(restHpPercentage) {
