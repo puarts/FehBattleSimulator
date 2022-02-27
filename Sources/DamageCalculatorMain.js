@@ -679,7 +679,7 @@ class DamageCalcData {
             startProgressiveProcess(length,
                 function (iter) {
                     let atkUnit = atkUnits[iter];
-                    // atkUnit = atkUnits.filter(x => x.heroInfo.name === "アスタルテ")[0];
+                    // atkUnit = atkUnits.filter(x => x.heroInfo.name === "伝承リリーナ")[0];
                     if (self.unitManager.units.length === 3) {
                         self.unitManager.units.pop();
                     }
@@ -689,7 +689,7 @@ class DamageCalcData {
                     self.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(atkUnit);
                     self.beginningOfTurnSkillHandler.applyReservedState(atkUnit);
                     self.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(atkUnit);
-                    self.beginningOfTurnSkillHandler.applyReservedState(atkUnit);
+                    atkUnit.applyReservedHp(true);
                     atkUnit.applyAtkBuff(6);
                     atkUnit.applySpdBuff(6);
                     atkUnit.applyDefBuff(6);
@@ -703,6 +703,7 @@ class DamageCalcData {
                         calculator.clearLog();
                         calculator.updateUnitSpur(atkUnit);
                         calculator.updateUnitSpur(defUnit);
+
                         let result = calculator.calcDamage(atkUnit, defUnit);
                         if (defUnit.restHp === 0) {
                             ++winCount;
