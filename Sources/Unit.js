@@ -2037,7 +2037,22 @@ class Unit {
             }
         }
     }
-
+    /**
+     * 状態変化の表示用の文字列を取得します。
+     */
+    statusEffectsToDisplayString() {
+        if (this.statusEffects.length == 0) {
+            return "なし";
+        }
+        let result = "";
+        for (let statusEffect of this.statusEffects) {
+            result += getKeyByValue(StatusEffectType, statusEffect) + " ";
+        }
+        return result.substring(0, result.length - 1);
+    }
+    /**
+     * 状態変化のシリアライズ用の文字列を取得します。
+     */
     statusEffectsToString() {
         if (this.statusEffects.length == 0) {
             return String(StatusEffectType.None);
@@ -2248,12 +2263,22 @@ class Unit {
         }
         return result;
     }
-
+    /**
+     * @param  {StatusEffectType} statusEffectType
+     */
     addStatusEffect(statusEffectType) {
         if (this.hasStatusEffect(statusEffectType)) {
             return;
         }
         this.statusEffects.push(statusEffectType);
+    }
+    /**
+     * @param  {StatusEffectType[]} statusEffects
+     */
+    addStatusEffects(statusEffects) {
+        for (let item of statusEffects) {
+            this.addStatusEffect(item);
+        }
     }
 
     clearPerTurnStatuses() {

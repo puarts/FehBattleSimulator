@@ -286,6 +286,9 @@ class DamageCalculator {
                 return result;
             }
         }
+        else {
+            if (this.isLogEnabled) this.writeLog(defUnit.getNameWithGroup() + "は反撃不可");
+        }
     }
 
     __followupCounterattack(atkUnit, defUnit, result, context) {
@@ -533,8 +536,8 @@ class DamageCalculator {
         damage += fixedAddDamage;
 
         let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
-        let sufferRatio = (specialSuffer / 100.0);
-        let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * sufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
+        let specialSufferRatio = (specialSuffer / 100.0);
+        let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * specialSufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
         let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage;
         if (specialDamage < 0) {
             specialDamage = 0;
@@ -588,8 +591,8 @@ class DamageCalculator {
             }
             this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
             this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
-            if (sufferRatio > 0) {
-                this.writeDebugLog(`守備、魔防－${floorNumberWithFloatError(sufferRatio * 100)}%扱い`);
+            if (specialSufferRatio > 0) {
+                this.writeDebugLog(`奥義発動時、守備、魔防－${floorNumberWithFloatError(specialSufferRatio * 100)}%扱い`);
             }
             this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
             this.writeDebugLog(
@@ -922,9 +925,9 @@ class DamageCalculator {
         let reducedDamage = floorNumberWithFloatError(damage * damageReductionRatio) + damageReductionValue;
         let currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
-            if (this.isLogEnabled) this.writeDebugLog("ダメージ軽減" + floorNumberWithFloatError(damageReductionRatio) * 100 + "%");
-            if (this.isLogEnabled) this.writeDebugLog("ダメージ-" + damageReductionValue);
-            if (this.isLogEnabled) this.writeDebugLog("ダメージ:" + damage + "→" + currentDamage);
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ軽減率" + floorNumberWithFloatError(damageReductionRatio * 100) + "%");
+            if (this.isLogEnabled) this.writeDebugLog("固定ダメージ軽減値-" + damageReductionValue);
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ変化:" + damage + "→" + currentDamage);
         }
 
         if (activatesDefenderSpecial) {

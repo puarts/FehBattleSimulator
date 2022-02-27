@@ -369,7 +369,7 @@ class DamageCalculatorWrapper {
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
     /**
-     * @param  {Unit} saverUnit
+     * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {DamageType} damageType
      */

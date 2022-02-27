@@ -1057,3 +1057,12 @@ function roundFloat(value, precision = 6) {
 function numberToSignedString(number) {
     return number < 0 ? number : "+" + number;
 }
+
+function getKeyByValue(dict, value) {
+    for (let key in dict) {
+        if (dict[key] === value) {
+            return key;
+        }
+    }
+    return null;
+}

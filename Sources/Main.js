@@ -2235,6 +2235,7 @@ class AetherRaidTacticsBoard {
         // 元の状態を保存
         let serializedTurn = g_appData.exportSettingsAsString();
 
+        this.clearLog();
         this.__durabilityTest_simulate(targetUnit, enemyUnit);
 
         importSettingsFromString(serializedTurn);
@@ -4004,7 +4005,10 @@ class AetherRaidTacticsBoard {
 
         this.disableAllLogs = originalDisableAllLogs;
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     */
     __durabilityTest_simulateImpl(targetUnit, enemyUnit) {
         let winCount = 0;
         let drawCount = 0;
@@ -4015,6 +4019,8 @@ class AetherRaidTacticsBoard {
         let originalEnemyHp = enemyUnit.hp;
         let originalEnemySpecialCount = enemyUnit.specialCount;
         let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
+        let targetUnitStatusEffects = targetUnit.statusEffects;
+        let enemyUnitStatusEffects = enemyUnit.statusEffects;
 
         let loseEnemies = [];
         let drawEnemies = [];
@@ -4045,12 +4051,20 @@ class AetherRaidTacticsBoard {
                 using(new ScopedStopwatch(time => elapsedMillisecToApplySkillsForBeginningOfTurn += time), () => {
                     this.__forceToApplySkillsForBeginningOfTurn(targetUnit);
                     this.__forceToApplySkillsForBeginningOfTurn(enemyUnit);
+
+                    // 元々設定していた状態は維持して評価する
+                    targetUnit.addStatusEffects(targetUnitStatusEffects);
+                    enemyUnit.addStatusEffects(enemyUnitStatusEffects);
                 });
             }
 
             let tmpWinCount = 0;
             let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
             let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
+
+            let log = `${attackerUnit.getNameWithGroup()}の状態変化: ${attackerUnit.statusEffectsToDisplayString()}<br/>`;
+            log += `${deffenceUnit.getNameWithGroup()}の状態変化: ${deffenceUnit.statusEffectsToDisplayString()}<br/>`;
+
             using(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
                 for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
                     let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null,
@@ -4070,7 +4084,7 @@ class AetherRaidTacticsBoard {
                 loseEnemies.push(heroInfo);
 
                 if (this.vm.durabilityTestIsLogEnabled && this.vm.durabilityTestLogDamageCalcDetailIfLose) {
-                    this.writeLogLine(this.damageCalc.log);
+                    this.writeLogLine(log + this.damageCalc.log);
                 }
             }
             else if (tmpWinCount == this.vm.durabilityTestBattleCount) {
@@ -4082,6 +4096,9 @@ class AetherRaidTacticsBoard {
                 combatResultText = "引き分け";
                 ++drawCount;
                 drawEnemies.push(heroInfo);
+                if (this.vm.durabilityTestIsLogEnabled && this.vm.durabilityTestLogDamageCalcDetailIfLose) {
+                    this.writeLogLine(log + this.damageCalc.log);
+                }
             }
 
             if (this.vm.durabilityTestIsLogEnabled) {
