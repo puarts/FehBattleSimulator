@@ -1255,6 +1255,9 @@ const Weapon = {
     DewDragonstone: 2002, // 芽生えし心の竜石
     ReinAxe: 2005, // 牽制の斧
     ReinAxePlus: 2004, // 牽制の斧+
+
+    // 2022年2月 伝承シーダ
+    WingLeftedSpear: 2014, // 扶翼ウイングスピア
 }
 
 const Support = {
@@ -1452,6 +1455,7 @@ const PassiveA = {
     CloseReversal: 1803, // 近反・金剛の構え
     DistantStance: 1884, // 遠反・明鏡の構え
     DistantCounter: 562, // 遠距離反撃
+    DistantStorm: 2015, // 遠反・攻撃の渾身
     DistantPressure: 1795, // 遠反・速さの渾身
     CloseSalvo: 1981, // 近反・攻撃の渾身
     DeathBlow3: 528, // 鬼神の一撃3
@@ -1936,6 +1940,7 @@ const PassiveB = {
     OddPulseTie3: 1321, // 鼓動の封緘・奇数3
 
     BeliefInLove: 1235, // 愛を信じますか?
+    FaithfulLoyalty: 2016, // 信じつづける誓い
     RagingStorm: 1303, // 狂嵐
 
     // 干渉

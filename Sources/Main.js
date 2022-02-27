@@ -5782,6 +5782,7 @@ class AetherRaidTacticsBoard {
                         return true;
                     }
                     break;
+                case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
                 case Weapon.HonorableBlade:
                 case Weapon.BowOfTwelve:
