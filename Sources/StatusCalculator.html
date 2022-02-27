@@ -80,14 +80,20 @@
                 <td>
                     <p>
                         <img v-bind:src="value.icon" width="50" height="50" /> {{value.name}} ☆
-                        <input name="merge" type="number" v-model="value.rarity" min="1" max="5" @input="updateStatus()"
-                            style="width:50px" /><br />
+                        <select v-model="value.rarity" @change="updateStatus();">
+                            <option v-for="item in UnitRarity" v-bind:value="item">
+                                {{ item}}
+                            </option>
+                        </select>
                         LV.
                         <input name="merge" type="number" v-model="value.level" min="1" max="99" @input="updateStatus()"
                             style="width:50px" />
                         +
-                        <input name="merge" type="number" v-model="value.merge" min="0" max="10" @input="updateStatus()"
-                            style="width:50px" />
+                        <select v-model="value.merge" @change="updateStatus();">
+                            <option v-for="(value, i) in (10+1)" v-bind:value="i">
+                                {{ i }}
+                            </option>
+                        </select>
                         <label for="dragonflower">
                             <img v-if="value.moveType == MoveType.Infantry"
                                 src="/blog/images/feh/Dragonflower_Infantry.png" width="30" height="30" />
@@ -98,8 +104,11 @@
                             <img v-else-if="value.moveType == MoveType.Armor"
                                 src="/blog/images/feh/Dragonflower_Armored.png" width="30" height="30" />
                             +</label>
-                        <input name="dragonflower" type="number" v-model="value.dragonflower" min="0"
-                            @input="updateStatus()" style="width:50px" v-bind:max="value.maxDragonflower" />
+                        <select v-model="value.dragonflower" @change="updateStatus();">
+                            <option v-for="(value, i) in (value.maxDragonflower+1)" v-bind:value="i">
+                                {{ i }}
+                            </option>
+                        </select>
                     </p>
                     <p>
                         <label class="normal">得意: </label>
