@@ -6640,6 +6640,16 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.BrightShellEgg:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit) || enemyUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.spdSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+                        let amount = targetUnit.getBuffTotalInCombat(enemyUnit) + Math.abs(enemyUnit.getDebuffTotalInCombat());
+                        if (amount >= 6) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
                 case Weapon.SellSpellTome:
                     if (targetUnit.battleContext.restHpPercentage >= 25 && targetUnit.dragonflower >= 3) {
                         DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -7796,6 +7806,14 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.BrightShellEgg:
+                if (atkUnit.hasPositiveStatusEffect(defUnit) || defUnit.hasNegativeStatusEffect()) {
+                    let amount = atkUnit.getBuffTotalInCombat(defUnit) + Math.abs(defUnit.getDebuffTotalInCombat());
+                    if (amount >= 18) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.BladeOfJehanna:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     const isCross = atkUnit.posX === defUnit.posX || atkUnit.posY === defUnit.posY;

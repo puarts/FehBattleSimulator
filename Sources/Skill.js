@@ -1258,6 +1258,9 @@ const Weapon = {
 
     // 2022年2月 伝承シーダ
     WingLeftedSpear: 2014, // 扶翼ウイングスピア
+
+    // 超英雄 妹兎の願い
+    BrightShellEgg: 2023, // 可憐に色づく飾り卵
 }
 
 const Support = {
