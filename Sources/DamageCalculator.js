@@ -787,13 +787,14 @@ class DamageCalculator {
                 if (isDefenderSpecialActivated) {
                     if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
                         defUnit.passiveB === PassiveB.HardyFighter3) {
-                        damageReductionValue = 5;
+                        damageReductionValue += 5;
                     }
                     this.__restoreMaxSpecialCount(defUnit);
                 }
             }
 
             damageReductionRatio = 1.0 - damageReductionRatio;
+            damageReductionValue += defUnit.battleContext.damageReductionValue;
 
             let currentDamage = 0;
             if (activatesAttackerSpecial) {

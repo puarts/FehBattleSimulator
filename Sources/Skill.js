@@ -1261,6 +1261,7 @@ const Weapon = {
 
     // 超英雄 妹兎の願い
     BrightShellEgg: 2023, // 可憐に色づく飾り卵
+    PastelPoleaxe: 2024, // 無邪気な白兎の斧
 }
 
 const Support = {

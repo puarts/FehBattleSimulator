@@ -468,6 +468,9 @@ class BattleContext {
         // 奥義発動時の追加ダメージ
         this.additionalDamageOfSpecial = 0;
 
+        // 固定ダメージ軽減
+        this.damageReductionValue = 0;
+
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
 
@@ -527,6 +530,7 @@ class BattleContext {
         this.damageReductionRatio = 0;
         this.additionalDamage = 0;
         this.additionalDamageOfSpecial = 0;
+        this.damageReductionValue = 0;
     }
 
     clear() {

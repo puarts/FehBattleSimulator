@@ -1875,6 +1875,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.PastelPoleaxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.FaithfulLoyalty] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.moveType === MoveType.Armor || enemyUnit.moveType === MoveType.Cavalry) {
                 targetUnit.battleContext.isVantageActivatable = true;
@@ -6128,6 +6133,12 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.PastelPoleaxe:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                    targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                }
+                break;
             case Weapon.WingLeftedSpear:
                 if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                     targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
