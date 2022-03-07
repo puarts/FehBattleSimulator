@@ -1264,6 +1264,7 @@ const Weapon = {
     PastelPoleaxe: 2024, // 無邪気な白兎の斧
     CarrotTipBowPlus: 2026, // 春花の弓+
     MagicRabbits: 2028, // 二羽の魔兎の揺籃
+    CarrotTipSpearPlus: 2030, // 春花の槍+
 }
 
 const Support = {
