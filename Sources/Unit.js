@@ -3206,6 +3206,7 @@ class Unit {
             || isTriangleAdeptSkill(this.weapon)
             || (this.weapon === Weapon.Forukuvangu && this.isWeaponSpecialRefined)
             || (this.weapon === Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
+            || (this.weapon === Weapon.SeireiNoHogu && this.isWeaponSpecialRefined && this.battleContext.restHpPercentage >= 25)
             || this.hasStatusEffect(StatusEffectType.TriangleAdept)
         ) {
             return 0.2;

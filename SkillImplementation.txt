@@ -41,6 +41,18 @@ const BeastCommonSkillMap =
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 
+3すくみ有利だと、さらに攻撃+20%[相性激化]
+getTriangleAdeptAdditionalRatio() {
+    if (isTriangleAdeptSkill(this.passiveA)
+        || isTriangleAdeptSkill(this.weapon)
+        || (this.weapon === Weapon.Forukuvangu && this.isWeaponSpecialRefined)
+        || (this.weapon === Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
+        || this.hasStatusEffect(StatusEffectType.TriangleAdept)
+    ) {
+        return 0.2;
+    }
+}
+
 敵が歩行、飛行、騎馬、重装の時
 if (enemyUnit.moveType === MoveType.Infantry) {}
 if (enemyUnit.moveType === MoveType.Flying) {}

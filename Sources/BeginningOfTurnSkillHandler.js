@@ -107,6 +107,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.SeireiNoHogu:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
+                        unit.applySpdBuff(6);
+                    }
+                }
+                break;
             case Weapon.MagicRabbits:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(2);
