@@ -635,11 +635,13 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.Hyoushintou:
+            case Weapon.Hyoushintou: {
+                let amount = skillOwner.isWeaponRefined ? -6 : -4;
                 for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
-                    unit.reserveToApplyAllDebuff(-4);
+                    unit.reserveToApplyAllDebuff(amount);
                 }
                 break;
+            }
             case Weapon.JinroMusumeNoTsumekiba:
                 if (this.globalBattleContext.currentTurn == 1) {
                     skillOwner.reduceSpecialCount(2);

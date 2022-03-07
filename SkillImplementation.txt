@@ -217,6 +217,11 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);
 }
 
+敵が受けている弱化の合計値を自分の攻撃に加算[弱化ブレード]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    DamageCalculationUtility.applyDebuffBlade(targetUnit, enemyUnit);
+}
+
 敵が強化を受けていれば、戦闘中、自身の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ上昇(能力値ごとに計算)[敵強化増幅]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);

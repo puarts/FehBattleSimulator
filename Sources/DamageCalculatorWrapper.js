@@ -1875,6 +1875,22 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Hyoushintou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    enemyUnit.atkSpur -= 4;
+                    enemyUnit.spdSpur -= 4;
+                    enemyUnit.defSpur -= 4;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.atkSpur -= 4;
+                        enemyUnit.spdSpur -= 4;
+                        enemyUnit.defSpur -= 4;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SeireiNoHogu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 targetUnit.atkSpur += 5;
@@ -6492,6 +6508,11 @@ class DamageCalculatorWrapper {
             case Weapon.Blizard:
             case Weapon.HaNoOugiPlus:
                 DamageCalculationUtility.applyDebuffBlade(targetUnit, enemyUnit);
+                break;
+            case Weapon.Hyoushintou:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    DamageCalculationUtility.applyDebuffBlade(targetUnit, enemyUnit);
+                }
                 break;
             case Weapon.SyugosyaNoRekkyu:
                 if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
