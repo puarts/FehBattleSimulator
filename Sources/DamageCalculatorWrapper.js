@@ -1875,6 +1875,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CarrotTipBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                targetUnit.atkSpur += 5;
+                targetUnit.defSpur += 5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PastelPoleaxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -6651,6 +6657,12 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.CarrotTipBowPlus:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                        let amount = Math.abs(enemyUnit.getAtkDebuffInCombat()) + Math.abs(enemyUnit.getDefDebuffInCombat());
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += amount;
+                    }
+                    break;
                 case Weapon.BrightShellEgg:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit) || enemyUnit.hasNegativeStatusEffect()) {
                         enemyUnit.spdSpur -= 6;
