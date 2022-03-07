@@ -1258,6 +1258,13 @@ const Weapon = {
 
     // 2022年2月 伝承シーダ
     WingLeftedSpear: 2014, // 扶翼ウイングスピア
+
+    // 超英雄 妹兎の願い
+    BrightShellEgg: 2023, // 可憐に色づく飾り卵
+    PastelPoleaxe: 2024, // 無邪気な白兎の斧
+    CarrotTipBowPlus: 2026, // 春花の弓+
+    MagicRabbits: 2028, // 二羽の魔兎の揺籃
+    CarrotTipSpearPlus: 2030, // 春花の槍+
 }
 
 const Support = {
@@ -1977,6 +1984,7 @@ const PassiveB = {
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
 
     // 怒涛
+    FlowFlight3: 2025, // 怒涛・飛竜行空3
     FlowRefresh3: 1763, // 怒涛・再起3
     FlowGuard3: 1912, // 怒涛・キャンセル3
 };
@@ -2186,6 +2194,7 @@ const PassiveC = {
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     SpdDefRein3: 1485, // 速さ守備の牽制3
     SpdResRein3: 1538, // 速さ魔防の牽制3
+    SpdResHold: 2029, // 速さ魔防の大牽制
     DefResRein3: 1787, // 守備魔防の牽制3
 
     OddTempest3: 1515, // 迅雷風烈・奇数3

@@ -1875,6 +1875,30 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MagicRabbits] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 6;
+                targetUnit.atkSpur += targetUnit.maxSpecialCount * 3;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CarrotTipSpearPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                targetUnit.atkSpur += 5;
+                targetUnit.defSpur += 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CarrotTipBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                targetUnit.atkSpur += 5;
+                targetUnit.defSpur += 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.PastelPoleaxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.FaithfulLoyalty] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.moveType === MoveType.Armor || enemyUnit.moveType === MoveType.Cavalry) {
                 targetUnit.battleContext.isVantageActivatable = true;
@@ -6128,6 +6152,12 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.PastelPoleaxe:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                    targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                }
+                break;
             case Weapon.WingLeftedSpear:
                 if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                     targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
@@ -6640,6 +6670,23 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.CarrotTipBowPlus:
+                case Weapon.CarrotTipSpearPlus:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                        let amount = Math.abs(enemyUnit.getAtkDebuffInCombat()) + Math.abs(enemyUnit.getDefDebuffInCombat());
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += amount;
+                    }
+                    break;
+                case Weapon.BrightShellEgg:
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit) || enemyUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.spdSpur -= 6;
+                        enemyUnit.resSpur -= 6;
+                        let amount = targetUnit.getBuffTotalInCombat(enemyUnit) + Math.abs(enemyUnit.getDebuffTotalInCombat());
+                        if (amount >= 6) {
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                    break;
                 case Weapon.SellSpellTome:
                     if (targetUnit.battleContext.restHpPercentage >= 25 && targetUnit.dragonflower >= 3) {
                         DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -6822,6 +6869,17 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.FlowFlight3:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 10) {
+                            let diff = targetUnit.getEvalDefInCombat(enemyUnit) - enemyUnit.getEvalDefInCombat(targetUnit);
+                            let amount = Math.trunc(Math.min(7, Math.max(0, diff * 0.70)));
+                            targetUnit.battleContext.additionalDamage += amount;
+                            targetUnit.battleContext.damageReductionValue += amount;
+                        }
+                    }
+                    break;
                 case PassiveB.SavvyFighter3:
                     if (enemyUnit.battleContext.initiatesCombat) {
                         if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInPrecombat() - 4) {
@@ -7796,6 +7854,14 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.BrightShellEgg:
+                if (atkUnit.hasPositiveStatusEffect(defUnit) || defUnit.hasNegativeStatusEffect()) {
+                    let amount = atkUnit.getBuffTotalInCombat(defUnit) + Math.abs(defUnit.getDebuffTotalInCombat());
+                    if (amount >= 18) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.BladeOfJehanna:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     const isCross = atkUnit.posX === defUnit.posX || atkUnit.posY === defUnit.posY;
@@ -9385,6 +9451,12 @@ class DamageCalculatorWrapper {
                                 targetUnit.defSpur -= 3;
                                 targetUnit.resSpur -= 3;
                             }
+                            break;
+                    }
+                    switch (unit.passiveC) {
+                        case PassiveC.SpdResHold:
+                            targetUnit.spdSpur -= 4;
+                            targetUnit.resSpur -= 4;
                             break;
                     }
                 }

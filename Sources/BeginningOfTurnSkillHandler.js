@@ -107,6 +107,17 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.MagicRabbits:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                break;
+            case Weapon.BrightShellEgg:
+                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                    unit.reserveToApplySpdDebuff(-6);
+                    unit.reserveToApplyResDebuff(-6);
+                }
+                break;
             case Weapon.TomeOfReason:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {

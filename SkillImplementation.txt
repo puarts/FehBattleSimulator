@@ -363,6 +363,19 @@ targetUnit.isOneTimeActionActivatedForWeapon
 __canActivateCanto(unit) {}
 unit.calcMoveCountForCanto() {}
 
+移動可能[ワープ]
+const TeleportationSkillDictに登録
+Main.js
+*__enumerateTeleportTiles(unit) {
+    // 周囲2マス以内の味方の、周囲2マス以内に移動可能
+    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+        for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
+            yield tile;
+        }
+    }
+}
+
+
 天駆の道
 function hasPathfinderEffect(skillId) {}
 
