@@ -43,6 +43,7 @@ const Hero = {
     DuoDagr: 760,
     HarmonizedAzura: 770,
     DuoChrom: 776,
+    HarmonizedSonya: 787,
 };
 
 function isThiefIndex(heroIndex) {
