@@ -7300,6 +7300,16 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AzureLance:
+                    if (unit.isWeaponSpecialRefined) {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        targetUnit.applyAtkBuff(6);
+                        targetUnit.applySpdBuff(6);
+                        unit.heal(10);
+                        targetUnit.heal(10);
+                    }
+                    break;
                 case Weapon.DestinysBow:
                     if (g_appData.currentTurn <= 4) {
                         if (!unit.isOneTimeActionActivatedForWeapon) {
@@ -7644,6 +7654,16 @@ class AetherRaidTacticsBoard {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AzureLance:
+                    if (supporterUnit.isWeaponSpecialRefined) {
+                        supporterUnit.applyAtkBuff(6);
+                        supporterUnit.applySpdBuff(6);
+                        targetUnit.applyAtkBuff(6);
+                        targetUnit.applySpdBuff(6);
+                        supporterUnit.heal(10);
+                        targetUnit.heal(10);
+                    }
+                    break;
                 case Weapon.DamiellBow:
                     if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
                         targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
@@ -7687,6 +7707,16 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AzureLance:
+                    if (supporterUnit.isWeaponSpecialRefined) {
+                        supporterUnit.applyAtkBuff(6);
+                        supporterUnit.applySpdBuff(6);
+                        targetUnit.applyAtkBuff(6);
+                        targetUnit.applySpdBuff(6);
+                        supporterUnit.heal(10);
+                        targetUnit.heal(10);
+                    }
+                    break;
                 case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
                 case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
                 case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;

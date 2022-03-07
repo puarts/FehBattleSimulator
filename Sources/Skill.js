@@ -1265,6 +1265,9 @@ const Weapon = {
     CarrotTipBowPlus: 2026, // 春花の弓+
     MagicRabbits: 2028, // 二羽の魔兎の揺籃
     CarrotTipSpearPlus: 2030, // 春花の槍+
+
+    // 2022年3月 武器錬成
+    AzureLance: 2020, // 蒼穹の細槍
 }
 
 const Support = {

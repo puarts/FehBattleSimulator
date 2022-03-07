@@ -1875,6 +1875,19 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AzureLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+                targetUnit.battleContext.additionalDamage += 7;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AnyaryuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {

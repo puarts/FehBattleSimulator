@@ -366,6 +366,9 @@ __applyRefresh(skillOwnerUnit, targetUnit) {}
 移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
 __applyMovementAssistSkill() {}
 
+応援を使用した時、または自分に使用された時
+__applySkillsAfterRally(supporterUnit, targetUnit) {}
+
 自分を除く自軍内の移動タイプの種類数によって異なる効果を発動
 enumerateUnitsInTheSameGroupOnMap()
 let sameMoveTypeCount = 0;
