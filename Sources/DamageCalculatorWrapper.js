@@ -9446,6 +9446,12 @@ class DamageCalculatorWrapper {
                             }
                             break;
                     }
+                    switch (unit.passiveC) {
+                        case PassiveC.SpdResHold:
+                            targetUnit.spdSpur -= 4;
+                            targetUnit.resSpur -= 4;
+                            break;
+                    }
                 }
 
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
