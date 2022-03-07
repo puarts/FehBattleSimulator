@@ -1283,6 +1283,7 @@ const Support = {
     Sing: 411, // 歌う
     Dance: 412, // 踊る
     GrayWaves: 789, // ユラリユルレリ
+    GrayWaves2: 2017, // ユラリユルレリ・承
     GentleDream: 1061, // やさしいゆめ
     WhimsicalDream: 1362, // しろいゆめ
     SweetDreams: 1489, // あまいゆめ

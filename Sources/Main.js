@@ -7442,11 +7442,18 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Support.GrayWaves:
-                {
-                    if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                    }
+            {
+                if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                 }
+            }
+                break;
+            case Support.GrayWaves2: {
+                if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                targetUnit.addStatusEffect(StatusEffectType.NullPanic);
+            }
                 break;
             case Support.GentleDream:
                 {
