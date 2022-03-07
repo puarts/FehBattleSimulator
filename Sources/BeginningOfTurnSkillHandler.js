@@ -1647,13 +1647,25 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.AnyaryuNoBreath:
-                if (this.globalBattleContext.currentTurn == 4) {
-                    let count = 0;
-                    for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
-                        unit.reserveTakeDamage(10);
-                        ++count;
+                if (!skillOwner.isWeaponRefined) {
+                    if (this.globalBattleContext.currentTurn == 4) {
+                        let count = 0;
+                        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                            unit.reserveTakeDamage(10);
+                            ++count;
+                        }
+                        skillOwner.reserveHeal(count * 5);
                     }
-                    skillOwner.reserveHeal(count * 5);
+                } else {
+                    let currentTurn = this.globalBattleContext.currentTurn;
+                    if (3 <= currentTurn && currentTurn <= 4) {
+                        let count = 0;
+                        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
+                            unit.reserveTakeDamage(13);
+                            count++;
+                        }
+                        skillOwner.reserveHeal(count * 13);
+                    }
                 }
                 break;
             case PassiveB.Recovering:

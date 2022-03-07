@@ -1875,6 +1875,21 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AnyaryuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.atkSpur += 5;
+                    enemyUnit.atkSpur -= 5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.atkSpur += 5;
+                        enemyUnit.atkSpur -= 5;
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Hyoushintou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
