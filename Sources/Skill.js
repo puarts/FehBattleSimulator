@@ -1263,6 +1263,7 @@ const Weapon = {
     BrightShellEgg: 2023, // 可憐に色づく飾り卵
     PastelPoleaxe: 2024, // 無邪気な白兎の斧
     CarrotTipBowPlus: 2026, // 春花の弓+
+    MagicRabbits: 2028, // 二羽の魔兎の揺籃
 }
 
 const Support = {
