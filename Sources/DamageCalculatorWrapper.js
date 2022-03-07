@@ -6843,6 +6843,17 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.FlowFlight3:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 10) {
+                            let diff = targetUnit.getEvalDefInCombat(enemyUnit) - enemyUnit.getEvalDefInCombat(targetUnit);
+                            let amount = Math.trunc(Math.min(7, Math.max(0, diff * 0.70)));
+                            targetUnit.battleContext.additionalDamage += amount;
+                            targetUnit.battleContext.damageReductionValue += amount;
+                        }
+                    }
+                    break;
                 case PassiveB.SavvyFighter3:
                     if (enemyUnit.battleContext.initiatesCombat) {
                         if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInPrecombat() - 4) {

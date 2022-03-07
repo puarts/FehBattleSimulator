@@ -1981,6 +1981,7 @@ const PassiveB = {
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
 
     // 怒涛
+    FlowFlight3: 2025, // 怒涛・飛竜行空3
     FlowRefresh3: 1763, // 怒涛・再起3
     FlowGuard3: 1912, // 怒涛・キャンセル3
 };
