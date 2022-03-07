@@ -877,7 +877,7 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
-            case Hero.HarmonizedSonya:
+            case Hero.HarmonizedSonya: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
                     if (this.__areSameOrigin(unit, targetOrigins)) {
@@ -887,6 +887,7 @@ class AetherRaidTacticsBoard {
                     }
                 }
                 break;
+            }
             case Hero.DuoChrom:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
                     unit.applyAllDebuff(-5);
