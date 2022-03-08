@@ -306,6 +306,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PastelPoleaxe:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                            unit.reserveHeal(7);
+                        }
+                    }
+                    break;
                 case PassiveB.FaithfulLoyalty:
                     targetUnit.addStatusEffect(StatusEffectType.Vantage);
                     break;

@@ -3085,6 +3085,13 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MagicRabbits:
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
+                            yield tile;
+                        }
+                    }
+                    break;
                 case Weapon.TomeOfFavors:
                     if (unit.isWeaponSpecialRefined) {
                         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {

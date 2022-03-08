@@ -877,6 +877,17 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedSonya: {
+                let targetOrigins = duoUnit.heroInfo.origin.split('|');
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                        unit.reduceSpecialCount(2);
+                        unit.applyAtkBuff(6);
+                        unit.addStatusEffect(StatusEffectType.ResonantBlades);
+                    }
+                }
+                break;
+            }
             case Hero.DuoChrom:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
                     unit.applyAllDebuff(-5);
