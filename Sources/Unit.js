@@ -339,9 +339,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.GrandStrategy:
             return g_imageRootPath + "StatusEffect_GrandStrategy.png";
         case StatusEffectType.CantoControl:
-            // TODO: 画像を用意する
-            // return g_imageRootPath + "StatusEffect_CantoControl.png";
-            return g_imageRootPath + "StatusEffect_GrandStrategy.png";
+            return g_imageRootPath + "StatusEffect_CantoControl.png";
         default: return "";
     }
 }
