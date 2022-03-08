@@ -5782,7 +5782,15 @@ class AetherRaidTacticsBoard {
         if (this.__canActivateCanto(unit)) {
             this.writeDebugLogLine("再移動の発動");
             let count = unit.calcMoveCountForCanto();
-            unit.activateCantoIfPossible(count);
+            // 4マス以内にいるだけで再移動発動時に効果を発揮する
+            // activateCantoIfPossible内で再移動の発動を判定しているのでここでは4マス以内の判定結果だけを保存
+            let cantoControlledIfCantoActivated = false;
+            for (let u of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 4)) {
+                if (u.weapon === Weapon.DotingStaff && u.isWeaponSpecialRefined) {
+                    cantoControlledIfCantoActivated = true;
+                }
+            }
+            unit.activateCantoIfPossible(count, cantoControlledIfCantoActivated);
         }
     }
 
@@ -7300,6 +7308,16 @@ class AetherRaidTacticsBoard {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AzureLance:
+                    if (unit.isWeaponSpecialRefined) {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        targetUnit.applyAtkBuff(6);
+                        targetUnit.applySpdBuff(6);
+                        unit.heal(10);
+                        targetUnit.heal(10);
+                    }
+                    break;
                 case Weapon.DestinysBow:
                     if (g_appData.currentTurn <= 4) {
                         if (!unit.isOneTimeActionActivatedForWeapon) {
@@ -7442,11 +7460,18 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Support.GrayWaves:
-                {
-                    if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                    }
+            {
+                if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                 }
+            }
+                break;
+            case Support.GrayWaves2: {
+                if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                targetUnit.addStatusEffect(StatusEffectType.NullPanic);
+            }
                 break;
             case Support.GentleDream:
                 {
@@ -7637,6 +7662,16 @@ class AetherRaidTacticsBoard {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AzureLance:
+                    if (supporterUnit.isWeaponSpecialRefined) {
+                        supporterUnit.applyAtkBuff(6);
+                        supporterUnit.applySpdBuff(6);
+                        targetUnit.applyAtkBuff(6);
+                        targetUnit.applySpdBuff(6);
+                        supporterUnit.heal(10);
+                        targetUnit.heal(10);
+                    }
+                    break;
                 case Weapon.DamiellBow:
                     if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
                         targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
@@ -7680,6 +7715,16 @@ class AetherRaidTacticsBoard {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AzureLance:
+                    if (supporterUnit.isWeaponSpecialRefined) {
+                        supporterUnit.applyAtkBuff(6);
+                        supporterUnit.applySpdBuff(6);
+                        targetUnit.applyAtkBuff(6);
+                        targetUnit.applySpdBuff(6);
+                        supporterUnit.heal(10);
+                        targetUnit.heal(10);
+                    }
+                    break;
                 case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
                 case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
                 case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;

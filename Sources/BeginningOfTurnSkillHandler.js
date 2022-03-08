@@ -107,6 +107,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.SeireiNoHogu:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
+                        unit.applySpdBuff(6);
+                    }
+                }
+                break;
             case Weapon.MagicRabbits:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(2);
@@ -628,11 +635,13 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.Hyoushintou:
+            case Weapon.Hyoushintou: {
+                let amount = skillOwner.isWeaponRefined ? -6 : -4;
                 for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
-                    unit.reserveToApplyAllDebuff(-4);
+                    unit.reserveToApplyAllDebuff(amount);
                 }
                 break;
+            }
             case Weapon.JinroMusumeNoTsumekiba:
                 if (this.globalBattleContext.currentTurn == 1) {
                     skillOwner.reduceSpecialCount(2);
@@ -1638,13 +1647,25 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.AnyaryuNoBreath:
-                if (this.globalBattleContext.currentTurn == 4) {
-                    let count = 0;
-                    for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
-                        unit.reserveTakeDamage(10);
-                        ++count;
+                if (!skillOwner.isWeaponRefined) {
+                    if (this.globalBattleContext.currentTurn == 4) {
+                        let count = 0;
+                        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                            unit.reserveTakeDamage(10);
+                            ++count;
+                        }
+                        skillOwner.reserveHeal(count * 5);
                     }
-                    skillOwner.reserveHeal(count * 5);
+                } else {
+                    let currentTurn = this.globalBattleContext.currentTurn;
+                    if (3 <= currentTurn && currentTurn <= 4) {
+                        let count = 0;
+                        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
+                            unit.reserveTakeDamage(13);
+                            count++;
+                        }
+                        skillOwner.reserveHeal(count * 13);
+                    }
                 }
                 break;
             case PassiveB.Recovering:

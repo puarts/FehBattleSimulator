@@ -579,6 +579,15 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.QuickMulagir:
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        if (attackUnit.battleContext.initiatesCombat) {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                                unit.reserveTakeDamage(7);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.BoneCarverPlus:
                     if (attackUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
@@ -718,6 +727,7 @@ class PostCombatSkillHander {
                 case Weapon.Candlelight:
                     attackTargetUnit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                     break;
+                case Weapon.DotingStaff:
                 case Weapon.CandlelightPlus:
                 case Weapon.FlashPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {

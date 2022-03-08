@@ -1265,6 +1265,11 @@ const Weapon = {
     CarrotTipBowPlus: 2026, // 春花の弓+
     MagicRabbits: 2028, // 二羽の魔兎の揺籃
     CarrotTipSpearPlus: 2030, // 春花の槍+
+
+    // 2022年3月 武器錬成
+    AzureLance: 2020, // 蒼穹の細槍
+    QuickMulagir: 2021, // 颯弓ミュルグレ
+    DotingStaff: 2022, // 慈母の霊杖
 }
 
 const Support = {
@@ -1283,6 +1288,7 @@ const Support = {
     Sing: 411, // 歌う
     Dance: 412, // 踊る
     GrayWaves: 789, // ユラリユルレリ
+    GrayWaves2: 2017, // ユラリユルレリ・承
     GentleDream: 1061, // やさしいゆめ
     WhimsicalDream: 1362, // しろいゆめ
     SweetDreams: 1489, // あまいゆめ

@@ -41,11 +41,29 @@ const BeastCommonSkillMap =
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 
+3すくみ有利だと、さらに攻撃+20%[相性激化]
+getTriangleAdeptAdditionalRatio() {
+    if (isTriangleAdeptSkill(this.passiveA)
+        || isTriangleAdeptSkill(this.weapon)
+        || (this.weapon === Weapon.Forukuvangu && this.isWeaponSpecialRefined)
+        || (this.weapon === Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
+        || this.hasStatusEffect(StatusEffectType.TriangleAdept)
+    ) {
+        return 0.2;
+    }
+}
+
 敵が歩行、飛行、騎馬、重装の時
 if (enemyUnit.moveType === MoveType.Infantry) {}
 if (enemyUnit.moveType === MoveType.Flying) {}
 if (enemyUnit.moveType === MoveType.Cavalry) {}
 if (enemyUnit.moveType === MoveType.Armor:) {}
+
+射程
+1距離
+isMeleeWeaponType(weaponType)
+2距離
+isRangedWeaponType(weaponType)
 
 自分から攻撃した時
 if (targetUnit.battleContext.initiatesCombat) {
@@ -205,6 +223,11 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);
 }
 
+敵が受けている弱化の合計値を自分の攻撃に加算[弱化ブレード]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    DamageCalculationUtility.applyDebuffBlade(targetUnit, enemyUnit);
+}
+
 敵が強化を受けていれば、戦闘中、自身の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ上昇(能力値ごとに計算)[敵強化増幅]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
@@ -236,6 +259,16 @@ targetUnit.battleContext.healedHpByAttack = N
 戦闘後、HP N回復
 __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
+}
+
+戦闘後、敵の周囲2マスの敵に7ダメージ[死の吐息]
+__applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
+    case PassiveC.SavageBlow3:
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2)) {
+            this.writeLogLine(unit.getNameWithGroup() + "は死の吐息により7ダメージ");
+            unit.reserveTakeDamage(7);
+        }
+        break;
 }
 
 戦闘中、奥義による攻撃でダメージを与えた時、自分の最大HPの30%回復(与えたダメージが0でも効果は発動)
@@ -348,6 +381,9 @@ __applyRefresh(skillOwnerUnit, targetUnit) {}
 
 移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
 __applyMovementAssistSkill() {}
+
+応援を使用した時、または自分に使用された時
+__applySkillsAfterRally(supporterUnit, targetUnit) {}
 
 自分を除く自軍内の移動タイプの種類数によって異なる効果を発動
 enumerateUnitsInTheSameGroupOnMap()

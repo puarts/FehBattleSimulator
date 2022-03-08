@@ -214,6 +214,7 @@ const StatusEffectType = {
     FalseStart: 28, // ターン開始スキル不可
     NeutralizesFoesBonusesDuringCombat: 29, // 敵の強化の+を無効
     GrandStrategy: 30, // 神軍師の策
+    CantoControl: 31, // 再移動制限
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -264,6 +265,7 @@ NegativeStatusEffectTable[StatusEffectType.Isolation] = 0;
 NegativeStatusEffectTable[StatusEffectType.DeepWounds] = 0;
 NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
 NegativeStatusEffectTable[StatusEffectType.FalseStart] = 0;
+NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -335,6 +337,10 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.NeutralizesFoesBonusesDuringCombat:
             return g_imageRootPath + "StatusEffect_NeutralizeFoeBonuses.png";
         case StatusEffectType.GrandStrategy:
+            return g_imageRootPath + "StatusEffect_GrandStrategy.png";
+        case StatusEffectType.CantoControl:
+            // TODO: 画像を用意する
+            // return g_imageRootPath + "StatusEffect_CantoControl.png";
             return g_imageRootPath + "StatusEffect_GrandStrategy.png";
         default: return "";
     }
@@ -1215,6 +1221,7 @@ class Unit {
         this.chaseTargetTile = null;
 
         this.moveCountForCanto = 0; // 再移動の移動マス数
+        this.isCantoActivating = false; // 再移動が発動中かを保存
         this.isCantoActivatedInCurrentTurn = false; // 現在ターンで再移動が1度でも発動したかどうか
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
@@ -1277,7 +1284,7 @@ class Unit {
     }
 
     /// 再移動が発動可能なら発動します。
-    activateCantoIfPossible(moveCountForCanto) {
+    activateCantoIfPossible(moveCountForCanto, cantoControlledIfCantoActivated) {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return;
         }
@@ -1287,17 +1294,27 @@ class Unit {
         if (this.moveCountForCanto > 0) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
+            this.isCantoActivating = true;
+            if (cantoControlledIfCantoActivated) {
+                this.addStatusEffect(StatusEffectType.CantoControl);
+                this.moveCountForCanto = this.calcMoveCountForCanto();
+                if (this.isRangedWeaponType()) {
+                    this.endAction();
+                    this.deactivateCanto();
+                }
+            }
         }
     }
 
     /// 再移動の発動を終了します。
     deactivateCanto() {
         this.moveCountForCanto = 0;
+        this.isCantoActivating = false;
     }
 
     /// 再移動が発動しているとき、trueを返します。
     isCantoActivated() {
-        return this.moveCountForCanto > 0;
+        return this.isCantoActivating;
     }
 
     chaseTargetTileToString() {
@@ -3206,6 +3223,7 @@ class Unit {
             || isTriangleAdeptSkill(this.weapon)
             || (this.weapon === Weapon.Forukuvangu && this.isWeaponSpecialRefined)
             || (this.weapon === Weapon.TomeOfOrder && this.isWeaponSpecialRefined)
+            || (this.weapon === Weapon.SeireiNoHogu && this.isWeaponSpecialRefined && this.battleContext.restHpPercentage >= 25)
             || this.hasStatusEffect(StatusEffectType.TriangleAdept)
         ) {
             return 0.2;
@@ -4677,6 +4695,9 @@ class Unit {
      */
     calcMoveCountForCanto() {
         let moveCountForCanto = 0;
+        if (this.hasStatusEffect(StatusEffectType.CantoControl)) {
+            return isMeleeWeaponType(this.weaponType) ? 1 : 0;
+        }
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
@@ -4901,6 +4922,7 @@ function isAfflictor(attackUnit, lossesInCombat) {
         case Weapon.FlashPlus:
         case Weapon.Candlelight:
         case Weapon.CandlelightPlus:
+        case Weapon.DotingStaff:
         case Weapon.Merankory:
         case Weapon.MerankoryPlus:
         case Weapon.CandyStaff:
