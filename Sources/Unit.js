@@ -1284,7 +1284,7 @@ class Unit {
     }
 
     /// 再移動が発動可能なら発動します。
-    activateCantoIfPossible(moveCountForCanto) {
+    activateCantoIfPossible(moveCountForCanto, cantoControlledIfCantoActivated) {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return;
         }
@@ -1295,6 +1295,10 @@ class Unit {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
             this.isCantoActivating = true;
+            if (cantoControlledIfCantoActivated) {
+                this.addStatusEffect(StatusEffectType.CantoControl);
+                this.moveCountForCanto = this.calcMoveCountForCanto();
+            }
         }
     }
 
@@ -4914,6 +4918,7 @@ function isAfflictor(attackUnit, lossesInCombat) {
         case Weapon.FlashPlus:
         case Weapon.Candlelight:
         case Weapon.CandlelightPlus:
+        case Weapon.DotingStaff:
         case Weapon.Merankory:
         case Weapon.MerankoryPlus:
         case Weapon.CandyStaff:

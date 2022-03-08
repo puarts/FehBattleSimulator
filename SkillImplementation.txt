@@ -59,6 +59,12 @@ if (enemyUnit.moveType === MoveType.Flying) {}
 if (enemyUnit.moveType === MoveType.Cavalry) {}
 if (enemyUnit.moveType === MoveType.Armor:) {}
 
+射程
+1距離
+isMeleeWeaponType(weaponType)
+2距離
+isRangedWeaponType(weaponType)
+
 自分から攻撃した時
 if (targetUnit.battleContext.initiatesCombat) {
 敵から攻撃された時

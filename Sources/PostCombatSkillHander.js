@@ -727,6 +727,7 @@ class PostCombatSkillHander {
                 case Weapon.Candlelight:
                     attackTargetUnit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                     break;
+                case Weapon.DotingStaff:
                 case Weapon.CandlelightPlus:
                 case Weapon.FlashPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
