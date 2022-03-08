@@ -498,6 +498,7 @@ class ImageProcessor {
 
     setMapByImage(file) {
         let self = g_app;
+        let processor = this;
         loadAndProcessImage(file, image => {
             const croppedCanvas = document.getElementById("croppedImage");
             let croppedWidth = image.width - self.vm.ocrCropX * 2;
@@ -513,7 +514,7 @@ class ImageProcessor {
             }
 
             const topCropHeightRatio = 0.15;
-            this.__drawCroppedImage(image, croppedCanvas,
+            processor.__drawCroppedImage(image, croppedCanvas,
                 self.vm.ocrCropX, croppedPointY,
                 croppedWidth, croppedHeight - croppedHeight * topCropHeightRatio - croppedHeight * cropHeightRatio,
                 scale);
@@ -534,7 +535,7 @@ class ImageProcessor {
                     (iter) => {
                         // 地形タイプ判別
                         let mapImageFile = self.vm.arenaMapImageFiles[iter];
-                        let sum = this.__calcAbsDiffOfImages(croppedCanvas, mapImageFile);
+                        let sum = processor.__calcAbsDiffOfImages(croppedCanvas, mapImageFile);
                         if (sum < minSum) {
                             minSum = sum;
                             minMapType = mapImageFile.id;
@@ -576,7 +577,7 @@ class ImageProcessor {
                         if (!isDebugModeEnabled && iter < self.vm.mapImageFiles.length) {
                             // 地形タイプ判別
                             let mapImageFile = self.vm.mapImageFiles[iter];
-                            let sum = this.__calcAbsDiffOfImages(croppedCanvas, mapImageFile);
+                            let sum = processor.__calcAbsDiffOfImages(croppedCanvas, mapImageFile);
                             if (sum < minSum) {
                                 minSum = sum;
                                 minMapType = mapImageFile.id;
@@ -587,7 +588,7 @@ class ImageProcessor {
                             if (isDebugModeEnabled) {
                                 templateIndex = self.vm.debugTemplateIndex + iter;
                             }
-                            this.__templateMatch(templateIndex, croppedCanvas, matchedPoints);
+                            processor.__templateMatch(templateIndex, croppedCanvas, matchedPoints);
                         }
                     },
                     (iter, iterMax) => {
@@ -610,17 +611,17 @@ class ImageProcessor {
                         $("#progress").progressbar({ disabled: true });
 
                         // トラップは2つあるので片方のインスタンスを本物トラップに置き換える
-                        let boltTrapPoints = this.__getSortedMatchedPoints(matchedPoints, st => st instanceof FalseBoltTrap);
-                        this.__updateStructureInstanceOfSortedMatchedPoints(boltTrapPoints,
+                        let boltTrapPoints = processor.__getSortedMatchedPoints(matchedPoints, st => st instanceof FalseBoltTrap);
+                        processor.__updateStructureInstanceOfSortedMatchedPoints(boltTrapPoints,
                             x => x instanceof FalseBoltTrap || x instanceof BoltTrap,
                             (st, point) => { });
-                        let heavyTrapPoints = this.__getSortedMatchedPoints(matchedPoints, st => st instanceof FalseHeavyTrap);
-                        this.__updateStructureInstanceOfSortedMatchedPoints(heavyTrapPoints,
+                        let heavyTrapPoints = processor.__getSortedMatchedPoints(matchedPoints, st => st instanceof FalseHeavyTrap);
+                        processor.__updateStructureInstanceOfSortedMatchedPoints(heavyTrapPoints,
                             x => x instanceof FalseHeavyTrap || x instanceof HeavyTrap,
                             (st, point) => { });
 
-                        let ornamentPoints = this.__getSortedMatchedPoints(matchedPoints, st => st instanceof Ornament);
-                        this.__updateStructureInstanceOfSortedMatchedPoints(ornamentPoints,
+                        let ornamentPoints = processor.__getSortedMatchedPoints(matchedPoints, st => st instanceof Ornament);
+                        processor.__updateStructureInstanceOfSortedMatchedPoints(ornamentPoints,
                             x => x instanceof Ornament,
                             (st, point) => {
                                 st.ornamentTypeIndex = findOrnamentTypeIndexByIcon(point[4]);
@@ -658,18 +659,18 @@ class ImageProcessor {
      * @param  {Canvas[]} ocrCanvases
      */
     setUnitByImage(unit, file, sourceCanvas, binarizedCanvas, ocrCanvases) {
-        let self = g_app;
-        self.vm.ocrProgress = `画像の読み込みと2値化(${unit.id})..`;
+        let app = g_app;
+        let self = this;
+        app.vm.ocrProgress = `画像の読み込み(${unit.id})..`;
         loadAndProcessImage(file, image => {
-            self.vm.ocrProgress = `画像の読み込み完了(${unit.id})..`;
-            const croppedWidth = image.width - self.vm.ocrCropX * 2;
+            const croppedWidth = image.width - app.vm.ocrCropX * 2;
             const croppedHeight = croppedWidth * (16.0 / 9.0);
             let scale = 1136.0 / croppedHeight; // テンプレート画像が640x1136から切り出したものを使ってるのでサイズを合わせる必要がある
-            this.__drawCroppedImage(image, sourceCanvas,
-                self.vm.ocrCropX, self.vm.ocrCropY, croppedWidth, croppedHeight, scale);
+            self.__drawCroppedImage(image, sourceCanvas,
+                app.vm.ocrCropX, app.vm.ocrCropY, croppedWidth, croppedHeight, scale);
 
             // 文字認識用に2値化
-            self.vm.ocrProgress = `画像の2値化(${unit.id})..`;
+            app.vm.ocrProgress = `画像の2値化(${unit.id})..`;
             manipurateHsv(sourceCanvas, binarizedCanvas,
                 (h, s, v) => { return s > 40 || v < 140; }, true);
 
@@ -703,32 +704,16 @@ class ImageProcessor {
             cropAndBinarizeImageAndOcr(
                 ocrInputCanvas, binarizedCanvas,
                 0.05, 0.435, 0.45, 0.105, -1,
-                p => self.ocrProgress(p, `ユニット名抽出(${unit.id})`),
+                p => app.ocrProgress(p, `ユニット名抽出(${unit.id})`),
                 ocrResult => {
-                    self.clearOcrProgress();
+                    app.clearOcrProgress();
                     console.log(ocrResult);
-                    g_appData.ocrResult += "キャラ名: " + ocrResult.text + "\n";
-                    let filtered = convertOcrResultToArray(ocrResult.text);
-                    filtered = self.limitArrayLengthTo2WithLargerLengthString(filtered);
-                    if (filtered.length >= 2) {
-                        let epithet = "";
-                        for (let i = 0; i < filtered.length - 1; ++i) {
-                            epithet += filtered[i];
-                        }
-                        let name = filtered[filtered.length - 1];
-                        let result = g_app.findSimilarHeroNameInfo(name, epithet);
-                        if (result != null) {
-                            let info = result[0];
-                            let heroIndex = g_appData.heroInfos.findIndexOfInfo(info.name)
-                            g_appData.initializeByHeroInfo(unit, heroIndex, false);
-                            selectItemById(unit.id);
-                        }
-                    }
+                    self.extractHeroName(unit, ocrResult);
                 }).then(() => {
-                    self.writeProgress(`祝福抽出(${unit.id})`);
-                    this.setUnitBlessingByImage(unit, sourceCanvas, ocrInputCanvas1);
+                    app.writeProgress(`祝福抽出(${unit.id})`);
+                    self.setUnitBlessingByImage(unit, sourceCanvas, ocrInputCanvas1);
                     updateAllUi();
-                    self.clearOcrProgress();
+                    app.clearOcrProgress();
                 }).then(() => {
                     // 凸数抽出
                     unit.merge = 0;
@@ -737,7 +722,7 @@ class ImageProcessor {
                         0.252, 0.577, 0.06, 0.038, 130,
                         p => g_app.ocrProgress(p, `凸数抽出(${unit.id})`),
                         ocrResult => {
-                            self.clearOcrProgress();
+                            app.clearOcrProgress();
                             console.log(ocrResult);
                             g_appData.ocrResult += "凸数: " + ocrResult.text + "\n";
                             var filtered = convertOcrResultToArray(ocrResult.text);
@@ -757,7 +742,7 @@ class ImageProcessor {
                             0.541, 0.58, 0.06, 0.03, -1,
                             p => g_app.ocrProgress(p, `花凸数抽出(${unit.id})`),
                             ocrResult => {
-                                self.clearOcrProgress();
+                                app.clearOcrProgress();
                                 console.log(ocrResult);
                                 g_appData.ocrResult += "花凸数: " + ocrResult.text + "\n";
                                 var filtered = convertOcrResultToArray(ocrResult.text);
@@ -767,7 +752,6 @@ class ImageProcessor {
                                     unit.dragonflower = dragonflower;
                                     g_appData.__updateStatusBySkillsAndMerges(unit);
                                 }
-                                return false;
                             },
                             'eng'
                             // ,"0123456789"
@@ -776,9 +760,9 @@ class ImageProcessor {
                             cropAndBinarizeImageAndOcr(
                                 ocrInputCanvas11, binarizedCanvas,
                                 0.506, 0.58, 0.06, 0.03, -1,
-                                p => self.ocrProgress(p, `花凸数抽出(${unit.id})`),
+                                p => app.ocrProgress(p, `花凸数抽出(${unit.id})`),
                                 ocrResult => {
-                                    self.clearOcrProgress();
+                                    app.clearOcrProgress();
                                     console.log(ocrResult);
                                     g_appData.ocrResult += "花凸数: " + ocrResult.text + "\n";
                                     var filtered = convertOcrResultToArray(ocrResult.text);
@@ -807,21 +791,7 @@ class ImageProcessor {
                                     },
                                     p => g_app.ocrProgress(p, `得意個体抽出(${unit.id})`),
                                     ocrResult => {
-                                        self.clearOcrProgress();
-                                        unit.setIvHighStat(StatusType.None);
-                                        console.log(ocrResult);
-                                        g_appData.ocrResult += "得意: " + ocrResult.text + "\n";
-                                        var filtered = convertOcrResultToArray(ocrResult.text);
-                                        let partialName = getMaxLengthElem(filtered);
-                                        g_app.writeDebugLogLine(`partialName=${partialName}`);
-                                        if (partialName == null || partialName == "") {
-                                            return;
-                                        }
-                                        let statusName = g_app.__findSimilarStatusName(partialName);
-                                        if (statusName != null) {
-                                            unit.setIvHighStat(nameToStatusType(statusName));
-                                            g_appData.__updateStatusBySkillsAndMerges(unit);
-                                        }
+                                        self.extractAsset(unit, ocrResult);
                                     },
                                     'jpn',
                                     "HP攻撃速さ守備魔防"
@@ -840,20 +810,7 @@ class ImageProcessor {
                                         },
                                         p => g_app.ocrProgress(p, `苦手個体抽出(${unit.id})`),
                                         ocrResult => {
-                                            self.clearOcrProgress();
-                                            console.log(ocrResult);
-                                            unit.setIvLowStat(StatusType.None);
-                                            g_appData.ocrResult += "苦手: " + ocrResult.text + "\n";
-                                            var filtered = convertOcrResultToArray(ocrResult.text);
-                                            let partialName = getMaxLengthElem(filtered);
-                                            if (partialName == null || partialName == "") {
-                                                return;
-                                            }
-                                            let statusName = g_app.__findSimilarStatusName(partialName);
-                                            if (statusName != null) {
-                                                unit.setIvLowStat(nameToStatusType(statusName));
-                                                g_appData.__updateStatusBySkillsAndMerges(unit);
-                                            }
+                                            self.extractFlaw(unit, ocrResult);
                                         },
                                         'jpn',
                                         "HP攻撃速さ守備魔防"
@@ -874,51 +831,11 @@ class ImageProcessor {
                                             },
                                             p => g_app.ocrProgress(p, `武器抽出(${unit.id})`),
                                             ocrResult => {
-                                                self.clearOcrProgress();
-                                                console.log(ocrResult);
-                                                g_appData.ocrResult += "武器名: " + ocrResult.text + "\n";
-                                                let filtered = convertOcrResultToArray(ocrResult.text);
-                                                let partialName = combineText(filtered);
-                                                console.log(partialName);
-
-                                                // heroIndexChangedイベントによってデフォルトスキルが予約されてしまうのでスキルセットする直前で解消
-                                                // todo: もっとまともな方法があれば
-                                                unit.clearReservedSkills();
-                                                unit.weapon = -1;
-
-                                                if (partialName != null) {
-                                                    let result = self.findSimilarNameSkill(partialName,
-                                                        self.__enumerateElemOfArrays([
-                                                            g_appData.weaponInfos]));
-                                                    if (result != null) {
-                                                        let skillInfo = result[0];
-                                                        console.log(skillInfo.name);
-                                                        let skillId = skillInfo.id;
-                                                        if (skillInfo.name.startsWith("ファルシオン")) {
-                                                            switch (unit.heroIndex) {
-                                                                case 84: // マルス
-                                                                    skillId = 47;
-                                                                    break;
-                                                                case 72: // ルキナ
-                                                                case 24: // クロム
-                                                                case 134: // 仮面マルス
-                                                                    skillId = 48;
-                                                                    break;
-                                                                case 114: // アルム
-                                                                    skillId = 49;
-                                                                    break;
-                                                                default:
-                                                                    break;
-                                                            }
-                                                        }
-                                                        unit.weapon = skillId;
-                                                        g_appData.__updateUnitSkillInfo(unit);
-                                                    }
-                                                }
+                                                self.extractWeapon(unit, ocrResult);
                                             },
                                             "jpn",
                                             // ホワイトリスト有効にするとスマホ版でtesseractが固まる
-                                            self.vm.useWhitelistForOcr ? self.weaponSkillCharWhiteList : ""
+                                            app.vm.useWhitelistForOcr ? app.weaponSkillCharWhiteList : ""
                                         ).then(() => {
                                             // 武器錬成抽出
                                             cropAndPostProcessAndOcr(
@@ -933,18 +850,18 @@ class ImageProcessor {
                                                 },
                                                 p => g_app.ocrProgress(p, `武器錬成抽出(${unit.id})`),
                                                 ocrResult => {
-                                                    self.clearOcrProgress();
+                                                    app.clearOcrProgress();
                                                     var filtered = convertOcrResultToArray(ocrResult.text);
                                                     let partialName = getMaxLengthElem(filtered);
                                                     console.log(filtered);
                                                     unit.weaponRefinement = WeaponRefinementType.None;
                                                     if (partialName == null) {
                                                         // 武器錬成あり
-                                                        this.setWeaponRefinementTypeByImage(unit, sourceCanvas, ocrInputCanvas8);
+                                                        self.setWeaponRefinementTypeByImage(unit, sourceCanvas, ocrInputCanvas8);
                                                     }
                                                 },
                                                 "jpn",
-                                                self.vm.useWhitelistForOcr ? self.weaponSkillCharWhiteList : ""
+                                                app.vm.useWhitelistForOcr ? app.weaponSkillCharWhiteList : ""
                                             ).then(() => {
                                                 // 武器、S以外のスキル名抽出
                                                 cropAndBinarizeImageAndOcr(
@@ -953,104 +870,26 @@ class ImageProcessor {
                                                     -1,
                                                     p => g_app.ocrProgress(p, `スキル抽出(${unit.id})`),
                                                     ocrResult => {
-                                                        self.clearOcrProgress();
-                                                        console.log(ocrResult);
-                                                        g_appData.ocrResult += "スキル名: " + ocrResult.text + "\n";
-                                                        var filtered = convertOcrResultToArray(ocrResult.text);
-                                                        console.log(filtered);
-
-                                                        unit.support = -1;
-                                                        unit.special = -1;
-                                                        unit.passiveA = -1;
-                                                        unit.passiveB = -1;
-                                                        unit.passiveC = -1;
-                                                        let dict = {};
-                                                        for (let name of filtered) {
-                                                            let skillInfo = null;
-                                                            skillInfo = self.__findSkillInfoWithDict(name, unit, dict);
-                                                            if (skillInfo == null) {
-                                                                continue;
-                                                            }
-                                                            if (!dict[SkillType.Support]) {
-                                                                if (skillInfo.type == SkillType.Support) {
-                                                                    dict[SkillType.Support] = skillInfo;
-                                                                    unit.support = skillInfo.id;
-                                                                    continue;
-                                                                }
-                                                            }
-
-                                                            if (!dict[SkillType.Special]) {
-                                                                if (skillInfo.type == SkillType.Special) {
-                                                                    dict[skillInfo.type] = skillInfo;
-                                                                    unit.special = skillInfo.id;
-                                                                    continue;
-                                                                }
-                                                            }
-
-                                                            if (!dict[SkillType.PassiveA]) {
-                                                                if (skillInfo.type == SkillType.PassiveA) {
-                                                                    dict[skillInfo.type] = skillInfo;
-                                                                    unit.passiveA = skillInfo.id;
-                                                                    continue;
-                                                                }
-                                                            }
-
-                                                            if (!dict[SkillType.PassiveB]) {
-                                                                if (skillInfo.type == SkillType.PassiveB) {
-                                                                    dict[skillInfo.type] = skillInfo;
-                                                                    unit.passiveB = skillInfo.id;
-                                                                    continue;
-                                                                }
-                                                            }
-
-                                                            if (!dict[SkillType.PassiveC]) {
-                                                                if (skillInfo.type == SkillType.PassiveC) {
-                                                                    dict[skillInfo.type] = skillInfo;
-                                                                    unit.passiveC = skillInfo.id;
-                                                                    continue;
-                                                                }
-                                                            }
-
-                                                            // ここまで来た場合は見つからなかったか、複数スキルが同じ種類に判定されてしまったパターン
-                                                        }
+                                                        self.extractSkills(unit, ocrResult);
                                                     },
                                                     "jpn",
-                                                    self.vm.useWhitelistForOcr ?
-                                                        self.supportSkillCharWhiteList +
-                                                        self.specialSkillCharWhiteList +
-                                                        self.passiveSkillCharWhiteList : "",
-                                                    self.passiveSkillCharBlackList,
+                                                    app.vm.useWhitelistForOcr ?
+                                                        app.supportSkillCharWhiteList +
+                                                        app.specialSkillCharWhiteList +
+                                                        app.passiveSkillCharWhiteList : "",
+                                                    app.passiveSkillCharBlackList,
                                                 ).then(() => {
                                                     cropAndBinarizeImageAndOcr(
                                                         ocrInputCanvas10, binarizedCanvas,
                                                         0.575, 0.855, 0.32, 0.03, -1,
                                                         p => g_app.ocrProgress(p, `聖印抽出(${unit.id})`),
                                                         ocrResult => {
-                                                            self.clearOcrProgress();
-                                                            console.log(ocrResult);
-                                                            g_appData.ocrResult += "聖印名: " + ocrResult.text + "\n";
-                                                            var filtered = convertOcrResultToArray(ocrResult.text);
-                                                            let partialName = getMaxLengthElem(filtered);
-                                                            console.log(filtered);
-
-                                                            if (partialName != null) {
-                                                                let result = g_app.findSimilarNameSkill(partialName,
-                                                                    self.__enumerateElemOfArrays([
-                                                                        g_appData.passiveAInfos,
-                                                                        g_appData.passiveBInfos,
-                                                                        g_appData.passiveCInfos,
-                                                                        g_appData.passiveSInfos]));
-                                                                if (result != null) {
-                                                                    let skillInfo = result[0];
-                                                                    console.log(skillInfo.name);
-                                                                    unit.passiveS = skillInfo.id;
-                                                                }
-                                                            }
+                                                            self.extractSacredSeal(unit, ocrResult);
                                                         },
                                                         "jpn",
-                                                        self.vm.useWhitelistForOcr ?
-                                                            self.passiveSkillCharWhiteList : "",
-                                                        self.passiveSkillCharBlackList,
+                                                        app.vm.useWhitelistForOcr ?
+                                                            app.passiveSkillCharWhiteList : "",
+                                                        app.passiveSkillCharBlackList,
                                                     ).then(() => {
                                                         // 最後にスキル情報を同期
                                                         g_appData.__updateUnitSkillInfo(unit);
@@ -1065,5 +904,195 @@ class ImageProcessor {
                     });
                 });
         });
+    }
+
+    extractFlaw(unit, ocrResult) {
+        let app = g_app;
+        app.clearOcrProgress();
+        console.log(ocrResult);
+        unit.setIvLowStat(StatusType.None);
+        g_appData.ocrResult += "苦手: " + ocrResult.text + "\n";
+        var filtered = convertOcrResultToArray(ocrResult.text);
+        let partialName = getMaxLengthElem(filtered);
+        if (partialName == null || partialName == "") {
+            return;
+        }
+        let statusName = g_app.__findSimilarStatusName(partialName);
+        if (statusName != null) {
+            unit.setIvLowStat(nameToStatusType(statusName));
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+        }
+    }
+
+    extractAsset(unit, ocrResult) {
+        let app = g_app;
+        app.clearOcrProgress();
+        unit.setIvHighStat(StatusType.None);
+        console.log(ocrResult);
+        g_appData.ocrResult += "得意: " + ocrResult.text + "\n";
+        let filtered = convertOcrResultToArray(ocrResult.text);
+        let partialName = getMaxLengthElem(filtered);
+        g_app.writeDebugLogLine(`partialName=${partialName}`);
+        if (partialName == null || partialName == "") {
+            return;
+        }
+        let statusName = g_app.__findSimilarStatusName(partialName);
+        if (statusName != null) {
+            unit.setIvHighStat(nameToStatusType(statusName));
+            g_appData.__updateStatusBySkillsAndMerges(unit);
+        }
+    }
+
+    extractSacredSeal(unit, ocrResult) {
+        let app = g_app;
+        app.clearOcrProgress();
+        console.log(ocrResult);
+        g_appData.ocrResult += "聖印名: " + ocrResult.text + "\n";
+        var filtered = convertOcrResultToArray(ocrResult.text);
+        let partialName = getMaxLengthElem(filtered);
+        console.log(filtered);
+
+        if (partialName != null) {
+            let result = g_app.findSimilarNameSkill(partialName,
+                app.__enumerateElemOfArrays([
+                    g_appData.passiveAInfos,
+                    g_appData.passiveBInfos,
+                    g_appData.passiveCInfos,
+                    g_appData.passiveSInfos]));
+            if (result != null) {
+                let skillInfo = result[0];
+                console.log(skillInfo.name);
+                unit.passiveS = skillInfo.id;
+            }
+        }
+    }
+
+    extractSkills(unit, ocrResult) {
+        let app = g_app;
+        app.clearOcrProgress();
+        console.log(ocrResult);
+        g_appData.ocrResult += "スキル名: " + ocrResult.text + "\n";
+        let filtered = convertOcrResultToArray(ocrResult.text);
+        console.log(filtered);
+
+        unit.support = -1;
+        unit.special = -1;
+        unit.passiveA = -1;
+        unit.passiveB = -1;
+        unit.passiveC = -1;
+        let dict = {};
+        for (let name of filtered) {
+            let skillInfo = null;
+            skillInfo = app.__findSkillInfoWithDict(name, unit, dict);
+            if (skillInfo == null) {
+                continue;
+            }
+            if (!dict[SkillType.Support]) {
+                if (skillInfo.type == SkillType.Support) {
+                    dict[SkillType.Support] = skillInfo;
+                    unit.support = skillInfo.id;
+                    continue;
+                }
+            }
+
+            if (!dict[SkillType.Special]) {
+                if (skillInfo.type == SkillType.Special) {
+                    dict[skillInfo.type] = skillInfo;
+                    unit.special = skillInfo.id;
+                    continue;
+                }
+            }
+
+            if (!dict[SkillType.PassiveA]) {
+                if (skillInfo.type == SkillType.PassiveA) {
+                    dict[skillInfo.type] = skillInfo;
+                    unit.passiveA = skillInfo.id;
+                    continue;
+                }
+            }
+
+            if (!dict[SkillType.PassiveB]) {
+                if (skillInfo.type == SkillType.PassiveB) {
+                    dict[skillInfo.type] = skillInfo;
+                    unit.passiveB = skillInfo.id;
+                    continue;
+                }
+            }
+
+            if (!dict[SkillType.PassiveC]) {
+                if (skillInfo.type == SkillType.PassiveC) {
+                    dict[skillInfo.type] = skillInfo;
+                    unit.passiveC = skillInfo.id;
+                    continue;
+                }
+            }
+
+            // ここまで来た場合は見つからなかったか、複数スキルが同じ種類に判定されてしまったパターン
+        }
+    }
+
+    extractWeapon(unit, ocrResult) {
+        let self = g_app;
+        self.clearOcrProgress();
+        console.log(ocrResult);
+        g_appData.ocrResult += "武器名: " + ocrResult.text + "\n";
+        let filtered = convertOcrResultToArray(ocrResult.text);
+        let partialName = combineText(filtered);
+        console.log(partialName);
+
+        // heroIndexChangedイベントによってデフォルトスキルが予約されてしまうのでスキルセットする直前で解消
+        // todo: もっとまともな方法があれば
+        unit.clearReservedSkills();
+        unit.weapon = -1;
+
+        if (partialName != null) {
+            let result = self.findSimilarNameSkill(partialName,
+                self.__enumerateElemOfArrays([
+                    g_appData.weaponInfos]));
+            if (result != null) {
+                let skillInfo = result[0];
+                console.log(skillInfo.name);
+                let skillId = skillInfo.id;
+                if (skillInfo.name.startsWith("ファルシオン")) {
+                    switch (unit.heroIndex) {
+                        case 84: // マルス
+                            skillId = 47;
+                            break;
+                        case 72: // ルキナ
+                        case 24: // クロム
+                        case 134: // 仮面マルス
+                            skillId = 48;
+                            break;
+                        case 114: // アルム
+                            skillId = 49;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                unit.weapon = skillId;
+                g_appData.__updateUnitSkillInfo(unit);
+            }
+        }
+    }
+
+    extractHeroName(unit, ocrResult) {
+        g_appData.ocrResult += "キャラ名: " + ocrResult.text + "\n";
+        let filtered = convertOcrResultToArray(ocrResult.text);
+        filtered = g_app.limitArrayLengthTo2WithLargerLengthString(filtered);
+        if (filtered.length >= 2) {
+            let epithet = "";
+            for (let i = 0; i < filtered.length - 1; ++i) {
+                epithet += filtered[i];
+            }
+            let name = filtered[filtered.length - 1];
+            let result = g_app.findSimilarHeroNameInfo(name, epithet);
+            if (result != null) {
+                let info = result[0];
+                let heroIndex = g_appData.heroInfos.findIndexOfInfo(info.name)
+                g_appData.initializeByHeroInfo(unit, heroIndex, false);
+                selectItemById(unit.id);
+            }
+        }
     }
 }
