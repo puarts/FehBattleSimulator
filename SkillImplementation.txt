@@ -255,6 +255,16 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
 }
 
+戦闘後、敵の周囲2マスの敵に7ダメージ[死の吐息]
+__applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
+    case PassiveC.SavageBlow3:
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2)) {
+            this.writeLogLine(unit.getNameWithGroup() + "は死の吐息により7ダメージ");
+            unit.reserveTakeDamage(7);
+        }
+        break;
+}
+
 戦闘中、奥義による攻撃でダメージを与えた時、自分の最大HPの30%回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
 

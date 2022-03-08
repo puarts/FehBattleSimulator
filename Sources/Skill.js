@@ -1268,6 +1268,7 @@ const Weapon = {
 
     // 2022年3月 武器錬成
     AzureLance: 2020, // 蒼穹の細槍
+    QuickMulagir: 2021, // 颯弓ミュルグレ
 }
 
 const Support = {
