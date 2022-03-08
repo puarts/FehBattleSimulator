@@ -214,6 +214,7 @@ const StatusEffectType = {
     FalseStart: 28, // ターン開始スキル不可
     NeutralizesFoesBonusesDuringCombat: 29, // 敵の強化の+を無効
     GrandStrategy: 30, // 神軍師の策
+    CantoControl: 31, // 再移動制限
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -264,6 +265,7 @@ NegativeStatusEffectTable[StatusEffectType.Isolation] = 0;
 NegativeStatusEffectTable[StatusEffectType.DeepWounds] = 0;
 NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
 NegativeStatusEffectTable[StatusEffectType.FalseStart] = 0;
+NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -335,6 +337,10 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.NeutralizesFoesBonusesDuringCombat:
             return g_imageRootPath + "StatusEffect_NeutralizeFoeBonuses.png";
         case StatusEffectType.GrandStrategy:
+            return g_imageRootPath + "StatusEffect_GrandStrategy.png";
+        case StatusEffectType.CantoControl:
+            // TODO: 画像を用意する
+            // return g_imageRootPath + "StatusEffect_CantoControl.png";
             return g_imageRootPath + "StatusEffect_GrandStrategy.png";
         default: return "";
     }
