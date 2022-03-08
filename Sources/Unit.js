@@ -1221,6 +1221,7 @@ class Unit {
         this.chaseTargetTile = null;
 
         this.moveCountForCanto = 0; // 再移動の移動マス数
+        this.isCantoActivating = false; // 再移動が発動中かを保存
         this.isCantoActivatedInCurrentTurn = false; // 現在ターンで再移動が1度でも発動したかどうか
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
@@ -1293,17 +1294,19 @@ class Unit {
         if (this.moveCountForCanto > 0) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
+            this.isCantoActivating = true;
         }
     }
 
     /// 再移動の発動を終了します。
     deactivateCanto() {
         this.moveCountForCanto = 0;
+        this.isCantoActivating = false;
     }
 
     /// 再移動が発動しているとき、trueを返します。
     isCantoActivated() {
-        return this.moveCountForCanto > 0;
+        return this.isCantoActivating;
     }
 
     chaseTargetTileToString() {
