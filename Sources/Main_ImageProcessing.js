@@ -700,7 +700,7 @@ class ImageProcessor {
 
             g_appData.ocrResult = "";
             // キャラ名抽出、祝福抽出
-            promise = cropAndBinarizeImageAndOcr(
+            cropAndBinarizeImageAndOcr(
                 ocrInputCanvas, binarizedCanvas,
                 0.05, 0.435, 0.45, 0.105, -1,
                 p => self.ocrProgress(p, `ユニット名抽出(${unit.id})`),
@@ -827,7 +827,7 @@ class ImageProcessor {
                                     "HP攻撃速さ守備魔防"
                                 ).then(() => {
                                     // 苦手個体
-                                    promise = cropAndPostProcessAndOcr(
+                                    cropAndPostProcessAndOcr(
                                         ocrInputCanvas5, sourceCanvas,
                                         0.14, 0.615, 0.10, 0.205,
                                         (srcCanvas) => {
