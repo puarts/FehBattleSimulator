@@ -1298,6 +1298,10 @@ class Unit {
             if (cantoControlledIfCantoActivated) {
                 this.addStatusEffect(StatusEffectType.CantoControl);
                 this.moveCountForCanto = this.calcMoveCountForCanto();
+                if (this.isRangedWeaponType()) {
+                    this.endAction();
+                    this.deactivateCanto();
+                }
             }
         }
     }
