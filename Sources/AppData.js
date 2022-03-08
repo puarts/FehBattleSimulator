@@ -747,7 +747,11 @@ class AppData extends UnitManager {
 
         this.__showStatusToAttackerInfo();
     }
-
+    /**
+     * @param  {Unit} unit
+     * @param  {Number} heroIndex
+     * @param  {Boolean} initEditableAttrs=true
+     */
     initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true) {
         let heroInfo = this.heroInfos.getHeroInfo(heroIndex);
         if (heroInfo == null) {
@@ -757,6 +761,7 @@ class AppData extends UnitManager {
 
         this.registerSkillInfos(heroInfo);
 
+        unit.heroIndex = heroIndex;
         unit.initByHeroInfo(heroInfo);
 
         if (this.gameMode != GameMode.ResonantBattles
@@ -1131,7 +1136,7 @@ class AppData extends UnitManager {
 
         this.exportSettingText = this.compressSetting(settingText);
 
-		// #main-content とかがURLに含まれてると不正なURLになってしまうので、とりあえず決め打ちにしておく
+        // #main-content とかがURLに含まれてると不正なURLになってしまうので、とりあえず決め打ちにしておく
         // let location = window.location.href;
         // let split = location.split("s=");
         // if (split.length > 1) {
