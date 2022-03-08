@@ -4687,6 +4687,9 @@ class Unit {
      */
     calcMoveCountForCanto() {
         let moveCountForCanto = 0;
+        if (this.hasStatusEffect(StatusEffectType.CantoControl)) {
+            return isMeleeWeaponType(this.weaponType) ? 1 : 0;
+        }
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
