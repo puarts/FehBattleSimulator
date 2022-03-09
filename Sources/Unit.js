@@ -80,6 +80,19 @@ function statusTypeToString(type) {
     }
 }
 
+function statusTypeToShortString(type) {
+    switch (type) {
+        case StatusType.Hp: return "HP";
+        case StatusType.Atk: return "攻";
+        case StatusType.Spd: return "速";
+        case StatusType.Def: return "守";
+        case StatusType.Res: return "魔";
+        case StatusType.None:
+        default:
+            return "-";
+    }
+}
+
 function nameToStatusType(statusName) {
     if (statusName == "HP") {
         return StatusType.Hp;

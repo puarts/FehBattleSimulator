@@ -30,6 +30,14 @@ Vue.component('tile-detail', function (resolve, reject) {
     }, DelayTimeForUnitAndStructureComponent)
 });
 
+Vue.component('status-label', function (resolve, reject) {
+    setTimeout(function () {
+        resolve({
+            props: ['statusType', 'unit'],
+            template: "#status-label-template"
+        })
+    }, DelayTimeForUnitAndStructureComponent)
+});
 
 Vue.component('select2_unwatch', {
     template: '<select></select>',

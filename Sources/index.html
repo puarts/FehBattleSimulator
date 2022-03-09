@@ -300,6 +300,20 @@
         input[class="fehButton"]:not(:checked)+label {
             filter: grayscale(100%);
         }
+
+        .assetStatus {
+            color: rgb(161, 234, 252);
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
+
+        .flowStatus {
+            color: rgb(252, 161, 161);
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
+
+        .normalStatus {
+            color: rgb(0, 0, 0);
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -1449,6 +1463,18 @@
             </div>
         </div>
     </script>
+    <script type="text/x-template" id="status-label-template">
+        {{statusType}}
+        <span v-if="unit.isAsset(statusType)" class="assetStatus">
+        {{statusTypeToShortString(statusType)}}
+        </span>
+        <span v-else-if="unit.isFlaw(statusType)" class="flowStatus">
+        {{statusTypeToShortString(statusType)}}
+        </span>                                        
+        <span v-else class="normalStatus">
+        {{statusTypeToShortString(statusType)}}
+        </span>
+    </script>
     <script type="text/x-template" id="unit-detail-template">
         <table border='0' style='border-width: 0px;border-style:none;'>
             <tr>
@@ -1621,7 +1647,7 @@
                         </tr>
                         <tr>
                             <th class='param'>
-                                HP
+                                <status-label v-bind:statusType="StatusType.Hp" v-bind:unit="value" ></status-label>
                             </th>
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.atkWithSkills"
@@ -1650,7 +1676,7 @@
                         </tr>
                         <tr>
                             <th class='param'>
-                                攻
+                                <status-label v-bind:statusType="StatusType.Atk" v-bind:unit="value" ></status-label>
                             </th>
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.atkWithSkills"
@@ -1686,7 +1712,7 @@
                         </tr>
                         <tr>
                             <th class='param'>
-                                速
+                                <status-label v-bind:statusType="StatusType.Spd" v-bind:unit="value" ></status-label>
                             </th>
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.spdWithSkills"
@@ -1722,7 +1748,7 @@
                         </tr>
                         <tr>
                             <th class='param'>
-                                守
+                                <status-label v-bind:statusType="StatusType.Def" v-bind:unit="value" ></status-label>
                             </th>
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.defWithSkills"
@@ -1759,7 +1785,7 @@
                         </tr>
                         <tr>
                             <th class='param'>
-                                魔
+                                <status-label v-bind:statusType="StatusType.Res" v-bind:unit="value" ></status-label>
                             </th>
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.resWithSkills"
