@@ -923,22 +923,40 @@ class ImageProcessor {
             g_appData.__updateStatusBySkillsAndMerges(unit);
         }
     }
-
+    /**
+     * @param  {Unit} unit
+     * @param  {any} ocrResult
+     */
     extractAsset(unit, ocrResult) {
         let app = g_app;
         app.clearOcrProgress();
         unit.setIvHighStat(StatusType.None);
+        unit.ascendedAsset = StatusType.None;
         console.log(ocrResult);
+        /** @type {String} */
         g_appData.ocrResult += "得意: " + ocrResult.text + "\n";
         let filtered = convertOcrResultToArray(ocrResult.text);
-        let partialName = getMaxLengthElem(filtered);
-        g_app.writeDebugLogLine(`partialName=${partialName}`);
-        if (partialName == null || partialName == "") {
-            return;
+        let names = getMaxLengthElem2(filtered);
+        let isAssetFound = false;
+        for (let partialName of names) {
+            g_app.writeDebugLogLine(`partialName=${partialName}`);
+            if (partialName == null || partialName == "") {
+                continue;
+            }
+            let statusName = g_app.__findSimilarStatusName(partialName);
+            if (statusName != null) {
+                if (isAssetFound) {
+                    // 2つ目は開花得意とする
+                    unit.ascendedAsset = nameToStatusType(statusName);
+                }
+                else {
+                    unit.setIvHighStat(nameToStatusType(statusName));
+                    isAssetFound = true;
+                }
+            }
         }
-        let statusName = g_app.__findSimilarStatusName(partialName);
-        if (statusName != null) {
-            unit.setIvHighStat(nameToStatusType(statusName));
+
+        if (isAssetFound) {
             g_appData.__updateStatusBySkillsAndMerges(unit);
         }
     }

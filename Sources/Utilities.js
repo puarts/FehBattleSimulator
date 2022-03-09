@@ -886,16 +886,23 @@ function combineText(textArray) {
     }
     return result;
 }
-
+/**
+ * @param  {String} ocrResult
+ * @returns {String[]}
+ */
 function convertOcrResultToArray(ocrResult) {
     let splited = ocrResult.split("\n");
     let filtered = splited.filter(function (el) {
         return el != "" && el != null;
     });
+    let result = [];
     for (let i = 0; i < filtered.length; ++i) {
-        filtered[i] = filtered[i].replace(/ /g, '');
+        let trimed = filtered[i].replace(/ /g, '');
+        if (trimed != "") {
+            result.push(trimed);
+        }
     }
-    return filtered;
+    return result;
 }
 
 function getMaxLengthElem(elems) {
