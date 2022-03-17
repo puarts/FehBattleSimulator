@@ -107,6 +107,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.AscendingBlade:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case Weapon.DiplomacyStaff:
                 let removedCount = this.globalBattleContext.RemovedUnitCountsInCombat[skillOwner.groupId];
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {

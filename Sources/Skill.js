@@ -1276,6 +1276,7 @@ const Weapon = {
     ReinSword: 2035, // 牽制の剣
     ReinSwordPlus: 2034, // 牽制の剣+
     AlliedLancePlus: 2036, // 共闘の槍+
+    AscendingBlade: 2038, // 花開く心技の剣
 }
 
 const Support = {
