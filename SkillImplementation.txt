@@ -311,6 +311,14 @@ resetMaxSpecialCount() {
     specialCountMax -= 1;
 }
 
+奥義発動可能状態
+if (unit.isSpecialCharged) {}
+
+奥義ダメージ+N
+__init__applySpecialSkillEffect() {
+    targetUnit.battleContext.specialAddDamage = N;
+}
+
 周囲3マス以内に支援を結んでいる味方の組み合わせ(自分は含まない)がいる時
 let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
 let partners = units.map(u => u.partnerHeroIndex);

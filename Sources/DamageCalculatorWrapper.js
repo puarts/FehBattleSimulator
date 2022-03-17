@@ -772,6 +772,14 @@ class DamageCalculatorWrapper {
                 break;
         }
 
+        switch (defUnit.special) {
+            case Special.VitalAstra:
+                if (defUnit.isSpecialCharged) {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 3, 30);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+        }
+
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
@@ -7113,6 +7121,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Special.VitalAstra:
+                if (defUnit.isSpecialCharged) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 3, 30);
+                }
+                break;
             case Weapon.HurricaneDagger:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -7260,7 +7273,7 @@ class DamageCalculatorWrapper {
     }
 
     __applyDamageReductionRatio(atkUnit, defUnit) {
-        for (let skillId of [defUnit.weapon, defUnit.passiveB]) {
+        for (let skillId of [defUnit.weapon, defUnit.passiveB, defUnit.special]) {
             let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
             if (ratio > 0) {
                 defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
@@ -8706,6 +8719,10 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.specialAddDamage = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.25);
             }
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        };
+        this._applySpecialSkillEffectFuncDict[Special.VitalAstra] = (targetUnit, enemyUnit) => {
+            let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
         };
         {
             let func = (targetUnit, enemyUnit) => {
