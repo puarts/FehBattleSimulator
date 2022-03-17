@@ -1270,6 +1270,9 @@ const Weapon = {
     AzureLance: 2020, // 蒼穹の細槍
     QuickMulagir: 2021, // 颯弓ミュルグレ
     DotingStaff: 2022, // 慈母の霊杖
+
+    // 新英雄&開花マリータ
+    DiplomacyStaff: 2032, // 軍師の諫言の杖
 }
 
 const Support = {
