@@ -9572,6 +9572,8 @@ class DamageCalculatorWrapper {
                             targetUnit.spdSpur -= 5;
                             targetUnit.resSpur -= 5;
                             break;
+                        case Weapon.ReinSword:
+                        case Weapon.ReinSwordPlus:
                         case Weapon.ReinAxe:
                         case Weapon.ReinAxePlus:
                         case Weapon.ReinBow:

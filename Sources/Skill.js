@@ -1273,6 +1273,8 @@ const Weapon = {
 
     // 新英雄&開花マリータ
     DiplomacyStaff: 2032, // 軍師の諫言の杖
+    ReinSword: 2035, // 牽制の剣
+    ReinSwordPlus: 2034, // 牽制の剣+
 }
 
 const Support = {
