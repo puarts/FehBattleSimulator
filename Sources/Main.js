@@ -2915,6 +2915,7 @@ class AetherRaidTacticsBoard {
 
         if (atkUnit.hp == 0) {
             this.audioManager.playSoundEffect(SoundEffectId.Dead);
+            g_appData.globalBattleContext.RemovedUnitCountsInCombat[atkUnit.groupId]++;
 
             // マップからの除外と追跡対象の更新
             let updateRequiredTile = atkUnit.placedTile;
@@ -2927,6 +2928,7 @@ class AetherRaidTacticsBoard {
             for (let unit of this.enumerateUnitsInTheSameGroupOnMap(defUnit, true)) {
                 if (unit.hp == 0) {
                     this.audioManager.playSoundEffect(SoundEffectId.Dead);
+                    g_appData.globalBattleContext.RemovedUnitCountsInCombat[unit.groupId]++;
                     switch (unit.passiveS) {
                         case PassiveS.TozokuNoGuzoRakurai:
                             g_appData.resonantBattleItems.push(ItemType.RakuraiNoJufu);

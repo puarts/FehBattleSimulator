@@ -1430,6 +1430,8 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.currentTurn
             + ValueDelimiter + this.battileItemsToString()
             + ValueDelimiter + boolToInt(this.isCombatOccuredInCurrentTurn)
+            + ValueDelimiter + this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy]
             ;
     }
 
@@ -1455,6 +1457,8 @@ class AppData extends UnitManager {
         if (Number.isInteger(Number(splited[i]))) { this.currentTurn = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.setBattleItemsFromString(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCombatOccuredInCurrentTurn = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {
