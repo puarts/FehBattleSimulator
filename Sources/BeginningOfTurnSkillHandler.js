@@ -112,7 +112,7 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;
-            case Weapon.DiplomacyStaff:
+            case Weapon.DiplomacyStaff: {
                 let removedCount = this.globalBattleContext.RemovedUnitCountsInCombat[skillOwner.groupId];
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
                     if (skillOwner.partnerHeroIndex === unit.heroIndex) {
@@ -127,6 +127,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
+            }
             case Weapon.SeireiNoHogu:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
