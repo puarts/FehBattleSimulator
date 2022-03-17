@@ -4101,6 +4101,12 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesOwnResDebuff = true;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveA.DefResBond4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+                targetUnit.battleContext.invalidatesOwnResDebuff = true;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[Weapon.VezuruNoYoran] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                 targetUnit.battleContext.invalidateAllOwnDebuffs();
@@ -9842,6 +9848,10 @@ class DamageCalculatorWrapper {
                     case PassiveA.DefResBond3:
                         targetUnit.defSpur += 5;
                         targetUnit.resSpur += 5;
+                        break;
+                    case PassiveA.DefResBond4:
+                        targetUnit.defSpur += 7;
+                        targetUnit.resSpur += 7;
                         break;
                     default:
                         break;

@@ -1524,6 +1524,7 @@ const PassiveA = {
     DefResBond1: 1335,
     DefResBond2: 1336,
     DefResBond3: 775,
+    DefResBond4: 2033, // 守備魔防の絆4
 
     JaryuNoUroko: 585, // 邪竜の鱗
     DragonSkin2: 1754, // 邪竜の鱗・承
