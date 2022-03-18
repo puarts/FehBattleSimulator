@@ -772,6 +772,14 @@ class DamageCalculatorWrapper {
                 break;
         }
 
+        switch (defUnit.special) {
+            case Special.VitalAstra:
+                if (defUnit.isSpecialCharged) {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 3, 30);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+        }
+
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
@@ -1875,6 +1883,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AscendingBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DotingStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.atkSpur += 5;
@@ -4098,6 +4113,12 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveA.SpdResBond4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                 targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                targetUnit.battleContext.invalidatesOwnResDebuff = true;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveA.DefResBond4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                targetUnit.battleContext.invalidatesOwnDefDebuff = true;
                 targetUnit.battleContext.invalidatesOwnResDebuff = true;
             }
         };
@@ -7100,6 +7121,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Special.VitalAstra:
+                if (defUnit.isSpecialCharged) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 3, 30);
+                }
+                break;
             case Weapon.HurricaneDagger:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -7247,7 +7273,7 @@ class DamageCalculatorWrapper {
     }
 
     __applyDamageReductionRatio(atkUnit, defUnit) {
-        for (let skillId of [defUnit.weapon, defUnit.passiveB]) {
+        for (let skillId of [defUnit.weapon, defUnit.passiveB, defUnit.special]) {
             let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
             if (ratio > 0) {
                 defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
@@ -8694,6 +8720,10 @@ class DamageCalculatorWrapper {
             }
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         };
+        this._applySpecialSkillEffectFuncDict[Special.VitalAstra] = (targetUnit, enemyUnit) => {
+            let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
+        };
         {
             let func = (targetUnit, enemyUnit) => {
                 {
@@ -9030,6 +9060,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case Weapon.AlliedLancePlus:
             case Weapon.LoveCandelabraPlus:
                 targetUnit.atkSpur += 4;
                 targetUnit.defSpur += 4;
@@ -9566,6 +9597,8 @@ class DamageCalculatorWrapper {
                             targetUnit.spdSpur -= 5;
                             targetUnit.resSpur -= 5;
                             break;
+                        case Weapon.ReinSword:
+                        case Weapon.ReinSwordPlus:
                         case Weapon.ReinAxe:
                         case Weapon.ReinAxePlus:
                         case Weapon.ReinBow:
@@ -9843,6 +9876,10 @@ class DamageCalculatorWrapper {
                         targetUnit.defSpur += 5;
                         targetUnit.resSpur += 5;
                         break;
+                    case PassiveA.DefResBond4:
+                        targetUnit.defSpur += 7;
+                        targetUnit.resSpur += 7;
+                        break;
                     default:
                         break;
                 }
@@ -9852,6 +9889,7 @@ class DamageCalculatorWrapper {
         // 味方が2マス以内にいる時に発動するスキル
         if (isAllyAvailableRange2 && !calcPotentialDamage) {
             switch (targetUnit.weapon) {
+                case Weapon.AlliedLancePlus:
                 case Weapon.LoveCandelabraPlus:
                     targetUnit.atkSpur += 4;
                     targetUnit.defSpur += 4;

@@ -3,6 +3,10 @@ class GlobalBattleContext {
     constructor() {
         this.currentTurn = 0;
         this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
+        // 戦闘でHP0になって退場になったユニットの数
+        this.RemovedUnitCountsInCombat = {};
+        this.RemovedUnitCountsInCombat[UnitGroupType.Ally] = 0;
+        this.RemovedUnitCountsInCombat[UnitGroupType.Enemy] = 0;
 
         // シーズン設定
         this.isLightSeason = true;
