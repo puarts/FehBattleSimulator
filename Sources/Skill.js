@@ -1277,6 +1277,9 @@ const Weapon = {
     ReinSwordPlus: 2034, // 牽制の剣+
     AlliedLancePlus: 2036, // 共闘の槍+
     AscendingBlade: 2038, // 花開く心技の剣
+
+    // 2022年3月 伝承ナンナ
+    LandsSword: 2042, // 大地の剣
 }
 
 const Support = {

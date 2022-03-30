@@ -1883,6 +1883,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LandsSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                enemyUnit.battleContext.preventedDefenderSpecial = true;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AscendingBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
