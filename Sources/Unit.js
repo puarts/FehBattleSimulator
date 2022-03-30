@@ -4742,6 +4742,7 @@ class Unit {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
+                case PassiveB.HodrsZeal:
                 case PassiveB.MurderousLion:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
