@@ -952,6 +952,9 @@ class DamageCalculatorWrapper {
                     break;
             }
             switch (atkUnit.passiveB) {
+                case PassiveB.HodrsZeal:
+                    atkUnit.battleContext.isDesperationActivatable = true;
+                    break;
                 case PassiveB.YngviAscendant:
                     atkUnit.battleContext.isDesperationActivatable = true;
                     break;
@@ -1883,6 +1886,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LandsSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.spdSpur += 6;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                enemyUnit.battleContext.preventedDefenderSpecial = true;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AscendingBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -7311,6 +7323,11 @@ class DamageCalculatorWrapper {
 
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         switch (atkUnit.passiveB) {
+            case PassiveB.HodrsZeal: {
+                let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getEvalAtkInCombat(atkUnit);
+                atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.20);
+                break;
+            }
             case PassiveB.LunarBrace2: {
                 let def = isPrecombat ? defUnit.getEvalDefInPrecombat() : defUnit.getEvalDefInCombat(atkUnit);
                 atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);

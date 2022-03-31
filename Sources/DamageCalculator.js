@@ -434,6 +434,7 @@ class DamageCalculator {
         }
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
+        let invalidatesDamageReductionExceptSpecial = atkUnit.battleContext.invalidatesDamageReductionExceptSpecial;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
         switch (atkUnit.special) {
             case Special.IceMirror:
@@ -551,7 +552,8 @@ class DamageCalculator {
             atkCountPerOneAttack,
             damage,
             specialDamage,
-            invalidatesDamageReductionExceptSpecialOnSpecialActivation
+            invalidatesDamageReductionExceptSpecialOnSpecialActivation,
+            invalidatesDamageReductionExceptSpecial
         );
 
         if (this.isLogEnabled) {
@@ -724,8 +726,8 @@ class DamageCalculator {
 
     __calcAttackTotalDamage(
         context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
-        invalidatesDamageReductionExceptSpecialOnSpecialActivation
-    ) {
+        invalidatesDamageReductionExceptSpecialOnSpecialActivation,
+        invalidatesDamageReductionExceptSpecial) {
         let hasAtkUnitSpecial = atkUnit.hasSpecial && isNormalAttackSpecial(atkUnit.special);
         let hasDefUnitSpecial = defUnit.hasSpecial && isDefenseSpecial(defUnit.special);
 
@@ -743,7 +745,8 @@ class DamageCalculator {
             }
 
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
-            let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0;
+            let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
+                !defUnit.battleContext.preventedDefenderSpecial;
             let damageReductionRatio = 1.0;
             let damageReductionValue = 0;
 
@@ -766,9 +769,9 @@ class DamageCalculator {
                 }
             }
 
-            let invalidatesDamageReductionExceptSpecial =
+            let invalidatesOnSpecialActivation =
                 activatesAttackerSpecial && invalidatesDamageReductionExceptSpecialOnSpecialActivation;
-            if (invalidatesDamageReductionExceptSpecial) {
+            if (invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial) {
                 if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
                 damageReductionRatio = 1.0;
             }
@@ -841,6 +844,7 @@ class DamageCalculator {
             if (this.__canActivateMiracle(defUnit, atkUnit)
                 && (defUnit.restHp - totalDamage > 1)
                 && (defUnit.restHp - totalDamage - currentDamage <= 0)
+                && !defUnit.battleContext.preventedDefenderSpecial
             ) {
                 if (this.isLogEnabled) this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
                 // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する

@@ -1277,6 +1277,9 @@ const Weapon = {
     ReinSwordPlus: 2034, // 牽制の剣+
     AlliedLancePlus: 2036, // 共闘の槍+
     AscendingBlade: 2038, // 花開く心技の剣
+
+    // 2022年3月 伝承ナンナ
+    LandsSword: 2042, // 大地の剣
 }
 
 const Support = {
@@ -1989,6 +1992,7 @@ const PassiveB = {
     MoonlightBangle: 1798, // 華月の腕輪
     Prescience: 1822, // 未来を知る力
     DivineRecreation: 1910, // それは興味深いね
+    HodrsZeal: 2043, // ヘズルの聖騎士
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3

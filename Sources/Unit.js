@@ -490,6 +490,9 @@ class BattleContext {
         this.damageReductionValue = 0;
 
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
+        this.invalidatesDamageReductionExceptSpecial = false;
+
+        // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(奥義発動時)
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
 
         // 敵は反撃不可
@@ -536,6 +539,9 @@ class BattleContext {
 
         // 防御床にいるかどうか
         this.isOnDefensiveTile = false;
+
+        // 「敵から攻撃を受ける際に発動する奥義」が発動できないかどうか
+        this.preventedDefenderSpecial = false;
     }
 
     increaseCooldownCountForBoth() {
@@ -620,6 +626,7 @@ class BattleContext {
 
         this.additionalDamageOfFirstAttack = 0;
 
+        this.invalidatesDamageReductionExceptSpecial = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
@@ -638,6 +645,7 @@ class BattleContext {
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
         this.isOnDefensiveTile = false;
+        this.preventedDefenderSpecial = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -4734,6 +4742,7 @@ class Unit {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
+                case PassiveB.HodrsZeal:
                 case PassiveB.MurderousLion:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
