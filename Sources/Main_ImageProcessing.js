@@ -891,8 +891,9 @@ class ImageProcessor {
                                                             app.passiveSkillCharWhiteList : "",
                                                         app.passiveSkillCharBlackList,
                                                     ).then(() => {
-                                                        // 最後にスキル情報を同期
-                                                        g_appData.__updateUnitSkillInfo(unit);
+                                                        // 最後にユニットをリセット
+                                                        g_appData.__updateStatusBySkillsAndMerges(unit, false);
+                                                        unit.resetMaxSpecialCount();
                                                     });
                                                 });
                                             });
