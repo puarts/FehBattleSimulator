@@ -1270,6 +1270,16 @@ const Weapon = {
     AzureLance: 2020, // 蒼穹の細槍
     QuickMulagir: 2021, // 颯弓ミュルグレ
     DotingStaff: 2022, // 慈母の霊杖
+
+    // 新英雄&開花マリータ
+    DiplomacyStaff: 2032, // 軍師の諫言の杖
+    ReinSword: 2035, // 牽制の剣
+    ReinSwordPlus: 2034, // 牽制の剣+
+    AlliedLancePlus: 2036, // 共闘の槍+
+    AscendingBlade: 2038, // 花開く心技の剣
+
+    // 2022年3月 伝承ナンナ
+    LandsSword: 2042, // 大地の剣
 }
 
 const Support = {
@@ -1388,6 +1398,7 @@ const Special = {
     Yuyo: 494,
     RegnalAstra: 465, // 剣姫の流星
     ImperialAstra: 1094, // 剣皇の流星
+    VitalAstra: 2039, // 心流星
     OpenTheFuture: 1091, // 開世
     Fukusyu: 453, // 復讐
     Kessyu: 454, // 血讐
@@ -1521,6 +1532,7 @@ const PassiveA = {
     DefResBond1: 1335,
     DefResBond2: 1336,
     DefResBond3: 775,
+    DefResBond4: 2033, // 守備魔防の絆4
 
     JaryuNoUroko: 585, // 邪竜の鱗
     DragonSkin2: 1754, // 邪竜の鱗・承
@@ -1980,6 +1992,7 @@ const PassiveB = {
     MoonlightBangle: 1798, // 華月の腕輪
     Prescience: 1822, // 未来を知る力
     DivineRecreation: 1910, // それは興味深いね
+    HodrsZeal: 2043, // ヘズルの聖騎士
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
@@ -2555,6 +2568,7 @@ NormalAttackSpecialDict[Special.Taiyo] = 0;
 NormalAttackSpecialDict[Special.Yuyo] = 0;
 NormalAttackSpecialDict[Special.RegnalAstra] = 0; // 剣姫の流星
 NormalAttackSpecialDict[Special.ImperialAstra] = 0; // 剣皇の流星
+NormalAttackSpecialDict[Special.VitalAstra] = 0; // 心流星
 NormalAttackSpecialDict[Special.OpenTheFuture] = 0; // 開世
 NormalAttackSpecialDict[Special.Fukusyu] = 0; // 復讐
 NormalAttackSpecialDict[Special.Kessyu] = 0; // 血讐

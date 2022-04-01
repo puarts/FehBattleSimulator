@@ -839,6 +839,7 @@ class DamageCalcData {
             // Special.HerosBlood, // 英雄の血脈(+速さ30%)
             // Special.RighteousWind, // 聖風(+速さ30%)
             Special.RegnalAstra, // 剣姫の流星(+速さ40%)
+            Special.VitalAstra, // 心流星(+速さ30%)
             // Special.ImperialAstra, // 剣皇の流星(+速さ40%)
             Special.TwinBlades, // 双刃(+魔防30%)
         ];

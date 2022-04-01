@@ -261,6 +261,12 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
 }
 
+戦闘後、奥義発動カウント-N
+__applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
+  targetUnit.specialCount -= N;
+}
+
+
 戦闘後、敵の周囲2マスの敵に7ダメージ[死の吐息]
 __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
     case PassiveC.SavageBlow3:
@@ -305,6 +311,17 @@ resetMaxSpecialCount() {
     specialCountMax -= 1;
 }
 
+奥義発動可能状態
+if (unit.isSpecialCharged) {}
+
+奥義ダメージ+N
+__init__applySpecialSkillEffect() {
+    targetUnit.battleContext.specialAddDamage = N;
+}
+
+「敵から攻撃を受ける際に発動する奥義」を発動できない
+enemyUnit.battleContext.preventedDefenderSpecial = true;
+
 周囲3マス以内に支援を結んでいる味方の組み合わせ(自分は含まない)がいる時
 let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
 let partners = units.map(u => u.partnerHeroIndex);
@@ -332,6 +349,9 @@ targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
 敵から受けた追撃のダメージを80%軽減(追撃:通常の武器は、2回目の攻撃、「2回攻撃」の武器は、3～4回目の攻撃)
 targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+
+奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
+targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
 
 奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;

@@ -306,6 +306,16 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.LandsSword:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
+                case Weapon.AscendingBlade:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.specialCount -= 1;
+                    }
+                    break;
                 case Weapon.PastelPoleaxe:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {

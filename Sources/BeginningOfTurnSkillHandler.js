@@ -107,6 +107,27 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.AscendingBlade:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
+            case Weapon.DiplomacyStaff: {
+                let removedCount = this.globalBattleContext.RemovedUnitCountsInCombat[skillOwner.groupId];
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
+                    if (skillOwner.partnerHeroIndex === unit.heroIndex) {
+                        unit.applyAtkBuff(6);
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                        if (removedCount >= 1) {
+                            unit.reduceSpecialCount(2);
+                            unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                        }
+                    }
+                }
+                break;
+            }
             case Weapon.SeireiNoHogu:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
