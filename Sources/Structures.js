@@ -739,6 +739,46 @@ class TrapBase extends TileTypeStructureBase {
     }
 }
 
+class FalseHexTrap extends TrapBase {
+    constructor(id) {
+        super(id);
+    }
+    get iconFileName() {
+        return "HexTrap.png";
+    }
+    get name() {
+        return "偽・停止の魔法罠";
+    }
+    get hasLevel() {
+        return false;
+    }
+    get isExecutable() {
+        return false;
+    }
+    get isBreakable() {
+        return false;
+    }
+}
+
+class HexTrap extends TrapBase {
+    constructor(id) {
+        super(id);
+    }
+    get iconFileName() {
+        return "HexTrap.png";
+    }
+    get name() {
+        return "停止の魔法罠";
+    }
+    get isBreakable() {
+        return false;
+    }
+    get description() {
+        let value = Number(this.level) * 5 + 35;
+        return `設置したマスで敵が移動終了したとき、その敵がHP${value}以下なら、攻撃や補助スキルをキャンセルし、行動済みにする(魔法罠は、罠解除で解除できない)`;
+    }
+}
+
 class FalseBoltTrap extends TrapBase {
     constructor(id) {
         super(id);

@@ -1307,7 +1307,7 @@ class AppData extends UnitManager {
 
     registerTemplateImages() {
         for (let st of this.defenseStructureStorage.objs) {
-            if (st instanceof FalseBoltTrap || st instanceof FalseHeavyTrap || st instanceof Ornament) {
+            if (st instanceof FalseHexTrap || st instanceof FalseBoltTrap || st instanceof FalseHeavyTrap || st instanceof Ornament) {
                 continue;
             }
             this.templateImageFiles.push(st.iconFileName);
@@ -1656,6 +1656,8 @@ class AppData extends UnitManager {
         // this.registerDefenceStructure(new BoltTrap(g_idGenerator.generate()));
         // this.registerDefenceStructure(new HeavyTrap(g_idGenerator.generate()));
         this.registerOffenceStructure(new SafetyFence(g_idGenerator.generate()));
+        this.registerDefenceStructure(new FalseHexTrap(g_idGenerator.generate()));
+        this.registerDefenceStructure(new HexTrap(g_idGenerator.generate()));
     }
 
     registerDefenceStructure(structure) {

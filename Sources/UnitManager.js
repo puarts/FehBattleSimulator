@@ -27,9 +27,17 @@ class UnitManager {
         }
     }
 
+    /**
+     * @param  {UnitGroupType} groupId
+     * @returns {Unit[]}
+     */
     enumerateUnitsInSpecifiedGroup(groupId) {
         return this.enumerateUnitsWithPredicator(x => x.groupId == groupId);
     }
+    /**
+     * @param  {UnitGroupType} groupId
+     * @returns {Unit[]}
+     */
     enumerateUnitsInSpecifiedGroupOnMap(groupId) {
         return this.enumerateUnitsWithPredicator(x => x.isOnMap && x.groupId == groupId);
     }

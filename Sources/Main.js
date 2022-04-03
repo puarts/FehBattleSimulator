@@ -30,6 +30,7 @@ const MoveResult = {
     Failure: 1,
     BoltTrapActivated: 2,
     HeavyTrapActivated: 3,
+    HexTrapActivated: 4,
 }
 
 class MovementAssistResult {
@@ -96,6 +97,7 @@ class AetherRaidTacticsBoard {
         this.skillIdToNameDict = {};
 
         let self = this;
+
         this.vm = new Vue({
             el: "#app",
             data: g_appData,
@@ -3720,7 +3722,9 @@ class AetherRaidTacticsBoard {
 
         return false;
     }
-
+    /**
+     * @returns {Tile}
+     */
     get map() {
         return this.vm.map;
     }
@@ -7009,6 +7013,17 @@ class AetherRaidTacticsBoard {
         else if (structure instanceof DefBrightShrine) {
             this.__executeBrightShrine(structure, UnitGroupType.Ally);
         }
+        else if (structure instanceof HexTrap) {
+            for (let unit of g_appData.enumerateUnitsInSpecifiedGroupOnMap(UnitGroupType.Ally)) {
+                if (unit.posX == px && unit.posY == py) {
+                    if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                        this.writeLogLine(unit.getNameWithGroup() + "に停止の魔法罠の効果適用");
+                        unit.isActionDone = true;
+                    }
+                    break;
+                }
+            }
+        }
         else if (structure instanceof BoltTrap) {
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Enemy, 3)) {
                 let damage = Number(structure.level) * 10;
@@ -7027,7 +7042,6 @@ class AetherRaidTacticsBoard {
                 }
             }
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Ally, 2)) {
-                console.log(unit.getNameWithGroup());
                 if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
                     this.writeLogLine(unit.getNameWithGroup() + "に重圧の罠の効果適用");
                     unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
@@ -7463,11 +7477,11 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Support.GrayWaves:
-            {
-                if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
-                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                {
+                    if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
                 }
-            }
                 break;
             case Support.GrayWaves2: {
                 if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
@@ -8411,6 +8425,9 @@ function placeUnitToMap(unit, x, y, endsActionIfActivateTrap = false) {
                 }
                 else if (obj instanceof BoltTrap) {
                     result = MoveResult.BoltTrapActivated;
+                }
+                else if (obj instanceof HexTrap) {
+                    result = MoveResult.HexTrapActivated;
                 }
             }
         }

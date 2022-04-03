@@ -619,6 +619,10 @@ class ImageProcessor {
                         processor.__updateStructureInstanceOfSortedMatchedPoints(heavyTrapPoints,
                             x => x instanceof FalseHeavyTrap || x instanceof HeavyTrap,
                             (st, point) => { });
+                        let hexTrapPoints = processor.__getSortedMatchedPoints(matchedPoints, st => st instanceof FalseHexTrap);
+                        processor.__updateStructureInstanceOfSortedMatchedPoints(hexTrapPoints,
+                            x => x instanceof FalseHexTrap || x instanceof HexTrap,
+                            (st, point) => { });
 
                         let ornamentPoints = processor.__getSortedMatchedPoints(matchedPoints, st => st instanceof Ornament);
                         processor.__updateStructureInstanceOfSortedMatchedPoints(ornamentPoints,
