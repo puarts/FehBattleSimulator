@@ -1902,6 +1902,17 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LargeWarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.globalBattleContext.isOddTurn) {
+                targetUnit.atkSpur += 10;
+                targetUnit.spdSpur += 10;
+                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+            } else {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SturdyWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -6832,6 +6843,11 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.LargeWarAxe:
+                    if (this.globalBattleContext.isOddTurn) {
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(targetUnit.getEvalAtkInCombat(enemyUnit) * 0.15);
+                    }
+                    break;
                 case Weapon.WindyWarTome:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                         let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
