@@ -1899,6 +1899,25 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SturdyWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = 0
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4)) {
+                    count++;
+                }
+                if (count >= 1) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack = Math.trunc(targetUnit.maxSpecialCount / 2);
+                }
+                if (count >= 2) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.1 * targetUnit.maxSpecialCount, enemyUnit);
+                }
+                if (count >= 3) {
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WindyWarTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.atkSpur -= 6;

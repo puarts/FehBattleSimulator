@@ -744,6 +744,9 @@ class DamageCalculator {
                 return totalDamage;
             }
 
+            if (context.isFirstAttack(atkUnit)) {
+                atkUnit.tmpSpecialCount = Math.max(0, atkUnit.tmpSpecialCount - atkUnit.battleContext.specialCountReductionBeforeFirstAttack);
+            }
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
                 !defUnit.battleContext.preventedDefenderSpecial;

@@ -1285,6 +1285,7 @@ const Weapon = {
     SharpWarSword: 2045, // 戦神の鋭剣
     AdroitWarTome: 2047, // 戦神の戦術書
     WindyWarTome: 2048, // 戦神の風書
+    SturdyWarSword: 2049, // 戦神の剛なる鉄剣
 }
 
 const Support = {
