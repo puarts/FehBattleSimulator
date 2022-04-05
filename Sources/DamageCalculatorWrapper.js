@@ -1886,6 +1886,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AdroitWarTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.resSpur += 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 3;
             enemyUnit.defSpur -= 3;
@@ -6785,6 +6791,17 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.AdroitWarTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        if (diff >= 1) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        }
+                        if (diff >= 10) {
+                            targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                        }
+                    }
+                    break;
                 case Weapon.QuickMulagir:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 5) {
@@ -7987,6 +8004,15 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.AdroitWarTome:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    if (atkUnit.getEvalResInCombat(defUnit) >= defUnit.getEvalResInCombat(atkUnit) + 5) {
+                        if (isPhysicalWeaponType(defUnit.weaponType)) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.QuickMulagir:
                 if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
                     return true;
