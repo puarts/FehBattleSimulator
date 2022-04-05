@@ -1280,6 +1280,13 @@ const Weapon = {
 
     // 2022年3月 伝承ナンナ
     LandsSword: 2042, // 大地の剣
+
+    // 超英雄 不思議な友達
+    SharpWarSword: 2045, // 戦神の鋭剣
+    AdroitWarTome: 2047, // 戦神の戦術書
+    WindyWarTome: 2048, // 戦神の風書
+    SturdyWarSword: 2049, // 戦神の剛なる鉄剣
+    LargeWarAxe: 2051, // 戦神の大斧
 }
 
 const Support = {
@@ -1478,6 +1485,7 @@ const PassiveA = {
     CloseCounter: 561, // 近距離反撃
     CloseReversal: 1803, // 近反・金剛の構え
     DistantStance: 1884, // 遠反・明鏡の構え
+    DistantDart: 2050, // 遠反・飛燕の構え
     DistantCounter: 562, // 遠距離反撃
     DistantStorm: 2015, // 遠反・攻撃の渾身
     DistantPressure: 1795, // 遠反・速さの渾身
@@ -2006,6 +2014,9 @@ const PassiveB = {
     FlowFlight3: 2025, // 怒涛・飛竜行空3
     FlowRefresh3: 1763, // 怒涛・再起3
     FlowGuard3: 1912, // 怒涛・キャンセル3
+
+    // 拍節
+    SpdDefTempo3: 2046, // 速さ守備の拍節3
 };
 
 const PassiveC = {
@@ -2941,11 +2952,16 @@ const EvalSpdAddDict = {};
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
+EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。
-function getEvalSpdAdd(passiveS) {
-    let value = EvalSpdAddDict[passiveS];
-    return value ? value : 0;
+function getEvalSpdAdd(unit) {
+    let amount = 0;
+    for (let skillId of unit.enumerateSkills()) {
+        let value = EvalSpdAddDict[skillId];
+        amount += value ? value : 0;
+    }
+    return amount;
 }
 
 const EvalResAddDict = {};

@@ -121,6 +121,10 @@ __updateUnitSpur() {}
 targetUnit.battleContext.restHpPercentage >= N
 enemyUnit.battleContext.restHpPercentage >= N
 
+速さの差を比較するスキルの比較判定時、自身の速さ+Nとして判定[虚勢]
+const EvalSpdAddDict = {};
+EvalSpdAddDict[<skill id>] = N;
+
 速さが敵よりN以上高い時
 __applySkillEffectForUnitAfterCombatStatusFixed() {
     if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + N) {
@@ -349,6 +353,9 @@ targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
 敵から受けた追撃のダメージを80%軽減(追撃:通常の武器は、2回目の攻撃、「2回攻撃」の武器は、3～4回目の攻撃)
 targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+
+敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を半分無効(無効にする数値は端数切捨て。例えば敵の「ダメージを45%軽減」なら半分の「22%」分を無効にし、「ダメージを23%軽減」にする))[リヴスラ, ダメージ軽減半分無効]
+targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
 
 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;

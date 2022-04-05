@@ -619,6 +619,19 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.WindyWarTome:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
+                    let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    }
+                }
+                break;
             case Weapon.HurricaneDagger:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -1761,6 +1774,9 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantStance] = (defUnit, atkUnit, calcPotentialDamage) => {
             defUnit.resSpur += 5;
         };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantDart] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.spdSpur += 5;
+        };
     }
 
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
@@ -1886,6 +1902,57 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LargeWarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.globalBattleContext.isOddTurn) {
+                targetUnit.atkSpur += 10;
+                targetUnit.spdSpur += 10;
+                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+            } else {
+                targetUnit.atkSpur += 5;
+                targetUnit.spdSpur += 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SturdyWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = 0
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4)) {
+                    count++;
+                }
+                if (count >= 1) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack = Math.trunc(targetUnit.maxSpecialCount / 2);
+                }
+                if (count >= 2) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.1 * targetUnit.maxSpecialCount, enemyUnit);
+                }
+                if (count >= 3) {
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WindyWarTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.atkSpur -= 6;
+                enemyUnit.resSpur -= 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AdroitWarTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                targetUnit.resSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 3;
+            enemyUnit.defSpur -= 3;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SharpWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.LandsSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -6776,6 +6843,30 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.LargeWarAxe:
+                    if (this.globalBattleContext.isOddTurn) {
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(targetUnit.getEvalAtkInCombat(enemyUnit) * 0.15);
+                    }
+                    break;
+                case Weapon.WindyWarTome:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        if (diff >= 5) {
+                            enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                        }
+                    }
+                    break;
+                case Weapon.AdroitWarTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        if (diff >= 1) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        }
+                        if (diff >= 10) {
+                            targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                        }
+                    }
+                    break;
                 case Weapon.QuickMulagir:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 5) {
@@ -7133,6 +7224,20 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.WindyWarTome:
+                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
+                    let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (diff > 0) {
+                        let percentage = diff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                        return percentage / 100.0;
+                    }
+                }
+                break;
             case Special.VitalAstra:
                 if (defUnit.isSpecialCharged) {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 3, 30);
@@ -7978,6 +8083,15 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.AdroitWarTome:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    if (atkUnit.getEvalResInCombat(defUnit) >= defUnit.getEvalResInCombat(atkUnit) + 5) {
+                        if (isPhysicalWeaponType(defUnit.weaponType)) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.QuickMulagir:
                 if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
                     return true;
@@ -8534,6 +8648,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.passiveB) {
+            case PassiveB.SpdDefTempo3:
+                defUnit.battleContext.increaseCooldownCountForAttack = false;
+                defUnit.battleContext.increaseCooldownCountForDefense = false;
+                defUnit.battleContext.reducesCooldownCount = false;
+                break;
             case PassiveB.SolarBrace2:
             case PassiveB.MoonlightBangle:
                 defUnit.battleContext.reducesCooldownCount = false;

@@ -107,6 +107,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.SharpWarSword:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                }
+                break;
             case Weapon.AscendingBlade:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(1);
