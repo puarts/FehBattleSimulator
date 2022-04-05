@@ -879,6 +879,20 @@ class AetherRaidTacticsBoard {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoIke:
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 5, 99)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Guard);
+                    unit.increaseSpecialCount(2);
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 99, 5)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                    unit.addStatusEffect(StatusEffectType.Guard);
+                    unit.increaseSpecialCount(2);
+                }
+                break;
             case Hero.HarmonizedSonya: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
