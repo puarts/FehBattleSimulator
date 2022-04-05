@@ -1280,6 +1280,9 @@ const Weapon = {
 
     // 2022年3月 伝承ナンナ
     LandsSword: 2042, // 大地の剣
+
+    // 超英雄 不思議な友達
+    SharpWarSword: 2045, // 戦神の鋭剣
 }
 
 const Support = {
@@ -2941,11 +2944,16 @@ const EvalSpdAddDict = {};
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
+EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。
-function getEvalSpdAdd(passiveS) {
-    let value = EvalSpdAddDict[passiveS];
-    return value ? value : 0;
+function getEvalSpdAdd(unit) {
+    let amount = 0;
+    for (let skillId of unit.enumerateSkills()) {
+        let value = EvalSpdAddDict[skillId];
+        amount += value ? value : 0;
+    }
+    return amount;
 }
 
 const EvalResAddDict = {};

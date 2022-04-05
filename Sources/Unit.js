@@ -3296,7 +3296,7 @@ class Unit {
         return 0;
     }
     __getEvalSpdAdd() {
-        return getEvalSpdAdd(this.passiveS);
+        return getEvalSpdAdd(this);
     }
 
     getAtkInPrecombatWithoutDebuff() {
