@@ -6363,6 +6363,39 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.FoxkitFang:
+                if (!targetUnit.isWeaponRefined) {
+                    // <通常効果>
+                    if (enemyUnit.weaponType === WeaponType.Sword ||
+                        enemyUnit.weaponType === WeaponType.Lance ||
+                        enemyUnit.weaponType === WeaponType.Axe ||
+                        isWeaponTypeBreath(enemyUnit.weaponType) ||
+                        isWeaponTypeBeast(enemyUnit.weaponType)) {
+
+                        if (targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat()) {
+                            let atkRes = targetUnit.getResInCombat(enemyUnit);
+                            let defRes = enemyUnit.getResInCombat(targetUnit);
+                            let spurAmount = Math.min(8, Math.floor((atkRes - defRes) * 0.5));
+                            targetUnit.addAllSpur(spurAmount);
+                        }
+                    }
+                } else {
+                    // <錬成効果>
+                    let atkRes = targetUnit.getEvalResInPrecombat();
+                    let defRes = enemyUnit.getEvalResInPrecombat();
+                    targetUnit.addAllSpur(4);
+                    if (atkRes > defRes) {
+                        let spurAmount = Math.min(8, Math.floor((atkRes - defRes) * 0.8));
+                        targetUnit.addAllSpur(spurAmount);
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                }
+                break;
             case Weapon.FeruniruNoYouran:
                 if (targetUnit.isWeaponRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -7119,16 +7152,16 @@ class DamageCalculatorWrapper {
                     DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
                     break;
                 case Weapon.FoxkitFang:
-                    if (enemyUnit.weaponType === WeaponType.Sword
-                        || enemyUnit.weaponType === WeaponType.Lance
-                        || enemyUnit.weaponType === WeaponType.Axe
-                        || isWeaponTypeBreath(enemyUnit.weaponType)
-                        || isWeaponTypeBeast(enemyUnit.weaponType)) {
-                        let atkRes = targetUnit.getResInCombat(enemyUnit);
-                        let defRes = enemyUnit.getResInCombat(targetUnit);
-                        if (atkRes > defRes) {
-                            let spurAmount = Math.floor((atkRes - defRes) * 0.5);
-                            targetUnit.addAllSpur(spurAmount);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.reducesCooldownCount = true;
+                            }
+                            if (diff >= 5) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
                         }
                     }
                     break;
