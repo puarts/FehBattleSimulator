@@ -9794,33 +9794,10 @@ class DamageCalculatorWrapper {
                                     defBuff = unit.defBuff * unit.__getBuffMultiply();
                                     resBuff = unit.resBuff * unit.__getBuffMultiply();
                                 }
-                                let atkDebuff = targetUnit.getAtkDebuffInCombat();
-                                // パニックの場合は強化を弱化に加算する
-                                if (targetUnit.hasPanic) {
-                                    atkDebuff -= targetUnit.atkBuff;
-                                }
-                                targetUnit.atkSpur -= Math.max(0, atkBuff, -atkDebuff);
-
-                                let spdDebuff = targetUnit.getSpdDebuffInCombat();
-                                // パニックの場合は強化を弱化に加算する
-                                if (targetUnit.hasPanic) {
-                                    spdDebuff -= targetUnit.spdBuff;
-                                }
-                                targetUnit.spdSpur -= Math.max(0, spdBuff, -spdDebuff);
-
-                                let defDebuff = targetUnit.getDefDebuffInCombat();
-                                // パニックの場合は強化を弱化に加算する
-                                if (targetUnit.hasPanic) {
-                                    defDebuff -= targetUnit.defBuff;
-                                }
-                                targetUnit.defSpur -= Math.max(0, defBuff, -defDebuff);
-
-                                let resDebuff = targetUnit.getResDebuffInCombat();
-                                // パニックの場合は強化を弱化に加算する
-                                if (targetUnit.hasPanic) {
-                                    resDebuff -= targetUnit.resBuff;
-                                }
-                                targetUnit.resSpur -= Math.max(0, resBuff, -resDebuff);
+                                targetUnit.atkSpur -= Math.max(0, atkBuff, Math.abs(targetUnit.atkDebuffTotal));
+                                targetUnit.spdSpur -= Math.max(0, spdBuff, Math.abs(targetUnit.spdDebuffTotal));
+                                targetUnit.defSpur -= Math.max(0, defBuff, Math.abs(targetUnit.defDebuffTotal));
+                                targetUnit.resSpur -= Math.max(0, resBuff, Math.abs(targetUnit.resDebuffTotal));
                             }
                             break;
                         case Weapon.AchimenesFurl: {
