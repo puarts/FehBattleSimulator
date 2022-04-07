@@ -2129,6 +2129,12 @@ class Unit {
         this.defSpur += amountNum;
         this.resSpur += amountNum;
     }
+    addSpurs(atk, spd, def, res) {
+        this.atkSpur += atk;
+        this.spdSpur += spd;
+        this.defSpur += def;
+        this.resSpur += res;
+    }
 
     get isHarmonicHero() {
         return this.heroInfo != null

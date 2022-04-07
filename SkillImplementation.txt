@@ -4,6 +4,7 @@
 if (targetUnit.isWeaponRefined) {}
 <特殊錬成武器判定>
 if (targetUnit.isWeaponSpecialRefined) {}
+
 武器錬成テンプレ
 if (!targetUnit.isWeaponRefined) {
     // <通常効果>
@@ -13,7 +14,8 @@ if (!targetUnit.isWeaponRefined) {
         // <特殊錬成効果>
     }
 }
-武器錬成(錬成効果追加のみ)
+
+武器錬成テンプレ(錬成効果追加のみ)
 if (targetUnit.isWeaponRefined) {
     // <錬成効果>
     if (targetUnit.isWeaponSpecialRefined) {

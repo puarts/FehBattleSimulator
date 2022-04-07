@@ -1902,6 +1902,27 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TakaouNoHashizume] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.isRestHpFull) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(5, 0, 5, 0);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addSpurs(5, 0, 5, 0);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.LargeWarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.globalBattleContext.isOddTurn) {
                 targetUnit.atkSpur += 10;
@@ -7802,11 +7823,6 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.Jikumunt:
                     if (atkUnit.battleContext.restHpPercentage >= 90) {
-                        ++followupAttackPriority;
-                    }
-                    break;
-                case Weapon.TakaouNoHashizume:
-                    if (defUnit.battleContext.isRestHpFull) {
                         ++followupAttackPriority;
                     }
                     break;
