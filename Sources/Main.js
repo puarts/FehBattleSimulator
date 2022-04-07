@@ -3048,6 +3048,9 @@ class AetherRaidTacticsBoard {
         // 再移動の評価
         this.__activateCantoIfPossible(atkUnit);
 
+        // 罠は再行動奥義や再移動の後に評価する必要がある(停止罠で迅雷や再移動は無効化される)
+        executeTrapIfPossible(atkUnit);
+
         // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
         this.__goToNextPhaseIfAllActionDone(atkUnit.groupId);
     }
@@ -3148,25 +3151,30 @@ class AetherRaidTacticsBoard {
 
     __applyMovementSkillAfterCombat(atkUnit, attackTargetUnit) {
         let isMoved = false;
+        let executesTrap = false; // トラップは迅雷や再移動の発動後に評価する必要がある
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.KaihiTatakikomi3:
                 case PassiveB.Tatakikomi:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
-                        (unit, target, tile) => this.__findTileAfterShove(unit, target, tile), false);
+                        (unit, target, tile) => this.__findTileAfterShove(unit, target, tile),
+                        false, true, executesTrap);
                     break;
                 case PassiveB.Kirikomi:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
-                        (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile), false);
+                        (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile),
+                        false, true, executesTrap);
                     break;
                 case PassiveB.Hikikomi:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
-                        (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile), false);
+                        (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),
+                        false, true, executesTrap);
                     break;
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.Ichigekiridatsu:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
-                        (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile), false, false);
+                        (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),
+                        false, false, executesTrap);
                     break;
                 case Weapon.EishinNoAnki:
                     {
@@ -3174,7 +3182,8 @@ class AetherRaidTacticsBoard {
                         if (partners.length == 1) {
                             let partner = partners[0];
                             isMoved = this.__applyMovementAssist(atkUnit, partner,
-                                (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile), false);
+                                (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile),
+                                false, true, executesTrap);
                         }
                     }
                     break;
@@ -7264,8 +7273,22 @@ class AetherRaidTacticsBoard {
 
         return new MovementAssistResult(true, assistTile, moveTile);
     }
-
-    __applyMovementAssist(unit, targetUnit, movementAssistCalcFunc, applysMovementSkill = true, movesTargetUnit = true) {
+    /**
+     * @param  {Unit} unit
+     * @param  {Unit} targetUnit
+     * @param  {Function} movementAssistCalcFunc
+     * @param  {Boolean} applysMovementSkill=true
+     * @param  {Boolean} movesTargetUnit=true
+     * @param  {Boolean} executesTrap=true
+     */
+    __applyMovementAssist(
+        unit,
+        targetUnit,
+        movementAssistCalcFunc,
+        applysMovementSkill = true,
+        movesTargetUnit = true,
+        executesTrap = true,
+    ) {
         if (targetUnit == null) { return false; }
         let result = movementAssistCalcFunc(unit, targetUnit, unit.placedTile);
         if (!result.success) {
@@ -7284,8 +7307,8 @@ class AetherRaidTacticsBoard {
         if (movesTargetUnit) {
             canMove &= result.targetUnitTileAfterAssist.isUnitPlacableForUnit(targetUnit);
         }
-        moveUnit(unit, origUnitTile);
-        moveUnit(targetUnit, origTargetUnitTile);
+        moveUnit(unit, origUnitTile, false, executesTrap);
+        moveUnit(targetUnit, origTargetUnitTile, false, executesTrap);
         if (!canMove) {
             return false;
         }
@@ -7299,9 +7322,9 @@ class AetherRaidTacticsBoard {
             g_appData.map.removeUnit(targetUnit);
         }
 
-        moveUnit(unit, result.assistUnitTileAfterAssist);
+        moveUnit(unit, result.assistUnitTileAfterAssist, false, executesTrap);
         if (movesTargetUnit) {
-            moveUnit(targetUnit, result.targetUnitTileAfterAssist);
+            moveUnit(targetUnit, result.targetUnitTileAfterAssist, false, executesTrap);
         }
 
         if (applysMovementSkill) {
@@ -8379,8 +8402,8 @@ function moveUnitToTrashBox(unit) {
     unit.ownerType = OwnerType.TrashBox;
 }
 
-function moveUnitToMap(unit, x, y, endsActionIfActivateTrap = false) {
-    let moveResult = placeUnitToMap(unit, x, y, endsActionIfActivateTrap);
+function moveUnitToMap(unit, x, y, endsActionIfActivateTrap = false, executesTrap = true) {
+    let moveResult = placeUnitToMap(unit, x, y, endsActionIfActivateTrap, executesTrap);
     g_trashArea.removeStructure(unit);
     return moveResult;
 }
@@ -8391,12 +8414,11 @@ function moveUnitToEmptyTileOfMap(unit) {
     return moveResult;
 }
 
-function moveUnit(unit, tile, endsActionIfActivateTrap = false) {
-    return moveUnitToMap(unit, tile.posX, tile.posY, endsActionIfActivateTrap);
+function moveUnit(unit, tile, endsActionIfActivateTrap = false, executesTrap = true) {
+    return moveUnitToMap(unit, tile.posX, tile.posY, endsActionIfActivateTrap, executesTrap);
 }
 
-// 罠発動ならfalse、そうでなければtrueを返します
-function placeUnitToMap(unit, x, y, endsActionIfActivateTrap = false) {
+function placeUnitToMap(unit, x, y, endsActionIfActivateTrap = false, executesTrap = true) {
     g_appData.map.placeUnit(unit, x, y);
     unit.ownerType = OwnerType.Map;
 
@@ -8404,12 +8426,26 @@ function placeUnitToMap(unit, x, y, endsActionIfActivateTrap = false) {
     if (unit.placedTile == null) {
         console.error(`could not place unit to map (${x}, ${y})`);
         console.log(unit);
-        return;
+        return MoveResult.Failure;
     }
 
+    if (executesTrap) {
+        return executeTrapIfPossible(unit, endsActionIfActivateTrap);
+    }
+    else {
+        return MoveResult.Success;
+    }
+}
+/**
+ * @param {Unit} unit
+ * @param {boolean} endsActionIfActivateTrap
+ * @returns {Number}
+ */
+function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
     let tile = unit.placedTile;
     let obj = tile.obj;
     let result = MoveResult.Success;
+
     if (unit.groupId == UnitGroupType.Ally && obj instanceof TrapBase) {
         // トラップ床発動
         if (obj.isExecutable) {
@@ -8434,7 +8470,6 @@ function placeUnitToMap(unit, x, y, endsActionIfActivateTrap = false) {
 
         moveStructureToTrashBox(obj);
     }
-
     return result;
 }
 
