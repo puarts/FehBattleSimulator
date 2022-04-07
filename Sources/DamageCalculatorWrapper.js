@@ -246,8 +246,8 @@ class DamageCalculatorWrapper {
         let self = this;
         let result;
         using(new ScopedTileChanger(atkUnit, tileToAttack, () => {
-            self.updateUnitSpur(atkUnit, calcPotentialDamage);
-            self.updateUnitSpur(defUnit, calcPotentialDamage);
+            self.updateUnitSpur(atkUnit, calcPotentialDamage, false, false, null, defUnit);
+            self.updateUnitSpur(defUnit, calcPotentialDamage, false, false, null, atkUnit);
         }), () => {
             atkUnit.initBattleContext(true);
             defUnit.initBattleContext(false);
@@ -851,17 +851,17 @@ class DamageCalculatorWrapper {
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
         if (this.__canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage)) {
             // 問答無用で周囲のキャラのスキルを無視する場合
-            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true, false);
+            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true, false, null, targetUnit);
 
             // 敵の牽制などが無効化されるので自身の戦闘中バフも更新が必要
-            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, true);
+            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, true, null, enemyUnit);
         } else if (targetUnit.hasFeudSkill()) {
             // 周囲の特定の条件を満たすキャラのスキルだけを無視する場合
             console.log("apply feud skill.");
             this.updateUnitSpur(enemyUnit, calcPotentialDamage, false, false, targetUnit);
 
             // 敵の牽制などが無効化されるので自身の戦闘中バフも更新が必要
-            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, false, targetUnit);
+            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, false, enemyUnit);
         }
     }
 
@@ -4480,9 +4480,17 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Syurugu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()) {
-                targetUnit.atkSpur += 4;
-                targetUnit.spdSpur += 4;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()) {
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Rifia] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6864,6 +6872,16 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.Syurugu:
+                    if (targetUnit.isWeaponRefined) {
+                        let spd = targetUnit.getEvalSpdInCombat(enemyUnit);
+                        if (spd >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1 ||
+                            enemyUnit.battleContext.restHpPercentage >= 75) {
+                            targetUnit.addSpurs(5, 5, 0, 0);
+                            targetUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
+                        }
+                    }
+                    break;
                 case Weapon.LargeWarAxe:
                     if (this.globalBattleContext.isOddTurn) {
                         targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(targetUnit.getEvalAtkInCombat(enemyUnit) * 0.15);
@@ -9501,14 +9519,15 @@ class DamageCalculatorWrapper {
      * @param  {boolean} ignoreSkillEffectFromEnemies=false
      */
     updateUnitSpur(targetUnit, calcPotentialDamage = false,
-        ignoresSkillEffectFromAllies = false,
-        ignoreSkillEffectFromEnemies = false,
-        feudSkillOwner = null
+                   ignoresSkillEffectFromAllies = false,
+                   ignoreSkillEffectFromEnemies = false,
+                   feudSkillOwner = null,
+                   enemyUnit = null
     ) {
         let self = this;
         this.profiler.profile("updateUnitSpur", () => {
             self.__updateUnitSpur(targetUnit, calcPotentialDamage,
-                ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner);
+                ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit);
         });
     }
 
@@ -9537,7 +9556,7 @@ class DamageCalculatorWrapper {
      * @param  {boolean} ignoresSkillEffectFromAllies
      * @param  {Unit} feudSkillOwner
      */
-    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner) {
+    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit) {
         let feudFunc = this.__getFeudConditionFunc(feudSkillOwner);
         let ignoresSkillEffectFromAlliesByFeudSkill = feudFunc != null && targetUnit.groupId !== feudSkillOwner.groupId;
         let ignoresSkillEffectFromEnemiesByFeudSkill = feudFunc != null && targetUnit.groupId === feudSkillOwner.groupId;
@@ -9677,6 +9696,55 @@ class DamageCalculatorWrapper {
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
                     switch (unit.weapon) {
+                        case Weapon.Syurugu:
+                            if (unit.isWeaponSpecialRefined) {
+                                // unit: ユルグ
+                                // unit(ユルグ)の強化値とtargetUnitの弱化値の大きいほう(弱化はパニック分も含む)
+                                // targetUnitとunitが直接戦闘している場合は強化無効が有効になる
+                                let atkBuff = 0;
+                                let spdBuff = 0;
+                                let defBuff = 0;
+                                let resBuff = 0;
+                                if (enemyUnit !== null && enemyUnit === unit) {
+                                    atkBuff = unit.getAtkBuffInCombat(targetUnit);
+                                    spdBuff = unit.getSpdBuffInCombat(targetUnit);
+                                    defBuff = unit.getDefBuffInCombat(targetUnit);
+                                    resBuff = unit.getResBuffInCombat(targetUnit);
+                                } else {
+                                    atkBuff = unit.atkBuff * unit.__getBuffMultiply();
+                                    spdBuff = unit.spdBuff * unit.__getBuffMultiply();
+                                    defBuff = unit.defBuff * unit.__getBuffMultiply();
+                                    resBuff = unit.resBuff * unit.__getBuffMultiply();
+                                }
+                                let atkDebuff = targetUnit.getAtkDebuffInCombat();
+                                // パニックの場合は強化を弱化に加算する
+                                if (targetUnit.hasPanic) {
+                                    atkDebuff -= targetUnit.atkBuff;
+                                }
+                                targetUnit.atkSpur -= Math.max(0, atkBuff, -atkDebuff);
+
+                                let spdDebuff = targetUnit.getSpdDebuffInCombat();
+                                // パニックの場合は強化を弱化に加算する
+                                if (targetUnit.hasPanic) {
+                                    spdDebuff -= targetUnit.spdBuff;
+                                }
+                                targetUnit.spdSpur -= Math.max(0, spdBuff, -spdDebuff);
+
+                                let defDebuff = targetUnit.getDefDebuffInCombat();
+                                // パニックの場合は強化を弱化に加算する
+                                if (targetUnit.hasPanic) {
+                                    defDebuff -= targetUnit.defBuff;
+                                }
+                                targetUnit.defSpur -= Math.max(0, defBuff, -defDebuff);
+
+                                let resDebuff = targetUnit.getResDebuffInCombat();
+                                // パニックの場合は強化を弱化に加算する
+                                if (targetUnit.hasPanic) {
+                                    resDebuff -= targetUnit.resBuff;
+                                }
+                                targetUnit.resSpur -= Math.max(0, resBuff, -resDebuff);
+                            }
+                            break;
                         case Weapon.AchimenesFurl: {
                             let types = new Set();
                             for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {

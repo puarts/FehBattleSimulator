@@ -3317,6 +3317,7 @@ class Unit {
         return Math.min(99, this.getAtkInPrecombatWithoutDebuff() + Number(this.atkDebuff));
     }
 
+    // 強化無効の場合0。パニックの場合マイナス。強化無効かつパニックの場合マイナス。
     __getBuffInCombat(getInvalidatesFunc, getBuffFunc, getInvalidateOwnDebuffFunc) {
         let buffMult = this.__getBuffMultiply();
         let buff = 0;
@@ -3429,6 +3430,7 @@ class Unit {
             () => this.battleContext.invalidatesOwnResDebuff
         );
     }
+    // マイナス値を返す
     getAtkDebuffInCombat() {
         return this.battleContext.invalidatesOwnAtkDebuff ? 0 : Number(this.atkDebuff);
     }
