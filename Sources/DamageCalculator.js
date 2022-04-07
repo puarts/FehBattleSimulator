@@ -733,6 +733,9 @@ class DamageCalculator {
 
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
+        if (context.isFirstAttack(atkUnit)) {
+            atkUnit.tmpSpecialCount = Math.max(0, atkUnit.tmpSpecialCount - atkUnit.battleContext.specialCountReductionBeforeFirstAttack);
+        }
         let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
@@ -844,7 +847,6 @@ class DamageCalculator {
             if (this.__canActivateMiracle(defUnit, atkUnit)
                 && (defUnit.restHp - totalDamage > 1)
                 && (defUnit.restHp - totalDamage - currentDamage <= 0)
-                && !defUnit.battleContext.preventedDefenderSpecial
             ) {
                 if (this.isLogEnabled) this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
                 // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
@@ -905,6 +907,7 @@ class DamageCalculator {
         switch (unit.special) {
             case Special.LifeUnending:
             case Special.Miracle:
+                if (unit.battleContext.preventedDefenderSpecial) return false;
                 if (unit.tmpSpecialCount === 0) return true;
                 break;
         }

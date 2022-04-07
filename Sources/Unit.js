@@ -44,6 +44,7 @@ const Hero = {
     HarmonizedAzura: 770,
     DuoChrom: 776,
     HarmonizedSonya: 787,
+    DuoIke: 798,
 };
 
 function isThiefIndex(heroIndex) {
@@ -477,6 +478,9 @@ class BattleContext {
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
 
+        // 最初の攻撃前の奥義発動カウント軽減値
+        this.specialCountReductionBeforeFirstAttack = 0;
+
         // 攻撃時の追加ダメージ
         this.additionalDamage = 0;
 
@@ -624,6 +628,7 @@ class BattleContext {
 
         this.isSaviorActivated = false;
 
+        this.specialCountReductionBeforeFirstAttack = 0;
         this.additionalDamageOfFirstAttack = 0;
 
         this.invalidatesDamageReductionExceptSpecial = false;
@@ -3296,7 +3301,7 @@ class Unit {
         return 0;
     }
     __getEvalSpdAdd() {
-        return getEvalSpdAdd(this.passiveS);
+        return getEvalSpdAdd(this);
     }
 
     getAtkInPrecombatWithoutDebuff() {
