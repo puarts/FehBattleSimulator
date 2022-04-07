@@ -1177,11 +1177,13 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.AversasNight:
+            case Weapon.AversasNight: {
+                let amount = skillOwner.isWeaponRefined ? -4 : -3;
                 this.__applySabotageSkillImpl(
                     skillOwner,
                     unit => this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3),
-                    unit => { unit.reserveToApplyAllDebuff(-3); unit.reserveToAddStatusEffect(StatusEffectType.Panic); });
+                    unit => { unit.reserveToApplyAllDebuff(amount); unit.reserveToAddStatusEffect(StatusEffectType.Panic); });
+            }
                 break;
             case Weapon.KokyousyaNoYari:
                 if (skillOwner.isWeaponSpecialRefined) {
