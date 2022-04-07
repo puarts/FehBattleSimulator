@@ -234,6 +234,17 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     DamageCalculationUtility.applyDebuffBlade(targetUnit, enemyUnit);
 }
 
+戦闘中、周囲2マス以内にいる味方のうち、強化の合計値が最も高い味方の強化の合計値を攻撃に加算(例えば、周囲2マス以内の味方が攻撃、速さ、守備、魔防+6の強化を受けていれば、24を攻撃に加算)[アスタルテブレード、味方ブレード]
+__applySpurForUnitAfterCombatStatusFixed
+    let maxBuff = 0;
+    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+        maxBuff = Math.max(unit.buffTotal, maxBuff);
+    }
+
+    targetUnit.atkSpur += maxBuff;
+}
+
+
 敵が強化を受けていれば、戦闘中、自身の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ上昇(能力値ごとに計算)[敵強化増幅]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);

@@ -4553,8 +4553,22 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.FeruniruNoYouran] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Saferimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6349,6 +6363,17 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.FeruniruNoYouran:
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let maxBuff = 0;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                            maxBuff = Math.max(unit.buffTotal, maxBuff);
+                        }
+                        targetUnit.atkSpur += maxBuff;
+                    }
+                }
+                break;
             case Weapon.PastelPoleaxe:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);

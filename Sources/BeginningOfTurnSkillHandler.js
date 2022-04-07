@@ -107,6 +107,22 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.FeruniruNoYouran:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        count++;
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                    }
+                    if (count > 0) {
+                        skillOwner.applyAtkBuff(6);
+                        skillOwner.applySpdBuff(6);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                    }
+                }
+                break;
             case Weapon.SharpWarSword:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
