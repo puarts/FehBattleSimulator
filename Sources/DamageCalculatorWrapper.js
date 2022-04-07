@@ -1950,7 +1950,7 @@ class DamageCalculatorWrapper {
                     count++;
                 }
                 if (count >= 1) {
-                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack = Math.trunc(targetUnit.maxSpecialCount / 2);
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.trunc(targetUnit.maxSpecialCount / 2);
                 }
                 if (count >= 2) {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.1 * targetUnit.maxSpecialCount, enemyUnit);
