@@ -861,7 +861,7 @@ class DamageCalculatorWrapper {
             this.updateUnitSpur(enemyUnit, calcPotentialDamage, false, false, targetUnit);
 
             // 敵の牽制などが無効化されるので自身の戦闘中バフも更新が必要
-            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, false, enemyUnit);
+            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, false, targetUnit);
         }
     }
 
