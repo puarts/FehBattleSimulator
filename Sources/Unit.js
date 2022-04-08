@@ -229,6 +229,7 @@ const StatusEffectType = {
     NeutralizesFoesBonusesDuringCombat: 29, // 敵の強化の+を無効
     GrandStrategy: 30, // 神軍師の策
     CantoControl: 31, // 再移動制限
+    UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces: 32, // 周囲2マスの味方の隣接マスに移動可能
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -354,6 +355,10 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_GrandStrategy.png";
         case StatusEffectType.CantoControl:
             return g_imageRootPath + "StatusEffect_CantoControl.png";
+        case StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces:
+            return g_imageRootPath + "StatusEffect_CantoControl.png";
+            // TODO: 画像を用意する
+            // return g_imageRootPath + "StatusEffect_UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces.png";
         default: return "";
     }
 }
@@ -2129,6 +2134,12 @@ class Unit {
         this.defSpur += amountNum;
         this.resSpur += amountNum;
     }
+    addSpurs(atk, spd, def, res) {
+        this.atkSpur += atk;
+        this.spdSpur += spd;
+        this.defSpur += def;
+        this.resSpur += res;
+    }
 
     get isHarmonicHero() {
         return this.heroInfo != null
@@ -3311,6 +3322,7 @@ class Unit {
         return Math.min(99, this.getAtkInPrecombatWithoutDebuff() + Number(this.atkDebuff));
     }
 
+    // 強化無効の場合0。パニックの場合マイナス。強化無効かつパニックの場合マイナス。
     __getBuffInCombat(getInvalidatesFunc, getBuffFunc, getInvalidateOwnDebuffFunc) {
         let buffMult = this.__getBuffMultiply();
         let buff = 0;
@@ -3423,6 +3435,7 @@ class Unit {
             () => this.battleContext.invalidatesOwnResDebuff
         );
     }
+    // マイナス値を返す
     getAtkDebuffInCombat() {
         return this.battleContext.invalidatesOwnAtkDebuff ? 0 : Number(this.atkDebuff);
     }

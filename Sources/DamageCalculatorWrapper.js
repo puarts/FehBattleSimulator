@@ -246,8 +246,8 @@ class DamageCalculatorWrapper {
         let self = this;
         let result;
         using(new ScopedTileChanger(atkUnit, tileToAttack, () => {
-            self.updateUnitSpur(atkUnit, calcPotentialDamage);
-            self.updateUnitSpur(defUnit, calcPotentialDamage);
+            self.updateUnitSpur(atkUnit, calcPotentialDamage, false, false, null, defUnit);
+            self.updateUnitSpur(defUnit, calcPotentialDamage, false, false, null, atkUnit);
         }), () => {
             atkUnit.initBattleContext(true);
             defUnit.initBattleContext(false);
@@ -851,10 +851,10 @@ class DamageCalculatorWrapper {
     __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
         if (this.__canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage)) {
             // 問答無用で周囲のキャラのスキルを無視する場合
-            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true, false);
+            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true, false, null, targetUnit);
 
             // 敵の牽制などが無効化されるので自身の戦闘中バフも更新が必要
-            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, true);
+            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, true, null, enemyUnit);
         } else if (targetUnit.hasFeudSkill()) {
             // 周囲の特定の条件を満たすキャラのスキルだけを無視する場合
             console.log("apply feud skill.");
@@ -1902,6 +1902,35 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AversasNight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    enemyUnit.addSpurs(-4, -4, 0, -4);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TakaouNoHashizume] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.isRestHpFull) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(5, 0, 5, 0);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addSpurs(5, 0, 5, 0);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.LargeWarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.globalBattleContext.isOddTurn) {
                 targetUnit.atkSpur += 10;
@@ -1921,7 +1950,7 @@ class DamageCalculatorWrapper {
                     count++;
                 }
                 if (count >= 1) {
-                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack = Math.trunc(targetUnit.maxSpecialCount / 2);
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.trunc(targetUnit.maxSpecialCount / 2);
                 }
                 if (count >= 2) {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.1 * targetUnit.maxSpecialCount, enemyUnit);
@@ -4459,9 +4488,17 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Syurugu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()) {
-                targetUnit.atkSpur += 4;
-                targetUnit.spdSpur += 4;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()) {
+                    targetUnit.atkSpur += 4;
+                    targetUnit.spdSpur += 4;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Rifia] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -4524,8 +4561,22 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.FeruniruNoYouran] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Saferimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6320,6 +6371,62 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.AversasNight:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.addSpurs(-4, -4, 0, -4);
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                        enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    }
+                }
+                break;
+            case Weapon.FoxkitFang:
+                if (!targetUnit.isWeaponRefined) {
+                    // <通常効果>
+                    if (enemyUnit.weaponType === WeaponType.Sword ||
+                        enemyUnit.weaponType === WeaponType.Lance ||
+                        enemyUnit.weaponType === WeaponType.Axe ||
+                        isWeaponTypeBreath(enemyUnit.weaponType) ||
+                        isWeaponTypeBeast(enemyUnit.weaponType)) {
+
+                        if (targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat()) {
+                            let atkRes = targetUnit.getResInCombat(enemyUnit);
+                            let defRes = enemyUnit.getResInCombat(targetUnit);
+                            let spurAmount = Math.min(8, Math.floor((atkRes - defRes) * 0.5));
+                            targetUnit.addAllSpur(spurAmount);
+                        }
+                    }
+                } else {
+                    // <錬成効果>
+                    let atkRes = targetUnit.getEvalResInPrecombat();
+                    let defRes = enemyUnit.getEvalResInPrecombat();
+                    targetUnit.addAllSpur(4);
+                    if (atkRes > defRes) {
+                        let spurAmount = Math.min(8, Math.floor((atkRes - defRes) * 0.8));
+                        targetUnit.addAllSpur(spurAmount);
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            targetUnit.addAllSpur(4);
+                        }
+                    }
+                }
+                break;
+            case Weapon.FeruniruNoYouran:
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let maxBuff = 0;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                            maxBuff = Math.max(unit.buffTotal, maxBuff);
+                        }
+                        targetUnit.atkSpur += maxBuff;
+                    }
+                }
+                break;
             case Weapon.PastelPoleaxe:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
@@ -6843,6 +6950,16 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.Syurugu:
+                    if (targetUnit.isWeaponRefined) {
+                        let spd = targetUnit.getEvalSpdInCombat(enemyUnit);
+                        if (spd >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1 ||
+                            enemyUnit.battleContext.restHpPercentage >= 75) {
+                            targetUnit.addSpurs(5, 5, 0, 0);
+                            targetUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
+                        }
+                    }
+                    break;
                 case Weapon.LargeWarAxe:
                     if (this.globalBattleContext.isOddTurn) {
                         targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(targetUnit.getEvalAtkInCombat(enemyUnit) * 0.15);
@@ -7055,16 +7172,16 @@ class DamageCalculatorWrapper {
                     DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
                     break;
                 case Weapon.FoxkitFang:
-                    if (enemyUnit.weaponType === WeaponType.Sword
-                        || enemyUnit.weaponType === WeaponType.Lance
-                        || enemyUnit.weaponType === WeaponType.Axe
-                        || isWeaponTypeBreath(enemyUnit.weaponType)
-                        || isWeaponTypeBeast(enemyUnit.weaponType)) {
-                        let atkRes = targetUnit.getResInCombat(enemyUnit);
-                        let defRes = enemyUnit.getResInCombat(targetUnit);
-                        if (atkRes > defRes) {
-                            let spurAmount = Math.floor((atkRes - defRes) * 0.5);
-                            targetUnit.addAllSpur(spurAmount);
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.reducesCooldownCount = true;
+                            }
+                            if (diff >= 5) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
                         }
                     }
                     break;
@@ -7802,11 +7919,6 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.Jikumunt:
                     if (atkUnit.battleContext.restHpPercentage >= 90) {
-                        ++followupAttackPriority;
-                    }
-                    break;
-                case Weapon.TakaouNoHashizume:
-                    if (defUnit.battleContext.isRestHpFull) {
                         ++followupAttackPriority;
                     }
                     break;
@@ -9485,14 +9597,15 @@ class DamageCalculatorWrapper {
      * @param  {boolean} ignoreSkillEffectFromEnemies=false
      */
     updateUnitSpur(targetUnit, calcPotentialDamage = false,
-        ignoresSkillEffectFromAllies = false,
-        ignoreSkillEffectFromEnemies = false,
-        feudSkillOwner = null
+                   ignoresSkillEffectFromAllies = false,
+                   ignoreSkillEffectFromEnemies = false,
+                   feudSkillOwner = null,
+                   enemyUnit = null
     ) {
         let self = this;
         this.profiler.profile("updateUnitSpur", () => {
             self.__updateUnitSpur(targetUnit, calcPotentialDamage,
-                ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner);
+                ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit);
         });
     }
 
@@ -9521,7 +9634,7 @@ class DamageCalculatorWrapper {
      * @param  {boolean} ignoresSkillEffectFromAllies
      * @param  {Unit} feudSkillOwner
      */
-    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner) {
+    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit) {
         let feudFunc = this.__getFeudConditionFunc(feudSkillOwner);
         let ignoresSkillEffectFromAlliesByFeudSkill = feudFunc != null && targetUnit.groupId !== feudSkillOwner.groupId;
         let ignoresSkillEffectFromEnemiesByFeudSkill = feudFunc != null && targetUnit.groupId === feudSkillOwner.groupId;
@@ -9661,6 +9774,32 @@ class DamageCalculatorWrapper {
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                     if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
                     switch (unit.weapon) {
+                        case Weapon.Syurugu:
+                            if (unit.isWeaponSpecialRefined) {
+                                // unit: ユルグ
+                                // unit(ユルグ)の強化値とtargetUnitの弱化値の大きいほう(弱化はパニック分も含む)
+                                // targetUnitとunitが直接戦闘している場合は強化無効が有効になる
+                                let atkBuff = 0;
+                                let spdBuff = 0;
+                                let defBuff = 0;
+                                let resBuff = 0;
+                                if (enemyUnit !== null && enemyUnit === unit) {
+                                    atkBuff = unit.getAtkBuffInCombat(targetUnit);
+                                    spdBuff = unit.getSpdBuffInCombat(targetUnit);
+                                    defBuff = unit.getDefBuffInCombat(targetUnit);
+                                    resBuff = unit.getResBuffInCombat(targetUnit);
+                                } else {
+                                    atkBuff = unit.atkBuff * unit.__getBuffMultiply();
+                                    spdBuff = unit.spdBuff * unit.__getBuffMultiply();
+                                    defBuff = unit.defBuff * unit.__getBuffMultiply();
+                                    resBuff = unit.resBuff * unit.__getBuffMultiply();
+                                }
+                                targetUnit.atkSpur -= Math.max(0, atkBuff, Math.abs(targetUnit.atkDebuffTotal));
+                                targetUnit.spdSpur -= Math.max(0, spdBuff, Math.abs(targetUnit.spdDebuffTotal));
+                                targetUnit.defSpur -= Math.max(0, defBuff, Math.abs(targetUnit.defDebuffTotal));
+                                targetUnit.resSpur -= Math.max(0, resBuff, Math.abs(targetUnit.resDebuffTotal));
+                            }
+                            break;
                         case Weapon.AchimenesFurl: {
                             let types = new Set();
                             for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
