@@ -107,6 +107,22 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.FeruniruNoYouran:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        count++;
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                    }
+                    if (count > 0) {
+                        skillOwner.applyAtkBuff(6);
+                        skillOwner.applySpdBuff(6);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                    }
+                }
+                break;
             case Weapon.SharpWarSword:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
@@ -1161,11 +1177,13 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.AversasNight:
+            case Weapon.AversasNight: {
+                let amount = skillOwner.isWeaponRefined ? -4 : -3;
                 this.__applySabotageSkillImpl(
                     skillOwner,
                     unit => this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3),
-                    unit => { unit.reserveToApplyAllDebuff(-3); unit.reserveToAddStatusEffect(StatusEffectType.Panic); });
+                    unit => { unit.reserveToApplyAllDebuff(amount); unit.reserveToAddStatusEffect(StatusEffectType.Panic); });
+            }
                 break;
             case Weapon.KokyousyaNoYari:
                 if (skillOwner.isWeaponSpecialRefined) {
