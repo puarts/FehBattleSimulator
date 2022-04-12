@@ -406,6 +406,7 @@ class DamageCalculator {
         }
     }
     /**
+     * 一回分の攻撃ダメージを計算します。
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {DamageCalcContext} context

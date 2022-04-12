@@ -85,7 +85,11 @@ const WeaponTypeOptions = [
     { text: "緑獣", id: WeaponType.GreenBeast },
     { text: "無獣", id: WeaponType.ColorlessBeast },
 ];
-
+/**
+ * @param  {string} name
+ * @param  {UnitGroupType} groupId=UnitGroupType.Ally
+ * @returns {Unit}
+ */
 function createDefaultUnit(name, groupId = UnitGroupType.Ally) {
     let unit = new Unit("", name, groupId);
     unit.placedTile = new Tile(0, 0);
@@ -258,6 +262,8 @@ class DamageCalcData {
         this.unitManager.units = [];
         this.map = new BattleMap("", MapType.None, 0);
         this.battleContext = new GlobalBattleContext();
+
+        /** @type {DamageCalculatorWrapper} */
         this.damageCalc = new DamageCalculatorWrapper(
             this.unitManager,
             this.map,
@@ -281,12 +287,17 @@ class DamageCalcData {
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
         this.attackerTriangleAdvantage = TriangleAdvantage.None;
         this.triangleAdeptType = TriangleAdeptType.None;
+
+        /** @type {Unit} */
         this.atkUnit = createDefaultUnit("攻撃者");
         this.atkUnit.weaponInfo = weaponInfos[0];
+
+        /** @type {Unit} */
         this.defUnit = createDefaultUnit("被攻撃者", UnitGroupType.Enemy);
         this.defUnit.weaponInfo = weaponInfos[0];
         this.basicDamageDealt = 0;
         this.actualDamageDealt = 0;
+        this.additionalDamage = 0;
         this.log = "";
 
         this.specialOptions = [];
@@ -369,6 +380,7 @@ class DamageCalcData {
         let result = this.damageCalc.calcCombatResult(this.atkUnit, this.defUnit);
         this.basicDamageDealt = result.atkUnit_normalAttackDamage;
         this.actualDamageDealt = result.damageHistory[0].damageDealt;
+        this.additionalDamage = this.atkUnit.battleContext.specialAddDamage;
         this.log = this.damageCalc.log;
 
         // 計算式用のプロパティ設定

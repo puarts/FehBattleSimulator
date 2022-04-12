@@ -1385,24 +1385,24 @@ const AssistType = {
 
 const Special = {
     None: -1,
-    Moonbow: 468,
-    Luna: 467,
-    Aether: 470,
-    LunaFlash: 889,
+    Moonbow: 468, // 月虹
+    Luna: 467, // 月光
+    Aether: 470, // 天空
+    LunaFlash: 889, // 月光閃
     Glimmer: 462, // 凶星
     Deadeye: 1481, // 狙撃
     Astra: 461, // 流星
-    Bonfire: 455,
-    Ignis: 450,
-    Iceberg: 456,
-    Glacies: 451,
-    DraconicAura: 457,
-    DragonFang: 452,
+    Bonfire: 455, // 緋炎
+    Ignis: 450, // 華炎
+    Iceberg: 456, // 氷蒼
+    Glacies: 451, // 氷華
+    DraconicAura: 457, // 竜裂
+    DragonFang: 452, // 竜穿
     Sirius: 956, // 天狼
     RupturedSky: 954, // 破天
     TwinBlades: 1043, // 双刃
-    Taiyo: 493,
-    Yuyo: 494,
+    Taiyo: 493, // 太陽
+    Yuyo: 494, // 夕陽
     RegnalAstra: 465, // 剣姫の流星
     ImperialAstra: 1094, // 剣皇の流星
     VitalAstra: 2039, // 心流星
