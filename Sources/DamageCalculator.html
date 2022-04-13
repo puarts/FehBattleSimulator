@@ -209,12 +209,12 @@
                     </dd>
 
                     <dt>最終ダメージ</dt>
-                    <dd>= [基本ダメージ] - [基本ダメージ]×[ダメージ軽減率] + [加算ダメージ]<br />
-                        = {{basicDamageDealt}} - floor({{basicDamageDealt}} × {{(damageReductionPercentage *
-                        0.01).toFixed(2)}}) + {{additionalDamage}}<br />
-                        = {{basicDamageDealt}} - {{floorNumberWithFloatError(basicDamageDealt *
-                        damageReductionPercentage *
-                        0.01)}} + {{additionalDamage}}<br />
+                    <dd>= [基本ダメージ]×(1 - [ダメージ軽減率])×[ダメージ倍率] + [加算ダメージ]<br />
+                        = floor({{basicDamageDealt}} × (1 - {{(damageReductionPercentage *
+                        0.01).toFixed(2)}})×{{multDamage}}) + {{additionalDamage}}<br />
+                        = {{floorNumberWithFloatError(basicDamageDealt *
+                        (1 - damageReductionPercentage *
+                        0.01)* multDamage)}} + {{additionalDamage}}<br />
                         = <span style="font-weight: bold;font-size: 20;">{{actualDamageDealt}}</span>
                     </dd>
 

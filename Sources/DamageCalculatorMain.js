@@ -298,6 +298,7 @@ class DamageCalcData {
         this.basicDamageDealt = 0;
         this.actualDamageDealt = 0;
         this.additionalDamage = 0;
+        this.multDamage = 1;
         this.log = "";
 
         this.specialOptions = [];
@@ -380,7 +381,11 @@ class DamageCalcData {
         let result = this.damageCalc.calcCombatResult(this.atkUnit, this.defUnit);
         this.basicDamageDealt = result.atkUnit_normalAttackDamage;
         this.actualDamageDealt = result.damageHistory[0].damageDealt;
-        this.additionalDamage = this.atkUnit.battleContext.specialAddDamage;
+        this.additionalDamage = this.atkUnit.battleContext.specialAddDamage
+            + this.atkUnit.battleContext.additionalDamage
+            + this.atkUnit.battleContext.additionalDamageOfSpecial;
+        this.multDamage = this.atkUnit.battleContext.specialMultDamage;
+
         this.log = this.damageCalc.log;
 
         // 計算式用のプロパティ設定
