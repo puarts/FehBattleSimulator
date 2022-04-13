@@ -8457,8 +8457,12 @@ function placeUnitToMap(unit, x, y, endsActionIfActivateTrap = false, executesTr
  */
 function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
     let tile = unit.placedTile;
-    let obj = tile.obj;
     let result = MoveResult.Success;
+    if (tile == null) {
+        return result;
+    }
+
+    let obj = tile.obj;
 
     if (unit.groupId == UnitGroupType.Ally && obj instanceof TrapBase) {
         // トラップ床発動
