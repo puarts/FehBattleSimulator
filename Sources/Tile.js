@@ -73,6 +73,8 @@ class Tile {
         this._moveWeights[MoveType.Flying] = 1;
         this._moveWeights[MoveType.Armor] = 1;
         this._moveWeights[MoveType.Cavalry] = 1;
+
+        /** @type {Tile} */
         this._neighbors = [];
         this._placedUnit = null;
         this._tempData = null;
@@ -392,7 +394,9 @@ class Tile {
     set placedUnit(value) {
         this._placedUnit = value;
     }
-
+    /**
+     * @returns {Tile[]}
+     */
     get neighbors() {
         return this._neighbors;
     }
