@@ -5873,6 +5873,7 @@ class DamageCalculatorWrapper {
                     targetUnit.resSpur += 6;
                 }
                 break;
+            case Weapon.SpiritedSwordPlus:
             case Weapon.SpiritedAxePlus:
             case Weapon.SpiritedSpearPlus:
                 if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {

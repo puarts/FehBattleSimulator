@@ -1292,6 +1292,7 @@ const Weapon = {
     ThundererTome: 2052, // 怒雷の紫書
     GronnvulturePlus: 2054, // グルンバルチャー+
     ThundersMjolnir: 2059, // 雷神トールハンマー
+    SpiritedSwordPlus: 2057, // 士気旺盛の剣+
 }
 
 const Support = {
