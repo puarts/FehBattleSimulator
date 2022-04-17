@@ -1291,6 +1291,7 @@ const Weapon = {
     // 新英雄&開花イシュタル
     ThundererTome: 2052, // 怒雷の紫書
     GronnvulturePlus: 2054, // グルンバルチャー+
+    ThundersMjolnir: 2059, // 雷神トールハンマー
 }
 
 const Support = {

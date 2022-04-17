@@ -1902,6 +1902,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ThundersMjolnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+               targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ThundererTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.globalBattleContext.currentTurn <= 3 || targetUnit.battleContext.restHpPercentage <= 99) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -6970,6 +6975,14 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.ThundersMjolnir:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.battleContext.initiatesCombat &&
+                            targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.Syurugu:
                     if (targetUnit.isWeaponRefined) {
                         let spd = targetUnit.getEvalSpdInCombat(enemyUnit);
@@ -8735,6 +8748,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.ThundersMjolnir:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                    defUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.ProfessorialGuide:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     defUnit.battleContext.reducesCooldownCount = false;
