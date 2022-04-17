@@ -2256,6 +2256,7 @@ const PassiveC = {
     AtkSpdMenace: 1733, // 攻撃速さの脅嚇
     AtkDefMenace: 1708, // 攻撃守備の脅嚇
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
+    SpdResMenace: 2056, // 速さ魔防の脅嚇
     DefResMenace: 1728, // 守備魔防の脅嚇
 
     StallPloy3: 1789, // 空転の奇策3

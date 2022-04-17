@@ -395,6 +395,17 @@ class BeginningOfTurnSkillHandler {
                         unit.reserveToApplyDefDebuff(-6);
                     });
                 break;
+            case PassiveC.SpdResMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applySpdBuff(6);
+                        unit.applyResBuff(6);
+                    },
+                    unit => {
+                        unit.reserveToApplySpdDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
+                    });
+                break;
             case PassiveC.DefResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
