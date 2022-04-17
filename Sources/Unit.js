@@ -357,8 +357,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_CantoControl.png";
         case StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces:
             return g_imageRootPath + "StatusEffect_CantoControl.png";
-            // TODO: 画像を用意する
-            // return g_imageRootPath + "StatusEffect_UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces.png";
+        // TODO: 画像を用意する
+        // return g_imageRootPath + "StatusEffect_UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces.png";
         default: return "";
     }
 }
@@ -2565,6 +2565,7 @@ class Unit {
 
     // 行動終了状態にする
     endAction() {
+        this.deactivateCanto();
         if (this.isActionDone) {
             return;
         }

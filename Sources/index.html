@@ -1868,6 +1868,8 @@
                         </tr>
                         <tr v-bind:style="g_app.vm.debugMenuStyle">
                             <td colspan="7">
+                                <label class="normal" v-bind:for='"isCantoActivated"+value.id'>再移動</label>
+                                {{value.isCantoActivated()}}
                                 <input v-bind:id='"isSelected"+value.id' type="checkbox" v-model="value.isSelected" />
                                 <label class="normal" v-bind:for='"isSelected"+value.id'>選択中</label>
                             </td>
@@ -2469,7 +2471,6 @@
                     passiveSInfos);
                 g_app.registerHeroOptions(heroInfos, false);
 
-                createDialogs();
                 loadLazyImages();
             });
         });
@@ -2479,6 +2480,7 @@
             g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
             initAetherRaidBoard(heroInfos);
 
+            createDialogs();
             importUrl(location.search);
         });
     </script>

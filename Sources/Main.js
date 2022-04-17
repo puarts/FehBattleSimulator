@@ -3252,7 +3252,9 @@ class AetherRaidTacticsBoard {
     enumerateUnitsInDifferentGroup(targetUnit) {
         return g_appData.enumerateUnitsInDifferentGroup(targetUnit);
     }
-
+    /**
+     * @returns {Unit[]}
+     */
     * enumerateEnemyUnitsOnMap() {
         for (let unit of this.enumerateUnitsInSpecifiedGroup(UnitGroupType.Enemy)) {
             if (unit.isOnMap) {
@@ -8203,7 +8205,9 @@ class AetherRaidTacticsBoard {
         }
         this.__goToNextPhaseIfAllActionDone(groupId);
     }
-
+    /**
+     * @param  {Unit} unit
+     */
     endUnitAction(unit) {
         unit.endAction();
         this.__goToNextPhaseIfAllActionDone(unit.groupId);
