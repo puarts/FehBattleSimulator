@@ -2580,7 +2580,7 @@ class BattleMap {
             for (let neighborNeighbor of neighbor.neighbors) {
                 for (let neighborNeighborNeighbor of neighborNeighbor.neighbors) {
                     if (neighborNeighborNeighbor.isUnitPlacable()) {
-                        return tile;
+                        return neighborNeighborNeighbor;
                     }
                 }
             }
