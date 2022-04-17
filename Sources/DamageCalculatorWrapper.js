@@ -2121,11 +2121,15 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (self.__isSolo(targetUnit) || calcPotentialDamage) {
-                enemyUnit.atkSpur -= 5;
-                enemyUnit.resSpur -= 5;
-            }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    enemyUnit.atkSpur -= 5;
+                    enemyUnit.resSpur -= 5;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.GronnvulturePlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SellSpellTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -6454,6 +6458,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.HvitrvulturePlus:
+            case Weapon.GronnvulturePlus:
                 if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                     enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
                     enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
