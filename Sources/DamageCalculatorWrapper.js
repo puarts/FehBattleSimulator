@@ -1902,6 +1902,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ThundererTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.globalBattleContext.currentTurn <= 3 || targetUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AversasNight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 // <錬成効果>

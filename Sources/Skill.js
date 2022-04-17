@@ -1287,6 +1287,9 @@ const Weapon = {
     WindyWarTome: 2048, // 戦神の風書
     SturdyWarSword: 2049, // 戦神の剛なる鉄剣
     LargeWarAxe: 2051, // 戦神の大斧
+
+    // 新英雄&開花イシュタル
+    ThundererTome: 2052, // 怒雷の紫書
 }
 
 const Support = {
