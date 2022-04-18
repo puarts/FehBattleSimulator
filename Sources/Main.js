@@ -1835,6 +1835,10 @@ class AetherRaidTacticsBoard {
             partialName,
             g_appData.heroInfos.data,
             info => {
+                if (info.pureNames.length == 0) {
+                    return 10000;
+                }
+
                 let pureName = info.pureNames[0];
                 let nameDiff = calcSimilarity(partialName, pureName);
                 let epithetDiff = calcSimilarity(epithet, info.epithet);
