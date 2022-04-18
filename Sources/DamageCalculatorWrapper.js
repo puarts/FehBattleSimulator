@@ -823,11 +823,11 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
-            // case PassiveC.BlueFeud3:
-            //     if (enemyUnit.color === ColorType.Blue) {
-            //         return true;
-            //     }
-            //     break;
+            case PassiveC.BlueFeud3:
+                if (enemyUnit.color === ColorType.Blue) {
+                    return true;
+                }
+                break;
             case PassiveC.GreenFeud3:
                 if (enemyUnit.color === ColorType.Green) {
                     return true;
@@ -1902,6 +1902,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ThundersMjolnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+               targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ThundererTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.globalBattleContext.currentTurn <= 3 || targetUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AversasNight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 // <錬成効果>
@@ -2114,11 +2126,15 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (self.__isSolo(targetUnit) || calcPotentialDamage) {
-                enemyUnit.atkSpur -= 5;
-                enemyUnit.resSpur -= 5;
-            }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    enemyUnit.atkSpur -= 5;
+                    enemyUnit.resSpur -= 5;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.GronnvulturePlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SellSpellTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -2408,11 +2424,11 @@ class DamageCalculatorWrapper {
                 enemyUnit.addAllSpur(-4);
             }
         }
-        // this._applySkillEffectForUnitFuncDict[PassiveC.BlueFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-        //     if (enemyUnit.color === ColorType.Blue) {
-        //         enemyUnit.addAllSpur(-4);
-        //     }
-        // }
+        this._applySkillEffectForUnitFuncDict[PassiveC.BlueFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.color === ColorType.Blue) {
+                enemyUnit.addAllSpur(-4);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.GreenFeud3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.color === ColorType.Green) {
                 enemyUnit.addAllSpur(-4);
@@ -5857,6 +5873,7 @@ class DamageCalculatorWrapper {
                     targetUnit.resSpur += 6;
                 }
                 break;
+            case Weapon.SpiritedSwordPlus:
             case Weapon.SpiritedAxePlus:
             case Weapon.SpiritedSpearPlus:
                 if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
@@ -6447,6 +6464,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.HvitrvulturePlus:
+            case Weapon.GronnvulturePlus:
                 if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                     enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
                     enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
@@ -6846,6 +6864,14 @@ class DamageCalculatorWrapper {
                         unit.atkSpur += value; unit.spdSpur += value;
                     });
                 break;
+            case PassiveA.AtkDefIdeal3:
+                DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
+                    (unit, value) => {
+                        unit.atkSpur += value;
+                        unit.defSpur += value;
+                    },
+                    5, 0);
+                break;
             case PassiveA.AtkDefIdeal4:
                 DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
                     (unit, value) => {
@@ -6950,6 +6976,14 @@ class DamageCalculatorWrapper {
 
         {
             switch (targetUnit.weapon) {
+                case Weapon.ThundersMjolnir:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.battleContext.initiatesCombat &&
+                            targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.Syurugu:
                     if (targetUnit.isWeaponRefined) {
                         let spd = targetUnit.getEvalSpdInCombat(enemyUnit);
@@ -8715,6 +8749,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.ThundersMjolnir:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    defUnit.battleContext.increaseCooldownCountForAttack = false;
+                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                    defUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.ProfessorialGuide:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     defUnit.battleContext.reducesCooldownCount = false;
@@ -9617,8 +9658,8 @@ class DamageCalculatorWrapper {
         switch (feudSkillOwner.passiveC) {
             case PassiveC.RedFeud3:
                 return unit => unit.color === ColorType.Red;
-            // case PassiveC.BlueFeud3:
-            //     return unit => unit.color === ColorType.Blue;
+            case PassiveC.BlueFeud3:
+                return unit => unit.color === ColorType.Blue;
             case PassiveC.GreenFeud3:
                 return unit => unit.color === ColorType.Green;
             case PassiveC.CFeud3:
@@ -10666,11 +10707,11 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
-            // case PassiveC.BlueFeud3:
-            //     if (enemyUnit.color === ColorType.Blue) {
-            //         return true;
-            //     }
-            //     break;
+            case PassiveC.BlueFeud3:
+                if (enemyUnit.color === ColorType.Blue) {
+                    return true;
+                }
+                break;
             case PassiveC.GreenFeud3:
                 if (enemyUnit.color === ColorType.Green) {
                     return true;

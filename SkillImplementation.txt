@@ -405,7 +405,7 @@ __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
 
 奥義によるダメージ+N
 __calcFixedSpecialAddDamage() {
-    fixedSpecialAddDamage += N;
+    targetUnit.battleContext.additionalDamageOfSpecial += N;
 }
 
 ダメージをHPが1残るように軽減(祈り)

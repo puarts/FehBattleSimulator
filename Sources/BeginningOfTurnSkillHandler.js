@@ -107,6 +107,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ThundererTome:
+                if (this.globalBattleContext.currentTurn <= 3 || skillOwner.battleContext.restHpPercentage <= 99) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case Weapon.FeruniruNoYouran:
                 if (skillOwner.isWeaponSpecialRefined) {
                     let count = 0;
@@ -388,6 +393,17 @@ class BeginningOfTurnSkillHandler {
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
                         unit.reserveToApplyDefDebuff(-6);
+                    });
+                break;
+            case PassiveC.SpdResMenace:
+                this.__applyMenace(skillOwner,
+                    unit => {
+                        unit.applySpdBuff(6);
+                        unit.applyResBuff(6);
+                    },
+                    unit => {
+                        unit.reserveToApplySpdDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
                     });
                 break;
             case PassiveC.DefResMenace:
