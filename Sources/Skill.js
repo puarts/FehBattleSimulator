@@ -1287,6 +1287,12 @@ const Weapon = {
     WindyWarTome: 2048, // 戦神の風書
     SturdyWarSword: 2049, // 戦神の剛なる鉄剣
     LargeWarAxe: 2051, // 戦神の大斧
+
+    // 新英雄&開花イシュタル
+    ThundererTome: 2052, // 怒雷の紫書
+    GronnvulturePlus: 2054, // グルンバルチャー+
+    ThundersMjolnir: 2059, // 雷神トールハンマー
+    SpiritedSwordPlus: 2057, // 士気旺盛の剣+
 }
 
 const Support = {
@@ -1733,6 +1739,7 @@ const PassiveA = {
     // 万全
     AtkSpdIdeal3: 1926, // 攻撃速さの万全3
     AtkSpdIdeal4: 1688, // 攻撃速さの万全4
+    AtkDefIdeal3: 2060, // 攻撃守備の万全3
     AtkDefIdeal4: 1705,
     AtkResIdeal3: 1960,
     AtkResIdeal4: 1723,
@@ -2252,13 +2259,14 @@ const PassiveC = {
     AtkSpdMenace: 1733, // 攻撃速さの脅嚇
     AtkDefMenace: 1708, // 攻撃守備の脅嚇
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
+    SpdResMenace: 2056, // 速さ魔防の脅嚇
     DefResMenace: 1728, // 守備魔防の脅嚇
 
     StallPloy3: 1789, // 空転の奇策3
 
     // 暗闘
     RedFeud3: 1918, // 赤への暗闘3
-    // BlueFeud3: -1, // 青への暗闘3
+    BlueFeud3: 2053, // 青への暗闘3
     GreenFeud3: 1958, // 緑への暗闘3
     CFeud3: 1935, // 無への暗闇3
 
@@ -3061,7 +3069,7 @@ function isAdvantageousForColorless(weapon) {
 
 const FeudSkillTable = {};
 FeudSkillTable[PassiveC.RedFeud3] = 0;
-// FeudSkillTable[PassiveC.BlueFeud3] = 0;
+FeudSkillTable[PassiveC.BlueFeud3] = 0;
 FeudSkillTable[PassiveC.GreenFeud3] = 0;
 FeudSkillTable[PassiveC.CFeud3] = 0;
 
