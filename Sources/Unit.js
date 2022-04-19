@@ -208,7 +208,7 @@ const StatusEffectType = {
     Isolation: 8, // 補助不可
     BonusDoubler: 9, // 強化増幅
     SieldDragonArmor: 10, // 竜特効、重装特効無効
-    TotalPenaltyDamage: 11, // 敵弱化ダメージ+
+    TotalPenaltyDamage: 11, // 敵弱化ダメージ+(Dominance)
     ResonantBlades: 12, // 双界効果・刃
     Desperation: 13, // 攻め立て
     ResonantShield: 14, // 双界効果・盾
