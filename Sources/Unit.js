@@ -4003,18 +4003,57 @@ class Unit {
      */
     updateArenaScore(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
         if (this.heroIndex < 0) {
-            this.weaponSp = 0;
-            this.supportSp = 0;
-            this.specialSp = 0;
-            this.passiveASp = 0;
-            this.passiveBSp = 0;
-            this.passiveCSp = 0;
-            this.passiveSSp = 0;
-            this.totalSp = 0;
-            this.arenaScore = this.__calcArenaScore(0, 0, 0, 0);
+            this.__clearArenaScore();
             return;
         }
 
+        let totalSp = this.__updateAndGetTotalSp();
+        let merge = this.__getArenaMerges(majorSeason, minorSeason);
+        let rating = this.__getArenaRating();
+        let score = this.__calcArenaScore(rating, totalSp, merge, this.rarity);
+        this.arenaScore = score;
+    }
+
+    /**
+     * @param  {Number} totalSp
+     * @returns {Number}
+     */
+    calcArenaScore(totalSp) {
+        let merge = this.__getArenaMerges();
+        let rating = this.__getArenaRating();
+        return this.__calcArenaScore(rating, totalSp, merge, this.rarity);
+    }
+
+    /**
+     * @returns {Number}
+     */
+    __getArenaMerges(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
+        let merge = Number(this.merge);
+        if (majorSeason != SeasonType.None && this.providableBlessingSeason == majorSeason) {
+            merge += 10;
+        }
+        else if (minorSeason != SeasonType.None && this.providableBlessingSeason == minorSeason) {
+            merge += 5;
+        }
+        return merge;
+    }
+
+    __clearArenaScore() {
+        this.weaponSp = 0;
+        this.supportSp = 0;
+        this.specialSp = 0;
+        this.passiveASp = 0;
+        this.passiveBSp = 0;
+        this.passiveCSp = 0;
+        this.passiveSSp = 0;
+        this.totalSp = 0;
+        this.arenaScore = this.__calcArenaScore(0, 0, 0, 0);
+    }
+
+    /**
+     * @returns {Number}
+     */
+    __updateAndGetTotalSp() {
         let totalSp = 0;
         let weaponSp = 0;
         if (this.weaponInfo != null) {
@@ -4055,8 +4094,6 @@ class Unit {
             totalSp += this.passiveSInfo.sp;
         }
 
-        let rating = this.__getRating();
-
         this.weaponSp = weaponSp;
         this.supportSp = supportSp;
         this.specialSp = specialSp;
@@ -4064,6 +4101,22 @@ class Unit {
         this.passiveBSp = passiveBSp;
         this.passiveCSp = passiveCSp;
         this.passiveSSp = passiveSSp;
+
+        this.totalSp = totalSp;
+        return totalSp;
+    }
+
+    /**
+     * @returns {Number}
+     */
+    __getArenaRating() {
+        let hp = this.__calcStatusLvN(this.heroInfo.hpLv1, this.heroInfo.hp, this.__getIvType(StatusType.Hp));
+        let atk = this.__calcStatusLvN(this.heroInfo.atkLv1, this.heroInfo.atk, this.__getIvType(StatusType.Atk));
+        let spd = this.__calcStatusLvN(this.heroInfo.spdLv1, this.heroInfo.spd, this.__getIvType(StatusType.Spd));
+        let def = this.__calcStatusLvN(this.heroInfo.defLv1, this.heroInfo.def, this.__getIvType(StatusType.Def));
+        let res = this.__calcStatusLvN(this.heroInfo.resLv1, this.heroInfo.res, this.__getIvType(StatusType.Res));
+        let addValue = this.ivHighStat == StatusType.None && this.ivLowStat == StatusType.None && this.merge > 0 ? 3 : 0;
+        let rating = hp + atk + spd + def + res + addValue;
 
         if (rating < this.heroInfo.duelScore) {
             rating = this.heroInfo.duelScore;
@@ -4084,28 +4137,7 @@ class Unit {
             }
         }
 
-        this.totalSp = totalSp;
-
-        let merge = Number(this.merge);
-        if (majorSeason != SeasonType.None && this.providableBlessingSeason == majorSeason) {
-            merge += 10;
-        }
-        else if (minorSeason != SeasonType.None && this.providableBlessingSeason == minorSeason) {
-            merge += 5;
-        }
-
-        let score = this.__calcArenaScore(rating, totalSp, merge, 5);
-        this.arenaScore = score;
-    }
-
-    __getRating() {
-        let hp = this.__calcStatusLvN(this.heroInfo.hpLv1, this.heroInfo.hp, this.__getIvType(StatusType.Hp));
-        let atk = this.__calcStatusLvN(this.heroInfo.atkLv1, this.heroInfo.atk, this.__getIvType(StatusType.Atk));
-        let spd = this.__calcStatusLvN(this.heroInfo.spdLv1, this.heroInfo.spd, this.__getIvType(StatusType.Spd));
-        let def = this.__calcStatusLvN(this.heroInfo.defLv1, this.heroInfo.def, this.__getIvType(StatusType.Def));
-        let res = this.__calcStatusLvN(this.heroInfo.resLv1, this.heroInfo.res, this.__getIvType(StatusType.Res));
-        let addValue = this.ivHighStat == StatusType.None && this.ivLowStat == StatusType.None && this.merge > 0 ? 3 : 0;
-        return hp + atk + spd + def + res + addValue;
+        return rating;
     }
 
     __getIvType(statusType, includesAscendedAsset = false) {

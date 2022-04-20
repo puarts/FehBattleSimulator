@@ -8,7 +8,8 @@ let vm = new Vue({
     data: {
         /** @member {Unit} */
         value: unit,
-        isWeaponEnabled: false
+        isWeaponEnabled: false,
+        totalSp: 0,
     },
     methods: {
         reset() {
@@ -98,6 +99,8 @@ function updateStatus() {
     unit.__updateStatusByBlessing(unit.blessing4);
     unit.__updateStatusByBlessing(unit.blessing5);
     unit.__updateStatusByBlessing(unit.blessing6);
+
+    unit.arenaScore = unit.calcArenaScore(vm.totalSp);
 }
 
 
@@ -111,11 +114,11 @@ function __findSkillInfo(skillInfos, id) {
     return null;
 }
 
-function init(heroInfo, skillInfos) {
+function init(heroInfo, skillInfos, totalSp) {
     unit.name = "hoge";
     unit.initByHeroInfo(heroInfo);
     unit.initializeSkillsToDefault();
     unit.weaponInfo = __findSkillInfo(skillInfos, unit.weapon);
-
+    vm.totalSp = totalSp;
     updateStatus();
 }

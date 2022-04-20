@@ -221,10 +221,18 @@
             </tr>
             <tr>
                 <td>
+                    最大SP: {{totalSp}}<br />
+                    査定総合値: {{value.rating}}<br />
+                    闘技場スコア: {{value.arenaScore * 2}}({{value.arenaScore}})
+                </td>
+            </tr>
+            <tr>
+                <td>
                     <input type="button" class="button" value="凸と花を最大化" @click="maximaizeMergeAndDragonflower" />
                     <input type="button" class="button" value="リセット" @click="reset" />
                 </td>
             </tr>
+
         </table>
     </div>
 
@@ -250,7 +258,7 @@
         $(function () {
             let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '0/0', '0/0', '0/0', '0/0', '0/0', 24, -1, 476, -1, 620, 689, SeasonType.None, BlessingType.None, 'リキア一の騎士', ['エリウッド',], 0, [24, 33,], [], 82, true, '烈火の剣', 'ガチャ', '2017-02-02', [476,], [], [620,], [689,]);
             let weaponInfo = new SkillInfo(24, 'デュランダル', 16, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 16, false, false, AssistType.None, false, 0, WeaponType.Sword, 400, false, [], [], true);
-            init(heroInfo, [weaponInfo]);
+            init(heroInfo, [weaponInfo], 2100);
         });
     </script>
 
