@@ -107,6 +107,21 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.FieryBolganone: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
+                    found = true;
+                    break;
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.TotalPenaltyDamage);
+                    for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
+                    }
+                }
+                break;
+            }
             case Weapon.ThundererTome:
                 if (this.globalBattleContext.currentTurn <= 3 || skillOwner.battleContext.restHpPercentage <= 99) {
                     skillOwner.reduceSpecialCount(1);

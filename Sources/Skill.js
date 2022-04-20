@@ -1293,6 +1293,7 @@ const Weapon = {
     GronnvulturePlus: 2054, // グルンバルチャー+
     ThundersMjolnir: 2059, // 雷神トールハンマー
     SpiritedSwordPlus: 2057, // 士気旺盛の剣+
+    FieryBolganone: 2062, // 嘲謔ボルガノン
 }
 
 const Support = {
