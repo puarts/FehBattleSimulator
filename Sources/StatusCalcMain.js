@@ -10,6 +10,7 @@ let vm = new Vue({
         value: unit,
         isWeaponEnabled: false,
         totalSp: 0,
+        isDuelSkillEnabled: false,
     },
     methods: {
         reset() {
@@ -99,6 +100,13 @@ function updateStatus() {
     unit.__updateStatusByBlessing(unit.blessing4);
     unit.__updateStatusByBlessing(unit.blessing5);
     unit.__updateStatusByBlessing(unit.blessing6);
+
+    if (vm.isDuelSkillEnabled) {
+        unit.passiveAInfo = new SkillInfo("", "死闘4");
+    }
+    else {
+        unit.passiveAInfo = null;
+    }
 
     unit.arenaScore = unit.calcArenaScore(vm.totalSp);
 }

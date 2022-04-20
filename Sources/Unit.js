@@ -1174,6 +1174,8 @@ class Unit {
         this.weaponInfo = null;
         this.supportInfo = null;
         this.specialInfo = null;
+
+        /** @type {SkillInfo} */
         this.passiveAInfo = null;
         this.passiveBInfo = null;
         this.passiveCInfo = null;

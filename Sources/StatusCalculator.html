@@ -222,7 +222,13 @@
             <tr>
                 <td>
                     最大SP: {{totalSp}}<br />
-                    査定総合値: {{value.rating}}<br />
+                    査定総合値: {{value.rating}}
+                    <span v-if="value.moveType != MoveType.Armor">
+                        <input id="isDuelSkillEnabled" type="checkbox" v-model="isDuelSkillEnabled"
+                            @change="updateStatus()" />
+                        <label class="normal" for="isDuelSkillEnabled">死闘4装備で計算</label>
+                    </span>
+                    <br />
                     闘技場スコア: {{value.arenaScore * 2}}({{value.arenaScore}})
                 </td>
             </tr>
