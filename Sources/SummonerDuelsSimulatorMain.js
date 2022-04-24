@@ -8478,20 +8478,25 @@ function __getTileFromMapElement(item) {
     return null;
 }
 
+function __getUnselectedTileBgColor(tile) {
+    // 攻撃範囲など諸々込みの色を取得します。
+    let cell = new Cell();
+    g_appData.map.setCellStyle(tile, cell);
+    return cell.bgColor;
+}
+
+function __clearSelectedTileColor() {
+    for (let tile of g_appData.map.enumerateTiles()) {
+        updateCellBgColor(tile.posX, tile.posY, __getUnselectedTileBgColor(tile));
+    }
+}
+
 function syncSelectedTileColor() {
+    __clearSelectedTileColor();
+
     for (let item of g_appData.enumerateItems()) {
         if (item.isSelected) {
             updateCellBgColor(item.posX, item.posY, SelectedTileColor);
-        }
-        else {
-            let tile = __getTileFromMapElement(item);
-            if (tile == null) {
-                continue;
-            }
-
-            let cell = new Cell();
-            g_appData.map.setCellStyle(tile, cell);
-            updateCellBgColor(item.posX, item.posY, cell.bgColor);
         }
     }
 }
