@@ -107,8 +107,6 @@ function getPawnsOfLokiDifficalityScore(difficality) {
 class AppData extends UnitManager {
     constructor() {
         super();
-        this.gameVersion = 360;
-        this.gameVersionOptions = [{ label: "3.6.0(2019/6のアプデ後)", value: 360 },];
         this.gameMode = GameMode.AetherRaid;
         this.gameModeOptions = [
             { label: "飛空城", value: GameMode.AetherRaid },
