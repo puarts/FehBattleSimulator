@@ -4,6 +4,7 @@
 const MapType_ArenaOffset = 50;
 const MapType_ResonantBattlesOffset = MapType_ArenaOffset + 100;
 const MapType_TempestTrialsOffset = MapType_ResonantBattlesOffset + 1000;
+const MapType_SummonerDuelsOffset = MapType_TempestTrialsOffset + 2000;
 const MapType = {
     None: -1,
 
@@ -83,7 +84,44 @@ const MapType = {
     TempestTrials_KojoNoTakaraSagashi: MapType_TempestTrialsOffset + 0,
     TempestTrials_ButosaiNoKyodai: MapType_TempestTrialsOffset + 1,
     TempestTrials_ShinmaiNinjaNoHatsuNinmu: MapType_TempestTrialsOffset + 2,
+
+    // 英雄決闘
+    SummonersDuel_EnclosedRuins: MapType_SummonerDuelsOffset + 0, // 崩れた壁に囲まれた地
+    SummonersDuel_MountainPass: MapType_SummonerDuelsOffset + 1, // 山間の道
+    SummonersDuel_Bridges: MapType_SummonerDuelsOffset + 2, // 東西の端の橋
+    SummonersDuel_ShiftingSands: MapType_SummonerDuelsOffset + 3, // 蛇行する砂漠
+    SummonersDuel_DesertTrees: MapType_SummonerDuelsOffset + 4, // 樹々生い茂る砂漠
 };
+
+const SummonerDuelsMapKindOptions = [
+    { label: "崩れた壁に囲まれた地", value: MapType.SummonersDuel_EnclosedRuins },
+    { label: "山間の道", value: MapType.SummonersDuel_MountainPass },
+    { label: "東西の端の橋", value: MapType.SummonersDuel_Bridges },
+    { label: "蛇行する砂漠", value: MapType.SummonersDuel_ShiftingSands },
+    { label: "樹々生い茂る砂漠", value: MapType.SummonersDuel_DesertTrees },
+];
+
+
+function isAetherRaidMap(type) {
+    return type >= 0 && type < MapType_ArenaOffset;
+}
+
+function isArenaMap(type) {
+    return type >= MapType_ArenaOffset && type < MapType_ResonantBattlesOffset;
+}
+
+function isResonantBattlesMap(type) {
+    return type >= MapType_ResonantBattlesOffset && type < MapType_TempestTrialsOffset;
+}
+
+function isTempestTrialsMap(type) {
+    return type >= MapType_TempestTrialsOffset && type < MapType_SummonerDuelsOffset;
+}
+
+function isSummonerDuelsMap(type) {
+    return type >= MapType_SummonerDuelsOffset;
+}
+
 
 /**
  * @param  {MapType} type
@@ -575,7 +613,7 @@ class BattleMap {
             this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
         }
 
-        for (let i = this._walls.length; i < 16; ++i) {
+        for (let i = this._walls.length; i < 32; ++i) {
             this._walls.push(new Wall(idGenerator == null ? "" : idGenerator.generate()));
         }
 
@@ -741,12 +779,17 @@ class BattleMap {
         let result = "// マップのセットアップ\n";
         result += this.__createSourceCodeForWallPlacement();
         result += this.__createSourceCodeForBreakableWallPlacement();
-        result += this.__createSourceCodeForTileTypeSetting("Flier", TileType.Flier);
-        result += this.__createSourceCodeForTileTypeSetting("Forest", TileType.Forest);
+        for (let key of Object.keys(TileType)) {
+            if (TileType[key] == TileType.Normal) {
+                continue;
+            }
+            result += this.__createSourceCodeForTileTypeSetting(key, TileType[key]);
+        }
         result += "if (withUnits) {\n";
         result += this.__createSourceCodeForUnitPlacement(UnitGroupType.Enemy);
+        result += this.__createSourceCodeForUnitPlacement(UnitGroupType.Ally);
         result += "}\n";
-        result += "// 敵のセットアップ\n"
+        result += "// 敵軍のセットアップ\n"
         result += this.__createSourceCodeForEnemyUnitSetup();
         this.sourceCode = result;
     }
@@ -773,8 +816,8 @@ class BattleMap {
             return "";
         }
         switch (groupType) {
-            case UnitGroupType.Enemy: return `this.__placeElemyUnitsByPosYX([${elems}]);\n`;
-            case UnitGroupType.Ally: return `this.__placeAllyUnitsByPosYX([${elems}]);\n`;
+            case UnitGroupType.Enemy: return `map.__placeElemyUnitsByPosYX([${elems}]);\n`;
+            case UnitGroupType.Ally: return `map.__placeAllyUnitsByPosYX([${elems}]);\n`;
             default:
                 throw new Error("invalid group type");
         }
@@ -787,7 +830,7 @@ class BattleMap {
         if (elems == "") {
             return "";
         }
-        return `this.__placeWallsByPosYX([${elems}]);\n`;
+        return `map.__placeWallsByPosYX([${elems}]);\n`;
     }
     __createSourceCodeForBreakableWallPlacement() {
         let elems = "";
@@ -797,7 +840,7 @@ class BattleMap {
         if (elems == "") {
             return "";
         }
-        return `this.__placeBreakableWallsByPosYX([${elems}], BreakableWallIconType.Wall);\n`;
+        return `map.__placeBreakableWallsByPosYX([${elems}], BreakableWallIconType.Wall);\n`;
     }
     __createSourceCodeForTileTypeSetting(tileTypeText, tileType) {
         let elems = "";
@@ -807,7 +850,7 @@ class BattleMap {
         if (elems == "") {
             return "";
         }
-        return `this.__setTileTypesByPosYX([${elems}],TileType.${tileTypeText});\n`;
+        return `map.__setTileTypesByPosYX([${elems}],TileType.${tileTypeText});\n`;
     }
 
     __setTileTypesByPosYX(positions, tileType) {

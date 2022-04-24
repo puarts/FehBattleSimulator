@@ -177,6 +177,7 @@ class AetherRaidTacticsBoard {
                             resetPlacement();
                             break;
                         case GameMode.PawnsOfLoki:
+                        case GameMode.SummonerDuels:
                             resetPlacement();
                             break;
                     }
@@ -184,8 +185,8 @@ class AetherRaidTacticsBoard {
                     updateAllUi();
                 },
                 addWallToMap: function () {
-                    let newWallIndex = this.map.countWallsOnMap();
-                    let wall = this.map.getWall(newWallIndex);
+                    let newWallIndex = g_appData.map.countWallsOnMap();
+                    let wall = g_appData.map.getWall(newWallIndex);
                     if (wall == null) {
                         self.writeErrorLine("これ以上壁を配置できません");
                         return;
@@ -8515,11 +8516,6 @@ function removeBreakableWallsFromTrashbox() {
     }
 }
 
-function createMap() {
-    resetPlacementOfStructures();
-    resetPlacementOfUnits();
-}
-
 function resetPlacementForArena() {
     for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
         moveStructureToDefenceStorage(structure);
@@ -8556,17 +8552,6 @@ function resetPlacementOfStructures() {
     // 施設を施設置き場へ移動
     for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {
         moveToDefault(structure);
-    }
-
-    // 攻撃施設も必須のものがマップになければ配置する
-    for (let structure of g_appData.offenceStructureStorage.enumerateAllObjs()) {
-        if (!structure.isRequired) {
-            continue;
-        }
-
-        if (!g_appData.map.isObjAvailable(structure)) {
-            moveToDefault(structure);
-        }
     }
 }
 
@@ -8636,6 +8621,9 @@ function resetPlacement() {
             resetPlacementForArena();
             break;
         case GameMode.PawnsOfLoki:
+            resetPlacementForArena();
+            break;
+        case GameMode.SummonerDuels:
             resetPlacementForArena();
             break;
     }
@@ -8793,7 +8781,8 @@ function initAetherRaidBoard(
     heroInfos
 ) {
     using(new ScopedStopwatch(time => g_app.writeDebugLogLine("マップの初期化: " + time + " ms")), () => {
-        createMap();
+        g_appData.setGameMode(GameMode.SummonerDuels);
+        resetPlacement();
 
         // 全ユニットをアルフォンスで初期化(名前が変わらない事があるので一旦コメントアウト)
         // let defaultHeroIndex = 18;

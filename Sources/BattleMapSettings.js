@@ -16,105 +16,8 @@ function changeMapKind(map, mapKind) {
     resetBattleMapPlacement(map, mapKind);
 }
 
-/**
- * マップの配置をリセットします。
- * @param  {BattleMap} map
- * @param  {MapType} type
- * @param  {Boolean} withUnits=false
- */
-function resetBattleMapPlacement(map, type, withUnits = false) {
-    map.__clearTiles();
+function __resetBattleMapPlacementForArena(map, type, withUnits) {
     switch (type) {
-        case MapType.None:
-            break;
-        case MapType.Izumi: // 泉の城
-            {
-                map.setTileType(0, 4, TileType.Flier);
-                map.setTileType(5, 2, TileType.Flier);
-            }
-            break;
-        case MapType.Hyosetsu: // 氷雪の城
-            {
-                map.setTileType(1, 2, TileType.Forest);
-                map.setTileType(4, 4, TileType.Forest);
-                map.setTileType(3, 5, TileType.Forest);
-            }
-            break;
-        case MapType.Haikyo: // 廃墟の城
-            {
-                map.__placeObjForcibly(map._walls[0], 2, 4);
-                map.__placeObjForcibly(map._breakableWalls[0], 1, 4);
-                map.__placeObjForcibly(map._breakableWalls[1], 4, 4);
-                map.__placeObjForcibly(map._breakableWalls[2], 0, 2);
-                map.__setBreakableWallIconType(BreakableWallIconType.Wall);
-            }
-            break;
-        case MapType.Yukigesho: // 雪化粧の城
-            {
-                map.__placeObjForcibly(map._breakableWalls[0], 0, 4);
-                map.setTileType(1, 3, TileType.DefensiveTrench);
-                map.setTileType(2, 5, TileType.Forest);
-                map.setTileType(5, 2, TileType.DefensiveTrench);
-                map.__setBreakableWallIconType(BreakableWallIconType.Wall);
-            }
-            break;
-        case MapType.Sabaku: // 砂漠の城
-            {
-                map.setTileType(2, 2, TileType.Flier);
-                map.setTileType(2, 5, TileType.Flier);
-                map.setTileType(3, 5, TileType.Flier);
-            }
-            break;
-        case MapType.Harukaze: // 春風の城
-            {
-                map.__placeObjForcibly(map._walls[0], 2, 5);
-                map.__placeObjForcibly(map._breakableWalls[2], 5, 5);
-                map.__placeObjForcibly(map._breakableWalls[0], 0, 2);
-                map.__placeObjForcibly(map._breakableWalls[1], 3, 2);
-                map.__setBreakableWallIconType(BreakableWallIconType.Wall);
-            }
-            break;
-        case MapType.Komorebi: // 木漏れ日の城
-            {
-                map.setTileType(1, 4, TileType.Trench);
-                map.setTileType(2, 4, TileType.Forest);
-                map.setTileType(3, 2, TileType.Trench);
-                map.setTileType(4, 2, TileType.Trench);
-            }
-            break;
-        case MapType.Wasurerareta: // 忘れられた城
-            {
-                map.setTileType(1, 2, TileType.DefensiveTile);
-                map.setTileType(2, 2, TileType.DefensiveTile);
-                map.setTileType(1, 3, TileType.Forest);
-                map.__placeObjForcibly(map._walls[0], 5, 4);
-            }
-            break;
-        case MapType.Natsukusa: // 夏草の城
-            {
-                map.setTileType(3, 2, TileType.Forest);
-                map.setTileType(4, 2, TileType.Forest);
-                map.setTileType(4, 5, TileType.Forest);
-            }
-            break;
-        case MapType.Syakunetsu: // 灼熱の城
-            {
-                map.setTileType(5, 2, TileType.Flier);
-                map.setTileType(2, 4, TileType.Flier);
-                map.setTileType(2, 5, TileType.Flier);
-            }
-            break;
-        case MapType.DreamCastle: {
-            map.setTileType(0, 3, TileType.Flier);
-            map.setTileType(5, 3, TileType.Flier);
-        }
-            break;
-        case MapType.NightmareCastle: {
-            map.setTileType(0, 5, TileType.DefensiveForest);
-            map.setTileType(2, 2, TileType.DefensiveForest);
-            map.setTileType(3, 2, TileType.DefensiveForest);
-        }
-            break;
         case MapType.Arena_1:
             map.setTileType(0, 0, TileType.Forest);
             map.setTileType(0, 4, TileType.Forest);
@@ -1022,6 +925,110 @@ function resetBattleMapPlacement(map, type, withUnits = false) {
                 map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4]]);
             }
             break;
+        default:
+            return;
+    }
+}
+
+function __resetBattleMapPlacementForAetherRaid(map, type) {
+    switch (type) {
+        case MapType.None:
+            break;
+        case MapType.Izumi: // 泉の城
+            {
+                map.setTileType(0, 4, TileType.Flier);
+                map.setTileType(5, 2, TileType.Flier);
+            }
+            break;
+        case MapType.Hyosetsu: // 氷雪の城
+            {
+                map.setTileType(1, 2, TileType.Forest);
+                map.setTileType(4, 4, TileType.Forest);
+                map.setTileType(3, 5, TileType.Forest);
+            }
+            break;
+        case MapType.Haikyo: // 廃墟の城
+            {
+                map.__placeObjForcibly(map._walls[0], 2, 4);
+                map.__placeObjForcibly(map._breakableWalls[0], 1, 4);
+                map.__placeObjForcibly(map._breakableWalls[1], 4, 4);
+                map.__placeObjForcibly(map._breakableWalls[2], 0, 2);
+                map.__setBreakableWallIconType(BreakableWallIconType.Wall);
+            }
+            break;
+        case MapType.Yukigesho: // 雪化粧の城
+            {
+                map.__placeObjForcibly(map._breakableWalls[0], 0, 4);
+                map.setTileType(1, 3, TileType.DefensiveTrench);
+                map.setTileType(2, 5, TileType.Forest);
+                map.setTileType(5, 2, TileType.DefensiveTrench);
+                map.__setBreakableWallIconType(BreakableWallIconType.Wall);
+            }
+            break;
+        case MapType.Sabaku: // 砂漠の城
+            {
+                map.setTileType(2, 2, TileType.Flier);
+                map.setTileType(2, 5, TileType.Flier);
+                map.setTileType(3, 5, TileType.Flier);
+            }
+            break;
+        case MapType.Harukaze: // 春風の城
+            {
+                map.__placeObjForcibly(map._walls[0], 2, 5);
+                map.__placeObjForcibly(map._breakableWalls[2], 5, 5);
+                map.__placeObjForcibly(map._breakableWalls[0], 0, 2);
+                map.__placeObjForcibly(map._breakableWalls[1], 3, 2);
+                map.__setBreakableWallIconType(BreakableWallIconType.Wall);
+            }
+            break;
+        case MapType.Komorebi: // 木漏れ日の城
+            {
+                map.setTileType(1, 4, TileType.Trench);
+                map.setTileType(2, 4, TileType.Forest);
+                map.setTileType(3, 2, TileType.Trench);
+                map.setTileType(4, 2, TileType.Trench);
+            }
+            break;
+        case MapType.Wasurerareta: // 忘れられた城
+            {
+                map.setTileType(1, 2, TileType.DefensiveTile);
+                map.setTileType(2, 2, TileType.DefensiveTile);
+                map.setTileType(1, 3, TileType.Forest);
+                map.__placeObjForcibly(map._walls[0], 5, 4);
+            }
+            break;
+        case MapType.Natsukusa: // 夏草の城
+            {
+                map.setTileType(3, 2, TileType.Forest);
+                map.setTileType(4, 2, TileType.Forest);
+                map.setTileType(4, 5, TileType.Forest);
+            }
+            break;
+        case MapType.Syakunetsu: // 灼熱の城
+            {
+                map.setTileType(5, 2, TileType.Flier);
+                map.setTileType(2, 4, TileType.Flier);
+                map.setTileType(2, 5, TileType.Flier);
+            }
+            break;
+        case MapType.DreamCastle: {
+            map.setTileType(0, 3, TileType.Flier);
+            map.setTileType(5, 3, TileType.Flier);
+        }
+            break;
+        case MapType.NightmareCastle: {
+            map.setTileType(0, 5, TileType.DefensiveForest);
+            map.setTileType(2, 2, TileType.DefensiveForest);
+            map.setTileType(3, 2, TileType.DefensiveForest);
+        }
+            break;
+        default:
+            return;
+    }
+}
+
+function __resetBattleMapPlacementForResonantBattles(map, type, withUnits) {
+    switch (type) {
         case MapType.ResonantBattles_Default:
             break;
         case MapType.ResonantBattles_1:
@@ -1259,6 +1266,18 @@ function resetBattleMapPlacement(map, type, withUnits = false) {
                 map.__placeElemyUnitsByPosYX([[2, 3], [2, 5], [3, 0], [3, 1], [3, 5], [4, 7], [5, 1], [5, 2], [5, 6], [6, 4], [7, 0], [7, 6],]);
             }
             break;
+        default:
+            return;
+    }
+
+    if (withUnits) {
+        // 双界の味方配置はどのマップも同じ
+        map.__placeAllyUnitsByPosYX([[9, 2], [9, 3], [9, 4], [9, 5]]);
+    }
+}
+
+function __resetBattleMapPlacementForTempestTrials(map, type, withUnits) {
+    switch (type) {
         case MapType.TempestTrials_KojoNoTakaraSagashi:
             map.__placeWallsByPosYX([
                 [1, 0], [1, 1],
@@ -1325,11 +1344,75 @@ function resetBattleMapPlacement(map, type, withUnits = false) {
         default:
             throw new Error("unexpected map kind " + type);
     }
+}
 
-    if (withUnits) {
-        if (MapType_ResonantBattlesOffset <= this._type && this._type < MapType_TempestTrialsOffset) {
-            // 双界の味方配置はどのマップも同じ
-            this.__placeAllyUnitsByPosYX([[9, 2], [9, 3], [9, 4], [9, 5]]);
-        }
+function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
+    switch (type) {
+        case MapType.SummonersDuel_EnclosedRuins:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 4], [0, 6], [1, 0], [1, 1], [1, 7], [8, 0], [8, 6], [8, 7], [9, 1], [9, 3], [9, 5], [9, 6], [9, 7],]);
+            map.__placeBreakableWallsByPosYX([[0, 5], [0, 7], [2, 0], [7, 7], [9, 0], [9, 2],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[4, 4], [5, 3],], TileType.Forest);
+            map.__setTileTypesByPosYX([[3, 4], [4, 1], [5, 6], [6, 3],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 3], [1, 2], [2, 1], [3, 0], [3, 1],]);
+                map.__placeAllyUnitsByPosYX([[6, 6], [6, 7], [7, 6], [8, 5], [9, 4],]);
+            }
+            break;
+        case MapType.SummonersDuel_MountainPass:
+            break;
+        case MapType.SummonersDuel_Bridges:
+            break;
+        case MapType.SummonersDuel_ShiftingSands:
+            break;
+        case MapType.SummonersDuel_DesertTrees:
+            break;
+        default:
+            return;
     }
+
+    // 英雄決闘のマップは共通で左上、右下の4マスが移動不可
+    // map.__placeWallsByPosYX([
+    //     [0, 0], [0, 1],
+    //     [1, 0], [1, 1],
+    //     [8, 6], [8, 7],
+    //     [9, 6], [9, 7],
+    // ]);
+}
+
+function __resetBattleMapPlacement(map, type, withUnits) {
+    if (type === MapType.None) {
+        return;
+    }
+
+    if (isAetherRaidMap(type)) {
+        __resetBattleMapPlacementForAetherRaid(map, type);
+        return;
+    }
+    if (isArenaMap(type)) {
+        __resetBattleMapPlacementForArena(map, type, withUnits);
+        return;
+    }
+    if (isResonantBattlesMap(type)) {
+        __resetBattleMapPlacementForResonantBattles(map, type, withUnits);
+        return;
+    }
+    if (isTempestTrialsMap(type)) {
+        __resetBattleMapPlacementForTempestTrials(map, type, withUnits);
+        return;
+    }
+    if (isSummonerDuelsMap(type)) {
+        __resetBattleMapPlacementForSummonerDuels(map, type, withUnits);
+        return;
+    }
+}
+
+/**
+ * マップの配置をリセットします。
+ * @param  {BattleMap} map
+ * @param  {MapType} type
+ * @param  {Boolean} withUnits=false
+ */
+function resetBattleMapPlacement(map, type, withUnits = false) {
+    map.__clearTiles();
+    __resetBattleMapPlacement(map, type, withUnits);
 }

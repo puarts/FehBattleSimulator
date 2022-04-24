@@ -69,6 +69,7 @@ const GameMode = {
     ResonantBattles: 3,
     TempestTrials: 4,
     PawnsOfLoki: 5,
+    SummonerDuels: 6, // 英雄決闘
 };
 
 // 選択モード
@@ -453,9 +454,14 @@ class AppData extends UnitManager {
 
         {
             // 生成順を変えるとIDが変わってしまうので注意
+            /** @type {ObjectStorage} */
             this.defenseStructureStorage = new ObjectStorage(g_idGenerator.generate());
+
+            /** @type {ObjectStorage} */
             this.offenceStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.createStructures();
+
+            /** @type {BattleMap} */
             this.map = new BattleMap(g_idGenerator.generate(), g_idGenerator);
             this.map.isExpansionUnitFunc = x => {
                 return this.isSpecialSlotUnit(x);
@@ -473,8 +479,13 @@ class AppData extends UnitManager {
         resetBattleMapPlacement(this.map, this.map._type, withUnits);
     }
 
+    setMapKind(mapKind) {
+        this.mapKind = mapKind;
+        changeMapKind(this.map, mapKind);
+    }
+
     syncMapKind() {
-        changeMapKind(this.map, this.mapKind);
+        this.setMapKind(this.mapKind);
     }
 
     setAllSeasonEnabled() {
@@ -1480,16 +1491,21 @@ class AppData extends UnitManager {
         if (Number.isInteger(Number(splited[i]))) { this.settingCompressMode = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) {
             let newValue = Number(splited[i]);
-            let isGameModeChanged = newValue != this.gameMode;
-            if (isGameModeChanged) {
-                this.gameMode = newValue;
-                this.setPropertiesForCurrentGameMode();
-                this.updateEnemyAndAllyUnits();
-            }
+            this.setGameMode(newValue);
 
             ++i;
         }
         if (Number.isInteger(Number(splited[i]))) { this.resonantBattleInterval = Number(splited[i]); ++i; }
+    }
+
+    setGameMode(gameMode) {
+        if (this.gameMode == gameMode) {
+            return;
+        }
+
+        this.gameMode = gameMode;
+        this.setPropertiesForCurrentGameMode();
+        this.updateEnemyAndAllyUnits();
     }
 
     setPropertiesForCurrentGameMode() {
@@ -1518,6 +1534,14 @@ class AppData extends UnitManager {
                 this.map.isBackgroundImageEnabled = false;
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToPawnsOfLoki();
+                break;
+            case GameMode.SummonerDuels:
+                this.map.isBackgroundImageEnabled = false;
+                this.hideAetherRaidManu();
+                this.map.setMapSizeToLarge();
+                if (!isSummonerDuelsMap(this.mapKind)) {
+                    this.setMapKind(MapType.SummonersDuel_EnclosedRuins);
+                }
                 break;
             default:
                 break;
@@ -1815,6 +1839,7 @@ class AppData extends UnitManager {
             case GameMode.ResonantBattles: return 12;
             case GameMode.TempestTrials: return 6;
             case GameMode.PawnsOfLoki: return 8;
+            case GameMode.SummonerDuels: return 5;
         }
     }
     getAllyCount() {
@@ -1824,6 +1849,7 @@ class AppData extends UnitManager {
             case GameMode.ResonantBattles: return 4;
             case GameMode.TempestTrials: return 4;
             case GameMode.PawnsOfLoki: return 8 + 4 + 5; // 戦闘枠+補助枠+ショップ
+            case GameMode.SummonerDuels: return 5;
         }
     }
 

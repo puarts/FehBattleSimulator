@@ -349,6 +349,12 @@
                                         {{ option.label }}
                                     </option>
                                 </select>
+                                <select v-model="mapKind" v-on:change="mapChanged"
+                                    v-if="gameMode == GameMode.SummonerDuels">
+                                    <option v-for="option in SummonerDuelsMapKindOptions" v-bind:value="option.value">
+                                        {{ option.label }}
+                                    </option>
+                                </select>
                             </td>
                         </tr>
                         <tr v-if="gameMode == GameMode.ResonantBattles">
