@@ -1293,6 +1293,8 @@ class AppData extends UnitManager {
             case GameMode.PawnsOfLoki:
                 // todo: 本当は盤位で最大値が決まる。盤位1は9ターン、盤位4は10ターンだったが法則は不明
                 return 20;
+            case GameMode.SummonerDuels:
+                return 5;
             default:
                 throw new Error("invalid gameMode");
         }
