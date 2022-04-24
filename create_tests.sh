@@ -5,6 +5,7 @@ SOURCE_FILE_NAMES=(
     Utilities
     Logger
     Skill
+    BattleMapElement
     Tile
     Structures
     Cell
@@ -12,7 +13,7 @@ SOURCE_FILE_NAMES=(
     HeroInfo
     Unit
     UnitManager
-    Map
+    BattleMap
     GlobalBattleContext
     DamageCalculationUtility
     DamageCalculator
