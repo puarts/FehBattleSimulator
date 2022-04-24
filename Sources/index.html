@@ -325,18 +325,6 @@
             <tr>
                 <td style="width: 450px" valign="top">
                     <table style="border-width: 0px;border-style: none;">
-                        <tr v-bind:style="debugMenuStyle">
-                            <td>
-                                <label>バージョン:</label>
-                            </td>
-                            <td>
-                                <select v-model="gameVersion">
-                                    <option v-for="option in gameVersionOptions" v-bind:value="option.value">
-                                        {{ option.label }}
-                                    </option>
-                                </select>
-                            </td>
-                        </tr>
                         <tr>
                             <td>
                                 <label>ゲームモード:</label>

@@ -1,3 +1,7 @@
+
+
+
+
 /**
  * マップの種類を変更します。
  * @param  {BattleMap} map
@@ -38,14 +42,8 @@ function resetBattleMapPlacement(map, type, withUnits = false) {
             break;
         case MapType.Haikyo: // 廃墟の城
             {
-                if (map._gameVersion == 360) {
-                    map.__placeObjForcibly(map._walls[0], 2, 4);
-                    map.__placeObjForcibly(map._breakableWalls[0], 1, 4);
-                }
-                else {
-                    map.__placeObjForcibly(map._walls[1], 1, 4);
-                    map.__placeObjForcibly(map._breakableWalls[0], 2, 4);
-                }
+                map.__placeObjForcibly(map._walls[0], 2, 4);
+                map.__placeObjForcibly(map._breakableWalls[0], 1, 4);
                 map.__placeObjForcibly(map._breakableWalls[1], 4, 4);
                 map.__placeObjForcibly(map._breakableWalls[2], 0, 2);
                 map.__setBreakableWallIconType(BreakableWallIconType.Wall);
@@ -53,12 +51,7 @@ function resetBattleMapPlacement(map, type, withUnits = false) {
             break;
         case MapType.Yukigesho: // 雪化粧の城
             {
-                if (map._gameVersion == 360) {
-                    map.__placeObjForcibly(map._breakableWalls[0], 0, 4);
-                }
-                else {
-                    map.__placeObjForcibly(map._walls[0], 0, 4);
-                }
+                map.__placeObjForcibly(map._breakableWalls[0], 0, 4);
                 map.setTileType(1, 3, TileType.DefensiveTrench);
                 map.setTileType(2, 5, TileType.Forest);
                 map.setTileType(5, 2, TileType.DefensiveTrench);
@@ -75,13 +68,7 @@ function resetBattleMapPlacement(map, type, withUnits = false) {
         case MapType.Harukaze: // 春風の城
             {
                 map.__placeObjForcibly(map._walls[0], 2, 5);
-                if (map._gameVersion == 360) {
-                    map.__placeObjForcibly(map._breakableWalls[2], 5, 5);
-                }
-                else {
-                    map.__placeObjForcibly(map._walls[1], 5, 5);
-                }
-
+                map.__placeObjForcibly(map._breakableWalls[2], 5, 5);
                 map.__placeObjForcibly(map._breakableWalls[0], 0, 2);
                 map.__placeObjForcibly(map._breakableWalls[1], 3, 2);
                 map.__setBreakableWallIconType(BreakableWallIconType.Wall);

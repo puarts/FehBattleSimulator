@@ -387,7 +387,6 @@ class SettingManager {
                 if (loadsDefenceSettings) {
                     // マップオブジェクトのロード
                     // console.log("loading map objects");
-                    // console.log("map object count: " + this._appData.map.breakableObjCountOfCurrentMapType);
                     for (let structure of this._appData.map.enumerateBreakableWallsOfCurrentMapType()) {
                         // console.log(structure.id);
                         if (!turnSetting.isDeserialized(structure)) { continue; }

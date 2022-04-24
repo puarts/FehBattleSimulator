@@ -84,6 +84,77 @@ const MapType = {
     TempestTrials_ButosaiNoKyodai: MapType_TempestTrialsOffset + 1,
     TempestTrials_ShinmaiNinjaNoHatsuNinmu: MapType_TempestTrialsOffset + 2,
 };
+
+/**
+ * @param  {MapType} type
+ */
+function getBreakableObjCountOfCurrentMapType(type) {
+    switch (type) {
+        case MapType.Izumi: // 泉の城
+        case MapType.Hyosetsu: // 氷雪の城
+        case MapType.Sabaku: // 砂漠の城
+        case MapType.Komorebi: // 木漏れ日の城
+        case MapType.Wasurerareta: // 忘れられた城
+        case MapType.Natsukusa: // 夏草の城
+        case MapType.Syakunetsu: // 灼熱の城
+        case MapType.Yukigesho: // 雪化粧の城
+            return 1;
+        case MapType.Haikyo: // 廃墟の城
+            return 3;
+        case MapType.Harukaze: // 春風の城
+            return 3;
+        case MapType.Arena_3:
+            return 14;
+        case MapType.Arena_7:
+            return 2;
+        case MapType.Arena_10:
+            return 2;
+        case MapType.Arena_12:
+            return 12;
+        case MapType.Arena_13:
+            return 8;
+        case MapType.Arena_16:
+            return 2;
+        case MapType.Arena_17:
+            return 4;
+        case MapType.Arena_18:
+            return 4;
+        case MapType.Arena_19:
+            return 4;
+        case MapType.Arena_21:
+            return 8;
+        case MapType.Arena_26:
+            return 12;
+        case MapType.Arena_29:
+            return 8;
+        case MapType.Arena_31: return 4;
+        case MapType.Arena_33: return 8;
+        case MapType.Arena_34: return 2;
+        case MapType.Arena_46: return 8;
+        case MapType.Arena_48: return 7;
+        case MapType.Arena_49: return 4;
+        case MapType.Arena_50: return 7;
+        case MapType.ResonantBattles_Default:
+            return 8;
+        case MapType.ResonantBattles_1:
+            return 6;
+        case MapType.ResonantBattles_2:
+            return 9;
+        case MapType.ResonantBattles_3:
+        case MapType.ResonantBattles_4:
+            return 0;
+        case MapType.ResonantBattles_5: return 5;
+        case MapType.ResonantBattles_6: return 4;
+        case MapType.ResonantBattles_7: return 5;
+        case MapType.ResonantBattles_8: return 3;
+        case MapType.TempestTrials_KojoNoTakaraSagashi: return 1;
+        case MapType.TempestTrials_ButosaiNoKyodai: return 0;
+        case MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu: return 0;
+        default:
+            return 0;
+    }
+}
+
 const DefaultResonantBattleMap = MapType.ResonantBattles_8;
 const DefaultTempestTrialsMap = MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu;
 const AetherRaidMapImageFiles = [
@@ -654,73 +725,6 @@ class BattleMap {
         this._showAllyAttackRange = value;
     }
 
-    get breakableObjCountOfCurrentMapType() {
-        switch (this._type) {
-            case MapType.Izumi: // 泉の城
-            case MapType.Hyosetsu: // 氷雪の城
-            case MapType.Sabaku: // 砂漠の城
-            case MapType.Komorebi: // 木漏れ日の城
-            case MapType.Wasurerareta: // 忘れられた城
-            case MapType.Natsukusa: // 夏草の城
-            case MapType.Syakunetsu: // 灼熱の城
-            case MapType.Yukigesho: // 雪化粧の城
-                return 1;
-            case MapType.Haikyo: // 廃墟の城
-                return 3;
-            case MapType.Harukaze: // 春風の城
-                return 3;
-            case MapType.Arena_3:
-                return 14;
-            case MapType.Arena_7:
-                return 2;
-            case MapType.Arena_10:
-                return 2;
-            case MapType.Arena_12:
-                return 12;
-            case MapType.Arena_13:
-                return 8;
-            case MapType.Arena_16:
-                return 2;
-            case MapType.Arena_17:
-                return 4;
-            case MapType.Arena_18:
-                return 4;
-            case MapType.Arena_19:
-                return 4;
-            case MapType.Arena_21:
-                return 8;
-            case MapType.Arena_26:
-                return 12;
-            case MapType.Arena_29:
-                return 8;
-            case MapType.Arena_31: return 4;
-            case MapType.Arena_33: return 8;
-            case MapType.Arena_34: return 2;
-            case MapType.Arena_46: return 8;
-            case MapType.Arena_48: return 7;
-            case MapType.Arena_49: return 4;
-            case MapType.Arena_50: return 7;
-            case MapType.ResonantBattles_Default:
-                return 8;
-            case MapType.ResonantBattles_1:
-                return 6;
-            case MapType.ResonantBattles_2:
-                return 9;
-            case MapType.ResonantBattles_3:
-            case MapType.ResonantBattles_4:
-                return 0;
-            case MapType.ResonantBattles_5: return 5;
-            case MapType.ResonantBattles_6: return 4;
-            case MapType.ResonantBattles_7: return 5;
-            case MapType.ResonantBattles_8: return 3;
-            case MapType.TempestTrials_KojoNoTakaraSagashi: return 1;
-            case MapType.TempestTrials_ButosaiNoKyodai: return 0;
-            case MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu: return 0;
-            default:
-                return 0;
-        }
-    }
-
     __clearTiles() {
         for (let i = 0; i < this._tiles.length; ++i) {
             let tile = this._tiles[i];
@@ -1063,7 +1067,7 @@ class BattleMap {
     }
 
     *enumerateBreakableWallsOfCurrentMapType() {
-        for (let i = 0; i < this.breakableObjCountOfCurrentMapType; ++i) {
+        for (let i = 0; i < getBreakableObjCountOfCurrentMapType(this._type); ++i) {
             let obj = this._breakableWalls[i];
             yield obj;
         }
