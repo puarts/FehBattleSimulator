@@ -1042,6 +1042,8 @@ const NotReserved = -2;
 class Unit extends BattleMapElement {
     constructor(id = "", name = "", unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry, icon = "") {
         super();
+        // Unitはマップ上で作るので利便性のために初期値0にしておく
+        this.setPos(0, 0);
         this._id = id;
         this._name = name;
         this._groupId = unitGroupType;
