@@ -86,14 +86,16 @@ const MapType = {
     TempestTrials_ShinmaiNinjaNoHatsuNinmu: MapType_TempestTrialsOffset + 2,
 
     // 英雄決闘
-    SummonersDuel_EnclosedRuins: MapType_SummonerDuelsOffset + 0, // 崩れた壁に囲まれた地
-    SummonersDuel_MountainPass: MapType_SummonerDuelsOffset + 1, // 山間の道
-    SummonersDuel_Bridges: MapType_SummonerDuelsOffset + 2, // 東西の端の橋
-    SummonersDuel_ShiftingSands: MapType_SummonerDuelsOffset + 3, // 蛇行する砂漠
-    SummonersDuel_DesertTrees: MapType_SummonerDuelsOffset + 4, // 樹々生い茂る砂漠
+    SummonersDuel_Default: MapType_SummonerDuelsOffset + 0, // マップ作成用の更地
+    SummonersDuel_EnclosedRuins: MapType_SummonerDuelsOffset + 1, // 崩れた壁に囲まれた地
+    SummonersDuel_MountainPass: MapType_SummonerDuelsOffset + 2, // 山間の道
+    SummonersDuel_Bridges: MapType_SummonerDuelsOffset + 3, // 東西の端の橋
+    SummonersDuel_ShiftingSands: MapType_SummonerDuelsOffset + 4, // 蛇行する砂漠
+    SummonersDuel_DesertTrees: MapType_SummonerDuelsOffset + 5, // 樹々生い茂る砂漠
 };
 
 const SummonerDuelsMapKindOptions = [
+    { label: "更地(マップ作成用)", value: MapType.SummonersDuel_Default },
     { label: "崩れた壁に囲まれた地", value: MapType.SummonersDuel_EnclosedRuins },
     { label: "山間の道", value: MapType.SummonersDuel_MountainPass },
     { label: "東西の端の橋", value: MapType.SummonersDuel_Bridges },
@@ -1336,7 +1338,10 @@ class BattleMap {
         }
         return text;
     }
-
+    /**
+     * @param  {Function} predicatorFunc=null
+     * @returns {Tile[]}
+     */
     *enumerateTiles(predicatorFunc = null) {
         for (let tile of this._tiles) {
             if (predicatorFunc == null || predicatorFunc(tile)) {
@@ -1344,7 +1349,16 @@ class BattleMap {
             }
         }
     }
+    /**
+     * @returns {Tile[]}
+     */
+    enumerateSelectedTiles() {
+        return this.enumerateTiles(x => x.isSelected);
+    }
 
+    /**
+     * @returns {Tile[]}
+     */
     *enumerateTilesInSpecifiedDistanceFrom(targetTile, targetDistance) {
         for (let y = 0; y < this._height; ++y) {
             for (let x = 0; x < this._width; ++x) {

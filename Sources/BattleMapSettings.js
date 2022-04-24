@@ -1348,6 +1348,14 @@ function __resetBattleMapPlacementForTempestTrials(map, type, withUnits) {
 
 function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
     switch (type) {
+        case MapType.SummonersDuel_Default:
+            map.__placeWallsByPosYX([
+                [0, 0], [0, 1],
+                [1, 0], [1, 1],
+                [8, 6], [8, 7],
+                [9, 6], [9, 7],
+            ]);
+            break;
         case MapType.SummonersDuel_EnclosedRuins:
             map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 4], [0, 6], [1, 0], [1, 1], [1, 7], [8, 0], [8, 6], [8, 7], [9, 1], [9, 3], [9, 5], [9, 6], [9, 7],]);
             map.__placeBreakableWallsByPosYX([[0, 5], [0, 7], [2, 0], [7, 7], [9, 0], [9, 2],], BreakableWallIconType.Wall);
@@ -1359,8 +1367,24 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
             }
             break;
         case MapType.SummonersDuel_MountainPass:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [8, 6], [8, 7], [9, 4], [9, 5], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[0, 4], [0, 7], [2, 0], [2, 1], [3, 4], [3, 7], [4, 0], [4, 1], [5, 6], [5, 7], [6, 0], [6, 3], [7, 6], [7, 7], [9, 0], [9, 3],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 4], [5, 3],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[7, 0], [8, 0], [8, 1], [9, 1], [9, 2],]);
+                map.__placeAllyUnitsByPosYX([[0, 5], [0, 6], [1, 6], [1, 7], [2, 7],]);
+            }
             break;
         case MapType.SummonersDuel_Bridges:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__placeBreakableWallsByPosYX([[1, 2], [1, 3], [2, 0], [7, 7], [8, 4], [8, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[2, 3], [4, 5], [5, 2], [7, 4],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 2], [0, 3], [0, 5], [0, 6], [0, 7], [1, 7], [4, 1], [5, 6], [8, 0], [9, 0], [9, 1], [9, 2], [9, 4], [9, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 4], [6, 3],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [1, 5], [1, 6], [2, 7], [3, 7],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [7, 0], [8, 1], [8, 2], [9, 3],]);
+            }
             break;
         case MapType.SummonersDuel_ShiftingSands:
             break;
@@ -1369,14 +1393,6 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
         default:
             return;
     }
-
-    // 英雄決闘のマップは共通で左上、右下の4マスが移動不可
-    // map.__placeWallsByPosYX([
-    //     [0, 0], [0, 1],
-    //     [1, 0], [1, 1],
-    //     [8, 6], [8, 7],
-    //     [9, 6], [9, 7],
-    // ]);
 }
 
 function __resetBattleMapPlacement(map, type, withUnits) {

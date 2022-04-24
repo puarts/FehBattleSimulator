@@ -1039,8 +1039,9 @@ class ActionContext {
 const NotReserved = -2;
 
 /// ユニットのインスタンス
-class Unit {
+class Unit extends BattleMapElement {
     constructor(id = "", name = "", unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry, icon = "") {
+        super();
         this._id = id;
         this._name = name;
         this._groupId = unitGroupType;
@@ -1051,8 +1052,6 @@ class Unit {
         this._spd = 40;
         this._def = 30;
         this._res = 30;
-        this._posX = 0;
-        this._posY = 0;
 
         this._placedTile = null;
         this._moveCount = 1;
@@ -1214,7 +1213,6 @@ class Unit {
         /** @type {Unit} */
         this.snapshot = null;
 
-        this.isSelected = false;
         this.blessingCount = 2;
 
         // 査定計算用
@@ -3157,20 +3155,6 @@ class Unit {
     }
     set moveType(value) {
         this._moveType = value;
-    }
-
-    get posX() {
-        return this._posX;
-    }
-    set posX(value) {
-        this._posX = value;
-    }
-
-    get posY() {
-        return this._posY;
-    }
-    set posY(value) {
-        this._posY = value;
     }
 
     /**

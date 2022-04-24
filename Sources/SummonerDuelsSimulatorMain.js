@@ -621,6 +621,14 @@ class AetherRaidTacticsBoard {
         }
     }
 
+    tileTypeChanged() {
+        let currentItem = g_appData.currentItem;
+        for (let tile of g_appData.map.enumerateSelectedTiles()) {
+            tile.type = currentItem.type;
+        }
+        updateAllUi();
+    }
+
     __findMaxSpWeaponId(defaultSkillId, options) {
         let skillInfoArrays = [g_appData.weaponInfos];
         let maxSpSkillInfo = this.__findSkillInfoFromArrays(skillInfoArrays, defaultSkillId);
@@ -8460,18 +8468,29 @@ function moveToDefault(target) {
     }
 }
 
+function __getTileFromMapElement(item) {
+    if (item instanceof Unit || item instanceof StructureBase) {
+        return item.placedTile;
+    }
+    else if (item instanceof Tile) {
+        return item;
+    }
+    return null;
+}
+
 function syncSelectedTileColor() {
     for (let item of g_appData.enumerateItems()) {
-        if (item.placedTile == null) {
-            continue;
-        }
-
         if (item.isSelected) {
             updateCellBgColor(item.posX, item.posY, SelectedTileColor);
         }
         else {
+            let tile = __getTileFromMapElement(item);
+            if (tile == null) {
+                continue;
+            }
+
             let cell = new Cell();
-            g_appData.map.setCellStyle(item.placedTile, cell);
+            g_appData.map.setCellStyle(tile, cell);
             updateCellBgColor(item.posX, item.posY, cell.bgColor);
         }
     }

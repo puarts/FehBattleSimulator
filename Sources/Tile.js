@@ -62,8 +62,9 @@ function setUnitToTile(unit, tile) {
 }
 
 /// マップを構成するタイルです。
-class Tile {
+class Tile extends BattleMapElement {
     constructor(px, py) {
+        super();
         this.posX = px;
         this.posY = py;
         this._type = TileType.Normal;

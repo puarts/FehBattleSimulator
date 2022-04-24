@@ -1863,6 +1863,9 @@ class AppData extends UnitManager {
         for (let st of this.defenseStructureStorage.objs) {
             yield st;
         }
+        for (let tile of this.map.enumerateTiles()) {
+            yield tile;
+        }
     }
 
     findIndexOfItem(id) {

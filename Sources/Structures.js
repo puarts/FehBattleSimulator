@@ -62,15 +62,12 @@ function findOrnamentTypeIndexByIcon(icon) {
 }
 
 /// 配置物の基底クラスです。
-class StructureBase {
+class StructureBase extends BattleMapElement {
     constructor(id) {
+        super();
         this._id = id;
         this.level = 1;
-        this.posX = -1;
-        this.posY = -1;
         this.placedTile = null;
-
-        this.isSelected = false;
 
         // シリアライズする時に一時的に使用
         this.ownerType = 0;

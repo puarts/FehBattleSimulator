@@ -45,6 +45,18 @@ function findParentTdElement(elem) {
     return currentNode;
 }
 
+function __selectItemById(id) {
+    if (g_keyboardManager.isShiftKeyPressing) {
+        selectItemById(id, true, false);
+    }
+    else if (g_keyboardManager.isControlKeyPressing) {
+        selectItemById(id, false, true);
+    }
+    else {
+        selectItemById(id);
+    }
+}
+
 function onItemSelected(event) {
     console.log("onItemSelected");
     g_doubleClickChecker.notifyClick();
@@ -54,19 +66,11 @@ function onItemSelected(event) {
         let tdElem = findParentTdElement(targetElem);
         if (tdElem != null) {
             // タイルが選択された
-            selectItemById(tdElem.id);
+            __selectItemById(tdElem.id);
         }
     }
     else {
-        if (g_keyboardManager.isShiftKeyPressing) {
-            selectItemById(targetElem.id, true, false);
-        }
-        else if (g_keyboardManager.isControlKeyPressing) {
-            selectItemById(targetElem.id, false, true);
-        }
-        else {
-            selectItemById(targetElem.id);
-        }
+        __selectItemById(targetElem.id);
     }
 
     if (g_doubleClickChecker.isDoubleClicked()) {
