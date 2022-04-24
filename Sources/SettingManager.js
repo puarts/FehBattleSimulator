@@ -311,7 +311,7 @@ class SettingManager {
                         }
                     }
 
-                    this._appData.map.resetPlacement();
+                    this._appData.resetBattleMapPlacement();
                 }
             }
 
@@ -363,7 +363,7 @@ class SettingManager {
                 turnSetting.fromTurnWideStatusString(settingDict[TurnWideCookieId]);
                 if (loadsDefenceSettings) {
                     // マップ種類
-                    this._appData.map.changeMapKind(this._appData.mapKind, this._appData.gameVersion);
+                    this._appData.syncMapKind();
                 }
 
                 if (loadsEnemySettings) {

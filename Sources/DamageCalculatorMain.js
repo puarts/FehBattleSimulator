@@ -260,7 +260,7 @@ class DamageCalcData {
         this.logger = new HtmlLogger();
         this.unitManager = new UnitManager();
         this.unitManager.units = [];
-        this.map = new BattleMap("", MapType.None, 0);
+        this.map = new BattleMap("");
         this.battleContext = new GlobalBattleContext();
 
         /** @type {DamageCalculatorWrapper} */

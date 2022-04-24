@@ -458,16 +458,25 @@ class AppData extends UnitManager {
             this.defenseStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.offenceStructureStorage = new ObjectStorage(g_idGenerator.generate());
             this.createStructures();
-            this.map = new BattleMap(g_idGenerator.generate(), this.mapKind, this.gameVersion, g_idGenerator);
+            this.map = new BattleMap(g_idGenerator.generate(), g_idGenerator);
             this.map.isExpansionUnitFunc = x => {
                 return this.isSpecialSlotUnit(x);
             };
+            this.syncMapKind();
         }
 
         this.addStructuresToSelectionOptions();
         this.registerTemplateImages();
         this.applyDebugMenuVisibility();
         this.updateTargetInfoTdStyle();
+    }
+
+    resetBattleMapPlacement(withUnits = false) {
+        resetBattleMapPlacement(this.map, this.map._type, withUnits);
+    }
+
+    syncMapKind() {
+        changeMapKind(this.map, this.mapKind);
     }
 
     setAllSeasonEnabled() {
@@ -695,7 +704,6 @@ class AppData extends UnitManager {
 
         // 祝福効果の更新
         if (updateBlessingEffects) {
-            console.log("update blessing effects");
             unit.clearBlessingEffects();
             for (let ally of this.enumerateUnitsInTheSameGroup(unit, false)) {
                 if (!this.isBlessingEffectEnabled(unit, ally)) {

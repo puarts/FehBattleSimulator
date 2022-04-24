@@ -7460,11 +7460,11 @@ class AetherRaidTacticsBoard {
                 }
                 break;
             case Support.GrayWaves:
-            {
-                if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
-                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                {
+                    if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
                 }
-            }
                 break;
             case Support.GrayWaves2: {
                 if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
@@ -8505,9 +8505,7 @@ function updateMap() {
 }
 
 function changeMap() {
-    let mapKind = g_app.vm.mapKind;
-    let gameVersion = g_app.vm.gameVersion;
-    g_appData.map.changeMapKind(mapKind, gameVersion);
+    g_appData.syncMapKind();
     updateMap();
 }
 
@@ -8537,7 +8535,7 @@ function resetPlacementForArena() {
     }
 
     resetPlacementOfUnits();
-    g_appData.map.resetPlacement(true);
+    g_appData.resetBattleMapPlacement(true);
 }
 
 function resetPlacementOfStructures() {
@@ -8553,7 +8551,7 @@ function resetPlacementOfStructures() {
         moveStructureToMap(obj);
     }
 
-    g_appData.map.resetPlacement();
+    g_appData.resetBattleMapPlacement();
 
     // 施設を施設置き場へ移動
     for (let structure of g_appData.defenseStructureStorage.enumerateAllObjs()) {

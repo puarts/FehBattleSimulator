@@ -69,7 +69,7 @@ class test_HeroDatabase extends HeroDatabase {
 class test_BeginningOfTurnSkillHandler {
     constructor() {
         this.unitManager = new UnitManager();
-        this.map = new BattleMap("", MapType.None, 0);
+        this.map = new BattleMap("");
         this.battleContext = new GlobalBattleContext();
         this._beginningOfTurnSkillHandler = new BeginningOfTurnSkillHandler(
             this.unitManager,
@@ -90,7 +90,7 @@ class test_BeginningOfTurnSkillHandler {
 class test_DamageCalculator {
     constructor() {
         this.unitManager = new UnitManager();
-        this.map = new BattleMap("", MapType.None, 0);
+        this.map = new BattleMap("");
         this.battleContext = new GlobalBattleContext();
         this.damageCalc = new DamageCalculatorWrapper(
             this.unitManager,
