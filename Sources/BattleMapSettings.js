@@ -1386,9 +1386,111 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
                 map.__placeAllyUnitsByPosYX([[6, 0], [7, 0], [8, 1], [8, 2], [9, 3],]);
             }
             break;
+        // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR014
         case MapType.SummonersDuel_ShiftingSands:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[3, 2], [6, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 7], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [3, 5], [6, 2], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [9, 0],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 2], [5, 5],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 5], [1, 5], [1, 6], [2, 6], [2, 7],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [8, 1], [8, 2], [9, 2],]);
+            }
             break;
+        // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR006
         case MapType.SummonersDuel_DesertTrees:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [2, 4], [7, 3], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[0, 2], [0, 6], [1, 7], [2, 0], [2, 3], [4, 3], [5, 4], [7, 4], [7, 7], [8, 0], [9, 1], [9, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 7], [3, 5], [6, 2], [9, 0],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 1], [5, 6],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [0, 5], [1, 6], [2, 7], [3, 7],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [7, 0], [8, 1], [9, 2], [9, 3],]);
+            }
+            break;
+        case MapType.SummonersDuel_1:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[0, 2], [3, 3], [4, 7], [5, 0], [6, 4], [9, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[2, 0], [2, 1], [2, 3], [2, 4], [3, 0], [3, 4], [6, 3], [6, 7], [7, 3], [7, 4], [7, 6], [7, 7],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 2], [6, 5],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 5], [1, 5], [1, 6], [2, 6], [2, 7],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [8, 1], [8, 2], [9, 2],]);
+            }
+            break;
+        case MapType.SummonersDuel_2:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 3], [0, 6], [0, 7], [1, 0], [1, 1], [3, 1], [3, 3], [6, 4], [6, 6], [8, 6], [8, 7], [9, 0], [9, 1], [9, 4], [9, 5], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[3, 0], [3, 4], [3, 6], [6, 1], [6, 3], [6, 7],], TileType.Forest);
+            map.__setTileTypesByPosYX([[4, 4], [5, 3],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 5], [1, 5], [1, 6], [2, 6], [2, 7],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [8, 1], [8, 2], [9, 2],]);
+            }
+            break;
+        case MapType.SummonersDuel_3:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 3], [0, 7], [1, 0], [1, 1], [1, 2], [1, 7], [2, 0], [2, 1], [2, 7], [3, 0], [3, 7], [6, 0], [6, 7], [7, 0], [7, 6], [7, 7], [8, 0], [8, 5], [8, 6], [8, 7], [9, 0], [9, 4], [9, 5], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[3, 3], [4, 5], [5, 2], [6, 4],], TileType.Forest);
+            map.__setTileTypesByPosYX([[2, 2], [7, 5],], TileType.Flier);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [0, 5], [0, 6], [1, 5], [2, 5],]);
+                map.__placeAllyUnitsByPosYX([[7, 2], [8, 2], [9, 1], [9, 2], [9, 3],]);
+            }
+            break;
+        case MapType.SummonersDuel_7:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__placeBreakableWallsByPosYX([[4, 3], [4, 4], [5, 3], [5, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 2], [0, 3], [0, 4], [1, 2], [2, 0], [2, 1], [3, 0], [4, 0], [5, 7], [6, 7], [7, 6], [7, 7], [8, 5], [9, 3], [9, 4], [9, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 2], [6, 5],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 5], [1, 5], [1, 6], [2, 6], [2, 7],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [8, 1], [8, 2], [9, 2],]);
+            }
+            break;
+        case MapType.SummonersDuel_8:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [1, 0], [1, 1], [1, 2], [8, 5], [8, 6], [8, 7], [9, 0], [9, 1], [9, 2], [9, 3], [9, 4], [9, 5], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[3, 2], [3, 3], [3, 5], [4, 5], [5, 2], [6, 2], [6, 4], [6, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 2], [7, 5],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[1, 6], [2, 7], [4, 7], [6, 7], [7, 7],]);
+                map.__placeAllyUnitsByPosYX([[2, 0], [3, 0], [5, 0], [7, 0], [8, 1],]);
+            }
+            break;
+        case MapType.SummonersDuel_9:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__placeBreakableWallsByPosYX([[4, 3], [5, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 7], [1, 7], [8, 0], [9, 0],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 2], [0, 3], [0, 4], [1, 2], [1, 3], [2, 0], [3, 0], [3, 2], [4, 0], [5, 7], [6, 5], [6, 7], [7, 7], [8, 4], [8, 5], [9, 3], [9, 4], [9, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 2], [5, 5],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 5], [1, 5], [1, 6], [2, 6], [2, 7],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [8, 1], [8, 2], [9, 2],]);
+            }
+            break;
+        case MapType.SummonersDuel_10:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 3], [1, 0], [1, 1], [4, 7], [5, 0], [8, 6], [8, 7], [9, 4], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[0, 2], [0, 4], [0, 6], [0, 7], [1, 7], [2, 3], [3, 3], [3, 7], [4, 5], [5, 2], [6, 0], [6, 4], [7, 4], [8, 0], [9, 0], [9, 1], [9, 3], [9, 5],], TileType.Flier);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 5], [1, 5], [1, 6], [2, 6], [2, 7],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [8, 1], [8, 2], [9, 2],]);
+            }
+            break;
+        case MapType.SummonersDuel_11:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[3, 3], [6, 4],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 2], [0, 3], [0, 6], [0, 7], [1, 7], [2, 3], [3, 1], [6, 6], [7, 4], [8, 0], [9, 0], [9, 1], [9, 4], [9, 5],], TileType.Flier);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 5], [1, 5], [1, 6], [2, 6], [2, 7],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [8, 1], [8, 2], [9, 2],]);
+            }
+            break;
+        case MapType.SummonersDuel_12:
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
+            map.__setTileTypesByPosYX([[0, 2], [0, 3], [0, 6], [0, 7], [1, 7], [2, 3], [2, 4], [3, 1], [3, 6], [4, 3], [4, 6], [5, 1], [5, 4], [6, 1], [6, 6], [7, 3], [7, 4], [8, 0], [9, 0], [9, 1], [9, 4], [9, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 1], [5, 6],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [1, 5], [1, 6], [2, 6], [3, 7],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [7, 1], [8, 1], [8, 2], [9, 3],]);
+            }
             break;
         default:
             return;

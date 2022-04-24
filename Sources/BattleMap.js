@@ -87,11 +87,34 @@ const MapType = {
 
     // 英雄決闘
     SummonersDuel_Default: MapType_SummonerDuelsOffset + 0, // マップ作成用の更地
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR005
     SummonersDuel_EnclosedRuins: MapType_SummonerDuelsOffset + 1, // 崩れた壁に囲まれた地
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR004
     SummonersDuel_MountainPass: MapType_SummonerDuelsOffset + 2, // 山間の道
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR013
     SummonersDuel_Bridges: MapType_SummonerDuelsOffset + 3, // 東西の端の橋
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR014
     SummonersDuel_ShiftingSands: MapType_SummonerDuelsOffset + 4, // 蛇行する砂漠
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR006
     SummonersDuel_DesertTrees: MapType_SummonerDuelsOffset + 5, // 樹々生い茂る砂漠
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR001
+    SummonersDuel_1: MapType_SummonerDuelsOffset + 6,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR002
+    SummonersDuel_2: MapType_SummonerDuelsOffset + 7,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR003
+    SummonersDuel_3: MapType_SummonerDuelsOffset + 8,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR007
+    SummonersDuel_7: MapType_SummonerDuelsOffset + 9,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR008
+    SummonersDuel_8: MapType_SummonerDuelsOffset + 10,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR009
+    SummonersDuel_9: MapType_SummonerDuelsOffset + 11,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR010
+    SummonersDuel_10: MapType_SummonerDuelsOffset + 12,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR011
+    SummonersDuel_11: MapType_SummonerDuelsOffset + 13,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR012
+    SummonersDuel_12: MapType_SummonerDuelsOffset + 14,
 };
 
 const SummonerDuelsMapKindOptions = [
@@ -101,6 +124,15 @@ const SummonerDuelsMapKindOptions = [
     { label: "東西の端の橋", value: MapType.SummonersDuel_Bridges },
     { label: "蛇行する砂漠", value: MapType.SummonersDuel_ShiftingSands },
     { label: "樹々生い茂る砂漠", value: MapType.SummonersDuel_DesertTrees },
+    { label: "01", value: MapType.SummonersDuel_1 },
+    { label: "02", value: MapType.SummonersDuel_2 },
+    { label: "03", value: MapType.SummonersDuel_3 },
+    { label: "07", value: MapType.SummonersDuel_7 },
+    { label: "08", value: MapType.SummonersDuel_8 },
+    { label: "09", value: MapType.SummonersDuel_9 },
+    { label: "10", value: MapType.SummonersDuel_10 },
+    { label: "11", value: MapType.SummonersDuel_11 },
+    { label: "12", value: MapType.SummonersDuel_12 },
 ];
 
 
