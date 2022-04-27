@@ -107,6 +107,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ShadowBreath: {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.applyAtkBuff(6);
+                    unit.applyResBuff(6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.EnGarde);
+                }
+            }
+
+
             case Weapon.FieryBolganone: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {

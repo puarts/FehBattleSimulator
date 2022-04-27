@@ -229,6 +229,7 @@ const StatusEffectType = {
     NeutralizesFoesBonusesDuringCombat: 29, // 敵の強化の+を無効
     GrandStrategy: 30, // 神軍師の策
     CantoControl: 31, // 再移動制限
+    EnGarde: 32, // 戦闘外ダメージ無効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -354,6 +355,10 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_GrandStrategy.png";
         case StatusEffectType.CantoControl:
             return g_imageRootPath + "StatusEffect_CantoControl.png";
+        case StatusEffectType.EnGarde:
+            return g_imageRootPath + "StatusEffect_CantoControl.png";
+            // TODO: 画像を用意する
+            // return g_imageRootPath + "StatusEffect_EnGarde.png";
         default: return "";
     }
 }
@@ -2796,11 +2801,9 @@ class Unit extends BattleMapElement {
      * @param  {Boolean} leavesOneHp
      */
     applyReservedHp(leavesOneHp) {
-        let healHp = this.reservedHeal;
-        if (this.hasStatusEffect(StatusEffectType.DeepWounds)) {
-            healHp = 0;
-        }
-        this.hp = Number(this.hp) - this.reservedDamage + healHp;
+        let healHp = this.hasStatusEffect(StatusEffectType.DeepWounds) ? 0 : this.reservedHeal;
+        let damageHp = this.hasStatusEffect(StatusEffectType.EnGarde) ? 0 : this.reservedDamage;
+        this.hp = Number(this.hp) - damageHp + healHp;
         this.modifyHp(leavesOneHp);
 
         this.reservedDamage = 0;
