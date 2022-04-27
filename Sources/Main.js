@@ -5821,8 +5821,14 @@ class AetherRaidTacticsBoard {
             // activateCantoIfPossible内で再移動の発動を判定しているのでここでは4マス以内の判定結果だけを保存
             let cantoControlledIfCantoActivated = false;
             for (let u of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 4)) {
-                if (u.weapon === Weapon.DotingStaff && u.isWeaponSpecialRefined) {
-                    cantoControlledIfCantoActivated = true;
+                for (let skillId of u.enumerateSkills()) {
+                    switch (skillId) {
+                        case Weapon.DotingStaff:
+                            if (u.isWeaponSpecialRefined) {
+                                cantoControlledIfCantoActivated = true;
+                            }
+                            break;
+                    }
                 }
             }
             unit.activateCantoIfPossible(count, cantoControlledIfCantoActivated);
