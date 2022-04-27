@@ -2275,6 +2275,9 @@ const PassiveC = {
     GreenFeud3: 1958, // 緑への暗闘3
     CFeud3: 1935, // 無への暗闇3
 
+    // 再移動制限
+    CantoControl3: 2067, // 再移動制限3
+
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神

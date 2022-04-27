@@ -5828,6 +5828,9 @@ class AetherRaidTacticsBoard {
                                 cantoControlledIfCantoActivated = true;
                             }
                             break;
+                        case PassiveC.CantoControl3:
+                            cantoControlledIfCantoActivated = true;
+                            break;
                     }
                 }
             }

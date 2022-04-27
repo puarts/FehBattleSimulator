@@ -73,7 +73,7 @@ class DamageCalculatorWrapper {
          * @param {Unit} targetUnit
          * @param {Unit} enemyUnit
          * @param {Boolean} calcPotentialDamage
-         * 
+         *
          * @callback skillEffectFunc
          * @param {Unit} targetUnit
          * @param {Unit} enemyUnit
@@ -741,7 +741,7 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (defUnit.passiveB) {
-            case PassiveB.AssuredRebirth:
+            case PassiveB.AssuredRebirth: {
                 let percentage = 0;
                 let count = 0;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 3)) {
@@ -757,6 +757,7 @@ class DamageCalculatorWrapper {
                 }
                 percentage = Math.min(percentage, 60);
                 defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+            }
                 break;
             case PassiveB.DragonWall3:
                 {
@@ -7408,7 +7409,7 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
-            case PassiveB.AssuredRebirth:
+            case PassiveB.AssuredRebirth: {
                 let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
                 let percentage = 0;
                 let count = 0;
@@ -7424,6 +7425,7 @@ class DamageCalculatorWrapper {
                 }
                 percentage = Math.min(percentage, 60);
                 return percentage / 100.0;
+            }
             case Weapon.WindyWarTome:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
                     let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
