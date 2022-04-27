@@ -134,12 +134,12 @@ class BeginningOfTurnSkillHandler {
                         count++;
                         unit.applyAtkBuff(6);
                         unit.applySpdBuff(6);
-                        unit.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                        unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                     }
                     if (count > 0) {
                         skillOwner.applyAtkBuff(6);
                         skillOwner.applySpdBuff(6);
-                        skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                     }
                 }
                 break;

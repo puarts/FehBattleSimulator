@@ -1837,13 +1837,6 @@ class BattleMap {
                 }
             }
         }
-        if (unit.hasStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces)) {
-            for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
-                    yield tile;
-                }
-            }
-        }
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
