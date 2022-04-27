@@ -741,6 +741,23 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (defUnit.passiveB) {
+            case PassiveB.AssuredRebirth:
+                let percentage = 0;
+                let count = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 3)) {
+                    if (unit.weaponType === WeaponType.Staff || isWeaponTypeBreath(unit.weaponType)) {
+                        count++;
+                    }
+                }
+                percentage += count * 20;
+                let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                if (diff > 0) {
+                    let p = Math.min(diff * 4, 40);
+                    percentage += p;
+                }
+                percentage = Math.min(percentage, 60);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                break;
             case PassiveB.DragonWall3:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -7236,6 +7253,11 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.AssuredRebirth:
+                    if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                    break;
                 case PassiveB.FlowFlight3:
                     if (targetUnit.battleContext.initiatesCombat) {
                         targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -7386,6 +7408,22 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case PassiveB.AssuredRebirth:
+                let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                let percentage = 0;
+                let count = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 3)) {
+                    if (unit.weaponType === WeaponType.Staff || unit.weaponType === WeaponType.Breath) {
+                        count++;
+                    }
+                }
+                percentage += count * 20;
+                if (diff > 0) {
+                    let p = Math.min(diff * 4, 40);
+                    percentage += p;
+                }
+                percentage = Math.min(percentage, 60);
+                return percentage / 100.0;
             case Weapon.WindyWarTome:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
                     let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);

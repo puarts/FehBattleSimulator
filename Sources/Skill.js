@@ -2012,6 +2012,7 @@ const PassiveB = {
     Prescience: 1822, // 未来を知る力
     DivineRecreation: 1910, // それは興味深いね
     HodrsZeal: 2043, // ヘズルの聖騎士
+    AssuredRebirth: 2066, // 我が復活は成った
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
