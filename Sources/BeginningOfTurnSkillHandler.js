@@ -107,6 +107,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ShadowBreath:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.applyAtkBuff(6);
+                    unit.applyResBuff(6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.EnGarde);
+                }
+                break;
             case Weapon.FieryBolganone: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
@@ -134,12 +141,12 @@ class BeginningOfTurnSkillHandler {
                         count++;
                         unit.applyAtkBuff(6);
                         unit.applySpdBuff(6);
-                        unit.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                        unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                     }
                     if (count > 0) {
                         skillOwner.applyAtkBuff(6);
                         skillOwner.applySpdBuff(6);
-                        skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                     }
                 }
                 break;

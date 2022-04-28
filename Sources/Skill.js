@@ -1294,6 +1294,9 @@ const Weapon = {
     ThundersMjolnir: 2059, // 雷神トールハンマー
     SpiritedSwordPlus: 2057, // 士気旺盛の剣+
     FieryBolganone: 2062, // 嘲謔ボルガノン
+
+    // 2022年4月 神階メディウス
+    ShadowBreath: 2065, //  暗黒地竜のブレス
 }
 
 const Support = {
@@ -2009,6 +2012,7 @@ const PassiveB = {
     Prescience: 1822, // 未来を知る力
     DivineRecreation: 1910, // それは興味深いね
     HodrsZeal: 2043, // ヘズルの聖騎士
+    AssuredRebirth: 2066, // 我が復活は成った
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
@@ -2270,6 +2274,9 @@ const PassiveC = {
     BlueFeud3: 2053, // 青への暗闘3
     GreenFeud3: 1958, // 緑への暗闘3
     CFeud3: 1935, // 無への暗闇3
+
+    // 再移動制限
+    CantoControl3: 2067, // 再移動制限3
 
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
