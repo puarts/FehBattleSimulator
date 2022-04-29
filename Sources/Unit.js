@@ -356,9 +356,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.CantoControl:
             return g_imageRootPath + "StatusEffect_CantoControl.png";
         case StatusEffectType.EnGarde:
-            return g_imageRootPath + "StatusEffect_CantoControl.png";
-            // TODO: 画像を用意する
-            // return g_imageRootPath + "StatusEffect_EnGarde.png";
+            return g_imageRootPath + "StatusEffect_EnGarde.webp";
         default: return "";
     }
 }

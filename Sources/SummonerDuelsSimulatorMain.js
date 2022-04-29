@@ -8698,6 +8698,10 @@ function loadSettings() {
     console.log("loading..");
     console.log("current cookie:" + document.cookie);
     g_appData.settings.loadSettings();
+
+    // 英雄決闘に強制
+    g_appData.setGameMode(GameMode.SummonerDuels);
+
     if (g_appData.gameMode == GameMode.ResonantBattles) {
         g_app.__setUnitsForResonantBattles();
     }
@@ -8727,6 +8731,9 @@ function loadSettingsFromDict(
         loadsDefenceSettings,
         loadsMapSettings,
         clearsAllFirst);
+    // 英雄決闘に強制
+    g_appData.setGameMode(GameMode.SummonerDuels);
+
     g_app.updateAllUnitSpur();
     if (updatesChaseTarget) {
         __updateChaseTargetTilesForAllUnits();
