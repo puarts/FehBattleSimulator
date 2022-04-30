@@ -368,7 +368,9 @@ class Tile extends BattleMapElement {
         return this._placedUnit.groupId == unit.groupId
             && this._placedUnit.hasPathfinderEffect();
     }
-
+    /**
+     * @returns {BattleMapElement}
+     */
     get obj() {
         return this._obj;
     }

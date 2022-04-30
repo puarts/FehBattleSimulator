@@ -1514,6 +1514,7 @@ class AppData extends UnitManager {
         switch (this.gameMode) {
             case GameMode.AetherRaid:
                 this.map.isBackgroundImageEnabled = true;
+                this.map.isBlockImageEnabled = false;
                 this.showAetherRaidManu();
                 this.map.setMapSizeToNormal();
                 break;
@@ -1539,6 +1540,7 @@ class AppData extends UnitManager {
                 break;
             case GameMode.SummonerDuels:
                 this.map.isBackgroundImageEnabled = true;
+                this.map.isBlockImageEnabled = true;
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToLarge();
                 if (!isSummonerDuelsMap(this.mapKind)) {

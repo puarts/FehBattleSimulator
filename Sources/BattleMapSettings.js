@@ -1275,7 +1275,11 @@ function __resetBattleMapPlacementForResonantBattles(map, type, withUnits) {
         map.__placeAllyUnitsByPosYX([[9, 2], [9, 3], [9, 4], [9, 5]]);
     }
 }
-
+/**
+ * @param  {BattleMap} map
+ * @param  {MapType} type
+ * @param  {Boolean} withUnits
+ */
 function __resetBattleMapPlacementForTempestTrials(map, type, withUnits) {
     switch (type) {
         case MapType.TempestTrials_KojoNoTakaraSagashi:
@@ -1345,7 +1349,11 @@ function __resetBattleMapPlacementForTempestTrials(map, type, withUnits) {
             throw new Error("unexpected map kind " + type);
     }
 }
-
+/**
+ * @param  {BattleMap} map
+ * @param  {MapType} type
+ * @param  {Boolean} withUnits
+ */
 function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
     switch (type) {
         case MapType.SummonersDuel_Default:
@@ -1495,6 +1503,14 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
         default:
             return;
     }
+
+    // 壁が配置されてると壁が表示されてしまうので、英雄決闘の状態表示部分だけWallタイプに変更
+    map.__convertTilesPlacedWallToWallTileTypeByPosYx([
+        [0, 0], [0, 1],
+        [1, 0], [1, 1],
+        [8, 6], [8, 7],
+        [9, 6], [9, 7],
+    ]);
 }
 
 function __resetBattleMapPlacement(map, type, withUnits) {

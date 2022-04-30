@@ -714,6 +714,7 @@ class BattleMap {
         this.isTrapIconOverlayDisabled = false;
 
         this.isBackgroundImageEnabled = true;
+        this.isBlockImageEnabled = false;
 
         this.setMapSizeToNormal();
 
@@ -1002,6 +1003,24 @@ class BattleMap {
         let i = 0;
         for (let pos of positions) {
             this.__placeObjForcibly(this._walls[i], pos[1], pos[0]);
+            ++i;
+        }
+    }
+    /**
+     * 壁が配置されてるタイルを Wall タイプのタイルに変換します。
+     * @param  {Number[][]} positions
+     */
+    __convertTilesPlacedWallToWallTileTypeByPosYx(positions) {
+        let i = 0;
+        for (let pos of positions) {
+            let posX = pos[1];
+            let posY = pos[0];
+            let tile = this.getTile(posX, posY);
+            let oldObj = tile.obj;
+            if (oldObj instanceof Wall) {
+                tile.setObj(null);
+                tile.type = TileType.Wall;
+            }
             ++i;
         }
     }
@@ -2430,7 +2449,7 @@ class BattleMap {
 
                     if (obj != null) {
                         let drawsObj = !this.isBackgroundImageEnabled
-                            || !(obj instanceof Wall);
+                            || (!(obj instanceof Wall) || this.isBlockImageEnabled);
                         if (drawsObj) {
                             tileText += "<img style='position:absolute;bottom:0;left:0;' class='draggable-elem' id='" + tile.obj.id + "' src='" + obj.icon + "' width='" + cellWidth + "px' draggable='true' ondragstart='f_dragstart(event)' />";
                         }
