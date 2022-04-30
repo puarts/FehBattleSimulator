@@ -444,7 +444,16 @@
                                     </tr>
                                     <tr>
                                         <td>
-                                            <div id="mapArea"></div>
+                                            <div style="position: relative;">
+                                                <div id="mapArea"></div>
+                                                <div
+                                                    style="position:absolute;top:20;left:35;color: #fff;font-size: 27px;text-align: center;">
+                                                    {{globalBattleContext.currentTurn}}
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:50;left:38;color: #fff;font-size: 13px;text-align: center;">
+                                                    {{g_appData.maxTurn}}</div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </table>

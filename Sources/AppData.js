@@ -137,6 +137,7 @@ class AppData extends UnitManager {
         this.settings = new SettingManager(this);
         this.audioManager = new AudioManager();
 
+        /** @type {GlobalBattleContext} */
         this.globalBattleContext = new GlobalBattleContext();
 
         // 査定
@@ -1270,7 +1271,7 @@ class AppData extends UnitManager {
     }
 
     get isSupportActivationDisabled() {
-        return this.currentTurn == 0;
+        return this.globalBattleContext.currentTurn == 0;
     }
 
     get maxTurn() {

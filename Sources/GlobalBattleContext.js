@@ -2,6 +2,11 @@
 class GlobalBattleContext {
     constructor() {
         this.currentTurn = 0;
+
+        // 現在の手番
+        this.currentPhase = 0;
+        this.currentPhaseType = UnitGroupType.Ally;
+
         this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
         // 戦闘でHP0になって退場になったユニットの数
         this.RemovedUnitCountsInCombat = {};
