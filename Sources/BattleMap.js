@@ -565,38 +565,34 @@ function getMapBackgroundImageInfos(mapType) {
     return Array.from(enumerateMapBackgroundImageInfos(mapType));
 }
 
+const g_summonerDuelsMapRoot = g_corsImageRootPath + "Maps/SummonerDuels/";
+
 /**
  * @param  {MapType} mapType
  * @returns {String[]}
  */
 function* enumerateMapBackgroundImageInfos(mapType) {
-    const summonerDuelsMapRoot = g_corsImageRootPath + "Maps/SummonerDuels/";
     if (isSummonerDuelsMap(mapType)) {
         const cornerSize = `${(100 * 2 / 8).toFixed()}% ${(100 * 2 / 10).toFixed()}%`;
         yield new BackgroundImageInfo(
-            summonerDuelsMapRoot + "SummonerDuels_Corner1.png",
+            g_summonerDuelsMapRoot + "SummonerDuels_Corner1.png",
             `left top`, cornerSize
         );
         yield new BackgroundImageInfo(
-            summonerDuelsMapRoot + "SummonerDuels_Corner2.png",
+            g_summonerDuelsMapRoot + "SummonerDuels_Corner2.png",
             `right bottom`, cornerSize
         );
         yield new BackgroundImageInfo(
-            summonerDuelsMapRoot + "SummonerDuels_PointArea.png",
+            g_summonerDuelsMapRoot + "SummonerDuels_PointArea.png",
             `center`,
             `${(100 * 6 / 8).toFixed()}% ${(100 * 4 / 10).toFixed()}%`
         );
     }
-    switch (mapType) {
-        case MapType.SummonersDuel_1:
-            yield new BackgroundImageInfo(summonerDuelsMapRoot + "Map_ZR001.png");
-            break;
-        default:
-            yield new BackgroundImageInfo(getMapBackgroundImage(mapType));
-    }
+
+    yield new BackgroundImageInfo(getMapBackgroundImage(mapType));
 
     if (isSummonerDuelsMap(mapType)) {
-        yield new BackgroundImageInfo(summonerDuelsMapRoot + "Rival_Domains_Wave.webp");
+        yield new BackgroundImageInfo(g_summonerDuelsMapRoot + "Rival_Domains_Wave.webp");
     }
 }
 
@@ -656,6 +652,20 @@ function getMapBackgroundImage(mapKind) {
         case MapType.Arena_48: return arenaRoot + "Arena_48.png";
         case MapType.Arena_49: return arenaRoot + "Arena_49.png";
         case MapType.Arena_50: return arenaRoot + "Arena_50.png";
+        case MapType.SummonersDuel_1: return g_summonerDuelsMapRoot + "Map_ZR001.png";
+        case MapType.SummonersDuel_2: return g_summonerDuelsMapRoot + "Map_ZR002.webp";
+        case MapType.SummonersDuel_EnclosedRuins: return g_summonerDuelsMapRoot + "Map_ZR005.webp";
+        case MapType.SummonersDuel_MountainPass: return g_summonerDuelsMapRoot + "Map_ZR004.webp";
+        case MapType.SummonersDuel_Bridges: return g_summonerDuelsMapRoot + "Map_ZR013.webp";
+        case MapType.SummonersDuel_ShiftingSands: return g_summonerDuelsMapRoot + "Map_ZR014.webp";
+        case MapType.SummonersDuel_DesertTrees: return g_summonerDuelsMapRoot + "Map_ZR006.webp";
+        case MapType.SummonersDuel_3: return g_summonerDuelsMapRoot + "Map_ZR003.webp";
+        case MapType.SummonersDuel_7: return g_summonerDuelsMapRoot + "Map_ZR007.webp";
+        case MapType.SummonersDuel_8: return g_summonerDuelsMapRoot + "Map_ZR008.webp";
+        case MapType.SummonersDuel_9: return g_summonerDuelsMapRoot + "Map_ZR009.webp";
+        case MapType.SummonersDuel_10: return g_summonerDuelsMapRoot + "Map_ZR010.webp";
+        case MapType.SummonersDuel_11: return g_summonerDuelsMapRoot + "Map_ZR011.webp";
+        case MapType.SummonersDuel_12: return g_summonerDuelsMapRoot + "Map_ZR012.webp";
         default:
             throw new Error("Unknown map type " + mapKind);
     }
