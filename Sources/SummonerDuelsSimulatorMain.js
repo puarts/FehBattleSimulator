@@ -3390,18 +3390,14 @@ class AetherRaidTacticsBoard {
             return;
         }
 
-        let enemyUnits = [];
-        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0])) {
-            enemyUnits.push(unit);
-        }
+        g_appData.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally] = 6;
+        g_appData.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally] = 6;
 
-        let allyUnits = [];
-        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnits[0])) {
-            allyUnits.push(unit);
-        }
+        let enemyUnits = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
+        let allUnits = targetUnits.concat(enemyUnits);
 
         let group = targetUnits[0].groupId;
-        for (let unit of targetUnits) {
+        for (let unit of allUnits) {
             unit.endAction();
             unit.deactivateCanto();
             unit.beginAction();
@@ -3429,12 +3425,12 @@ class AetherRaidTacticsBoard {
             }
         }
 
-        for (let unit of enemyUnits) {
-            unit.endAction();
-            unit.deactivateCanto();
-        }
+        // for (let unit of enemyUnits) {
+        //     unit.endAction();
+        //     unit.deactivateCanto();
+        // }
 
-        for (let unit of this.enumerateAllUnitsOnMap()) {
+        for (let unit of allUnits) {
             unit.resetOneTimeActionActivationStates();
 
             // 評価用のスナップショットを作成
@@ -3446,7 +3442,7 @@ class AetherRaidTacticsBoard {
         this.executeStructuresByUnitGroupType(group, false);
 
         // ターン開始時スキル(通常)
-        for (let unit of targetUnits) {
+        for (let unit of allUnits) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動スキルを適用..");
             this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
         }
@@ -3454,7 +3450,7 @@ class AetherRaidTacticsBoard {
         this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
 
         // ターン開始時スキル(回復・ダメージ)
-        for (let unit of targetUnits) {
+        for (let unit of allUnits) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動HPスキルを適用..");
             this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(unit);
         }
@@ -3463,7 +3459,7 @@ class AetherRaidTacticsBoard {
 
         this.writeLog(this.beginningOfTurnSkillHandler.log);
 
-        for (let unit of targetUnits) {
+        for (let unit of allUnits) {
             unit.deleteSnapshot();
         }
 
@@ -3475,7 +3471,7 @@ class AetherRaidTacticsBoard {
 
         // ターンワイド状態の評価と保存
         {
-            for (let unit of targetUnits) {
+            for (let unit of allUnits) {
                 unit.clearPerTurnStatuses();
 
                 // すり抜け状態の更新
@@ -3486,7 +3482,7 @@ class AetherRaidTacticsBoard {
                 // 敵への距離を更新
                 this.__updateDistanceFromClosestEnemy(unit);
             }
-            this.__updateMovementOrders(targetUnits);
+            this.__updateMovementOrders(allUnits);
         }
 
         // 障害物リストの作成
@@ -3494,8 +3490,9 @@ class AetherRaidTacticsBoard {
 
         // 脅威の評価
         this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
+        this.__updateEnemyThreatStatusesForAll(enemyUnits, targetUnits);
 
-        this.__updateChaseTargetTiles(targetUnits);
+        this.__updateChaseTargetTiles(allUnits);
 
         // ターン開始時の移動値を記録
         for (let unit of this.enumerateAllUnitsOnMap(x => true)) {
@@ -3668,6 +3665,25 @@ class AetherRaidTacticsBoard {
             ++count;
         }
         return count;
+    }
+
+    simulateBeginningOfTurn() {
+        if (g_appData.currentTurn == this.vm.maxTurn) {
+            return;
+        }
+        let self = this;
+        this.__enqueueCommand("ターン開始", function () {
+            g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Ally;
+            ++g_appData.globalBattleContext.currentTurn;
+            if (g_appData.currentTurn == 1) {
+                // 戦闘開始
+                for (let unit of g_appData.units) {
+                    unit.resetAllState();
+                }
+            }
+            self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
+            self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList());
+        });
     }
 
     simulateBeginningOfAllyTurn() {
@@ -8508,15 +8524,14 @@ function updateMapUi() {
     }
 
     g_appData.map.updateTiles();
-    let table = g_appData.map.toTable();
+    let table = g_appData.map.toTable(g_appData.globalBattleContext.currentPhaseType);
     table.onDragOverEvent = "f_dragover(event)";
     table.onDropEvent = "f_drop(event)";
     table.onDragEndEvent = "table_dragend(event)";
     if (isSummonerDuelsMap(g_appData.map._type)) {
+        // 得点エリアを表示
         let scale = 4 / 10;
         let verticalPercent = 100 * (1 / 2 + g_appData.globalBattleContext.summonerDuelsPointAreaOffset * 1 / 6);
-        console.log("verticalPercent=" + verticalPercent);
-
         let bgImageInfo = new BackgroundImageInfo(
             g_summonerDuelsMapRoot + "SummonerDuels_PointArea.png",
             `50% ${verticalPercent.toFixed()}%`,

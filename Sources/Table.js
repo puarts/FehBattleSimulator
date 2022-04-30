@@ -44,6 +44,7 @@ class Table {
     constructor(columnCount, rowCount) {
         this._columnCount = 0;
         this._rowCount = 0;
+        /** @type {Cell[]} */
         this._cells = [];
         this.resize(columnCount, rowCount);
         this._onDropEvent = null;
@@ -100,7 +101,11 @@ class Table {
     get rowCount() {
         return this._rowCount;
     }
-
+    /**
+     * @param  {number} x
+     * @param  {number} y
+     * @returns {Cell}
+     */
     getCell(x, y) {
         return this._cells[y * this._columnCount + x];
     }

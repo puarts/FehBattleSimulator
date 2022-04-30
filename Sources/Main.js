@@ -8573,7 +8573,7 @@ function updateMapUi() {
     }
 
     g_appData.map.updateTiles();
-    let table = g_appData.map.toTable();
+    let table = g_appData.map.toTable(g_appData.currentTurnType);
     table.onDragOverEvent = "f_dragover(event)";
     table.onDropEvent = "f_drop(event)";
     table.onDragEndEvent = "table_dragend(event)";

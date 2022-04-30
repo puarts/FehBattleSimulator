@@ -6,6 +6,9 @@ class GlobalBattleContext {
         // 現在の手番
         this.currentPhase = 0;
         this.currentPhaseType = UnitGroupType.Ally;
+        this.restOfPhaseCounts = {};
+        this.restOfPhaseCounts[UnitGroupType.Ally] = 0;
+        this.restOfPhaseCounts[UnitGroupType.Enemy] = 0;
 
         // 英雄決闘の得点エリアのオフセット
         this.summonerDuelsPointAreaOffset = 0;

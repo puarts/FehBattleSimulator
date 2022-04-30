@@ -2359,8 +2359,11 @@ class BattleMap {
         }
     }
 
-    /// マップを Table に変換します。
-    toTable() {
+    /**
+     * マップを Table に変換します。
+     * @param  {UnitGroupType} currentPhaseType
+     */
+    toTable(currentPhaseType) {
         let isMapHeaderEnabled = this.isHeaderEnabled;
         if (isMapHeaderEnabled) {
             this.cellOffsetX = 1;
@@ -2485,7 +2488,7 @@ class BattleMap {
             switch (unit.groupId) {
                 case UnitGroupType.Enemy:
                     {
-                        this.__putUnitIconToCell(cell, unit);
+                        this.__putUnitIconToCell(cell, unit, currentPhaseType);
                         // 敵への最短距離を表示
                         if (this.showClosestDistanceToEnemy) {
                             tile.closestDistanceToEnemy = tile.calculateDistanceToClosestEnemyTile(unit);
@@ -2494,7 +2497,7 @@ class BattleMap {
                     break;
                 case UnitGroupType.Ally:
                     {
-                        this.__putUnitIconToCell(cell, unit);
+                        this.__putUnitIconToCell(cell, unit, currentPhaseType);
                     }
                     break;
             }
@@ -2649,8 +2652,12 @@ class BattleMap {
             }
         }
     }
-
-    __putUnitIconToCell(cell, unit) {
+    /**
+     * @param  {Cell} cell
+     * @param  {Unit} unit
+     * @param  {UnitGroupType} currentPhaseType
+     */
+    __putUnitIconToCell(cell, unit, currentPhaseType) {
         let style = "";
         let color = "#bbeeff";
         {
@@ -2665,7 +2672,7 @@ class BattleMap {
             }
         }
 
-        if (unit.isActionDone) {
+        if (unit.isActionDone || currentPhaseType != unit.groupId) {
             style += "filter:grayscale(100%);filter:brightness(70%);";
         }
 

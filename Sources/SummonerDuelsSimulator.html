@@ -497,21 +497,23 @@
                                                     <td style="padding-left:10px;padding-right: 10px;">
                                                         <span style="font-size:12px;font-weight: bold;">
                                                             <span
-                                                                v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally"
-                                                                style="color:blue;">Player Phase<br />ターン
-                                                                {{globalBattleContext.currentTurn}} /
-                                                                {{g_appData.maxTurn}}</span>
+                                                                v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally"
+                                                                style="color:blue;">Player Phase<br />残り手番
+                                                                {{globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally]}}
+                                                                /
+                                                                {{6}}</span>
                                                             <span
-                                                                v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Enemy"
-                                                                style="color:red;">Enemy Phase<br />ターン
-                                                                {{globalBattleContext.currentTurn}} /
-                                                                {{g_appData.maxTurn}}</span>
+                                                                v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy"
+                                                                style="color:red;">Enemy Phase<br />残り手番
+                                                                {{globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy]}}
+                                                                /
+                                                                {{6}}</span>
                                                             <span v-if="globalBattleContext.currentTurn == 0">
                                                                 <input type="button"
                                                                     style="width: 140px;height:34px; background-color: #ffffff; border-style: none;
                                                                             background-size:cover;background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/StartBattle.png) ;cursor: pointer;"
                                                                     class="buttonUi imageButton"
-                                                                    @click="g_app.clearLog();g_app.simulateBeginningOfAllyTurn();g_app.__executeAllCommands(g_app.commandQueuePerAction, 0);updateAllUi();">
+                                                                    @click="g_app.clearLog();g_app.simulateBeginningOfTurn();g_app.__executeAllCommands(g_app.commandQueuePerAction, 0);updateAllUi();">
                                                             </span>
                                                         </span>
                                                     </td>
