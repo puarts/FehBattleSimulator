@@ -25,6 +25,20 @@ function updateCellBgColor(posX, posY, bgColor, boderColor = null) {
     }
 }
 
+class BackgroundImageInfo {
+    constructor(url, postionStyle = "left top", sizeStyle = "contain", repeats = false) {
+        this.url = url;
+        this.positionStyle = postionStyle;
+        this.sizeStyle = sizeStyle;
+        this.repeats = repeats;
+    }
+
+    toStyle() {
+        let repeat = this.repeats ? "repeat" : "no-repeat";
+        return `url(${this.url}) ${this.positionStyle} / ${this.sizeStyle} ${repeat}`;
+    }
+}
+
 /// HTMLのテーブルを構築するためのクラスです。
 class Table {
     constructor(columnCount, rowCount) {
@@ -37,7 +51,8 @@ class Table {
         this.onDragEndEvent = null;
         this._cellVerticalAlign = null;
         this._tableElem = null;
-        this.backgroundImage = "none";
+        /** @type {BackgroundImageInfo[]} */
+        this.backgroundImages = [];
     }
 
     resize(columnCount, rowCount) {
@@ -120,8 +135,13 @@ class Table {
 
         {
             let style = "";
-            style += `background-image:${this.backgroundImage};`;
-            style += "background-size: contain;";
+            if (this.backgroundImages.length > 0) {
+                let bgStyle = this.backgroundImages.map(x => x.toStyle()).join(",");
+                style += `background:${bgStyle};`;
+            }
+
+            // style += `background-image:${this.backgroundImage};`;
+            // style += "background-size: contain;";
             // style += "border-collapse: separate;";
             style += "border-collapse: collapse;";
             style += "border-spacing: 0px;";

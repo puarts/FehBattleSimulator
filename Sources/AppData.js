@@ -1538,7 +1538,7 @@ class AppData extends UnitManager {
                 this.map.setMapSizeToPawnsOfLoki();
                 break;
             case GameMode.SummonerDuels:
-                this.map.isBackgroundImageEnabled = false;
+                this.map.isBackgroundImageEnabled = true;
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToLarge();
                 if (!isSummonerDuelsMap(this.mapKind)) {

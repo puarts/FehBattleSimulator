@@ -561,6 +561,45 @@ function tileTypeToColor(type) {
     }
 }
 
+function getMapBackgroundImageInfos(mapType) {
+    return Array.from(enumerateMapBackgroundImageInfos(mapType));
+}
+
+/**
+ * @param  {MapType} mapType
+ * @returns {String[]}
+ */
+function* enumerateMapBackgroundImageInfos(mapType) {
+    const summonerDuelsMapRoot = g_corsImageRootPath + "Maps/SummonerDuels/";
+    if (isSummonerDuelsMap(mapType)) {
+        const cornerSize = `${(100 * 2 / 8).toFixed()}% ${(100 * 2 / 10).toFixed()}%`;
+        yield new BackgroundImageInfo(
+            summonerDuelsMapRoot + "SummonerDuels_Corner1.png",
+            `left top`, cornerSize
+        );
+        yield new BackgroundImageInfo(
+            summonerDuelsMapRoot + "SummonerDuels_Corner2.png",
+            `right bottom`, cornerSize
+        );
+        yield new BackgroundImageInfo(
+            summonerDuelsMapRoot + "SummonerDuels_PointArea.png",
+            `center`,
+            `${(100 * 6 / 8).toFixed()}% ${(100 * 4 / 10).toFixed()}%`
+        );
+    }
+    switch (mapType) {
+        case MapType.SummonersDuel_1:
+            yield new BackgroundImageInfo(summonerDuelsMapRoot + "Map_ZR001.png");
+            break;
+        default:
+            yield new BackgroundImageInfo(getMapBackgroundImage(mapType));
+    }
+
+    if (isSummonerDuelsMap(mapType)) {
+        yield new BackgroundImageInfo(summonerDuelsMapRoot + "Rival_Domains_Wave.webp");
+    }
+}
+
 function getMapBackgroundImage(mapKind) {
     const root = g_imageRootPath + "TableBackground/";
     const arenaRoot = g_imageRootPath + "Maps/";
@@ -654,6 +693,7 @@ class BattleMap {
         this._showEnemyAttackRange = false;
         this._showAllyAttackRange = false;
         this._showClosestDistanceToEnemy = false;
+        /** @type {Table} */
         this._table = null;
         this.cellOffsetX = 0;
         this.cellOffsetY = 0;
@@ -2315,10 +2355,15 @@ class BattleMap {
         let table = this._table;
 
         if (this.isBackgroundImageEnabled) {
-            table.backgroundImage = `url(${getMapBackgroundImage(this._type)})`;
+            try {
+                table.backgroundImages = getMapBackgroundImageInfos(this._type);
+            } catch (error) {
+                // 画像が見つからない場合はエラー出しつつ無視
+                console.error(error);
+            }
         }
         else {
-            table.backgroundImage = "none";
+            table.backgroundImages = [];
         }
 
         // マップをテーブル化
