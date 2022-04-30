@@ -1364,7 +1364,7 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
                 [9, 6], [9, 7],
             ]);
             break;
-        case MapType.SummonersDuel_EnclosedRuins:
+        case MapType.SummonersDuel_5:
             map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 4], [0, 6], [1, 0], [1, 1], [1, 7], [8, 0], [8, 6], [8, 7], [9, 1], [9, 3], [9, 5], [9, 6], [9, 7],]);
             map.__placeBreakableWallsByPosYX([[0, 5], [0, 7], [2, 0], [7, 7], [9, 0], [9, 2],], BreakableWallIconType.Wall);
             map.__setTileTypesByPosYX([[4, 4], [5, 3],], TileType.Forest);
@@ -1374,7 +1374,7 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
                 map.__placeAllyUnitsByPosYX([[6, 6], [6, 7], [7, 6], [8, 5], [9, 4],]);
             }
             break;
-        case MapType.SummonersDuel_MountainPass:
+        case MapType.SummonersDuel_13:
             map.__placeWallsByPosYX([[0, 0], [0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [8, 6], [8, 7], [9, 4], [9, 5], [9, 6], [9, 7],]);
             map.__setTileTypesByPosYX([[0, 4], [0, 7], [2, 0], [2, 1], [3, 4], [3, 7], [4, 0], [4, 1], [5, 6], [5, 7], [6, 0], [6, 3], [7, 6], [7, 7], [9, 0], [9, 3],], TileType.Flier);
             map.__setTileTypesByPosYX([[4, 4], [5, 3],], TileType.Trench);
@@ -1383,7 +1383,7 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
                 map.__placeAllyUnitsByPosYX([[0, 5], [0, 6], [1, 6], [1, 7], [2, 7],]);
             }
             break;
-        case MapType.SummonersDuel_Bridges:
+        case MapType.SummonersDuel_4:
             map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
             map.__placeBreakableWallsByPosYX([[1, 2], [1, 3], [2, 0], [7, 7], [8, 4], [8, 5],], BreakableWallIconType.Wall);
             map.__setTileTypesByPosYX([[2, 3], [4, 5], [5, 2], [7, 4],], TileType.Forest);
@@ -1395,7 +1395,7 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
             }
             break;
         // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR014
-        case MapType.SummonersDuel_ShiftingSands:
+        case MapType.SummonersDuel_14:
             map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [8, 6], [8, 7], [9, 6], [9, 7],]);
             map.__setTileTypesByPosYX([[3, 2], [6, 5],], TileType.Forest);
             map.__setTileTypesByPosYX([[0, 7], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [3, 5], [6, 2], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [9, 0],], TileType.Flier);
@@ -1406,7 +1406,7 @@ function __resetBattleMapPlacementForSummonerDuels(map, type, withUnits) {
             }
             break;
         // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR006
-        case MapType.SummonersDuel_DesertTrees:
+        case MapType.SummonersDuel_6:
             map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1], [2, 4], [7, 3], [8, 6], [8, 7], [9, 6], [9, 7],]);
             map.__setTileTypesByPosYX([[0, 2], [0, 6], [1, 7], [2, 0], [2, 3], [4, 3], [5, 4], [7, 4], [7, 7], [8, 0], [9, 1], [9, 5],], TileType.Forest);
             map.__setTileTypesByPosYX([[0, 7], [3, 5], [6, 2], [9, 0],], TileType.Flier);

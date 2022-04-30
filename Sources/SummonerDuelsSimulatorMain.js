@@ -8512,6 +8512,18 @@ function updateMapUi() {
     table.onDragOverEvent = "f_dragover(event)";
     table.onDropEvent = "f_drop(event)";
     table.onDragEndEvent = "table_dragend(event)";
+    if (isSummonerDuelsMap(g_appData.map._type)) {
+        let scale = 4 / 10;
+        let verticalPercent = 100 * (1 / 2 + g_appData.globalBattleContext.summonerDuelsPointAreaOffset * 1 / 6);
+        console.log("verticalPercent=" + verticalPercent);
+
+        let bgImageInfo = new BackgroundImageInfo(
+            g_summonerDuelsMapRoot + "SummonerDuels_PointArea.png",
+            `50% ${verticalPercent.toFixed()}%`,
+            `${(100 * 6 / 8).toFixed()}% ${(100 * scale).toFixed()}%`
+        );
+        table.backgroundImages.splice(0, 0, bgImageInfo);
+    }
     let tableElem = table.updateTableElement();
     if (mapArea.childElementCount == 0) {
         mapArea.appendChild(tableElem);

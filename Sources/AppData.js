@@ -1545,7 +1545,7 @@ class AppData extends UnitManager {
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToLarge();
                 if (!isSummonerDuelsMap(this.mapKind)) {
-                    this.setMapKind(MapType.SummonersDuel_EnclosedRuins);
+                    this.setMapKind(MapType.SummonersDuel_5);
                 }
                 break;
             default:

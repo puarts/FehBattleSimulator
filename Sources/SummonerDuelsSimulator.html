@@ -719,6 +719,8 @@
                                     @click="$('#autoClearDialog').dialog('open');">
                                 <input type="button" value="全アイテム情報出力" style="width:140px" class="buttonUi"
                                     @click="g_app.logAllItemInfos()">
+                                <input type="number" v-model="globalBattleContext.summonerDuelsPointAreaOffset"
+                                    @click="updateAllUi()">
                             </td>
                         </tr>
                     </table>

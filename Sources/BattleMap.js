@@ -87,52 +87,52 @@ const MapType = {
 
     // 英雄決闘
     SummonersDuel_Default: MapType_SummonerDuelsOffset + 0, // マップ作成用の更地
-    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR005
-    SummonersDuel_EnclosedRuins: MapType_SummonerDuelsOffset + 1, // 崩れた壁に囲まれた地
-    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR013
-    SummonersDuel_MountainPass: MapType_SummonerDuelsOffset + 2, // 山間の道
-    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR004
-    SummonersDuel_Bridges: MapType_SummonerDuelsOffset + 3, // 東西の端の橋
-    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR014
-    SummonersDuel_ShiftingSands: MapType_SummonerDuelsOffset + 4, // 蛇行する砂漠
-    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR006
-    SummonersDuel_DesertTrees: MapType_SummonerDuelsOffset + 5, // 樹々生い茂る砂漠
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR001
-    SummonersDuel_1: MapType_SummonerDuelsOffset + 6,
+    SummonersDuel_1: MapType_SummonerDuelsOffset + 1,
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR002
-    SummonersDuel_2: MapType_SummonerDuelsOffset + 7,
+    SummonersDuel_2: MapType_SummonerDuelsOffset + 2,
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR003
-    SummonersDuel_3: MapType_SummonerDuelsOffset + 8,
+    SummonersDuel_3: MapType_SummonerDuelsOffset + 3,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR004
+    SummonersDuel_4: MapType_SummonerDuelsOffset + 4, // 東西の端の橋
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR005
+    SummonersDuel_5: MapType_SummonerDuelsOffset + 5, // 崩れた壁に囲まれた地
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR006
+    SummonersDuel_6: MapType_SummonerDuelsOffset + 6, // 樹々生い茂る砂漠
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR007
-    SummonersDuel_7: MapType_SummonerDuelsOffset + 9,
+    SummonersDuel_7: MapType_SummonerDuelsOffset + 7,
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR008
-    SummonersDuel_8: MapType_SummonerDuelsOffset + 10,
+    SummonersDuel_8: MapType_SummonerDuelsOffset + 8,
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR009
-    SummonersDuel_9: MapType_SummonerDuelsOffset + 11,
+    SummonersDuel_9: MapType_SummonerDuelsOffset + 9,
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR010
-    SummonersDuel_10: MapType_SummonerDuelsOffset + 12,
+    SummonersDuel_10: MapType_SummonerDuelsOffset + 10,
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR011
-    SummonersDuel_11: MapType_SummonerDuelsOffset + 13,
+    SummonersDuel_11: MapType_SummonerDuelsOffset + 11,
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR012
-    SummonersDuel_12: MapType_SummonerDuelsOffset + 14,
+    SummonersDuel_12: MapType_SummonerDuelsOffset + 12,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR013
+    SummonersDuel_13: MapType_SummonerDuelsOffset + 13, // 山間の道
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR014
+    SummonersDuel_14: MapType_SummonerDuelsOffset + 14, // 蛇行する砂漠
 };
 
 const SummonerDuelsMapKindOptions = [
     { label: "更地(マップ作成用)", value: MapType.SummonersDuel_Default },
-    { label: "崩れた壁に囲まれた地", value: MapType.SummonersDuel_EnclosedRuins },
-    { label: "山間の道", value: MapType.SummonersDuel_MountainPass },
-    { label: "東西の端の橋", value: MapType.SummonersDuel_Bridges },
-    { label: "蛇行する砂漠", value: MapType.SummonersDuel_ShiftingSands },
-    { label: "樹々生い茂る砂漠", value: MapType.SummonersDuel_DesertTrees },
-    { label: "01", value: MapType.SummonersDuel_1 },
-    { label: "02", value: MapType.SummonersDuel_2 },
-    { label: "03", value: MapType.SummonersDuel_3 },
-    { label: "07", value: MapType.SummonersDuel_7 },
-    { label: "08", value: MapType.SummonersDuel_8 },
-    { label: "09", value: MapType.SummonersDuel_9 },
-    { label: "10", value: MapType.SummonersDuel_10 },
-    { label: "11", value: MapType.SummonersDuel_11 },
-    { label: "12", value: MapType.SummonersDuel_12 },
+    { label: "細く長い川", value: MapType.SummonersDuel_1 },
+    { label: "並ぶ樹と壁", value: MapType.SummonersDuel_2 },
+    { label: "壁に囲まれた地", value: MapType.SummonersDuel_3 },
+    { label: "東西の端の橋", value: MapType.SummonersDuel_4 },
+    { label: "崩れた壁に囲まれた地", value: MapType.SummonersDuel_5 },
+    { label: "樹々生い茂る砂漠", value: MapType.SummonersDuel_6 },
+    { label: "斜めに伸びた床", value: MapType.SummonersDuel_7 },
+    { label: "小さな部屋", value: MapType.SummonersDuel_8 },
+    { label: "細く短い迂回路", value: MapType.SummonersDuel_9 },
+    { label: "四つの部屋", value: MapType.SummonersDuel_10 },
+    { label: "広大な草原", value: MapType.SummonersDuel_11 },
+    { label: "水没した床", value: MapType.SummonersDuel_12 },
+    { label: "山間の道", value: MapType.SummonersDuel_13 },
+    { label: "蛇行する砂漠", value: MapType.SummonersDuel_14 },
 ];
 
 
@@ -582,11 +582,6 @@ function* enumerateMapBackgroundImageInfos(mapType) {
             g_summonerDuelsMapRoot + "SummonerDuels_Corner2.png",
             `right bottom`, cornerSize
         );
-        yield new BackgroundImageInfo(
-            g_summonerDuelsMapRoot + "SummonerDuels_PointArea.png",
-            `center`,
-            `${(100 * 6 / 8).toFixed()}% ${(100 * 4 / 10).toFixed()}%`
-        );
     }
 
     yield new BackgroundImageInfo(getMapBackgroundImage(mapType));
@@ -654,11 +649,11 @@ function getMapBackgroundImage(mapKind) {
         case MapType.Arena_50: return arenaRoot + "Arena_50.png";
         case MapType.SummonersDuel_1: return g_summonerDuelsMapRoot + "Map_ZR001.png";
         case MapType.SummonersDuel_2: return g_summonerDuelsMapRoot + "Map_ZR002.webp";
-        case MapType.SummonersDuel_EnclosedRuins: return g_summonerDuelsMapRoot + "Map_ZR005.webp";
-        case MapType.SummonersDuel_MountainPass: return g_summonerDuelsMapRoot + "Map_ZR013.webp";
-        case MapType.SummonersDuel_Bridges: return g_summonerDuelsMapRoot + "Map_ZR004.webp";
-        case MapType.SummonersDuel_ShiftingSands: return g_summonerDuelsMapRoot + "Map_ZR014.webp";
-        case MapType.SummonersDuel_DesertTrees: return g_summonerDuelsMapRoot + "Map_ZR006.webp";
+        case MapType.SummonersDuel_5: return g_summonerDuelsMapRoot + "Map_ZR005.webp";
+        case MapType.SummonersDuel_13: return g_summonerDuelsMapRoot + "Map_ZR013.webp";
+        case MapType.SummonersDuel_4: return g_summonerDuelsMapRoot + "Map_ZR004.webp";
+        case MapType.SummonersDuel_14: return g_summonerDuelsMapRoot + "Map_ZR014.webp";
+        case MapType.SummonersDuel_6: return g_summonerDuelsMapRoot + "Map_ZR006.webp";
         case MapType.SummonersDuel_3: return g_summonerDuelsMapRoot + "Map_ZR003.webp";
         case MapType.SummonersDuel_7: return g_summonerDuelsMapRoot + "Map_ZR007.webp";
         case MapType.SummonersDuel_8: return g_summonerDuelsMapRoot + "Map_ZR008.webp";

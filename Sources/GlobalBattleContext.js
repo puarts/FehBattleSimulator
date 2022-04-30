@@ -7,6 +7,9 @@ class GlobalBattleContext {
         this.currentPhase = 0;
         this.currentPhaseType = UnitGroupType.Ally;
 
+        // 英雄決闘の得点エリアのオフセット
+        this.summonerDuelsPointAreaOffset = 0;
+
         this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
         // 戦闘でHP0になって退場になったユニットの数
         this.RemovedUnitCountsInCombat = {};
