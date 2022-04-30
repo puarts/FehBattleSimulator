@@ -89,9 +89,9 @@ const MapType = {
     SummonersDuel_Default: MapType_SummonerDuelsOffset + 0, // マップ作成用の更地
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR005
     SummonersDuel_EnclosedRuins: MapType_SummonerDuelsOffset + 1, // 崩れた壁に囲まれた地
-    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR004
-    SummonersDuel_MountainPass: MapType_SummonerDuelsOffset + 2, // 山間の道
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR013
+    SummonersDuel_MountainPass: MapType_SummonerDuelsOffset + 2, // 山間の道
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR004
     SummonersDuel_Bridges: MapType_SummonerDuelsOffset + 3, // 東西の端の橋
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR014
     SummonersDuel_ShiftingSands: MapType_SummonerDuelsOffset + 4, // 蛇行する砂漠
@@ -655,8 +655,8 @@ function getMapBackgroundImage(mapKind) {
         case MapType.SummonersDuel_1: return g_summonerDuelsMapRoot + "Map_ZR001.png";
         case MapType.SummonersDuel_2: return g_summonerDuelsMapRoot + "Map_ZR002.webp";
         case MapType.SummonersDuel_EnclosedRuins: return g_summonerDuelsMapRoot + "Map_ZR005.webp";
-        case MapType.SummonersDuel_MountainPass: return g_summonerDuelsMapRoot + "Map_ZR004.webp";
-        case MapType.SummonersDuel_Bridges: return g_summonerDuelsMapRoot + "Map_ZR013.webp";
+        case MapType.SummonersDuel_MountainPass: return g_summonerDuelsMapRoot + "Map_ZR013.webp";
+        case MapType.SummonersDuel_Bridges: return g_summonerDuelsMapRoot + "Map_ZR004.webp";
         case MapType.SummonersDuel_ShiftingSands: return g_summonerDuelsMapRoot + "Map_ZR014.webp";
         case MapType.SummonersDuel_DesertTrees: return g_summonerDuelsMapRoot + "Map_ZR006.webp";
         case MapType.SummonersDuel_3: return g_summonerDuelsMapRoot + "Map_ZR003.webp";
