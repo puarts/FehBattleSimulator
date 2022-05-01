@@ -3,10 +3,10 @@
 set battle_simulator_filenames=GlobalDefinitions,Utilities,Logger,Skill,BattleMapElement,Tile,BattleMap,BattleMapSettings,Structures,Cell,Table,HeroInfo,Unit,UnitManager,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,PostCombatSkillHander,DamageCalculatorWrapper,BeginningOfTurnSkillHandler,SkillDatabase,HeroDatabase,TurnSetting,AudioManager,AetherRaidDefensePresets,SettingManager,AppData,Main_ImageProcessing,Main_OriginalAi,Main_MouseAndTouch,BattleSimulatorBase,VueComponents
 
 rem 飛空城シミュレーター
-call %~dp0MergeSourcesAndCompress.bat %battle_simulator_filenames%,Main FehBattleSimulator
+call %~dp0MergeSourcesAndCompress.bat FehBattleSimulator %battle_simulator_filenames%,Main
 
 rem 英雄決闘シミュレーター
-call %~dp0MergeSourcesAndCompress.bat %battle_simulator_filenames%,SummonerDuelsSimulatorMain FehSummonerDuelsSimulator
+call %~dp0MergeSourcesAndCompress.bat FehSummonerDuelsSimulator %battle_simulator_filenames%,SummonerDuelsSimulatorMain
 
 rem ステータス計算機
 call %~dp0MergeSourcesAndCompress.bat FehStatusCalculator GlobalDefinitions,Utilities,Skill,BattleMapElement,HeroInfo,Unit,StatusCalcMain

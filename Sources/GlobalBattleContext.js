@@ -44,10 +44,21 @@ class GlobalBattleContext {
         return this.isAllyPhaseEnded && this.isEnemyPhaseEnded;
     }
 
-    gainSummonerDuelsPhase(endsCurrentPhaseTurn = false) {
+    endSummonerDuelsTurn() {
+        if (this.currentPhaseType == UnitGroupType.Ally) {
+            this.isAllyPhaseEnded = true;
+            this.currentPhaseType = UnitGroupType.Enemy;
+        }
+        else {
+            this.isEnemyPhaseEnded = true;
+            this.currentPhaseType = UnitGroupType.Ally;
+        }
+    }
+
+    gainSummonerDuelsPhase(endsTurnOfCurrentPhase = false) {
         switch (this.currentPhaseType) {
             case UnitGroupType.Ally:
-                if (endsCurrentPhaseTurn) {
+                if (endsTurnOfCurrentPhase) {
                     this.isAllyPhaseEnded = true;
                 }
                 else {
@@ -61,7 +72,7 @@ class GlobalBattleContext {
                 }
                 break;
             case UnitGroupType.Enemy:
-                if (endsCurrentPhaseTurn) {
+                if (endsTurnOfCurrentPhase) {
                     this.isEnemyPhaseEnded = true;
                 }
                 else {
@@ -78,12 +89,29 @@ class GlobalBattleContext {
     }
 
     initializeSummonerDuelsTurnContext() {
+        if (this.currentTurn == 1) {
+            this.currentPhaseType = UnitGroupType.Ally;
+        }
+        else {
+            this.currentPhaseType = this.__getNextFirstPhaseType();
+        }
         this.restOfPhaseCounts[UnitGroupType.Ally] = 6;
         this.restOfPhaseCounts[UnitGroupType.Enemy] = 6;
         this.isAllyPhaseEnded = false;
         this.isEnemyPhaseEnded = false;
     }
 
+    __getNextFirstPhaseType() {
+        if (this.restOfPhaseCounts[UnitGroupType.Ally] > this.restOfPhaseCounts[UnitGroupType.Enemy]) {
+            return UnitGroupType.Ally;
+        }
+        else if (this.restOfPhaseCounts[UnitGroupType.Ally] < this.restOfPhaseCounts[UnitGroupType.Enemy]) {
+            return UnitGroupType.Enemy;
+        }
+        else {
+            return this.currentPhaseType == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+        }
+    }
 
     *enumerateCurrentSeasons() {
         if (this.isLightSeason) {

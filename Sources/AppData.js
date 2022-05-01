@@ -1451,6 +1451,10 @@ class AppData extends UnitManager {
             + ValueDelimiter + boolToInt(this.isCombatOccuredInCurrentTurn)
             + ValueDelimiter + this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally]
             + ValueDelimiter + this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy]
+            + ValueDelimiter + this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy]
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isAllyPhaseEnded)
+            + ValueDelimiter + boolToInt(this.globalBattleContext.isEnemyPhaseEnded)
             ;
     }
 
@@ -1478,6 +1482,10 @@ class AppData extends UnitManager {
         if (splited[i] != undefined) { this.isCombatOccuredInCurrentTurn = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally] = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.isAllyPhaseEnded = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.isEnemyPhaseEnded = intToBool(Number(splited[i])); ++i; }
     }
 
     fromTurnWideStatusString(value) {

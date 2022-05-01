@@ -447,11 +447,11 @@
                                             <div style="position: relative;">
                                                 <div id="mapArea"></div>
                                                 <div
-                                                    style="position:absolute;top:20;left:35;color: #fff;font-size: 27px;text-align: center;">
+                                                    style="position:absolute;top:20px;left:35px;color: #fff;font-size: 27px;text-align: center;">
                                                     {{globalBattleContext.currentTurn}}
                                                 </div>
                                                 <div
-                                                    style="position:absolute;top:50;left:38;color: #fff;font-size: 13px;text-align: center;">
+                                                    style="position:absolute;top:50px;left:38px;color: #fff;font-size: 13px;text-align: center;">
                                                     {{g_appData.maxTurn}}</div>
                                             </div>
                                         </td>
@@ -498,13 +498,17 @@
                                                         <span style="font-size:12px;font-weight: bold;">
                                                             <span
                                                                 v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally"
-                                                                style="color:blue;">Player Phase<br />残り手番
-                                                                {{globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally]}}
-                                                                /
-                                                                {{6}}</span>
+                                                                style="color:blue;">Player Phase</span>
                                                             <span
                                                                 v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy"
-                                                                style="color:red;">Enemy Phase<br />残り手番
+                                                                style="color:red;">Enemy Phase</span>
+                                                            <br /><span v-if="globalBattleContext.currentTurn > 0"
+                                                                style="color:blue;">残り手番
+                                                                {{globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally]}}
+                                                                /
+                                                                {{6}}</span><br /><span
+                                                                v-if="globalBattleContext.currentTurn > 0"
+                                                                style="color:red;">残り手番
                                                                 {{globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy]}}
                                                                 /
                                                                 {{6}}</span>
@@ -622,11 +626,11 @@
                                                         class="fehButton imageButton"
                                                         @click="g_app.clearLog(); g_app.simulateAllyAction();">
                                                 </span>
-                                                <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
+                                                <span v-if="globalBattleContext.currentTurn > 0">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/EndTurn.png)"
-                                                        class="fehButton imageButton" @click="endTurn">
+                                                        class="fehButton imageButton"
+                                                        @click="g_app.endSummonerDuelsTurn()">
                                                 </span>
 
                                                 <span

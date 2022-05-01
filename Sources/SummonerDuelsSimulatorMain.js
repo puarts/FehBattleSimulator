@@ -13,7 +13,6 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
         }
         let self = this;
         this.__enqueueCommand("ターン開始", function () {
-            g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Ally;
             ++g_appData.globalBattleContext.currentTurn;
             if (g_appData.currentTurn == 1) {
                 // 戦闘開始
@@ -24,6 +23,15 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
             self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
             self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList());
         });
+    }
+
+    endSummonerDuelsTurn() {
+        this.data.globalBattleContext.endSummonerDuelsTurn();
+        if (this.data.globalBattleContext.isSummonerDuelsTurnEnded) {
+            this.simulateBeginningOfTurn();
+            this.__executeAllCommands(this.commandQueuePerAction, 0);
+        }
+        updateAllUi();
     }
 
     /**
@@ -37,9 +45,7 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
         if (this.data.globalBattleContext.isSummonerDuelsTurnEnded) {
             this.simulateBeginningOfTurn();
         }
-        else {
-            updateAllUi();
-        }
+        updateAllUi();
     }
     /**
      * @param  {Unit[]} units
