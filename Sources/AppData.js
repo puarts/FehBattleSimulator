@@ -1917,4 +1917,4 @@ class AppData extends UnitManager {
     }
 }
 
-let g_appData = new AppData();
+const g_appData = new AppData();

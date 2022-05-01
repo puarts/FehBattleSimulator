@@ -3428,7 +3428,7 @@ class BattleSimmulatorBase {
 
         this.__initReservedHpForAllUnitsOnMap();
 
-        this.executeStructuresByUnitGroupType(group, false);
+        this.executeStructuresByUnitGroupType(targetUnits[0].groupId, false);
 
         // ターン開始時スキル(通常)
         for (let unit of targetUnits) {
@@ -3456,7 +3456,7 @@ class BattleSimmulatorBase {
         this.data.__updateStatusBySkillsAndMergeForAllHeroes();
 
         // マップの更新(ターン開始時の移動マスの変化をマップに反映)
-        this.data.updateTiles();
+        this.data.map.updateTiles();
     }
 
     /**

@@ -38,6 +38,19 @@ class GlobalBattleContext {
         return this.currentTurn % 2 === 0;
     }
 
+    gainSummonerDuelsPhase() {
+        switch (this.currentPhaseType) {
+            case UnitGroupType.Ally:
+                --this.restOfPhaseCounts[UnitGroupType.Ally];
+                this.currentPhaseType = UnitGroupType.Enemy;
+                break;
+            case UnitGroupType.Enemy:
+                --this.restOfPhaseCounts[UnitGroupType.Enemy];
+                this.currentPhaseType = UnitGroupType.Ally;
+                break;
+        }
+    }
+
     initializeRestOfPhaseCounts() {
         this.restOfPhaseCounts[UnitGroupType.Ally] = 6;
         this.restOfPhaseCounts[UnitGroupType.Enemy] = 6;

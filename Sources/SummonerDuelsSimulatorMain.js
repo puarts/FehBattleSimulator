@@ -25,6 +25,15 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
             self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList());
         });
     }
+
+    /**
+     * @param  {Unit} unit
+     */
+    endUnitAction(unit) {
+        unit.endAction();
+        this.data.globalBattleContext.gainSummonerDuelsPhase();
+        updateAllUi();
+    }
 }
 
 let g_app = new SummonerDuelsSimulator();
