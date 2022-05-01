@@ -6,6 +6,8 @@ class GlobalBattleContext {
         // 現在の手番
         this.currentPhase = 0;
         this.currentPhaseType = UnitGroupType.Ally;
+
+        /** @type {{UnitGroupType,number}} */
         this.restOfPhaseCounts = {};
         this.restOfPhaseCounts[UnitGroupType.Ally] = 0;
         this.restOfPhaseCounts[UnitGroupType.Enemy] = 0;
@@ -34,6 +36,11 @@ class GlobalBattleContext {
 
     get isEvenTurn() {
         return this.currentTurn % 2 === 0;
+    }
+
+    initializeRestOfPhaseCounts() {
+        this.restOfPhaseCounts[UnitGroupType.Ally] = 6;
+        this.restOfPhaseCounts[UnitGroupType.Enemy] = 6;
     }
 
 

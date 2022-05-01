@@ -98,6 +98,8 @@ class BattleSimmulatorBase {
 
         let self = this;
 
+        this.data = g_appData;
+
         this.vm = new Vue({
             el: "#app",
             data: g_appData,
@@ -3416,57 +3418,7 @@ class BattleSimmulatorBase {
     /**
      * @param  {Unit[]} targetUnits
      */
-    __simulateBeginningOfTurn(targetUnits) {
-        g_appData.isCombatOccuredInCurrentTurn = false;
-
-        if (targetUnits.length == 0) {
-            return;
-        }
-
-        let enemyUnits = [];
-        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0])) {
-            enemyUnits.push(unit);
-        }
-
-        let allyUnits = [];
-        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnits[0])) {
-            allyUnits.push(unit);
-        }
-
-        let group = targetUnits[0].groupId;
-        for (let unit of targetUnits) {
-            unit.endAction();
-            unit.deactivateCanto();
-            unit.beginAction();
-            // console.log(unit.getNameWithGroup() + ": moveCount=" + unit.moveCount);
-
-            // 比翼や双界スキル発動カウントリセット
-            unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
-            if (unit.heroIndex == Hero.YoungPalla
-                || unit.heroIndex == Hero.DuoSigurd
-                || unit.heroIndex == Hero.DuoEirika
-                || unit.heroIndex == Hero.DuoSothis
-            ) {
-                if (this.isOddTurn) {
-                    unit.duoOrHarmonizedSkillActivationCount = 0;
-                }
-            }
-            else if (unit.heroIndex == Hero.SummerMia
-                || unit.heroIndex == Hero.SummerByleth
-                || unit.heroIndex == Hero.PirateVeronica
-                || unit.heroIndex == Hero.DuoHilda
-            ) {
-                if (g_appData.currentTurn % 3 == 1) {
-                    unit.duoOrHarmonizedSkillActivationCount = 0;
-                }
-            }
-        }
-
-        for (let unit of enemyUnits) {
-            unit.endAction();
-            unit.deactivateCanto();
-        }
-
+    __applySkillsForBeginningOfTurn(targetUnits) {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.resetOneTimeActionActivationStates();
 
@@ -3501,11 +3453,86 @@ class BattleSimmulatorBase {
         }
 
         // 化身によりステータス変化する
-        g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+        this.data.__updateStatusBySkillsAndMergeForAllHeroes();
 
         // マップの更新(ターン開始時の移動マスの変化をマップに反映)
-        g_appData.map.updateTiles();
+        this.data.updateTiles();
+    }
 
+    /**
+     * @param  {Unit[]} targetUnits
+     */
+    __simulateBeginningOfTurn(targetUnits) {
+        g_appData.isCombatOccuredInCurrentTurn = false;
+
+        if (targetUnits.length == 0) {
+            return;
+        }
+
+        let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
+
+        this.__initializeUnitsPerTurn(targetUnits);
+
+        if (this.data.gameMode != GameMode.SummonerDuels) {
+            for (let unit of enemyUnitsAgainstTarget) {
+                unit.endAction();
+                unit.deactivateCanto();
+            }
+        }
+
+        this.__applySkillsForBeginningOfTurn(targetUnits);
+
+        if (this.data.gameMode == GameMode.SummonerDuels) {
+            this.data.globalBattleContext.initializeRestOfPhaseCounts();
+
+            // 英雄決闘のAIはいらない気がするけど、一応残しておく
+            let allyUnits = Array.from(this.enumerateAllyUnitsOnMap());
+            let enemyUnits = Array.from(this.enumerateEnemyUnitsOnMap());
+            this.__initializeAiContextPerTurn(allyUnits, enemyUnits);
+            this.__initializeAiContextPerTurn(enemyUnits, allyUnits);
+        }
+        else {
+            this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
+        }
+    }
+    /**
+     * @param  {Unit[]} targetUnits
+     */
+    __initializeUnitsPerTurn(targetUnits) {
+        for (let unit of targetUnits) {
+            unit.endAction();
+            unit.deactivateCanto();
+            unit.beginAction();
+            // console.log(unit.getNameWithGroup() + ": moveCount=" + unit.moveCount);
+
+            // 比翼や双界スキル発動カウントリセット
+            unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
+            if (unit.heroIndex == Hero.YoungPalla
+                || unit.heroIndex == Hero.DuoSigurd
+                || unit.heroIndex == Hero.DuoEirika
+                || unit.heroIndex == Hero.DuoSothis
+            ) {
+                if (this.isOddTurn) {
+                    unit.duoOrHarmonizedSkillActivationCount = 0;
+                }
+            }
+            else if (unit.heroIndex == Hero.SummerMia
+                || unit.heroIndex == Hero.SummerByleth
+                || unit.heroIndex == Hero.PirateVeronica
+                || unit.heroIndex == Hero.DuoHilda
+            ) {
+                if (this.data.currentTurn % 3 == 1) {
+                    unit.duoOrHarmonizedSkillActivationCount = 0;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param  {Unit[]} targetUnits
+     * @param  {Unit[]} enemyUnits
+     */
+    __initializeAiContextPerTurn(targetUnits, enemyUnits) {
         // ターンワイド状態の評価と保存
         {
             for (let unit of targetUnits) {
@@ -3531,7 +3558,7 @@ class BattleSimmulatorBase {
         this.__updateChaseTargetTiles(targetUnits);
 
         // ターン開始時の移動値を記録
-        for (let unit of this.enumerateAllUnitsOnMap(x => true)) {
+        for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.moveCountAtBeginningOfTurn = unit.moveCount;
         }
 
@@ -3549,13 +3576,7 @@ class BattleSimmulatorBase {
         return enemy;
     }
     __getOnMapAllyUnitList() {
-        let units = [];
-        for (let unit of this.enumerateAllyUnits()) {
-            if (unit.isOnMap) {
-                units.push(unit);
-            }
-        }
-        return units;
+        return Array.from(this.enumerateAllyUnitsOnMap());
     }
 
 
