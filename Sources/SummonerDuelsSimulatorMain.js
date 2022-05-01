@@ -27,12 +27,30 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
     }
 
     /**
-     * @param  {Unit} unit
+     * @param  {Unit} targetUnit
      */
-    endUnitAction(unit) {
-        unit.endAction();
-        this.data.globalBattleContext.gainSummonerDuelsPhase();
-        updateAllUi();
+    endUnitAction(targetUnit) {
+        targetUnit.endAction();
+        let hasAnyAction = this.__hasAnyActions(this.enumerateUnitsInTheSameGroupOnMap(targetUnit));
+        let endsCurrentPhase = !hasAnyAction;
+        this.data.globalBattleContext.gainSummonerDuelsPhase(endsCurrentPhase);
+        if (this.data.globalBattleContext.isSummonerDuelsTurnEnded) {
+            this.simulateBeginningOfTurn();
+        }
+        else {
+            updateAllUi();
+        }
+    }
+    /**
+     * @param  {Unit[]} units
+     */
+    __hasAnyActions(units) {
+        for (let unit of units) {
+            if (!unit.isActionDone || this.canActivateDuoSkillOrHarmonizedSkill(unit)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

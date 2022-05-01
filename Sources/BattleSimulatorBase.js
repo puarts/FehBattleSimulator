@@ -98,6 +98,7 @@ class BattleSimmulatorBase {
 
         let self = this;
 
+        /** @type {AppData} */
         this.data = g_appData;
 
         this.vm = new Vue({
@@ -3483,7 +3484,7 @@ class BattleSimmulatorBase {
         this.__applySkillsForBeginningOfTurn(targetUnits);
 
         if (this.data.gameMode == GameMode.SummonerDuels) {
-            this.data.globalBattleContext.initializeRestOfPhaseCounts();
+            this.data.globalBattleContext.initializeSummonerDuelsTurnContext();
 
             // 英雄決闘のAIはいらない気がするけど、一応残しておく
             let allyUnits = Array.from(this.enumerateAllyUnitsOnMap());

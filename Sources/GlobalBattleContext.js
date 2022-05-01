@@ -11,6 +11,8 @@ class GlobalBattleContext {
         this.restOfPhaseCounts = {};
         this.restOfPhaseCounts[UnitGroupType.Ally] = 0;
         this.restOfPhaseCounts[UnitGroupType.Enemy] = 0;
+        this.isAllyPhaseEnded = false;
+        this.isEnemyPhaseEnded = false;
 
         // 英雄決闘の得点エリアのオフセット
         this.summonerDuelsPointAreaOffset = 0;
@@ -38,22 +40,48 @@ class GlobalBattleContext {
         return this.currentTurn % 2 === 0;
     }
 
-    gainSummonerDuelsPhase() {
+    get isSummonerDuelsTurnEnded() {
+        return this.isAllyPhaseEnded && this.isEnemyPhaseEnded;
+    }
+
+    gainSummonerDuelsPhase(endsCurrentPhaseTurn = false) {
         switch (this.currentPhaseType) {
             case UnitGroupType.Ally:
-                --this.restOfPhaseCounts[UnitGroupType.Ally];
-                this.currentPhaseType = UnitGroupType.Enemy;
+                if (endsCurrentPhaseTurn) {
+                    this.isAllyPhaseEnded = true;
+                }
+                else {
+                    --this.restOfPhaseCounts[UnitGroupType.Ally];
+                    if (this.restOfPhaseCounts[UnitGroupType.Ally] == 0) {
+                        this.isAllyPhaseEnded = true;
+                    }
+                }
+                if (!this.isEnemyPhaseEnded) {
+                    this.currentPhaseType = UnitGroupType.Enemy;
+                }
                 break;
             case UnitGroupType.Enemy:
-                --this.restOfPhaseCounts[UnitGroupType.Enemy];
-                this.currentPhaseType = UnitGroupType.Ally;
+                if (endsCurrentPhaseTurn) {
+                    this.isEnemyPhaseEnded = true;
+                }
+                else {
+                    --this.restOfPhaseCounts[UnitGroupType.Enemy];
+                    if (this.restOfPhaseCounts[UnitGroupType.Enemy] == 0) {
+                        this.isEnemyPhaseEnded = true;
+                    }
+                }
+                if (!this.isAllyPhaseEnded) {
+                    this.currentPhaseType = UnitGroupType.Ally;
+                }
                 break;
         }
     }
 
-    initializeRestOfPhaseCounts() {
+    initializeSummonerDuelsTurnContext() {
         this.restOfPhaseCounts[UnitGroupType.Ally] = 6;
         this.restOfPhaseCounts[UnitGroupType.Enemy] = 6;
+        this.isAllyPhaseEnded = false;
+        this.isEnemyPhaseEnded = false;
     }
 
 
