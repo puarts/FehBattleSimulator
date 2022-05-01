@@ -146,7 +146,7 @@ class OriginalAi {
         let self = g_app;
         let targetGroup = UnitGroupType.Ally;
         let enemyGroup = UnitGroupType.Enemy;
-        if (self.vm.currentTurnType == enemyGroup) {
+        if (self.vm.globalBattleContext.currentPhaseType == enemyGroup) {
             return false;
         }
 
@@ -562,7 +562,7 @@ class OriginalAi {
                 self.map.placeUnitForcibly(unit, snapshot.posX, snapshot.posY);
             }
 
-            while (self.vm.currentTurnType == UnitGroupType.Ally) {
+            while (self.vm.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
                 let isAllUnitActionDone = this.__origAi_simulate();
                 if (isAllUnitActionDone) {
                     self.__enqueueEndAllUnitActionCommand(UnitGroupType.Ally);
@@ -570,7 +570,7 @@ class OriginalAi {
                 self.__executeAllCommands(self.commandQueuePerAction, 0);
             }
 
-            while (self.vm.currentTurnType == UnitGroupType.Enemy) {
+            while (self.vm.globalBattleContext.currentPhaseType == UnitGroupType.Enemy) {
                 let isAllUnitActionDone = self.__simulateEnemyAction();
                 if (isAllUnitActionDone) {
                     self.__enqueueEndAllUnitActionCommand(UnitGroupType.Enemy);
@@ -710,7 +710,7 @@ class OriginalAi {
         // {
         //     let targetGroup = UnitGroupType.Ally;
         //     let enemyGroup = UnitGroupType.Enemy;
-        //     if (self.vm.currentTurnType == enemyGroup) {
+        //     if (self.vm.globalBattleContext.currentPhaseType == enemyGroup) {
         //         return false;
         //     }
 

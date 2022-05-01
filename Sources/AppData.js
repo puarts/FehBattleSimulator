@@ -264,7 +264,6 @@ class AppData extends UnitManager {
         // その他
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
-        this.currentTurnType = UnitGroupType.Ally;
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;
@@ -1445,7 +1444,7 @@ class AppData extends UnitManager {
 
 
     perTurnStatusToString() {
-        return this.currentTurnType
+        return this.globalBattleContext.currentPhaseType
             + ValueDelimiter + boolToInt(this.isEnemyActionTriggered)
             + ValueDelimiter + this.currentTurn
             + ValueDelimiter + this.battileItemsToString()
@@ -1472,7 +1471,7 @@ class AppData extends UnitManager {
     fromPerTurnStatusString(value) {
         let splited = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.currentTurnType = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.globalBattleContext.currentPhaseType = Number(splited[i]); ++i; }
         this.isEnemyActionTriggered = intToBool(Number(splited[i])); ++i;
         if (Number.isInteger(Number(splited[i]))) { this.currentTurn = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.setBattleItemsFromString(splited[i]); ++i; }

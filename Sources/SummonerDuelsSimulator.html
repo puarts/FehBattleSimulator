@@ -613,24 +613,24 @@
                                                     style="background-image: url(https://puarts.com/images/dummy.png) "
                                                     class="lazy fehButton imageButton"
                                                     data-src="https://puarts.com/AetherRaidTacticsBoard/images/LoadState.png"
-                                                    @click="g_app.clearSimpleLog();loadSettings();">
+                                                    @click="g_app.clearSimpleLog();loadSettings();g_appData.setGameMode(GameMode.SummonerDuels);">
 
                                                 <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/AutoPlay.png) "
                                                         class="fehButton imageButton"
                                                         @click="g_app.clearLog(); g_app.simulateAllyAction();">
                                                 </span>
                                                 <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/EndTurn.png)"
                                                         class="fehButton imageButton" @click="endTurn">
                                                 </span>
 
                                                 <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Enemy">
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
                                                         class="fehButton imageButton"
@@ -2295,6 +2295,7 @@
                 loadsDefenceSettings,
                 loadsMapSettings,
                 compressMode);
+            g_appData.setGameMode(GameMode.SummonerDuels);
             updateAllUi();
             var closeDialog = $("#closesDialogAfterImport")[0].checked;
             if (closeDialog) {
@@ -2429,6 +2430,7 @@
                 "Main_ImageProcessing.js",
                 "Main_OriginalAi.js",
                 "Main_MouseAndTouch.js",
+                "BattleSimulatorBase.js",
                 "SummonerDuelsSimulatorMain.js",
                 "VueComponents.js",
                 "SampleSkillInfos.js",

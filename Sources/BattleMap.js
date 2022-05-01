@@ -647,6 +647,7 @@ function getMapBackgroundImage(mapKind) {
         case MapType.Arena_48: return arenaRoot + "Arena_48.png";
         case MapType.Arena_49: return arenaRoot + "Arena_49.png";
         case MapType.Arena_50: return arenaRoot + "Arena_50.png";
+        case MapType.SummonersDuel_Default: return g_summonerDuelsMapRoot + "Default.png";
         case MapType.SummonersDuel_1: return g_summonerDuelsMapRoot + "Map_ZR001.png";
         case MapType.SummonersDuel_2: return g_summonerDuelsMapRoot + "Map_ZR002.webp";
         case MapType.SummonersDuel_5: return g_summonerDuelsMapRoot + "Map_ZR005.webp";

@@ -2348,11 +2348,11 @@ class BattleSimmulatorBase {
             return;
         }
         g_appData.commandQueuePerAction.clear();
-        if (g_appData.currentTurn > 0 && g_appData.currentTurnType == UnitGroupType.Ally) {
-            g_appData.currentTurnType = UnitGroupType.Enemy;
+        if (g_appData.currentTurn > 0 && g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
+            g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Enemy;
             return;
         }
-        g_appData.currentTurnType = UnitGroupType.Ally;
+        g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Ally;
         ++g_appData.globalBattleContext.currentTurn;
         this.__turnChanged();
     }
@@ -2373,11 +2373,11 @@ class BattleSimmulatorBase {
             return;
         }
         g_appData.commandQueuePerAction.clear();
-        if (g_appData.currentTurn > 0 && g_appData.currentTurnType == UnitGroupType.Enemy) {
-            g_appData.currentTurnType = UnitGroupType.Ally;
+        if (g_appData.currentTurn > 0 && g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Enemy) {
+            g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Ally;
             return;
         }
-        g_appData.currentTurnType = UnitGroupType.Enemy;
+        g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Enemy;
         --g_appData.globalBattleContext.currentTurn;
         this.__turnChanged();
     }
@@ -3670,7 +3670,7 @@ class BattleSimmulatorBase {
 
         let self = this;
         this.__enqueueCommand("敵ターン開始", function () {
-            self.vm.currentTurnType = UnitGroupType.Enemy;
+            self.vm.globalBattleContext.currentPhaseType = UnitGroupType.Enemy;
             self.audioManager.playSoundEffect(SoundEffectId.EnemyPhase);
             self.__simulateBeginningOfTurn(self.__getOnMapEnemyUnitList());
 
@@ -3709,7 +3709,7 @@ class BattleSimmulatorBase {
         }
         let self = this;
         this.__enqueueCommand("自ターン開始", function () {
-            self.vm.currentTurnType = UnitGroupType.Ally;
+            self.vm.globalBattleContext.currentPhaseType = UnitGroupType.Ally;
             ++g_appData.globalBattleContext.currentTurn;
             if (g_appData.currentTurn == 1) {
                 // 戦闘開始
@@ -4296,7 +4296,7 @@ class BattleSimmulatorBase {
         this.tempSerializedTurn = exportPerTurnSettingAsString();
 
         let currentTurn = g_appData.currentTurn;
-        if (g_appData.currentTurnType == UnitGroupType.Ally) {
+        if (g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
             this.simulateBeginningOfEnemyTurn();
         }
         this.isTurnWideCommandQueueEnabled = true;
@@ -4310,7 +4310,7 @@ class BattleSimmulatorBase {
 
         g_appData.currentTurn = currentTurn;
         importPerTurnSetting(this.tempSerializedTurn);
-        if (g_appData.currentTurnType == UnitGroupType.Ally) {
+        if (g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
             this.simulateBeginningOfEnemyTurn();
         }
 
@@ -4321,7 +4321,7 @@ class BattleSimmulatorBase {
         tile.resetOverriddenCell();
         g_appData.currentTurn = currentTurn;
         importPerTurnSetting(this.tempSerializedTurn);
-        if (g_appData.currentTurnType == UnitGroupType.Ally) {
+        if (g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
             this.simulateBeginningOfEnemyTurn();
         }
 
@@ -4403,7 +4403,7 @@ class BattleSimmulatorBase {
     __simulateAllyActionCustomized() {
         let targetGroup = UnitGroupType.Ally;
         let enemyGroup = UnitGroupType.Enemy;
-        if (g_appData.currentTurnType == enemyGroup) {
+        if (g_appData.globalBattleContext.currentPhaseType == enemyGroup) {
             return false;
         }
 
@@ -4450,7 +4450,7 @@ class BattleSimmulatorBase {
     __simulateAllyAction() {
         let targetGroup = UnitGroupType.Ally;
         let enemyGroup = UnitGroupType.Enemy;
-        if (g_appData.currentTurnType == enemyGroup) {
+        if (g_appData.globalBattleContext.currentPhaseType == enemyGroup) {
             return false;
         }
 
@@ -4502,7 +4502,7 @@ class BattleSimmulatorBase {
     __simulateEnemyAction() {
         let targetGroup = UnitGroupType.Enemy;
         let enemyGroup = UnitGroupType.Ally;
-        if (g_appData.currentTurnType == enemyGroup) {
+        if (g_appData.globalBattleContext.currentPhaseType == enemyGroup) {
             return false;
         }
 
@@ -8597,7 +8597,7 @@ function updateMapUi() {
     }
 
     g_appData.map.updateTiles();
-    let table = g_appData.map.toTable(g_appData.currentTurnType);
+    let table = g_appData.map.toTable(g_appData.globalBattleContext.currentPhaseType);
     table.onDragOverEvent = "f_dragover(event)";
     table.onDropEvent = "f_drop(event)";
     table.onDragEndEvent = "table_dragend(event)";

@@ -515,12 +515,12 @@
                                                     <td style="padding-left:10px;padding-right: 10px;">
                                                         <span style="font-size:12px;font-weight: bold;">
                                                             <span
-                                                                v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally"
+                                                                v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally"
                                                                 style="color:blue;">Player Phase<br />ターン
                                                                 {{globalBattleContext.currentTurn}} /
                                                                 {{g_appData.maxTurn}}</span>
                                                             <span
-                                                                v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Enemy"
+                                                                v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy"
                                                                 style="color:red;">Enemy Phase<br />ターン
                                                                 {{globalBattleContext.currentTurn}} /
                                                                 {{g_appData.maxTurn}}</span>
@@ -632,21 +632,21 @@
                                                     @click="g_app.clearSimpleLog();loadSettings();">
 
                                                 <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/AutoPlay.png) "
                                                         class="fehButton imageButton"
                                                         @click="g_app.clearLog(); g_app.simulateAllyAction();">
                                                 </span>
                                                 <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Ally">
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/EndTurn.png)"
                                                         class="fehButton imageButton" @click="endTurn">
                                                 </span>
 
                                                 <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && currentTurnType == UnitGroupType.Enemy">
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy">
                                                     <input type="button"
                                                         style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
                                                         class="fehButton imageButton"
