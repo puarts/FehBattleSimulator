@@ -391,7 +391,7 @@
                 "Skill.js",
                 "BattleMapElement.js",
                 "Tile.js",
-                "Map.js",
+                "BattleMap.js",
                 "GlobalBattleContext.js",
                 "Structures.js",
                 "Table.js",
@@ -413,6 +413,8 @@
             ], () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
+                initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+                    passiveSInfos);
                 addKeyRepeatEvents();
             });
         });

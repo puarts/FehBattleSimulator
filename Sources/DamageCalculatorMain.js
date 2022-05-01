@@ -256,7 +256,8 @@ class RoundRobinParam {
 }
 
 class DamageCalcData {
-    constructor() {
+    constructor(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+        passiveSInfos) {
         this.logger = new HtmlLogger();
         this.unitManager = new UnitManager();
         this.unitManager.units = [];
@@ -903,7 +904,7 @@ class DamageCalcData {
     }
 }
 
-const g_damageCalcData = new DamageCalcData();
+let g_damageCalcData = null;
 
 let g_keyRepeatHandler = new KeyRepeatHandler();
 
@@ -936,29 +937,7 @@ function addKeyRepeatEventById(elemId, changeValueFunc) {
     addKeyRepeatEvent(elem, changeValueFunc);
 }
 
-const g_damageCalcVm = new Vue({
-    el: "#damageCalc",
-    data: g_damageCalcData,
-    methods: {
-        triangleAdvantageChanged: function () {
-            g_damageCalcData.updateDamageDealt();
-        },
-        updateDamageResult: function () {
-            console.log("ダメージ更新");
-            g_damageCalcData.updateDamageDealt();
-            if (g_damageCalcData.mode == DamageCalculatorMode.SpecialDamageGraph) {
-                console.log("ダメージグラフ更新");
-                g_damageCalcData.updateDamageGraph();
-            }
-        },
-        updateDamageGraph: function () {
-            g_damageCalcData.updateDamageGraph();
-        },
-        calcRoundRogin: function () {
-            g_damageCalcData.calcRoundRobin();
-        },
-    }
-});
+let g_damageCalcVm = null;
 
 class HslColor {
     constructor(h, s, l) {
@@ -990,4 +969,34 @@ function* enumerateColors() {
             }
         }
     }
+}
+
+function initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+    passiveSInfos) {
+    g_damageCalcData = new DamageCalcData(
+        heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+        passiveSInfos);
+    g_damageCalcVm = new Vue({
+        el: "#damageCalc",
+        data: g_damageCalcData,
+        methods: {
+            triangleAdvantageChanged: function () {
+                g_damageCalcData.updateDamageDealt();
+            },
+            updateDamageResult: function () {
+                console.log("ダメージ更新");
+                g_damageCalcData.updateDamageDealt();
+                if (g_damageCalcData.mode == DamageCalculatorMode.SpecialDamageGraph) {
+                    console.log("ダメージグラフ更新");
+                    g_damageCalcData.updateDamageGraph();
+                }
+            },
+            updateDamageGraph: function () {
+                g_damageCalcData.updateDamageGraph();
+            },
+            calcRoundRogin: function () {
+                g_damageCalcData.calcRoundRobin();
+            },
+        }
+    });
 }
