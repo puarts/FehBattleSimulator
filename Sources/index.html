@@ -314,6 +314,21 @@
         .normalStatus {
             color: rgb(0, 0, 0);
         }
+
+        .skillTypeText {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        .skillHeader {
+            font-size: 16px;
+            padding: 0px;
+            text-align: center;
+            position: relative;
+            color: white;
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -1937,7 +1952,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(224, 19, 19)">A</span></th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveAInfo != null" v-bind:src="value.passiveAInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'A.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveAOptions"  v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
@@ -1953,7 +1972,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(28, 28, 209)">B</span></th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveBInfo != null" v-bind:src="value.passiveBInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'B.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveBOptions"  v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
@@ -1969,7 +1992,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(118, 175, 4)">C</span></th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveCInfo != null" v-bind:src="value.passiveCInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'C.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveCOptions" v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
@@ -1985,8 +2012,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(255, 157, 0);">S</span>
-                            </th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveSInfo != null" v-bind:src="value.passiveSInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'S.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveSOptions" v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">

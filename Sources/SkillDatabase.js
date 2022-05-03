@@ -8,11 +8,14 @@ class SkillDatabase {
         this.passiveBInfos = [];
         this.passiveCInfos = [];
         this.passiveSInfos = [];
+        this.captainInfos = [];
         this.skillIdToInfoDict = {};
         this.skillNameToInfoDict = {};
     }
 
-    registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
+    registerSkillOptions(
+        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captains = []
+    ) {
         this.weaponInfos = weapons;
         this.supportInfos = supports;
         this.specialInfos = specials;
@@ -20,6 +23,7 @@ class SkillDatabase {
         this.passiveBInfos = passiveBs;
         this.passiveCInfos = passiveCs;
         this.passiveSInfos = passiveSs;
+        this.captainInfos = captains;
 
         // type は事前に設定されてないので登録時に同期
         for (let info of this.supportInfos) {
@@ -40,6 +44,9 @@ class SkillDatabase {
         for (let info of this.passiveSInfos) {
             info.type = SkillType.PassiveS;
         }
+        for (let info of this.captainInfos) {
+            info.type = SkillType.Captain;
+        }
 
         this.__registerInfosToDict(weapons);
         this.__registerInfosToDict(supports);
@@ -48,6 +55,7 @@ class SkillDatabase {
         this.__registerInfosToDict(passiveBs);
         this.__registerInfosToDict(passiveCs);
         this.__registerInfosToDict(passiveSs);
+        this.__registerInfosToDict(captains);
     }
 
     findSkillInfoByDict(id) {
@@ -61,7 +69,9 @@ class SkillDatabase {
         }
         return null;
     }
-
+    /**
+     * @param  {Unit} unit
+     */
     updateUnitSkillInfo(unit) {
         unit.weaponInfo = this.findSkillInfoByDict(unit.weapon);
         unit.supportInfo = this.findSkillInfoByDict(unit.support);
@@ -70,6 +80,7 @@ class SkillDatabase {
         unit.passiveBInfo = this.findSkillInfoByDict(unit.passiveB);
         unit.passiveCInfo = this.findSkillInfoByDict(unit.passiveC);
         unit.passiveSInfo = this.findSkillInfoByDict(unit.passiveS);
+        unit.captainInfo = this.findSkillInfoByDict(unit.captain);
     }
 
     __registerInfosToDict(skillInfos) {

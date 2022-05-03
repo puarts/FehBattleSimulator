@@ -367,6 +367,14 @@ class BattleSimmulatorBase {
                     // 曲技飛行等で移動範囲が変わる
                     updateAllUi();
                 },
+                captainChanged: function () {
+                    if (g_app == null) { return; }
+                    let unit = g_app.__getCurrentUnit();
+                    if (unit == null) { return; }
+                    g_appData.__updateStatusBySkillsAndMerges(unit);
+                    g_app.updateAllUnitSpur();
+                    updateAllUi();
+                },
                 mergeChanged: function () {
                     if (g_app == null) { return; }
                     let unit = g_app.__getCurrentUnit();
@@ -2747,10 +2755,12 @@ class BattleSimmulatorBase {
         return null;
     }
 
-    registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
+    registerSkillOptions(
+        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills = []
+    ) {
         let self = this;
         using(new ScopedStopwatch(time => self.writeDebugLogLine("スキル情報の登録: " + time + " ms")), () => {
-            g_appData.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
+            this.data.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills);
 
             self.passiveSkillCharWhiteList = "";
             self.weaponSkillCharWhiteList = "";

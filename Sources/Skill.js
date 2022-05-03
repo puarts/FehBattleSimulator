@@ -17,6 +17,7 @@ const SkillType = {
     PassiveB: 4,
     PassiveC: 5,
     PassiveS: 6,
+    Captain: 7,
 };
 
 const WeaponType = {
@@ -2335,6 +2336,16 @@ const PassiveS = {
     TozokuNoGuzoOdori: 1402,
 };
 
+// 隊長スキル
+const Captain = {
+    None: -1,
+    EarthRendering: 1971, // 震天動地
+    // SecretManeuver: 1972, // 竜跳虎臥
+    // AdroitCaptain: 1970, // 暗中飛躍
+    // Erosion: 1975, // 水滴石穿
+};
+
+
 const PhysicalWeaponTypeDict = {};
 PhysicalWeaponTypeDict[WeaponType.Sword] = 0;
 PhysicalWeaponTypeDict[WeaponType.Lance] = 0;
@@ -3123,6 +3134,7 @@ const PassiveAValueDict = __createValueDict(PassiveA);
 const PassiveBValueDict = __createValueDict(PassiveB);
 const PassiveCValueDict = __createValueDict(PassiveC);
 const PassiveSValueDict = __createValueDict(PassiveS);
+const CaptainValueDict = __createValueDict(Captain);
 
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
@@ -3270,6 +3282,7 @@ class SkillInfo {
             case SkillType.PassiveB: return this.id in PassiveBValueDict;
             case SkillType.PassiveC: return this.id in PassiveCValueDict;
             case SkillType.PassiveS: return this.id in PassiveSValueDict;
+            case SkillType.Captain: return this.id in CaptainValueDict;
             default:
                 throw new Error("Invalid skill type");
         }
@@ -3281,10 +3294,11 @@ class SkillInfo {
             case SkillType.Weapon: return iconRoot + "Weapon.png";
             case SkillType.Support: return iconRoot + "Support.png";
             case SkillType.Special: return iconRoot + "Special.png";
-            case SkillType.PassiveA: return iconRoot + "PassiveA/" + iconName + ".png";
-            case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName + ".png";
-            case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName + ".png";
-            case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName + ".png";
+            case SkillType.PassiveA: return iconRoot + "PassiveA/" + iconName;
+            case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName;
+            case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName;
+            case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName;
+            case SkillType.Captain: return iconRoot + "Captain/" + iconName;
             default:
                 return "";
         }

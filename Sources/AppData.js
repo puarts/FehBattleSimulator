@@ -287,7 +287,9 @@ class AppData extends UnitManager {
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
 
+        /** @type {Unit[]} */
         this.enemyUnits = [];
+        /** @type {Unit[]} */
         this.allyUnits = [];
         this.updateEnemyAndAllyUnits();
 
@@ -399,6 +401,9 @@ class AppData extends UnitManager {
         this.passiveSOptions = [
             { id: -1, text: "なし" }
         ];
+        this.captainOptions = [
+            { id: -1, text: "なし" }
+        ];
 
         this.ornamentTypeOptions = [
         ];
@@ -495,6 +500,13 @@ class AppData extends UnitManager {
         this.globalBattleContext.isEarthSeason = true;
         this.globalBattleContext.isWindSeason = true;
         this.globalBattleContext.isWaterSeason = true;
+    }
+
+    findAllyCaptain() {
+        return this.allyUnits.find(x => x.isCaptain);
+    }
+    findEnemyCaptain() {
+        return this.enemyUnits.find(x => x.isCaptain);
     }
 
     getEnemyExpansionUnitOnMap() {
@@ -604,8 +616,11 @@ class AppData extends UnitManager {
         heroInfo.registerPassiveSOptions(this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos);
     }
 
-    registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
-        this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
+    registerSkillOptions(
+        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills = []
+    ) {
+        this.skillDatabase.registerSkillOptions(
+            weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills);
 
         __registerSkillOptions(this.weaponOptions, weapons);
         __registerSkillOptions(this.supportOptions, supports);
@@ -614,6 +629,7 @@ class AppData extends UnitManager {
         __registerSkillOptions(this.passiveBOptions, passiveBs);
         __registerSkillOptions(this.passiveCOptions, passiveCs);
         __registerSkillOptions(this.passiveSOptions, passiveSs);
+        __registerSkillOptions(this.captainOptions, captainSkills);
         __registerPassiveSOptions(this.passiveSOptions, passiveAs);
         __registerPassiveSOptions(this.passiveSOptions, passiveBs);
         __registerPassiveSOptions(this.passiveSOptions, passiveCs);
@@ -650,6 +666,9 @@ class AppData extends UnitManager {
     get passiveSInfos() {
         return this.skillDatabase.passiveSInfos;
     }
+    get captainInfos() {
+        return this.skillDatabase.captainInfos;
+    }
 
     __findWeaponInfo(id) {
         return this.findSkillInfoByDict(id);
@@ -675,7 +694,6 @@ class AppData extends UnitManager {
     __findPassiveSInfo(id) {
         return this.findSkillInfoByDict(id);
     }
-
     __showStatusToAttackerInfo() {
         let unit = this.currentUnit;
         if (unit == null) { return; }
@@ -1552,7 +1570,7 @@ class AppData extends UnitManager {
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToLarge();
                 if (!isSummonerDuelsMap(this.mapKind)) {
-                    this.setMapKind(MapType.SummonersDuel_5);
+                    this.setMapKind(MapType.SummonersDuel_1);
                 }
                 break;
             default:

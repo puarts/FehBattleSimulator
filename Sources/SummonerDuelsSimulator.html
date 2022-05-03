@@ -307,6 +307,21 @@
         .normalStatus {
             color: rgb(0, 0, 0);
         }
+
+        .skillTypeText {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        .skillHeader {
+            font-size: 16px;
+            padding: 0px;
+            text-align: center;
+            position: relative;
+            color: white;
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -743,7 +758,14 @@
                     </div> -->
                     <table border="0" style="border-width: 0px;border-color: #dddddd;margin: 5px;font-size:14px">
                         <tr>
-                            <td><span style="padding-right: 10px;">自軍編成</span>
+                            <td><span style="padding-right: 10px;color:blue">青軍</span>
+                                <span style="position: relative;">
+                                    <img v-if="g_appData.findAllyCaptain().captainInfo != null"
+                                        v-bind:src="g_appData.findAllyCaptain().captainInfo.iconPath" width="25"
+                                        height="25" />
+                                    <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                </span>
+
                                 <span v-if="g_appData.gameMode == GameMode.Arena"
                                     style="font-size:12px"><br />査定:{{arenaScore}}({{primeArenaScore}})</span>
                             </td>
@@ -766,9 +788,15 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><span style="padding-right: 10px;">敵軍編成</span><span
+                            <td><span style="padding-right: 10px;color:red">赤軍</span><span
                                     v-if="g_appData.gameMode == GameMode.Arena"
                                     style="font-size:12px"><br />査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
+                                </span>
+                                <span style="position: relative;">
+                                    <img v-if="g_appData.findEnemyCaptain().captainInfo != null"
+                                        v-bind:src="g_appData.findEnemyCaptain().captainInfo.iconPath" width="25"
+                                        height="25" />
+                                    <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
                                 </span>
                                 <span v-else-if="g_appData.gameMode == GameMode.AetherRaid"
                                     style="font-size:12px"><br />失敗レート:{{aetherRaidDefenseLiftLoss}}</span>
@@ -1921,7 +1949,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(224, 19, 19)">A</span></th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveAInfo != null" v-bind:src="value.passiveAInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'A.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveAOptions"  v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
@@ -1937,7 +1969,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(28, 28, 209)">B</span></th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveBInfo != null" v-bind:src="value.passiveBInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'B.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveBOptions"  v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
@@ -1953,7 +1989,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(118, 175, 4)">C</span></th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveCInfo != null" v-bind:src="value.passiveCInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'C.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveCOptions" v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
@@ -1969,8 +2009,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><span style="color:rgb(255, 157, 0);">S</span>
-                            </th>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveSInfo != null" v-bind:src="value.passiveSInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'S.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveSOptions" v-if="g_app.vm.enableAllSkillOptions"
                                     v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
@@ -1983,6 +2026,24 @@
 
                                 <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
                                     ({{value.passiveS}}) {{value.heroInfo!=null?value.heroInfo.passiveSOptions.length:0}}, {{g_appData.passiveSImplCount}}/{{g_appData.passiveSCount}}({{Math.floor(100*g_appData.passiveSImplCount/g_appData.passiveSCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr v-if="value.isCaptain">
+                            <td class='skillHeader'>
+                                <img v-if="value.captainInfo != null" v-bind:src="value.captainInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <span class="skillTypeText" style="font-size:10px" >隊長</span>
+                            </td>
+                            <td>
+                                <select2 :options="g_app.vm.captainOptions" v-model="value.captain"
+                                    @input="g_app.vm.captainChanged" 
+                                    class="skill">
+                                </select2>
+                                <a v-bind:href="value.captainInfo.detailPageUrl" target="_blank" v-if="value.captainInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.captain}})</span>
+
                             </td>
                         </tr>
                     </table>
@@ -2444,20 +2505,21 @@
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-                    passiveSInfos);
+                    passiveSInfos, captainInfos);
                 g_app.registerHeroOptions(heroInfos, false);
 
                 createDialogs();
                 loadLazyImages();
+
+                let diffTime = endTime - g_startTime;
+                g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
+                initAetherRaidBoard(heroInfos);
+
+                importUrl(location.search);
+
             });
         });
-        window.addEventListener('load', (event) => {
-            let endTime = Date.now();
-            let diffTime = endTime - g_startTime;
-            g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
-            initAetherRaidBoard(heroInfos);
-
-            importUrl(location.search);
-        });
+        // window.addEventListener('load', (event) => {
+        // });
     </script>
 </body>

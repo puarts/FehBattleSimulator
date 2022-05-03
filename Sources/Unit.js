@@ -1066,6 +1066,7 @@ class Unit extends BattleMapElement {
         this.battleContext = new BattleContext();
         this.actionContext = new ActionContext();
 
+        /** @type {number} */
         this.slotOrder = 0;
 
         this.weaponRefinement = WeaponRefinementType.None;
@@ -1139,6 +1140,7 @@ class Unit extends BattleMapElement {
         this.passiveB = -1;
         this.passiveC = -1;
         this.passiveS = -1;
+        this.captain = -1;
         this.deffensiveTile = false; // 防御床
         this.setMoveCountFromMoveType();
 
@@ -1179,6 +1181,8 @@ class Unit extends BattleMapElement {
         this.passiveBInfo = null;
         this.passiveCInfo = null;
         this.passiveSInfo = null;
+        /** @type {SkillInfo} */
+        this.captainInfo = null;
 
         this.partnerHeroIndex = 0;
         this.partnerLevel = PartnerLevel.None; // 支援レベル
@@ -1264,6 +1268,14 @@ class Unit extends BattleMapElement {
 
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
+    }
+
+    /**
+     * 隊長であればtrue、そうでなければfalseを返します。
+     * @returns {boolean}
+     */
+    get isCaptain() {
+        return this.slotOrder == 0;
     }
 
     /**
@@ -1546,6 +1558,7 @@ class Unit extends BattleMapElement {
         this.passiveB = -1;
         this.passiveC = -1;
         this.passiveS = -1;
+        this.captain = -1;
         this.weaponInfo = null;
         this.supportInfo = null;
         this.specialInfo = null;
@@ -1553,6 +1566,7 @@ class Unit extends BattleMapElement {
         this.passiveBInfo = null;
         this.passiveCInfo = null;
         this.passiveSInfo = null;
+        this.captainInfo = null;
     }
 
     resetStatusAdd() {
@@ -1679,6 +1693,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.resGrowthRate
             + ValueDelimiter + this.blessing6
             + ValueDelimiter + this.ascendedAsset
+            + ValueDelimiter + this.captain
             ;
     }
 
@@ -1768,6 +1783,7 @@ class Unit extends BattleMapElement {
         if (Number.isFinite(Number(splited[i]))) { this.resGrowthRate = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.blessing6 = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.ascendedAsset = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.captain = Number(splited[i]); ++i; }
     }
 
     fromPerTurnStatusString(value) {
@@ -2051,6 +2067,7 @@ class Unit extends BattleMapElement {
         this.snapshot.passiveBInfo = this.passiveBInfo;
         this.snapshot.passiveCInfo = this.passiveCInfo;
         this.snapshot.passiveSInfo = this.passiveSInfo;
+        this.snapshot.captainInfo = this.captainInfo;
         this.snapshot.fromString(this.toString());
         return this.snapshot;
     }
@@ -3873,6 +3890,9 @@ class Unit extends BattleMapElement {
         }
         if (this.passiveSInfo != null) {
             yield this.passiveSInfo;
+        }
+        if (this.captainInfo != null) {
+            yield this.captainInfo;
         }
     }
 
