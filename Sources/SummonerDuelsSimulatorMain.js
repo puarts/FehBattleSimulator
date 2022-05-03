@@ -21,8 +21,17 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
                 }
             }
             self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
+            self.showMapMessage();
             self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList());
         });
+    }
+
+    showMapMessage() {
+        this.data.isDisplayingMapMessage = true;
+        let self = this;
+        setTimeout(() => {
+            self.data.isDisplayingMapMessage = false;
+        }, 3000);
     }
 
     endSummonerDuelsTurn() {

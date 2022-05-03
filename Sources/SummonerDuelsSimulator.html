@@ -322,8 +322,33 @@
             color: white;
             text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
         }
-    </style>
 
+        .mapMessage {
+            color: white;
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
+    </style>
+    <style>
+        .fade {
+            animation: fadeIn 5.2s ease 0.3s 1 normal;
+        }
+
+        @keyframes fadeIn {
+
+            /*animation-nameで設定した値を書く*/
+            0% {
+                opacity: 0
+            }
+
+            /*アニメーション開始時は不透明度0%*/
+            100% {
+                opacity: 1
+            }
+
+            /*アニメーション終了時は不透明度100%*/
+        }
+    </style>
+    <div class="fade">ここがふわっとするよ</div>
     <!-- 重要なところは予め接続 -->
     <link rel="preconnect" href="//cdnjs.cloudflare.com">
     <link rel="preconnect" href="//code.jquery.com">
@@ -470,13 +495,22 @@
                                             </div>
                                             <div style="position: relative;">
                                                 <div id="mapArea"></div>
-                                                <div
-                                                    style="position:absolute;top:20px;left:35px;color: #fff;font-size: 27px;text-align: center;">
+                                                <div class="mapMessage"
+                                                    style="position:absolute;top:20px;left:35px;color: #ddd;font-size: 27px;text-align: center;">
                                                     {{globalBattleContext.currentTurn}}
                                                 </div>
-                                                <div
-                                                    style="position:absolute;top:50px;left:38px;color: #fff;font-size: 13px;text-align: center;">
-                                                    {{g_appData.maxTurn}}</div>
+                                                <div class="mapMessage"
+                                                    style="position:absolute;top:50px;left:38px;color: #ddd;font-size: 13px;">
+                                                    {{g_appData.maxTurn}}
+                                                </div>
+                                                <div v-if="isDisplayingMapMessage">
+                                                    <img v-bind:src="g_imageRootPath + 'SummonerDuelsTurnDisplay.png'"
+                                                        style="position:absolute;top:130px;left:0px">
+                                                    <div class="mapMessage"
+                                                        style="position:absolute;top:163px;right:107px;color: #ddd;font-size: 30px;">
+                                                        {{globalBattleContext.currentTurn}}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>

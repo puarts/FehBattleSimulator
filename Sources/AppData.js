@@ -287,6 +287,8 @@ class AppData extends UnitManager {
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
 
+        this.isDisplayingMapMessage = false;
+
         /** @type {Unit[]} */
         this.enemyUnits = [];
         /** @type {Unit[]} */
