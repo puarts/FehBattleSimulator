@@ -1220,7 +1220,7 @@ class BattleMap {
      */
     isUnitOnSummonerDuelsPointArea(unit, areaOffset) {
         return 0 < unit.posX && unit.posX < this.width - 1
-            && 2 + areaOffset < unit.posY && unit.posY < this.height - 3 + areaOffset;
+            && 2 + areaOffset < unit.posY && unit.posY < this.height - 1 - (1 + areaOffset);
     }
 
     findWallOrBreakableWallById(id) {

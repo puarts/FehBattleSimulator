@@ -1473,6 +1473,7 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy]
             + ValueDelimiter + boolToInt(this.globalBattleContext.isAllyPhaseEnded)
             + ValueDelimiter + boolToInt(this.globalBattleContext.isEnemyPhaseEnded)
+            + ValueDelimiter + this.globalBattleContext.summonerDuelsPointAreaOffset
             ;
     }
 
@@ -1504,6 +1505,7 @@ class AppData extends UnitManager {
         if (splited[i] != undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.isAllyPhaseEnded = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.isEnemyPhaseEnded = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsPointAreaOffset = Number(splited[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {

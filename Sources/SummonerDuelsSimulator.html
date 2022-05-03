@@ -460,6 +460,15 @@
                                     <tr>
                                         <td>
                                             <div style="position: relative;">
+                                                <img v-bind:src="g_imageRootPath + 'SummonerDuelsPointDisplay.png'">
+                                                <img v-if="g_appData.findAllyCaptain().captainInfo != null"
+                                                    v-bind:src="g_appData.findAllyCaptain().captainInfo.iconPath"
+                                                    width="25" height="25" style="position:absolute; left:135px" />
+                                                <img v-if="g_appData.findEnemyCaptain().captainInfo != null"
+                                                    v-bind:src="g_appData.findEnemyCaptain().captainInfo.iconPath"
+                                                    width="25" height="25" style="position:absolute; right:135px" />
+                                            </div>
+                                            <div style="position: relative;">
                                                 <div id="mapArea"></div>
                                                 <div
                                                     style="position:absolute;top:20px;left:35px;color: #fff;font-size: 27px;text-align: center;">
@@ -705,19 +714,11 @@
                                 <input type="checkbox" id="isIconOverlayDisabled" v-model="map.isIconOverlayDisabled"
                                     @change="iconOverlayDisabledChanged"><label for="isIconOverlayDisabled"
                                     class="normal">アイコン上の状態表示無効</label>
-                                <input type="checkbox" id="isTrapIconOverlayDisabled"
-                                    v-model="map.isTrapIconOverlayDisabled" @change="iconOverlayDisabledChanged"><label
-                                    for="isTrapIconOverlayDisabled" class="normal">罠のLV表示無効</label>
                                 <div>
                                     <input type="button" value="全員状態リセット" style="width:140px" class="buttonUi"
                                         @click="healHpFullForAllUnits">
                                     <input type="button" value="配置リセット" style="width:140px" class="buttonUi"
                                         onclick="resetPlacement()">
-                                    <input v-if="gameMode==GameMode.AetherRaid" type="button" value="模擬戦..."
-                                        style="width:140px" class="buttonUi"
-                                        @click="$('#aetherRaidDefensePresetDialog').dialog('open');">
-                                    <input v-if="gameMode==GameMode.ResonantBattles" type="button" value="アイテム..."
-                                        style="width:140px" class="buttonUi" @click="$('#itemDialog').dialog('open');">
                                     <input v-if="gameMode==GameMode.AetherRaid" type="button" value="耐久/殲滅力テスト..."
                                         style="width:140px" class="buttonUi"
                                         @click="$('#durabilityTestDialog').dialog('open');">
