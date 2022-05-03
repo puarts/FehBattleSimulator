@@ -20,18 +20,13 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
                     unit.resetAllState();
                 }
             }
+            self.data.isDisplayingMapMessage = true;
             self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
-            self.showMapMessage();
-            self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList());
+            self.__simulateBeginningOfTurn(self.__getUnits(x => x.isOnMap));
+            setTimeout(() => {
+                self.data.isDisplayingMapMessage = false;
+            }, 3000);
         });
-    }
-
-    showMapMessage() {
-        this.data.isDisplayingMapMessage = true;
-        let self = this;
-        setTimeout(() => {
-            self.data.isDisplayingMapMessage = false;
-        }, 3000);
     }
 
     endSummonerDuelsTurn() {
