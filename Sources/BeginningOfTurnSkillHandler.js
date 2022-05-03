@@ -10,7 +10,7 @@ class BeginningOfTurnSkillHandler {
     constructor(unitManager, map, globalBattleContext, logger, moveStructureToTrashBox) {
         /** @type {UnitManager} */
         this._unitManager = unitManager;
-        /** @type {Map} */
+        /** @type {BattleMap} */
         this.map = map;
         /** @type {GlobalBattleContext} */
         this.globalBattleContext = globalBattleContext;
@@ -24,6 +24,9 @@ class BeginningOfTurnSkillHandler {
     }
     get isEvenTurn() {
         return this.globalBattleContext.isEvenTurn;
+    }
+    get isFirstTurn() {
+        return this.globalBattleContext.isFirstTurn;
     }
 
     get log() {
@@ -107,6 +110,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Captain.EarthRendering:
+                if (!this.isFirstTurn && this.map.isUnitOnSummonerDuelsPointArea(skillOwner, this.globalBattleContext.summonerDuelsPointAreaOffset)) {
+                    this.globalBattleContext.moveSummonerDuelsPointAreaOffset(skillOwner.groupId);
+                }
+                break;
             case Weapon.ShadowBreath:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                     unit.applyAtkBuff(6);
@@ -832,7 +840,7 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.__findMinStatusUnits(
                         skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
                         x => this.__getStatusEvalUnit(x).getResInPrecombat())
-                        ) {
+                    ) {
                         unit.reserveToApplyAtkDebuff(-6);
                         unit.reserveToApplySpdDebuff(-6);
                     }

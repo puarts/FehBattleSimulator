@@ -3891,7 +3891,7 @@ class Unit extends BattleMapElement {
         if (this.passiveSInfo != null) {
             yield this.passiveSInfo;
         }
-        if (this.captainInfo != null) {
+        if (this.isCaptain && this.captainInfo != null) {
             yield this.captainInfo;
         }
     }
@@ -3904,6 +3904,7 @@ class Unit extends BattleMapElement {
         if (this.passiveB != NoneValue) { yield this.passiveB; }
         if (this.passiveC != NoneValue) { yield this.passiveC; }
         if (this.passiveS != NoneValue) { yield this.passiveS; }
+        if (this.isCaptain && this.captain != NoneValue) { yield this.captain; }
     }
 
     *enumeratePassiveSkills() {

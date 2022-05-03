@@ -1214,6 +1214,14 @@ class BattleMap {
             yield obj;
         }
     }
+    /**
+     * @param  {Unit} unit
+     * @param  {Number} areaOffset
+     */
+    isUnitOnSummonerDuelsPointArea(unit, areaOffset) {
+        return 0 < unit.posX && unit.posX < this.width - 1
+            && 2 + areaOffset < unit.posY && unit.posY < this.height - 3 + areaOffset;
+    }
 
     findWallOrBreakableWallById(id) {
         let wall = this.findBreakbleWallById(id);

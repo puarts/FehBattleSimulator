@@ -32,12 +32,25 @@ class GlobalBattleContext {
         this.isWaterSeason = false;
     }
 
+    moveSummonerDuelsPointAreaOffset(groupType) {
+        if (groupType == UnitGroupType.Ally) {
+            ++this.summonerDuelsPointAreaOffset;
+        }
+        else {
+            --this.summonerDuelsPointAreaOffset;
+        }
+    }
+
     get isOddTurn() {
         return this.currentTurn % 2 === 1;
     }
 
     get isEvenTurn() {
         return this.currentTurn % 2 === 0;
+    }
+
+    get isFirstTurn() {
+        return this.currentTurn === 1;
     }
 
     get isSummonerDuelsTurnEnded() {

@@ -757,8 +757,8 @@
                         </span>
                     </div> -->
                     <table border="0" style="border-width: 0px;border-color: #dddddd;margin: 5px;font-size:14px">
-                        <tr>
-                            <td><span style="padding-right: 10px;color:blue">青軍</span>
+                        <tr style="background-color:#bcf;border-style: solid;border-color: #aaf; border-width: 2px;">
+                            <td><span style="padding-right: 10px;">青軍</span>
                                 <span style="position: relative;">
                                     <img v-if="g_appData.findAllyCaptain().captainInfo != null"
                                         v-bind:src="g_appData.findAllyCaptain().captainInfo.iconPath" width="25"
@@ -787,8 +787,8 @@
                                 </draggable>
                             </td>
                         </tr>
-                        <tr>
-                            <td><span style="padding-right: 10px;color:red">赤軍</span><span
+                        <tr style="background-color:#fcc;border-style: solid;border-color: #faa; border-width: 2px;">
+                            <td><span style="padding-right: 10px;">赤軍</span><span
                                     v-if="g_appData.gameMode == GameMode.Arena"
                                     style="font-size:12px"><br />査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
                                 </span>
