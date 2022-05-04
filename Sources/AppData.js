@@ -1476,6 +1476,10 @@ class AppData extends UnitManager {
             + ValueDelimiter + boolToInt(this.globalBattleContext.isAllyPhaseEnded)
             + ValueDelimiter + boolToInt(this.globalBattleContext.isEnemyPhaseEnded)
             + ValueDelimiter + this.globalBattleContext.summonerDuelsPointAreaOffset
+            + ValueDelimiter + this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy]
+            + ValueDelimiter + this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy]
             ;
     }
 
@@ -1508,6 +1512,10 @@ class AppData extends UnitManager {
         if (splited[i] != undefined) { this.globalBattleContext.isAllyPhaseEnded = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.isEnemyPhaseEnded = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsPointAreaOffset = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Ally] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {

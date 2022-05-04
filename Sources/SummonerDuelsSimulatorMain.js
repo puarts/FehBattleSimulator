@@ -20,13 +20,26 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
                     unit.resetAllState();
                 }
             }
+            else {
+                self.data.globalBattleContext.addSummonerDuelsCaptureScore(
+                    self.__getUnitsOnPointArea(UnitGroupType.Ally),
+                    self.__getUnitsOnPointArea(UnitGroupType.Enemy));
+            }
             self.data.isDisplayingMapMessage = true;
             self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
             self.__simulateBeginningOfTurn(self.__getUnits(x => x.isOnMap));
+            const displayingMessageMilliseconds = 2500;
             setTimeout(() => {
                 self.data.isDisplayingMapMessage = false;
-            }, 3000);
+            }, displayingMessageMilliseconds);
         });
+    }
+
+    __getUnitsOnPointArea(groupId) {
+        return this.__getUnits(x =>
+            x.isOnMap
+            && x.groupId === groupId
+            && this.map.isUnitOnSummonerDuelsPointArea(x, this.data.globalBattleContext.summonerDuelsPointAreaOffset));
     }
 
     endSummonerDuelsTurn() {

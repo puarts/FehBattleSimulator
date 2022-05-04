@@ -272,7 +272,7 @@ class PostCombatSkillHander {
                     }
                     break;
                 case Weapon.HokenSophia:
-                    if (!targetUnit.isWeaponRefined) {
+                    if (!attackUnit.isWeaponRefined) {
                         if (this.__getStatusEvalUnit(attackUnit).isRestHpFull) {
                             attackUnit.reserveTakeDamage(4);
                         }

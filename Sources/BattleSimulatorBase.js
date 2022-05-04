@@ -3085,6 +3085,10 @@ class BattleSimmulatorBase {
             }
         }
 
+        if (this.data.gameMode == GameMode.SummonerDuels) {
+            this.data.globalBattleContext.addSummonerDuelsKoScore(atkUnit, defUnit);
+        }
+
         // 再移動の評価
         this.__activateCantoIfPossible(atkUnit);
 
@@ -3578,13 +3582,7 @@ class BattleSimmulatorBase {
     }
 
     __getOnMapEnemyUnitList() {
-        let enemy = [];
-        for (let unit of this.enumerateEnemyUnits()) {
-            if (unit.isOnMap) {
-                enemy.push(unit);
-            }
-        }
-        return enemy;
+        return Array.from(this.enumerateEnemyUnitsOnMap());
     }
     __getOnMapAllyUnitList() {
         return Array.from(this.enumerateAllyUnitsOnMap());
@@ -3793,7 +3791,7 @@ class BattleSimmulatorBase {
         return false;
     }
     /**
-     * @returns {Tile}
+     * @returns {BattleMap}
      */
     get map() {
         return this.vm.map;

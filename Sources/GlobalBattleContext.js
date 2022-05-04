@@ -17,6 +17,14 @@ class GlobalBattleContext {
         // 英雄決闘の得点エリアのオフセット
         this.summonerDuelsPointAreaOffset = 0;
 
+        // 英雄決闘の特典
+        this.summonerDuelsKoScores = {};
+        this.summonerDuelsKoScores[UnitGroupType.Ally] = 0;
+        this.summonerDuelsKoScores[UnitGroupType.Enemy] = 0;
+        this.summonerDuelsCaptureScores = {};
+        this.summonerDuelsCaptureScores[UnitGroupType.Ally] = 0;
+        this.summonerDuelsCaptureScores[UnitGroupType.Enemy] = 0;
+
         this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
         // 戦闘でHP0になって退場になったユニットの数
         this.RemovedUnitCountsInCombat = {};
@@ -55,6 +63,31 @@ class GlobalBattleContext {
 
     get isSummonerDuelsTurnEnded() {
         return this.isAllyPhaseEnded && this.isEnemyPhaseEnded;
+    }
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
+    addSummonerDuelsKoScore(atkUnit, defUnit) {
+        this.summonerDuelsKoScores[atkUnit.groupId] += 2;
+        if (atkUnit.isCaptain) {
+            this.summonerDuelsKoScores[atkUnit.groupId] += 1;
+        }
+        if (defUnit.isCaptain) {
+            this.summonerDuelsKoScores[atkUnit.groupId] += 1;
+        }
+    }
+    /**
+     * @param  {Unit[]} allyUnitsOnPointArea
+     * @param  {Unit[]} enemyUnitsOnPointArea
+     */
+    addSummonerDuelsCaptureScore(allyUnitsOnPointArea, enemyUnitsOnPointArea) {
+        if (allyUnitsOnPointArea.length >= enemyUnitsOnPointArea.length + 2) {
+            this.summonerDuelsCaptureScores[UnitGroupType.Ally] += 2;
+        }
+        else if (enemyUnitsOnPointArea.length >= allyUnitsOnPointArea.length + 2) {
+            this.summonerDuelsCaptureScores[UnitGroupType.Enemy] += 2;
+        }
     }
 
     endSummonerDuelsTurn() {
