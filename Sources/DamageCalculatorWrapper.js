@@ -1933,7 +1933,7 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[Weapon.ThundersMjolnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
-               targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.addSpurs(6, 6, 0, 0);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.ThundererTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6084,6 +6084,12 @@ class DamageCalculatorWrapper {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 if (allyUnit.isCaptain) {
                     switch (allyUnit.captain) {
+                        case Captain.SecretManeuver:
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                            break;
                     }
                 }
                 switch (allyUnit.weapon) {
@@ -7000,7 +7006,11 @@ class DamageCalculatorWrapper {
 
         return true;
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} calcPotentialDamage
+     */
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -7013,6 +7023,16 @@ class DamageCalculatorWrapper {
         }
 
         {
+            if (targetUnit.isCaptain) {
+                switch (targetUnit.captain) {
+                    case Captain.SecretManeuver:
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                        break;
+                }
+            }
             switch (targetUnit.weapon) {
                 case Weapon.ThundersMjolnir:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -9703,10 +9723,10 @@ class DamageCalculatorWrapper {
      * @param  {boolean} ignoreSkillEffectFromEnemies=false
      */
     updateUnitSpur(targetUnit, calcPotentialDamage = false,
-                   ignoresSkillEffectFromAllies = false,
-                   ignoreSkillEffectFromEnemies = false,
-                   feudSkillOwner = null,
-                   enemyUnit = null
+        ignoresSkillEffectFromAllies = false,
+        ignoreSkillEffectFromEnemies = false,
+        feudSkillOwner = null,
+        enemyUnit = null
     ) {
         let self = this;
         this.profiler.profile("updateUnitSpur", () => {
