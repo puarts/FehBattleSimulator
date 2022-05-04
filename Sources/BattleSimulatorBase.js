@@ -3523,7 +3523,12 @@ class BattleSimmulatorBase {
     }
 
     __getCaptainUnitOnMap(groupId) {
-        return this.enumerateUnitsInSpecifiedGroup(groupId).find(x => x.isOnMap && x.isCaptain);
+        for (let x of this.enumerateUnitsInSpecifiedGroup(groupId)) {
+            if (x.isOnMap && x.isCaptain) {
+                return x;
+            }
+        }
+        return null;
     }
 
     /**
