@@ -6067,6 +6067,11 @@ class DamageCalculatorWrapper {
             }
         }
     }
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} calcPotentialDamage
+     */
     __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
         if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
             return;
@@ -6077,6 +6082,10 @@ class DamageCalculatorWrapper {
             let feudFunc = this.__getFeudConditionFunc(enemyUnit);
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
+                if (allyUnit.isCaptain) {
+                    switch (allyUnit.captain) {
+                    }
+                }
                 switch (allyUnit.weapon) {
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
@@ -9212,7 +9221,12 @@ class DamageCalculatorWrapper {
             }
         }
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Number} spaces
+     * @param  {Boolean} withTargetUnit=false
+     * @returns {Unit[]}
+     */
     enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
     }
@@ -10405,6 +10419,16 @@ class DamageCalculatorWrapper {
 
         // その他
         {
+            if (targetUnit.isCaptain) {
+                switch (targetUnit.captain) {
+                    case Captain.SecretManeuver:
+                        {
+                            targetUnit.spdSpur += 5;
+                        }
+                        break;
+                }
+            }
+
             // 潜在ダメージ計算に加味される効果
             switch (targetUnit.passiveA) {
                 case PassiveA.AtkSpdBojosen3:
