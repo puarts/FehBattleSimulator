@@ -529,6 +529,15 @@
                                                         style="position:absolute;top:163px;right:107px;color: #ddd;font-size: 30px;">
                                                         {{globalBattleContext.currentTurn}}
                                                     </div>
+                                                    <div class="mapMessage"
+                                                        v-if="globalBattleContext.currentPhaseType == UnitGroupType.Ally"
+                                                        style="position:absolute;top:223px;left:127px;color: #49f;;font-size: 13px;">
+                                                        青軍が先行です
+                                                    </div>
+                                                    <div v-else class="mapMessage"
+                                                        style="position:absolute;top:223px;left:127px;color: #f99;font-size: 13px;">
+                                                        赤軍が先行です
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
