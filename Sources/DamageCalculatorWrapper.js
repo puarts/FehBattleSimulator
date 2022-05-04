@@ -10031,12 +10031,10 @@ class DamageCalculatorWrapper {
                             break;
                     }
 
-                    if (unit.isCaptain) {
-                        switch (unit.captain) {
-                            case Captain.Eminence:
-                                targetUnit.addSpurs(0, 0, -3, -3);
-                                break;
-                        }
+                    switch (unit.getCaptainSkill()) {
+                        case Captain.Eminence:
+                            targetUnit.addSpurs(0, 0, -3, -3);
+                            break;
                     }
                 }
 

@@ -133,21 +133,38 @@ class GlobalBattleContext {
                 break;
         }
     }
-
-    initializeSummonerDuelsTurnContext() {
+    /**
+     * @param  {Number} allyCaptainSkill
+     * @param  {Number} enemyCaptainSkill
+     */
+    initializeSummonerDuelsTurnContext(allyCaptainSkill, enemyCaptainSkill) {
         if (this.currentTurn == 1) {
             this.currentPhaseType = UnitGroupType.Ally;
         }
         else {
-            this.currentPhaseType = this.__getNextFirstPhaseType();
+            this.currentPhaseType = this.__getNextFirstPhaseType(allyCaptainSkill, enemyCaptainSkill);
         }
         this.restOfPhaseCounts[UnitGroupType.Ally] = 6;
         this.restOfPhaseCounts[UnitGroupType.Enemy] = 6;
+        if (this.currentTurn === 2 || this.currentTurn === 4) {
+            if (allyCaptainSkill == Captain.QuickDraw) {
+                --this.restOfPhaseCounts[UnitGroupType.Enemy];
+            }
+            if (enemyCaptainSkill == Captain.QuickDraw) {
+                --this.restOfPhaseCounts[UnitGroupType.Ally];
+            }
+        }
         this.isAllyPhaseEnded = false;
         this.isEnemyPhaseEnded = false;
     }
 
-    __getNextFirstPhaseType() {
+    __getNextFirstPhaseType(allyCaptainSkill, enemyCaptainSkill) {
+        if (allyCaptainSkill == Captain.QuickDraw && enemyCaptainSkill != Captain.QuickDraw) {
+            return UnitGroupType.Ally;
+        }
+        if (allyCaptainSkill != Captain.QuickDraw && enemyCaptainSkill == Captain.QuickDraw) {
+            return UnitGroupType.Enemy;
+        }
         if (this.restOfPhaseCounts[UnitGroupType.Ally] > this.restOfPhaseCounts[UnitGroupType.Enemy]) {
             return UnitGroupType.Ally;
         }

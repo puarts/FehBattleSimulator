@@ -1269,6 +1269,12 @@ class Unit extends BattleMapElement {
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
     }
+    /**
+     * @returns {Number}
+     */
+    getCaptainSkill() {
+        return this.isCaptain ? this.captain : Captain.None;
+    }
 
     /**
      * 隊長であればtrue、そうでなければfalseを返します。

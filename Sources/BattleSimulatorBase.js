@@ -3310,7 +3310,10 @@ class BattleSimmulatorBase {
             yield unit;
         }
     }
-
+    /**
+     * @param  {Number} groupId
+     * @returns {Unit[]}
+     */
     enumerateUnitsInSpecifiedGroup(groupId) {
         return g_appData.enumerateUnitsInSpecifiedGroup(groupId);
     }
@@ -3499,7 +3502,10 @@ class BattleSimmulatorBase {
         this.__applySkillsForBeginningOfTurn(targetUnits);
 
         if (this.data.gameMode == GameMode.SummonerDuels) {
-            this.data.globalBattleContext.initializeSummonerDuelsTurnContext();
+            this.data.globalBattleContext.initializeSummonerDuelsTurnContext(
+                this.__getCaptainSkill(UnitGroupType.Ally),
+                this.__getCaptainSkill(UnitGroupType.Enemy)
+            );
 
             // 英雄決闘のAIはいらない気がするけど、一応残しておく
             let allyUnits = Array.from(this.enumerateAllyUnitsOnMap());
@@ -3511,6 +3517,15 @@ class BattleSimmulatorBase {
             this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
         }
     }
+    __getCaptainSkill(groupId) {
+        let captainUnit = this.__getCaptainUnitOnMap(groupId);
+        return captainUnit.getCaptainSkill();
+    }
+
+    __getCaptainUnitOnMap(groupId) {
+        return this.enumerateUnitsInSpecifiedGroup(groupId).find(x => x.isOnMap && x.isCaptain);
+    }
+
     /**
      * @param  {Unit[]} targetUnits
      */
