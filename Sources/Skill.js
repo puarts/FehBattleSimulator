@@ -2343,6 +2343,14 @@ const Captain = {
     SecretManeuver: 1972, // 竜跳虎臥
     AdroitCaptain: 1970, // 暗中飛躍
     Erosion: 1975, // 水滴石穿
+
+    Eminence: 1974, // 天地万有
+    // QuickDraw: 1973, // 先手必勝
+    // Effulgence: 1995, // 光輝燦然
+    // Turmoil: 1994, // 疾風怒濤
+    // FlashOfSteel: 2019, // 紫電一閃
+    // RallyingCry: 2018, // 叱咤激励
+    // MassConfusion: 2044, // 空花乱墜
 };
 
 
@@ -2939,6 +2947,7 @@ function hasPathfinderEffect(skillId) {
         case Weapon.JotnarBow:
         case Weapon.Hrimfaxi:
         case Weapon.Skinfaxi:
+        case Captain.Eminence:
             return true;
         default:
             return false;

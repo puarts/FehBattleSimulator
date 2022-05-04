@@ -9295,7 +9295,11 @@ class DamageCalculatorWrapper {
     enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Number} spaces
+     * @returns {Unit[]}
+     */
     enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
     }
@@ -10025,6 +10029,14 @@ class DamageCalculatorWrapper {
                             targetUnit.spdSpur -= 4;
                             targetUnit.resSpur -= 4;
                             break;
+                    }
+
+                    if (unit.isCaptain) {
+                        switch (unit.captain) {
+                            case Captain.Eminence:
+                                targetUnit.addSpurs(0, 0, -3, -3);
+                                break;
+                        }
                     }
                 }
 
