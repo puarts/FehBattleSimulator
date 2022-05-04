@@ -139,6 +139,15 @@ class BeginningOfTurnSkillHandler {
                         });
                 }
                 break;
+            case Captain.RallyingCry:
+                if (this.globalBattleContext.isCurrentTurnIn(2, 5)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
+                            unit.applyAllBuff(6);
+                        }
+                    }
+                }
+                break;
             case Weapon.ShadowBreath:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                     unit.applyAtkBuff(6);
@@ -2041,7 +2050,12 @@ class BeginningOfTurnSkillHandler {
     __findMinStatusUnits(unitGroup, getStatusFunc) {
         return this._unitManager.findMinStatusUnits(unitGroup, getStatusFunc);
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Number} spaces
+     * @param  {Boolean} withTargetUnit=false
+     * @returns {Unit[]}
+     */
     enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
     }
