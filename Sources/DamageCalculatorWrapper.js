@@ -1946,6 +1946,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+
+        this._applySkillEffectForUnitFuncDict[Captain.Effulgence] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidateAllOwnDebuffs();
+        }
+        this._applySkillEffectForUnitFuncDict[Captain.SecretManeuver] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                targetUnit.battleContext.invalidateFollowupAttackSkills();
+            }
+        }
+
         this._applySkillEffectForUnitFuncDict[Weapon.ShadowBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.addSpurs(-6, 0, 0, -6);
@@ -6107,7 +6117,7 @@ class DamageCalculatorWrapper {
             let feudFunc = this.__getFeudConditionFunc(enemyUnit);
 
             // 距離に関係ない効果
-            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, true)) {
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 if (allyUnit.isCaptain) {
                     switch (allyUnit.captain) {
@@ -6125,15 +6135,16 @@ class DamageCalculatorWrapper {
             // 2マス以内の味方からの効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
-                if (allyUnit.isCaptain) {
-                    switch (allyUnit.captain) {
-                        case Captain.SecretManeuver:
-                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                            }
-                            break;
-                    }
+                switch (allyUnit.getCaptainSkill()) {
+                    case Captain.SecretManeuver:
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidateFollowupAttackSkills();
+                        }
+                        break;
+                    case Captain.Effulgence:
+                        targetUnit.battleContext.invalidateAllOwnDebuffs();
+                        break;
+
                 }
                 switch (allyUnit.weapon) {
                     case Weapon.TannenbatonPlus:
@@ -9366,9 +9377,17 @@ class DamageCalculatorWrapper {
             x => unit.calculateDistanceToUnit(x) <= 3
                 && unit.partnerHeroIndex === x.heroIndex);
     }
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} allyUnit
+     * @param  {Boolean} calcPotentialDamage
+     */
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
-        for (let skillId of [allyUnit.passiveC, allyUnit.passiveS]) {
+        for (let skillId of [allyUnit.passiveC, allyUnit.passiveS, allyUnit.getCaptainSkill()]) {
             switch (skillId) {
+                case Captain.Effulgence:
+                    targetUnit.addSpurs(4, 4, 0, 0);
+                    break;
                 case PassiveC.OpeningRetainer:
                     targetUnit.atkSpur += 4;
                     break;
@@ -10498,14 +10517,13 @@ class DamageCalculatorWrapper {
 
         // その他
         {
-            if (targetUnit.isCaptain) {
-                switch (targetUnit.captain) {
-                    case Captain.SecretManeuver:
-                        {
-                            targetUnit.spdSpur += 5;
-                        }
-                        break;
-                }
+            switch (targetUnit.getCaptainSkill()) {
+                case Captain.SecretManeuver:
+                    targetUnit.spdSpur += 5;
+                    break;
+                case Captain.Effulgence:
+                    targetUnit.addSpurs(4, 4, 0, 0);
+                    break;
             }
 
             // 潜在ダメージ計算に加味される効果

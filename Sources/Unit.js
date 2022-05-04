@@ -551,6 +551,11 @@ class BattleContext {
         this.preventedDefenderSpecial = false;
     }
 
+    invalidateFollowupAttackSkills() {
+        this.invalidatesAbsoluteFollowupAttack = true;
+        this.invalidatesInvalidationOfFollowupAttack = true;
+    }
+
     increaseCooldownCountForBoth() {
         this.increaseCooldownCountForAttack = true;
         this.increaseCooldownCountForDefense = true;
