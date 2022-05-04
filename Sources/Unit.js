@@ -390,7 +390,7 @@ class BattleContext {
         this.isVantageActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
         this.isVantageActivated = false; // 待ち伏せが実際に発動するか(敵の戦闘順入替スキルを加味した有効無効)
         this.isDesperationActivatable = false; // 攻め立てが発動条件を満たすか
-        this.isDesperationActivated = false; // 攻め立てが実際に発動するか
+        this.isDesperationActivated = false; // 攻め立てが実際に発動するか(これはisDesperationActivatableから設定されるので直接設定しない)
         this.isDefDesperationActivatable = false; // 受け攻め立ての発動条件を満たすか
         this.isDefDesperationActivated = false; // 最後の聖戦のように攻め立て受け側バージョン
         this.damageReductionRatioOfFirstAttack = 0;
@@ -416,11 +416,11 @@ class BattleContext {
         // 敵の奥義発動カウント変動量を-1
         this.reducesCooldownCount = false;
 
-        // // 自身の発動カウント変動量-1を無効
-        // this.invalidatesReduceCooldownCount = false;
+        // 自身の発動カウント変動量-1を無効
+        this.invalidatesReduceCooldownCount = false;
 
-        // // 敵の発動カウント変動量+1を無効
-        // this.invalidatesIncreaseCooldownCount = false;
+        // 敵の発動カウント変動量+1を無効
+        this.invalidatesIncreaseCooldownCount = false;
 
         // 守備魔防の低い方を参照を無効化
         this.invalidatesReferenceLowerMit = false;
@@ -556,6 +556,11 @@ class BattleContext {
         this.invalidatesInvalidationOfFollowupAttack = true;
     }
 
+    invalidateCooldownCountSkills() {
+        this.invalidatesIncreaseCooldownCount = true;
+        this.invalidatesReduceCooldownCount = true;
+    }
+
     increaseCooldownCountForBoth() {
         this.increaseCooldownCountForAttack = true;
         this.increaseCooldownCountForDefense = true;
@@ -622,11 +627,11 @@ class BattleContext {
         this.reducedDamageForNextAttack = 0;
         this.nextAttackEffectAfterSpecialActivated = false;
 
-        // // 自身の発動カウント変動量-1を無効
-        // this.invalidatesReduceCooldownCount = false;
+        // 自身の発動カウント変動量-1を無効
+        this.invalidatesReduceCooldownCount = false;
 
-        // // 敵の発動カウント変動量+1を無効
-        // this.invalidatesIncreaseCooldownCount = false;
+        // 敵の発動カウント変動量+1を無効
+        this.invalidatesIncreaseCooldownCount = false;
 
         this.initiatesCombat = false;
         this.followupAttackPriorityIncrement = 0;

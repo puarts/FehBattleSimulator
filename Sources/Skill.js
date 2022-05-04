@@ -2347,7 +2347,7 @@ const Captain = {
     QuickDraw: 1973, // 先手必勝
     Effulgence: 1995, // 光輝燦然
     Turmoil: 1994, // 疾風怒濤
-    // FlashOfSteel: 2019, // 紫電一閃
+    FlashOfSteel: 2019, // 紫電一閃
     RallyingCry: 2018, // 叱咤激励
     MassConfusion: 2044, // 空花乱墜
 };

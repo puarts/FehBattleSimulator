@@ -909,7 +909,11 @@ class DamageCalculatorWrapper {
         }
     }
 
-    /// 戦闘順入れ替えスキルを適用します。
+    /**
+     * 戦闘順入れ替えスキルを適用します。
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
     __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
         {
             switch (defUnit.weapon) {
@@ -1142,7 +1146,7 @@ class DamageCalculatorWrapper {
             if (self.__isThereAnyAllyUnit(atkUnit, x => x.isActionDone)) {
                 atkUnit.atkSpur += 6;
                 atkUnit.spdSpur += 6;
-                atkUnit.battleContext.isDesperationActivated = true;
+                atkUnit.battleContext.isDesperationActivatable = true;
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.EishinNoAnki] = (atkUnit, defUnit, calcPotentialDamage) => {
@@ -1954,6 +1958,10 @@ class DamageCalculatorWrapper {
             if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
                 targetUnit.battleContext.invalidateFollowupAttackSkills();
             }
+        }
+        this._applySkillEffectForUnitFuncDict[Captain.FlashOfSteel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.isDesperationActivatable = true;
+            targetUnit.battleContext.invalidateCooldownCountSkills();
         }
 
         this._applySkillEffectForUnitFuncDict[Weapon.ShadowBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -3093,7 +3101,7 @@ class DamageCalculatorWrapper {
                 enemyUnit.defSpur -= 6;
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                 if (targetUnit.isTransformed) {
-                    targetUnit.battleContext.isDesperationActivated = true;
+                    targetUnit.battleContext.isDesperationActivatable = true;
                 }
             }
         };
@@ -6144,18 +6152,16 @@ class DamageCalculatorWrapper {
                     case Captain.Effulgence:
                         targetUnit.battleContext.invalidateAllOwnDebuffs();
                         break;
-
+                    case Captain.FlashOfSteel:
+                        targetUnit.battleContext.invalidateCooldownCountSkills();
+                        break;
                 }
                 switch (allyUnit.weapon) {
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
                         break;
                     case Weapon.ProfessorialGuide:
-                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                            enemyUnit.battleContext.reducesCooldownCount = false;
-                            enemyUnit.battleContext.increaseCooldownCountForAttack = false;
-                            enemyUnit.battleContext.increaseCooldownCountForDefense = false;
-                        }
+                        targetUnit.battleContext.invalidateCooldownCountSkills();
                         break;
                     case Weapon.ProfessorialText:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
@@ -8864,87 +8870,75 @@ class DamageCalculatorWrapper {
                 break;
         }
     }
-
-    __applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage) {
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} calcPotentialDamage
+     */
+    __applyInvalidationSkillEffect(targetUnit, enemyUnit, calcPotentialDamage) {
         // 獣の共通武器スキル
-        switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
+        switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
             case BeastCommonSkillType.InfantryMelee2:
-                if (atkUnit.isTransformed) {
-                    defUnit.battleContext.reducesCooldownCount = false;
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                if (targetUnit.isTransformed) {
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
                 }
                 break;
             case BeastCommonSkillType.InfantryMelee2IfRefined:
-                if (!atkUnit.isWeaponRefined) break;
-                if (atkUnit.isTransformed) {
-                    defUnit.battleContext.reducesCooldownCount = false;
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                if (!targetUnit.isWeaponRefined) break;
+                if (targetUnit.isTransformed) {
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
                 }
                 break;
         }
-        switch (atkUnit.weapon) {
+        switch (targetUnit.weapon) {
             case Weapon.ThundersMjolnir:
-                if (atkUnit.battleContext.restHpPercentage >= 25) {
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
-                    defUnit.battleContext.reducesCooldownCount = false;
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
                 }
                 break;
             case Weapon.ProfessorialGuide:
-                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
-                    defUnit.battleContext.reducesCooldownCount = false;
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
                 }
                 break;
             case Weapon.FiremansHook:
-                if (atkUnit.battleContext.initiatesCombat || this.__isSolo(atkUnit) || calcPotentialDamage) {
-                    defUnit.battleContext.reducesCooldownCount = false;
+                if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.battleContext.invalidatesReduceCooldownCount = true;
                 }
                 break;
             case Weapon.SpendyScimitar:
-                if (atkUnit.battleContext.initiatesCombat && atkUnit.dragonflower >= 2) {
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
-                    defUnit.battleContext.reducesCooldownCount = false;
+                if (targetUnit.battleContext.initiatesCombat && targetUnit.dragonflower >= 2) {
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
                 }
                 break;
             case Weapon.WhirlingGrace:
-                if (atkUnit.battleContext.restHpPercentage >= 25) {
-                    if (atkUnit.getEvalSpdInCombat() >= defUnit.getSpdInCombat() + 1) {
-                        defUnit.battleContext.reducesCooldownCount = false;
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                        targetUnit.battleContext.invalidatesReduceCooldownCount = true;
                     }
                 }
                 break;
             case Weapon.HolyYewfelle:
-                if (atkUnit.battleContext.initiatesCombat || defUnit.battleContext.restHpPercentage >= 75) {
-                    defUnit.battleContext.reducesCooldownCount = false;
+                if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.invalidatesReduceCooldownCount = true;
                 }
                 break;
             case Weapon.SyunsenAiraNoKen:
-                if (atkUnit.isWeaponRefined) {
-                    defUnit.battleContext.increaseCooldownCountForAttack = false;
-                    defUnit.battleContext.increaseCooldownCountForDefense = false;
-                    defUnit.battleContext.reducesCooldownCount = false;
+                if (targetUnit.isWeaponRefined) {
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
                 }
                 break;
             case Weapon.TenteiNoKen:
-                defUnit.battleContext.increaseCooldownCountForAttack = false;
-                defUnit.battleContext.increaseCooldownCountForDefense = false;
-                defUnit.battleContext.reducesCooldownCount = false;
+                targetUnit.battleContext.invalidateCooldownCountSkills();
                 break;
         }
-        switch (atkUnit.passiveB) {
+        switch (targetUnit.passiveB) {
             case PassiveB.SpdDefTempo3:
-                defUnit.battleContext.increaseCooldownCountForAttack = false;
-                defUnit.battleContext.increaseCooldownCountForDefense = false;
-                defUnit.battleContext.reducesCooldownCount = false;
+                targetUnit.battleContext.invalidateCooldownCountSkills();
                 break;
             case PassiveB.SolarBrace2:
             case PassiveB.MoonlightBangle:
-                defUnit.battleContext.reducesCooldownCount = false;
+                targetUnit.battleContext.invalidatesReduceCooldownCount = true;
                 break;
 
         }

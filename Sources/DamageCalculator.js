@@ -696,30 +696,33 @@ class DamageCalculator {
         return currentDamage;
     }
 
-
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
     __calcAndSetCooldownCount(atkUnit, defUnit) {
         atkUnit.battleContext.cooldownCountForAttack = 1;
         defUnit.battleContext.cooldownCountForAttack = 1;
         atkUnit.battleContext.cooldownCountForDefense = 1;
         defUnit.battleContext.cooldownCountForDefense = 1;
-        if (atkUnit.battleContext.increaseCooldownCountForAttack) {
+        if (atkUnit.battleContext.increaseCooldownCountForAttack && !defUnit.battleContext.invalidatesIncreaseCooldownCount) {
             atkUnit.battleContext.cooldownCountForAttack += 1;
         }
-        if (atkUnit.battleContext.increaseCooldownCountForDefense) {
+        if (atkUnit.battleContext.increaseCooldownCountForDefense && !defUnit.battleContext.invalidatesIncreaseCooldownCount) {
             atkUnit.battleContext.cooldownCountForDefense += 1;
         }
-        if (defUnit.battleContext.increaseCooldownCountForAttack) {
+        if (defUnit.battleContext.increaseCooldownCountForAttack && !atkUnit.battleContext.invalidatesIncreaseCooldownCount) {
             defUnit.battleContext.cooldownCountForAttack += 1;
         }
-        if (defUnit.battleContext.increaseCooldownCountForDefense) {
+        if (defUnit.battleContext.increaseCooldownCountForDefense && !atkUnit.battleContext.invalidatesIncreaseCooldownCount) {
             defUnit.battleContext.cooldownCountForDefense += 1;
         }
 
-        if (defUnit.battleContext.reducesCooldownCount) {
+        if (defUnit.battleContext.reducesCooldownCount && !atkUnit.battleContext.invalidatesReduceCooldownCount) {
             atkUnit.battleContext.cooldownCountForAttack -= 1;
             atkUnit.battleContext.cooldownCountForDefense -= 1;
         }
-        if (atkUnit.battleContext.reducesCooldownCount) {
+        if (atkUnit.battleContext.reducesCooldownCount && !defUnit.battleContext.invalidatesReduceCooldownCount) {
             defUnit.battleContext.cooldownCountForAttack -= 1;
             defUnit.battleContext.cooldownCountForDefense -= 1;
         }
