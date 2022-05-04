@@ -124,6 +124,9 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
+            case Captain.Turmoil:
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                break;
             case Weapon.ShadowBreath:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                     unit.applyAtkBuff(6);

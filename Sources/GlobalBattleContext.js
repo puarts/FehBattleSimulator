@@ -77,17 +77,28 @@ class GlobalBattleContext {
             this.summonerDuelsKoScores[atkUnit.groupId] += 1;
         }
     }
+
     /**
      * @param  {Unit[]} allyUnitsOnPointArea
      * @param  {Unit[]} enemyUnitsOnPointArea
      */
     addSummonerDuelsCaptureScore(allyUnitsOnPointArea, enemyUnitsOnPointArea) {
-        if (allyUnitsOnPointArea.length >= enemyUnitsOnPointArea.length + 2) {
+        let allyEvalCount = allyUnitsOnPointArea.length + this.__getCaptureScoreEvalCount(allyUnitsOnPointArea);
+        let enemyEvalCount = enemyUnitsOnPointArea.length + this.__getCaptureScoreEvalCount(enemyUnitsOnPointArea);
+        if (allyEvalCount >= enemyEvalCount + 2) {
             this.summonerDuelsCaptureScores[UnitGroupType.Ally] += 2;
         }
-        else if (enemyUnitsOnPointArea.length >= allyUnitsOnPointArea.length + 2) {
+        else if (enemyEvalCount >= allyEvalCount + 2) {
             this.summonerDuelsCaptureScores[UnitGroupType.Enemy] += 2;
         }
+    }
+
+    /**
+     * @param  {Unit[]} unitsOnPointArea
+     */
+    __getCaptureScoreEvalCount(unitsOnPointArea) {
+        let captainUnit = unitsOnPointArea.find(x => x.isCaptain);
+        return unitsOnPointArea.length + (captainUnit != null && captainUnit.getCaptainSkill() == Captain.Turmoil ? 1 : 0);
     }
 
     endSummonerDuelsTurn() {
