@@ -2349,7 +2349,7 @@ const Captain = {
     Turmoil: 1994, // 疾風怒濤
     // FlashOfSteel: 2019, // 紫電一閃
     // RallyingCry: 2018, // 叱咤激励
-    // MassConfusion: 2044, // 空花乱墜
+    MassConfusion: 2044, // 空花乱墜
 };
 
 

@@ -48,6 +48,14 @@ class GlobalBattleContext {
             --this.summonerDuelsPointAreaOffset;
         }
     }
+    /**
+     * @param  {Number} beginTurn
+     * @param  {Number} endTurn
+     * @returns {Boolean}
+     */
+    isCurrentTurnIn(beginTurn, endTurn) {
+        return beginTurn <= this.currentTurn && this.currentTurn <= endTurn;
+    }
 
     get isOddTurn() {
         return this.currentTurn % 2 === 1;

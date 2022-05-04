@@ -10524,6 +10524,9 @@ class DamageCalculatorWrapper {
                 case Captain.Effulgence:
                     targetUnit.addSpurs(4, 4, 0, 0);
                     break;
+                case Captain.MassConfusion:
+                    targetUnit.atkSpur += 5;
+                    break;
             }
 
             // 潜在ダメージ計算に加味される効果

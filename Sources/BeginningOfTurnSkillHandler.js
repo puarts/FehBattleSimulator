@@ -127,6 +127,18 @@ class BeginningOfTurnSkillHandler {
             case Captain.Turmoil:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;
+            case Captain.MassConfusion:
+                if (this.globalBattleContext.isCurrentTurnIn(2, 5)) {
+                    this.__applySabotageSkillImpl(
+                        skillOwner,
+                        unit => true,
+                        unit => {
+                            unit.reserveToApplyAtkDebuff(-7);
+                            unit.reserveToApplyDefDebuff(-7);
+                            unit.reserveToApplyResDebuff(-7);
+                        });
+                }
+                break;
             case Weapon.ShadowBreath:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                     unit.applyAtkBuff(6);
