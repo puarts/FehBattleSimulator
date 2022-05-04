@@ -111,8 +111,17 @@ class BeginningOfTurnSkillHandler {
 
         switch (skillId) {
             case Captain.EarthRendering:
-                if (!this.isFirstTurn && this.map.isUnitOnSummonerDuelsPointArea(skillOwner, this.globalBattleContext.summonerDuelsPointAreaOffset)) {
+                if (2 <= this.globalBattleContext.currentTurn && this.globalBattleContext.currentTurn <= 4
+                    && this.map.isUnitOnSummonerDuelsPointArea(skillOwner, this.globalBattleContext.summonerDuelsPointAreaOffset)
+                ) {
                     this.globalBattleContext.moveSummonerDuelsPointAreaOffset(skillOwner.groupId);
+                }
+                break;
+            case Captain.AdroitCaptain:
+                if (2 <= this.globalBattleContext.currentTurn && this.globalBattleContext.currentTurn <= 5) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
+                        unit.reduceSpecialCount(1);
+                    }
                 }
                 break;
             case Weapon.ShadowBreath:

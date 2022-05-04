@@ -2341,7 +2341,7 @@ const Captain = {
     None: -1,
     EarthRendering: 1971, // 震天動地
     SecretManeuver: 1972, // 竜跳虎臥
-    // AdroitCaptain: 1970, // 暗中飛躍
+    AdroitCaptain: 1970, // 暗中飛躍
     // Erosion: 1975, // 水滴石穿
 };
 
