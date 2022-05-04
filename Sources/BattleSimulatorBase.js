@@ -2835,6 +2835,7 @@ class BattleSimmulatorBase {
             self.__markUnsupportedSkills(self.vm.passiveSOptions,
                 [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
                 () => ++self.vm.passiveSCount, () => ++self.vm.passiveSImplCount);
+            self.__markUnsupportedSkills(self.vm.captainOptions, [g_appData.captainInfos]);
 
             // アルファベットソート(今は全スキルのオプションをメインで使ってないので速度優先でソートは無効化)
             // self.__sortSkillOptionsAlphabetically(self.vm.weaponOptions);
