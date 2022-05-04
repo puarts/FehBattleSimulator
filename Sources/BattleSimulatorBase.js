@@ -2622,12 +2622,11 @@ class BattleSimmulatorBase {
         this.clearSimpleLog();
     }
 
-    * enumerateUnits(predicator = null) {
-        for (let unit of this.vm.units) {
-            if (predicator == null || predicator(unit)) {
-                yield unit;
-            }
-        }
+    enumerateUnits(predicator = null) {
+        return g_appData.enumerateUnitsWithPredicator(predicator);
+    }
+    enumerateUnitsOnMap(predicator = null) {
+        return g_appData.enumerateUnitsWithPredicator(x => x.isOnMap && (x == null || predicator(x)));
     }
 
     __findIndexOfUnit(id) {
@@ -3097,7 +3096,7 @@ class BattleSimmulatorBase {
         executeTrapIfPossible(atkUnit);
 
         // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
-        this.__goToNextPhaseIfAllActionDone(atkUnit.groupId);
+        this.__goToNextPhaseIfPossible(atkUnit.groupId);
     }
 
     __activateRefreshSpecial(atkUnit) {
@@ -5742,10 +5741,10 @@ class BattleSimmulatorBase {
         }
         this.__enqueueCommand(`行動終了(${unit.getNameWithGroup()})`, function () {
             if (self.isCommandLogEnabled) {
-                g_app.writeLogLine(unit.getNameWithGroup() + "は行動終了");
+                self.writeLogLine(unit.getNameWithGroup() + "は行動終了");
             }
 
-            g_app.endUnitAction(unit);
+            self.endUnitActionAndGainPhaseIfPossible(unit);
             unit.deactivateCanto();
         }, serial);
     }
@@ -6003,7 +6002,7 @@ class BattleSimmulatorBase {
                 }
 
                 if (!unit.isActionDone && endAction) {
-                    self.endUnitAction(unit);
+                    self.endUnitActionAndGainPhaseIfPossible(unit);
                     unit.deactivateCanto();
                 }
                 self.__updateDistanceFromClosestEnemy(unit);
@@ -7403,7 +7402,7 @@ class BattleSimmulatorBase {
         }
 
         // 行動終了してから移動しないと罠が発動後に行動終了で状態異常がすぐに回復してしまう
-        // endUnitAction()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
+        // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
         unit.endAction();
 
         g_appData.map.removeUnit(unit);
@@ -8023,7 +8022,11 @@ class BattleSimmulatorBase {
         }
         supporterUnit.setSpecialCountToMax();
     }
-
+    /**
+     * @param  {Unit} supporterUnit
+     * @param  {Unit} targetUnit
+     * @param  {Tile} supportTile=null
+     */
     applySupportSkill(supporterUnit, targetUnit, supportTile = null) {
         if (supporterUnit.supportInfo == null) {
             return false;
@@ -8031,7 +8034,7 @@ class BattleSimmulatorBase {
 
         if (this.__applySupportSkill(supporterUnit, targetUnit)) {
             if (!supporterUnit.isActionDone) {
-                // endUnitAction()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
+                // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
             }
             switch (supporterUnit.support) {
@@ -8065,7 +8068,7 @@ class BattleSimmulatorBase {
             // 再移動の評価
             this.__activateCantoIfPossible(supporterUnit);
 
-            this.__goToNextPhaseIfAllActionDone(supporterUnit.groupId);
+            this.__goToNextPhaseIfPossible(supporterUnit.groupId);
         }
 
         return false;
@@ -8276,14 +8279,14 @@ class BattleSimmulatorBase {
             }
             unit.endAction();
         }
-        this.__goToNextPhaseIfAllActionDone(groupId);
+        this.__goToNextPhaseIfPossible(groupId);
     }
     /**
      * @param  {Unit} unit
      */
-    endUnitAction(unit) {
+    endUnitActionAndGainPhaseIfPossible(unit) {
         unit.endAction();
-        this.__goToNextPhaseIfAllActionDone(unit.groupId);
+        this.__goToNextPhaseIfPossible(unit.groupId);
     }
 
     __endUnitActionOrActivateCanto(unit) {
@@ -8292,10 +8295,10 @@ class BattleSimmulatorBase {
         // 再移動の評価
         this.__activateCantoIfPossible(unit);
 
-        this.__goToNextPhaseIfAllActionDone(unit.groupId);
+        this.__goToNextPhaseIfPossible(unit.groupId);
     }
 
-    __goToNextPhaseIfAllActionDone(groupId) {
+    __goToNextPhaseIfPossible(groupId) {
         if (groupId == UnitGroupType.Ally) {
             if (!this.__isThereActionableAllyUnit()) {
                 // 味方全員の行動が終了したので敵ターンへ
@@ -8545,7 +8548,7 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
         if (obj.isExecutable) {
             if (unit.passiveB != PassiveB.Wanakaijo3) {
                 if (endsActionIfActivateTrap) {
-                    g_app.endUnitAction(unit);
+                    g_app.endUnitActionAndGainPhaseIfPossible(unit);
                 }
 
                 g_app.audioManager.playSoundEffect(SoundEffectId.Trap);

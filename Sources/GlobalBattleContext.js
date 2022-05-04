@@ -77,12 +77,18 @@ class GlobalBattleContext {
      * @param  {Unit} defUnit
      */
     addSummonerDuelsKoScore(atkUnit, defUnit) {
-        this.summonerDuelsKoScores[atkUnit.groupId] += 2;
-        if (atkUnit.isCaptain) {
-            this.summonerDuelsKoScores[atkUnit.groupId] += 1;
+        let winner = defUnit.isDead ? atkUnit : atkUnit.isDead ? defUnit : null;
+        if (winner == null) {
+            return;
         }
-        if (defUnit.isCaptain) {
-            this.summonerDuelsKoScores[atkUnit.groupId] += 1;
+
+        let looser = winner == atkUnit ? defUnit : atkUnit;
+        this.summonerDuelsKoScores[winner.groupId] += 2;
+        if (winner.isCaptain) {
+            this.summonerDuelsKoScores[winner.groupId] += 1;
+        }
+        if (looser.isCaptain) {
+            this.summonerDuelsKoScores[winner.groupId] += 1;
         }
     }
 

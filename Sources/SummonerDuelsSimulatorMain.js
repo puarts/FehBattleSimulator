@@ -51,13 +51,8 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
         updateAllUi();
     }
 
-    /**
-     * @param  {Unit} targetUnit
-     */
-    endUnitAction(targetUnit) {
-        targetUnit.endAction();
-        let hasAnyAction = this.__hasAnyActions(this.enumerateUnitsInTheSameGroupOnMap(targetUnit));
-        let endsCurrentPhase = !hasAnyAction;
+    __goToNextPhaseIfPossible(groupId) {
+        let endsCurrentPhase = !this.__hasAnyActions(this.enumerateUnitsOnMap(x => x.groupId == groupId));
         this.data.globalBattleContext.gainSummonerDuelsPhase(endsCurrentPhase);
         if (this.data.globalBattleContext.isSummonerDuelsTurnEnded) {
             this.simulateBeginningOfTurn();
@@ -66,6 +61,7 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
     }
     /**
      * @param  {Unit[]} units
+     * @returns {Boolean}
      */
     __hasAnyActions(units) {
         for (let unit of units) {

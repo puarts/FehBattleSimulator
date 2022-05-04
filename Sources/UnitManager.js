@@ -21,7 +21,7 @@ class UnitManager {
 
     *enumerateUnitsWithPredicator(predicator) {
         for (let unit of this.enumerateUnits()) {
-            if (predicator(unit)) {
+            if (predicator != null && predicator(unit)) {
                 yield unit;
             }
         }
