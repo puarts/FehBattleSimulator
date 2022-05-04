@@ -596,6 +596,10 @@ class DamageCalculatorWrapper {
     }
 
     __canActivateSaveSkill(atkUnit, unit) {
+        if (this.__canDisableSaveSkill(atkUnit, unit)) {
+            return false;
+        }
+
         switch (unit.passiveC) {
             case PassiveC.WithEveryone2:
             case PassiveC.AdFarSave3:
@@ -614,6 +618,18 @@ class DamageCalculatorWrapper {
                 break;
         }
 
+        return false;
+    }
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
+    __canDisableSaveSkill(atkUnit, defUnit) {
+        if (atkUnit.isCaptain) {
+            switch (atkUnit.captain) {
+                case Captain.Erosion: return true;
+            }
+        }
         return false;
     }
 
@@ -824,8 +840,18 @@ class DamageCalculatorWrapper {
     __setBattleContextRelatedToMap(targetUnit, enemyUnit, calcPotentialDamage) {
         targetUnit.battleContext.isOnDefensiveTile = targetUnit.placedTile.isDefensiveTile;
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} calcPotentialDamage
+     */
     __canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.isCaptain) {
+            switch (targetUnit.captain) {
+                case Captain.AdroitCaptain:
+                    return true;
+            }
+        }
         switch (targetUnit.weapon) {
             case Weapon.ShikkyuMyurugure:
                 if (targetUnit.isWeaponRefined) {
@@ -6078,8 +6104,25 @@ class DamageCalculatorWrapper {
         }
 
         if (!calcPotentialDamage) {
-            // 2マス以内の味方からの効果
             let feudFunc = this.__getFeudConditionFunc(enemyUnit);
+
+            // 距離に関係ない効果
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, true)) {
+                if (feudFunc != null && feudFunc(allyUnit)) continue;
+                if (allyUnit.isCaptain) {
+                    switch (allyUnit.captain) {
+                        case Captain.Erosion:
+                            if (enemyUnit.battleContext.isSaviorActivated) {
+                                enemyUnit.defSpur -= 4;
+                                enemyUnit.resSpur -= 4;
+                                targetUnit.battleContext.invalidatesCounterattack = true;
+                            }
+                            break;
+                    }
+                }
+            }
+
+            // 2マス以内の味方からの効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 if (allyUnit.isCaptain) {
@@ -6199,6 +6242,8 @@ class DamageCalculatorWrapper {
                     }
                 }
             }
+
+            // 周囲3マス以内
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 for (let skill of allyUnit.enumerateSkills()) {
@@ -9254,7 +9299,11 @@ class DamageCalculatorWrapper {
     enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
     }
-
+    /**
+     * @param  {Unit} unit
+     * @param  {Boolean} withTargetUnit=false
+     * @returns {Unit[]}
+     */
     enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
