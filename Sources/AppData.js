@@ -887,7 +887,10 @@ class AppData extends UnitManager {
                 return 35 + Number(this.resonantBattleInterval);
         }
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} providerUnit
+     */
     isBlessingEffectEnabled(targetUnit, providerUnit) {
         switch (this.gameMode) {
             case GameMode.AetherRaid:
@@ -927,7 +930,6 @@ class AppData extends UnitManager {
 
                     return false;
                 }
-            case GameMode.SummonerDuels:
             case GameMode.Arena:
                 {
                     if (targetUnit.grantedBlessing == SeasonType.None
@@ -992,6 +994,35 @@ class AppData extends UnitManager {
                     }
 
                     return false;
+                }
+            case GameMode.SummonerDuels:
+                {
+                    if (providerUnit.providableBlessingSeason == SeasonType.None
+                        || isMythicSeasonType(providerUnit.providableBlessingSeason)
+                    ) {
+                        // 適用元が伝承効果を持たない
+                        return false;
+                    }
+
+                    if (isLegendarySeasonType(targetUnit.providableBlessingSeason)) {
+                        // 対象が伝承英雄なので祝福付与なし
+                        return false;
+                    }
+
+                    if (!this.examinesIsCurrentSeason(providerUnit.providableBlessingSeason)) {
+                        // 適用元の祝福がシーズンに合わない
+                        return false;
+                    }
+
+                    if (isMythicSeasonType(targetUnit.providableBlessingSeason)) {
+                        // 神階英雄はシーズンが合ってる場合だけ適用される
+                        let isSeasonMythicUnit = this.examinesIsCurrentSeason(targetUnit.providableBlessingSeason);
+                        return isSeasonMythicUnit;
+                    }
+                    else {
+                        // 英雄決闘は祝福の有無に関係なく伝承効果が適用されるので適用者の祝福の判定不要
+                        return true;
+                    }
                 }
             default:
                 return false;
