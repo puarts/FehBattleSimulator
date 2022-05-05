@@ -2718,8 +2718,14 @@ class BattleMap {
                     + specialCount + "</span>";
             }
 
+            // 隊長マーク
+            if (unit.isCaptain) {
+                const captainIcon = g_imageRootPath + "CaptainIcon.webp";
+                cell.innerText += `<span style='position:absolute;top:0;right:0;${shadowCss};'><img src='${captainIcon}' style='height:11px'></span>`;
+            }
+
             // バフ、デバフ
-            {
+            if (unit.isBuffed || unit.isDebuffed) {
                 cell.innerText += "<span style='position:absolute;bottom:0;right:0;" + shadowCss + ";'>"
                 if (unit.isBuffed) {
                     cell.innerText += "<img src='" + g_imageRootPath + "BuffIcon.png" + "' style='height:12px'>";
@@ -2731,15 +2737,10 @@ class BattleMap {
             }
 
             // 状態異常
-            {
+            if (unit.hasAnyStatusEffect) {
                 cell.innerText += "<span style='position:absolute;top:0;right:0;" + shadowCss + ";'>"
                 for (let statusEffect of unit.statusEffects) {
                     cell.innerText += "<img src='" + statusEffectTypeToIconFilePath(statusEffect) + "' style='height:11px'>";
-                }
-
-                // todo: 暫定対処
-                if (!unit.hasStatusEffect(StatusEffectType.MobilityIncreased) && unit.moveCount > unit.getNormalMoveCount()) {
-                    cell.innerText += "<img src='" + statusEffectTypeToIconFilePath(StatusEffectType.MobilityIncreased) + "' style='height:11px'>";
                 }
                 cell.innerText += "</span>";
             }
