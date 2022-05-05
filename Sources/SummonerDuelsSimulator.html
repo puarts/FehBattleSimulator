@@ -327,27 +327,14 @@
             color: white;
             text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
         }
-    </style>
-    <style>
-        .fade {
-            animation: fadeIn 5.2s ease 0.3s 1 normal;
-        }
 
-        @keyframes fadeIn {
-
-            /*animation-nameで設定した値を書く*/
-            0% {
-                opacity: 0
-            }
-
-            /*アニメーション開始時は不透明度0%*/
-            100% {
-                opacity: 1
-            }
-
-            /*アニメーション終了時は不透明度100%*/
+        .captainSkillIcon {
+            height: 25px;
+            width: 25px;
+            position: absolute;
         }
     </style>
+
     <!-- 重要なところは予め接続 -->
     <link rel="preconnect" href="//cdnjs.cloudflare.com">
     <link rel="preconnect" href="//code.jquery.com">
@@ -488,10 +475,14 @@
                                                 <!-- 隊長スキルアイコン -->
                                                 <img v-if="g_appData.findAllyCaptain().captainInfo != null"
                                                     v-bind:src="g_appData.findAllyCaptain().captainInfo.iconPath"
-                                                    width="25" height="25" style="position:absolute; left:135px" />
+                                                    class="captainSkillIcon" style="left:135px" />
+                                                <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'"
+                                                    class="captainSkillIcon" style="left:135px" />
                                                 <img v-if="g_appData.findEnemyCaptain().captainInfo != null"
                                                     v-bind:src="g_appData.findEnemyCaptain().captainInfo.iconPath"
-                                                    width="25" height="25" style="position:absolute; right:135px" />
+                                                    class="captainSkillIcon" style="right:135px" />
+                                                <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'"
+                                                    class="captainSkillIcon" style="right:135px" />
 
                                                 <!-- 撃破スコア -->
                                                 <div
