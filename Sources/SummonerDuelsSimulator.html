@@ -813,15 +813,6 @@
                     <table border="0" style="border-width: 0px;border-color: #dddddd;margin: 5px;font-size:14px">
                         <tr style="background-color:#bcf;border-style: solid;border-color: #aaf; border-width: 2px;">
                             <td><span style="padding-right: 10px;">青軍</span>
-                                <span style="position: relative;">
-                                    <img v-if="g_appData.findAllyCaptain().captainInfo != null"
-                                        v-bind:src="g_appData.findAllyCaptain().captainInfo.iconPath" width="25"
-                                        height="25" />
-                                    <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                </span>
-
-                                <span v-if="g_appData.gameMode == GameMode.Arena"
-                                    style="font-size:12px"><br />査定:{{arenaScore}}({{primeArenaScore}})</span>
                             </td>
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
@@ -833,6 +824,13 @@
                                                 style=" color:blue;background-color: #ffffff66;">
                                                 Bonus</div>
                                         </span>
+                                        <span v-if="unit.isCaptain">
+                                            <img v-if="g_appData.findAllyCaptain().captainInfo != null"
+                                                v-bind:src="g_appData.findAllyCaptain().captainInfo.iconPath" width="25"
+                                                height="25" />
+                                            <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'"
+                                                width="25" height="25" />
+                                        </span>
                                         <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
 
                                     </span>
@@ -842,18 +840,7 @@
                             </td>
                         </tr>
                         <tr style="background-color:#fcc;border-style: solid;border-color: #faa; border-width: 2px;">
-                            <td><span style="padding-right: 10px;">赤軍</span><span
-                                    v-if="g_appData.gameMode == GameMode.Arena"
-                                    style="font-size:12px"><br />査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
-                                </span>
-                                <span style="position: relative;">
-                                    <img v-if="g_appData.findEnemyCaptain().captainInfo != null"
-                                        v-bind:src="g_appData.findEnemyCaptain().captainInfo.iconPath" width="25"
-                                        height="25" />
-                                    <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                </span>
-                                <span v-else-if="g_appData.gameMode == GameMode.AetherRaid"
-                                    style="font-size:12px"><br />失敗レート:{{aetherRaidDefenseLiftLoss}}</span>
+                            <td><span style="padding-right: 10px;">赤軍</span>
                             </td>
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected"
@@ -865,6 +852,13 @@
                                             <div v-if="unit.isBonusChar"
                                                 style=" color:blue;background-color: #ffffff66;">
                                                 Bonus</div>
+                                        </span>
+                                        <span v-if="unit.isCaptain">
+                                            <img v-if="g_appData.findEnemyCaptain().captainInfo != null"
+                                                v-bind:src="g_appData.findEnemyCaptain().captainInfo.iconPath"
+                                                width="25" height="25" />
+                                            <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'"
+                                                width="25" height="25" />
                                         </span>
                                         <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
                                     </span>
@@ -2085,7 +2079,7 @@
                         <tr v-if="value.isCaptain">
                             <td class='skillHeader'>
                                 <img v-if="value.captainInfo != null" v-bind:src="value.captainInfo.iconPath" width="25" height="25" />
-                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'" width="25" height="25" />
                                 <span class="skillTypeText" style="font-size:10px" >隊長</span>
                             </td>
                             <td>

@@ -927,6 +927,7 @@ class AppData extends UnitManager {
 
                     return false;
                 }
+            case GameMode.SummonerDuels:
             case GameMode.Arena:
                 {
                     if (targetUnit.grantedBlessing == SeasonType.None

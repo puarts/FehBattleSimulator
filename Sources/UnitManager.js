@@ -41,7 +41,11 @@ class UnitManager {
     enumerateUnitsInSpecifiedGroupOnMap(groupId) {
         return this.enumerateUnitsWithPredicator(x => x.isOnMap && x.groupId == groupId);
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Boolean} withTargetUnit=false
+     * @returns {Unit[]}
+     */
     enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
         return this.enumerateUnitsWithPredicator(x =>
             x.groupId == targetUnit.groupId
