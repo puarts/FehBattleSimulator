@@ -62,15 +62,6 @@ function getItemTypeName(itemType) {
     }
 }
 
-const GameMode = {
-    AetherRaid: 0,
-    Arena: 1,
-    AllegianceBattles: 2,
-    ResonantBattles: 3,
-    TempestTrials: 4,
-    PawnsOfLoki: 5,
-    SummonerDuels: 6, // 英雄決闘
-};
 
 // 選択モード
 const SelectMode = {

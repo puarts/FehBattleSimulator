@@ -2942,7 +2942,7 @@ class BattleSimmulatorBase {
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
         this.damageCalc.clearLog();
 
-        let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack);
+        let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack, this.data.gameMode);
         atkUnit.isCombatDone = true;
 
         // this.clearSimpleLog();
@@ -3114,7 +3114,7 @@ class BattleSimmulatorBase {
         damageType = DamageType.ActualDamage
     ) {
         this.damageCalc.clearLog();
-        let result = this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, damageType);
+        let result = this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, damageType, this.data.gameMode);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);
         return result;
@@ -3133,7 +3133,7 @@ class BattleSimmulatorBase {
         damageType = DamageType.EstimatedDamage
     ) {
         this.damageCalc.clearLog();
-        let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, damageType);
+        let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, damageType, this.data.gameMode);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);
         if (result.defUnit != defUnit) {
@@ -3518,6 +3518,10 @@ class BattleSimmulatorBase {
     }
     __getCaptainSkill(groupId) {
         let captainUnit = this.__getCaptainUnitOnMap(groupId);
+        if (captainUnit == null) {
+            // マップ上にいない場合は無効
+            return Captain.None;
+        }
         return captainUnit.getCaptainSkill();
     }
 
@@ -7570,7 +7574,10 @@ class BattleSimmulatorBase {
         applyBuffFunc(unit);
         applyBuffFunc(targetUnit);
     }
-
+    /**
+     * @param  {Unit} skillOwnerUnit
+     * @param  {Unit} targetUnit
+     */
     __applyRefresh(skillOwnerUnit, targetUnit) {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
@@ -7580,11 +7587,6 @@ class BattleSimmulatorBase {
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
                         unit.applyAllDebuff(-4);
                     }
-                }
-                break;
-            case Support.Urur:
-                {
-                    targetUnit.applyAllBuff(3);
                 }
                 break;
             case Support.GrayWaves:
@@ -7643,6 +7645,11 @@ class BattleSimmulatorBase {
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Urur:
+                    {
+                        targetUnit.applyAllBuff(3);
+                    }
+                    break;
                 case Weapon.DancingFlames:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 1)) {
                         unit.applyAllBuff(6);

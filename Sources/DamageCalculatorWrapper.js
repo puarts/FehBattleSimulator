@@ -137,9 +137,10 @@ class DamageCalculatorWrapper {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
+     * @param  {Number} gameMode=GameMode.Arena
      * @returns {DamageCalcResult}
      */
-    updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
+    updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
         // 攻撃対象以外の戦闘前の範囲奥義ダメージ
         let precombatDamages = new Map();
         if (atkUnit.canActivatePrecombatSpecial()) {
@@ -166,7 +167,7 @@ class DamageCalculatorWrapper {
         }
 
         // 戦闘ダメージ計算
-        let result = this.calcDamage(atkUnit, defUnit, tileToAttack);
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, DamageType.ActualDamage, gameMode);
 
         // 戦闘の計算結果を反映させる
         {
@@ -208,15 +209,17 @@ class DamageCalculatorWrapper {
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {boolean} calcPotentialDamage=false
+     * @param  {Number} gameMode=GameMode.Arena
      * @returns {DamageCalcResult}
      */
     calcDamageTemporary(
         atkUnit,
         defUnit,
         tileToAttack = null,
-        damageType = DamageType.EstimatedDamage
+        damageType = DamageType.EstimatedDamage,
+        gameMode = GameMode.Arena
     ) {
-        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, damageType);
+        let result = this.calcDamage(atkUnit, defUnit, tileToAttack, damageType, gameMode);
         if (defUnit != result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
@@ -234,13 +237,15 @@ class DamageCalculatorWrapper {
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {DamageType} damageType=DamageType.ActualDamage
+     * @param  {Number} gameMode=GameMode.Arena
      * @returns {DamageCalcResult}
      */
     calcDamage(
         atkUnit,
         defUnit,
         tileToAttack = null,
-        damageType = DamageType.ActualDamage
+        damageType = DamageType.ActualDamage,
+        gameMode = GameMode.Arena
     ) {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
@@ -301,7 +306,7 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            result = self.calcCombatResult(atkUnit, actualDefUnit, damageType);
+            result = self.calcCombatResult(atkUnit, actualDefUnit, damageType, gameMode);
             result.preCombatDamage = preCombatDamage;
             result.preCombatDamageWithOverkill = preCombatDamageWithOverkill;
 
@@ -372,8 +377,9 @@ class DamageCalculatorWrapper {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {DamageType} damageType
+     * @param  {Number} gameMode
      */
-    calcCombatResult(atkUnit, defUnit, damageType) {
+    calcCombatResult(atkUnit, defUnit, damageType, gameMode) {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
@@ -383,8 +389,8 @@ class DamageCalculatorWrapper {
         self.__applyImpenetrableDark(defUnit, atkUnit, calcPotentialDamage);
 
         self.__applySkillEffect(atkUnit, defUnit, calcPotentialDamage);
-        self.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage);
-        self.__applySkillEffectForUnit(defUnit, atkUnit, calcPotentialDamage);
+        self.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage, gameMode);
+        self.__applySkillEffectForUnit(defUnit, atkUnit, calcPotentialDamage, gameMode);
 
         self.__applySkillEffectRelatedToEnemyStatusEffects(atkUnit, defUnit, calcPotentialDamage);
         self.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
@@ -1907,13 +1913,19 @@ class DamageCalculatorWrapper {
         return false;
     }
 
-    __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
+    __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
         let self = this;
         this.profiler.profile("__applySkillEffectForUnit", () => {
-            self.____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage);
+            self.____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode);
         });
     }
-    ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage) {
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} calcPotentialDamage
+     * @param  {GameMode} gameMode
+     */
+    ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
         ) {
@@ -1933,6 +1945,15 @@ class DamageCalculatorWrapper {
 
         if (targetUnit.hasStatusEffect(StatusEffectType.Guard)) {
             enemyUnit.battleContext.reducesCooldownCount = true;
+        }
+
+        if (gameMode == GameMode.SummonerDuels) {
+            if (targetUnit.attackRange == 1 && enemyUnit.attackRange == 2
+                && !targetUnit.battleContext.isSaviorActivated
+            ) {
+                // 英雄決闘では射程1ボーナスで射程2と闘う時、守備、魔防+7される(護り手発動時は除外)
+                targetUnit.addSpurs(0, 0, 7, 7);
+            }
         }
 
         // 今のところ奥義にしかこの効果が存在しないので、重複しない。もし今後重複する場合は重複時の計算方法を調査して実装する

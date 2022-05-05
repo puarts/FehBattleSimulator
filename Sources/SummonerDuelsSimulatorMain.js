@@ -52,6 +52,11 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
     }
 
     __goToNextPhaseIfPossible(groupId) {
+        if (this.__isCantoAtionActivatable(this.enumerateUnitsOnMap(x => x.groupId == groupId))) {
+            // 再移動発動中のユニットがいる場合はフェーズを切り替えない
+            return;
+        }
+
         let endsCurrentPhase = !this.__hasAnyActions(this.enumerateUnitsOnMap(x => x.groupId == groupId));
         this.data.globalBattleContext.gainSummonerDuelsPhase(endsCurrentPhase);
         if (this.data.globalBattleContext.isSummonerDuelsTurnEnded) {
@@ -59,6 +64,19 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
         }
         updateAllUi();
     }
+    /**
+     * @param  {Unit[]} units
+     * @returns {Boolean}
+     */
+    __isCantoAtionActivatable(units) {
+        for (let unit of units) {
+            if (unit.isCantoActivated()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @param  {Unit[]} units
      * @returns {Boolean}

@@ -1,6 +1,17 @@
 /// @file
 /// @brief DamageCalculator クラスとそれに関連するクラスや関数等の定義です。
 
+
+const GameMode = {
+    AetherRaid: 0,
+    Arena: 1,
+    AllegianceBattles: 2,
+    ResonantBattles: 3,
+    TempestTrials: 4,
+    PawnsOfLoki: 5,
+    SummonerDuels: 6, // 英雄決闘
+};
+
 const DamageType = {
     ActualDamage: 0,
     EstimatedDamage: 1,

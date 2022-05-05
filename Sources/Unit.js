@@ -3159,7 +3159,9 @@ class Unit extends BattleMapElement {
         }
         return this.heroInfo.iconUrl;
     }
-
+    /**
+     * @returns {Number}
+     */
     get attackRange() {
         if (this.isCantoActivated()) {
             return 0;
