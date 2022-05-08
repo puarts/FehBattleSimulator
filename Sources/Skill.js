@@ -1301,6 +1301,7 @@ const Weapon = {
 
     // 新英雄 (まつろわぬ魂たち)
     SilentPower: 2072, // 透魔竜の力
+    EnvelopingBreath: 2074, // 茫漠のブレス
 }
 
 const Support = {

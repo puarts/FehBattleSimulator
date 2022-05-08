@@ -7645,6 +7645,15 @@ class BattleSimmulatorBase {
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EnvelopingBreath:
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
+                        if (this.__isInCloss(unit, skillOwnerUnit) || this.__isInCloss(unit, targetUnit)) {
+                            unit.applyAtkDebuff(-7);
+                            unit.applyResDebuff(-7);
+                            unit.addStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                    break;
                 case Weapon.Urur:
                     {
                         targetUnit.applyAllBuff(3);
