@@ -306,6 +306,19 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.TrueDragonWall: {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                        if (isWeaponTypeBreathOrBeast(unit.weaponType)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
+                }
                 case Weapon.LandsSword:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);
