@@ -570,6 +570,12 @@ class PostCombatSkillHander {
                 case PassiveC.ResSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-5)); break;
                 case PassiveC.ResSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-7)); break;
                 // 紫烟4
+                case PassiveC.AtkSmoke4:
+                    this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-7), true);
+                    targetUnit.applyDefBuff(6);
+                    targetUnit.applyResBuff(6);
+                    targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                    break;
                 case PassiveC.SpdSmoke4:
                     this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-7), true);
                     targetUnit.applySpdBuff(6);
