@@ -1947,6 +1947,10 @@ class DamageCalculatorWrapper {
             enemyUnit.battleContext.reducesCooldownCount = true;
         }
 
+        if (targetUnit.hasStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack)) {
+            targetUnit.battleContext.increaseCooldownCountForBoth();
+        }
+
         if (gameMode == GameMode.SummonerDuels) {
             if (targetUnit.attackRange == 1 && enemyUnit.attackRange == 2
                 && !targetUnit.battleContext.isSaviorActivated

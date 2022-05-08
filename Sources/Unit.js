@@ -230,6 +230,7 @@ const StatusEffectType = {
     GrandStrategy: 30, // 神軍師の策
     CantoControl: 31, // 再移動制限
     EnGarde: 32, // 戦闘外ダメージ無効
+    SpecialCooldownChargePlusOnePerAttack: 33, // 戦闘中、奥義発動カウント変動量+1
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -357,6 +358,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_CantoControl.png";
         case StatusEffectType.EnGarde:
             return g_imageRootPath + "StatusEffect_EnGarde.webp";
+        case StatusEffectType.SpecialCooldownChargePlusOnePerAttack:
+            return g_imageRootPath + "StatusEffect_SpecialCooldownChargePlusOnePerAttack.webp";
         default: return "";
     }
 }

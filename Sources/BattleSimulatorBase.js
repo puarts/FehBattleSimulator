@@ -7582,6 +7582,10 @@ class BattleSimmulatorBase {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
         switch (skillOwnerUnit.support) {
+            case Support.CallToFlame:
+                targetUnit.applyAtkBuff(6);
+                targetUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                break;
             case Support.Play:
                 if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {

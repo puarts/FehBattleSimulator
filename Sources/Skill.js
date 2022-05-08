@@ -1326,6 +1326,7 @@ const Support = {
     SweetDreams: 1489, // あまいゆめ
     FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
+    CallToFlame: 2079, // オイデ、ヒノコタチ
 
     RallyAttack: 418,
     RallySpeed: 417,
@@ -2651,6 +2652,7 @@ function isNormalAttackSpecial(special) {
 /// 再行動補助スキルかどうかを判定します。
 function isRefreshSupportSkill(skillId) {
     switch (skillId) {
+        case Support.CallToFlame:
         case Support.Sing:
         case Support.Dance:
         case Support.GrayWaves:
