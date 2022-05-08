@@ -556,6 +556,7 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
+                // 紫烟1-3
                 case PassiveC.AtkSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-3)); break;
                 case PassiveC.AtkSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-5)); break;
                 case PassiveC.AtkSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-7)); break;
@@ -568,6 +569,12 @@ class PostCombatSkillHander {
                 case PassiveC.ResSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-3)); break;
                 case PassiveC.ResSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-5)); break;
                 case PassiveC.ResSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-7)); break;
+                // 紫烟4
+                case PassiveC.SpdSmoke4:
+                    this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-7), true);
+                    targetUnit.applySpdBuff(6);
+                    targetUnit.addStatusEffect(StatusEffectType.Dodge);
+                    break;
             }
         }
     }
@@ -951,8 +958,8 @@ class PostCombatSkillHander {
         }
     }
 
-    __applySmokeSkill(attackTargetUnit, debuffFunc) {
-        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, false)) {
+    __applySmokeSkill(attackTargetUnit, debuffFunc, withTargetUnit = false) {
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, withTargetUnit)) {
             debuffFunc(unit);
         }
     }

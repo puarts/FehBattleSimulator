@@ -2180,6 +2180,7 @@ const PassiveC = {
     SpdSmoke1: 1405,
     SpdSmoke2: 1406,
     SpdSmoke3: 728, // 速さの紫煙3
+    SpdSmoke4: 2073, // 速さの紫煙4
     DefSmoke1: 1407,
     DefSmoke2: 1408,
     DefSmoke3: 729, // 守備の紫煙3
