@@ -1971,7 +1971,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
-
+        this._applySkillEffectForUnitFuncDict[Weapon.SilentPower] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Captain.Effulgence] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidateAllOwnDebuffs();
         }

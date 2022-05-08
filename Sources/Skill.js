@@ -1298,6 +1298,9 @@ const Weapon = {
 
     // 2022年4月 神階メディウス
     ShadowBreath: 2065, //  暗黒地竜のブレス
+
+    // 新英雄 (まつろわぬ魂たち)
+    SilentPower: 2072, // 透魔竜の力
 }
 
 const Support = {
@@ -2935,6 +2938,7 @@ TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
 TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
 TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
+TeleportationSkillDict[Weapon.SilentPower] = 0;
 /// テレポート効果を持つスキルであるかどうかを判定します。
 function isTeleportationSkill(skillId) {
     return skillId in TeleportationSkillDict;

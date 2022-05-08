@@ -110,6 +110,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.SilentPower:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                    if (skillOwner.partnerHeroIndex === unit.heroIndex ||
+                        unit.partnerHeroIndex === skillOwner.heroIndex) {
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    }
+                }
+                break;
             case Captain.EarthRendering:
                 if (2 <= this.globalBattleContext.currentTurn && this.globalBattleContext.currentTurn <= 4
                     && this.map.isUnitOnSummonerDuelsPointArea(skillOwner, this.globalBattleContext.summonerDuelsPointAreaOffset)

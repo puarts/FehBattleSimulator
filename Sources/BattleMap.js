@@ -1913,6 +1913,15 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SilentPower:
+                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                        if (unit.partnerHeroIndex == ally.heroIndex) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.MagicRabbits:
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
                         for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
