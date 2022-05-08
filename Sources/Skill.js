@@ -1303,6 +1303,7 @@ const Weapon = {
     SilentPower: 2072, // 透魔竜の力
     EnvelopingBreath: 2074, // 茫漠のブレス
     HeadsmanGlitnir: 2075, // 死斧グリトニル
+    RuinousFrost: 2077, // 滅亡の霜雪
 }
 
 const Support = {

@@ -1975,6 +1975,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.RuinousFrost] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityDecrement--;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HeadsmanGlitnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, -5, -5, 0);
@@ -7140,6 +7148,12 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.RuinousFrost:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        let res = enemyUnit.getEvalResInCombat(targetUnit);
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(res * 0.4);
+                    }
+                    break;
                 case Weapon.ThundersMjolnir:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.battleContext.initiatesCombat &&
