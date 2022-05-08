@@ -1975,6 +1975,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HeadsmanGlitnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, -5, -5, 0);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.reducesCooldownCount = true;
+                if (self.canCounterAttack(targetUnit, enemyUnit) || enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.EnvelopingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(0, 6, 0, 6);

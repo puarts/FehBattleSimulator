@@ -177,6 +177,9 @@ __canDisableCounterAttack(atkUnit, defUnit) {
     return false;
 }
 
+敵が反撃可能なら
+this.canCounterAttack(atkUnit, defUnit)
+
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
 __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
