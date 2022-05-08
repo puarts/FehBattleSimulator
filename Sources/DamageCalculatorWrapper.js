@@ -781,6 +781,24 @@ class DamageCalculatorWrapper {
                 defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
             }
                 break;
+            case PassiveB.TrueDragonWall: {
+                let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                let r = 0;
+                let maxPercentage = 0;
+                if (defUnit.isOneTimeActionActivatedForPassiveB) {
+                    r = 6;
+                    maxPercentage = 60;
+                } else {
+                    r = 4;
+                    maxPercentage = 40
+                }
+                if (resDiff > 0) {
+                    let percentage = resDiff * r;
+                    percentage = Math.min(percentage, maxPercentage);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                }
+                break;
+            }
             case PassiveB.DragonWall3:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -7655,6 +7673,25 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveB.TrueDragonWall: {
+                let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                let r = 0;
+                let maxPercentage = 0;
+                if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                    r = 6;
+                    maxPercentage = 60;
+                } else {
+                    r = 4;
+                    maxPercentage = 40;
+                }
+                if (resDiff > 0) {
+                    let percentage = resDiff * r;
+                    percentage = Math.min(percentage, maxPercentage);
+                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                    return percentage / 100.0;
+                }
+                break;
+            }
             case PassiveB.DragonWall3:
             case Weapon.NewFoxkitFang:
                 {

@@ -2576,6 +2576,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = true;
 
         switch (this.passiveB) {
+            case PassiveB.TrueDragonWall:
             case PassiveB.ArmoredWall:
             case PassiveB.GuardBearing3:
                 this.isOneTimeActionActivatedForPassiveB = true;
