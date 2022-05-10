@@ -359,7 +359,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.EnGarde:
             return g_imageRootPath + "StatusEffect_EnGarde.webp";
         case StatusEffectType.SpecialCooldownChargePlusOnePerAttack:
-            return g_imageRootPath + "StatusEffect_SpecialCooldownChargePlusOnePerAttack.webp";
+            return g_imageRootPath + "StatusEffect_AccelerateSpecial.webp";
         default: return "";
     }
 }
