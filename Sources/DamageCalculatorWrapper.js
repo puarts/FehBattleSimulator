@@ -1999,6 +1999,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.YoukoohNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MaryuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) return;
             if (enemyUnit.battleContext.initiatesCombat || targetUnit.battleContext.restHpPercentage <= 99) {
@@ -6271,6 +6283,11 @@ class DamageCalculatorWrapper {
                         break;
                 }
                 switch (allyUnit.weapon) {
+                    case Weapon.YoukoohNoTsumekiba:
+                        if (allyUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                        break;
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
                         break;
@@ -9659,6 +9676,11 @@ class DamageCalculatorWrapper {
             }
         }
         switch (allyUnit.weapon) {
+            case Weapon.YoukoohNoTsumekiba:
+                if (allyUnit.isWeaponSpecialRefined) {
+                    targetUnit.addSpurs(0, 0, 2, 2);
+                }
+                break;
             case Weapon.IzunNoKajitsu:
                 if (allyUnit.isWeaponRefined) {
                     if (allyUnit.isWeaponSpecialRefined) {
