@@ -4803,12 +4803,35 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Erudofurimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
-                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                let diffHalf = Math.floor(diff * 0.5);
-                let amount = Math.max(0, Math.min(8, diffHalf));
-                enemyUnit.atkSpur -= amount;
-                enemyUnit.spdSpur -= amount;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
+                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                    let diffHalf = Math.floor(diff * 0.5);
+                    let amount = Math.max(0, Math.min(8, diffHalf));
+                    enemyUnit.atkSpur -= amount;
+                    enemyUnit.spdSpur -= amount;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
+                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                    let diffHalf = Math.floor(diff * 0.5);
+                    let amount = Math.max(0, Math.min(8, diffHalf));
+                    enemyUnit.atkSpur -= amount;
+                    enemyUnit.spdSpur -= amount;
+                    enemyUnit.defSpur -= amount;
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.BoranNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -7227,6 +7250,16 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.Erudofurimuniru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                            if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 1) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.IcyMaltet:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
