@@ -1304,6 +1304,9 @@ const Weapon = {
     EnvelopingBreath: 2074, // 茫漠のブレス
     HeadsmanGlitnir: 2075, // 死斧グリトニル
     RuinousFrost: 2077, // 滅亡の霜雪
+
+    // 2022年5月 武器錬成
+    IcyMaltet: 2071, // 氷槍マルテ
 }
 
 const Support = {

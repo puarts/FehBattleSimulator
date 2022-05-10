@@ -1993,6 +1993,20 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.IcyMaltet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                let amount = targetUnit.dragonflower >= 1 ? 5 : 4;
+                targetUnit.addAllSpur(amount);
+                if (targetUnit.dragonflower >= 5) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RuinousFrost] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 6;
@@ -7166,6 +7180,13 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.IcyMaltet:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+                        }
+                    }
+                    break;
                 case Weapon.RuinousFrost:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                         let res = enemyUnit.getEvalResInCombat(targetUnit);

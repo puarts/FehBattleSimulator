@@ -110,6 +110,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.IcyMaltet:
+                if (skillOwner.dragonflower >= 10) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applyDefBuff(6);
+                }
+                break;
             case PassiveB.TrueDragonWall: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
