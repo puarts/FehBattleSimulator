@@ -1298,6 +1298,12 @@ const Weapon = {
 
     // 2022年4月 神階メディウス
     ShadowBreath: 2065, //  暗黒地竜のブレス
+
+    // 新英雄 (まつろわぬ魂たち)
+    SilentPower: 2072, // 透魔竜の力
+    EnvelopingBreath: 2074, // 茫漠のブレス
+    HeadsmanGlitnir: 2075, // 死斧グリトニル
+    RuinousFrost: 2077, // 滅亡の霜雪
 }
 
 const Support = {
@@ -1322,6 +1328,7 @@ const Support = {
     SweetDreams: 1489, // あまいゆめ
     FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
+    CallToFlame: 2079, // オイデ、ヒノコタチ
 
     RallyAttack: 418,
     RallySpeed: 417,
@@ -1764,6 +1771,7 @@ const PassiveB = {
     QuickRiposte2: 1255, // 切り返し2
     QuickRiposte3: 599, // 切り返し3
     DragonWall3: 1621, // 竜鱗障壁3
+    TrueDragonWall: 2078, // 真竜鱗障壁
     DragonsIre3: 1493, // 竜の逆鱗3
     DragonsWrath: 1863, // 竜の魔鱗3
     Vantage3: 596, // 待ち伏せ3
@@ -2174,9 +2182,11 @@ const PassiveC = {
     AtkSmoke1: 1403,
     AtkSmoke2: 1404,
     AtkSmoke3: 727, // 攻撃の紫煙3
+    AtkSmoke4: 2076, // 攻撃の紫煙4
     SpdSmoke1: 1405,
     SpdSmoke2: 1406,
     SpdSmoke3: 728, // 速さの紫煙3
+    SpdSmoke4: 2073, // 速さの紫煙4
     DefSmoke1: 1407,
     DefSmoke2: 1408,
     DefSmoke3: 729, // 守備の紫煙3
@@ -2646,6 +2656,7 @@ function isNormalAttackSpecial(special) {
 /// 再行動補助スキルかどうかを判定します。
 function isRefreshSupportSkill(skillId) {
     switch (skillId) {
+        case Support.CallToFlame:
         case Support.Sing:
         case Support.Dance:
         case Support.GrayWaves:
@@ -2935,6 +2946,7 @@ TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
 TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
 TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
+TeleportationSkillDict[Weapon.SilentPower] = 0;
 /// テレポート効果を持つスキルであるかどうかを判定します。
 function isTeleportationSkill(skillId) {
     return skillId in TeleportationSkillDict;

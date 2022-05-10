@@ -110,6 +110,28 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveB.TrueDragonWall: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
+                    if (isWeaponTypeBreathOrBeast(unit.weaponType)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    skillOwner.reserveHeal(7);
+                }
+                break;
+            }
+            case Weapon.SilentPower:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                    if (skillOwner.partnerHeroIndex === unit.heroIndex ||
+                        unit.partnerHeroIndex === skillOwner.heroIndex) {
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    }
+                }
+                break;
             case Captain.EarthRendering:
                 if (2 <= this.globalBattleContext.currentTurn && this.globalBattleContext.currentTurn <= 4
                     && this.map.isUnitOnSummonerDuelsPointArea(skillOwner, this.globalBattleContext.summonerDuelsPointAreaOffset)

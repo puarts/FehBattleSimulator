@@ -781,6 +781,24 @@ class DamageCalculatorWrapper {
                 defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
             }
                 break;
+            case PassiveB.TrueDragonWall: {
+                let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                let r = 0;
+                let maxPercentage = 0;
+                if (defUnit.isOneTimeActionActivatedForPassiveB) {
+                    r = 6;
+                    maxPercentage = 60;
+                } else {
+                    r = 4;
+                    maxPercentage = 40
+                }
+                if (resDiff > 0) {
+                    let percentage = resDiff * r;
+                    percentage = Math.min(percentage, maxPercentage);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                }
+                break;
+            }
             case PassiveB.DragonWall3:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -1947,6 +1965,10 @@ class DamageCalculatorWrapper {
             enemyUnit.battleContext.reducesCooldownCount = true;
         }
 
+        if (targetUnit.hasStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack)) {
+            targetUnit.battleContext.increaseCooldownCountForBoth();
+        }
+
         if (gameMode == GameMode.SummonerDuels) {
             if (targetUnit.attackRange == 1 && enemyUnit.attackRange == 2
                 && !targetUnit.battleContext.isSaviorActivated
@@ -1971,7 +1993,34 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
-
+        this._applySkillEffectForUnitFuncDict[Weapon.RuinousFrost] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityDecrement--;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HeadsmanGlitnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, -5, -5, 0);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.reducesCooldownCount = true;
+                if (self.canCounterAttack(targetUnit, enemyUnit) || enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.EnvelopingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(0, 6, 0, 6);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SilentPower] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Captain.Effulgence] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidateAllOwnDebuffs();
         }
@@ -7117,6 +7166,12 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.RuinousFrost:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        let res = enemyUnit.getEvalResInCombat(targetUnit);
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(res * 0.4);
+                    }
+                    break;
                 case Weapon.ThundersMjolnir:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.battleContext.initiatesCombat &&
@@ -7618,6 +7673,25 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveB.TrueDragonWall: {
+                let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                let r = 0;
+                let maxPercentage = 0;
+                if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                    r = 6;
+                    maxPercentage = 60;
+                } else {
+                    r = 4;
+                    maxPercentage = 40;
+                }
+                if (resDiff > 0) {
+                    let percentage = resDiff * r;
+                    percentage = Math.min(percentage, maxPercentage);
+                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                    return percentage / 100.0;
+                }
+                break;
+            }
             case PassiveB.DragonWall3:
             case Weapon.NewFoxkitFang:
                 {

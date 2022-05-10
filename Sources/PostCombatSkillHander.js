@@ -306,6 +306,19 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.TrueDragonWall: {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                        if (isWeaponTypeBreathOrBeast(unit.weaponType)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
+                }
                 case Weapon.LandsSword:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);
@@ -556,6 +569,7 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
+                // 紫烟1-3
                 case PassiveC.AtkSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-3)); break;
                 case PassiveC.AtkSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-5)); break;
                 case PassiveC.AtkSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-7)); break;
@@ -568,6 +582,18 @@ class PostCombatSkillHander {
                 case PassiveC.ResSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-3)); break;
                 case PassiveC.ResSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-5)); break;
                 case PassiveC.ResSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-7)); break;
+                // 紫烟4
+                case PassiveC.AtkSmoke4:
+                    this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-7), true);
+                    targetUnit.applyDefBuff(6);
+                    targetUnit.applyResBuff(6);
+                    targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                    break;
+                case PassiveC.SpdSmoke4:
+                    this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-7), true);
+                    targetUnit.applySpdBuff(6);
+                    targetUnit.addStatusEffect(StatusEffectType.Dodge);
+                    break;
             }
         }
     }
@@ -951,8 +977,8 @@ class PostCombatSkillHander {
         }
     }
 
-    __applySmokeSkill(attackTargetUnit, debuffFunc) {
-        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, false)) {
+    __applySmokeSkill(attackTargetUnit, debuffFunc, withTargetUnit = false) {
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, withTargetUnit)) {
             debuffFunc(unit);
         }
     }

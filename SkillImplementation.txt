@@ -177,6 +177,9 @@ __canDisableCounterAttack(atkUnit, defUnit) {
     return false;
 }
 
+敵が反撃可能なら
+this.canCounterAttack(atkUnit, defUnit)
+
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
 __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -418,6 +421,9 @@ __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTar
 
 「歌う」「踊る」使用時
 __applyRefresh(skillOwnerUnit, targetUnit) {}
+
+このスキルは「歌う」「踊る｣として扱われる。「歌う」「踊る」を持つ対象には使用できない。対象を行動可能な状態にする。
+function isRefreshSupportSkill(skillId) {return true;}
 
 移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
 __applyMovementAssistSkill() {}

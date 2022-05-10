@@ -7582,6 +7582,10 @@ class BattleSimmulatorBase {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
         switch (skillOwnerUnit.support) {
+            case Support.CallToFlame:
+                targetUnit.applyAtkBuff(6);
+                targetUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                break;
             case Support.Play:
                 if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
@@ -7645,6 +7649,15 @@ class BattleSimmulatorBase {
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EnvelopingBreath:
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
+                        if (this.__isInCloss(unit, skillOwnerUnit) || this.__isInCloss(unit, targetUnit)) {
+                            unit.applyAtkDebuff(-7);
+                            unit.applyResDebuff(-7);
+                            unit.addStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                    break;
                 case Weapon.Urur:
                     {
                         targetUnit.applyAllBuff(3);
