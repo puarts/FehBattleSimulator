@@ -5353,9 +5353,27 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.FellBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.battleContext.restHpPercentage < 100) {
-                targetUnit.atkSpur += 6;
-                targetUnit.resSpur += 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.restHpPercentage < 100) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.restHpPercentage < 100 || targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() + 1) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.atkSpur += 5;
+                        enemyUnit.atkSpur -= 5;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TaguelFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -7250,6 +7268,15 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.FellBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            let amount = Math.max(diff, 0);
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(amount * 0.3);
+                        }
+                    }
+                    break;
                 case Weapon.Erudofurimuniru:
                     if (targetUnit.isWeaponSpecialRefined) {
                         // <特殊錬成効果>
@@ -8978,6 +9005,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.FellBreath:
+                    if (atkUnit.isWeaponRefined) break;
                     if (atkUnit.battleContext.restHpPercentage < 100) {
                         --followupAttackPriority;
                     }
