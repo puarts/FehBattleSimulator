@@ -641,6 +641,12 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.Mafu:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                }
             case Weapon.WindyWarTome:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
                     let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -1993,6 +1999,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Mafu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.IcyMaltet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 let amount = targetUnit.dragonflower >= 1 ? 5 : 4;
@@ -7597,6 +7613,12 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.Mafu:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(atkUnit.weaponType)) {
+                        return 0.3;
+                    }
+                }
             case PassiveB.AssuredRebirth: {
                 let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
                 let percentage = 0;
@@ -8487,6 +8509,13 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.Mafu:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(defUnit.weaponType)) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.AdroitWarTome:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     if (atkUnit.getEvalResInCombat(defUnit) >= defUnit.getEvalResInCombat(atkUnit) + 5) {

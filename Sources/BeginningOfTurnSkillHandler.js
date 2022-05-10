@@ -765,8 +765,9 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.Mafu:
                 if (this.globalBattleContext.currentTurn == 3) {
+                    let amount = skillOwner.isWeaponRefined ? 7 : 5;
                     let units = this.enumerateUnitsWithinSpecifiedRange(
-                        skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, 5, 99);
+                        skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, amount, 99);
                     for (let unit of units) {
                         if (isWeaponTypeTome(unit.weaponType)) {
                             continue;
