@@ -1999,6 +1999,19 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MaryuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) return;
+            if (enemyUnit.battleContext.initiatesCombat || targetUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                targetUnit.addAllSpur(4);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.atkSpur += 5;
+                    enemyUnit.atkSpur -= 5;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Mafu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.addSpurs(5, 5, 0, 0);
@@ -6143,6 +6156,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.MaryuNoBreath:
+                if (targetUnit.isWeaponRefined) break;
                 if (targetUnit.hasNegativeStatusEffect()
                     || !targetUnit.battleContext.isRestHpFull
                 ) {
@@ -9361,6 +9375,14 @@ class DamageCalculatorWrapper {
 
     __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
         switch (targetUnit.weapon) {
+            case Weapon.MaryuNoBreath:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        if (enemyUnit.battleContext.canFollowupAttack) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.70, enemyUnit);
+                        }
+                    }
+                }
             case Weapon.SeaSearLance:
             case Weapon.LoyalistAxe:
                 if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) &&

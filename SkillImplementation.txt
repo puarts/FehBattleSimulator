@@ -146,6 +146,13 @@ __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
     atkUnit.battleContext.isDesperationActivatable = true;
 }
 
+敵が追撃可能なら、最初に受けた攻撃のダメージをN%軽減
+__setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
+    if (enemyUnit.battleContext.canFollowupAttack) {
+        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(N / 100.0, enemyUnit);
+    }
+}
+
 敵から攻撃された時、先制攻撃[待ち伏せ]
 targetUnit.battleContext.isVantageActivatable = true;
 
