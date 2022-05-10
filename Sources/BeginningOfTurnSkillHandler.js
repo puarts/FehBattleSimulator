@@ -1054,6 +1054,28 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyDefBuff(5); }); break;
             case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyResBuff(5); }); break;
             case PassiveC.DefResOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applyResBuff(5); }); break;
+            case PassiveC.UpheavalPlus:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    if (this.globalBattleContext.isAstraSeason) {
+                        if (skillOwner.groupId === UnitGroupType.Enemy) {
+                            let minDistance = Number.MAX_SAFE_INTEGER;
+                            let structures = [];
+                            for (let st of this.map.enumerateObjs(x => x instanceof OffenceStructureBase && x.isBreakable)) {
+                                let distance = Math.abs(st.posX - skillOwner.posX) + Math.abs(st.posY - skillOwner.posY);
+                                if (distance === minDistance) {
+                                    structures.push(st);
+                                } else if (distance < minDistance) {
+                                    minDistance = distance;
+                                    structures = [st];
+                                }
+                            }
+                            for (let st of structures) {
+                                this.moveStructureToTrashBox(st);
+                            }
+                        }
+                    }
+                }
+                break;
             case PassiveC.Upheaval:
                 if (this.globalBattleContext.currentTurn == 1) {
                     if (this.globalBattleContext.isAstraSeason) {
@@ -1927,6 +1949,13 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             }
+            case PassiveC.UpheavalPlus:
+                if (this.globalBattleContext.currentTurn == 1) {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        unit.reserveTakeDamage(10);
+                    }
+                }
+                break;
             case PassiveC.Upheaval:
                 if (this.globalBattleContext.currentTurn == 1) {
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {

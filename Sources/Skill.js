@@ -2306,6 +2306,7 @@ const PassiveC = {
     AirOrders3: 819, // 先導の伝令・天3
     GroundOrders3: 911, // 先導の伝令・地3
     Upheaval: 823, // メガクェイク
+    UpheavalPlus: 2070, // メガクェイク・神
     VisionOfArcadia: 933, // 理想郷となるように
     OstiasPulse: 753, // オスティアの鼓動
     OstiasPulse2: 1828, // 盟主の鼓動・承
