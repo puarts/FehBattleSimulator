@@ -647,6 +647,7 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
                     }
                 }
+                break;
             case Weapon.WindyWarTome:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
                     let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -6329,11 +6330,6 @@ class DamageCalculatorWrapper {
                         break;
                 }
                 switch (allyUnit.weapon) {
-                    case Weapon.YoukoohNoTsumekiba:
-                        if (allyUnit.isWeaponSpecialRefined) {
-                            targetUnit.battleContext.reducesCooldownCount = true;
-                        }
-                        break;
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
                         break;
@@ -6362,11 +6358,15 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.YoukoohNoTsumekiba:
-                        if (!allyUnit.hasStatusEffect(StatusEffectType.Panic)) {
-                            targetUnit.atkSpur += allyUnit.atkBuff;
-                            targetUnit.spdSpur += allyUnit.spdBuff;
-                            targetUnit.defSpur += allyUnit.defBuff;
-                            targetUnit.resSpur += allyUnit.resBuff;
+                        if (!allyUnit.isWeaponRefined) {
+                            if (!allyUnit.hasStatusEffect(StatusEffectType.Panic)) {
+                                targetUnit.atkSpur += allyUnit.atkBuff;
+                                targetUnit.spdSpur += allyUnit.spdBuff;
+                                targetUnit.defSpur += allyUnit.defBuff;
+                                targetUnit.resSpur += allyUnit.resBuff;
+                            }
+                        } else if (allyUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case Weapon.GengakkiNoYumiPlus:
@@ -7715,6 +7715,7 @@ class DamageCalculatorWrapper {
                         return 0.3;
                     }
                 }
+                break;
             case PassiveB.AssuredRebirth: {
                 let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
                 let percentage = 0;
@@ -9466,6 +9467,7 @@ class DamageCalculatorWrapper {
                         }
                     }
                 }
+                break;
             case Weapon.SeaSearLance:
             case Weapon.LoyalistAxe:
                 if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) &&
