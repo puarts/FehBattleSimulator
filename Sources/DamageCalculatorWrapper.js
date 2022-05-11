@@ -2000,6 +2000,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WildTigerFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidateAllBuffs();
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.UpheavalPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() + 1 || enemyUnit.battleContext.restHpPercentage <= 99) {
                 targetUnit.battleContext.invalidateAllBuffs();

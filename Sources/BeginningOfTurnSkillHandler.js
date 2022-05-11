@@ -45,6 +45,7 @@ class BeginningOfTurnSkillHandler {
      * @param  {Unit} unit
      */
     applySkillsForBeginningOfTurn(unit) {
+        this.applyTransformSkillForBeginningOfTurn(unit);
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillForBeginningOfTurn(skillId, unit);
         }
@@ -89,10 +90,10 @@ class BeginningOfTurnSkillHandler {
     }
 
     /**
-     * @param  {Number} skillId
-     * @param  {Unit} skillOwner
+     * ターン開始時の化身処理を行う
+     * @param skillOwner
      */
-    applySkillForBeginningOfTurn(skillId, skillOwner) {
+    applyTransformSkillForBeginningOfTurn(skillOwner) {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
                 skillOwner.isTransformed = true;
@@ -105,11 +106,30 @@ class BeginningOfTurnSkillHandler {
                 skillOwner.isTransformed = false;
             }
         }
+        // 闇ムワリムの特殊化身処理
+        switch (skillOwner.weapon) {
+            case Weapon.WildTigerFang: {
+                let currentTurn = this.globalBattleContext.currentTurn;
+                skillOwner.isTransformed = currentTurn === 2 || currentTurn >= 4;
+                break;
+            }
+        }
+    }
 
+    /**
+     * @param  {Number} skillId
+     * @param  {Unit} skillOwner
+     */
+    applySkillForBeginningOfTurn(skillId, skillOwner) {
         // ターン開始スキル不可である場合は処理を終える
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.WildTigerFang:
+                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
+                    unit.reserveToApplyAllDebuff(-6);
+                }
+                break;
             case Weapon.IcyMaltet:
                 if (skillOwner.dragonflower >= 10) {
                     skillOwner.applyAtkBuff(6);

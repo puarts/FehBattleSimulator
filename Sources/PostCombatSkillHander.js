@@ -306,6 +306,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.WildTigerFang:
+                    if (targetUnit.isTransformed) {
+                        targetUnit.reserveTakeDamage(5);
+                    }
+                    break;
                 case PassiveB.TrueDragonWall: {
                     let found = false;
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {

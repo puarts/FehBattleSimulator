@@ -283,9 +283,10 @@ targetUnit.reserveHeal(N);
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack = N
 
-戦闘後、HP N回復
+戦闘後、HP N回復/Nダメージ
 __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
+  targetUnit.reserveTakeDamage(N);
 }
 
 戦闘後、奥義発動カウント-N

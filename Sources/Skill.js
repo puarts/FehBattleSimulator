@@ -1304,6 +1304,7 @@ const Weapon = {
     EnvelopingBreath: 2074, // 茫漠のブレス
     HeadsmanGlitnir: 2075, // 死斧グリトニル
     RuinousFrost: 2077, // 滅亡の霜雪
+    WildTigerFang: 2080, // 暴走の虎の爪牙
 
     // 2022年5月 武器錬成
     IcyMaltet: 2071, // 氷槍マルテ
@@ -3075,6 +3076,7 @@ const BeastCommonSkillType = {
 const BeastCommonSkillMap =
     new Map(
         [
+            [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
