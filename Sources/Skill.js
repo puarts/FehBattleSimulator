@@ -1304,6 +1304,10 @@ const Weapon = {
     EnvelopingBreath: 2074, // 茫漠のブレス
     HeadsmanGlitnir: 2075, // 死斧グリトニル
     RuinousFrost: 2077, // 滅亡の霜雪
+    WildTigerFang: 2080, // 暴走の虎の爪牙
+
+    // 2022年5月 武器錬成
+    IcyMaltet: 2071, // 氷槍マルテ
 }
 
 const Support = {
@@ -2303,6 +2307,7 @@ const PassiveC = {
     AirOrders3: 819, // 先導の伝令・天3
     GroundOrders3: 911, // 先導の伝令・地3
     Upheaval: 823, // メガクェイク
+    UpheavalPlus: 2070, // メガクェイク・神
     VisionOfArcadia: 933, // 理想郷となるように
     OstiasPulse: 753, // オスティアの鼓動
     OstiasPulse2: 1828, // 盟主の鼓動・承
@@ -3071,6 +3076,7 @@ const BeastCommonSkillType = {
 const BeastCommonSkillMap =
     new Map(
         [
+            [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],

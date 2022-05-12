@@ -641,6 +641,13 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.Mafu:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                }
+                break;
             case Weapon.WindyWarTome:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
                     let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -1993,6 +2000,66 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WildTigerFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidateAllBuffs();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.UpheavalPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() + 1 || enemyUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.battleContext.invalidateAllBuffs();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.YoukoohNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MaryuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) return;
+            if (enemyUnit.battleContext.initiatesCombat || targetUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                targetUnit.addAllSpur(4);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.atkSpur += 5;
+                    enemyUnit.atkSpur -= 5;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Mafu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.IcyMaltet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                let amount = targetUnit.dragonflower >= 1 ? 5 : 4;
+                targetUnit.addAllSpur(amount);
+                if (targetUnit.dragonflower >= 5) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RuinousFrost] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 6;
@@ -4748,12 +4815,35 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Erudofurimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
-                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                let diffHalf = Math.floor(diff * 0.5);
-                let amount = Math.max(0, Math.min(8, diffHalf));
-                enemyUnit.atkSpur -= amount;
-                enemyUnit.spdSpur -= amount;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
+                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                    let diffHalf = Math.floor(diff * 0.5);
+                    let amount = Math.max(0, Math.min(8, diffHalf));
+                    enemyUnit.atkSpur -= amount;
+                    enemyUnit.spdSpur -= amount;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
+                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                    let diffHalf = Math.floor(diff * 0.5);
+                    let amount = Math.max(0, Math.min(8, diffHalf));
+                    enemyUnit.atkSpur -= amount;
+                    enemyUnit.spdSpur -= amount;
+                    enemyUnit.defSpur -= amount;
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.BoranNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5275,9 +5365,27 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.FellBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.battleContext.restHpPercentage < 100) {
-                targetUnit.atkSpur += 6;
-                targetUnit.resSpur += 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.restHpPercentage < 100) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.restHpPercentage < 100 || targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() + 1) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.atkSpur += 5;
+                        enemyUnit.atkSpur -= 5;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TaguelFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6113,6 +6221,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.MaryuNoBreath:
+                if (targetUnit.isWeaponRefined) break;
                 if (targetUnit.hasNegativeStatusEffect()
                     || !targetUnit.battleContext.isRestHpFull
                 ) {
@@ -6255,11 +6364,15 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.YoukoohNoTsumekiba:
-                        if (!allyUnit.hasStatusEffect(StatusEffectType.Panic)) {
-                            targetUnit.atkSpur += allyUnit.atkBuff;
-                            targetUnit.spdSpur += allyUnit.spdBuff;
-                            targetUnit.defSpur += allyUnit.defBuff;
-                            targetUnit.resSpur += allyUnit.resBuff;
+                        if (!allyUnit.isWeaponRefined) {
+                            if (!allyUnit.hasStatusEffect(StatusEffectType.Panic)) {
+                                targetUnit.atkSpur += allyUnit.atkBuff;
+                                targetUnit.spdSpur += allyUnit.spdBuff;
+                                targetUnit.defSpur += allyUnit.defBuff;
+                                targetUnit.resSpur += allyUnit.resBuff;
+                            }
+                        } else if (allyUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case Weapon.GengakkiNoYumiPlus:
@@ -7166,6 +7279,32 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.FellBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            let amount = Math.max(diff, 0);
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(amount * 0.3);
+                        }
+                    }
+                    break;
+                case Weapon.Erudofurimuniru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                            if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 1) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.IcyMaltet:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+                        }
+                    }
+                    break;
                 case Weapon.RuinousFrost:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                         let res = enemyUnit.getEvalResInCombat(targetUnit);
@@ -7576,6 +7715,13 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.Mafu:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(atkUnit.weaponType)) {
+                        return 0.3;
+                    }
+                }
+                break;
             case PassiveB.AssuredRebirth: {
                 let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
                 let percentage = 0;
@@ -8466,6 +8612,13 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.Mafu:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(defUnit.weaponType)) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.AdroitWarTome:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     if (atkUnit.getEvalResInCombat(defUnit) >= defUnit.getEvalResInCombat(atkUnit) + 5) {
@@ -8864,6 +9017,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.FellBreath:
+                    if (atkUnit.isWeaponRefined) break;
                     if (atkUnit.battleContext.restHpPercentage < 100) {
                         --followupAttackPriority;
                     }
@@ -9311,6 +9465,15 @@ class DamageCalculatorWrapper {
 
     __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
         switch (targetUnit.weapon) {
+            case Weapon.MaryuNoBreath:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        if (enemyUnit.battleContext.canFollowupAttack) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.70, enemyUnit);
+                        }
+                    }
+                }
+                break;
             case Weapon.SeaSearLance:
             case Weapon.LoyalistAxe:
                 if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) &&
@@ -9587,6 +9750,11 @@ class DamageCalculatorWrapper {
             }
         }
         switch (allyUnit.weapon) {
+            case Weapon.YoukoohNoTsumekiba:
+                if (allyUnit.isWeaponSpecialRefined) {
+                    targetUnit.addSpurs(0, 0, 2, 2);
+                }
+                break;
             case Weapon.IzunNoKajitsu:
                 if (allyUnit.isWeaponRefined) {
                     if (allyUnit.isWeaponSpecialRefined) {

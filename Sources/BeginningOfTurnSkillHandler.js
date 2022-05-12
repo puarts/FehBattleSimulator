@@ -45,6 +45,7 @@ class BeginningOfTurnSkillHandler {
      * @param  {Unit} unit
      */
     applySkillsForBeginningOfTurn(unit) {
+        this.applyTransformSkillForBeginningOfTurn(unit);
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillForBeginningOfTurn(skillId, unit);
         }
@@ -89,10 +90,10 @@ class BeginningOfTurnSkillHandler {
     }
 
     /**
-     * @param  {Number} skillId
-     * @param  {Unit} skillOwner
+     * ターン開始時の化身処理を行う
+     * @param skillOwner
      */
-    applySkillForBeginningOfTurn(skillId, skillOwner) {
+    applyTransformSkillForBeginningOfTurn(skillOwner) {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
                 skillOwner.isTransformed = true;
@@ -105,11 +106,36 @@ class BeginningOfTurnSkillHandler {
                 skillOwner.isTransformed = false;
             }
         }
+        // 闇ムワリムの特殊化身処理
+        switch (skillOwner.weapon) {
+            case Weapon.WildTigerFang: {
+                let currentTurn = this.globalBattleContext.currentTurn;
+                skillOwner.isTransformed = currentTurn === 2 || currentTurn >= 4;
+                break;
+            }
+        }
+    }
 
+    /**
+     * @param  {Number} skillId
+     * @param  {Unit} skillOwner
+     */
+    applySkillForBeginningOfTurn(skillId, skillOwner) {
         // ターン開始スキル不可である場合は処理を終える
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.WildTigerFang:
+                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
+                    unit.reserveToApplyAllDebuff(-6);
+                }
+                break;
+            case Weapon.IcyMaltet:
+                if (skillOwner.dragonflower >= 10) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applyDefBuff(6);
+                }
+                break;
             case PassiveB.TrueDragonWall: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
@@ -759,8 +785,9 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.Mafu:
                 if (this.globalBattleContext.currentTurn == 3) {
+                    let amount = skillOwner.isWeaponRefined ? 7 : 5;
                     let units = this.enumerateUnitsWithinSpecifiedRange(
-                        skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, 5, 99);
+                        skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, amount, 99);
                     for (let unit of units) {
                         if (isWeaponTypeTome(unit.weaponType)) {
                             continue;
@@ -1047,6 +1074,28 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyDefBuff(5); }); break;
             case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyResBuff(5); }); break;
             case PassiveC.DefResOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applyResBuff(5); }); break;
+            case PassiveC.UpheavalPlus:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    if (this.globalBattleContext.isAstraSeason) {
+                        if (skillOwner.groupId === UnitGroupType.Enemy) {
+                            let minDistance = Number.MAX_SAFE_INTEGER;
+                            let structures = [];
+                            for (let st of this.map.enumerateObjs(x => x instanceof OffenceStructureBase && x.isBreakable)) {
+                                let distance = Math.abs(st.posX - skillOwner.posX) + Math.abs(st.posY - skillOwner.posY);
+                                if (distance === minDistance) {
+                                    structures.push(st);
+                                } else if (distance < minDistance) {
+                                    minDistance = distance;
+                                    structures = [st];
+                                }
+                            }
+                            for (let st of structures) {
+                                this.moveStructureToTrashBox(st);
+                            }
+                        }
+                    }
+                }
+                break;
             case PassiveC.Upheaval:
                 if (this.globalBattleContext.currentTurn == 1) {
                     if (this.globalBattleContext.isAstraSeason) {
@@ -1920,6 +1969,13 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             }
+            case PassiveC.UpheavalPlus:
+                if (this.globalBattleContext.currentTurn == 1) {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        unit.reserveTakeDamage(10);
+                    }
+                }
+                break;
             case PassiveC.Upheaval:
                 if (this.globalBattleContext.currentTurn == 1) {
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
