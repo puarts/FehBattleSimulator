@@ -7726,8 +7726,8 @@ class DamageCalculatorWrapper {
                 let diff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
                 let percentage = 0;
                 let count = 0;
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 3)) {
-                    if (unit.weaponType === WeaponType.Staff || unit.weaponType === WeaponType.Breath) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 3)) {
+                    if (unit.weaponType === WeaponType.Staff || isWeaponTypeBreath(unit.weaponType)) {
                         count++;
                     }
                 }
