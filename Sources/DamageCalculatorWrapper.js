@@ -9238,6 +9238,21 @@ class DamageCalculatorWrapper {
                 break;
 
         }
+        switch (targetUnit.passiveC) {
+            case PassiveC.FaithInHumanity:
+                let count = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (!isWeaponTypeBreathOrBeast(unit.weaponType) && unit.buffTotal >= 10) {
+                        count++
+                    }
+                }
+                if (count >= 2) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+                break;
+        }
     }
 
     __init__applySpecialSkillEffect() {

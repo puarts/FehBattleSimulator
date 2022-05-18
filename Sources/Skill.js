@@ -2332,6 +2332,7 @@ const PassiveC = {
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者
     HolyGround: 1977, // 地上の最後の女神
+    FaithInHumanity: 2089, // 人の可能性を信じる
 };
 
 const PassiveS = {
