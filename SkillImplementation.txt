@@ -43,6 +43,9 @@ const BeastCommonSkillMap =
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 
+無属性の敵と戦闘時、自分は3すくみ有利、敵は3すくみ不利となる[レイヴン]
+targetUnit.battleContext.isAdvantageForColorless = true; 
+
 3すくみ有利だと、さらに攻撃+20%[相性激化]
 getTriangleAdeptAdditionalRatio() {
     if (isTriangleAdeptSkill(this.passiveA)
