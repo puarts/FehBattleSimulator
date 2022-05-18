@@ -2000,6 +2000,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BridalOrchidPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 0, 0, 5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DragonBouquet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -6688,6 +6693,12 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.BridalOrchidPlus:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+                    targetUnit.resSpur += targetUnit.getResBuffInCombat(enemyUnit);
+                }
+                break;
             case Weapon.AversasNight:
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>

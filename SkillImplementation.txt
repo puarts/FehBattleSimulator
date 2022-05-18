@@ -194,6 +194,10 @@ this.canCounterAttack(atkUnit, defUnit)
 __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
 }
+[部分強化増幅]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+}
 
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();

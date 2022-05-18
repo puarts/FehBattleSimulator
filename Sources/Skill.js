@@ -1312,6 +1312,7 @@ const Weapon = {
     // 超英雄 百花繚乱の花嫁
     TrueLoveRoses: 2081, // 一途な想いの薔薇
     DragonBouquet: 2083, // 竜血継ぐ花嫁の花
+    BridalOrchidPlus: 2085, // 花嫁のカトレア
 }
 
 const Support = {
