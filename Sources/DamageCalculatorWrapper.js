@@ -8003,6 +8003,10 @@ class DamageCalculatorWrapper {
     }
 
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+        if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
+            atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
+        }
+
         switch (atkUnit.passiveB) {
             case PassiveB.HodrsZeal: {
                 let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getEvalAtkInCombat(atkUnit);
