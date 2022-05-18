@@ -2000,6 +2000,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TrueLoveRoses] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 0, 0, 6)
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WildTigerFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -7997,6 +8002,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.TrueLoveRoses:
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                    let amount = isPrecombat ? atkUnit.getEvalResInPrecombat() : atkUnit.getEvalResInCombat(defUnit);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(amount * 0.1);
+                }
             case Weapon.MugenNoSyo:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.restHpPercentage >= 25) {

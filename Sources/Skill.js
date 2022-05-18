@@ -1308,6 +1308,9 @@ const Weapon = {
 
     // 2022年5月 武器錬成
     IcyMaltet: 2071, // 氷槍マルテ
+
+    // 超英雄 百花繚乱の花嫁
+    TrueLoveRoses: 2081, // 一途な想いの薔薇
 }
 
 const Support = {

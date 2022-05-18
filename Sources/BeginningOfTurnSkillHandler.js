@@ -655,6 +655,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             }
+            case Weapon.TrueLoveRoses:
             case Weapon.StudiedForblaze:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(1);
