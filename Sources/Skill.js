@@ -1313,6 +1313,7 @@ const Weapon = {
     TrueLoveRoses: 2081, // 一途な想いの薔薇
     DragonBouquet: 2083, // 竜血継ぐ花嫁の花
     BridalOrchidPlus: 2085, // 花嫁のカトレア
+    BlazingPolearms: 2087, // 紅炎の親子の聖斧
 }
 
 const Support = {
