@@ -8048,6 +8048,7 @@ class DamageCalculatorWrapper {
                     let amount = isPrecombat ? atkUnit.getEvalResInPrecombat() : atkUnit.getEvalResInCombat(defUnit);
                     atkUnit.battleContext.additionalDamage += Math.trunc(amount * 0.1);
                 }
+                break;
             case Weapon.MugenNoSyo:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
@@ -9243,7 +9244,7 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.passiveC) {
-            case PassiveC.FaithInHumanity:
+            case PassiveC.FaithInHumanity: {
                 let count = 0;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                     if (!isWeaponTypeBreathOrBeast(unit.weaponType) && unit.buffTotal >= 10) {
@@ -9256,6 +9257,7 @@ class DamageCalculatorWrapper {
                     enemyUnit.battleContext.increaseCooldownCountForDefense = false;
                 }
                 break;
+            }
         }
     }
 

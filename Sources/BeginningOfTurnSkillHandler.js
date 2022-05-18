@@ -125,7 +125,7 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
-            case PassiveC.FaithInHumanity:
+            case PassiveC.FaithInHumanity: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
                     if (!isWeaponTypeBreathOrBeast(unit.weaponType)) {
@@ -139,6 +139,7 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.applySpdBuff(6);
                 }
                 break;
+            }
             case Weapon.WildTigerFang:
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
                     unit.reserveToApplyAllDebuff(-6);
