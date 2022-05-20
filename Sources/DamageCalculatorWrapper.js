@@ -2000,6 +2000,32 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BridalSunflowerPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 0, 5, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BlazingPolearms] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BridalOrchidPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 0, 0, 5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DragonBouquet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TrueLoveRoses] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 0, 0, 6)
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WildTigerFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -3288,9 +3314,18 @@ class DamageCalculatorWrapper {
                 enemyUnit.addAllSpur(-5);
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.FlowForce3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+
+                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.FlowGuard3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         }
@@ -6677,6 +6712,24 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.BridalSunflowerPlus:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+                    targetUnit.defSpur += targetUnit.getDefBuffInCombat(enemyUnit);
+                }
+                break;
+            case Weapon.BlazingPolearms:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    let amount = Math.min(6, Math.trunc(targetUnit.getBuffTotalInCombat(enemyUnit) * 0.5));
+                    enemyUnit.addAllSpur(-amount);
+                }
+                break;
+            case Weapon.BridalOrchidPlus:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+                    targetUnit.resSpur += targetUnit.getResBuffInCombat(enemyUnit);
+                }
+                break;
             case Weapon.AversasNight:
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
@@ -7961,6 +8014,10 @@ class DamageCalculatorWrapper {
     }
 
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+        if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
+            atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
+        }
+
         switch (atkUnit.passiveB) {
             case PassiveB.HodrsZeal: {
                 let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getEvalAtkInCombat(atkUnit);
@@ -7997,6 +8054,12 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.TrueLoveRoses:
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                    let amount = isPrecombat ? atkUnit.getEvalResInPrecombat() : atkUnit.getEvalResInCombat(defUnit);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(amount * 0.1);
+                }
+                break;
             case Weapon.MugenNoSyo:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
@@ -9191,6 +9254,22 @@ class DamageCalculatorWrapper {
                 break;
 
         }
+        switch (targetUnit.passiveC) {
+            case PassiveC.FaithInHumanity: {
+                let count = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (!isWeaponTypeBreathOrBeast(unit.weaponType) && unit.buffTotal >= 10) {
+                        count++
+                    }
+                }
+                if (count >= 2) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+                break;
+            }
+        }
     }
 
     __init__applySpecialSkillEffect() {
@@ -10301,9 +10380,11 @@ class DamageCalculatorWrapper {
                             break;
                     }
                     switch (unit.passiveC) {
+                        case PassiveC.AtkResHold:
+                            targetUnit.addSpurs(-4, 0, 0, -4);
+                            break;
                         case PassiveC.SpdResHold:
-                            targetUnit.spdSpur -= 4;
-                            targetUnit.resSpur -= 4;
+                            targetUnit.addSpurs(0, -4, 0, -4);
                             break;
                     }
 

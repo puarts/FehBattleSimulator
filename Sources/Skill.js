@@ -1308,6 +1308,13 @@ const Weapon = {
 
     // 2022年5月 武器錬成
     IcyMaltet: 2071, // 氷槍マルテ
+
+    // 超英雄 百花繚乱の花嫁
+    TrueLoveRoses: 2081, // 一途な想いの薔薇
+    DragonBouquet: 2083, // 竜血継ぐ花嫁の花
+    BridalOrchidPlus: 2085, // 花嫁のカトレア
+    BlazingPolearms: 2087, // 紅炎の親子の聖斧
+    BridalSunflowerPlus: 2090, // 花嫁の向日葵+
 }
 
 const Support = {
@@ -2039,6 +2046,7 @@ const PassiveB = {
     FlowFlight3: 2025, // 怒涛・飛竜行空3
     FlowRefresh3: 1763, // 怒涛・再起3
     FlowGuard3: 1912, // 怒涛・キャンセル3
+    FlowForce3: 2088, // 怒涛・不屈3
 
     // 拍節
     SpdDefTempo3: 2046, // 速さ守備の拍節3
@@ -2249,6 +2257,7 @@ const PassiveC = {
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
     AtkDefRein3: 1519, // 攻撃守備の牽制3
     AtkResRein3: 1490, // 攻撃魔防の牽制3
+    AtkResHold: 2084, // 攻撃魔防の大牽制
     SpdDefRein3: 1485, // 速さ守備の牽制3
     SpdResRein3: 1538, // 速さ魔防の牽制3
     SpdResHold: 2029, // 速さ魔防の大牽制
@@ -2324,6 +2333,7 @@ const PassiveC = {
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者
     HolyGround: 1977, // 地上の最後の女神
+    FaithInHumanity: 2089, // 人の可能性を信じる
 };
 
 const PassiveS = {

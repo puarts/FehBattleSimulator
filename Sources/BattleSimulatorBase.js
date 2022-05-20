@@ -899,6 +899,18 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedRoy: {
+                let targetOrigins = duoUnit.heroInfo.origin.split('|');
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                        unit.applyDefBuff(6);
+                        unit.applyResBuff(6);
+                        unit.addStatusEffect(StatusEffectType.ResonantShield);
+                        unit.addStatusEffect(StatusEffectType.Treachery);
+                    }
+                }
+                break;
+            }
             case Hero.DuoIke:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 5, 99)) {
                     unit.applyAtkDebuff(-7);

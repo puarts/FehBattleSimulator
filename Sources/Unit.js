@@ -45,6 +45,7 @@ const Hero = {
     DuoChrom: 776,
     HarmonizedSonya: 787,
     DuoIke: 798,
+    HarmonizedRoy: 816,
 };
 
 function isThiefIndex(heroIndex) {
@@ -231,6 +232,7 @@ const StatusEffectType = {
     CantoControl: 31, // 再移動制限
     EnGarde: 32, // 戦闘外ダメージ無効
     SpecialCooldownChargePlusOnePerAttack: 33, // 戦闘中、奥義発動カウント変動量+1
+    Treachery: 34, // 強化ダメージ+
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -360,6 +362,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_EnGarde.webp";
         case StatusEffectType.SpecialCooldownChargePlusOnePerAttack:
             return g_imageRootPath + "StatusEffect_AccelerateSpecial.webp";
+        case StatusEffectType.Treachery:
+            return g_imageRootPath + "StatusEffect_Treachery.webp";
         default: return "";
     }
 }

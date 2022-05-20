@@ -43,6 +43,9 @@ const BeastCommonSkillMap =
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 
+無属性の敵と戦闘時、自分は3すくみ有利、敵は3すくみ不利となる[レイヴン]
+targetUnit.battleContext.isAdvantageForColorless = true; 
+
 3すくみ有利だと、さらに攻撃+20%[相性激化]
 getTriangleAdeptAdditionalRatio() {
     if (isTriangleAdeptSkill(this.passiveA)
@@ -190,6 +193,10 @@ this.canCounterAttack(atkUnit, defUnit)
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
 __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+}
+[部分強化増幅]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
 }
 
 敵の強化の+を無効(強化無効)
