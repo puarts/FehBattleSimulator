@@ -57,7 +57,7 @@ const ModuleLoadState = {
 
 /// シミュレーター本体です。
 class BattleSimmulatorBase {
-    constructor() {
+    constructor(additionalMethods = null) {
         this.isTurnWideCommandQueueEnabled = false;
         this.disableAllLogs = false;
         this.isCommandLogEnabled = true;
@@ -101,521 +101,531 @@ class BattleSimmulatorBase {
         /** @type {AppData} */
         this.data = g_appData;
 
+        let methods = {
+            bgmEnabledChanged: function () {
+                if (self.audioManager.isBgmEnabled) {
+                    self.vm.audioManager.isSoundEffectEnabled = true;
+                    if (self.vm.changesBgmRandomly) {
+                        self.audioManager.setBgmRandom();
+                        self.writeDebugLogLine(`BGM番号: ${self.audioManager.currentBgmId}`);
+                    }
+                    self.audioManager.playBgm();
+                }
+                else {
+                    self.vm.audioManager.isSoundEffectEnabled = false;
+                    self.audioManager.pauseBgm();
+                }
+            },
+            backgroundImageEnabledChanged: function () {
+                updateMapUi();
+            },
+            gameModeChanged: function () {
+                // g_appData.clearReservedSkillsForAllUnits();
+                g_appData.setPropertiesForCurrentGameMode();
+
+                // デフォルトのマップに設定
+                switch (this.gameMode) {
+                    case GameMode.AetherRaid:
+                        this.mapKind = MapType.Izumi;
+                        break;
+                    case GameMode.Arena:
+                        this.mapKind = MapType.Arena_1;
+                        break;
+                    case GameMode.ResonantBattles:
+                        this.mapKind = DefaultResonantBattleMap;
+                        break;
+                    case GameMode.TempestTrials:
+                        this.mapKind = DefaultTempestTrialsMap;
+                        break;
+                    case GameMode.PawnsOfLoki:
+                        this.mapKind = -1;
+                        break;
+                    default:
+                        break;
+                }
+
+
+                g_appData.updateEnemyAndAllyUnits();
+                g_appData.sortUnitsBySlotOrder();
+                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                changeMap();
+                g_appData.clearReservedSkillsForAllUnits();
+                resetPlacement();
+                switch (this.gameMode) {
+                    case GameMode.Arena:
+                        break;
+                    case GameMode.ResonantBattles:
+                        self.__setUnitsForResonantBattles();
+                        break;
+                    case GameMode.TempestTrials:
+                        self.__setUnitsForTempestTrials();
+                        break;
+                }
+                updateAllUi();
+            },
+            mapChanged: function () {
+                // g_appData.clearReservedSkillsForAllUnits();
+                removeBreakableWallsFromTrashbox();
+                changeMap();
+                switch (this.gameMode) {
+                    case GameMode.Arena:
+                        resetPlacement();
+                        break;
+                    case GameMode.ResonantBattles:
+                        resetPlacement();
+                        self.__setUnitsForResonantBattles();
+                        break;
+                    case GameMode.TempestTrials:
+                        resetPlacement();
+                        break;
+                    case GameMode.PawnsOfLoki:
+                    case GameMode.SummonerDuels:
+                        resetPlacement();
+                        break;
+                }
+
+                updateAllUi();
+            },
+            addWallToMap: function () {
+                let newWallIndex = this.map.countWallsOnMap();
+                let wall = this.map.getWall(newWallIndex);
+                if (wall == null) {
+                    self.writeErrorLine("これ以上壁を配置できません");
+                    return;
+                }
+                removeFromAll(wall);
+                moveStructureToEmptyTileOfMap(wall);
+                updateAllUi();
+            },
+            removeWallFromMap: function () {
+                let wallIndex = this.map.countWallsOnMap() - 1;
+                if (wallIndex < 0) {
+                    self.writeErrorLine("削除する壁がありません");
+                    return;
+                }
+                let wall = this.map.getWall(wallIndex);
+
+                removeFromAll(wall);
+                updateAllUi();
+            },
+            addBreakableWallToMap: function () {
+                let newWallIndex = this.map.countBreakableWallsOnMap();
+                let wall = this.map.getBreakableWall(newWallIndex);
+                if (wall == null) {
+                    self.writeErrorLine("これ以上壊せる壁を配置できません");
+                    return;
+                }
+                removeFromAll(wall);
+                moveStructureToEmptyTileOfMap(wall);
+                updateAllUi();
+            },
+            removeBreakableWallFromMap: function () {
+                let wallIndex = this.map.countBreakableWallsOnMap() - 1;
+                if (wallIndex < 0) {
+                    self.writeErrorLine("削除する壊せる壁がありません");
+                    return;
+                }
+                let wall = this.map.getBreakableWall(wallIndex);
+
+                removeFromAll(wall);
+                updateAllUi();
+            },
+            resonantBattleIntervalChanged: function () {
+                self.__setUnitsForResonantBattles();
+                updateAllUi();
+            },
+            currentItemIndexChanged: function () {
+                // if (g_app == null) { return; }
+                // changeCurrentUnitTab(this.currentItemIndex);
+
+                // let currentItem = g_appData.currentItem;
+                // for (let item of g_appData.enumerateItems()) {
+                //     if (item == currentItem) {
+                //         item.isSelected = true;
+                //     }
+                //     else {
+                //         item.isSelected = false;
+                //     }
+                // }
+
+                // let currentUnit = g_app.__getCurrentUnit();
+                // if (currentUnit != null) {
+                //     if (currentUnit.groupId == UnitGroupType.Ally) {
+                //         this.attackerUnitIndex = this.currentItemIndex;
+                //     }
+                //     else {
+                //         this.attackTargetUnitIndex = this.currentItemIndex;
+                //     }
+                // }
+                // g_appData.__showStatusToAttackerInfo();
+                // updateAllUi();
+            },
+            heroIndexChanged: function (e) {
+                if (g_app == null) { return; }
+                let currentUnit = g_app.__getCurrentUnit();
+                if (currentUnit == null) { return; }
+                g_appData.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
+                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                console.log("heroIndexChanged");
+                updateAllUi();
+            },
+            buffChanged: function () {
+                if (g_app == null) { return; }
+                g_appData.__showStatusToAttackerInfo();
+                updateAllUi();
+            },
+            moveCountChanged: function () {
+                if (g_app == null) { return; }
+                updateAllUi();
+            },
+            weaponChanged: function () {
+                console.log("weaponChanged");
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                unit.weaponRefinement = WeaponRefinementType.None;
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                unit.resetMaxSpecialCount();
+                self.updateAllUnitSpur();
+                g_appData.updateArenaScore(unit);
+            },
+            weaponOptionChanged: function () {
+                console.log("weaponOptionChanged");
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                unit.resetMaxSpecialCount();
+                g_app.updateAllUnitSpur();
+                g_appData.updateArenaScore(unit);
+            },
+            supportChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateUnitSkillInfo(unit);
+                g_appData.updateArenaScore(unit);
+            },
+            specialChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateUnitSkillInfo(unit);
+                unit.resetMaxSpecialCount();
+                g_appData.updateArenaScore(unit);
+                updateAllUi();
+            },
+            specialCountChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                updateAllUi();
+            },
+            hpChanged: function () {
+                if (g_app == null) { return; }
+                g_appData.__showStatusToAttackerInfo();
+                updateAllUi();
+            },
+            passiveAChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                unit.resetMaxSpecialCount();
+                g_app.updateAllUnitSpur();
+                g_appData.updateArenaScore(unit);
+            },
+            passiveBChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateUnitSkillInfo(unit);
+                g_appData.updateArenaScore(unit);
+
+                // 救援等に変わったら移動可能範囲の更新が必要
+                updateAllUi();
+            },
+            passiveCChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                g_app.updateAllUnitSpur();
+                g_appData.updateArenaScore(unit);
+            },
+            passiveSChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                g_app.updateAllUnitSpur();
+                g_appData.updateArenaScore(unit);
+
+                // 曲技飛行等で移動範囲が変わる
+                updateAllUi();
+            },
+            captainChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                g_app.updateAllUnitSpur();
+                updateAllUi();
+            },
+            mergeChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+            },
+            dragonflowerChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+            },
+            summonerLevelChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+            },
+            grantedBlessingChanged: function () {
+                if (g_app == null) { return; }
+                let currentUnit = g_app.__getCurrentUnit();
+                if (currentUnit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                g_appData.updateArenaScoreOfUnit(currentUnit);
+
+                for (let unit of g_appData.enumerateSelectedItems(x => x != currentUnit && x instanceof Unit)) {
+                    if (unit.grantedBlessing != currentUnit.grantedBlessing
+                        && unit.providableBlessingSeason == SeasonType.None
+                    ) {
+                        unit.grantedBlessing = currentUnit.grantedBlessing;
+                        g_appData.__updateStatusBySkillsAndMerges(unit);
+                    }
+                    g_appData.updateArenaScoreOfUnit(unit);
+                }
+                g_appData.updateArenaScoreOfParties();
+                updateAllUi();
+            },
+            ivChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                unit.updatePureGrowthRate();
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                g_appData.updateArenaScore(unit);
+                updateAllUi();
+            },
+            addChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+            },
+            blessingChanged: function () {
+                // if (g_app == null) { return; }
+                // let unit = g_app.__getCurrentUnit();
+                // if (unit == null) { return; }
+                // g_appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+            },
+            transformedChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                g_appData.__updateStatusBySkillsAndMerges(unit);
+            },
+            lightSeasonChanged: function () {
+                if (g_app == null) { return; }
+                this.globalBattleContext.isAstraSeason = !this.globalBattleContext.isLightSeason;
+                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                g_appData.resetCurrentAetherRaidDefensePreset();
+            },
+            astraSeasonChanged: function () {
+                if (g_app == null) { return; }
+                this.globalBattleContext.isLightSeason = !this.globalBattleContext.isAstraSeason;
+                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                g_appData.resetCurrentAetherRaidDefensePreset();
+            },
+            seasonChanged: function () {
+                if (g_app == null) { return; }
+                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                updateAllUi();
+            },
+            aetherRaidDefensePresetChanged: function () {
+                g_appData.updateAetherRaidDefensePresetDescription();
+            },
+            aetherRaidOffensePresetChanged: function () {
+            },
+            slotOrderChanged: function () {
+                updateMapUi();
+            },
+            showDetailLogChanged: function () {
+            },
+            resetUnitRandom: function () {
+                if (g_app == null) { return; }
+                g_app.resetUnitRandom();
+                updateAllUi();
+            },
+            healHpFull: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getCurrentUnit();
+                if (unit == null) { return; }
+                unit.hp = unit.maxHpWithSkills;
+                g_appData.__showStatusToAttackerInfo();
+                updateAllUi();
+            },
+            healHpFullForAllUnits: function () {
+                if (g_app == null) { return; }
+                for (let unit of this.units) {
+                    unit.resetAllState();
+                }
+                g_appData.__showStatusToAttackerInfo();
+                updateAllUi();
+            },
+            debugMenuEnabledChanged: function () {
+                g_appData.applyDebugMenuVisibility();
+            },
+            actionDoneChanged: function () {
+                updateAllUi();
+            },
+            activateAllUnit: function () {
+                for (let unit of this.units) {
+                    unit.isActionDone = false;
+                }
+                updateAllUi();
+            },
+            isBonusCharChanged: function () {
+                if (g_app == null) { return; }
+                let currentUnit = g_app.__getCurrentUnit();
+                if (currentUnit == null) { return; }
+                let value = currentUnit.isBonusChar;
+                for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit)) {
+                    if (unit.isBonusChar == value) {
+                        continue;
+                    }
+                    unit.isBonusChar = value;
+                }
+                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+            },
+            resetUnitForTesting: function () {
+                if (g_app == null) { return; }
+                g_app.resetUnitsForTesting();
+            },
+            ornamentIconChanged: function () {
+                if (g_app == null) { return; }
+                let currentItem = g_appData.currentItem;
+                if ((currentItem instanceof Ornament) == false) {
+                    return;
+                }
+                currentItem.setIconByOrnamentTypeIndex();
+                updateAllUi();
+            },
+            structureLevelChanged: function () {
+                if (g_app == null) { return; }
+                let currentItem = g_appData.currentItem;
+                let isUpdateUnitRequired = (currentItem instanceof OfFortress) || (currentItem instanceof DefFortress);
+                for (let st of g_appData.enumerateSelectedItems(x => x != currentItem && x instanceof StructureBase)) {
+                    if (st.hasLevel && Number(st.level) != Number(currentItem.level)) {
+                        st.level = Number(currentItem.level);
+                    }
+
+                    isUpdateUnitRequired |= (st instanceof OfFortress) || (st instanceof DefFortress);
+                }
+
+                if (isUpdateUnitRequired) {
+                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                }
+
+                updateAllUi();
+            },
+            currentTurnChanged: function () {
+                console.log("current turn changed");
+                if (this.isAutoLoadTurnSettingEnabled) {
+                    loadSettings();
+                }
+            },
+            enemyUnitSorted: function (event) {
+                let slotOrder = 0;
+                for (let elem of event.to.childNodes) {
+                    let unit = g_app.findUnitById(elem.classList[0]);
+                    unit.slotOrder = slotOrder;
+                    ++slotOrder;
+                }
+                g_appData.updateAetherRaidDefenseLiftLoss();
+                updateMapUi();
+            },
+            unitSelected: function (event) {
+                let name = event.item.name;
+                if (name == undefined) {
+                    name = event.item.classList[0];
+                }
+                g_app.selectItem(name);
+            },
+            examinesAliveTiles: function (event) {
+                self.examinesAliveTiles();
+            },
+            resetCellOverrides: function (event) {
+                this.map.resetOverriddenTiles();
+                updateAllUi();
+            },
+            removeDefenceStructuresNoEffectForEnemyMovement: function (event) {
+                console.log("removeDefenceStructuresNoEffectForEnemyMovement");
+                self.removeDefenceStructuresNoEffectForEnemyMovement();
+                updateAllUi();
+            },
+            examinesAttackableEnemies: function (event) {
+                console.log("examinesAttackableEnemies");
+                self.origAi.examinesAttackableEnemies();
+                updateAllUi();
+            },
+            endTurn: function (event) {
+                self.clearLog();
+                self.simulateBeginningOfEnemyTurn();
+                self.__executeAllCommands(self.commandQueuePerAction, 0);
+                updateAllUi();
+            },
+            iconOverlayDisabledChanged: function (event) {
+                updateAllUi();
+            },
+            exportSettingChanged: function () {
+                if (g_app == null) {
+                    return;
+                }
+                g_appData.updateExportText();
+            },
+            cellSizeChanged: function () {
+                self.map.cellHeight = self.map.cellWidth;
+                g_appData.updateTargetInfoTdStyle();
+                updateAllUi();
+            },
+            ocrSettingFileChanged: function (event) {
+                this.showOcrImage = false;
+                const files = event.target.files;
+                if (files.length == 0) {
+                    return;
+                }
+
+                this.showOcrImage = true;
+                self._imageProcessor.showOcrSettingSourceImage(files);
+            }
+        };
+
+        if (additionalMethods != null) {
+            for (let key in additionalMethods) {
+                methods[key] = additionalMethods[key];
+            }
+        }
         this.vm = new Vue({
             el: "#app",
             data: g_appData,
-            methods: {
-                bgmEnabledChanged: function () {
-                    if (self.audioManager.isBgmEnabled) {
-                        self.vm.audioManager.isSoundEffectEnabled = true;
-                        if (self.vm.changesBgmRandomly) {
-                            self.audioManager.setBgmRandom();
-                            self.writeDebugLogLine(`BGM番号: ${self.audioManager.currentBgmId}`);
-                        }
-                        self.audioManager.playBgm();
-                    }
-                    else {
-                        self.vm.audioManager.isSoundEffectEnabled = false;
-                        self.audioManager.pauseBgm();
-                    }
-                },
-                backgroundImageEnabledChanged: function () {
-                    updateMapUi();
-                },
-                gameModeChanged: function () {
-                    // g_appData.clearReservedSkillsForAllUnits();
-                    g_appData.setPropertiesForCurrentGameMode();
-
-                    // デフォルトのマップに設定
-                    switch (this.gameMode) {
-                        case GameMode.AetherRaid:
-                            this.mapKind = MapType.Izumi;
-                            break;
-                        case GameMode.Arena:
-                            this.mapKind = MapType.Arena_1;
-                            break;
-                        case GameMode.ResonantBattles:
-                            this.mapKind = DefaultResonantBattleMap;
-                            break;
-                        case GameMode.TempestTrials:
-                            this.mapKind = DefaultTempestTrialsMap;
-                            break;
-                        case GameMode.PawnsOfLoki:
-                            this.mapKind = -1;
-                            break;
-                        default:
-                            break;
-                    }
-
-
-                    g_appData.updateEnemyAndAllyUnits();
-                    g_appData.sortUnitsBySlotOrder();
-                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                    changeMap();
-                    g_appData.clearReservedSkillsForAllUnits();
-                    resetPlacement();
-                    switch (this.gameMode) {
-                        case GameMode.Arena:
-                            break;
-                        case GameMode.ResonantBattles:
-                            self.__setUnitsForResonantBattles();
-                            break;
-                        case GameMode.TempestTrials:
-                            self.__setUnitsForTempestTrials();
-                            break;
-                    }
-                    updateAllUi();
-                },
-                mapChanged: function () {
-                    // g_appData.clearReservedSkillsForAllUnits();
-                    removeBreakableWallsFromTrashbox();
-                    changeMap();
-                    switch (this.gameMode) {
-                        case GameMode.Arena:
-                            resetPlacement();
-                            break;
-                        case GameMode.ResonantBattles:
-                            resetPlacement();
-                            self.__setUnitsForResonantBattles();
-                            break;
-                        case GameMode.TempestTrials:
-                            resetPlacement();
-                            break;
-                        case GameMode.PawnsOfLoki:
-                        case GameMode.SummonerDuels:
-                            resetPlacement();
-                            break;
-                    }
-
-                    updateAllUi();
-                },
-                addWallToMap: function () {
-                    let newWallIndex = this.map.countWallsOnMap();
-                    let wall = this.map.getWall(newWallIndex);
-                    if (wall == null) {
-                        self.writeErrorLine("これ以上壁を配置できません");
-                        return;
-                    }
-                    removeFromAll(wall);
-                    moveStructureToEmptyTileOfMap(wall);
-                    updateAllUi();
-                },
-                removeWallFromMap: function () {
-                    let wallIndex = this.map.countWallsOnMap() - 1;
-                    if (wallIndex < 0) {
-                        self.writeErrorLine("削除する壁がありません");
-                        return;
-                    }
-                    let wall = this.map.getWall(wallIndex);
-
-                    removeFromAll(wall);
-                    updateAllUi();
-                },
-                addBreakableWallToMap: function () {
-                    let newWallIndex = this.map.countBreakableWallsOnMap();
-                    let wall = this.map.getBreakableWall(newWallIndex);
-                    if (wall == null) {
-                        self.writeErrorLine("これ以上壊せる壁を配置できません");
-                        return;
-                    }
-                    removeFromAll(wall);
-                    moveStructureToEmptyTileOfMap(wall);
-                    updateAllUi();
-                },
-                removeBreakableWallFromMap: function () {
-                    let wallIndex = this.map.countBreakableWallsOnMap() - 1;
-                    if (wallIndex < 0) {
-                        self.writeErrorLine("削除する壊せる壁がありません");
-                        return;
-                    }
-                    let wall = this.map.getBreakableWall(wallIndex);
-
-                    removeFromAll(wall);
-                    updateAllUi();
-                },
-                resonantBattleIntervalChanged: function () {
-                    self.__setUnitsForResonantBattles();
-                    updateAllUi();
-                },
-                currentItemIndexChanged: function () {
-                    // if (g_app == null) { return; }
-                    // changeCurrentUnitTab(this.currentItemIndex);
-
-                    // let currentItem = g_appData.currentItem;
-                    // for (let item of g_appData.enumerateItems()) {
-                    //     if (item == currentItem) {
-                    //         item.isSelected = true;
-                    //     }
-                    //     else {
-                    //         item.isSelected = false;
-                    //     }
-                    // }
-
-                    // let currentUnit = g_app.__getCurrentUnit();
-                    // if (currentUnit != null) {
-                    //     if (currentUnit.groupId == UnitGroupType.Ally) {
-                    //         this.attackerUnitIndex = this.currentItemIndex;
-                    //     }
-                    //     else {
-                    //         this.attackTargetUnitIndex = this.currentItemIndex;
-                    //     }
-                    // }
-                    // g_appData.__showStatusToAttackerInfo();
-                    // updateAllUi();
-                },
-                heroIndexChanged: function (e) {
-                    if (g_app == null) { return; }
-                    let currentUnit = g_app.__getCurrentUnit();
-                    if (currentUnit == null) { return; }
-                    g_appData.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
-                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                    console.log("heroIndexChanged");
-                    updateAllUi();
-                },
-                buffChanged: function () {
-                    if (g_app == null) { return; }
-                    g_appData.__showStatusToAttackerInfo();
-                    updateAllUi();
-                },
-                moveCountChanged: function () {
-                    if (g_app == null) { return; }
-                    updateAllUi();
-                },
-                weaponChanged: function () {
-                    console.log("weaponChanged");
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    unit.weaponRefinement = WeaponRefinementType.None;
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    unit.resetMaxSpecialCount();
-                    self.updateAllUnitSpur();
-                    g_appData.updateArenaScore(unit);
-                },
-                weaponOptionChanged: function () {
-                    console.log("weaponOptionChanged");
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    unit.resetMaxSpecialCount();
-                    g_app.updateAllUnitSpur();
-                    g_appData.updateArenaScore(unit);
-                },
-                supportChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateUnitSkillInfo(unit);
-                    g_appData.updateArenaScore(unit);
-                },
-                specialChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateUnitSkillInfo(unit);
-                    unit.resetMaxSpecialCount();
-                    g_appData.updateArenaScore(unit);
-                    updateAllUi();
-                },
-                specialCountChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    updateAllUi();
-                },
-                hpChanged: function () {
-                    if (g_app == null) { return; }
-                    g_appData.__showStatusToAttackerInfo();
-                    updateAllUi();
-                },
-                passiveAChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    unit.resetMaxSpecialCount();
-                    g_app.updateAllUnitSpur();
-                    g_appData.updateArenaScore(unit);
-                },
-                passiveBChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateUnitSkillInfo(unit);
-                    g_appData.updateArenaScore(unit);
-
-                    // 救援等に変わったら移動可能範囲の更新が必要
-                    updateAllUi();
-                },
-                passiveCChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    g_app.updateAllUnitSpur();
-                    g_appData.updateArenaScore(unit);
-                },
-                passiveSChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    g_app.updateAllUnitSpur();
-                    g_appData.updateArenaScore(unit);
-
-                    // 曲技飛行等で移動範囲が変わる
-                    updateAllUi();
-                },
-                captainChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    g_app.updateAllUnitSpur();
-                    updateAllUi();
-                },
-                mergeChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    updateAllUi();
-                },
-                dragonflowerChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    updateAllUi();
-                },
-                summonerLevelChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    updateAllUi();
-                },
-                grantedBlessingChanged: function () {
-                    if (g_app == null) { return; }
-                    let currentUnit = g_app.__getCurrentUnit();
-                    if (currentUnit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(currentUnit);
-
-                    for (let unit of g_appData.enumerateSelectedItems(x => x != currentUnit && x instanceof Unit)) {
-                        if (unit.grantedBlessing != currentUnit.grantedBlessing
-                            && unit.providableBlessingSeason == SeasonType.None
-                        ) {
-                            unit.grantedBlessing = currentUnit.grantedBlessing;
-                            g_appData.__updateStatusBySkillsAndMerges(unit);
-                        }
-                    }
-                    updateAllUi();
-                },
-                ivChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    unit.updatePureGrowthRate();
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    g_appData.updateArenaScore(unit);
-                    updateAllUi();
-                },
-                addChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                    updateAllUi();
-                },
-                blessingChanged: function () {
-                    // if (g_app == null) { return; }
-                    // let unit = g_app.__getCurrentUnit();
-                    // if (unit == null) { return; }
-                    // g_appData.__updateStatusBySkillsAndMerges(unit);
-                    updateAllUi();
-                },
-                transformedChanged: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMerges(unit);
-                },
-                lightSeasonChanged: function () {
-                    if (g_app == null) { return; }
-                    this.globalBattleContext.isAstraSeason = !this.globalBattleContext.isLightSeason;
-                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                    g_appData.resetCurrentAetherRaidDefensePreset();
-                },
-                astraSeasonChanged: function () {
-                    if (g_app == null) { return; }
-                    this.globalBattleContext.isLightSeason = !this.globalBattleContext.isAstraSeason;
-                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                    g_appData.resetCurrentAetherRaidDefensePreset();
-                },
-                seasonChanged: function () {
-                    if (g_app == null) { return; }
-                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                    updateAllUi();
-                },
-                aetherRaidDefensePresetChanged: function () {
-                    g_appData.updateAetherRaidDefensePresetDescription();
-                },
-                aetherRaidOffensePresetChanged: function () {
-                },
-                slotOrderChanged: function () {
-                    updateMapUi();
-                },
-                showDetailLogChanged: function () {
-                },
-                resetUnitRandom: function () {
-                    if (g_app == null) { return; }
-                    g_app.resetUnitRandom();
-                    updateAllUi();
-                },
-                healHpFull: function () {
-                    if (g_app == null) { return; }
-                    let unit = g_app.__getCurrentUnit();
-                    if (unit == null) { return; }
-                    unit.hp = unit.maxHpWithSkills;
-                    g_appData.__showStatusToAttackerInfo();
-                    updateAllUi();
-                },
-                healHpFullForAllUnits: function () {
-                    if (g_app == null) { return; }
-                    for (let unit of this.units) {
-                        unit.resetAllState();
-                    }
-                    g_appData.__showStatusToAttackerInfo();
-                    updateAllUi();
-                },
-                debugMenuEnabledChanged: function () {
-                    g_appData.applyDebugMenuVisibility();
-                },
-                actionDoneChanged: function () {
-                    updateAllUi();
-                },
-                activateAllUnit: function () {
-                    for (let unit of this.units) {
-                        unit.isActionDone = false;
-                    }
-                    updateAllUi();
-                },
-                isBonusCharChanged: function () {
-                    if (g_app == null) { return; }
-                    let currentUnit = g_app.__getCurrentUnit();
-                    if (currentUnit == null) { return; }
-                    let value = currentUnit.isBonusChar;
-                    for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit)) {
-                        if (unit.isBonusChar == value) {
-                            continue;
-                        }
-                        unit.isBonusChar = value;
-                    }
-                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                },
-                resetUnitForTesting: function () {
-                    if (g_app == null) { return; }
-                    g_app.resetUnitsForTesting();
-                },
-                ornamentIconChanged: function () {
-                    if (g_app == null) { return; }
-                    let currentItem = g_appData.currentItem;
-                    if ((currentItem instanceof Ornament) == false) {
-                        return;
-                    }
-                    currentItem.setIconByOrnamentTypeIndex();
-                    updateAllUi();
-                },
-                structureLevelChanged: function () {
-                    if (g_app == null) { return; }
-                    let currentItem = g_appData.currentItem;
-                    let isUpdateUnitRequired = (currentItem instanceof OfFortress) || (currentItem instanceof DefFortress);
-                    for (let st of g_appData.enumerateSelectedItems(x => x != currentItem && x instanceof StructureBase)) {
-                        if (st.hasLevel && Number(st.level) != Number(currentItem.level)) {
-                            st.level = Number(currentItem.level);
-                        }
-
-                        isUpdateUnitRequired |= (st instanceof OfFortress) || (st instanceof DefFortress);
-                    }
-
-                    if (isUpdateUnitRequired) {
-                        g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                    }
-
-                    updateAllUi();
-                },
-                currentTurnChanged: function () {
-                    console.log("current turn changed");
-                    if (this.isAutoLoadTurnSettingEnabled) {
-                        loadSettings();
-                    }
-                },
-                enemyUnitSorted: function (event) {
-                    let slotOrder = 0;
-                    for (let elem of event.to.childNodes) {
-                        let unit = g_app.findUnitById(elem.classList[0]);
-                        unit.slotOrder = slotOrder;
-                        ++slotOrder;
-                    }
-                    g_appData.updateAetherRaidDefenseLiftLoss();
-                    updateMapUi();
-                },
-                unitSelected: function (event) {
-                    let name = event.item.name;
-                    if (name == undefined) {
-                        name = event.item.classList[0];
-                    }
-                    g_app.selectItem(name);
-                },
-                examinesAliveTiles: function (event) {
-                    self.examinesAliveTiles();
-                },
-                resetCellOverrides: function (event) {
-                    this.map.resetOverriddenTiles();
-                    updateAllUi();
-                },
-                removeDefenceStructuresNoEffectForEnemyMovement: function (event) {
-                    console.log("removeDefenceStructuresNoEffectForEnemyMovement");
-                    self.removeDefenceStructuresNoEffectForEnemyMovement();
-                    updateAllUi();
-                },
-                examinesAttackableEnemies: function (event) {
-                    console.log("examinesAttackableEnemies");
-                    self.origAi.examinesAttackableEnemies();
-                    updateAllUi();
-                },
-                endTurn: function (event) {
-                    self.clearLog();
-                    self.simulateBeginningOfEnemyTurn();
-                    self.__executeAllCommands(self.commandQueuePerAction, 0);
-                    updateAllUi();
-                },
-                iconOverlayDisabledChanged: function (event) {
-                    updateAllUi();
-                },
-                exportSettingChanged: function () {
-                    if (g_app == null) {
-                        return;
-                    }
-                    g_appData.updateExportText();
-                },
-                cellSizeChanged: function () {
-                    self.map.cellHeight = self.map.cellWidth;
-                    g_appData.updateTargetInfoTdStyle();
-                    updateAllUi();
-                },
-                ocrSettingFileChanged: function (event) {
-                    this.showOcrImage = false;
-                    const files = event.target.files;
-                    if (files.length == 0) {
-                        return;
-                    }
-
-                    this.showOcrImage = true;
-                    self._imageProcessor.showOcrSettingSourceImage(files);
-                }
-            },
+            methods: methods,
         });
 
         {

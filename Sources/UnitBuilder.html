@@ -99,7 +99,7 @@
         }
 
         .contents li {
-            border: 1px solid #ccc;
+            border: 0px solid #ccc;
         }
 
         .unitDetailContainer {
@@ -109,6 +109,13 @@
             border-radius: 20px;
         }
 
+        .jquery .contents li {
+            display: none;
+        }
+
+        .jquery .contents li.active {
+            display: block;
+        }
 
 
         .tabs input {
@@ -235,7 +242,7 @@
         .smallParam {
             width: 25px;
             text-align: left;
-            font-size: 12px;
+            font-size: 10px;
             color: rgb(192, 199, 190);
             text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
         }
@@ -376,8 +383,79 @@
                 </td>
             </tr>
             <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <td>
+                                シーズン:
+                            </td>
+                            <td>
+                                <input id="isLightSeason" type="checkbox" v-model="globalBattleContext.isLightSeason"
+                                    @change="lightSeasonChanged"><label class="normal" for="isLightSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Light.png" />
+                                    <img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Dark.png" /></label>
+                                <input id="isAstraSeason" type="checkbox" v-model="globalBattleContext.isAstraSeason"
+                                    @change="astraSeasonChanged"><label class="normal" for="isAstraSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Astra.png" />
+                                    <img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Anima.png" /></label>
+                                <input id="isFireSeason" type="checkbox" v-model="globalBattleContext.isFireSeason"
+                                    @change="seasonChanged"><label class="normal" for="isFireSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Fire.png" /></label>
+                                <input id="isWaterSeason" type="checkbox" v-model="globalBattleContext.isWaterSeason"
+                                    @change="seasonChanged"><label class="normal" for="isWaterSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Water.png" /></label>
+                                <input id="isWindSeason" type="checkbox" v-model="globalBattleContext.isWindSeason"
+                                    @change="seasonChanged">
+                                <label class="normal" for="isWindSeason">
+                                    <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Wind.png" />
+                                </label>
+                                <input id="isEarthSeason" type="checkbox" v-model="globalBattleContext.isEarthSeason"
+                                    @change="seasonChanged"><label class="normal" for="isEarthSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" /></label>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table
+                        style="padding: 5px; border-style: solid; border-width: 2px; border-color:#6aa5a2; border-radius: 5px;">
+                        <tr>
+                            <td style="padding: 5px;background-color: #aadaa6;">
+                                <span style="padding-right: 10px;font-weight: bold;">編成</span>
+                                <span v-if="g_appData.gameMode == GameMode.Arena"
+                                    style="font-size:12px"><br />スコア:{{arenaScore}}</span>
+                            </td>
+                            <td style="padding: 5px;background-color: #ccf8c8; ">
+                                <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
+                                    <span v-for="unit in allyUnits" v-bind:class="unit.id" style="position:relative">
+                                        <span style="font-weight: bold; font-size:12px; position:absolute">
+                                            <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
+                                                絆{{summonerLevelToString(unit.summonerLevel)}}</div>
+                                            <div v-if="unit.isBonusChar"
+                                                style=" color:blue;background-color: #ffffff66;">
+                                                Bonus</div>
+                                        </span>
+                                        <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 50px;" />
+                                    </span>
+                                </draggable>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
                 <td valign="top">
-                    <unit-detail v-model="allyUnits[0]"></unit-detail>
+                    <div class="jquery" id="unitSettings">
+                        <ul class="contents">
+                            <li v-for="unit in allyUnits">
+                                <unit-detail v-model="unit"></unit-detail>
+                            </li>
+                        </ul>
+                    </div>
                 </td>
             </tr>
             <tr v-bind:style="debugMenuStyle">
@@ -453,6 +531,13 @@
                 <div class='paramHeader' style="text-align:left;">
                     <table>
                         <tr>
+                            <td  class="paramHeader">
+                                <span  class="normal">
+                                ユニット{{value.slotOrder + 1}}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
                             <td rowspan="2">
                                 <img v-bind:src="value.icon" width="50" height="50" style="padding: 0px 10px 0px 0px " />
                             </td>
@@ -515,7 +600,7 @@
                                 {{value.maxHpWithSkillsWithoutAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.heroInfo != null ? value.maxHpWithSkillsWithoutAdd-value.heroInfo.hp : 0}})
+                                ({{value.heroInfo != null ? toSignedStr(value.maxHpWithSkillsWithoutAdd-value.heroInfo.hp) : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -534,7 +619,7 @@
                                 {{value.atkWithSkills-value.atkAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.heroInfo != null ? value.atkWithSkills-value.heroInfo.atk : 0}})
+                                ({{value.heroInfo != null ? toSignedStr(value.atkWithSkills-value.heroInfo.atk) : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -556,7 +641,7 @@
                                 {{value.spdWithSkills-value.spdAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.heroInfo != null ? value.spdWithSkills-value.heroInfo.spd : 0}})
+                                ({{value.heroInfo != null ? toSignedStr(value.spdWithSkills-value.heroInfo.spd) : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -578,7 +663,7 @@
                                 {{value.defWithSkills-value.defAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.heroInfo != null ? value.defWithSkills-value.heroInfo.def : 0}})
+                                ({{value.heroInfo != null ? toSignedStr(value.defWithSkills-value.heroInfo.def) : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -600,7 +685,7 @@
                                 {{value.resWithSkills-value.resAdd}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.heroInfo != null ? value.resWithSkills-value.heroInfo.res : 0}})
+                                ({{value.heroInfo != null ? toSignedStr(value.resWithSkills-value.heroInfo.res) : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -614,8 +699,8 @@
                                     +value.resWithSkills+value.resBuff+value.resDebuff}}
                             </td>
                             <td class='smallParam'>
-                                ({{value.heroInfo != null ? value.maxHpWithSkillsWithoutAdd+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills
-                                    -(value.heroInfo.getStatusTotalOfLv40()) : 0}})
+                                ({{value.heroInfo != null ? toSignedStr(value.maxHpWithSkillsWithoutAdd+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills
+                                    -(value.heroInfo.getStatusTotalOfLv40())) : 0}})
                             </td>
                         </tr>
                         <tr>
@@ -846,7 +931,16 @@
                             </option>
                         </select>
                     </dd>
-                    <dt><label class="title">祝福: </label></dt>
+                    <dt v-if="value.providableBlessingSeason == SeasonType.None">
+                        <label class="title">祝福:</label></dt>
+                    <dd v-if="value.providableBlessingSeason == SeasonType.None">
+                        <select v-model="value.grantedBlessing" @change="g_app.vm.grantedBlessingChanged">
+                            <option v-for="option in g_appData.seasonOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                    </dd>
+                    <dt><label class="title">祝福効果: </label></dt>
                     <dd>  
                         <select v-model="value.blessing1" @change="updateStatus(value);">
                             <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
@@ -892,7 +986,7 @@
                 <span>スコア: {{value.arenaScore}}({{value.arenaScore*2}})</span><br/>
                 <span style="color:#555">
                 計算式: (150 + {{value.rarityScore}} + {{value.levelScore}} + ({{value.rating}} / 5) + ({{value.totalSp}} / 100) + ({{value.merge}} * 2)) * 2<br/>
-                総合値: {{value.rating}}<br/>
+                基礎能力: {{value.rating}}<br/>
                 合計SP: {{value.totalSp}}({{value.weaponSp}}+{{value.supportSp}}+{{value.specialSp}}+{{value.passiveASp}}+{{value.passiveBSp}}+{{value.passiveCSp}}+{{value.passiveSSp}})</span><br/>
             </fieldset>
             </div>
@@ -900,6 +994,9 @@
     </script>
 
     <script>
+        function toSignedStr(value) {
+            return value <= 0 ? value : "+" + value;
+        }
         function copyDebugLogToClipboard() {
             selectText("debugLogPanel");
             document.execCommand("copy");
@@ -992,10 +1089,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
     <!-- sortable.js -->
-    <!-- <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script> -->
+    <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
 
     <!-- vuedraggable.js -->
-    <!-- <script async src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script> -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script>
 
     <!-- クッキー(実際は使ってないので消してもいいかも) -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->
@@ -1080,7 +1177,7 @@
                 "Main_OriginalAi.js",
                 "Main_MouseAndTouch.js",
                 "BattleSimulatorBase.js",
-                "Main.js",
+                "UnitBuilderMain.js",
                 "VueComponents.js",
                 "SampleSkillInfos.js",
                 "SampleHeroInfos.js",
@@ -1101,6 +1198,8 @@
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos);
                 g_app.registerHeroOptions(heroInfos, false);
+
+                g_appData.setGameMode(GameMode.Arena);
 
                 loadLazyImages();
             });

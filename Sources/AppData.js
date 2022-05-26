@@ -1044,7 +1044,7 @@ class AppData extends UnitManager {
             }
         }
 
-        score = Math.floor(score / units.length) * 2 + bressingCount * 2;
+        score = (Math.floor(score / units.length) + bressingCount) * 2;
         let tier = Number(this.mjolnirsStrikeTier);
         if (tier <= 5) {
             score += 0;
@@ -1931,6 +1931,16 @@ class AppData extends UnitManager {
         for (let tile of this.map.enumerateTiles()) {
             yield tile;
         }
+    }
+
+    findIndexOfAllyUnit(id) {
+        for (let i = 0; i < this.allyUnits.length; ++i) {
+            let unit = this.allyUnits[i];
+            if (unit.id == id) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     findIndexOfItem(id) {
