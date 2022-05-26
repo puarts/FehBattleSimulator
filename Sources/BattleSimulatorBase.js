@@ -7597,6 +7597,9 @@ class BattleSimmulatorBase {
             case Support.CallToFlame:
                 targetUnit.applyAtkBuff(6);
                 targetUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                if (isWeaponTypeBreath(targetUnit.weaponType)) {
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
                 break;
             case Support.Play:
                 if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {

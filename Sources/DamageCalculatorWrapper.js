@@ -3132,8 +3132,8 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[Weapon.PhantasmTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
-                enemyUnit.spdSput -= 6;
-                enemyUnit.resSput -= 6;
+                enemyUnit.spdSpur -= 6;
+                enemyUnit.resSpur -= 6;
                 targetUnit.battleContext.invalidatesSpdBuff = true;
                 targetUnit.battleContext.invalidatesResBuff = true;
                 if (targetUnit.battleContext.initiatesCombat) {
