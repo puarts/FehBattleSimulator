@@ -2128,7 +2128,7 @@ class DamageCalculatorWrapper {
         }
 
         this._applySkillEffectForUnitFuncDict[Weapon.ShadowBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.addSpurs(-6, 0, 0, -6);
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
