@@ -289,8 +289,6 @@ class DamageCalculatorWrapper {
                     if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
                     self.__initSaverUnit(saverUnit, defUnit);
                     if (atkUnit.canActivatePrecombatSpecial()) {
-                        // NOTE: 護られるユニットの防御床情報を護り手に入れる
-                        saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
                         // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
                         for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
                             if (tile.placedUnit === saverUnit) {
@@ -302,6 +300,8 @@ class DamageCalculatorWrapper {
                         // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
                         atkUnit.battleContext.clearPrecombatState();
                     }
+                    // NOTE: 護られるユニットの防御床情報を護り手に入れる
+                    saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
                     actualDefUnit = saverUnit;
                 }
             }
