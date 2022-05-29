@@ -390,6 +390,10 @@ function calcArenaBaseStatusScore(baseStatusTotal) {
     return Math.floor(baseStatusTotal / 5);
 }
 
+function calcArenaTotalSpScore(totalSp) {
+    return Math.floor(totalSp / 100);
+}
+
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
     constructor() {
@@ -4042,11 +4046,14 @@ class Unit extends BattleMapElement {
             return;
         }
 
+        this.arenaScore = this.calcCurrentArenaScore(majorSeason, minorSeason);
+    }
+
+    calcCurrentArenaScore(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
         let totalSp = this.__updateAndGetTotalSp();
         let merge = this.__getArenaMerges(majorSeason, minorSeason);
         let rating = this.__getArenaRating();
-        let score = this.__calcArenaScore(rating, totalSp, merge, this.rarity);
-        this.arenaScore = score;
+        return this.__calcArenaScore(rating, totalSp, merge, this.rarity);
     }
 
     /**
@@ -4089,56 +4096,42 @@ class Unit extends BattleMapElement {
      * @returns {Number}
      */
     __updateAndGetTotalSp() {
-        let totalSp = 0;
+        this.weaponSp = this.__getWeaponSp();
+        this.supportSp += this.specialInfo != null ? this.specialInfo.sp : 0;
+        this.specialSp += this.supportInfo != null ? this.supportInfo.sp : 0;
+        this.passiveASp += this.passiveAInfo != null ? this.passiveAInfo.sp : 0;
+        this.passiveBSp += this.passiveBInfo != null ? this.passiveBInfo.sp : 0;
+        this.passiveCSp += this.passiveCInfo != null ? this.passiveCInfo.sp : 0;
+        this.passiveSSp += this.passiveSInfo != null ? this.passiveSInfo.sp : 0;
+        this.totalSp = this.getTotalSp();
+        return this.totalSp;
+    }
+
+    __getWeaponSp() {
         let weaponSp = 0;
         if (this.weaponInfo != null) {
             weaponSp = this.weaponInfo.sp;
             if (weaponSp == 300 && this.isWeaponRefined) {
                 weaponSp += 50;
             }
-            totalSp += weaponSp;
         }
-        let specialSp = 0;
-        if (this.specialInfo != null) {
-            specialSp = this.specialInfo.sp;
-            totalSp += this.specialInfo.sp;
-        }
-        let supportSp = 0;
-        if (this.supportInfo != null) {
-            supportSp = this.supportInfo.sp;
-            totalSp += this.supportInfo.sp;
-        }
-        let passiveASp = 0;
-        if (this.passiveAInfo != null) {
-            passiveASp = this.passiveAInfo.sp;
-            totalSp += this.passiveAInfo.sp;
-        }
-        let passiveBSp = 0;
-        if (this.passiveBInfo != null) {
-            passiveBSp = this.passiveBInfo.sp;
-            totalSp += this.passiveBInfo.sp;
-        }
-        let passiveCSp = 0;
-        if (this.passiveCInfo != null) {
-            passiveCSp = this.passiveCInfo.sp;
-            totalSp += this.passiveCInfo.sp;
-        }
-        let passiveSSp = 0;
-        if (this.passiveSInfo != null) {
-            passiveSSp = this.passiveSInfo.sp;
-            totalSp += this.passiveSInfo.sp;
-        }
+        return weaponSp;
+    }
 
-        this.weaponSp = weaponSp;
-        this.supportSp = supportSp;
-        this.specialSp = specialSp;
-        this.passiveASp = passiveASp;
-        this.passiveBSp = passiveBSp;
-        this.passiveCSp = passiveCSp;
-        this.passiveSSp = passiveSSp;
-
-        this.totalSp = totalSp;
+    getTotalSp() {
+        let totalSp = 0;
+        totalSp += this.__getWeaponSp();
+        totalSp += this.specialInfo != null ? this.specialInfo.sp : 0;
+        totalSp += this.supportInfo != null ? this.supportInfo.sp : 0;
+        totalSp += this.passiveAInfo != null ? this.passiveAInfo.sp : 0;
+        totalSp += this.passiveBInfo != null ? this.passiveBInfo.sp : 0;
+        totalSp += this.passiveCInfo != null ? this.passiveCInfo.sp : 0;
+        totalSp += this.passiveSInfo != null ? this.passiveSInfo.sp : 0;
         return totalSp;
+    }
+
+    calcArenaTotalSpScore() {
+        return calcArenaTotalSpScore(this.getTotalSp());
     }
 
     /**
@@ -4255,7 +4248,9 @@ class Unit extends BattleMapElement {
 
         let baseStatusTotal = rating;
         this.rating = baseStatusTotal;
-        return base + levelScore + rarityBase + calcArenaBaseStatusScore(baseStatusTotal) + Math.floor((totalSp) / 100) + (rebirthCount * 2);
+        return base + levelScore + rarityBase
+            + calcArenaBaseStatusScore(baseStatusTotal)
+            + calcArenaTotalSpScore(totalSp) + (rebirthCount * 2);
     }
 
     initializeSkillsToDefault() {

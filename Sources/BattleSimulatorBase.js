@@ -728,7 +728,6 @@ class BattleSimmulatorBase {
         unit.setToMaxScoreAsset();
 
         unit.clearReservedSkills();
-        unit.initializeSkillsToDefault();
         unit.weapon = this.__findMaxSpWeaponId(unit.weapon, unit.heroInfo.weaponOptions);
         let weaponInfo = this.__findWeaponInfo(unit.weapon);
         if (weaponInfo.sp == 300 && weaponInfo.weaponRefinementOptions.length > 1) {
@@ -736,15 +735,49 @@ class BattleSimmulatorBase {
         }
         unit.support = this.__getMaxSpSkillId(unit.support, unit.heroInfo.supportOptions, [g_appData.supportInfos]);
         unit.special = this.__getMaxSpSkillId(unit.special, unit.heroInfo.specialOptions, [g_appData.specialInfos]);
+
+        let origPassiveA = unit.passiveA;
         unit.passiveA = this.__getMaxArenaScorePassiveA(unit);
 
         unit.passiveB = this.__getMaxSpSkillId(unit.passiveB, unit.heroInfo.passiveBOptions, [g_appData.passiveBInfos]);
+
+        let origPassiveC = unit.passiveC;
         unit.passiveC = this.__getMaxSpSkillId(unit.passiveC, unit.heroInfo.passiveCOptions, [g_appData.passiveCInfos]);
         unit.passiveS = this.__getMaxSpSkillId(unit.passiveS, unit.heroInfo.passiveSOptions, [
             g_appData.passiveAInfos,
             g_appData.passiveBInfos,
             g_appData.passiveCInfos,
             g_appData.passiveSInfos]);
+
+        // A、Cスキルは240から300にしてもスコアが変わらない場合があるのでチェック
+        {
+            if (unit.passiveC != origPassiveC) {
+                // スコアが変わらなければ元のスキルを維持
+                let maxSpSkillId = unit.passiveC;
+                this.data.skillDatabase.updateUnitSkillInfo(unit);
+                let currentScore = unit.calcArenaTotalSpScore();
+
+                unit.passiveC = origPassiveC;
+                this.data.skillDatabase.updateUnitSkillInfo(unit);
+                let origScore = unit.calcArenaTotalSpScore();
+
+                unit.passiveC = origScore == currentScore ? origPassiveC : maxSpSkillId;
+            }
+
+            if (unit.passiveA != origPassiveA) {
+                // スコアが変わらなければ元のスキルを維持
+                let maxSpSkillId = unit.passiveA;
+                this.data.skillDatabase.updateUnitSkillInfo(unit);
+                let currentScore = unit.calcArenaTotalSpScore();
+
+                unit.passiveA = origPassiveA;
+                this.data.skillDatabase.updateUnitSkillInfo(unit);
+                let origScore = unit.calcArenaTotalSpScore();
+
+                unit.passiveA = origScore == currentScore ? origPassiveA : maxSpSkillId;
+            }
+        }
+
         g_appData.__updateStatusBySkillsAndMerges(unit);
         this.updateAllUnitSpur();
         g_appData.updateArenaScore(unit);
