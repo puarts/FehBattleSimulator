@@ -630,7 +630,10 @@ class AppData extends UnitManager {
     __updateUnitSkillInfo(unit) {
         this.skillDatabase.updateUnitSkillInfo(unit);
     }
-
+    /**
+     * @param  {} id
+     * @returns {SkillInfo}
+     */
     findSkillInfoByDict(id) {
         return this.skillDatabase.findSkillInfoByDict(id);
     }
@@ -1825,6 +1828,9 @@ class AppData extends UnitManager {
         return null;
     }
 
+    /**
+     * @returns {Unit[]}
+     */
     *enumerateUnits() {
         for (let unit of this.enumerateEnemyUnits()) {
             yield unit;
@@ -1834,21 +1840,35 @@ class AppData extends UnitManager {
         }
     }
 
+    /**
+     * @returns {Unit[]}
+     */
     enumerateAllEnemyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, 1000);
     }
+    /**
+     * @returns {Unit[]}
+     */
     enumerateAllAllyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, 1000);
     }
-
+    /**
+     * @returns {Unit[]}
+     */
     enumerateAllyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, this.allyUnits.length);
     }
 
+    /**
+     * @returns {Unit[]}
+     */
     enumerateEnemyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, this.enemyUnits.length);
     }
 
+    /**
+     * @returns {Unit[]}
+     */
     * enumerateUnitsInSpecifiedGroup(groupId) {
         switch (groupId) {
             case UnitGroupType.Enemy:

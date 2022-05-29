@@ -9,8 +9,15 @@ class UnitBuilderMain extends BattleSimmulatorBase {
                     name = event.item.classList[0];
                 }
 
-                g_app.setCurrentUnit(name);
-            }
+                this.setCurrentUnit(name);
+            },
+            loadTeamMaxScore: () => {
+                for (let unit of this.data.enumerateAllyUnits()) {
+                    this.setUnitToMaxArenaScore(unit);
+
+                    console.log(`${unit.id}: maxSpecialCount = ${unit.maxSpecialCount}`);
+                }
+            },
         });
     }
 

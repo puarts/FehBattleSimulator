@@ -386,6 +386,10 @@ function groupIdToString(groupId) {
     }
 }
 
+function calcArenaBaseStatusScore(baseStatusTotal) {
+    return Math.floor(baseStatusTotal / 5);
+}
+
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
     constructor() {
@@ -4138,6 +4142,51 @@ class Unit extends BattleMapElement {
     }
 
     /**
+     * 闘技場スコアが最大になる個性に設定します。現在の個性が最大なら個性を変更しません。
+     */
+    setToMaxScoreAsset() {
+        let origMerge = this.merge;
+        if (this.merge == 0) {
+            // 限界突破していない場合は査定計算のために一時的に限界突破
+            this.merge = 1;
+        }
+
+        // 現在の個性で査定計算
+        let defaultAsset = this.ivHighStat;
+        let defaultFlaw = this.ivLowStat;
+        let defaultScore = this.calcArenaBaseStatusScore();
+        let assetStatuses = [
+            StatusType.Hp,
+            StatusType.Atk,
+            StatusType.Spd,
+            StatusType.Def,
+            StatusType.Res
+        ];
+
+        // すべての個性で評価して現在より大きい査定になるものがあればそれに設定
+        for (let asset of assetStatuses.filter(x => x != defaultAsset)) {
+            this.ivHighStat = asset;
+            this.ivLowStat = StatusType.None; // 不得意は関係ないので None にしておく
+            let score = this.calcArenaBaseStatusScore();
+            if (score > defaultScore) {
+                // 適当な不得意を設定
+                this.ivLowStat = assetStatuses.find(x => x != this.ivHighStat);
+                break;
+            }
+            this.ivHighStat = defaultAsset;
+            this.ivLowStat = defaultFlaw;
+        }
+
+        this.merge = origMerge;
+    }
+
+    calcArenaBaseStatusScore() {
+        let rating = this.__getArenaRating();
+        let score = calcArenaBaseStatusScore(rating);
+        return score;
+    }
+
+    /**
      * @returns {Number}
      */
     __getArenaRating() {
@@ -4156,19 +4205,22 @@ class Unit extends BattleMapElement {
             rating = 170;
         }
         else if (this.__hasDuel4Skill()) {
-            if (this.isMythicHero || this.isLegendaryHero) {
-                if (rating < 175) {
-                    rating = 175;
-                }
-            }
-            else {
-                if (rating < 180) {
-                    rating = 180;
-                }
+            let duel4Rating = this.getDuel4Rating();
+            if (rating < duel4Rating) {
+                rating = duel4Rating;
             }
         }
 
         return rating;
+    }
+
+    getDuel4Rating() {
+        if (this.isMythicHero || this.isLegendaryHero) {
+            return 175;
+        }
+        else {
+            return 180;
+        }
     }
 
     __getIvType(statusType, includesAscendedAsset = false) {
@@ -4203,7 +4255,7 @@ class Unit extends BattleMapElement {
 
         let baseStatusTotal = rating;
         this.rating = baseStatusTotal;
-        return base + levelScore + rarityBase + Math.floor(baseStatusTotal / 5) + Math.floor((totalSp) / 100) + (rebirthCount * 2);
+        return base + levelScore + rarityBase + calcArenaBaseStatusScore(baseStatusTotal) + Math.floor((totalSp) / 100) + (rebirthCount * 2);
     }
 
     initializeSkillsToDefault() {

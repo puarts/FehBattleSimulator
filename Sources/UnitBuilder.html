@@ -47,7 +47,7 @@
 
 <body>
     <p>
-        ユニットのステータスやスキル構成をシミュレートするツールです。
+        ユニットのステータスやスキル構成をシミュレートするツールです。闘技場スコアも表示しているので、闘技場スコア(査定)の計算にもご活用下さい。
     </p>
     <div id="initMessage">初期化中..</div>
     <style>
@@ -117,6 +117,11 @@
             display: block;
         }
 
+        div.block {
+            float: left;
+            display: block;
+        }
+
 
         .tabs input {
             display: none;
@@ -142,7 +147,7 @@
         .minusButtonUi {
             font-size: 12px;
             font-weight: bold;
-            width: 25px;
+            min-width: 25px;
             height: 25px;
             color: #fff;
             background-color: orangered;
@@ -390,30 +395,46 @@
                                 シーズン:
                             </td>
                             <td>
-                                <input id="isLightSeason" type="checkbox" v-model="globalBattleContext.isLightSeason"
-                                    @change="lightSeasonChanged"><label class="normal" for="isLightSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Light.png" />
-                                    <img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Dark.png" /></label>
-                                <input id="isAstraSeason" type="checkbox" v-model="globalBattleContext.isAstraSeason"
-                                    @change="astraSeasonChanged"><label class="normal" for="isAstraSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Astra.png" />
-                                    <img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Anima.png" /></label>
-                                <input id="isFireSeason" type="checkbox" v-model="globalBattleContext.isFireSeason"
-                                    @change="seasonChanged"><label class="normal" for="isFireSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Fire.png" /></label>
-                                <input id="isWaterSeason" type="checkbox" v-model="globalBattleContext.isWaterSeason"
-                                    @change="seasonChanged"><label class="normal" for="isWaterSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Water.png" /></label>
-                                <input id="isWindSeason" type="checkbox" v-model="globalBattleContext.isWindSeason"
-                                    @change="seasonChanged">
-                                <label class="normal" for="isWindSeason">
-                                    <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Wind.png" />
-                                </label>
-                                <input id="isEarthSeason" type="checkbox" v-model="globalBattleContext.isEarthSeason"
-                                    @change="seasonChanged"><label class="normal" for="isEarthSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" /></label>
+                                <div class="block">
+                                    <input id="isLightSeason" type="checkbox"
+                                        v-model="globalBattleContext.isLightSeason" @change="lightSeasonChanged"><label
+                                        class="normal" for="isLightSeason"><img
+                                            src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Light.png" />
+                                        <img
+                                            src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Dark.png" /></label>
+                                </div>
+                                <div class="block">
+                                    <input id="isAstraSeason" type="checkbox"
+                                        v-model="globalBattleContext.isAstraSeason" @change="astraSeasonChanged"><label
+                                        class="normal" for="isAstraSeason"><img
+                                            src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Astra.png" />
+                                        <img
+                                            src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Anima.png" /></label>
+                                </div>
+                                <div class="block">
+                                    <input id="isFireSeason" type="checkbox" v-model="globalBattleContext.isFireSeason"
+                                        @change="seasonChanged"><label class="normal" for="isFireSeason"><img
+                                            src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Fire.png" /></label>
+                                </div>
+                                <div class="block">
+                                    <input id="isWaterSeason" type="checkbox"
+                                        v-model="globalBattleContext.isWaterSeason" @change="seasonChanged"><label
+                                        class="normal" for="isWaterSeason"><img
+                                            src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Water.png" /></label>
+                                </div>
+                                <div class="block">
+                                    <input id="isWindSeason" type="checkbox" v-model="globalBattleContext.isWindSeason"
+                                        @change="seasonChanged">
+                                    <label class="normal" for="isWindSeason">
+                                        <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Wind.png" />
+                                    </label>
+                                </div>
+                                <div class="block">
+                                    <input id="isEarthSeason" type="checkbox"
+                                        v-model="globalBattleContext.isEarthSeason" @change="seasonChanged"><label
+                                        class="normal" for="isEarthSeason"><img
+                                            src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" /></label>
+                                </div>
                             </td>
                         </tr>
                     </table>
@@ -421,30 +442,35 @@
             </tr>
             <tr>
                 <td>
-                    <table
-                        style="padding: 5px; border-style: solid; border-width: 2px; border-color:#6aa5a2; border-radius: 5px;">
-                        <tr>
-                            <td style="padding: 5px;background-color: #aadaa6;">
-                                <span style="padding-right: 10px;font-weight: bold;">編成</span>
-                                <span v-if="g_appData.gameMode == GameMode.Arena"
-                                    style="font-size:12px"><br />スコア:{{arenaScore}}</span>
-                            </td>
-                            <td style="padding: 5px;background-color: #ccf8c8; ">
-                                <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
-                                    <span v-for="unit in allyUnits" v-bind:class="unit.id" style="position:relative">
-                                        <span style="font-weight: bold; font-size:12px; position:absolute">
-                                            <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
-                                                絆{{summonerLevelToString(unit.summonerLevel)}}</div>
-                                            <div v-if="unit.isBonusChar"
-                                                style=" color:blue;background-color: #ffffff66;">
-                                                Bonus</div>
-                                        </span>
-                                        <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 50px;" />
-                                    </span>
-                                </draggable>
-                            </td>
-                        </tr>
-                    </table>
+                    <div class="block">
+                        <table
+                            style="padding: 5px; border-style: solid; border-width: 2px; border-color:#6aa5a2; border-radius: 5px;">
+                            <tr>
+                                <td style="padding: 5px;background-color: #aadaa6;">
+                                    <span style="padding-right: 10px;font-weight: bold;">編成</span>
+                                    <span v-if="g_appData.gameMode == GameMode.Arena"
+                                        style="font-size:12px"><br />スコア:{{arenaScore}}</span>
+                                </td>
+                                <td style="padding: 5px;background-color: #ccf8c8; ">
+                                    <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
+                                        <div v-for="unit in allyUnits" v-bind:class="unit.id"
+                                            style="position:relative;float:left;">
+                                            <span class="paramHeader"
+                                                style="padding:3px; position:absolute;right:0px;bottom:-5px;">
+                                                {{unit.arenaScore}}
+                                            </span>
+                                            <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 50px;" />
+                                        </div>
+                                    </draggable>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="block">
+                        <div style="padding: 5px;">
+                            <input type="button" class="buttonUi" @click="loadTeamMaxScore" value="全員の査定最大化"></input>
+                        </div>
+                    </div>
                 </td>
             </tr>
             <tr>

@@ -715,7 +715,9 @@ class BattleSimmulatorBase {
         }
         return maxSpSkillInfo.id;
     }
-
+    /**
+     * @param  {Unit} unit
+     */
     setUnitToMaxArenaScore(unit) {
         if (unit.heroInfo == null) {
             return;
@@ -723,23 +725,22 @@ class BattleSimmulatorBase {
 
         unit.merge = 10;
         unit.level = 40;
+        unit.setToMaxScoreAsset();
 
         unit.clearReservedSkills();
+        unit.initializeSkillsToDefault();
         unit.weapon = this.__findMaxSpWeaponId(unit.weapon, unit.heroInfo.weaponOptions);
         let weaponInfo = this.__findWeaponInfo(unit.weapon);
         if (weaponInfo.sp == 300 && weaponInfo.weaponRefinementOptions.length > 1) {
             unit.weaponRefinement = weaponInfo.weaponRefinementOptions[1].id;
         }
-        unit.support = this.__findMaxSpSkillId(unit.support, unit.heroInfo.supportOptions, [g_appData.supportInfos]);
-        unit.special = this.__findMaxSpSkillId(unit.special, unit.heroInfo.specialOptions, [g_appData.specialInfos]);
-        unit.passiveA = this.__findEquipableMaxDuelSkill(unit);
-        if (unit.passiveA < 0) {
-            unit.passiveA = this.__findMaxSpSkillId(unit.passiveA, unit.heroInfo.passiveAOptions, [g_appData.passiveAInfos]);
-        }
-        unit.passiveA = this.__findMaxSpSkillId(unit.passiveA, unit.heroInfo.passiveAOptions, [g_appData.passiveAInfos]);
-        unit.passiveB = this.__findMaxSpSkillId(unit.passiveB, unit.heroInfo.passiveBOptions, [g_appData.passiveBInfos]);
-        unit.passiveC = this.__findMaxSpSkillId(unit.passiveC, unit.heroInfo.passiveCOptions, [g_appData.passiveCInfos]);
-        unit.passiveS = this.__findMaxSpSkillId(unit.passiveS, unit.heroInfo.passiveSOptions, [
+        unit.support = this.__getMaxSpSkillId(unit.support, unit.heroInfo.supportOptions, [g_appData.supportInfos]);
+        unit.special = this.__getMaxSpSkillId(unit.special, unit.heroInfo.specialOptions, [g_appData.specialInfos]);
+        unit.passiveA = this.__getMaxArenaScorePassiveA(unit);
+
+        unit.passiveB = this.__getMaxSpSkillId(unit.passiveB, unit.heroInfo.passiveBOptions, [g_appData.passiveBInfos]);
+        unit.passiveC = this.__getMaxSpSkillId(unit.passiveC, unit.heroInfo.passiveCOptions, [g_appData.passiveCInfos]);
+        unit.passiveS = this.__getMaxSpSkillId(unit.passiveS, unit.heroInfo.passiveSOptions, [
             g_appData.passiveAInfos,
             g_appData.passiveBInfos,
             g_appData.passiveCInfos,
@@ -747,7 +748,37 @@ class BattleSimmulatorBase {
         g_appData.__updateStatusBySkillsAndMerges(unit);
         this.updateAllUnitSpur();
         g_appData.updateArenaScore(unit);
+        unit.resetMaxSpecialCount();
         updateAllUi();
+    }
+
+    __getMaxSpSkillId(defaultSkillId, options, skillInfoArrays) {
+        let defaultSkillInfo = this.data.findSkillInfoByDict(defaultSkillId);
+        let maxSpSkillId = this.__findMaxSpSkillId(defaultSkillId, options, skillInfoArrays);
+        let maxSpSkillInfo = this.data.findSkillInfoByDict(maxSpSkillId);
+        if (defaultSkillInfo == null || defaultSkillInfo.sp < maxSpSkillInfo.sp) {
+            return maxSpSkillId;
+        }
+        else {
+            return defaultSkillId;
+        }
+    }
+
+    /**
+     * @param  {Unit} unit
+     */
+    __getMaxArenaScorePassiveA(unit) {
+        let currentScore = unit.calcArenaBaseStatusScore();
+        let duel4Score = calcArenaBaseStatusScore(unit.getDuel4Rating());
+        if (currentScore < duel4Score) {
+            let duel4Skill = this.__findEquipableMaxDuelSkill(unit);
+            if (duel4Skill != PassiveA.None) {
+                unit.passiveA = duel4Skill;
+                return duel4Skill;
+            }
+        }
+
+        return this.__getMaxSpSkillId(unit.passiveA, unit.heroInfo.passiveAOptions, [g_appData.passiveAInfos]);
     }
 
     __findEquipableMaxDuelSkill(unit) {
