@@ -1315,6 +1315,9 @@ const Weapon = {
     BridalOrchidPlus: 2085, // 花嫁のカトレア
     BlazingPolearms: 2087, // 紅炎の親子の聖斧
     BridalSunflowerPlus: 2090, // 花嫁の向日葵+
+
+    // 2022年5月 伝承ミルラ
+    GodlyBreath: 2095, // 竜神のブレス
 }
 
 const Support = {
