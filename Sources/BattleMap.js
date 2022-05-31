@@ -2178,9 +2178,12 @@ class BattleMap {
 
     __canWarp(targetTile, warpUnit) {
         for (let tile of this.enumerateTilesWithinSpecifiedDistance(targetTile, 4)) {
-            if (tile.isEnemyUnitAvailable(warpUnit)
-                && tile.placedUnit.passiveB == PassiveB.DetailedReport) {
-                return false;
+            if (tile.isEnemyUnitAvailable(warpUnit)) {
+                let enemyUnit = tile.placedUnit;
+                if (enemyUnit.passiveB === PassiveB.DetailedReport ||
+                    enemyUnit.hasStatusEffect(StatusEffectType.WarpBubble)) {
+                    return false;
+                }
             }
         }
         return true;

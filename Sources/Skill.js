@@ -2338,6 +2338,7 @@ const PassiveC = {
     GoddessBearer: 1939, // 女神を宿せし者
     HolyGround: 1977, // 地上の最後の女神
     FaithInHumanity: 2089, // 人の可能性を信じる
+    DarklingGuardian: 2097, // 闇の樹海の守護竜
 };
 
 const PassiveS = {
