@@ -125,6 +125,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.DarklingGuardian:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.applyDefBuff(6);
+                    skillOwner.applyResBuff(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.WarpBubble);
+                }
+                break;
             case PassiveC.FaithInHumanity: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {

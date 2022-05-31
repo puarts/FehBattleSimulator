@@ -1315,6 +1315,9 @@ const Weapon = {
     BridalOrchidPlus: 2085, // 花嫁のカトレア
     BlazingPolearms: 2087, // 紅炎の親子の聖斧
     BridalSunflowerPlus: 2090, // 花嫁の向日葵+
+
+    // 2022年5月 伝承ミルラ
+    GodlyBreath: 2095, // 竜神のブレス
 }
 
 const Support = {
@@ -1750,6 +1753,7 @@ const PassiveA = {
     AtkSpdUnity: 1801, // 攻撃速さの連帯
     AtkDefUnity: 1450, // 攻撃守備の連帯
     AtkResUnity: 1575, // 攻撃魔防の連帯
+    DefResUnity: 2096, // 守備魔防の連帯
 
     // 機先
     AtkSpdCatch3: 1648, // 攻撃速さの機先3
@@ -2334,6 +2338,7 @@ const PassiveC = {
     GoddessBearer: 1939, // 女神を宿せし者
     HolyGround: 1977, // 地上の最後の女神
     FaithInHumanity: 2089, // 人の可能性を信じる
+    DarklingGuardian: 2097, // 闇の樹海の守護竜
 };
 
 const PassiveS = {

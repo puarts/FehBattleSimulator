@@ -233,6 +233,7 @@ const StatusEffectType = {
     EnGarde: 32, // 戦闘外ダメージ無効
     SpecialCooldownChargePlusOnePerAttack: 33, // 戦闘中、奥義発動カウント変動量+1
     Treachery: 34, // 強化ダメージ+
+    WarpBubble: 35, // 敵ワープ抑制
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -364,6 +365,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_AccelerateSpecial.webp";
         case StatusEffectType.Treachery:
             return g_imageRootPath + "StatusEffect_Treachery.webp";
+        case StatusEffectType.WarpBubble:
+            return g_imageRootPath + "StatusEffect_WarpBubble.webp";
         default: return "";
     }
 }
