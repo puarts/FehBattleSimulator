@@ -7267,6 +7267,12 @@ class DamageCalculatorWrapper {
                     targetUnit.applyResUnity();
                 }
                 break;
+            case PassiveA.DefResUnity:
+                if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    targetUnit.applyDefUnity();
+                    targetUnit.applyResUnity();
+                }
+                break;
         }
 
         switch (targetUnit.passiveB) {
