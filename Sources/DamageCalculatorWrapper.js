@@ -2061,11 +2061,6 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.MaryuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!targetUnit.isWeaponRefined) return;
-            if (enemyUnit.battleContext.initiatesCombat || targetUnit.battleContext.restHpPercentage <= 99) {
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
-                targetUnit.addAllSpur(4);
-            }
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                     targetUnit.atkSpur += 5;
@@ -6267,10 +6262,9 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.MaryuNoBreath:
-                if (targetUnit.isWeaponRefined) break;
-                if (targetUnit.hasNegativeStatusEffect()
-                    || !targetUnit.battleContext.isRestHpFull
-                ) {
+                if (targetUnit.hasNegativeStatusEffect() ||
+                    !targetUnit.battleContext.isRestHpFull ||
+                    (targetUnit.isWeaponRefined && enemyUnit.battleContext.initiatesCombat)) {
                     targetUnit.addAllSpur(4);
                     targetUnit.battleContext.invalidateAllOwnDebuffs();
                 }

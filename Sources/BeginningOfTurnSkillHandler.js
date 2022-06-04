@@ -129,7 +129,7 @@ class BeginningOfTurnSkillHandler {
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.applyDefBuff(6);
                     skillOwner.applyResBuff(6);
-                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.WarpBubble);
                 }
                 break;
