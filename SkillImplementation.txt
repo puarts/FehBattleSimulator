@@ -517,4 +517,4 @@ perTurnStatusToString() {}
 4. tileTypeToThumbを修正
 5. getMapBackgroundImage
 6. breakableObjCountOfCurrentMapTypeを修正
-7. resetPlacementで特殊なタイルを設定
+7. __resetBattleMapPlacementForAetherRaidで特殊なタイルを設定(x: 左から0~, y: 上から0~)
