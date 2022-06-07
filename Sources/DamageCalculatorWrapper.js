@@ -6091,6 +6091,21 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveA.SpdDefCatch4:
+                if (enemyUnit.battleContext.restHpPercentage === 100
+                    || enemyUnit.hasNegativeStatusEffect()
+                ) {
+                    targetUnit.spdSpur += 7;
+                    targetUnit.defSpur += 7;
+
+                    if (enemyUnit.battleContext.restHpPercentage === 100
+                        && enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.spdSpur += 2;
+                        targetUnit.defSpur += 2;
+                    }
+                }
+                break;
             case PassiveA.DefResCatch4:
                 if (enemyUnit.battleContext.restHpPercentage === 100
                     || enemyUnit.hasNegativeStatusEffect()
