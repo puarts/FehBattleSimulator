@@ -1148,13 +1148,13 @@
                     passiveSInfos);
                 g_app.registerHeroOptions(heroInfos, false);
 
-                g_appData.setGameMode(GameMode.Arena);
+                initUnitBuilder();
 
                 loadLazyImages();
             });
         });
         window.addEventListener('load', (event) => {
-            initUnitBuilder();
+            // initUnitBuilder();
         });
     </script>
 </body>

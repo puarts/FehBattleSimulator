@@ -27,6 +27,43 @@ class UnitBuilderMain extends BattleSimmulatorBase {
         let tabIndex = this.data.findIndexOfAllyUnit(id);
         changeCurrentUnitTab(tabIndex);
     }
+
+    setFromSetting(settingText) {
+        const settings = Array.from(settingText.split(ElemDelimiter).filter(x => x != ""));
+        if (settings.length == 0) {
+            return;
+        }
+
+        this.data.fromTurnWideStatusString(settings[0]);
+        for (let i = 0; i + 1 < settings.length && i < this.data.allyUnits.length; ++i) {
+            const unitSetting = settings[i + 1];
+            const unit = this.data.allyUnits[i];
+            this.writeDebugLogLine(`${unit.id}: ` + unitSetting);
+            unit.fromTurnWideStatusString(unitSetting);
+            this.data.initializeByHeroInfo(unit, unit.heroIndex, false);
+            unit.fromTurnWideStatusString(unitSetting);
+            this.data.__updateUnitSkillInfo(unit);
+            this.data.__updateStatusBySkillsAndMerges(unit, true);
+            this.data.updateArenaScore(unit);
+        }
+
+        this.data.updateArenaScoreOfParties();
+    }
+
+    getCurrentSetting() {
+        let settingText = "";
+        const appSetting = this.data.turnWideStatusToString();
+        // this.writeDebugLogLine(`app: ` + appSetting);
+        settingText += appSetting + ElemDelimiter;
+        for (let unit of g_appData.allyUnits) {
+            const unitSetting = unit.turnWideStatusToString();
+            // this.writeDebugLogLine(`${unit.getNameWithGroup()}: ` + unitSetting);
+            settingText += unitSetting + ElemDelimiter;
+        }
+
+        settingText.trimEnd(ElemDelimiter);
+        return settingText;
+    }
 }
 
 
@@ -62,28 +99,16 @@ function importUrl(url) {
         return;
     }
 
+    g_app.writeDebugLogLine(`■URLから設定をインポート`);
     let settingText = splited[1];
     let decompressed = LZString.decompressFromEncodedURIComponent(settingText);
-    let unit = g_appData.currentUnit;
-    unit.fromTurnWideStatusString(decompressed);
-    g_appData.initializeByHeroInfo(unit, unit.heroIndex, false);
-    unit.fromTurnWideStatusString(decompressed);
-    g_appData.__updateUnitSkillInfo(unit);
-    g_appData.__updateStatusBySkillsAndMerges(unit, true);
-    // unit.fromTurnWideStatusString(decompressed);
-    // g_appData.__updateStatusBySkillsAndMerges(unit, true);
-
-    g_app.setCurrentUnit(unit.id);
+    g_app.setFromSetting(decompressed);
 }
 
 function updateUrl() {
-    let unit = g_appData.currentUnit;
-    if (unit == null) {
-        unit = g_appData.allyUnits[0];
-        g_app.setCurrentUnit(unit.id);
-    }
-    let settingText = unit.turnWideStatusToString();
-    g_appData.exportSettingUrl = "https://puarts.com/?pid=1736&s=" + LZString.compressToEncodedURIComponent(settingText);
+    // g_app.writeDebugLogLine(`■URLの更新`);
+    let settingText = g_app.getCurrentSetting();
+    g_appData.exportSettingUrl = "https://puarts.com/?pid=1736&s=" + LZString.compressToEncodedURIComponent(settingText) + "#app";
     let textarea = $("#urlTextArea")[0];
     textarea.textContent = settingText;
 }
@@ -110,17 +135,13 @@ function updateStatus(unit) {
 
 function initUnitBuilder() {
     using(new ScopedStopwatch(time => g_app.writeDebugLogLine("初期化: " + time + " ms")), () => {
+        g_appData.setGameMode(GameMode.Arena);
         let unit = g_appData.allyUnits[0];
         g_app.setCurrentUnit(unit.id);
         g_appData.isDebugMenuEnabled = false;
         g_appData.applyDebugMenuVisibility();
-
-        let elem = document.getElementById("initMessage");
-        elem.textContent = "";
         importUrl(location.search);
-        updateUrl();
-        g_appData.setGameMode(GameMode.Arena);
         g_app.setCurrentUnit(unit.id);
-        unit.updateArenaScore();
+        g_appData.updateArenaScoreForAll();
     });
 }

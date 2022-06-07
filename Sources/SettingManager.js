@@ -164,7 +164,14 @@ class SettingManager {
                 throw new Error("Unknown OwnerType " + structure.ownerType);
         }
     }
-
+    /**
+     * @param  {} loadsAllies=true
+     * @param  {} loadsEnemies=true
+     * @param  {} loadsOffenceStructures=true
+     * @param  {} loadsDefenseStructures=true
+     * @param  {} exportsMapSettings=false
+     * @returns {TurnSetting}
+     */
     convertToPerTurnSetting(
         loadsAllies = true,
         loadsEnemies = true,

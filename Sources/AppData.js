@@ -1145,6 +1145,16 @@ class AppData extends UnitManager {
         this.updateArenaScoreOfParties();
     }
 
+    updateArenaScoreForAll() {
+        for (let unit of this.allyUnits) {
+            this.updateArenaScore(unit);
+        }
+        for (let unit of this.enemyUnits) {
+            this.updateArenaScore(unit);
+        }
+        this.updateArenaScoreOfParties();
+    }
+
     updateEnemyAndAllyUnits() {
         let enemyCount = this.getEnemyCount();
         let allyCount = this.getAllyCount();
