@@ -1320,7 +1320,8 @@ const Weapon = {
     GodlyBreath: 2095, // 竜神のブレス
 
     // 新英雄&開花英雄&レティシア
-    NewHeightBow: 2104 // 友の風舞う翼弓
+    NewHeightBow: 2104, // 友の風舞う翼弓
+    JollyJadeLance: 2100, // お調子者の碧槍
 }
 
 const Support = {

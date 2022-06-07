@@ -456,6 +456,17 @@ for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
 上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
 targetUnit.isOneTimeActionActivatedForWeapon
 
+戦闘後、自分を行動可能にする(1ターンに1回のみ)[再行動]
+updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
+    // case Weapon.TwinCrestPower:
+    // case PassiveB.RagingStorm:
+}
+
+補助後、自分を行動可能にする[再行動]
+applySupportSkill() {
+    // case Support.FutureVision
+}
+
 再移動(N)
 __canActivateCanto(unit) {}
 unit.calcMoveCountForCanto() {}
