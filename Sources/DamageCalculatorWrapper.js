@@ -2005,6 +2005,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MorphFimbulvetr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addSpurs(-8, 0, 0, -8);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                let maxBuff = 0;
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
+                    let p = unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : 1;
+                    maxBuff = Math.max(p * (unit.atkBuff + unit.resBuff), maxBuff);
+                }
+                targetUnit.atkSpur += maxBuff;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Kormt] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -2623,7 +2635,8 @@ class DamageCalculatorWrapper {
             let maxBuff = 0;
             for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
                 found = true;
-                maxBuff = Math.max(unit.atkBuff + unit.spdBuff, maxBuff);
+                let p = unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : 1;
+                maxBuff = Math.max(p * (unit.atkBuff + unit.spdBuff), maxBuff);
             }
             targetUnit.atkSpur += maxBuff;
             if (found) {

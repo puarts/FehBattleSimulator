@@ -1324,6 +1324,7 @@ const Weapon = {
     JollyJadeLance: 2100, // お調子者の碧槍
     AlliedSwordPlus: 2102, // 共闘の剣+
     Kormt: 2063, // ケルムト
+    MorphFimbulvetr: 2099, //  被造フィンブル
 }
 
 const Support = {
