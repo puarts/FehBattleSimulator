@@ -4883,6 +4883,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
+                case PassiveB.SpdDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount);
                     break;
