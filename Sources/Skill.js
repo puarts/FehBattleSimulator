@@ -1322,6 +1322,7 @@ const Weapon = {
     // 新英雄&開花英雄&レティシア
     NewHeightBow: 2104, // 友の風舞う翼弓
     JollyJadeLance: 2100, // お調子者の碧槍
+    AlliedSwordPlus: 2102, // 共闘の剣+
 }
 
 const Support = {

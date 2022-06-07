@@ -9893,6 +9893,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case Weapon.AlliedSwordPlus:
             case Weapon.AlliedLancePlus:
             case Weapon.LoveCandelabraPlus:
                 targetUnit.atkSpur += 4;
@@ -10757,6 +10758,7 @@ class DamageCalculatorWrapper {
         // 味方が2マス以内にいる時に発動するスキル
         if (isAllyAvailableRange2 && !calcPotentialDamage) {
             switch (targetUnit.weapon) {
+                case Weapon.AlliedSwordPlus:
                 case Weapon.AlliedLancePlus:
                 case Weapon.LoveCandelabraPlus:
                     targetUnit.atkSpur += 4;
