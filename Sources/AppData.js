@@ -122,6 +122,9 @@ class AppData extends UnitManager {
             { label: "灼熱の城", value: MapType.Syakunetsu },
             { label: "夢の国の城", value: MapType.DreamCastle },
             { label: "悪夢の国の城", value: MapType.NightmareCastle },
+            { label: "死の国の城", value: MapType.K0013 },
+            { label: "小人の国の城", value: MapType.K0014 },
+            { label: "巨人の国の城", value: MapType.K0015 },
         ];
         this.aetherRaidMenuStyle = "";
 

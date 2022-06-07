@@ -21,6 +21,9 @@ const MapType = {
     Syakunetsu: 9,
     DreamCastle: 10,
     NightmareCastle: 11,
+    K0013: 12,
+    K0014: 13,
+    K0015: 14,
 
     // 闘技場
     // https://feheroes.gamepedia.com/List_of_Arena_maps
@@ -175,6 +178,8 @@ function getBreakableObjCountOfCurrentMapType(type) {
             return 3;
         case MapType.Harukaze: // 春風の城
             return 3;
+        case MapType.K0013:
+            return 4;
         case MapType.Arena_3:
             return 14;
         case MapType.Arena_7:
@@ -242,6 +247,9 @@ const AetherRaidMapImageFiles = [
     { id: MapType.Yukigesho, fileName: "Yukigesyo.png" },
     { id: MapType.DreamCastle, fileName: "DreamCastle.png" },
     { id: MapType.NightmareCastle, fileName: "NightmareCastle.png" },
+    { id: MapType.K0013, fileName: "K0013.png" },
+    { id: MapType.K0014, fileName: "K0014.png" },
+    { id: MapType.K0015, fileName: "K0015.png" },
 ];
 const ArenaMapImageFiles = [
     { id: MapType.Arena_1, fileName: "Arena_1.jpg" },
@@ -607,6 +615,9 @@ function getMapBackgroundImage(mapKind) {
         case MapType.Yukigesho: return root + "Yukigesyo.png";
         case MapType.DreamCastle: return root + "DreamCastle.png";
         case MapType.NightmareCastle: return root + "NightmareCastle.png";
+        case MapType.K0013: return root + "K0013.png";
+        case MapType.K0014: return root + "K0014.png";
+        case MapType.K0015: return root + "K0015.png";
         case MapType.Arena_1: return arenaRoot + "Arena_1.jpg";
         case MapType.Arena_2: return arenaRoot + "Arena_2.png";
         case MapType.Arena_3: return arenaRoot + "Arena_3.jpg";
@@ -679,6 +690,7 @@ class BattleMap {
         /** @type {Unit[]} */
         this._units = [];
         this._breakableWalls = [];
+        this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
         this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
         this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
         this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
