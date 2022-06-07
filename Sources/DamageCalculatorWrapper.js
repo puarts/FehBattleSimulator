@@ -2005,6 +2005,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.NewHeightBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.GodlyBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 enemyUnit.addAllSpur(-5);
@@ -8070,6 +8075,12 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.NewHeightBow:
+                if (this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
+                    let amount = isPrecombat ? atkUnit.getEvalSpdInCombat(defUnit) : atkUnit.getEvalSpdInCombat(defUnit);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(amount * 0.15);
+                }
+                break
             case Weapon.TrueLoveRoses:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     let amount = isPrecombat ? atkUnit.getEvalResInPrecombat() : atkUnit.getEvalResInCombat(defUnit);

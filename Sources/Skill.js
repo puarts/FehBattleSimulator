@@ -1318,6 +1318,9 @@ const Weapon = {
 
     // 2022年5月 伝承ミルラ
     GodlyBreath: 2095, // 竜神のブレス
+
+    // 新英雄&開花英雄&レティシア
+    NewHeightBow: 2104 // 友の風舞う翼弓
 }
 
 const Support = {
