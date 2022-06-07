@@ -2005,6 +2005,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Kormt] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.JollyJadeLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -6746,6 +6753,20 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.Kormt:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    let condA = this.__isThereAllyInSpecifiedSpaces(targetUnit, 3);
+                    let condB = this.__isThereAllyIn2Spaces(enemyUnit);
+                    let condC = targetUnit.hasPositiveStatusEffect(enemyUnit);
+                    let condD = enemyUnit.hasNegativeStatusEffect();
+                    let conditions = [condA, condB, condC, condD];
+                    // let conditions = [false, false, false, false];
+                    let count = conditions.filter(x => x).length;
+                    console.log(`count: ${count}`);
+                    let amount = Math.min(count * 3, 9);
+                    enemyUnit.addAllSpur(-amount);
+                }
+                break;
             case Weapon.BridalSunflowerPlus:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
