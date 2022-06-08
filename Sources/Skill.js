@@ -1318,6 +1318,13 @@ const Weapon = {
 
     // 2022年5月 伝承ミルラ
     GodlyBreath: 2095, // 竜神のブレス
+
+    // 新英雄&開花英雄&レティシア
+    NewHeightBow: 2104, // 友の風舞う翼弓
+    JollyJadeLance: 2100, // お調子者の碧槍
+    AlliedSwordPlus: 2102, // 共闘の剣+
+    Kormt: 2063, // ケルムト
+    MorphFimbulvetr: 2099, //  被造フィンブル
 }
 
 const Support = {
@@ -1761,6 +1768,7 @@ const PassiveA = {
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
     AtkDefCatch4: 1703, // 攻撃守備の機先4
     AtkResCatch4: 1845, // 攻撃魔防の機先4
+    SpdDefCatch4: 2101, // 速さ守備の機先4
     DefResCatch4: 1761, // 守備魔防の機先4
 
     // 万全
@@ -2044,6 +2052,7 @@ const PassiveB = {
     AtkSpdFarTrace3: 1843, // 攻撃速さの遠影3
     AtkDefFarTrace3: 1715, // 攻撃守備の遠影3
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
+    SpdDefFarTrace3: 2105, // 速さ魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
 
     // 怒涛
@@ -2247,6 +2256,7 @@ const PassiveC = {
     RouseAtkRes3: 1314,
     RouseAtkSpd4: 1904, // 攻撃速さの奮起4
     RouseAtkDef4: 1943, // 攻撃守備の奮起4
+    RouseAtkRes4: 2111, // 攻撃魔防の奮起4
     RouseSpdDef4: 1916, // 速さ守備の奮起4
 
     SeiNoIbuki3: 668, // 生の息吹3

@@ -306,6 +306,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MorphFimbulvetr:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        for (let unit of this.__findNearestAllies(targetUnit)) {
+                            unit.reserveTakeDamage(15);
+                        }
+                    }
+                    break;
                 case Weapon.WildTigerFang:
                     if (targetUnit.isTransformed) {
                         targetUnit.reserveTakeDamage(5);

@@ -1628,6 +1628,13 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 }
                 break;
+            case PassiveC.RouseAtkRes4:
+                if (this.__isSolo(skillOwner)) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applyResBuff(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+                break;
             case PassiveC.RouseSpdDef4:
                 if (this.__isSolo(skillOwner)) {
                     skillOwner.applySpdBuff(6);

@@ -4874,6 +4874,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
+                case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case PassiveB.MurderousLion:
                 case PassiveB.AtkDefNearTrace3:
@@ -4883,6 +4884,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
+                case PassiveB.SpdDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount);
                     break;

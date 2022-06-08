@@ -2005,6 +2005,35 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MorphFimbulvetr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addSpurs(-8, 0, 0, -8);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                let maxBuff = 0;
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
+                    let p = unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : 1;
+                    maxBuff = Math.max(p * (unit.atkBuff + unit.resBuff), maxBuff);
+                }
+                targetUnit.atkSpur += maxBuff;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Kormt] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.JollyJadeLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.NewHeightBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.GodlyBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 enemyUnit.addAllSpur(-5);
@@ -2606,7 +2635,8 @@ class DamageCalculatorWrapper {
             let maxBuff = 0;
             for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
                 found = true;
-                maxBuff = Math.max(unit.atkBuff + unit.spdBuff, maxBuff);
+                let p = unit.hasStatusEffect(StatusEffectType.Panic) ? 0 : 1;
+                maxBuff = Math.max(p * (unit.atkBuff + unit.spdBuff), maxBuff);
             }
             targetUnit.atkSpur += maxBuff;
             if (found) {
@@ -3701,6 +3731,10 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkResFarTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.atkSpur -= 3;
             enemyUnit.resSpur -= 3;
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefFarTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 3;
+            enemyUnit.defSpur -= 3;
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdResFarTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 3;
@@ -6077,6 +6111,21 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveA.SpdDefCatch4:
+                if (enemyUnit.battleContext.restHpPercentage === 100
+                    || enemyUnit.hasNegativeStatusEffect()
+                ) {
+                    targetUnit.spdSpur += 7;
+                    targetUnit.defSpur += 7;
+
+                    if (enemyUnit.battleContext.restHpPercentage === 100
+                        && enemyUnit.hasNegativeStatusEffect()
+                    ) {
+                        targetUnit.spdSpur += 2;
+                        targetUnit.defSpur += 2;
+                    }
+                }
+                break;
             case PassiveA.DefResCatch4:
                 if (enemyUnit.battleContext.restHpPercentage === 100
                     || enemyUnit.hasNegativeStatusEffect()
@@ -6717,6 +6766,20 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.Kormt:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    let condA = this.__isThereAllyInSpecifiedSpaces(targetUnit, 3);
+                    let condB = this.__isThereAllyIn2Spaces(enemyUnit);
+                    let condC = targetUnit.hasPositiveStatusEffect(enemyUnit);
+                    let condD = enemyUnit.hasNegativeStatusEffect();
+                    let conditions = [condA, condB, condC, condD];
+                    // let conditions = [false, false, false, false];
+                    let count = conditions.filter(x => x).length;
+                    console.log(`count: ${count}`);
+                    let amount = Math.min(count * 3, 9);
+                    enemyUnit.addAllSpur(-amount);
+                }
+                break;
             case Weapon.BridalSunflowerPlus:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
@@ -8070,6 +8133,12 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.NewHeightBow:
+                if (this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
+                    let amount = isPrecombat ? atkUnit.getEvalSpdInCombat(defUnit) : atkUnit.getEvalSpdInCombat(defUnit);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(amount * 0.15);
+                }
+                break
             case Weapon.TrueLoveRoses:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     let amount = isPrecombat ? atkUnit.getEvalResInPrecombat() : atkUnit.getEvalResInCombat(defUnit);
@@ -9858,6 +9927,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case Weapon.AlliedSwordPlus:
             case Weapon.AlliedLancePlus:
             case Weapon.LoveCandelabraPlus:
                 targetUnit.atkSpur += 4;
@@ -10722,6 +10792,7 @@ class DamageCalculatorWrapper {
         // 味方が2マス以内にいる時に発動するスキル
         if (isAllyAvailableRange2 && !calcPotentialDamage) {
             switch (targetUnit.weapon) {
+                case Weapon.AlliedSwordPlus:
                 case Weapon.AlliedLancePlus:
                 case Weapon.LoveCandelabraPlus:
                     targetUnit.atkSpur += 4;

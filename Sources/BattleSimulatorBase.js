@@ -6033,6 +6033,7 @@ class BattleSimmulatorBase {
                         return true;
                     }
                     break;
+                case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
@@ -6048,6 +6049,7 @@ class BattleSimmulatorBase {
                 case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
+                case PassiveB.SpdDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                 case PassiveB.MurderousLion:
                     return true;
@@ -8167,6 +8169,15 @@ class BattleSimmulatorBase {
             if (!supporterUnit.isActionDone) {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
+            }
+            switch (supporterUnit.weapon) {
+                case Weapon.JollyJadeLance:
+                    if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                        supporterUnit.applyAtkBuff(6);
+                        supporterUnit.applySpdBuff(6);
+                        supporterUnit.isActionDone = false;
+                        supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                    }
             }
             switch (supporterUnit.support) {
                 case Support.ToChangeFate:

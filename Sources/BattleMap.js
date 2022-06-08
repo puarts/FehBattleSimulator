@@ -1923,6 +1923,21 @@ class BattleMap {
             }
         }
 
+        // 味方を自身の周囲にワープさせるスキル
+        for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+            for (let skillId of ally.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.NewHeightBow:
+                        if (ally.hpPercentage <= 60) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(ally, 1, false, true)) {
+                                yield tile;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.SilentPower:
@@ -2123,6 +2138,7 @@ class BattleMap {
         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
             for (let skillId of ally.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.NewHeightBow:
                     case PassiveC.OpeningRetainer:
                         for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
                             yield tile;

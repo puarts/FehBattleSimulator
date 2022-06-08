@@ -456,6 +456,17 @@ for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
 上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
 targetUnit.isOneTimeActionActivatedForWeapon
 
+戦闘後、自分を行動可能にする(1ターンに1回のみ)[再行動]
+updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
+    // case Weapon.TwinCrestPower:
+    // case PassiveB.RagingStorm:
+}
+
+補助後、自分を行動可能にする[再行動]
+applySupportSkill() {
+    // case Support.FutureVision
+}
+
 再移動(N)
 __canActivateCanto(unit) {}
 unit.calcMoveCountForCanto() {}
@@ -464,7 +475,7 @@ unit.calcMoveCountForCanto() {}
 const TeleportationSkillDictに登録
 Main.js
 *__enumerateTeleportTiles(unit) {
-    // 周囲2マス以内の味方の、周囲2マス以内に移動可能
+    // 周囲2マス以内の味方の、周囲2マス以内に移動可能(PassiveC.OpeningRetainer)
     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
         for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
             yield tile;
