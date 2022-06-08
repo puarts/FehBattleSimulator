@@ -7629,6 +7629,8 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.PlegianAxePlus:
+                case Weapon.VultureBladePlus:
+                case Weapon.VultureBlade:
                     if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
                         enemyUnit.atkSpur -= 5;
                         enemyUnit.defSpur -= 5;

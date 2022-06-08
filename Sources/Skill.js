@@ -1325,6 +1325,8 @@ const Weapon = {
     AlliedSwordPlus: 2102, // 共闘の剣+
     Kormt: 2063, // ケルムト
     MorphFimbulvetr: 2099, //  被造フィンブル
+    VultureBladePlus: 2106, // 禿鷹の剣+
+    VultureBlade: 2107, // 禿鷹の剣
 }
 
 const Support = {
