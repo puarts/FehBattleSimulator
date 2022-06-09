@@ -4863,6 +4863,7 @@ class Unit extends BattleMapElement {
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
+                case Weapon.BlazingPolearms:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
                     break;
                 case Weapon.AutoLofnheior:
