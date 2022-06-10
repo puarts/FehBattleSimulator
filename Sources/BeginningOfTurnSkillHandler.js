@@ -838,10 +838,27 @@ class BeginningOfTurnSkillHandler {
                 break;
             }
             case Weapon.JinroMusumeNoTsumekiba:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(2);
                     for (let unit of this.__getPartnersInSpecifiedRange(skillOwner, 100)) {
                         unit.reduceSpecialCount(2);
+                    }
+                }
+                if (skillOwner.isWeaponSpecialRefined) {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                        if (unit.partnerHeroIndex === skillOwner.heroIndex ||
+                            skillOwner.partnerHeroIndex === unit.heroIndex) {
+                            found = true;
+                            unit.applyAtkBuff(6);
+                            unit.applySpdBuff(6);
+                            unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                        }
+                    }
+                    if (found) {
+                        skillOwner.applyAtkBuff(6);
+                        skillOwner.applySpdBuff(6);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                     }
                 }
                 break;

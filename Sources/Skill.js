@@ -3109,9 +3109,9 @@ const BeastCommonSkillMap =
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
 
             [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
+            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
 
             [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee],
             [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee],
             [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee],
             [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
