@@ -2011,6 +2011,25 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.JunaruSenekoNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, e)) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        let count = 0;
+                        for (let _ of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                            count++;
+                        }
+                        let amount = Math.min(count * 5, 15);
+                        targetUnit.battleContext.additionalDamage += amount;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Kurimuhirudo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -10045,8 +10064,10 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += 3;
                 break;
             case Weapon.JunaruSenekoNoTsumekiba:
-                targetUnit.atkSpur += 3;
-                targetUnit.defSpur += 3;
+                if (!allyUnit.isWeaponRefined) {
+                    targetUnit.atkSpur += 3;
+                    targetUnit.defSpur += 3;
+                }
                 break;
             case Weapon.RirisuNoUkiwa:
             case Weapon.RirisuNoUkiwaPlus:
@@ -10365,6 +10386,11 @@ class DamageCalculatorWrapper {
                     if (this.__isNear(unit, targetUnit, 3)) {
                         // 3マス以内で発動する戦闘中バフ
                         switch (unit.weapon) {
+                            case Weapon.JunaruSenekoNoTsumekiba:
+                                if (unit.isWeaponRefined) {
+                                    targetUnit.addSpurs(4, 4, 0, 0);
+                                }
+                                break;
                             case Weapon.FirstDreamBow:
                                 targetUnit.atkSpur += 4;
                                 break;
@@ -10881,8 +10907,10 @@ class DamageCalculatorWrapper {
                     targetUnit.spdSpur += 3;
                     break;
                 case Weapon.JunaruSenekoNoTsumekiba:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.defSpur += 3;
+                    if (!targetUnit.isWeaponRefined) {
+                        targetUnit.atkSpur += 3;
+                        targetUnit.defSpur += 3;
+                    }
                     break;
                 case Weapon.VezuruNoYoran:
                     targetUnit.atkSpur += 5;

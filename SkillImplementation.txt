@@ -100,6 +100,13 @@ __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
                 case XXX.YYY:
                     targetUnit.atkSpur += N;
 
+周囲3マス以内の味方は、戦闘中、<ステ>+N
+__updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit) {
+    if (this.__isNear(unit, targetUnit, 3)) {
+        // 3マス以内で発動する戦闘中バフ
+    }
+}
+
 周囲2マス以内に味方がいる時、戦闘中、自身の<ステ>+N
 __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
     if (!calcPotentialDamage) {
