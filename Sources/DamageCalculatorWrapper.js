@@ -4926,33 +4926,45 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Saferimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
                 let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                let diffHalf = Math.floor(diff * 0.5);
-                let amount = Math.max(0, Math.min(8, diffHalf));
-                enemyUnit.atkSpur -= amount;
-                enemyUnit.defSpur -= amount;
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.5)));
+                    enemyUnit.addSpurs(-amount, 0, -amount, 0);
+                }
+            } else {
+                // <錬成効果>
+                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.8)));
+                    enemyUnit.addSpurs(-amount, -amount, -amount, 0);
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Erudofurimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
-                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
-                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                    let diffHalf = Math.floor(diff * 0.5);
-                    let amount = Math.max(0, Math.min(8, diffHalf));
-                    enemyUnit.atkSpur -= amount;
-                    enemyUnit.spdSpur -= amount;
+                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.5)));
+                    enemyUnit.addSpurs(-amount, -amount, 0, 0);
                 }
             } else {
                 // <錬成効果>
-                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
-                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                    let diffHalf = Math.floor(diff * 0.5);
-                    let amount = Math.max(0, Math.min(8, diffHalf));
-                    enemyUnit.atkSpur -= amount;
-                    enemyUnit.spdSpur -= amount;
-                    enemyUnit.defSpur -= amount;
+                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.8)));
+                    enemyUnit.addSpurs(-amount, -amount, -amount, 0);
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(4);
                     }
@@ -7470,6 +7482,19 @@ class DamageCalculatorWrapper {
                             let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
                             let amount = Math.max(diff, 0);
                             targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(amount * 0.3);
+                        }
+                    }
+                    break;
+                case Weapon.Saferimuniru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            }
+                            if (diff >= 7) {
+                                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                            }
                         }
                     }
                     break;
