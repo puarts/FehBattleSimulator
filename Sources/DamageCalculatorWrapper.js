@@ -2005,6 +2005,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KarasuOuNoHashizume] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MorphFimbulvetr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 enemyUnit.addSpurs(-8, 0, 0, -8);
@@ -7406,6 +7418,19 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.KarasuOuNoHashizume:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {
+                            let d = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInCombat(targetUnit);
+                            if (d >= 1) {
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
+                            if (d >= 6) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.FellBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -8372,8 +8397,24 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.KarasuOuNoHashizume:
+                if (!atkUnit.isWeaponRefined) {
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y), 0.7, 7);
+                } else {
+                    if (atkUnit.battleContext.initiatesCombat || defUnit.battleContext.restHpPercentage >= 75) {
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.15);
+                    }
+                }
+                break;
             case Weapon.NewBrazenCatFang:
             case Weapon.AkaiAhiruPlus:
+                atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+                    atkUnit, defUnit, isPrecombat,
+                    x => x.getEvalSpdInPrecombat(),
+                    (x, y) => x.getEvalSpdInCombat(y), 0.7, 7);
+                break;
             case Weapon.GigaExcalibur:
                 if (atkUnit.isWeaponRefined) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
