@@ -1436,8 +1436,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForDefUnitFuncDict() {
         let self = this;
         self._applySkillEffectForDefUnitFuncDict[Weapon.Kurimuhirudo] = (defUnit, atkUnit, calcPotentialDamage) => {
-            if (self.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
+            if (!defUnit.isWeaponRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
+                    defUnit.battleContext.canCounterattackToAllDistance = true;
+                }
+            } else {
+                if (self.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                    defUnit.battleContext.canCounterattackToAllDistance = true;
+                }
             }
         };
         self._applySkillEffectForDefUnitFuncDict[Weapon.TwinCrestPower] = (defUnit, atkUnit, calcPotentialDamage) => {
@@ -2005,6 +2011,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Kurimuhirudo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.addSpurs(-5, 0, -5, -0);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.KarasuOuNoHashizume] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
