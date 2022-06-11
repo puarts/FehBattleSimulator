@@ -613,8 +613,14 @@ class PostCombatSkillHander {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Kurimuhirudo:
-                    if (atkUnit.isRangedWeaponType()) {
-                        for (let unit of this.__findNearestAllies(defUnit, 2)) {
+                    if (!defUnit.isWeaponRefined) {
+                        if (atkUnit.isRangedWeaponType()) {
+                            for (let unit of this.__findNearestAllies(defUnit, 2)) {
+                                unit.reserveTakeDamage(20);
+                            }
+                        }
+                    } else {
+                        for (let unit of this.__findNearestAllies(defUnit, 3)) {
                             unit.reserveTakeDamage(20);
                         }
                     }

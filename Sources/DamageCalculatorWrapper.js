@@ -1436,8 +1436,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForDefUnitFuncDict() {
         let self = this;
         self._applySkillEffectForDefUnitFuncDict[Weapon.Kurimuhirudo] = (defUnit, atkUnit, calcPotentialDamage) => {
-            if (self.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
+            if (!defUnit.isWeaponRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
+                    defUnit.battleContext.canCounterattackToAllDistance = true;
+                }
+            } else {
+                if (self.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                    defUnit.battleContext.canCounterattackToAllDistance = true;
+                }
             }
         };
         self._applySkillEffectForDefUnitFuncDict[Weapon.TwinCrestPower] = (defUnit, atkUnit, calcPotentialDamage) => {
@@ -2005,6 +2011,57 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.JinroMusumeNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.JunaruSenekoNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, e)) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        let count = 0;
+                        for (let _ of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                            count++;
+                        }
+                        let amount = Math.min(count * 5, 15);
+                        targetUnit.battleContext.additionalDamage += amount;
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Kurimuhirudo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.addSpurs(-5, 0, -5, -0);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.KarasuOuNoHashizume] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MorphFimbulvetr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 enemyUnit.addSpurs(-8, 0, 0, -8);
@@ -4881,33 +4938,45 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Saferimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
                 let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                let diffHalf = Math.floor(diff * 0.5);
-                let amount = Math.max(0, Math.min(8, diffHalf));
-                enemyUnit.atkSpur -= amount;
-                enemyUnit.defSpur -= amount;
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.5)));
+                    enemyUnit.addSpurs(-amount, 0, -amount, 0);
+                }
+            } else {
+                // <錬成効果>
+                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.8)));
+                    enemyUnit.addSpurs(-amount, -amount, -amount, 0);
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Erudofurimuniru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
-                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
-                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                    let diffHalf = Math.floor(diff * 0.5);
-                    let amount = Math.max(0, Math.min(8, diffHalf));
-                    enemyUnit.atkSpur -= amount;
-                    enemyUnit.spdSpur -= amount;
+                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.5)));
+                    enemyUnit.addSpurs(-amount, -amount, 0, 0);
                 }
             } else {
                 // <錬成効果>
-                if (targetUnit.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat()) {
-                    let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
-                    let diffHalf = Math.floor(diff * 0.5);
-                    let amount = Math.max(0, Math.min(8, diffHalf));
-                    enemyUnit.atkSpur -= amount;
-                    enemyUnit.spdSpur -= amount;
-                    enemyUnit.defSpur -= amount;
+                let diff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.max(0, Math.min(8, Math.floor(diff * 0.8)));
+                    enemyUnit.addSpurs(-amount, -amount, -amount, 0);
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(4);
                     }
@@ -7406,12 +7475,38 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.KarasuOuNoHashizume:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {
+                            let d = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInCombat(targetUnit);
+                            if (d >= 1) {
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
+                            if (d >= 6) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.FellBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                             let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
                             let amount = Math.max(diff, 0);
                             targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(amount * 0.3);
+                        }
+                    }
+                    break;
+                case Weapon.Saferimuniru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            }
+                            if (diff >= 7) {
+                                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                            }
                         }
                     }
                     break;
@@ -8372,8 +8467,24 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.KarasuOuNoHashizume:
+                if (!atkUnit.isWeaponRefined) {
+                    atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+                        atkUnit, defUnit, isPrecombat,
+                        x => x.getEvalSpdInPrecombat(),
+                        (x, y) => x.getEvalSpdInCombat(y), 0.7, 7);
+                } else {
+                    if (atkUnit.battleContext.initiatesCombat || defUnit.battleContext.restHpPercentage >= 75) {
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.15);
+                    }
+                }
+                break;
             case Weapon.NewBrazenCatFang:
             case Weapon.AkaiAhiruPlus:
+                atkUnit.battleContext.additionalDamage += DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
+                    atkUnit, defUnit, isPrecombat,
+                    x => x.getEvalSpdInPrecombat(),
+                    (x, y) => x.getEvalSpdInCombat(y), 0.7, 7);
+                break;
             case Weapon.GigaExcalibur:
                 if (atkUnit.isWeaponRefined) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalSpdInCombat() * 0.2);
@@ -9990,8 +10101,10 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += 3;
                 break;
             case Weapon.JunaruSenekoNoTsumekiba:
-                targetUnit.atkSpur += 3;
-                targetUnit.defSpur += 3;
+                if (!allyUnit.isWeaponRefined) {
+                    targetUnit.atkSpur += 3;
+                    targetUnit.defSpur += 3;
+                }
                 break;
             case Weapon.RirisuNoUkiwa:
             case Weapon.RirisuNoUkiwaPlus:
@@ -10310,6 +10423,11 @@ class DamageCalculatorWrapper {
                     if (this.__isNear(unit, targetUnit, 3)) {
                         // 3マス以内で発動する戦闘中バフ
                         switch (unit.weapon) {
+                            case Weapon.JunaruSenekoNoTsumekiba:
+                                if (unit.isWeaponRefined) {
+                                    targetUnit.addSpurs(4, 4, 0, 0);
+                                }
+                                break;
                             case Weapon.FirstDreamBow:
                                 targetUnit.atkSpur += 4;
                                 break;
@@ -10826,8 +10944,10 @@ class DamageCalculatorWrapper {
                     targetUnit.spdSpur += 3;
                     break;
                 case Weapon.JunaruSenekoNoTsumekiba:
-                    targetUnit.atkSpur += 3;
-                    targetUnit.defSpur += 3;
+                    if (!targetUnit.isWeaponRefined) {
+                        targetUnit.atkSpur += 3;
+                        targetUnit.defSpur += 3;
+                    }
                     break;
                 case Weapon.VezuruNoYoran:
                     targetUnit.atkSpur += 5;
