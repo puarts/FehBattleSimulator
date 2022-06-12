@@ -5,6 +5,9 @@ set battle_simulator_filenames=GlobalDefinitions,Utilities,Logger,Skill,BattleMa
 rem 飛空城シミュレーター
 call %~dp0MergeSourcesAndCompress.bat FehBattleSimulator %battle_simulator_filenames%,AetherRaidSimulatorMain
 
+rem 闘技場シミュレーター
+call %~dp0MergeSourcesAndCompress.bat FehArenaSimulator %battle_simulator_filenames%,ArenaSimulatorMain
+
 rem 英雄決闘シミュレーター
 call %~dp0MergeSourcesAndCompress.bat FehSummonerDuelsSimulator %battle_simulator_filenames%,SummonerDuelsSimulatorMain
 

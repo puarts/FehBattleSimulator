@@ -26,6 +26,13 @@ function initAetherRaidBoard(
     using(new ScopedStopwatch(time => g_app.writeDebugLogLine("保存状態の復元: " + time + " ms")), () => {
         // g_app.resetUnitsForTesting();
         loadSettings();
-        g_appData.setGameMode(GameMode.Arena);
+        if (!isArenaMap(g_appData.mapKind)) {
+            g_appData.setGameMode(GameMode.Arena);
+            g_appData.setMapKind(MapType.Arena_1);
+            removeBreakableWallsFromTrashbox();
+            changeMap();
+            resetPlacement();
+            updateAllUi();
+        }
     });
 }

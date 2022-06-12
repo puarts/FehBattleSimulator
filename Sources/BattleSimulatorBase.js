@@ -101,7 +101,7 @@ class BattleSimmulatorBase {
         /** @type {AppData} */
         this.data = g_appData;
 
-        let methods = {
+        this.methods = {
             bgmEnabledChanged: function () {
                 if (self.audioManager.isBgmEnabled) {
                     self.vm.audioManager.isSoundEffectEnabled = true;
@@ -619,13 +619,13 @@ class BattleSimmulatorBase {
 
         if (additionalMethods != null) {
             for (let key in additionalMethods) {
-                methods[key] = additionalMethods[key];
+                this.methods[key] = additionalMethods[key];
             }
         }
         this.vm = new Vue({
             el: "#app",
             data: g_appData,
-            methods: methods,
+            methods: this.methods,
         });
 
         {
