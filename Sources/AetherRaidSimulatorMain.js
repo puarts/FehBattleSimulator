@@ -3,13 +3,13 @@
 
 
 /// シミュレーター本体です。
-class AetherRaidTacticsBoard extends BattleSimmulatorBase {
+class AetherRaidSimulator extends BattleSimmulatorBase {
     constructor() {
         super();
     }
 }
 
-let g_app = new AetherRaidTacticsBoard();
+let g_app = new AetherRaidSimulator();
 
 function initAetherRaidBoard(
     heroInfos
