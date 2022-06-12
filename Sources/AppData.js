@@ -1599,6 +1599,9 @@ class AppData extends UnitManager {
                 this.map.isBackgroundImageEnabled = true;
                 this.hideAetherRaidManu();
                 this.map.setMapSizeToNormal();
+                if (!isArenaMap(this.mapKind)) {
+                    this.setMapKind(MapType.Arena_1);
+                }
                 break;
             case GameMode.ResonantBattles:
                 this.map.isBackgroundImageEnabled = false;

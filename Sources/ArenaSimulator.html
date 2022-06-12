@@ -1,0 +1,2471 @@
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>飛空城シミュレーター</title>
+    <link rel="stylesheet" href="https://puarts.com/css/main.css?20181201" type="text/css" />
+    <script>
+        const g_startTime = Date.now();
+    </script>
+    <script>
+        // 画像の遅延ロード用の処理。以下の要素を作ると遅延ロードされる
+        // <img src="dummy.png" data-src="actual.png" class="lazy" />
+        function loadLazyImages() {
+            let lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+            let lazyInputs = [].slice.call(document.querySelectorAll("input.lazy"));
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            if (lazyImage.tagName == "IMG") {
+                                lazyImage.src = lazyImage.dataset.src;
+                                if (typeof lazyImage.dataset.srcset === "undefined") {
+                                } else {
+                                    lazyImage.srcset = lazyImage.dataset.srcset;
+                                }
+                            }
+                            else if (lazyImage.tagName == "INPUT") {
+                                lazyImage.style.backgroundImage = `url("${lazyImage.dataset.src}")`;
+                            }
+                            lazyImage.classList.remove("lazy");
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+
+                lazyImages.forEach(function (lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+                lazyInputs.forEach(function (lazyInput) {
+                    lazyImageObserver.observe(lazyInput);
+                });
+            } else {
+                // Possibly fall back to a more compatible method here
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <p>
+        闘技場の戦闘をシミュレートできるツールです。キャラの動かし方を考えたり、敵の動きやダメージを確認することができます。飛空城や闘技場の攻略にお役立てください。
+    </p>
+    <p>
+        このツールの既知の不具合等は<a href="https://github.com/puarts/FehBattleSimulator/issues">こちら</a>で確認できます。
+        このツールに関して何か不具合や不明点等ありましたらお気軽に<a href="https://twitter.com/puarts_FEH">ぷあーと@FEH</a>までどうぞ。
+    </p>
+    <p style="color:red">
+        注意：このツールはスマホも対応してますが、普段はPCからChromeのみでしか動作確認していません。また、開発の都合で予告なく動作しなくなる場合があります。
+    </p>
+    <style>
+        .container {
+            /* margin: 20px auto; */
+            max-width: 270px;
+            float: left;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        .tabs {
+            overflow: hidden;
+        }
+
+        .tabs li,
+        .tabs label {
+            float: left;
+            font-size: 11px;
+            padding: 5px 5px;
+            /* border: 1px solid #ccc; */
+            cursor: pointer;
+            /* transition: .3s; */
+        }
+
+        .tabs li:not(:first-child),
+        .tabs label:not(:first-of-type) {
+            border-left: none;
+        }
+
+        .tabs li.active,
+        .tabs :checked+label {
+            background-color: #000;
+            border-color: #000;
+            color: #fff;
+            cursor: auto;
+        }
+
+        .contents {
+            overflow: hidden;
+            margin-top: -1px;
+        }
+
+        .contents li {
+            border: 1px solid #ccc;
+        }
+
+        .jquery .contents li {
+            display: none;
+        }
+
+        .jquery .contents li.active {
+            display: block;
+        }
+
+        .tabs input {
+            display: none;
+        }
+
+        .buttonUi {
+            font-size: 11px;
+        }
+
+        .plusButtonUi {
+            font-size: 12px;
+            font-weight: bold;
+            width: 25px;
+            height: 25px;
+            color: #fff;
+            background-color: green;
+            border-radius: 50%;
+            border-width: 0px;
+            border-collapse: collapse;
+        }
+
+        .minusButtonUi {
+            font-size: 12px;
+            font-weight: bold;
+            width: 25px;
+            height: 25px;
+            color: #fff;
+            background-color: orangered;
+            border-radius: 50%;
+            border-width: 0px;
+            border-collapse: collapse;
+        }
+
+        .fehButton {
+            display: inline-block;
+            width: 62px;
+            height: 62px;
+            margin-left: -2px;
+            margin-right: -2px;
+            background-color: #ffffff;
+            border-style: none;
+            cursor: pointer;
+            background-size: cover;
+        }
+
+        .fehButtonDisabled {
+            display: inline-block;
+            width: 62px;
+            height: 62px;
+            margin-left: -2px;
+            margin-right: -2px;
+            background-color: #ffffff;
+            border-style: none;
+            background-size: cover;
+        }
+
+        .imageButton:hover {
+            filter: brightness(120%);
+        }
+
+        .menuButton {
+            width: 23px;
+            height: 23px;
+            margin-left: 0px;
+            margin-right: 0px;
+            background-color: #dddddd;
+            border-style: solid;
+            border-color: grey;
+            border-width: 1px;
+            cursor: pointer;
+            background-size: cover;
+        }
+
+        .playerButton {
+            width: 25px;
+            height: 25px;
+            margin-left: 0px;
+            margin-right: 0px;
+            background-color: #dddddd;
+            border-style: solid;
+            border-color: grey;
+            border-width: 1px;
+            cursor: pointer;
+            background-size: cover;
+        }
+
+        img.urlJumpIcon {
+            width: 15px;
+            height: 15px;
+        }
+
+        .statusInput {
+            width: 50px;
+        }
+
+        th.param {
+            font-size: 11px;
+            background-color: #ffffff;
+            padding: 0px;
+            text-align: center;
+        }
+
+        td.param {
+            min-width: 40px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        input.numeric {
+            width: 40px;
+        }
+
+        input.numericFloat {
+            width: 50px;
+        }
+
+        .normal {
+            font-size: 11px;
+        }
+
+        tr.attackInfo {
+            border: solid;
+            border-width: 10px;
+            padding: 0px;
+            margin: 0px;
+        }
+
+        td.ally {
+            background-color: cadetblue;
+            color: gold;
+            font-size: 8px;
+            border: solid;
+            border-color: lightblue;
+            border-width: 1px;
+        }
+
+        td.enemy {
+            background-color: rgb(177, 55, 55);
+            color: gold;
+            font-size: 8px;
+            border: solid;
+            border-color: lightpink;
+            border-width: 1px;
+        }
+
+        select.hero {
+            width: 160px;
+        }
+
+        select.blessing {
+            width: 140px;
+        }
+
+        select.skill {
+            width: 160px;
+        }
+
+        .debugInfo {
+            font-size: 11px;
+            /* visibility: hidden; */
+        }
+
+        .itemDialog-button {
+            width: 200px;
+        }
+
+        .dialog-button {
+            width: 100px;
+        }
+
+        .dialog-button-text {
+            font-size: 14px;
+        }
+
+        input[type="checkbox"].fehButton {
+            display: none;
+        }
+
+        input[class="fehButton"]:checked+label {
+            filter: grayscale(0%);
+        }
+
+        input[class="fehButton"]:not(:checked)+label {
+            filter: grayscale(100%);
+        }
+
+        .assetStatus {
+            color: rgb(161, 234, 252);
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
+
+        .flowStatus {
+            color: rgb(252, 161, 161);
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
+
+        .normalStatus {
+            color: rgb(0, 0, 0);
+        }
+
+        .skillTypeText {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        .skillHeader {
+            font-size: 16px;
+            padding: 0px;
+            text-align: center;
+            position: relative;
+            color: white;
+            text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+        }
+    </style>
+
+    <!-- 重要なところは予め接続 -->
+    <link rel="preconnect" href="//cdnjs.cloudflare.com">
+    <link rel="preconnect" href="//code.jquery.com">
+
+    <div id="app">
+        <table style="border-style: none;">
+            <tr>
+                <td style="width: 450px" valign="top">
+                    <table style="border-width: 0px;border-style: none;">
+                        <tr>
+                            <td>
+                                <label>地形:</label>
+                            </td>
+                            <td>
+
+                                <select v-model="mapKind" v-on:change="mapChanged">
+                                    <option v-for="option in ArenaMapKindOptions" v-bind:value="option.value">
+                                        {{ option.label }}
+                                    </option>
+                                </select>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                シーズン:
+                            </td>
+                            <td>
+                                <input id="isLightSeason" type="checkbox" v-model="globalBattleContext.isLightSeason"
+                                    @change="lightSeasonChanged"><label class="normal" for="isLightSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Light.png" />
+                                    <img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Dark.png" /></label>
+                                <input id="isAstraSeason" type="checkbox" v-model="globalBattleContext.isAstraSeason"
+                                    @change="astraSeasonChanged"><label class="normal" for="isAstraSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Astra.png" />
+                                    <img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Anima.png" /></label>
+                                <input id="isFireSeason" type="checkbox" v-model="globalBattleContext.isFireSeason"
+                                    @change="seasonChanged"><label class="normal" for="isFireSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Fire.png" /></label>
+                                <input id="isWaterSeason" type="checkbox" v-model="globalBattleContext.isWaterSeason"
+                                    @change="seasonChanged"><label class="normal" for="isWaterSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Water.png" /></label>
+                                <input id="isWindSeason" type="checkbox" v-model="globalBattleContext.isWindSeason"
+                                    @change="seasonChanged">
+                                <label class="normal" for="isWindSeason">
+                                    <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Wind.png" />
+                                </label>
+                                <input id="isEarthSeason" type="checkbox" v-model="globalBattleContext.isEarthSeason"
+                                    @change="seasonChanged"><label class="normal" for="isEarthSeason"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" /></label>
+                            </td>
+                        </tr>
+                    </table>
+                    <table style="border-width: 0px">
+                        <tr v-bind:style="aetherRaidMenuStyle">
+                            <td colspan="2">
+                                <div id="deffenceStructureContainer" class="droppable-elem"
+                                    style="background-color: #fca;width:448px;min-height: 68px;"
+                                    ondragover="f_dragover(event)" ondrop="f_drop(event)"></div>
+                            </td>
+                        </tr>
+                        <tr v-bind:style="aetherRaidMenuStyle">
+                            <td colspan="2">
+                                <div id="offenceStructureContainer" class="droppable-elem"
+                                    style="background-color: #acf;width:448px;min-height: 38px;"
+                                    ondragover="f_dragover(event)" ondrop="f_drop(event)"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table style="border-style: none;">
+                                    <tr>
+                                        <td align="center">
+                                            <div style="text-align: center;">
+                                                <table border="0" align="center"
+                                                    style="border-collapse:initial;border-spacing: 0;border-width: 0px; border-style:none">
+
+                                                    <tr class="attackInfo">
+                                                        <!-- <td class="ally" rowspan="2" style="width:38px"><img style="width:38px;"
+                                                                                        v-bind:src="units[attackerUnitIndex].icon">
+                                                                                </td> -->
+                                                        <td class="ally" align="center"
+                                                            v-bind:style="attackInfoTdStyle">
+                                                            {{attackerUnitIndex < 0 ? "－" :
+                                                                units[attackerUnitIndex].heroInfo==null ?
+                                                                units[attackerUnitIndex].name:
+                                                                units[attackerUnitIndex].heroInfo.pureNames[0]}} </td>
+                                                                <!-- <td style="font-size:10px"></td> -->
+                                                        <td class="enemy" align="center"
+                                                            v-bind:style="attackInfoTdStyle">
+                                                            {{attackTargetUnitIndex < 0 ? "－"
+                                                                :units[attackTargetUnitIndex].heroInfo==null
+                                                                ?units[attackTargetUnitIndex].name:
+                                                                units[attackTargetUnitIndex].heroInfo.pureNames[0]}}
+                                                                </td>
+                                                                <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
+                                                                                        v-bind:src="units[attackTargetUnitIndex].icon"></td> -->
+                                                    </tr>
+                                                    <tr class="attackInfo" style="height:60px">
+                                                        <td class="ally" align="center">
+                                                            <div v-html="attackerInfo"></div>
+                                                        </td>
+                                                        <!-- <td style="font-size:10px" align="center">HP</td> -->
+                                                        <td class="enemy" align="center">
+                                                            <div v-html="attackTargetInfo"></div>
+                                                        </td>
+                                                    </tr>
+                                                    <!-- <tr class="attackInfo">
+                                                                                <td class="ally" align="center">0 x 2</td>
+                                                                                <td style="font-size:10px" align="center">攻撃</td>
+                                                                                <td class="enemy" align="center">0 x 2</td>
+                                                                            </tr> -->
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div id="mapArea"></div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="vertical-align:top;">
+                                <table style="border-style: none;">
+                                    <tr>
+                                        <td colspan="1">
+                                            <div id="trashArea" class="droppable-elem"
+                                                style="border-width: 2px; background-color:#eee;width:192px;min-height: 128px; background-image: url('https://puarts.com/AetherRaidTacticsBoard/images/tempArea.png');background-repeat: no-repeat; background-position: center;"
+                                                ondragover="f_dragover(event)" ondrop="f_drop(event)"></div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1">
+                                            <input type="button" @click="g_app.clearSimpleLog()" value="クリア"
+                                                style="font-size: 8px;" />
+                                            <input type="button" @click="copySimpleLogToClipboard()" value="コピー"
+                                                style="font-size: 8px;" />
+                                            <div v-html="simpleLog" id="simpleLogPanel"
+                                                style="overflow-y:scroll; margin-bottom: 5px; height: 130px; width:190px; border: 1px solid #ddd;background-color: #fff;">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">
+                                            <table style="margin-top:5px;margin-bottom:10px;border-style: none;">
+                                                <tr>
+                                                    <td>
+                                                        <span v-if="globalBattleContext.currentTurn > 0">
+                                                            <input type="button"
+                                                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/BackToZeroTurn.png) "
+                                                                class="playerButton imageButton"
+                                                                @click="g_app.backToZeroTurn();" />
+                                                            <input type="button"
+                                                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/BackTurn.png) "
+                                                                class="playerButton imageButton"
+                                                                @click="g_app.backCurrentTurn();" />
+                                                        </span>
+                                                    </td>
+                                                    <td style="padding-left:10px;padding-right: 10px;">
+                                                        <span style="font-size:12px;font-weight: bold;">
+                                                            <span
+                                                                v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally"
+                                                                style="color:blue;">Player Phase<br />ターン
+                                                                {{globalBattleContext.currentTurn}} /
+                                                                {{g_appData.maxTurn}}</span>
+                                                            <span
+                                                                v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy"
+                                                                style="color:red;">Enemy Phase<br />ターン
+                                                                {{globalBattleContext.currentTurn}} /
+                                                                {{g_appData.maxTurn}}</span>
+                                                            <span v-if="globalBattleContext.currentTurn == 0">
+                                                                <input type="button"
+                                                                    style="width: 140px;height:34px; background-color: #ffffff; border-style: none;
+                                                                            background-size:cover;background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/StartBattle.png) ;cursor: pointer;"
+                                                                    class="buttonUi imageButton"
+                                                                    @click="g_app.clearLog();g_app.simulateBeginningOfAllyTurn();g_app.__executeAllCommands(g_app.commandQueuePerAction, 0);updateAllUi();">
+                                                            </span>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span v-if="globalBattleContext.currentTurn > 0">
+                                                            <input type="button"
+                                                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/GainTurn.png) "
+                                                                class="playerButton imageButton"
+                                                                onclick="g_app.gainCurrentTurn()" />
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" align="right">
+                                            <span v-if="isCommandUndoable">
+                                                <span v-if="commandQueuePerAction.isUndoable">
+                                                    <input type="button"
+                                                        style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Undo.png"
+                                                        class="lazy menuButton imageButton"
+                                                        onclick="g_app.undoCommand()" />
+                                                </span>
+                                                <span v-if="!commandQueuePerAction.isUndoable">
+                                                    <input type="button"
+                                                        style="filter:brightness(50%);cursor:auto;background-image: url(https://puarts.com/images/dummy.png)"
+                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Undo.png"
+                                                        class="lazy menuButton" onclick="" />
+                                                </span>
+                                                <span v-if="commandQueuePerAction.isRedoable">
+                                                    <input type="button"
+                                                        style="background-image: url(https://puarts.com/images/dummy.png)"
+                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Redo.png"
+                                                        class="lazy menuButton imageButton"
+                                                        onclick="g_app.redoCommand()" />
+                                                </span>
+                                                <span v-if="!commandQueuePerAction.isRedoable">
+                                                    <input type="button"
+                                                        style="filter:brightness(50%);cursor:auto;background-image: url(https://puarts.com/images/dummy.png)"
+                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Redo.png"
+                                                        class="lazy menuButton" onclick="" />
+                                                </span>
+
+                                                <span style="padding-left:10px">
+
+                                                    <span v-if="commandQueuePerAction.isRedoable">
+                                                        <input type="button"
+                                                            style="background-image: url(https://puarts.com/images/dummy.png)"
+                                                            data-src="https://puarts.com/AetherRaidTacticsBoard/images/RedoAll.png"
+                                                            class="menuButton" onclick="g_app.redoAllCommand()" />
+                                                    </span>
+                                                    <span v-if="!commandQueuePerAction.isRedoable">
+                                                        <input type="button"
+                                                            style="filter:brightness(50%);cursor:auto; background-image: url(https://puarts.com/images/dummy.png) "
+                                                            data-src="https://puarts.com/AetherRaidTacticsBoard/images/RedoAll.png"
+                                                            class="lazy menuButton" onclick="" />
+                                                    </span>
+                                                </span>
+
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div id="progress" style="height:5px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="buttonUi">
+                                    <table style="border-style: none;">
+                                        <tr>
+                                            <td>
+                                                <span v-if="map.showEnemyAttackRange == true">
+                                                    <input type="button"
+                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/DangerAreaEnabled.png) "
+                                                        class="fehButton imageButton"
+                                                        @click=" map.switchEnemyAttackRange();updateMap();">
+                                                </span>
+                                                <span v-if="map.showEnemyAttackRange == false">
+                                                    <input type="button"
+                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/DangerAreaDisabled.png) "
+                                                        class="fehButton imageButton"
+                                                        @click="map.switchEnemyAttackRange();updateMap();">
+                                                </span>
+                                                <input type="button"
+                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                    class="lazy fehButton imageButton"
+                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/SaveState.png"
+                                                    @click="g_app.clearSimpleLog();saveSettings();">
+                                                <input type="button"
+                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                    class="lazy fehButton imageButton"
+                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/LoadState.png"
+                                                    @click="g_app.clearSimpleLog();loadSettings();">
+
+                                                <span
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
+                                                    <input type="button"
+                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/AutoPlay.png) "
+                                                        class="fehButton imageButton"
+                                                        @click="g_app.clearLog(); g_app.simulateAllyAction();">
+                                                </span>
+                                                <span
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
+                                                    <input type="button"
+                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/EndTurn.png)"
+                                                        class="fehButton imageButton" @click="endTurn">
+                                                </span>
+
+                                                <span
+                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy">
+                                                    <input type="button"
+                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
+                                                        class="fehButton imageButton"
+                                                        @click="g_app.clearLog(); g_app.simulateEnemyAction();">
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:0px" align="left">
+                                                <input type="button"
+                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                    class="lazy fehButton imageButton"
+                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/Settings.png"
+                                                    @click="showSettingDialog();">
+                                                <input type="button"
+                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                    class="lazy fehButton imageButton"
+                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/ImportSettings.png"
+                                                    @click="showImportDialog();">
+                                                <input type="button"
+                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                    class="lazy fehButton imageButton"
+                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/ExportSettings.png"
+                                                    @click="showExportDialog();">
+                                                <input type="checkbox" id="enableSound" class="fehButton"
+                                                    v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
+                                                <label for="enableSound" class="fehButton"
+                                                    style="background-image: url('https://puarts.com/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- <label for='currentTurnSlider'>現在のターン:</label> -->
+                                    <!-- <input type='number' id='currentTurn' v-model='globalBattleContext.currentTurn' min='0' max='7' step='1'
+                                        style='width:30px' @change="currentTurnChanged" readonly='readonly' /> -->
+
+
+                                    <span v-bind:style="debugMenuStyle">
+                                        <input id="isAutoLoadEnabled" type="checkbox"
+                                            v-model="isAutoLoadTurnSettingEnabled"><label
+                                            for="isAutoLoadEnabled">ターン切り替え時に自動復元</label>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <input type="checkbox" id="isEnemyActionTriggered"
+                                    v-model="isEnemyActionTriggered"><label for="isEnemyActionTriggered"
+                                    class="normal">敵の行動制限解除</label>
+                                <input type="checkbox" id="simulatesEnemyActionOneByOne"
+                                    v-model="simulatesEnemyActionOneByOne"><label for="simulatesEnemyActionOneByOne"
+                                    class="normal">敵の行動再現を1行動ずつ行う</label>
+                                <input type="checkbox" id="isIconOverlayDisabled" v-model="map.isIconOverlayDisabled"
+                                    @change="iconOverlayDisabledChanged"><label for="isIconOverlayDisabled"
+                                    class="normal">アイコン上の状態表示無効</label>
+                                <input type="checkbox" id="isTrapIconOverlayDisabled"
+                                    v-model="map.isTrapIconOverlayDisabled" @change="iconOverlayDisabledChanged"><label
+                                    for="isTrapIconOverlayDisabled" class="normal">罠のLV表示無効</label>
+                                <div>
+                                    <input type="button" value="全員状態リセット" style="width:140px" class="buttonUi"
+                                        @click="healHpFullForAllUnits">
+                                    <input type="button" value="配置リセット" style="width:140px" class="buttonUi"
+                                        onclick="resetPlacement()">
+                                    <input v-if="gameMode==GameMode.AetherRaid" type="button" value="模擬戦..."
+                                        style="width:140px" class="buttonUi"
+                                        @click="$('#aetherRaidDefensePresetDialog').dialog('open');">
+                                    <input v-if="gameMode==GameMode.ResonantBattles" type="button" value="アイテム..."
+                                        style="width:140px" class="buttonUi" @click="$('#itemDialog').dialog('open');">
+                                    <input v-if="gameMode==GameMode.AetherRaid" type="button" value="耐久/殲滅力テスト..."
+                                        style="width:140px" class="buttonUi"
+                                        @click="$('#durabilityTestDialog').dialog('open');">
+                                    <input type="button" value="マップ編集..." style="width:140px" class="buttonUi"
+                                        @click="$('#editMapDialog').dialog('open');">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-bind:style="debugMenuStyle">
+                            <td colspan="2">
+                                <input type="button" value="敵の動きを1ターンシミュレート" style="width:140px" class="buttonUi"
+                                    @click="g_app.simulateEnemiesForCurrentTurn()">
+                                <input type="button" value="キャラをランダム設定" style="width:140px" class="buttonUi"
+                                    @click="resetUnitRandom">
+                                <input type="button" value="全員行動可能に" style="width:140px" class="buttonUi"
+                                    @click="activateAllUnit">
+                                <input type="button" value="キャラをテスト用に設定" style="width:140px" class="buttonUi"
+                                    @click="resetUnitForTesting">
+                                <input type="button" value="お助けツール(開発中)..." style="width:140px" class="buttonUi"
+                                    @click="$('#autoClearDialog').dialog('open');">
+                                <input type="button" value="全アイテム情報出力" style="width:140px" class="buttonUi"
+                                    @click="g_app.logAllItemInfos()">
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td valign="top">
+                    <!-- <input type="checkbox" id='autoChangeDetail' v-model='autoChangeDetail'><label
+                        for='autoChangeDetail' class="normal">アイコン選択時に自動切換え</label><br /> -->
+                    <!-- <div class="tabs">
+                        <span v-for="(unit, index) in units">
+                            <input type="radio" v-bind:id="'tab-'+unit.id" name="tab" v-bind:value="index"
+                                v-model="currentUnitIndex">
+                            <label v-bind:for="'tab-'+unit.id">{{selectionOptions[index].text}}</label>
+                        </span>
+                    </div> -->
+                    <table border="0" style="border-width: 0px;border-color: #dddddd;margin: 5px;font-size:14px">
+                        <tr>
+                            <td><span style="padding-right: 10px;">攻撃編成</span>
+                                <span style="font-size:12px"><br />査定:{{arenaScore}}({{primeArenaScore}})</span>
+                            </td>
+                            <td>
+                                <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
+                                    <span v-for="unit in allyUnits" v-bind:class="unit.id" style="position:relative">
+                                        <span style="font-weight: bold; font-size:12px; position:absolute">
+                                            <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
+                                                絆{{summonerLevelToString(unit.summonerLevel)}}</div>
+                                            <div v-if="unit.isBonusChar"
+                                                style=" color:blue;background-color: #ffffff66;">
+                                                Bonus</div>
+                                        </span>
+                                        <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
+
+                                    </span>
+                                    <!-- <img v-for="unit in allyUnits" :key="unit.id" src="https://puarts.com/images/dummy.png" v-bind:data-src="unit.icon"
+                                        class="lazy" v-bind:name="unit.id" style="max-width: 35px;" /> -->
+                                </draggable>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span style="padding-right: 10px;">防衛編成</span><span
+                                    style="font-size:12px"><br />査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
+                                </span>
+                                <span v-else-if="g_appData.gameMode == GameMode.AetherRaid"
+                                    style="font-size:12px"><br />失敗レート:{{aetherRaidDefenseLiftLoss}}</span>
+                            </td>
+                            <td>
+                                <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected"
+                                    style="position:relative">
+                                    <span v-for="unit in enemyUnits" v-bind:class="unit.id" style="position:relative">
+                                        <span style="font-weight: bold; font-size:12px; position:absolute">
+                                            <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
+                                                {{summonerLevelToString(unit.summonerLevel)}}</div>
+                                            <div v-if="unit.isBonusChar"
+                                                style=" color:blue;background-color: #ffffff66;">
+                                                Bonus</div>
+                                        </span>
+                                        <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
+                                    </span>
+                                </draggable>
+                            </td>
+                        </tr>
+                    </table>
+                    <div>
+                        <!-- <input type="file" @change="analyzeImage" multiple="multiple" accept="image/*"> -->
+                        <input type="button" value="画像から自動設定..." @click="showOcrSettingDialog();">
+                        <input type="button" value="ミョルニル査定計算..." @click="showMjolnirsStrikeSettingDialog();"
+                            v-if="gameMode == GameMode.Arena">
+                        <input type="button" v-if="gameMode == GameMode.ResonantBattles" value="双界の敵リセット"
+                            class="buttonUi" @click="g_app.__setUnitsForResonantBattles()">
+                        <input type="button" v-if="gameMode == GameMode.ResonantBattles" value="双界の敵の成長率リセット"
+                            class="buttonUi" @click="g_app.__setUnitsForResonantBattles(true)">
+                        <input type="button" v-if="gameMode == GameMode.TempestTrials" value="戦渦の敵リセット" class="buttonUi"
+                            @click="g_app.__setUnitsForTempestTrials()">
+                        <span v-bind:style="debugMenuStyle">currentItemIndex={{currentItemIndex}}</span>
+                    </div>
+                    <div>
+                        {{ocrProgress}}
+                    </div>
+                    <div class="jquery" id="unitSettings">
+                        <ul class="contents">
+                            <li v-for="unit in enemyUnits">
+                                <unit-detail v-model="unit"></unit-detail>
+                            </li>
+                            <li v-for="unit in allyUnits">
+                                <unit-detail v-model="unit"></unit-detail>
+                            </li>
+                            <li v-for="structure in offenceStructureStorage.objs">
+                                <structure-detail v-model="structure">
+                                </structure-detail>
+                            </li>
+                            <li v-for="structure in defenseStructureStorage.objs">
+                                <structure-detail v-model="structure">
+                                </structure-detail>
+                            </li>
+                            <!-- </ul>
+                    </div>
+                    <div>
+                        <ul> -->
+                            <li v-for="tile in map._tiles">
+                                <tile-detail v-model="tile">
+                                </tile-detail>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div style="float:right">
+                        <input id="debugMenuEnabled" type="checkbox" v-model="isDebugMenuEnabled"
+                            @change="debugMenuEnabledChanged"><label class="normal"
+                            for="debugMenuEnabled">デバッグモード有効(開発者用)</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span style="font-size:12px"><b>デバッグログ</b></span>
+                    <input id="showDetailLog" type="checkbox" v-model="showDetailLog"
+                        @change="showDetailLogChanged"><label class="normal" for="showDetailLog">詳細ログを出力</label>
+                    <input type="button" @click="g_app.clearLog()" value="クリア" style="font-size: 8px;" />
+                    <input type="button" @click="copyDebugLogToClipboard()" value="コピー" style="font-size: 8px;" />
+                    <div v-html="damageCalcLog" id="debugLogPanel"
+                        style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div id="settingDialog">
+            <div style="font-size:12px;text-align: left;">
+                <fieldset>
+                    <legend>マップ表示の設定</legend>
+                    <input id="showMovableRangeWhenMovingUnit" type="checkbox"
+                        v-model="showMovableRangeWhenMovingUnit"><label class="normal"
+                        for="showMovableRangeWhenMovingUnit">ユニット移動中に移動可能範囲を表示</label>
+                    <br />
+                    <input id="showAllyAttackRange" type="checkbox"
+                        onchange="g_appData.map.switchAllyAttackRange();updateMap();"><label class="normal"
+                        for="showAllyAttackRange">味方の攻撃範囲を表示</label>
+                    <br />
+                    <input id="showClosestDistanceToEnemy" type="checkbox"
+                        onchange="g_appData.map.switchClosestDistanceToEnemy();updateMap();"><label class="normal"
+                        for="showClosestDistanceToEnemy">最も近い敵への距離を表示</label>
+                    <br />
+                    マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
+                    <br />
+                    <input id="isBgImageEnabled" type="checkbox" v-model="map.isBackgroundImageEnabled"
+                        @change="backgroundImageEnabledChanged"><label class="normal"
+                        for="isBgImageEnabled">マップの背景画像を有効にする</label>
+                    <br />
+                </fieldset>
+                <fieldset>
+                    <legend>画像解析の設定</legend>
+                    マップ画像解析時の画像サイズ除算値: <input type="number" v-model="imageSizeShrinkDiv" class="numeric" />
+                    <br />
+                    <input type="checkbox" id="useWhitelistForOcr" v-model="useWhitelistForOcr"><label
+                        for="useWhitelistForOcr" class="normal">OCR実行時にホワイトリストを有効化</label>
+                    <br />
+                </fieldset>
+                <fieldset>
+                    <legend>その他の設定</legend>
+                    <input type="checkbox" id="enableAllSkillOptions" v-model="enableAllSkillOptions"><label
+                        for="enableAllSkillOptions" class="normal">スキルの選択肢を継承可能なスキルのみに制限しない</label>
+                    <br />
+                    <input type="checkbox" id="isCommandUndoable" v-model="isCommandUndoable"><label
+                        for="isCommandUndoable" class="normal">「元に戻す」「やり直す」を有効</label>
+                    <br />
+                    <input type="checkbox" id="isPotentialDamageDetailEnabled"
+                        v-model="isPotentialDamageDetailEnabled"><label for="isPotentialDamageDetailEnabled"
+                        class="normal">潜在ダメージ計算の詳細ログを表示</label>
+                    <br />
+                    <input type="checkbox" id="changesBgmRandomly" v-model="changesBgmRandomly"><label
+                        for="changesBgmRandomly" class="normal">BGM再生時に曲をランダムで変更する</label>
+                    <br />
+                    <input type="checkbox" id="changesBgmRandomlyOnLoop"
+                        v-model="audioManager.changesBgmRandomlyOnLoop"><label for="changesBgmRandomlyOnLoop"
+                        class="normal">BGMループ時に曲をランダムで変更する</label>
+                    <br />
+                    選択モード:<select v-model="selectMode">
+                        <option v-for="option in SelectModeOptions" v-bind:value="option.id">
+                            {{ option.text }}
+                        </option>
+                    </select>
+
+                </fieldset>
+            </div>
+        </div>
+        <div id="mjolnirsStrikeSettingDialog" style="text-align:left;">
+            <p>以下を入力すると査定がミョルニルの最大獲得スコアになります。</p>
+            将位: <input type="number" v-model="mjolnirsStrikeTier" class="numeric" min="1" max="21" style="width:50px"
+                @change="g_app.updateArenaScoreForAllUnits()" />
+            <br />
+            メジャーシーズン:<select v-model="mjolnirsStrikeMajorSeason" @change="g_app.updateArenaScoreForAllUnits()">
+                <option v-for="option in mjolnirsStrikeSeasonOptions" v-bind:value="option.id">
+                    {{ option.text }}
+                </option>
+            </select>
+            <br />
+            マイナーシーズン:<select v-model="mjolnirsStrikeMinorSeason" @change="g_app.updateArenaScoreForAllUnits()">
+                <option v-for="option in mjolnirsStrikeSeasonOptions" v-bind:value="option.id">
+                    {{ option.text }}
+                </option>
+            </select>
+            <br />
+        </div>
+        <div id="ocrSettingDialog" style="text-align: left;">
+            <p>
+                <label class="normal"><input type="radio" v-model="ocrSettingTarget" value="0">選択中のキャラを設定</label>
+                <label class="normal"><input type="radio" v-model="ocrSettingTarget" value="1">敵を一括設定</label>
+                <label class="normal"><input type="radio" v-model="ocrSettingTarget" value="2">味方を一括設定</label>
+                <label class="normal"><input type="radio" v-model="ocrSettingTarget" value="3">マップを設定</label>
+            </p>
+            <p>
+                <input id="closesDialogAfterStartAnalysis" type="checkbox" checked="checked" />
+                <label class="normal" for="closesDialogAfterStartAnalysis">設定開始後にダイアログを閉じる</label><br />
+            </p>
+            <span v-if="ocrSettingTarget == 3" class="normal">
+                <p>
+                    <input id="ignoresUnitTileForAutoMapReplace" type="checkbox"
+                        v-model="ignoresUnitTileForAutoMapReplace">
+                    <label class="normal" for="ignoresUnitTileForAutoMapReplace">ユニットのいるマスに施設を配置しない</label>
+                </p>
+                <p>
+                    防衛マップのキャプチャ画像を選択してください。
+                </p>
+            </span>
+            <p v-if="ocrSettingTarget != 3" class="normal">
+                ユニットのステータス画面のキャプチャ画像を選択してください。
+            </p>
+            <input id="ocrSettingFile" type="file" @change="ocrSettingFileChanged" multiple="multiple"
+                accept="image/*" /><br />
+            <div v-if="showOcrImage">
+                <span class="normal" v-bind:style="debugMenuStyle">
+                    切り抜き時のオフセット: <input type="number" v-model="ocrCropX" class="numeric" /><input type="number"
+                        v-model="ocrCropY" class="numeric" /></span>
+                <p class="normal">キャプチャ画像にゲーム画面以外が含まれている場合、ゲーム画面全体がちょうど収まるように範囲を調整してください。
+                    縦横比が16:9に収まらない場合、16:9の比率のまま中央揃えで範囲を調整してください。(16:9に収まらない画面端は無視して下さい)</p>
+                <canvas id="tempCanvas" style="display: none;"></canvas>
+                <table style="border-style: none;">
+                    <tr>
+                        <th>元画像</th>
+                        <th>調整後(縦横比16:9)</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <canvas id="ocrSettingSourceCanvas" width="1" height="1"></canvas>
+                        </td>
+                        <td>
+                            <canvas id="ocrSettingCroppedCanvas" width="1" height="1"></canvas>
+                        </td>
+                    </tr>
+                </table>
+                <span v-bind:style="debugMenuStyle">
+                    マッチング手法: <select v-model="templateMatchMethod">
+                        <option v-for="option in templateMatchMethodOptions" v-bind:value="option.id">
+                            {{ option.text }}
+                        </option>
+                    </select><br />
+                    指定インデックスのテンプレートのみ使用: <input type="number" v-model="debugTemplateIndex" min="-1" class="numeric" />
+                    <input type="number" v-model="debugTemplateCount" min="1" class="numeric" /><br />
+                    テンプレート:
+                    <span v-if="debugTemplateIndex >= 0">
+                        {{templateImageFiles[debugTemplateIndex]}}
+                    </span>
+                    <span v-if="debugTemplateIndex < 0">
+                        {{templateImageFiles[currentTemplateIndex]}}
+                    </span><br />
+                    最大相関値に対する許容相関値の比率: <input type="number" v-model="corrThresholdRate" class="numeric" step="0.01"
+                        max="1.0" min="0.0" style="width:100px" /><br />
+                    <input type="button" value="解析開始"
+                        @click="const files = document.getElementById('ocrSettingFile').files;g_app.setUnitsByStatusImages(files);"><br />
+                    <canvas id="croppedImage"></canvas>
+                    <canvas v-for="(unit,index) in g_appData.enemyUnits" v-bind:id="'croppedImage'+index" />
+                    <canvas id="binarizedImage"></canvas>
+                    <canvas v-for="(unit,index) in g_appData.enemyUnits" v-bind:id="'binarizedImage'+index" />
+                    <canvas id="templateMatchingOutputImage"></canvas>
+                </span>
+            </div>
+            <!-- <canvas id="jsi-canvas" class="img-canvas" width="1080" height="1920"></canvas> -->
+        </div>
+        <div id="exportDialog">
+            <div style="font-size:12px;text-align: left;">
+                <p>
+                    以下は現在の設定です。テキストをコピーしてお使いのデバイスに保存してください。<br />
+                </p>
+                <div style="font-size:12px;text-align: right;">
+                    <p>
+                    <fieldset>
+                        <legend>エクスポート対象</legend>
+                        <input id="exportsAllySettings" type="checkbox" v-model="exportsAllySettings"
+                            @change="exportSettingChanged" />
+                        <label class="normal" for="exportsAllySettings">攻撃編成</label>
+                        <input id="exportsOffenceSettings" type="checkbox" v-model="exportsOffenceSettings"
+                            @change="exportSettingChanged" />
+                        <label class="normal" for="exportsOffenceSettings">攻撃施設</label>
+                        <input id="exportsEnemySettings" type="checkbox" v-model="exportsEnemySettings"
+                            @change="exportSettingChanged" />
+                        <label class="normal" for="exportsEnemySettings">防衛編成</label>
+                        <input id="exportsDefenceSettings" type="checkbox" v-model="exportsDefenceSettings"
+                            @change="exportSettingChanged" />
+                        <label class="normal" for="exportsDefenceSettings">防衛施設</label>
+                        <input id="exportsMapSettings" type="checkbox" v-model="exportsMapSettings"
+                            @change="exportSettingChanged" />
+                        <label class="normal" for="exportsMapSettings">マップ</label>
+                    </fieldset>
+                    </p>
+                    <p>
+                    <fieldset>
+                        <label class="normal" for="summonerLevel">圧縮形式: </label>
+                        <select v-model="settingCompressMode" @change="exportSettingChanged">
+                            <option v-for="option in settingCompressModeOptions" v-bind:value="option.id">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <br />
+                        <label class="normal" for="summonerLevel">設定サイズ: </label>{{exportSettingText.length}} byte
+                    </fieldset>
+                    </p>
+                </div>
+                <div>
+                    <input type="button" value="コピー" class="dialog-button" onclick="copyExportTextToClipboard()">
+                    <br />
+                    <textarea id="exportText" rows="4" cols="43" readonly="true" v-model="exportSettingText"></textarea>
+                </div>
+                <div>
+                    共有URL:<br />
+                    <input type="button" value="コピー" class="dialog-button" onclick="copyExportUrlToClipboard()">
+                    <br />
+                    <textarea id="exportUrl" rows="4" cols="43" readonly="true" v-model="exportSettingUrl"></textarea>
+                </div>
+            </div>
+        </div>
+        <div id="importDialog">
+            <div style="font-size:12px;text-align: left;">
+                <p>
+                    エクスポートしたテキストをここに貼り付けてインポートしてください。<br />
+                </p>
+                <div style="font-size:12px;text-align: right;">
+                    <p>
+                    <fieldset>
+                        <legend>インポート対象</legend>
+                        <input id="loadsAllySettings" type="checkbox" checked="checked" />
+                        <label class="normal" for="loadsAllySettings">攻撃編成</label>
+                        <input id="loadsOffenceSettings" type="checkbox" checked="checked" />
+                        <label class="normal" for="loadsOffenceSettings">攻撃施設</label>
+                        <input id="loadsEnemySettings" type="checkbox" checked="checked" />
+                        <label class="normal" for="loadsEnemySettings">防衛編成</label>
+                        <input id="loadsDefenceSettings" type="checkbox" checked="checked" />
+                        <label class="normal" for="loadsDefenceSettings">防衛施設</label>
+                        <input id="loadsMapSettings" type="checkbox" />
+                        <label class="normal" for="loadsMapSettings">マップ</label>
+                    </fieldset>
+                    <fieldset>
+                        <!-- <label class="normal" for="summonerLevel">圧縮形式: </label>
+                            <select2 :options="settingCompressModeOptions" v-model="settingCompressMode">
+                            </select2> -->
+                        <!-- <br /> -->
+                        <input id="closesDialogAfterImport" type="checkbox" checked="checked" />
+                        <label class="normal" for="closesDialogAfterImport">インポート後にダイアログを閉じる</label>
+                    </fieldset>
+                    </p>
+                </div>
+                <div>
+                    <!-- <input type="button" value='貼り付け' class='dialog-button'
+                        onclick="pasteClipboardToImportText()"> -->
+                    <input type="button" value="クリア" class="dialog-button" onclick="clearImportText()">
+                    <input type="button" value="インポート" class="dialog-button" onclick="importText()">
+                    <br />
+                    <textarea id="importText" rows="4" cols="43" placeholder="ここに設定を入力してください"></textarea>
+                </div>
+            </div>
+        </div>
+        <div id="durabilityTestDialog" style="text-align: left;">
+            <p style="font-size:12px">
+                テスト対象とリリース済みの全英雄との戦闘結果からテスト対象の耐久力や殲滅力を評価します。
+                敵の凸数などは選択した敵ユニットのものを採用します。スキルは初期スキル、武器錬成は特殊錬成で評価します。初期スキルに奥義がない場合はデフォルト奥義を装備します。
+            </p>
+            <p>
+                <label for="durabilityTestIsAllyUnitOffence">先制攻撃で評価(殲滅力を評価)</label>
+                <input id="durabilityTestIsAllyUnitOffence" type="checkbox" v-model="durabilityTestIsAllyUnitOffence">
+            </p>
+            <p>
+                <label>テスト対象</label>
+                <select v-model="durabilityTestAllyUnitId">
+                    <option v-for="unit in allyUnits" v-bind:value="unit.id">
+                        {{ unit.getNameWithGroup() }}
+                    </option>
+                </select>
+                <br />
+                <label>敵ユニット</label>
+                <select v-model="durabilityTestEnemyUnitId">
+                    <option v-for="unit in enemyUnits" v-bind:value="unit.id">
+                        {{ unit.getNameWithGroup() }}
+                    </option>
+                </select>
+            <details>
+                <summary>詳細設定</summary>
+                <label for="durabilityTestHealsHpFull">フルHPで評価</label>
+                <input id="durabilityTestHealsHpFull" type="checkbox" v-model="durabilityTestHealsHpFull" />
+                <br />
+                <label for="durabilityTestBattleCount">連戦回数</label>
+                <input id="durabilityTestBattleCount" min="1" max="10" type="number"
+                    v-model="durabilityTestBattleCount" />
+                <br />
+                <label>デフォルト奥義</label>
+                <select2 :options="specialOptions" v-model="durabilityTestDefaultSpecial" class="skill">
+                </select2>
+                <br />
+                <label for="durabilityTestChargesSpecialCount">敵を奥義発動可能状態で評価</label>
+                <input id="durabilityTestChargesSpecialCount" type="checkbox"
+                    v-model="durabilityTestChargesSpecialCount" />
+                <br />
+                <label for="durabilityTestCalcPotentialDamage">潜在ダメージで評価</label>
+                <input id="durabilityTestCalcPotentialDamage" type="checkbox"
+                    v-model="durabilityTestCalcPotentialDamage" />
+                <br />
+                <label for="durabilityTestEquipAllDistCounter">全距離反撃できなければ遠反/近反を装備</label>
+                <input id="durabilityTestEquipAllDistCounter" type="checkbox"
+                    v-model="durabilityTestEquipAllDistCounter" />
+                <br />
+                <label for="durabilityTestAppliesSkillsForBeginningOfTurn">ターン開始時のスキルを適用</label>
+                <input id="durabilityTestAppliesSkillsForBeginningOfTurn" type="checkbox"
+                    v-model="durabilityTestAppliesSkillsForBeginningOfTurn" />
+                <br />
+
+                <label for="durabilityTestIsLogEnabled">デバッグログ出力</label>
+                <input id="durabilityTestIsLogEnabled" type="checkbox" v-model="durabilityTestIsLogEnabled" />
+                <br />
+                <label for="durabilityTestLogDamageCalcDetailIfLose">敗北時の戦闘ログをデバッグログに出力</label>
+                <input id="durabilityTestLogDamageCalcDetailIfLose" type="checkbox"
+                    v-model="durabilityTestLogDamageCalcDetailIfLose" />
+            </details>
+            </p>
+            <p>
+                <input type="button" value="1vs1の配置に設定" @click="g_app.setOneVsOneForDurabilityTest();">
+                <input type="button" value="テスト開始" @click="g_app.beginDurabilityTest();">
+                <input type="button" value="ランキング作成" @click="g_app.createDurabilityRanking();">
+                <input type="button" value="殲滅力ダメージプロット" @click="g_app.plotDamage()">
+            </p>
+            <div v-html="durabilityTestLog"
+                style="min-height: 50px; padding: 10px; border: 1px solid #ddd;background-color: #fff;">
+            </div>
+        </div>
+        <div id="aetherRaidDefensePresetDialog">
+            <p>模擬戦する防衛を選択してください。</p>
+            <fieldset>
+                <legend>防衛マッププリセット</legend>
+                <p>
+                <div v-if="globalBattleContext.isLightSeason == true">
+                    <select v-model="aetherRaidDefensePreset" @change="aetherRaidDefensePresetChanged">
+                        <option v-for="option in AetherRaidDefensePresetOptions_DarkSeason" v-bind:value="option.id">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                <div v-else>
+                    <select v-model="aetherRaidDefensePreset" @change="aetherRaidDefensePresetChanged">
+                        <option v-for="option in AetherRaidDefensePresetOptions_AnimaSeason" v-bind:value="option.id">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                </p>
+                <p v-html="aetherRaidDefensePresetDescription">
+                </p>
+                <p>
+                    <input type="button" value="選択した防衛マップに設定" @click="g_app.setCurrentAetherRaidDefensePreset();">
+                </p>
+            </fieldset>
+            <fieldset>
+                <legend>攻撃編成プリセット</legend>
+                <p>
+                <div v-if="globalBattleContext.isLightSeason == true">
+                    <select v-model="aetherRaidOffensePresetIndex" @change="aetherRaidOffensePresetChanged">
+                        <option v-for="(option,index) in AetherRaidOffensePresetOptions_LightSeason"
+                            v-bind:value="index">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                <div v-else>
+                    <select v-model="aetherRaidOffensePresetIndex" @change="aetherRaidOffensePresetChanged">
+                        <option v-for="(option,index) in AetherRaidOffensePresetOptions_AstraSeason"
+                            v-bind:value="index">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+                </p>
+                <p>
+                    <input type="button" value="選択した攻撃編成に設定" @click="g_app.setCurrentAetherRaidOffensePreset();">
+                </p>
+            </fieldset>
+        </div>
+        <div id="itemDialog">
+            <p>使用するアイテムを選択してください。</p>
+            <span v-for="item in resonantBattleItems">
+                <input type="button" v-bind:value="getItemTypeName(item)" @click="g_app.useItem(item);"
+                    class="itemDialog-button"><br />
+            </span>
+
+            <!-- <input v-if="g_appData.hasItem(ItemType.RakuraiNoJufu)" type="button" value="落雷の呪符"
+                @click="g_app.useItem(ItemType.RakuraiNoJufu);$('#itemDialog').dialog('close');"
+                class="itemDialog-button"><br />
+            <input v-if="g_appData.hasItem(ItemType.KobuNoTsunobue)" type="button" value="鼓舞の角笛"
+                @click="g_app.useItem(ItemType.KobuNoTsunobue);$('#itemDialog').dialog('close');"
+                class="itemDialog-button"><br />
+            <input v-if="g_appData.hasItem(ItemType.KogunNoBoots)" type="button" value="行軍のブーツ"
+                @click="g_app.useItem(ItemType.KogunNoBoots);$('#itemDialog').dialog('close');"
+                class="itemDialog-button"><br />
+            <input v-if="g_appData.hasItem(ItemType.OugiNoYaiba)" type="button" value="奥義の刃"
+                @click="g_app.useItem(ItemType.OugiNoYaiba);$('#itemDialog').dialog('close');"
+                class="itemDialog-button"><br />
+            <input v-if="g_appData.hasItem(ItemType.Tokkoyaku)" type="button" value="特効薬"
+                @click="g_app.useItem(ItemType.Tokkoyaku);$('#itemDialog').dialog('close');"
+                class="itemDialog-button"><br />
+            <input v-if="g_appData.hasItem(ItemType.OdorikoNoVeru)" type="button" value="踊り子のヴェール"
+                @click="g_app.useItem(ItemType.OdorikoNoVeru);$('#itemDialog').dialog('close');"
+                class="itemDialog-button"> -->
+        </div>
+        <div id="editMapDialog" style="text-align:left;">
+            <div style="font-size: 10px;">
+                <table>
+                    <tr>
+                        <td>壁:</td>
+                        <td>{{map.countWallsOnMap()}}
+                            <input type="button" value="＋" @click="addWallToMap">
+                            <input type="button" value="－" @click="removeWallFromMap">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>壊せる壁:</td>
+                        <td>{{map.countBreakableWallsOnMap()}}
+                            <input type="button" value="＋" @click="addBreakableWallToMap">
+                            <input type="button" value="－" @click="removeBreakableWallFromMap">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="margin:5;">
+                <input type="button" value="スクリプト更新" @click="map.updateSourceCode()" style="font-size: 8px;">
+                <input type="button" @click="copyMapSourceCodeToClipboard();" value="コピー" style="font-size: 8px;" />
+                <br />
+                <textarea id="mapSourceCode" style="font-size: 8px;" rows="10" cols="43" readonly="true"
+                    v-model="map.sourceCode"></textarea>
+            </div>
+        </div>
+        <div id="setupResonantBattleEnemyDialog" style="text-align: left;">
+            <div v-if="g_appData.currentUnit != null">
+                {{g_appData.currentUnit.getNameWithGroup()}}のスキル設定が完了したら、ゲーム中のステータスを入力して「適用」ボタンを押してください。
+                <table>
+                    <tr>
+                        <th>HP</th>
+                        <td>
+                            <input min="0" max="99" type="number" v-model="rbEnemySettingInputHp">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>攻</th>
+                        <td>
+                            <input min="0" max="99" type="number" v-model="rbEnemySettingInputAtk">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>速</th>
+                        <td>
+                            <input min="0" max="99" type="number" v-model="rbEnemySettingInputSpd">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>守</th>
+                        <td>
+                            <input min="0" max="99" type="number" v-model="rbEnemySettingInputDef">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>魔</th>
+                        <td>
+                            <input min="0" max="99" type="number" v-model="rbEnemySettingInputRes">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="text-align: right;">
+                <input type="button" value="適用" class="dialog-button" @click="g_app.applyResonantBattleEnemyStatus()">
+            </div>
+        </div>
+        <div id="autoClearDialog" style="text-align:left;">
+            <p style="font-size: 10pt;">このツールは開発中で正しく動かないので使わないでください。</p>
+            <p>
+                <label class="normal" for="limitsExamineRangeToMovableRange">調査範囲を移動可能範囲に制限</label>
+                <input id="limitsExamineRangeToMovableRange" type="checkbox"
+                    v-model="limitsExamineRangeToMovableRange" />
+                <br />
+                <label class="normal" for="limitsExamineRangeToThreatenedRange">調査範囲を敵の攻撃範囲に制限</label>
+                <input id="limitsExamineRangeToThreatenedRange" type="checkbox"
+                    v-model="limitsExamineRangeToThreatenedRange" />
+                <br />
+                <label class="normal" for="limitsExamineRangeToNoTrapTiles">調査範囲を罠のないマスに制限</label>
+                <input id="limitsExamineRangeToNoTrapTiles" type="checkbox" v-model="limitsExamineRangeToNoTrapTiles" />
+            </p>
+            <input type="button" value="ランダム行動" class="buttonUi" style="width: 250"
+                @click="g_app.clearLog(); g_app.origAi.executeRandomAction();"><br />
+            <input type="button" value="おまかせ" class="buttonUi" style="width: 250"
+                @click="g_app.clearLog(); g_app.simulateAllyActionCustomized();"><br />
+            <input type="button" value="おまかせ2" class="buttonUi" style="width: 250"
+                @click="g_app.origAi.__origAi_simulate2();"><br />
+            <input type="button" value="おまかせ3" class="buttonUi" style="width: 250"
+                @click="g_app.origAi.__origAi_simulate3();"><br />
+            <input type="button" value="生存するマスを調査" class="buttonUi" style="width: 250"
+                @click="examinesAliveTiles"><br />
+            <input type="button" value="マスの情報表示をリセット" class="buttonUi" style="width: 250" @click="resetCellOverrides">
+            <input type="button" value="破壊可能な防衛施設除外" class="buttonUi" style="width: 250"
+                @click="removeDefenceStructuresNoEffectForEnemyMovement">
+            <input type="button" value="攻めブレムおまかせ" class="buttonUi" style="width: 250"
+                @click="examinesAttackableEnemies">
+            <br />
+        </div>
+        <div v-bind:style="debugMenuStyle">
+            <textarea style="height: 150px;width:300px;" v-bind:value="ocrResult"></textarea><br />
+            <!-- <canvas id="trimmedImage" style="width:1080;height:1920" class="img-canvas"></canvas> -->
+
+            <canvas id="ocrInputImage0"></canvas>
+            <canvas id="ocrInputImage1"></canvas>
+            <canvas id="ocrInputImage2"></canvas>
+            <canvas id="ocrInputImage3"></canvas>
+            <canvas id="ocrInputImage11"></canvas>
+            <canvas id="ocrInputImage4"></canvas>
+            <canvas id="ocrInputImage5"></canvas>
+            <canvas id="ocrInputImage6"></canvas>
+            <canvas id="ocrInputImage7"></canvas>
+            <canvas id="ocrInputImage8"></canvas>
+            <canvas id="ocrInputImage9"></canvas>
+            <canvas id="ocrInputImage10"></canvas>
+
+            <span v-for="imgFile in templateWeaponRefinementImageFiles">
+                <img src="https://puarts.com/images/dummy.png"
+                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
+                    class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
+            </span>
+            <span v-for="imgFile in templateBlessingImageFiles">
+                <img src="https://puarts.com/images/dummy.png"
+                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
+                    class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
+            </span>
+            <span v-for="imgFile in templateImageFiles">
+                <img src="https://puarts.com/images/dummy.png"
+                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile" class="lazyTemplateImage"
+                    v-bind:id="imgFile" v-bind:alt="imgFile" />
+            </span>
+            <span v-for="imgFile in mapImageFiles">
+                <img src="https://puarts.com/images/dummy.png"
+                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName"
+                    class="lazyTemplateImageForAetherRaid" v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
+            </span>
+            <span v-for="imgFile in arenaMapImageFiles">
+                <img src="https://puarts.com/images/dummy.png"
+                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImageForArena"
+                    v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
+            </span>
+        </div>
+    </div>
+    <style>
+        .select2-results__options {
+            font-size: 12px;
+        }
+
+        .select2-selection__rendered {
+            font-size: 12px;
+        }
+    </style>
+    <script type="text/x-template" id="tile-detail-template">
+        <div>
+            座標: ({{value.posX}}, {{value.posY}})
+            <br/>
+            種類: <select v-model="value._type" @change="updateAllUi()">
+                <option v-for="option in TileTypeOptions" v-bind:value="option.id">
+                    {{ option.text }}
+                </option>
+            </select>
+            <br/>
+            敵群の危険度: {{value.getEnemyThreatFor(UnitGroupType.Enemy)}}
+            <br/>
+            自軍の危険度: {{value.getEnemyThreatFor(UnitGroupType.Ally)}}
+        </div>
+    </script>
+    <script type="text/x-template" id="structure-detail-template">
+        <div style="height:500px;vertical-align:middle;display: table-cell;padding:10px">
+            <div  style="margin:5px">
+            {{value.name}}<span v-bind:style="g_app.vm.debugMenuStyle">({{value.id}})</span>
+            </div>
+            <div v-if="value instanceof Ornament" style="margin:5px">
+                <select v-model="value.ornamentTypeIndex" @change="g_app.vm.ornamentIconChanged" style="width:150px">
+                    <option v-for="option in g_appData.ornamentTypeOptions" v-bind:value="option.id">
+                        {{ option.text }}
+                    </option>
+                </select>
+            </div>
+            <div v-if="value.hasLevel" style="margin:5px">
+                <label class="normal" for="level">LV.</label>
+                <input name="level" type="number" max="10" min="1"
+                    v-model="value.level" class="statusInput" @input="g_app.vm.structureLevelChanged" />            
+            </div>
+            <div>
+                <span class="normal" >{{value.description}}</span>
+            </div>                
+            <div v-if="value.isExecutable" style="margin:5px">
+                <input v-bind:style="g_app.vm.debugMenuStyle" type="button" value='効果を発動' class="buttonUi"
+                    @click="g_app.executeCurrentStructure()" style="width:150px;">
+            </div>
+        </div>
+    </script>
+    <script type="text/x-template" id="status-label-template">
+        {{statusType}}
+        <span v-if="unit.isAsset(statusType)" class="assetStatus">
+        {{statusTypeToShortString(statusType)}}
+        </span>
+        <span v-else-if="unit.isFlaw(statusType)" class="flowStatus">
+        {{statusTypeToShortString(statusType)}}
+        </span>                                        
+        <span v-else class="normalStatus">
+        {{statusTypeToShortString(statusType)}}
+        </span>
+    </script>
+    <script type="text/x-template" id="unit-detail-template">
+        <table border='0' style='border-width: 0px;border-style:none;'>
+            <tr>
+                <td>
+                    <table border='0' style='border-width: 0px;border-style:none;'>
+                        <tr>
+                            <td>
+                                <select2 :options="g_app.vm.heroOptions" v-model="value.heroIndex" class="hero"
+                                    @input="g_app.vm.heroIndexChanged">
+                                </select2>
+                                <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.heroIndex}})</span>
+                                <br/>
+                                ★
+                                <select v-model="value.rarity" @change="g_app.vm.ivChanged">
+                                    <option v-for="item in UnitRarity" v-bind:value="item">
+                                        {{ item}}
+                                    </option>
+                                </select>
+                                <label class="normal" for="merge">LV.</label>
+                                <input name="level" type="number" v-model="value.level"
+                                    min="1" max="99" class="numeric" @input="g_app.vm.mergeChanged" />
+                                +<input name="merge" type="number" v-model="value.merge"
+                                    min="0" max="10" class="numeric" @input="g_app.vm.mergeChanged" />
+                                <label class="normal" for="dragonflower">花+</label>
+                                <input name="dragonflower" type="number"
+                                    v-model="value.dragonflower" min="0" v-bind:max="value.maxDragonflower"
+                                    class="numeric" @input="g_app.vm.dragonflowerChanged" />
+                            </td>
+                        </tr>
+                        <tr  v-bind:style="g_app.vm.debugMenuStyle">
+                            <td>
+                                id={{value.id}} 
+                                <label  class="normal" for="slotOrder">スロット番号: </label>
+                                <input   name="slotOrder" type="number" min="0" max="5" readonly="readonly"
+                                    v-model="value.slotOrder" class="statusInput"
+                                    @input="g_app.vm.slotOrderChanged" />
+                                <span class="debugInfo">
+                                    <label class="normal" for="moveCount">移動値: </label>
+                                    <input name="moveCount" type="number" readonly="readonly"
+                                        v-model="value.moveCount" class="statusInput"
+                                        @input="g_app.vm.moveCountChanged" />({{value.moveCountAtBeginningOfTurn}})
+                                </span>
+                                <label class="debugInfo" class="normal" for="moveCountAtBeginningOfTurn">ターン開始時の移動値: </label>
+                                <input class="debugInfo" name="moveCountAtBeginningOfTurn" type="number" readonly="readonly"
+                                    v-model="value.moveCountAtBeginningOfTurn" class="statusInput"
+                                   />
+                                <span v-if="value.heroInfo != null">
+                                <label  class="normal" for="origin">出典: </label>{{ value.heroInfo.origin }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span v-if="value.groupId == UnitGroupType.Ally">
+                                    <label class="normal" >召喚士との絆: </label>
+                                    <select v-model="value.summonerLevel" @change="g_app.vm.summonerLevelChanged">
+                                        <option v-for="option in g_appData.summonerLevelOptions" v-bind:value="option.id">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </span>
+                                <span v-if="value.providableBlessingSeason == SeasonType.None">
+                                    <label class="normal" for="grantedBlessing">祝福: </label>
+                                    <select v-model="value.grantedBlessing" @change="g_app.vm.grantedBlessingChanged">
+                                        <option v-for="option in g_appData.seasonOptions" v-bind:value="option.id">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="normal" for="ivHigh">得意: </label>
+                                <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged">
+                                    <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                                <label class="normal" for="ivLow">苦手: </label>
+                                <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged">
+                                    <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                                <label class="normal"><img
+                                        src="https://puarts.com/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
+                                        height="20"></label>
+                                <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged">
+                                    <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                                <input v-bind:id='"isBonusChar"+value.id' type="checkbox" v-model="value.isBonusChar" @change="g_app.vm.isBonusCharChanged" />
+                                <label class="normal" v-bind:for='"isBonusChar"+value.id'>ボナ補正</label>
+                                <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
+                                <input v-bind:id='"isResplendent"+value.id' type="checkbox" v-model="value.isResplendent" @change="g_app.vm.isBonusCharChanged" />
+                                <label class="normal" v-bind:for='"isResplendent"+value.id'>神装</label>
+                                </span>
+                                <br />
+                                <span v-if="value.groupId == UnitGroupType.Ally">
+                                    <label class="normal" >支援: </label>
+                                    <select2 :options="g_app.vm.heroOptions" v-model="value.partnerHeroIndex" class="hero"
+                                        @input="g_app.updateAllUnitSpur()">
+                                    </select2><label class="normal" >レベル</label>
+                                    <select v-model="value.partnerLevel" @change="g_app.updateAllUnitSpur()">
+                                        <option v-for="option in g_appData.partnerLevelOptions" v-bind:value="option.id">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr v-bind:style="g_app.vm.debugMenuStyle">
+                            <td>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table border='0' style='border-width: 0px;border-style:none;'>
+                        <tr>
+                            <td colspan="7">
+                                <label class="normal" for="currentUnitHp">HP: </label>
+                                <input name="currentUnitHp" type="number" min="0" @input="g_app.vm.hpChanged"
+                                    v-bind:max="value.maxHpWithSkills"
+                                    v-model="value.hp" class="numeric" />/
+                                <!-- <input type="number" v-model="value.maxHpWithSkills"
+                                    min="1" class="numeric" /> -->
+                                {{value.maxHpWithSkills}}
+                                <span
+                                    style="font-size:11px">({{value.hpPercentage}}%)</span>
+
+                                <input type="button" value='全回復' class="buttonUi"
+                                    @click="g_app.vm.healHpFull" v-bind:style="g_app.vm.debugMenuStyle">
+                                <input type="button" value='ステータス初期化' class="buttonUi"
+                                    @click="g_app.__updateStatusBySkillsAndMerges(value);" v-bind:style="g_app.vm.debugMenuStyle">
+                                <input v-if="g_appData.gameMode == GameMode.ResonantBattles" type="button" value="双界の敵ステータス設定..." style="width:140px" class="buttonUi" @click="$('#setupResonantBattleEnemyDialog').dialog('open');">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class='param'>
+                            </th>
+                            <th class='param'>
+                                
+                            </th>
+                            <th class='param'>
+                                強化
+                            </th>
+                            <th class='param'>
+                                弱化
+                            </th>
+                            <th class='param'>
+                                戦闘中
+                            </th>
+                            <th class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials" >
+                                乗算
+                            </th>
+                            <th class='param' >
+                                加算
+                            </th>
+                            <th class='param'>
+                                合計
+                            </th>
+                            <th class='param' v-bind:style="g_app.vm.debugMenuStyle">成長率</th>
+                        </tr>
+                        <tr>
+                            <th class='param'>
+                                <status-label v-bind:statusType="StatusType.Hp" v-bind:unit="value" ></status-label>
+                            </th>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.atkWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.maxHpWithSkillsWithoutAdd}}
+                            </td>
+                            <td class='param'>
+                            </td>
+                            <td class='param'>
+                            </td>
+                            <td class='param'>
+                            </td>
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
+                                <input class='numericFloat' v-model="value.hpMult" type="number" min="0" max="2" step="0.01">
+                            </td>
+                            <td class='param' ><input class='numeric'
+                                    v-model="value.hpAdd" type="number" min="-99"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                {{value.maxHpWithSkills}}
+                            </td>
+                            <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                                <input class='numericFloat' v-model="value.hpGrowthRate" @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2" step="0.05">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class='param'>
+                                <status-label v-bind:statusType="StatusType.Atk" v-bind:unit="value" ></status-label>
+                            </th>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.atkWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.atkWithSkills-value.atkAdd}}
+                            </td>
+                            <td class='param'>
+                                <input class='numeric' v-model=" value.atkBuff" @change="g_app.vm.buffChanged"
+                                    type="number" min="-99" max="99" step="1">
+                            </td>
+                            <td class='param'><input class='numeric'
+                                    v-model="value.atkDebuff" type="number" min="-99" @change="g_app.vm.buffChanged"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.atkSpur"
+                                    type="number" min="0" max="99" step="1" readonly="readonly"> -->
+                                {{value.atkSpur}}
+                            </td>
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
+                                <input class='numericFloat' v-model="value.atkMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
+                            </td>
+                            <td class='param' ><input class='numeric'
+                                    v-model="value.atkAdd" type="number" min="-99" @change="g_app.vm.addChanged"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                {{value.getAtkInCombat()}}({{value.getAtkInPrecombat()}})
+                            </td>
+                            <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                                <input class='numericFloat' v-model="value.atkGrowthRate" @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2" step="0.05">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class='param'>
+                                <status-label v-bind:statusType="StatusType.Spd" v-bind:unit="value" ></status-label>
+                            </th>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.spdWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.spdWithSkills-value.spdAdd}}
+                            </td>
+                            <td class='param'>
+                                <input class='numeric' v-model="value.spdBuff" @change="g_app.vm.buffChanged"
+                                    type="number" min="-99" max="99" step="1">
+                            </td>
+                            <td class='param'><input class='numeric' @change="g_app.vm.buffChanged"
+                                    v-model="value.spdDebuff" type="number" min="-99"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.spdSpur"
+                                    type="number" min="0" max="99" step="1" readonly="readonly"> -->
+                                {{value.spdSpur}}
+                            </td>
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials" >
+                                <input class='numericFloat' v-model="value.spdMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
+                            </td>
+                            <td class='param'><input class='numeric'
+                                    v-model="value.spdAdd" type="number" min="-99" @change="g_app.vm.addChanged"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                {{value.getSpdInCombat()}}({{value.getSpdInPrecombat()}})
+                            </td>
+                            <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                                <input class='numericFloat' v-model="value.spdGrowthRate" @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2" step="0.05">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class='param'>
+                                <status-label v-bind:statusType="StatusType.Def" v-bind:unit="value" ></status-label>
+                            </th>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.defWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.defWithSkills-value.defAdd}}
+                            </td>
+                            <td class='param'>
+                                <input class='numeric' v-model="value.defBuff" @change="g_app.vm.buffChanged"
+                                    type="number" min="-99" max="99" step="1">
+                            </td>
+                            <td class='param'><input class='numeric' @change="g_app.vm.buffChanged"
+                                    v-model="value.defDebuff" type="number" min="-99"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.defSpur"
+                                    type="number" min="0" max="99" step="1" readonly="readonly"> -->
+                                {{value.defSpur}}
+                            </td>
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
+                                <input class='numericFloat' v-model="value.defMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
+                            </td>
+                            <td class='param'><input class='numeric'
+                                    v-model="value.defAdd" type="number" min="-99" @change="g_app.vm.addChanged"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                {{value.getDefInCombat()}}({{value.getDefInPrecombat()}})
+                            </td>
+                            <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                                <input class='numericFloat' v-model="value.defGrowthRate" @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2" step="0.05">
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <th class='param'>
+                                <status-label v-bind:statusType="StatusType.Res" v-bind:unit="value" ></status-label>
+                            </th>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.resWithSkills"
+                                    type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                                {{value.resWithSkills-value.resAdd}}
+                            </td>
+                            <td class='param'>
+                                <input class='numeric' v-model="value.resBuff" @change="g_app.vm.buffChanged"
+                                    type="number" min="-99" max="99" step="1">
+                            </td>
+                            <td class='param'><input class='numeric' @change="g_app.vm.buffChanged"
+                                    v-model="value.resDebuff" type="number" min="-99"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                <!-- <input class='numeric' v-model="value.resSpur"
+                                    type="number" min="0" max="99" step="1" readonly="readonly"> -->
+                                {{value.resSpur}}
+                            </td>
+                            <td class='param' v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials" >
+                                <input class='numericFloat' v-model="value.resMult" @change="g_app.vm.addChanged" type="number" min="0" max="2" step="0.01">
+                            </td>
+                            <td class='param'><input class='numeric'
+                                    v-model="value.resAdd" type="number" min="-99" @change="g_app.vm.addChanged"
+                                    max="99" step="1">
+                            </td>
+                            <td class='param'>
+                                {{value.getResInCombat()}}({{value.getResInPrecombat()}})
+                            </td>
+                            <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                                <input class='numericFloat' v-model="value.resGrowthRate" @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2" step="0.05">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                            </td>
+                            <td class='param'>
+                                {{value.atkWithSkills+value.atkBuff+value.atkDebuff
+                                    +value.spdWithSkills+value.spdBuff+value.spdDebuff
+                                    +value.defWithSkills+value.defBuff+value.defDebuff
+                                    +value.resWithSkills+value.resBuff+value.resDebuff}}
+                            </td>
+                            <td colspan="3">
+                            </td>
+                            <td v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
+                                <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
+                                    @click="value.resetStatusMult();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                            </td>
+                            <td>
+                                <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
+                                    @click="value.resetStatusAdd();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                            </td>
+                            <td></td>
+                            <td v-bind:style="g_app.vm.debugMenuStyle">
+                                <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
+                                    @click="value.updatePureGrowthRate();if(g_app.vm.gameMode == GameMode.ResonantBattles && isThief(value)){value.defGrowthRate=0.4;}g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="7">
+                                <div style="padding:5px">
+                                    <label class="normal" >状態: </label>
+                                    <span v-for="statusEffect in value.statusEffects">
+                                        <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px" />
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="7">
+                                <input v-bind:id='"isActionDone"+value.id' type="checkbox" v-model="value.isActionDone" @change="g_app.vm.actionDoneChanged" />
+                                <label class="normal" v-bind:for='"isActionDone"+value.id'>行動済み</label>
+                                <input v-bind:id='"isEnemyActionTriggered"+value.id' type="checkbox" v-model="value.isEnemyActionTriggered" />
+                                <label class="normal" v-bind:for='"isEnemyActionTriggered"+value.id'>AIの行動制限解除</label>
+                                <span v-if="isWeaponTypeBeast(value.weaponType)">
+                                    <input v-bind:id='"isTransformed"+value.id' type="checkbox" v-model="value.isTransformed" @change="g_app.vm.mergeChanged" />
+                                    <label class="normal" v-bind:for='"isTransformed"+value.id'>化身状態</label>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr v-bind:style="g_app.vm.debugMenuStyle">
+                            <td colspan="7">
+                                <label class="normal" v-bind:for='"isCantoActivated"+value.id'>再移動</label>
+                                {{value.isCantoActivated()}}
+                                <input v-bind:id='"isSelected"+value.id' type="checkbox" v-model="value.isSelected" />
+                                <label class="normal" v-bind:for='"isSelected"+value.id'>選択中</label>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table border="0" style="border-style:none;">
+                        <tr>
+                            <th class='param'><img class="weaponIcon" style="max-width:15px" /></th>
+                            <td>
+                                <select2 :options="g_app.vm.weaponOptions" v-model="value.weapon" v-if="g_app.vm.enableAllSkillOptions"
+                                    @input="g_app.vm.weaponChanged" class="skill">
+                                </select2>
+                                <select2 :options="value.heroInfo.weaponOptions" v-model="value.weapon" v-bind:name="value.id+'-weapon'" v-else-if="value.heroInfo!=null"
+                                    @input="g_app.vm.weaponChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.weaponInfo.detailPageUrl" target="_blank" v-if="value.weaponInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.weapon}}) {{value.heroInfo!=null?value.heroInfo.weaponOptions.length:0}}, {{g_appData.weaponImplCount}}/{{g_appData.weaponCount}}({{Math.floor(100*g_appData.weaponImplCount/g_appData.weaponCount, 2)}}%)
+                                </span>
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-if="g_app.vm.enableAllSkillOptions">
+                                    <option v-for="option in g_appData.weaponRefinementOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                                <select v-model="value.weaponRefinement" @change="g_app.vm.weaponOptionChanged" v-else-if="value.weaponInfo != null&&value.weaponInfo.weaponRefinementOptions.length > 1">
+                                    <option v-for="option in value.weaponInfo.weaponRefinementOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class='param'><img class="supportIcon" style="max-width:15px" />
+                            </th>
+                            <td>
+                                <select2 :options="g_app.vm.supportOptions" v-if="g_app.vm.enableAllSkillOptions"
+                                @input="g_app.vm.supportChanged"
+                                    v-model="value.support" class="skill">
+                                </select2>
+                                <select2 :options="value.heroInfo.supportOptions" v-else-if="value.heroInfo!=null"
+                                @input="g_app.vm.supportChanged"
+                                 v-bind:name="value.id+'-support'"
+                                    v-model="value.support" class="skill">
+                                </select2>
+                                <a v-bind:href="value.supportInfo.detailPageUrl" target="_blank" v-if="value.supportInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.support}}) {{value.heroInfo!=null?value.heroInfo.supportOptions.length:0}}, {{g_appData.supportImplCount}}/{{g_appData.supportCount}}({{Math.floor(100*g_appData.supportImplCount/g_appData.supportCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class='param'><img class="specialIcon" style="max-width:15px" />
+                            </th>
+                            <td>
+                                <select2 :options="g_app.vm.specialOptions" v-model="value.special" v-if="g_app.vm.enableAllSkillOptions"
+                                    @input="g_app.vm.specialChanged" class="skill">
+                                </select2>
+                                <select2 :options="value.heroInfo.specialOptions" v-model="value.special" v-bind:name="value.id+'-special'" v-else-if="value.heroInfo!=null"
+                                    @input="g_app.vm.specialChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.specialInfo.detailPageUrl" target="_blank" v-if="value.specialInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.special}}) {{value.heroInfo!=null?value.heroInfo.specialOptions.length:0}}, {{g_appData.specialImplCount}}/{{g_appData.specialCount}}({{Math.floor(100*g_appData.specialImplCount/g_appData.specialCount, 2)}}%)</span>
+                                <span v-if="value.special >= 0">
+                                <input name="currentUnitSpecial" type="number" min="0" v-bind:max="value.maxSpecialCount" 
+                                    v-model="value.specialCount" class="numeric" @input="g_app.vm.specialCountChanged" /> / {{value.maxSpecialCount}}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveAInfo != null" v-bind:src="value.passiveAInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'A.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td>
+                                <select2 :options="g_app.vm.passiveAOptions"  v-if="g_app.vm.enableAllSkillOptions"
+                                    v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
+                                </select2>
+                                <select2 :options="value.heroInfo.passiveAOptions" v-bind:name="value.id+'-passiveA'" v-else-if="value.heroInfo!=null"
+                                    v-model="value.passiveA" @input="g_app.vm.passiveAChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.passiveAInfo.detailPageUrl" target="_blank" v-if="value.passiveAInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveA}}) {{value.heroInfo!=null?value.heroInfo.passiveAOptions.length:0}}, {{g_appData.passiveAImplCount}}/{{g_appData.passiveACount}}({{Math.floor(100*g_appData.passiveAImplCount/g_appData.passiveACount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveBInfo != null" v-bind:src="value.passiveBInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'B.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td>
+                                <select2 :options="g_app.vm.passiveBOptions"  v-if="g_app.vm.enableAllSkillOptions"
+                                    v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
+                                </select2>
+                                <select2 :options="value.heroInfo.passiveBOptions" v-bind:name="value.id+'-passiveB'" v-else-if="value.heroInfo!=null"
+                                    v-model="value.passiveB" class="skill" @input="g_app.vm.passiveBChanged">
+                                </select2>
+                                <a v-bind:href="value.passiveBInfo.detailPageUrl" target="_blank" v-if="value.passiveBInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveB}}) {{value.heroInfo!=null?value.heroInfo.passiveBOptions.length:0}}, {{g_appData.passiveBImplCount}}/{{g_appData.passiveBCount}}({{Math.floor(100*g_appData.passiveBImplCount/g_appData.passiveBCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveCInfo != null" v-bind:src="value.passiveCInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'C.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td>
+                                <select2 :options="g_app.vm.passiveCOptions" v-if="g_app.vm.enableAllSkillOptions"
+                                    v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
+                                </select2>
+                                <select2 :options="value.heroInfo.passiveCOptions" v-bind:name="value.id+'-passiveC'" v-else-if="value.heroInfo!=null"
+                                    v-model="value.passiveC" @input="g_app.vm.passiveCChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.passiveCInfo.detailPageUrl" target="_blank" v-if="value.passiveCInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveC}}) {{value.heroInfo!=null?value.heroInfo.passiveCOptions.length:0}}, {{g_appData.passiveCImplCount}}/{{g_appData.passiveCCount}}({{Math.floor(100*g_appData.passiveCImplCount/g_appData.passiveCCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveSInfo != null" v-bind:src="value.passiveSInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'S.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td>
+                                <select2 :options="g_app.vm.passiveSOptions" v-if="g_app.vm.enableAllSkillOptions"
+                                    v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
+                                </select2>
+                                <select2 :options="value.heroInfo.passiveSOptions" v-bind:name="value.id+'-passiveS'" v-else-if="value.heroInfo!=null"
+                                    v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.passiveSInfo.detailPageUrl" target="_blank" v-if="value.passiveSInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveS}}) {{value.heroInfo!=null?value.heroInfo.passiveSOptions.length:0}}, {{g_appData.passiveSImplCount}}/{{g_appData.passiveSCount}}({{Math.floor(100*g_appData.passiveSImplCount/g_appData.passiveSCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                    </table>
+                    <div>
+                        <span style="font-size:12px">×がついているスキルは未実装
+                        (未実装数 {{g_appData.totalSkillCount-g_appData.totalImplementedSkillCount}})
+                        </span>
+                        <br/>
+                        <input type="button" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();" >
+                        <input type="button" value="全て外す" @click="value.clearReservedSkills();value.clearSkills();" >
+                        <input v-if="g_appData.isDebugMenuEnabled" type="button" value="未実装スキルをログ表示" @click="g_app.outputSkillsNotImplemented();" >
+                    </div>
+                    <div style="padding:5px">
+                        <span v-if="(value.isDuoHero) && value.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+                            <input type="button"
+                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
+                                class="fehButton"
+                                 @click="g_app.activateDuoOrHarmonizedSkill(value);">
+                        </span>
+                        <span v-if="(value.isDuoHero) && value.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+                            <input type="button" v-if="value.isDuoHero " disabled
+                                style=" background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                class="fehButtonDisabled">
+                        </span>
+                        <span v-if="(value.isHarmonicHero) && value.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+                            <input type="button"
+                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
+                                class="fehButton"
+                                 @click="g_app.activateDuoOrHarmonizedSkill(value);">
+                        </span>
+                        <span v-if="(value.isHarmonicHero) && value.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+                            <input type="button" v-if="value.isHarmonicHero" disabled
+                                style=" background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
+                                class="fehButtonDisabled">
+                        </span>
+                    </div>
+                    <fieldset v-if="g_appData.gameMode == GameMode.Arena"  style="font-size:12px;">
+                        <legend>闘技場スコア</legend>
+                        
+                        <span>スコア: {{value.arenaScore*2}}({{value.arenaScore}})</span><br/>
+                        <span style="color:#555">
+                        計算式: (150 + {{value.rarityScore}} + {{value.levelScore}} + ({{value.rating}} / 5) + ({{value.totalSp}} / 100) + ({{value.merge}} * 2)) * 2<br/>
+                        総合値: {{value.rating}}<br/>
+                        合計SP: {{value.totalSp}}({{value.weaponSp}}+{{value.supportSp}}+{{value.specialSp}}+{{value.passiveASp}}+{{value.passiveBSp}}+{{value.passiveCSp}}+{{value.passiveSSp}})</span><br/>
+                        <input type="button" @click="g_app.setUnitToMaxArenaScore(value)" value="最大スコアに設定"></input>
+                    </fieldset>
+
+                    <span v-bind:style="g_app.vm.debugMenuStyle">
+                        pos=({{value.posX}}, {{value.posY}})
+                        <br/>
+                        reservedSkills={{value.reservedWeapon}},{{value.reservedSupport}},{{value.reservedSpecial}},
+                        {{value.reservedPassiveA}},{{value.reservedPassiveB}},{{value.reservedPassiveC}},{{value.reservedPassiveS}}
+                        <br/>
+                        movementOrder={{value.movementOrder}}
+                        <br/>
+                        chaseTargetTile={{value.chaseTargetTileToString()}}
+
+                        <span v-if="value.heroInfo != null">
+                            <table>
+                                <tr>
+                                    <th></th>
+                                    <th>HP</th>
+                                    <th>攻</th>
+                                    <th>速</th>
+                                    <th>守</th>
+                                    <th>魔</th>
+                                </tr>
+                                <tr>
+                                    <th>★5</th>
+                                    <td>{{value.heroInfo.hpLv1}}</td>
+                                    <td>{{value.heroInfo.atkLv1}}</td>
+                                    <td>{{value.heroInfo.spdLv1}}</td>
+                                    <td>{{value.heroInfo.defLv1}}</td>
+                                    <td>{{value.heroInfo.resLv1}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★4</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar4}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar4}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★3</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar3}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar3}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★2</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar2}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar2}}</td>
+                                </tr>
+                                <tr>
+                                    <th>★1</th>
+                                    <td>{{value.heroInfo.hpLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.atkLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.spdLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.defLv1ForStar1}}</td>
+                                    <td>{{value.heroInfo.resLv1ForStar1}}</td>
+                                </tr>
+                            </table>
+                        </span>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </script>
+
+    <script>
+        function showMjolnirsStrikeSettingDialog() {
+            $('#mjolnirsStrikeSettingDialog').dialog('open');
+        }
+        function setImageSrcFromDatasetSrc(lazyImages) {
+            for (let lazyImage of lazyImages) {
+                if (lazyImage.src != lazyImage.dataset.src) {
+                    lazyImage.src = lazyImage.dataset.src;
+                }
+            }
+        }
+        function setImageSrcToDummy(lazyImages) {
+            const dummyImageUrl = "https://puarts.com/images/dummy.png";
+            for (let lazyImage of lazyImages) {
+                if (lazyImage.src != dummyImageUrl) {
+                    lazyImage.src = dummyImageUrl;
+                }
+            }
+        }
+        let g_imageAnalysisDialogOpened = false;
+        function loadLazyTemplateImages() {
+            if (!g_imageAnalysisDialogOpened) {
+                return;
+            }
+            {
+                let lazyImages = [].slice.call(document.querySelectorAll("img.lazyTemplateImage"));
+                setImageSrcFromDatasetSrc(lazyImages);
+            }
+
+            let lazyImagesForArena = [].slice.call(document.querySelectorAll("img.lazyTemplateImageForArena"));
+            let lazyImagesForAetherRaid = [].slice.call(document.querySelectorAll("img.lazyTemplateImageForAetherRaid"));
+            switch (g_appData.gameMode) {
+                case GameMode.Arena:
+                    {
+                        setImageSrcFromDatasetSrc(lazyImagesForArena);
+                        setImageSrcToDummy(lazyImagesForAetherRaid);
+                    }
+                    break;
+                case GameMode.AetherRaid:
+                    {
+                        setImageSrcFromDatasetSrc(lazyImagesForAetherRaid);
+                        setImageSrcToDummy(lazyImagesForArena);
+                    }
+                    break;
+            }
+        }
+        function showOcrSettingDialog() {
+            g_imageAnalysisDialogOpened = true;
+            $('#ocrSettingDialog').dialog('open');
+            loadLazyTemplateImages();
+            g_app.loadImageAnalysisLibraries();
+        }
+        function showSettingDialog() {
+            $('#settingDialog').dialog('open');
+        }
+        function showExportDialog() {
+            g_appData.updateExportText();
+            $('#exportDialog').dialog('open');
+        }
+        function showImportDialog() {
+            $('#importDialog').dialog('open');
+        }
+        function createDialog(elem, title, width = 370, height = 500, positionOf = "#unitSettings") {
+            elem.dialog({
+                autoOpen: false,
+                modal: false,
+                title: title,
+                width: width,
+                height: height,
+                resizable: true,
+                closeText: "",
+                position: {
+                    my: "left top",
+                    at: "left top",
+                    of: positionOf
+                },
+                buttons: [
+                    {
+                        html: '<span class="dialog-button-text">閉じる</span>',
+                        class: 'dialog-button',
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    },
+                ]
+            });
+        }
+
+        function createDialogs() {
+            $('#simpleLogPanel').on('DOMSubtreeModified propertychange', function () {
+                var objDiv = document.getElementById("simpleLogPanel");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            });
+            $('#debugLogPanel').on('DOMSubtreeModified propertychange', function () {
+                var objDiv = document.getElementById("debugLogPanel");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            });
+
+
+            // タブ
+            $('.jquery .tabs li').click(function () {
+                var index = $('.jquery .tabs li').index(this);
+                g_app.setCurrentUnitIndex(index);
+            });
+
+            createDialog($("#mjolnirsStrikeSettingDialog"), "ミョルニル査定計算の設定", 370, 500, "#mapArea");
+            $("#ocrSettingDialog").dialog({
+                autoOpen: false,
+                modal: false,
+                title: "画像から自動設定",
+                width: 470,
+                height: 600,
+                closeText: "",
+                position: {
+                    my: "left bottom",
+                    at: "left bottom",
+                    of: "#mapArea"
+                },
+                buttons: [
+                    {
+                        html: '<span class="dialog-button-text">設定開始</span>',
+                        class: 'dialog-button',
+                        click: function () {
+                            const files = document.getElementById("ocrSettingFile").files;
+                            g_app.setUnitsByStatusImages(files);
+                            var closeDialog = $("#closesDialogAfterStartAnalysis")[0].checked;
+                            if (closeDialog) {
+                                $(this).dialog("close");
+                            }
+                        }
+                    },
+                    {
+                        html: '<span class="dialog-button-text">閉じる</span>',
+                        class: 'dialog-button',
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    },
+                ]
+            });
+            createDialog($("#durabilityTestDialog"), "耐久/殲滅力テスト", 490, 700);
+            createDialog($("#aetherRaidDefensePresetDialog"), "模擬戦相手の設定");
+            createDialog($("#itemDialog"), "アイテム");
+            createDialog($("#editMapDialog"), "マップ編集");
+            createDialog($("#setupResonantBattleEnemyDialog"), "双界の敵ステータス設定");
+            createDialog($("#autoClearDialog"), "お助けツール(開発中)");
+            createDialog($("#settingDialog"), "詳細設定", 370, 370, "#mapArea");
+            createDialog($("#exportDialog"), "設定のエクスポート", 370, 420, "#mapArea");
+            createDialog($("#importDialog"), "設定のインポート", 370, 420, "#mapArea");
+        }
+        function copyMapSourceCodeToClipboard() {
+            var textarea = $("#mapSourceCode")[0];
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+        }
+        function copySimpleLogToClipboard() {
+            selectText("simpleLogPanel");
+            document.execCommand("copy");
+        }
+        function copyDebugLogToClipboard() {
+            selectText("debugLogPanel");
+            document.execCommand("copy");
+        }
+        function copyExportUrlToClipboard() {
+            var textarea = $("#exportUrl")[0];
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); /*For mobile devices*/
+            document.execCommand("copy");
+        }
+        function copyExportTextToClipboard() {
+            var textarea = $("#exportText")[0];
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); /*For mobile devices*/
+            document.execCommand("copy");
+        }
+        function pasteClipboardToImportText() {
+            // セキュリティの都合で(コピーしたパスワードなどを取得できないように)多くのブラウザでは動作しない
+            var textarea = $("#importText")[0];
+            textarea.focus();
+            document.execCommand("paste");
+        }
+        function clearImportText() {
+            var textarea = $("#importText")[0];
+            textarea.value = '';
+        }
+        function importTextFromInputText(text, compressMode = null) {
+            var loadsEnemySettings = $("#loadsEnemySettings")[0].checked;
+            var loadsAllySettings = $("#loadsAllySettings")[0].checked;
+            var loadsDefenceSettings = $("#loadsDefenceSettings")[0].checked;
+            var loadsOffenceSettings = $("#loadsOffenceSettings")[0].checked;
+            var loadsMapSettings = $("#loadsMapSettings")[0].checked;
+            var textarea = $("#importText")[0];
+            importSettingsFromString(
+                text,
+                loadsAllySettings,
+                loadsEnemySettings,
+                loadsOffenceSettings,
+                loadsDefenceSettings,
+                loadsMapSettings,
+                compressMode);
+            updateAllUi();
+            var closeDialog = $("#closesDialogAfterImport")[0].checked;
+            if (closeDialog) {
+                $("#importDialog").dialog('close');
+            }
+        }
+        function importText() {
+            const textarea = $("#importText")[0];
+            importTextFromInputText(textarea.value);
+        }
+
+        function importUrl(url) {
+            console.log("url:" + url);
+            if (url == "" || url == null) {
+                return;
+            }
+            console.log(url);
+            let splited = url.split("s=");
+            if (splited.length != 2) {
+                console.log(`invalid url "${url}"`);
+                return;
+            }
+
+            let compressedSetting = splited[1];
+            importTextFromInputText(compressedSetting, SettingCompressMode.Uri);
+        }
+    </script>
+
+    <!-- jquery -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <!-- select2 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css"
+        media="print" onload="this.media='all'">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+    <!-- jquery-ui -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css" media="print"
+        onload="this.media='all'">
+    <script async src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+
+    <!-- sortable.js -->
+    <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+
+    <!-- vuedraggable.js -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script>
+
+    <!-- クッキー(実際は使ってないので消してもいいかも) -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->
+
+    <!-- 文字列圧縮 -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+
+    <!-- 画像解析 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css" media="print"
+        onload="this.media='all'">
+    <script async type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
+
+    <!-- <script defer type="text/javascript" src="https://docs.opencv.org/4.2.0/opencv.js"></script> -->
+
+
+
+
+
+
+    <script>
+        function createScriptElement(src, onloadFunc) {
+            let element = document.createElement("script");
+            element.type = "text/javascript";
+            element.src = src;
+            element.onload = onloadFunc;
+            // document.body.appendChild(element);
+            let headElement = document.getElementsByTagName('head')[0];
+            headElement.appendChild(element);
+        }
+
+        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
+            if (index == scriptFileNames.length) {
+                allScriptLoaded();
+                return;
+            }
+
+            let jsRootPath = "./";
+            // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
+            let reloadSuffix = "20200513";
+            let scriptFileName = scriptFileNames[index];
+            let src = jsRootPath + scriptFileName + "?" + reloadSuffix;
+            const startTime = Date.now();
+            createScriptElement(src, x => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load ${src}`);
+                loadScripts(scriptFileNames, allScriptLoaded, ++index);
+            });
+        }
+
+        $(function () {
+            const startTime = Date.now();
+            loadScripts([
+                "GlobalDefinitions_Debug.js",
+                "Cell.js",
+                "Table.js",
+                "Utilities.js",
+                "Logger.js",
+                "Skill.js",
+                "BattleMapElement.js",
+                "Tile.js",
+                "Structures.js",
+                "HeroInfo.js",
+                "Unit.js",
+                "UnitManager.js",
+                "BattleMap.js",
+                "BattleMapSettings.js",
+                "GlobalBattleContext.js",
+                "DamageCalculationUtility.js",
+                "DamageCalculator.js",
+                "PostCombatSkillHander.js",
+                "DamageCalculatorWrapper.js",
+                "BeginningOfTurnSkillHandler.js",
+                "TurnSetting.js",
+                "AudioManager.js",
+                "AetherRaidDefensePresets.js",
+                "SkillDatabase.js",
+                "HeroDatabase.js",
+                "SettingManager.js",
+                "AppData.js",
+                "Main_ImageProcessing.js",
+                "Main_OriginalAi.js",
+                "Main_MouseAndTouch.js",
+                "BattleSimulatorBase.js",
+                "ArenaSimulatorMain.js",
+                "VueComponents.js",
+                "SampleSkillInfos.js",
+                "SampleHeroInfos.js",
+            ], () => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load all scripts`);
+                console.log("initializing application");
+                g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
+                    passiveSInfos);
+                g_app.registerHeroOptions(heroInfos, false);
+
+                loadLazyImages();
+            });
+        });
+        window.addEventListener('load', (event) => {
+            let endTime = Date.now();
+            let diffTime = endTime - g_startTime;
+            g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
+            initAetherRaidBoard(heroInfos);
+
+            createDialogs();
+            importUrl(location.search);
+        });
+    </script>
+</body>
