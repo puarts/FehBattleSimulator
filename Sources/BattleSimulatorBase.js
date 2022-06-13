@@ -8809,6 +8809,15 @@ function updateMapUi() {
         );
         table.backgroundImages.splice(0, 0, bgImageInfo);
     }
+
+    // とりあえず海を後ろに表示しておく。海じゃないやつがあったらどうにかして分岐する
+    {
+        let bgImageInfo = new BackgroundImageInfo(
+            g_corsImageRootPath + "Maps/WavePatternSea.png"
+        );
+        table.backgroundImages.push(bgImageInfo);
+    }
+
     let tableElem = table.updateTableElement();
     if (mapArea.childElementCount == 0) {
         mapArea.appendChild(tableElem);
