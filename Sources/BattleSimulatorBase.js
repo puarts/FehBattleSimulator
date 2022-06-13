@@ -194,7 +194,7 @@ class BattleSimmulatorBase {
                     return;
                 }
                 removeFromAll(wall);
-                moveStructureToEmptyTileOfMap(wall);
+                moveStructureToEmptyTileOfMap(wall, false);
                 updateAllUi();
             },
             removeWallFromMap: function () {
@@ -216,7 +216,7 @@ class BattleSimmulatorBase {
                     return;
                 }
                 removeFromAll(wall);
-                moveStructureToEmptyTileOfMap(wall);
+                moveStructureToEmptyTileOfMap(wall, false);
                 updateAllUi();
             },
             removeBreakableWallFromMap: function () {
@@ -8612,8 +8612,8 @@ function moveStructureToOffenceStorage(structure) {
     g_offenceStructureContainer.addStructure(structure);
 }
 
-function moveStructureToEmptyTileOfMap(structure) {
-    g_appData.map.placeObjToEmptyTile(structure);
+function moveStructureToEmptyTileOfMap(structure, ignoresUnit = true) {
+    g_appData.map.placeObjToEmptyTile(structure, ignoresUnit);
     g_trashArea.removeStructure(structure);
     g_deffenceStructureContainer.removeStructure(structure);
     g_offenceStructureContainer.removeStructure(structure);

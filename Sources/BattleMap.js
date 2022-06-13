@@ -1344,31 +1344,31 @@ class BattleMap {
         targetTile.setObj(obj);
         return true;
     }
-    placeObjToEmptyTile(obj) {
+    placeObjToEmptyTile(obj, ignoresUnit = true) {
         let emptyTile;
         if (obj instanceof OffenceStructureBase) {
-            emptyTile = this.__findEmptyTileOfOffenceStructure();
+            emptyTile = this.__findEmptyTileOfOffenceStructure(ignoresUnit);
         }
         else {
-            emptyTile = this.__findEmptyTileOfDiffenceStructure();
+            emptyTile = this.__findEmptyTileOfDiffenceStructure(ignoresUnit);
         }
         this.removeObj(obj);
         emptyTile.setObj(obj);
     }
 
-    __findEmptyTileOfOffenceStructure() {
-        return this.__findEmptyTile(0, 7, this._width, this._height);
+    __findEmptyTileOfOffenceStructure(ignoresUnit = true) {
+        return this.__findEmptyTile(0, 7, this._width, this._height, ignoresUnit);
     }
 
-    __findEmptyTileOfDiffenceStructure() {
-        return this.__findEmptyTile(0, 0, this._width, this._height - 1);
+    __findEmptyTileOfDiffenceStructure(ignoresUnit = true) {
+        return this.__findEmptyTile(0, 0, this._width, this._height - 1, ignoresUnit);
     }
 
-    __findEmptyTile(offsetX, offsetY, width, height) {
+    __findEmptyTile(offsetX, offsetY, width, height, ignoresUnit = true) {
         for (let y = offsetY; y < height; ++y) {
             for (let x = offsetX; x < width; ++x) {
                 let tile = this.getTile(x, y);
-                if (tile.isObjPlacable() && tile.placedUnit == null) {
+                if (tile.isObjPlacable() && (!ignoresUnit || tile.placedUnit == null)) {
                     return tile;
                 }
             }

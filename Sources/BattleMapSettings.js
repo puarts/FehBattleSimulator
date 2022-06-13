@@ -13,7 +13,8 @@ function changeMapKind(map, mapKind) {
     }
 
     map._type = mapKind;
-    resetBattleMapPlacement(map, mapKind);
+    let withUnits = isArenaMap(mapKind);
+    resetBattleMapPlacement(map, mapKind, withUnits);
 }
 
 function __resetBattleMapPlacementForArena(map, type, withUnits) {
@@ -782,6 +783,41 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
                 map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 0], [7, 1]]);
             }
             break;
+        case MapType.Arena_36:
+            map.__placeBreakableWallsByPosYX([[3, 3], [3, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[1, 1], [1, 4], [1, 5], [2, 0], [2, 5], [3, 0], [6, 4],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 4], [0, 5], [1, 0], [3, 2], [3, 5], [4, 0], [4, 2], [4, 5], [5, 0], [5, 5], [6, 0], [6, 5], [7, 0], [7, 3], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 3],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 2], [0, 3], [1, 2], [1, 3],]);
+                map.__placeAllyUnitsByPosYX([[6, 1], [6, 2], [7, 1], [7, 2],]);
+            }
+            break;
+        case MapType.Arena_37:
+            break;
+        case MapType.Arena_38:
+            map.__setTileTypesByPosYX([[0, 3], [0, 5], [3, 5], [7, 0], [7, 2],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 2], [2, 0], [2, 2], [3, 0], [3, 2], [3, 3], [4, 0], [4, 3], [4, 5], [5, 3], [5, 5], [7, 3], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[1, 1], [4, 2], [6, 4],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [1, 4], [1, 5], [2, 5],]);
+                map.__placeAllyUnitsByPosYX([[5, 0], [6, 0], [6, 1], [7, 1],]);
+            }
+            break;
+        case MapType.Arena_39:
+            break;
+        case MapType.Arena_40:
+            break;
+        case MapType.Arena_41:
+            break;
+        case MapType.Arena_42:
+            break;
+        case MapType.Arena_43:
+            break;
+        case MapType.Arena_44:
+            break;
+        case MapType.Arena_45:
+            break;
         case MapType.Arena_46:
             map.__setTileTypesByPosYX([
                 [3, 1], [3, 2], [3, 4],
@@ -934,6 +970,17 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
             if (withUnits) {
                 map.__placeElemyUnitsByPosYX([[5, 5], [6, 4], [6, 5], [7, 4],]);
                 map.__placeAllyUnitsByPosYX([[0, 1], [1, 0], [1, 1], [2, 0],]);
+            }
+            break;
+        case MapType.Arena_67:
+            map.__placeBreakableWallsByPosYX([[2, 2], [3, 0], [3, 1], [3, 3], [4, 0], [4, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 0], [0, 5], [3, 2], [3, 4], [4, 2], [5, 2], [6, 5], [7, 0], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 3], [4, 3],], TileType.Trench);
+            map.__setTileTypesByPosYX([[1, 5], [5, 5],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[2, 1],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [0, 3], [0, 4],]);
+                map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
             }
             break;
         default:
