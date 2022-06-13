@@ -54,23 +54,56 @@ const MapType = {
     Arena_23: MapType_ArenaOffset + 22,
     Arena_24: MapType_ArenaOffset + 23,
     Arena_25: MapType_ArenaOffset + 24,
-
     Arena_26: MapType_ArenaOffset + 25,
     Arena_27: MapType_ArenaOffset + 26,
     Arena_28: MapType_ArenaOffset + 27,
     Arena_29: MapType_ArenaOffset + 28,
     Arena_30: MapType_ArenaOffset + 29,
-
     Arena_31: MapType_ArenaOffset + 30,
     Arena_32: MapType_ArenaOffset + 31,
     Arena_33: MapType_ArenaOffset + 32,
     Arena_34: MapType_ArenaOffset + 33,
     Arena_35: MapType_ArenaOffset + 34,
+    Arena_36: MapType_ArenaOffset + 35,
+    Arena_37: MapType_ArenaOffset + 36,
+    Arena_38: MapType_ArenaOffset + 37,
+    Arena_39: MapType_ArenaOffset + 38,
+    Arena_40: MapType_ArenaOffset + 39,
+    Arena_41: MapType_ArenaOffset + 40,
+    Arena_42: MapType_ArenaOffset + 41,
+    Arena_43: MapType_ArenaOffset + 42,
+    Arena_44: MapType_ArenaOffset + 43,
+    Arena_45: MapType_ArenaOffset + 44,
     Arena_46: MapType_ArenaOffset + 45,
     Arena_47: MapType_ArenaOffset + 46,
     Arena_48: MapType_ArenaOffset + 47,
     Arena_49: MapType_ArenaOffset + 48,
     Arena_50: MapType_ArenaOffset + 49,
+    Arena_51: MapType_ArenaOffset + 50,
+    Arena_52: MapType_ArenaOffset + 51,
+    Arena_53: MapType_ArenaOffset + 52,
+    Arena_54: MapType_ArenaOffset + 53,
+    Arena_55: MapType_ArenaOffset + 54,
+    Arena_56: MapType_ArenaOffset + 55,
+    Arena_57: MapType_ArenaOffset + 56,
+    Arena_58: MapType_ArenaOffset + 57,
+    Arena_59: MapType_ArenaOffset + 58,
+    Arena_60: MapType_ArenaOffset + 59,
+    Arena_61: MapType_ArenaOffset + 60,
+    Arena_62: MapType_ArenaOffset + 61,
+    Arena_63: MapType_ArenaOffset + 62,
+    Arena_64: MapType_ArenaOffset + 63,
+    Arena_65: MapType_ArenaOffset + 64,
+    Arena_66: MapType_ArenaOffset + 65,
+    Arena_67: MapType_ArenaOffset + 66,
+    Arena_68: MapType_ArenaOffset + 67,
+    Arena_69: MapType_ArenaOffset + 68,
+    Arena_70: MapType_ArenaOffset + 69,
+    Arena_71: MapType_ArenaOffset + 70,
+    Arena_72: MapType_ArenaOffset + 71,
+    Arena_73: MapType_ArenaOffset + 72,
+    Arena_74: MapType_ArenaOffset + 73,
+    Arena_75: MapType_ArenaOffset + 74,
 
     // 双界
     ResonantBattles_Default: MapType_ResonantBattlesOffset + 0,
@@ -325,11 +358,46 @@ ArenaMapImageFilePaths[MapType.Arena_32] = g_arenaMapRelativeRoot + "Arena_32.pn
 ArenaMapImageFilePaths[MapType.Arena_33] = g_arenaMapRelativeRoot + "Arena_33.png";
 ArenaMapImageFilePaths[MapType.Arena_34] = g_arenaMapRelativeRoot + "Arena_34.png";
 ArenaMapImageFilePaths[MapType.Arena_35] = g_arenaMapRelativeRoot + "Arena_35.png";
+ArenaMapImageFilePaths[MapType.Arena_36] = g_arenaMapRelativeRoot + "Map_Z0036.png";
+ArenaMapImageFilePaths[MapType.Arena_37] = g_arenaMapRelativeRoot + "Map_Z0037.png";
+ArenaMapImageFilePaths[MapType.Arena_38] = g_arenaMapRelativeRoot + "Map_Z0038.png";
+ArenaMapImageFilePaths[MapType.Arena_39] = g_arenaMapRelativeRoot + "Map_Z0039.png";
+ArenaMapImageFilePaths[MapType.Arena_40] = g_arenaMapRelativeRoot + "Map_Z0040.png";
+ArenaMapImageFilePaths[MapType.Arena_41] = g_arenaMapRelativeRoot + "Map_Z0041.png";
+ArenaMapImageFilePaths[MapType.Arena_42] = g_arenaMapRelativeRoot + "Map_Z0042.png";
+ArenaMapImageFilePaths[MapType.Arena_43] = g_arenaMapRelativeRoot + "Map_Z0043.png";
+ArenaMapImageFilePaths[MapType.Arena_44] = g_arenaMapRelativeRoot + "Map_Z0044.png";
+ArenaMapImageFilePaths[MapType.Arena_45] = g_arenaMapRelativeRoot + "Map_Z0045.png";
 ArenaMapImageFilePaths[MapType.Arena_46] = g_arenaMapRelativeRoot + "Arena_46.png";
 ArenaMapImageFilePaths[MapType.Arena_47] = g_arenaMapRelativeRoot + "Arena_47.png";
 ArenaMapImageFilePaths[MapType.Arena_48] = g_arenaMapRelativeRoot + "Arena_48.png";
 ArenaMapImageFilePaths[MapType.Arena_49] = g_arenaMapRelativeRoot + "Arena_49.png";
 ArenaMapImageFilePaths[MapType.Arena_50] = g_arenaMapRelativeRoot + "Arena_50.png";
+ArenaMapImageFilePaths[MapType.Arena_51] = g_arenaMapRelativeRoot + "Map_Z0051.png";
+ArenaMapImageFilePaths[MapType.Arena_52] = g_arenaMapRelativeRoot + "Map_Z0052.png";
+ArenaMapImageFilePaths[MapType.Arena_53] = g_arenaMapRelativeRoot + "Map_Z0053.png";
+ArenaMapImageFilePaths[MapType.Arena_54] = g_arenaMapRelativeRoot + "Map_Z0054.png";
+ArenaMapImageFilePaths[MapType.Arena_55] = g_arenaMapRelativeRoot + "Map_Z0055.png";
+ArenaMapImageFilePaths[MapType.Arena_56] = g_arenaMapRelativeRoot + "Map_Z0056.png";
+ArenaMapImageFilePaths[MapType.Arena_57] = g_arenaMapRelativeRoot + "Map_Z0057.png";
+ArenaMapImageFilePaths[MapType.Arena_58] = g_arenaMapRelativeRoot + "Map_Z0058.png";
+ArenaMapImageFilePaths[MapType.Arena_59] = g_arenaMapRelativeRoot + "Map_Z0059.png";
+ArenaMapImageFilePaths[MapType.Arena_60] = g_arenaMapRelativeRoot + "Map_Z0060.png";
+ArenaMapImageFilePaths[MapType.Arena_61] = g_arenaMapRelativeRoot + "Map_Z0061.png";
+ArenaMapImageFilePaths[MapType.Arena_62] = g_arenaMapRelativeRoot + "Map_Z0062.png";
+ArenaMapImageFilePaths[MapType.Arena_63] = g_arenaMapRelativeRoot + "Map_Z0063.png";
+ArenaMapImageFilePaths[MapType.Arena_64] = g_arenaMapRelativeRoot + "Map_Z0064.png";
+ArenaMapImageFilePaths[MapType.Arena_65] = g_arenaMapRelativeRoot + "Map_Z0065.png";
+ArenaMapImageFilePaths[MapType.Arena_66] = g_arenaMapRelativeRoot + "Map_Z0066.png";
+ArenaMapImageFilePaths[MapType.Arena_67] = g_arenaMapRelativeRoot + "Map_Z0067.png";
+ArenaMapImageFilePaths[MapType.Arena_68] = g_arenaMapRelativeRoot + "Map_Z0068.png";
+ArenaMapImageFilePaths[MapType.Arena_69] = g_arenaMapRelativeRoot + "Map_Z0069.png";
+ArenaMapImageFilePaths[MapType.Arena_70] = g_arenaMapRelativeRoot + "Map_Z0070.png";
+ArenaMapImageFilePaths[MapType.Arena_71] = g_arenaMapRelativeRoot + "Map_Z0071.png";
+ArenaMapImageFilePaths[MapType.Arena_72] = g_arenaMapRelativeRoot + "Map_Z0072.png";
+ArenaMapImageFilePaths[MapType.Arena_73] = g_arenaMapRelativeRoot + "Map_Z0073.png";
+ArenaMapImageFilePaths[MapType.Arena_74] = g_arenaMapRelativeRoot + "Map_Z0074.png";
+ArenaMapImageFilePaths[MapType.Arena_75] = g_arenaMapRelativeRoot + "Map_Z0075.png";
 
 const ArenaMapImageFiles = [];
 initializeImageFileList(ArenaMapImageFilePaths, ArenaMapImageFiles);
@@ -353,48 +421,17 @@ const TempestTrialsMapKindOptions = [
     { label: "新米忍者の初任務(2020/11/07～)", value: MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu },
 ];
 
-const ArenaMapKindOptions = [
-    { label: "マップ1", value: MapType.Arena_1 },
-    { label: "マップ2", value: MapType.Arena_2 },
-    { label: "マップ3", value: MapType.Arena_3 },
-    { label: "マップ4", value: MapType.Arena_4 },
-    { label: "マップ5", value: MapType.Arena_5 },
-    { label: "マップ6", value: MapType.Arena_6 },
-    { label: "マップ7", value: MapType.Arena_7 },
-    { label: "マップ8", value: MapType.Arena_8 },
-    { label: "マップ9", value: MapType.Arena_9 },
-    { label: "マップ10", value: MapType.Arena_10 },
-    { label: "マップ11", value: MapType.Arena_11 },
-    { label: "マップ12", value: MapType.Arena_12 },
-    { label: "マップ13", value: MapType.Arena_13 },
-    { label: "マップ14", value: MapType.Arena_14 },
-    { label: "マップ15", value: MapType.Arena_15 },
-    { label: "マップ16", value: MapType.Arena_16 },
-    { label: "マップ17", value: MapType.Arena_17 },
-    { label: "マップ18", value: MapType.Arena_18 },
-    { label: "マップ19", value: MapType.Arena_19 },
-    { label: "マップ20", value: MapType.Arena_20 },
-    { label: "マップ21", value: MapType.Arena_21 },
-    { label: "マップ22", value: MapType.Arena_22 },
-    { label: "マップ23", value: MapType.Arena_23 },
-    { label: "マップ24", value: MapType.Arena_24 },
-    { label: "マップ25", value: MapType.Arena_25 },
-    { label: "マップ26", value: MapType.Arena_26 },
-    { label: "マップ27", value: MapType.Arena_27 },
-    { label: "マップ28", value: MapType.Arena_28 },
-    { label: "マップ29", value: MapType.Arena_29 },
-    { label: "マップ30", value: MapType.Arena_30 },
-    { label: "マップ31", value: MapType.Arena_31 },
-    { label: "マップ32", value: MapType.Arena_32 },
-    { label: "マップ33", value: MapType.Arena_33 },
-    { label: "マップ34", value: MapType.Arena_34 },
-    { label: "マップ35", value: MapType.Arena_35 },
-    { label: "マップ46", value: MapType.Arena_46 },
-    { label: "マップ47", value: MapType.Arena_47 },
-    { label: "マップ48", value: MapType.Arena_48 },
-    { label: "マップ49", value: MapType.Arena_49 },
-    { label: "マップ50", value: MapType.Arena_50 },
-];
+const ArenaMapKindOptions = [];
+{
+    let i = 1;
+    for (let key in ArenaMapImageFilePaths) {
+        ArenaMapKindOptions.push({
+            label: `マップ${i}`,
+            value: Number(key)
+        });
+        ++i;
+    }
+}
 
 const ArenaMapRotation = [
     // 1
