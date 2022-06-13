@@ -234,65 +234,106 @@ function getBreakableObjCountOfCurrentMapType(type) {
 
 const DefaultResonantBattleMap = MapType.ResonantBattles_8;
 const DefaultTempestTrialsMap = MapType.TempestTrials_ShinmaiNinjaNoHatsuNinmu;
-const AetherRaidMapImageFiles = [
-    { id: MapType.Haikyo, fileName: "Haikyo.png" },
-    { id: MapType.Harukaze, fileName: "Harukaze.png" },
-    { id: MapType.Hyosetsu, fileName: "Hyosetsu.png" },
-    { id: MapType.Izumi, fileName: "Izumi.png" },
-    { id: MapType.Komorebi, fileName: "Komorebi.png" },
-    { id: MapType.Natsukusa, fileName: "Natsukusa.png" },
-    { id: MapType.Sabaku, fileName: "Sabaku.png" },
-    { id: MapType.Syakunetsu, fileName: "Syakunetsu.png" },
-    { id: MapType.Wasurerareta, fileName: "Wasurerareta.png" },
-    { id: MapType.Yukigesho, fileName: "Yukigesyo.png" },
-    { id: MapType.DreamCastle, fileName: "DreamCastle.png" },
-    { id: MapType.NightmareCastle, fileName: "NightmareCastle.png" },
-    { id: MapType.K0013, fileName: "K0013.png" },
-    { id: MapType.K0014, fileName: "K0014.png" },
-    { id: MapType.K0015, fileName: "K0015.png" },
-];
-const ArenaMapImageFiles = [
-    { id: MapType.Arena_1, fileName: "Arena_1.jpg" },
-    { id: MapType.Arena_2, fileName: "Arena_2.png" },
-    { id: MapType.Arena_3, fileName: "Arena_3.jpg" },
-    { id: MapType.Arena_4, fileName: "Arena_4.png" },
-    { id: MapType.Arena_5, fileName: "Arena_5.jpg" },
-    { id: MapType.Arena_6, fileName: "Arena_6.png" },
-    { id: MapType.Arena_7, fileName: "Arena_7.png" },
-    { id: MapType.Arena_8, fileName: "Arena_8.png" },
-    { id: MapType.Arena_9, fileName: "Arena_9.png" },
-    { id: MapType.Arena_10, fileName: "Arena_10.png" },
-    { id: MapType.Arena_11, fileName: "Arena_11.png" },
-    { id: MapType.Arena_12, fileName: "Arena_12.png" },
-    { id: MapType.Arena_13, fileName: "Arena_13.png" },
-    { id: MapType.Arena_14, fileName: "Arena_14.png" },
-    { id: MapType.Arena_15, fileName: "Arena_15.png" },
-    { id: MapType.Arena_16, fileName: "Arena_16.png" },
-    { id: MapType.Arena_17, fileName: "Arena_17.png" },
-    { id: MapType.Arena_18, fileName: "Arena_18.png" },
-    { id: MapType.Arena_19, fileName: "Arena_19.png" },
-    { id: MapType.Arena_20, fileName: "Arena_20.png" },
-    { id: MapType.Arena_21, fileName: "Arena_21.png" },
-    { id: MapType.Arena_22, fileName: "Arena_22.png" },
-    { id: MapType.Arena_23, fileName: "Arena_23.png" },
-    { id: MapType.Arena_24, fileName: "Arena_24.png" },
-    { id: MapType.Arena_25, fileName: "Arena_25.png" },
-    { id: MapType.Arena_26, fileName: "Arena_26.jpg" },
-    { id: MapType.Arena_27, fileName: "Arena_27.jpg" },
-    { id: MapType.Arena_28, fileName: "Arena_28.jpg" },
-    { id: MapType.Arena_29, fileName: "Arena_29.jpg" },
-    { id: MapType.Arena_30, fileName: "Arena_30.png" },
-    { id: MapType.Arena_31, fileName: "Arena_31.png" },
-    { id: MapType.Arena_32, fileName: "Arena_32.png" },
-    { id: MapType.Arena_33, fileName: "Arena_33.png" },
-    { id: MapType.Arena_34, fileName: "Arena_34.png" },
-    { id: MapType.Arena_35, fileName: "Arena_35.png" },
-    { id: MapType.Arena_46, fileName: "Arena_46.png" },
-    { id: MapType.Arena_47, fileName: "Arena_47.png" },
-    { id: MapType.Arena_48, fileName: "Arena_48.png" },
-    { id: MapType.Arena_49, fileName: "Arena_49.png" },
-    { id: MapType.Arena_50, fileName: "Arena_50.png" },
-];
+
+
+function initializeImageFileList(sourceDict, destArray) {
+    for (let key in sourceDict) {
+        let value = sourceDict[key];
+        destArray.push({
+            id: key,
+            fileName: value
+        });
+    }
+}
+
+const AetherRaidMapImageFilePaths = {}
+AetherRaidMapImageFilePaths[MapType.Haikyo] = "Haikyo.png";
+AetherRaidMapImageFilePaths[MapType.Harukaze] = "Harukaze.png";
+AetherRaidMapImageFilePaths[MapType.Hyosetsu] = "Hyosetsu.png";
+AetherRaidMapImageFilePaths[MapType.Izumi] = "Izumi.png";
+AetherRaidMapImageFilePaths[MapType.Komorebi] = "Komorebi.png";
+AetherRaidMapImageFilePaths[MapType.Natsukusa] = "Natsukusa.png";
+AetherRaidMapImageFilePaths[MapType.Sabaku] = "Sabaku.png";
+AetherRaidMapImageFilePaths[MapType.Syakunetsu] = "Syakunetsu.png";
+AetherRaidMapImageFilePaths[MapType.Wasurerareta] = "Wasurerareta.png";
+AetherRaidMapImageFilePaths[MapType.Yukigesho] = "Yukigesyo.png";
+AetherRaidMapImageFilePaths[MapType.DreamCastle] = "DreamCastle.png";
+AetherRaidMapImageFilePaths[MapType.NightmareCastle] = "NightmareCastle.png";
+AetherRaidMapImageFilePaths[MapType.K0013] = "K0013.png";
+AetherRaidMapImageFilePaths[MapType.K0014] = "K0014.png";
+AetherRaidMapImageFilePaths[MapType.K0015] = "K0015.png";
+
+const AetherRaidMapImageFiles = [];
+initializeImageFileList(AetherRaidMapImageFilePaths, AetherRaidMapImageFiles);
+
+const g_summonerDuelsMapRelativeRoot = "SummonerDuels/";
+const SummonerDuelsImageFilePaths = {};
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_Default] = g_summonerDuelsMapRelativeRoot + "Default.png";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_1] = g_summonerDuelsMapRelativeRoot + "Map_ZR001.png";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_2] = g_summonerDuelsMapRelativeRoot + "Map_ZR002.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_5] = g_summonerDuelsMapRelativeRoot + "Map_ZR005.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_13] = g_summonerDuelsMapRelativeRoot + "Map_ZR013.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_4] = g_summonerDuelsMapRelativeRoot + "Map_ZR004.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_14] = g_summonerDuelsMapRelativeRoot + "Map_ZR014.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_6] = g_summonerDuelsMapRelativeRoot + "Map_ZR006.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_3] = g_summonerDuelsMapRelativeRoot + "Map_ZR003.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_7] = g_summonerDuelsMapRelativeRoot + "Map_ZR007.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_8] = g_summonerDuelsMapRelativeRoot + "Map_ZR008.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_9] = g_summonerDuelsMapRelativeRoot + "Map_ZR009.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_10] = g_summonerDuelsMapRelativeRoot + "Map_ZR010.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_11] = g_summonerDuelsMapRelativeRoot + "Map_ZR011.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_12] = g_summonerDuelsMapRelativeRoot + "Map_ZR012.webp";
+
+const SummonerDuelsImageFiles = [];
+initializeImageFileList(SummonerDuelsImageFilePaths, SummonerDuelsImageFiles);
+
+
+const g_arenaMapRelativeRoot = "Arena/";
+const ArenaMapImageFilePaths = {};
+ArenaMapImageFilePaths[MapType.Arena_1] = g_arenaMapRelativeRoot + "Arena_1.jpg";
+ArenaMapImageFilePaths[MapType.Arena_2] = g_arenaMapRelativeRoot + "Arena_2.png";
+ArenaMapImageFilePaths[MapType.Arena_3] = g_arenaMapRelativeRoot + "Arena_3.jpg";
+ArenaMapImageFilePaths[MapType.Arena_4] = g_arenaMapRelativeRoot + "Arena_4.png";
+ArenaMapImageFilePaths[MapType.Arena_5] = g_arenaMapRelativeRoot + "Arena_5.jpg";
+ArenaMapImageFilePaths[MapType.Arena_6] = g_arenaMapRelativeRoot + "Arena_6.png";
+ArenaMapImageFilePaths[MapType.Arena_7] = g_arenaMapRelativeRoot + "Arena_7.png";
+ArenaMapImageFilePaths[MapType.Arena_8] = g_arenaMapRelativeRoot + "Arena_8.png";
+ArenaMapImageFilePaths[MapType.Arena_9] = g_arenaMapRelativeRoot + "Arena_9.png";
+ArenaMapImageFilePaths[MapType.Arena_10] = g_arenaMapRelativeRoot + "Arena_10.png";
+ArenaMapImageFilePaths[MapType.Arena_11] = g_arenaMapRelativeRoot + "Arena_11.png";
+ArenaMapImageFilePaths[MapType.Arena_12] = g_arenaMapRelativeRoot + "Arena_12.png";
+ArenaMapImageFilePaths[MapType.Arena_13] = g_arenaMapRelativeRoot + "Arena_13.png";
+ArenaMapImageFilePaths[MapType.Arena_14] = g_arenaMapRelativeRoot + "Arena_14.png";
+ArenaMapImageFilePaths[MapType.Arena_15] = g_arenaMapRelativeRoot + "Arena_15.png";
+ArenaMapImageFilePaths[MapType.Arena_16] = g_arenaMapRelativeRoot + "Arena_16.png";
+ArenaMapImageFilePaths[MapType.Arena_17] = g_arenaMapRelativeRoot + "Arena_17.png";
+ArenaMapImageFilePaths[MapType.Arena_18] = g_arenaMapRelativeRoot + "Arena_18.png";
+ArenaMapImageFilePaths[MapType.Arena_19] = g_arenaMapRelativeRoot + "Arena_19.png";
+ArenaMapImageFilePaths[MapType.Arena_20] = g_arenaMapRelativeRoot + "Arena_20.png";
+ArenaMapImageFilePaths[MapType.Arena_21] = g_arenaMapRelativeRoot + "Arena_21.png";
+ArenaMapImageFilePaths[MapType.Arena_22] = g_arenaMapRelativeRoot + "Arena_22.png";
+ArenaMapImageFilePaths[MapType.Arena_23] = g_arenaMapRelativeRoot + "Arena_23.png";
+ArenaMapImageFilePaths[MapType.Arena_24] = g_arenaMapRelativeRoot + "Arena_24.png";
+ArenaMapImageFilePaths[MapType.Arena_25] = g_arenaMapRelativeRoot + "Arena_25.png";
+ArenaMapImageFilePaths[MapType.Arena_26] = g_arenaMapRelativeRoot + "Arena_26.jpg";
+ArenaMapImageFilePaths[MapType.Arena_27] = g_arenaMapRelativeRoot + "Arena_27.jpg";
+ArenaMapImageFilePaths[MapType.Arena_28] = g_arenaMapRelativeRoot + "Arena_28.jpg";
+ArenaMapImageFilePaths[MapType.Arena_29] = g_arenaMapRelativeRoot + "Arena_29.jpg";
+ArenaMapImageFilePaths[MapType.Arena_30] = g_arenaMapRelativeRoot + "Arena_30.png";
+ArenaMapImageFilePaths[MapType.Arena_31] = g_arenaMapRelativeRoot + "Arena_31.png";
+ArenaMapImageFilePaths[MapType.Arena_32] = g_arenaMapRelativeRoot + "Arena_32.png";
+ArenaMapImageFilePaths[MapType.Arena_33] = g_arenaMapRelativeRoot + "Arena_33.png";
+ArenaMapImageFilePaths[MapType.Arena_34] = g_arenaMapRelativeRoot + "Arena_34.png";
+ArenaMapImageFilePaths[MapType.Arena_35] = g_arenaMapRelativeRoot + "Arena_35.png";
+ArenaMapImageFilePaths[MapType.Arena_46] = g_arenaMapRelativeRoot + "Arena_46.png";
+ArenaMapImageFilePaths[MapType.Arena_47] = g_arenaMapRelativeRoot + "Arena_47.png";
+ArenaMapImageFilePaths[MapType.Arena_48] = g_arenaMapRelativeRoot + "Arena_48.png";
+ArenaMapImageFilePaths[MapType.Arena_49] = g_arenaMapRelativeRoot + "Arena_49.png";
+ArenaMapImageFilePaths[MapType.Arena_50] = g_arenaMapRelativeRoot + "Arena_50.png";
+
+const ArenaMapImageFiles = [];
+initializeImageFileList(ArenaMapImageFilePaths, ArenaMapImageFiles);
+
 
 const ResonantBattlesMapKindOptions = [
     { label: "更地", value: MapType.ResonantBattles_Default },
@@ -574,6 +615,7 @@ function getMapBackgroundImageInfos(mapType) {
 }
 
 const g_summonerDuelsMapRoot = g_corsImageRootPath + "Maps/SummonerDuels/";
+const g_arenaMapRoot = g_corsImageRootPath + "Maps/" + g_arenaMapRelativeRoot;
 
 /**
  * @param  {MapType} mapType
@@ -600,81 +642,17 @@ function* enumerateMapBackgroundImageInfos(mapType) {
 }
 
 function getMapBackgroundImage(mapKind) {
-    const root = g_imageRootPath + "TableBackground/";
-    const arenaRoot = g_imageRootPath + "Maps/";
-    switch (mapKind) {
-        case MapType.Izumi: return root + "Izumi.png";
-        case MapType.Haikyo: return root + "Haikyo.png";
-        case MapType.Harukaze: return root + "Harukaze.png";
-        case MapType.Hyosetsu: return root + "Hyosetsu.png";
-        case MapType.Komorebi: return root + "Komorebi.png";
-        case MapType.Natsukusa: return root + "Natsukusa.png";
-        case MapType.Sabaku: return root + "Sabaku.png";
-        case MapType.Syakunetsu: return root + "Syakunetsu.png";
-        case MapType.Wasurerareta: return root + "Wasurerareta.png";
-        case MapType.Yukigesho: return root + "Yukigesyo.png";
-        case MapType.DreamCastle: return root + "DreamCastle.png";
-        case MapType.NightmareCastle: return root + "NightmareCastle.png";
-        case MapType.K0013: return root + "K0013.png";
-        case MapType.K0014: return root + "K0014.png";
-        case MapType.K0015: return root + "K0015.png";
-        case MapType.Arena_1: return arenaRoot + "Arena_1.jpg";
-        case MapType.Arena_2: return arenaRoot + "Arena_2.png";
-        case MapType.Arena_3: return arenaRoot + "Arena_3.jpg";
-        case MapType.Arena_4: return arenaRoot + "Arena_4.png";
-        case MapType.Arena_5: return arenaRoot + "Arena_5.jpg";
-        case MapType.Arena_6: return arenaRoot + "Arena_6.png";
-        case MapType.Arena_7: return arenaRoot + "Arena_7.png";
-        case MapType.Arena_8: return arenaRoot + "Arena_8.png";
-        case MapType.Arena_9: return arenaRoot + "Arena_9.png";
-        case MapType.Arena_10: return arenaRoot + "Arena_10.png";
-        case MapType.Arena_11: return arenaRoot + "Arena_11.png";
-        case MapType.Arena_12: return arenaRoot + "Arena_12.png";
-        case MapType.Arena_13: return arenaRoot + "Arena_13.png";
-        case MapType.Arena_14: return arenaRoot + "Arena_14.png";
-        case MapType.Arena_15: return arenaRoot + "Arena_15.png";
-        case MapType.Arena_16: return arenaRoot + "Arena_16.png";
-        case MapType.Arena_17: return arenaRoot + "Arena_17.png";
-        case MapType.Arena_18: return arenaRoot + "Arena_18.png";
-        case MapType.Arena_19: return arenaRoot + "Arena_19.png";
-        case MapType.Arena_20: return arenaRoot + "Arena_20.png";
-        case MapType.Arena_21: return arenaRoot + "Arena_21.png";
-        case MapType.Arena_22: return arenaRoot + "Arena_22.png";
-        case MapType.Arena_23: return arenaRoot + "Arena_23.png";
-        case MapType.Arena_24: return arenaRoot + "Arena_24.png";
-        case MapType.Arena_25: return arenaRoot + "Arena_25.png";
-        case MapType.Arena_26: return arenaRoot + "Arena_26.jpg";
-        case MapType.Arena_27: return arenaRoot + "Arena_27.jpg";
-        case MapType.Arena_28: return arenaRoot + "Arena_28.jpg";
-        case MapType.Arena_29: return arenaRoot + "Arena_29.jpg";
-        case MapType.Arena_30: return arenaRoot + "Arena_30.png";
-        case MapType.Arena_31: return arenaRoot + "Arena_31.png";
-        case MapType.Arena_32: return arenaRoot + "Arena_32.png";
-        case MapType.Arena_33: return arenaRoot + "Arena_33.png";
-        case MapType.Arena_34: return arenaRoot + "Arena_34.png";
-        case MapType.Arena_35: return arenaRoot + "Arena_35.png";
-        case MapType.Arena_46: return arenaRoot + "Arena_46.png";
-        case MapType.Arena_47: return arenaRoot + "Arena_47.png";
-        case MapType.Arena_48: return arenaRoot + "Arena_48.png";
-        case MapType.Arena_49: return arenaRoot + "Arena_49.png";
-        case MapType.Arena_50: return arenaRoot + "Arena_50.png";
-        case MapType.SummonersDuel_Default: return g_summonerDuelsMapRoot + "Default.png";
-        case MapType.SummonersDuel_1: return g_summonerDuelsMapRoot + "Map_ZR001.png";
-        case MapType.SummonersDuel_2: return g_summonerDuelsMapRoot + "Map_ZR002.webp";
-        case MapType.SummonersDuel_5: return g_summonerDuelsMapRoot + "Map_ZR005.webp";
-        case MapType.SummonersDuel_13: return g_summonerDuelsMapRoot + "Map_ZR013.webp";
-        case MapType.SummonersDuel_4: return g_summonerDuelsMapRoot + "Map_ZR004.webp";
-        case MapType.SummonersDuel_14: return g_summonerDuelsMapRoot + "Map_ZR014.webp";
-        case MapType.SummonersDuel_6: return g_summonerDuelsMapRoot + "Map_ZR006.webp";
-        case MapType.SummonersDuel_3: return g_summonerDuelsMapRoot + "Map_ZR003.webp";
-        case MapType.SummonersDuel_7: return g_summonerDuelsMapRoot + "Map_ZR007.webp";
-        case MapType.SummonersDuel_8: return g_summonerDuelsMapRoot + "Map_ZR008.webp";
-        case MapType.SummonersDuel_9: return g_summonerDuelsMapRoot + "Map_ZR009.webp";
-        case MapType.SummonersDuel_10: return g_summonerDuelsMapRoot + "Map_ZR010.webp";
-        case MapType.SummonersDuel_11: return g_summonerDuelsMapRoot + "Map_ZR011.webp";
-        case MapType.SummonersDuel_12: return g_summonerDuelsMapRoot + "Map_ZR012.webp";
-        default:
-            throw new Error("Unknown map type " + mapKind);
+    if (isAetherRaidMap(mapKind)) {
+        return g_imageRootPath + "TableBackground/" + AetherRaidMapImageFilePaths[mapKind];
+    }
+    else if (isArenaMap(mapKind)) {
+        return g_corsImageRootPath + "Maps/" + ArenaMapImageFilePaths[mapKind];
+    }
+    else if (isSummonerDuelsMap(mapKind)) {
+        return g_corsImageRootPath + "Maps/" + SummonerDuelsImageFilePaths[mapKind];
+    }
+    else {
+        throw new Error("Unknown map type " + mapKind);
     }
 }
 
