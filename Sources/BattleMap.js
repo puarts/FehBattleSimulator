@@ -1368,7 +1368,7 @@ class BattleMap {
         for (let y = offsetY; y < height; ++y) {
             for (let x = offsetX; x < width; ++x) {
                 let tile = this.getTile(x, y);
-                if (tile.isObjPlacable()) {
+                if (tile.isObjPlacable() && tile.placedUnit == null) {
                     return tile;
                 }
             }

@@ -1392,7 +1392,7 @@
         <div>
             座標: ({{value.posX}}, {{value.posY}})
             <br/>
-            種類: <select v-model="value._type" @change="updateAllUi()">
+            種類: <select v-model="value._type" @change="g_app.tileTypeChanged()">
                 <option v-for="option in TileTypeOptions" v-bind:value="option.id">
                     {{ option.text }}
                 </option>

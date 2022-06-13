@@ -925,6 +925,17 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
                 map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4]]);
             }
             break;
+        case MapType.Arena_61:
+            map.__placeBreakableWallsByPosYX([[3, 0], [3, 4], [4, 0], [5, 0], [5, 1], [5, 2], [6, 0], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 0], [0, 4], [0, 5], [1, 5], [7, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 3], [3, 3],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 2],], TileType.Trench);
+            map.__setTileTypesByPosYX([[2, 4], [4, 3], [6, 1],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[5, 5], [6, 4], [6, 5], [7, 4],]);
+                map.__placeAllyUnitsByPosYX([[0, 1], [1, 0], [1, 1], [2, 0],]);
+            }
+            break;
         default:
             return;
     }

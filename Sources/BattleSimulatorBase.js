@@ -124,21 +124,21 @@ class BattleSimmulatorBase {
                 g_appData.setPropertiesForCurrentGameMode();
 
                 // デフォルトのマップに設定
-                switch (this.gameMode) {
+                switch (self.gameMode) {
                     case GameMode.AetherRaid:
-                        this.mapKind = MapType.Izumi;
+                        self.mapKind = MapType.Izumi;
                         break;
                     case GameMode.Arena:
-                        this.mapKind = MapType.Arena_1;
+                        self.mapKind = MapType.Arena_1;
                         break;
                     case GameMode.ResonantBattles:
-                        this.mapKind = DefaultResonantBattleMap;
+                        self.mapKind = DefaultResonantBattleMap;
                         break;
                     case GameMode.TempestTrials:
-                        this.mapKind = DefaultTempestTrialsMap;
+                        self.mapKind = DefaultTempestTrialsMap;
                         break;
                     case GameMode.PawnsOfLoki:
-                        this.mapKind = -1;
+                        self.mapKind = -1;
                         break;
                     default:
                         break;
@@ -151,7 +151,7 @@ class BattleSimmulatorBase {
                 changeMap();
                 g_appData.clearReservedSkillsForAllUnits();
                 resetPlacement();
-                switch (this.gameMode) {
+                switch (self.gameMode) {
                     case GameMode.Arena:
                         break;
                     case GameMode.ResonantBattles:
@@ -167,7 +167,7 @@ class BattleSimmulatorBase {
                 // g_appData.clearReservedSkillsForAllUnits();
                 removeBreakableWallsFromTrashbox();
                 changeMap();
-                switch (this.gameMode) {
+                switch (self.gameMode) {
                     case GameMode.Arena:
                         resetPlacement();
                         break;
@@ -187,8 +187,8 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             addWallToMap: function () {
-                let newWallIndex = this.map.countWallsOnMap();
-                let wall = this.map.getWall(newWallIndex);
+                let newWallIndex = self.map.countWallsOnMap();
+                let wall = self.map.getWall(newWallIndex);
                 if (wall == null) {
                     self.writeErrorLine("これ以上壁を配置できません");
                     return;
@@ -198,19 +198,19 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             removeWallFromMap: function () {
-                let wallIndex = this.map.countWallsOnMap() - 1;
+                let wallIndex = self.map.countWallsOnMap() - 1;
                 if (wallIndex < 0) {
                     self.writeErrorLine("削除する壁がありません");
                     return;
                 }
-                let wall = this.map.getWall(wallIndex);
+                let wall = self.map.getWall(wallIndex);
 
                 removeFromAll(wall);
                 updateAllUi();
             },
             addBreakableWallToMap: function () {
-                let newWallIndex = this.map.countBreakableWallsOnMap();
-                let wall = this.map.getBreakableWall(newWallIndex);
+                let newWallIndex = self.map.countBreakableWallsOnMap();
+                let wall = self.map.getBreakableWall(newWallIndex);
                 if (wall == null) {
                     self.writeErrorLine("これ以上壊せる壁を配置できません");
                     return;
@@ -220,12 +220,12 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             removeBreakableWallFromMap: function () {
-                let wallIndex = this.map.countBreakableWallsOnMap() - 1;
+                let wallIndex = self.map.countBreakableWallsOnMap() - 1;
                 if (wallIndex < 0) {
                     self.writeErrorLine("削除する壊せる壁がありません");
                     return;
                 }
-                let wall = this.map.getBreakableWall(wallIndex);
+                let wall = self.map.getBreakableWall(wallIndex);
 
                 removeFromAll(wall);
                 updateAllUi();
@@ -236,7 +236,7 @@ class BattleSimmulatorBase {
             },
             currentItemIndexChanged: function () {
                 // if (g_app == null) { return; }
-                // changeCurrentUnitTab(this.currentItemIndex);
+                // changeCurrentUnitTab(self.currentItemIndex);
 
                 // let currentItem = g_appData.currentItem;
                 // for (let item of g_appData.enumerateItems()) {
@@ -251,10 +251,10 @@ class BattleSimmulatorBase {
                 // let currentUnit = g_app.__getCurrentUnit();
                 // if (currentUnit != null) {
                 //     if (currentUnit.groupId == UnitGroupType.Ally) {
-                //         this.attackerUnitIndex = this.currentItemIndex;
+                //         self.attackerUnitIndex = self.currentItemIndex;
                 //     }
                 //     else {
-                //         this.attackTargetUnitIndex = this.currentItemIndex;
+                //         self.attackTargetUnitIndex = self.currentItemIndex;
                 //     }
                 // }
                 // g_appData.__showStatusToAttackerInfo();
@@ -443,13 +443,13 @@ class BattleSimmulatorBase {
             },
             lightSeasonChanged: function () {
                 if (g_app == null) { return; }
-                this.globalBattleContext.isAstraSeason = !this.globalBattleContext.isLightSeason;
+                self.globalBattleContext.isAstraSeason = !self.globalBattleContext.isLightSeason;
                 g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 g_appData.resetCurrentAetherRaidDefensePreset();
             },
             astraSeasonChanged: function () {
                 if (g_app == null) { return; }
-                this.globalBattleContext.isLightSeason = !this.globalBattleContext.isAstraSeason;
+                self.globalBattleContext.isLightSeason = !self.globalBattleContext.isAstraSeason;
                 g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 g_appData.resetCurrentAetherRaidDefensePreset();
             },
@@ -483,7 +483,7 @@ class BattleSimmulatorBase {
             },
             healHpFullForAllUnits: function () {
                 if (g_app == null) { return; }
-                for (let unit of this.units) {
+                for (let unit of self.units) {
                     unit.resetAllState();
                 }
                 g_appData.__showStatusToAttackerInfo();
@@ -496,7 +496,7 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             activateAllUnit: function () {
-                for (let unit of this.units) {
+                for (let unit of self.units) {
                     unit.isActionDone = false;
                 }
                 updateAllUi();
@@ -547,7 +547,7 @@ class BattleSimmulatorBase {
             },
             currentTurnChanged: function () {
                 console.log("current turn changed");
-                if (this.isAutoLoadTurnSettingEnabled) {
+                if (self.isAutoLoadTurnSettingEnabled) {
                     loadSettings();
                 }
             },
@@ -572,7 +572,7 @@ class BattleSimmulatorBase {
                 self.examinesAliveTiles();
             },
             resetCellOverrides: function (event) {
-                this.map.resetOverriddenTiles();
+                self.map.resetOverriddenTiles();
                 updateAllUi();
             },
             removeDefenceStructuresNoEffectForEnemyMovement: function (event) {
@@ -606,15 +606,15 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             ocrSettingFileChanged: function (event) {
-                this.showOcrImage = false;
+                self.showOcrImage = false;
                 const files = event.target.files;
                 if (files.length == 0) {
                     return;
                 }
 
-                this.showOcrImage = true;
+                self.showOcrImage = true;
                 self._imageProcessor.showOcrSettingSourceImage(files);
-            }
+            },
         };
 
         if (additionalMethods != null) {
@@ -8810,7 +8810,7 @@ function updateMapUi() {
         table.backgroundImages.splice(0, 0, bgImageInfo);
     }
 
-    // とりあえず海を後ろに表示しておく。海じゃないやつがあったらどうにかして分岐する
+    // とりあえず海を後ろに表示しておく。海じゃないやつがあったらどうにかして分岐するか、マップ画像を加工する
     {
         let bgImageInfo = new BackgroundImageInfo(
             g_corsImageRootPath + "Maps/WavePatternSea.png"
