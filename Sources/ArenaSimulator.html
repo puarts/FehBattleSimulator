@@ -867,6 +867,9 @@
                         @change="backgroundImageEnabledChanged"><label class="normal"
                         for="isBgImageEnabled">マップの背景画像を有効にする</label>
                     <br />
+                    <input id="isBlockImageEnabled" type="checkbox" v-model="map.isBlockImageEnabled"
+                        @change="updateAllUi()"><label class="normal" for="isBlockImageEnabled">マップの壁画像を有効にする</label>
+                    <br />
                 </fieldset>
                 <fieldset>
                     <legend>画像解析の設定</legend>

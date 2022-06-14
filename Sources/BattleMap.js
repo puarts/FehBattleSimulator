@@ -885,6 +885,7 @@ class BattleMap {
 
     updateSourceCode() {
         let result = "// マップのセットアップ\n";
+        result += `map.isBlockImageEnabled = ${this.isBlockImageEnabled ? "true" : "false"};\n`;
         result += this.__createSourceCodeForWallPlacement();
         result += this.__createSourceCodeForBreakableWallPlacement();
         for (let key of Object.keys(TileType)) {
@@ -897,6 +898,7 @@ class BattleMap {
         result += this.__createSourceCodeForUnitPlacement(UnitGroupType.Enemy);
         result += this.__createSourceCodeForUnitPlacement(UnitGroupType.Ally);
         result += "}\n";
+        result += "\n";
         result += "// 敵軍のセットアップ\n"
         result += this.__createSourceCodeForEnemyUnitSetup();
         this.sourceCode = result;
@@ -1368,7 +1370,7 @@ class BattleMap {
         for (let y = offsetY; y < height; ++y) {
             for (let x = offsetX; x < width; ++x) {
                 let tile = this.getTile(x, y);
-                if (tile.isObjPlacable() && (!ignoresUnit || tile.placedUnit == null)) {
+                if (tile.isObjPlacable() && (ignoresUnit || tile.placedUnit == null)) {
                     return tile;
                 }
             }

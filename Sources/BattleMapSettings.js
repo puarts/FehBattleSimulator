@@ -16,8 +16,13 @@ function changeMapKind(map, mapKind) {
     let withUnits = isArenaMap(mapKind);
     resetBattleMapPlacement(map, mapKind, withUnits);
 }
-
+/**
+ * @param  {BattleMap} map
+ * @param  {MapType} type
+ * @param  {boolean} withUnits
+ */
 function __resetBattleMapPlacementForArena(map, type, withUnits) {
+    map.isBlockImageEnabled = false;
     switch (type) {
         case MapType.Arena_1:
             map.setTileType(0, 0, TileType.Forest);
@@ -794,6 +799,16 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
             }
             break;
         case MapType.Arena_37:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[3, 5],]);
+            map.__placeBreakableWallsByPosYX([[2, 1], [2, 2], [3, 3], [3, 4], [4, 4], [4, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[1, 1], [1, 2], [3, 1], [4, 1], [5, 1], [5, 4], [5, 5], [6, 5], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 2], [4, 3],], TileType.Trench);
+            map.__setTileTypesByPosYX([[3, 2],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [0, 5], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [7, 2], [7, 3],]);
+            }
             break;
         case MapType.Arena_38:
             map.__setTileTypesByPosYX([[0, 3], [0, 5], [3, 5], [7, 0], [7, 2],], TileType.Forest);
@@ -805,18 +820,83 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
             }
             break;
         case MapType.Arena_39:
+            map.__setTileTypesByPosYX([[3, 0], [5, 0],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [1, 0], [2, 0], [2, 3], [3, 2], [3, 3], [4, 0], [4, 2], [4, 5], [5, 2], [5, 5], [6, 0], [6, 5], [7, 0], [7, 1], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1],], TileType.Trench);
+            map.__setTileTypesByPosYX([[2, 2], [4, 3],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 3], [0, 4], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 1], [6, 2], [7, 2], [7, 3],]);
+            }
+
             break;
         case MapType.Arena_40:
+            map.__setTileTypesByPosYX([[3, 5], [4, 0],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 5], [1, 5], [2, 2], [2, 3], [2, 5], [5, 0], [5, 2], [5, 3], [6, 0], [7, 0], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 4], [4, 1],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 2], [0, 3], [0, 4], [1, 4],]);
+                map.__placeAllyUnitsByPosYX([[6, 1], [7, 1], [7, 2], [7, 3],]);
+            }
+
             break;
         case MapType.Arena_41:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[3, 3], [4, 0], [4, 2],]);
+            map.__placeBreakableWallsByPosYX([[2, 1], [2, 5], [3, 0], [3, 5], [4, 5], [5, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 4], [0, 5], [1, 0], [1, 5], [3, 2], [4, 3], [6, 0], [6, 5], [7, 0], [7, 1], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 4], [4, 1],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 2], [0, 3], [1, 2], [1, 3],]);
+                map.__placeAllyUnitsByPosYX([[6, 2], [6, 3], [7, 2], [7, 3],]);
+            }
             break;
         case MapType.Arena_42:
+            map.__placeBreakableWallsByPosYX([[3, 3],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 3], [4, 2], [5, 2], [7, 0],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [2, 3], [3, 1], [4, 1], [4, 3], [5, 1], [6, 5], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 0],], TileType.Trench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [0, 5], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 3], [7, 1], [7, 2],]);
+            }
+
             break;
         case MapType.Arena_43:
+            map.__placeBreakableWallsByPosYX([[2, 2], [4, 3], [4, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[1, 2], [2, 1], [3, 1], [3, 2], [4, 0], [4, 1], [5, 0],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [2, 0], [2, 5], [3, 0], [3, 4], [3, 5], [4, 5], [5, 4], [5, 5], [7, 3], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 3], [4, 2],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [0, 5], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 0], [7, 1],]);
+            }
             break;
         case MapType.Arena_44:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[2, 2], [3, 5],]);
+            map.__placeBreakableWallsByPosYX([[0, 0], [0, 5], [1, 5], [2, 0], [2, 1], [2, 5], [3, 0], [3, 3], [3, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[4, 0], [4, 3], [4, 5], [5, 0], [5, 5], [6, 0], [6, 5], [7, 0], [7, 1], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[1, 1],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [0, 3], [0, 4],]);
+                map.__placeAllyUnitsByPosYX([[6, 1], [6, 2], [6, 3], [6, 4],]);
+            }
+
             break;
         case MapType.Arena_45:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[7, 0], [7, 5],]);
+            map.__placeBreakableWallsByPosYX([[0, 0], [0, 5], [3, 0], [3, 2], [3, 5], [6, 0], [6, 5], [7, 1], [7, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 1], [0, 2], [0, 3], [0, 4], [2, 2], [2, 3], [3, 3], [6, 2], [7, 2], [7, 3],], TileType.Flier);
+            map.__setTileTypesByPosYX([[1, 3],], TileType.Trench);
+            map.__setTileTypesByPosYX([[4, 3], [5, 2],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[1, 5], [2, 5], [4, 5], [5, 5],]);
+                map.__placeAllyUnitsByPosYX([[1, 0], [2, 0], [4, 0], [5, 0],]);
+            }
+
             break;
         case MapType.Arena_46:
             map.__setTileTypesByPosYX([
@@ -961,6 +1041,122 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
                 map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4]]);
             }
             break;
+        case MapType.Arena_51:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[3, 5], [4, 3],]);
+            map.__placeBreakableWallsByPosYX([[0, 5], [3, 3], [3, 4], [4, 1], [4, 2], [4, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[2, 3], [3, 0], [4, 0], [5, 3],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 3], [1, 5], [2, 5], [5, 0], [6, 0], [6, 1], [7, 0], [7, 1], [7, 2], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 2], [4, 4],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[6, 4], [6, 5], [7, 3], [7, 4],]);
+                map.__placeAllyUnitsByPosYX([[0, 1], [0, 2], [1, 0], [1, 1],]);
+            }
+
+            break;
+        case MapType.Arena_52:
+            map.__placeBreakableWallsByPosYX([[3, 1], [3, 2], [4, 1], [5, 4], [5, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 1], [0, 4], [4, 4], [7, 2], [7, 3],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 5], [1, 0], [1, 5], [3, 3], [4, 3], [6, 0], [6, 5], [7, 0], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 0], [3, 5], [4, 2],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 2], [0, 3], [1, 1], [1, 4],]);
+                map.__placeAllyUnitsByPosYX([[6, 2], [6, 3], [7, 1], [7, 4],]);
+            }
+
+            break;
+        case MapType.Arena_53:
+            map.__placeBreakableWallsByPosYX([[2, 1], [2, 2], [2, 4], [2, 5], [3, 1], [3, 5], [4, 2], [5, 1], [5, 2], [5, 4], [5, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 0], [1, 0], [2, 0], [3, 0], [3, 3], [4, 0], [4, 3], [5, 0], [6, 0], [7, 0],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 3], [4, 1], [5, 3],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[3, 4],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [0, 3], [0, 4],]);
+                map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
+            }
+            break;
+        case MapType.Arena_54:
+            map.__placeBreakableWallsByPosYX([[5, 2], [5, 3], [6, 3],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 5], [4, 0], [7, 0], [7, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [1, 0], [2, 3], [4, 3], [7, 1], [7, 2], [7, 3],], TileType.Flier);
+            map.__setTileTypesByPosYX([[1, 2],], TileType.Trench);
+            map.__setTileTypesByPosYX([[2, 2], [2, 4],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[5, 4],], TileType.DefensiveTrench);
+            map.__setTileTypesByPosYX([[4, 2], [4, 4],], TileType.DefensiveForest);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[1, 5], [2, 5], [4, 5], [5, 5],]);
+                map.__placeAllyUnitsByPosYX([[2, 0], [3, 0], [5, 0], [6, 0],]);
+            }
+
+            break;
+        case MapType.Arena_55:
+            map.__placeBreakableWallsByPosYX([[3, 3], [3, 4], [3, 5], [5, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[2, 5], [4, 0], [7, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 2], [0, 5], [2, 2], [2, 3], [4, 2], [4, 3], [5, 0],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1],], TileType.Trench);
+            map.__setTileTypesByPosYX([[2, 4], [4, 5], [5, 2],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[3, 2],], TileType.DefensiveForest);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 3], [1, 0], [1, 4],]);
+                map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
+            }
+            break;
+        case MapType.Arena_56:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[0, 1], [0, 4], [1, 0], [1, 1], [1, 5], [2, 0], [3, 0], [3, 2],]);
+            map.__placeBreakableWallsByPosYX([[1, 4], [2, 5], [3, 4], [3, 5], [4, 0], [4, 5], [5, 0], [5, 2], [5, 3], [5, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 0], [0, 5], [7, 0], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 1],], TileType.Trench);
+            map.__setTileTypesByPosYX([[4, 3], [4, 4],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 2], [0, 3], [1, 2], [1, 3],]);
+                map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
+            }
+            break;
+        case MapType.Arena_57:
+            map.__setTileTypesByPosYX([[2, 0], [2, 1], [2, 2], [2, 5], [5, 3], [5, 4], [7, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 5], [1, 0], [1, 5], [3, 2], [3, 3], [4, 0], [4, 3], [5, 0], [6, 0], [7, 0],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 2],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[3, 5],], TileType.DefensiveForest);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [0, 3], [0, 4],]);
+                map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
+            }
+            break;
+        case MapType.Arena_58:
+            map.__placeBreakableWallsByPosYX([[3, 2], [3, 3],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[4, 0], [4, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[1, 0], [2, 0], [2, 2], [2, 5], [5, 0], [5, 2], [5, 4], [5, 5], [6, 0],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1], [4, 4],], TileType.Trench);
+            map.__setTileTypesByPosYX([[3, 0], [3, 5], [4, 2],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [0, 3], [0, 4],]);
+                map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
+            }
+
+            break;
+        case MapType.Arena_59:
+            map.__placeBreakableWallsByPosYX([[3, 2], [3, 3], [4, 2], [4, 3],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 0], [0, 5], [2, 1], [2, 2], [3, 1], [3, 4], [4, 4], [5, 3], [6, 3], [6, 4], [7, 0],], TileType.Flier);
+            map.__setTileTypesByPosYX([[5, 4],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 3], [0, 4], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 1], [7, 2],]);
+            }
+
+            break;
+        case MapType.Arena_60:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[3, 0], [4, 0], [4, 1],]);
+            map.__placeBreakableWallsByPosYX([[2, 0], [2, 1],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 0], [0, 4], [3, 5], [6, 4], [7, 0],], TileType.Forest);
+            map.__setTileTypesByPosYX([[2, 2], [2, 5], [4, 2], [5, 2], [5, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1], [4, 3],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [1, 0], [1, 1],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 1], [7, 2],]);
+            }
+            break;
         case MapType.Arena_61:
             map.__placeBreakableWallsByPosYX([[3, 0], [3, 4], [4, 0], [5, 0], [5, 1], [5, 2], [6, 0], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3],], BreakableWallIconType.Wall);
             map.__setTileTypesByPosYX([[0, 0], [0, 4], [0, 5], [1, 5], [7, 5],], TileType.Forest);
@@ -972,6 +1168,64 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
                 map.__placeAllyUnitsByPosYX([[0, 1], [1, 0], [1, 1], [2, 0],]);
             }
             break;
+        case MapType.Arena_62:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0],]);
+            map.__placeBreakableWallsByPosYX([[0, 2], [1, 2], [2, 0], [2, 1], [2, 2], [3, 3], [4, 4], [4, 5], [6, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[1, 1], [5, 2], [5, 4], [5, 5], [6, 4], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1], [3, 5], [5, 3],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 4], [0, 5], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 0], [7, 1],]);
+            }
+            break;
+        case MapType.Arena_63:
+            map.__placeBreakableWallsByPosYX([[3, 3],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[0, 4], [0, 5], [1, 4], [4, 0], [5, 0], [5, 2], [6, 1], [6, 2],], TileType.Forest);
+            map.__setTileTypesByPosYX([[3, 0], [3, 2], [3, 4], [7, 0], [7, 1], [7, 2],], TileType.Flier);
+            map.__setTileTypesByPosYX([[1, 5], [2, 4], [4, 2], [5, 1], [6, 0],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[2, 5], [4, 1],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[6, 4], [6, 5], [7, 3], [7, 4],]);
+                map.__placeAllyUnitsByPosYX([[0, 1], [0, 2], [1, 0], [1, 1],]);
+            }
+            break;
+        case MapType.Arena_64:
+            map.__placeBreakableWallsByPosYX([[4, 3], [4, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[3, 0], [3, 4], [4, 0], [5, 5], [7, 2],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 2], [0, 3], [0, 4], [0, 5], [1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 5], [4, 2], [4, 5], [5, 0], [5, 2], [6, 0], [7, 0], [7, 1],], TileType.Flier);
+            map.__setTileTypesByPosYX([[6, 1],], TileType.Trench);
+            map.__setTileTypesByPosYX([[3, 2], [3, 3], [5, 4],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[6, 4], [6, 5], [7, 4], [7, 5],]);
+                map.__placeAllyUnitsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1],]);
+            }
+            break;
+        case MapType.Arena_65:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[0, 0], [0, 1], [1, 0], [2, 0], [3, 0], [3, 5], [4, 0], [4, 2], [4, 5], [5, 5], [6, 5], [7, 4], [7, 5],]);
+            map.__placeBreakableWallsByPosYX([[1, 1], [3, 2], [3, 3], [3, 4], [4, 1], [4, 3], [6, 4],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[2, 3], [5, 2],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1], [4, 4],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 3], [0, 4], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 1], [7, 2],]);
+            }
+            break;
+        case MapType.Arena_66:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[2, 4],]);
+            map.__placeBreakableWallsByPosYX([[2, 3], [3, 3], [4, 0], [4, 1],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[1, 3], [4, 2], [7, 3],], TileType.Forest);
+            map.__setTileTypesByPosYX([[1, 4], [5, 2],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 1], [2, 5], [3, 2], [3, 4], [5, 4], [6, 1], [7, 0],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[4, 3],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[6, 4], [6, 5], [7, 4], [7, 5],]);
+                map.__placeAllyUnitsByPosYX([[0, 0], [0, 1], [1, 0], [1, 1],]);
+            }
+
+            break;
         case MapType.Arena_67:
             map.__placeBreakableWallsByPosYX([[2, 2], [3, 0], [3, 1], [3, 3], [4, 0], [4, 4],], BreakableWallIconType.Wall);
             map.__setTileTypesByPosYX([[0, 0], [0, 5], [3, 2], [3, 4], [4, 2], [5, 2], [6, 5], [7, 0], [7, 5],], TileType.Flier);
@@ -981,6 +1235,98 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
             if (withUnits) {
                 map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [0, 3], [0, 4],]);
                 map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
+            }
+            break;
+        case MapType.Arena_68:
+            map.__setTileTypesByPosYX([[3, 0], [4, 0], [4, 3],], TileType.Forest);
+            map.__setTileTypesByPosYX([[1, 2], [3, 5], [4, 2], [4, 5], [7, 2], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[1, 3], [1, 4], [1, 5], [6, 3], [6, 4], [6, 5],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[3, 4], [4, 1],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 0], [0, 1], [0, 3], [0, 4],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [7, 3], [7, 4],]);
+            }
+            break;
+        case MapType.Arena_69:
+            map.__setTileTypesByPosYX([[7, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[2, 0], [2, 1], [2, 4], [5, 0], [5, 3], [5, 4],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 2], [4, 1], [4, 3],], TileType.Trench);
+            map.__setTileTypesByPosYX([[3, 1], [3, 3], [4, 2],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 3], [0, 4], [0, 5], [1, 4],]);
+                map.__placeAllyUnitsByPosYX([[6, 1], [7, 0], [7, 1], [7, 2],]);
+            }
+            break;
+        case MapType.Arena_70:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[3, 3],]);
+            map.__placeBreakableWallsByPosYX([[4, 2], [4, 3], [5, 2], [5, 3],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[1, 0], [1, 1], [1, 4], [1, 5], [6, 0], [6, 5], [7, 0], [7, 1], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[6, 3],], TileType.Trench);
+            map.__setTileTypesByPosYX([[3, 2], [6, 2], [6, 4],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[2, 3],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[2, 5], [3, 5], [4, 5], [5, 5],]);
+                map.__placeAllyUnitsByPosYX([[2, 0], [3, 0], [4, 0], [5, 0],]);
+            }
+
+            break;
+        case MapType.Arena_71:
+            map.__placeBreakableWallsByPosYX([[3, 4], [4, 1],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[2, 0], [5, 5],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 2], [0, 5], [1, 0], [3, 2], [3, 3], [4, 2], [4, 3], [6, 5], [7, 0], [7, 3], [7, 4], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 3], [5, 2],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[3, 1], [4, 4],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 3], [0, 4], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 1], [7, 2],]);
+            }
+            break;
+        case MapType.Arena_72:
+            map.__placeBreakableWallsByPosYX([[3, 0], [3, 1], [4, 1], [4, 2],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[3, 4], [4, 5], [7, 4],], TileType.Forest);
+            map.__setTileTypesByPosYX([[0, 0], [0, 2], [0, 5], [2, 0], [3, 3], [4, 3], [6, 5], [7, 0], [7, 5],], TileType.Flier);
+            map.__setTileTypesByPosYX([[4, 4],], TileType.Trench);
+            map.__setTileTypesByPosYX([[1, 1], [3, 5], [4, 0], [5, 3],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[3, 2],], TileType.DefensiveTrench);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 3], [0, 4], [1, 4], [1, 5],]);
+                map.__placeAllyUnitsByPosYX([[6, 0], [6, 1], [7, 1], [7, 2],]);
+            }
+            break;
+        case MapType.Arena_73:
+            map.isBlockImageEnabled = true;
+            map.__placeWallsByPosYX([[2, 0], [2, 4],]);
+            map.__placeBreakableWallsByPosYX([[0, 0], [1, 0], [2, 1], [2, 3], [3, 4], [4, 2], [5, 2], [5, 4], [5, 5], [6, 5], [7, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[4, 0], [4, 3],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 2],], TileType.Trench);
+            map.__setTileTypesByPosYX([[3, 2], [4, 4], [5, 3],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 2], [0, 3], [0, 4], [0, 5],]);
+                map.__placeAllyUnitsByPosYX([[7, 0], [7, 1], [7, 2], [7, 3],]);
+            }
+            break;
+        case MapType.Arena_74:
+            map.__placeBreakableWallsByPosYX([[3, 5], [4, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[3, 0], [3, 4],], TileType.Forest);
+            map.__setTileTypesByPosYX([[1, 3], [2, 0], [2, 3], [5, 0], [5, 3], [6, 3],], TileType.Flier);
+            map.__setTileTypesByPosYX([[3, 1], [4, 2],], TileType.Trench);
+            map.__setTileTypesByPosYX([[4, 0], [4, 4],], TileType.DefensiveTile);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 1], [0, 2], [0, 3], [0, 4],]);
+                map.__placeAllyUnitsByPosYX([[7, 1], [7, 2], [7, 3], [7, 4],]);
+            }
+            break;
+        case MapType.Arena_75:
+            map.__placeBreakableWallsByPosYX([[3, 0], [3, 1], [3, 4], [3, 5], [4, 5],], BreakableWallIconType.Wall);
+            map.__setTileTypesByPosYX([[3, 3], [4, 2],], TileType.Flier);
+            map.__setTileTypesByPosYX([[2, 1], [5, 4],], TileType.Trench);
+            map.__setTileTypesByPosYX([[2, 0], [5, 5],], TileType.DefensiveTile);
+            map.__setTileTypesByPosYX([[1, 0], [3, 2], [4, 3], [6, 5],], TileType.DefensiveTrench);
+            map.__setTileTypesByPosYX([[0, 0], [0, 1], [0, 4], [0, 5], [1, 5], [2, 5], [5, 0], [6, 0], [7, 0], [7, 1], [7, 4], [7, 5],], TileType.DefensiveForest);
+            if (withUnits) {
+                map.__placeElemyUnitsByPosYX([[0, 2], [0, 3], [1, 3], [1, 4],]);
+                map.__placeAllyUnitsByPosYX([[6, 1], [6, 2], [7, 2], [7, 3],]);
             }
             break;
         default:
