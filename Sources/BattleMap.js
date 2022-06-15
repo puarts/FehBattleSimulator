@@ -151,6 +151,14 @@ const MapType = {
     SummonersDuel_13: MapType_SummonerDuelsOffset + 13, // 山間の道
     // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR014
     SummonersDuel_14: MapType_SummonerDuelsOffset + 14, // 蛇行する砂漠
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR015
+    SummonersDuel_15: MapType_SummonerDuelsOffset + 15,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR016
+    SummonersDuel_16: MapType_SummonerDuelsOffset + 16,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR017
+    SummonersDuel_17: MapType_SummonerDuelsOffset + 17,
+    // https://feheroes.fandom.com/wiki/Template:MapLayout_ZR018
+    SummonersDuel_18: MapType_SummonerDuelsOffset + 18,
 };
 
 const SummonerDuelsMapKindOptions = [
@@ -169,6 +177,10 @@ const SummonerDuelsMapKindOptions = [
     { label: "水没した床", value: MapType.SummonersDuel_12 },
     { label: "山間の道", value: MapType.SummonersDuel_13 },
     { label: "蛇行する砂漠", value: MapType.SummonersDuel_14 },
+    { label: "15", value: MapType.SummonersDuel_15 },
+    { label: "16", value: MapType.SummonersDuel_16 },
+    { label: "埋められない溝", value: MapType.SummonersDuel_17 },
+    { label: "そびえ立つ山林", value: MapType.SummonersDuel_18 },
 ];
 
 
@@ -316,6 +328,10 @@ SummonerDuelsImageFilePaths[MapType.SummonersDuel_9] = g_summonerDuelsMapRelativ
 SummonerDuelsImageFilePaths[MapType.SummonersDuel_10] = g_summonerDuelsMapRelativeRoot + "Map_ZR010.webp";
 SummonerDuelsImageFilePaths[MapType.SummonersDuel_11] = g_summonerDuelsMapRelativeRoot + "Map_ZR011.webp";
 SummonerDuelsImageFilePaths[MapType.SummonersDuel_12] = g_summonerDuelsMapRelativeRoot + "Map_ZR012.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_15] = g_summonerDuelsMapRelativeRoot + "Map_ZR015.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_16] = g_summonerDuelsMapRelativeRoot + "Map_ZR016.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_17] = g_summonerDuelsMapRelativeRoot + "Map_ZR017.webp";
+SummonerDuelsImageFilePaths[MapType.SummonersDuel_18] = g_summonerDuelsMapRelativeRoot + "Map_ZR018.webp";
 
 const SummonerDuelsImageFiles = [];
 initializeImageFileList(SummonerDuelsImageFilePaths, SummonerDuelsImageFiles);
