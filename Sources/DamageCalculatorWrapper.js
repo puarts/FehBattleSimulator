@@ -2011,6 +2011,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FrozenDelight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MoonlightDrop] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(6, 0, 0, 6);
@@ -7503,6 +7508,15 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.FrozenDelight:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
+                        let debuff = enemyUnit.getDebuffTotalInCombat();
+                        if (buff + debuff >= 12) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.MoonlightDrop:
                     if (targetUnit.battleContext.initiatesCombat) {
                         let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);

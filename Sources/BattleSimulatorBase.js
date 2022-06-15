@@ -6034,6 +6034,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.FrozenDelight:
                 case Weapon.UnyieldingOar:
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
