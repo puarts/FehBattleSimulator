@@ -5657,6 +5657,12 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidateAllBuffs();
             }
         };
+        this._applySkillEffectForUnitFuncDict[Captain.StormOfBlows] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isCaptain) {
+                targetUnit.battleContext.invalidateAllBuffs();
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.KyokaMukoKinkyori3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.isMeleeWeaponType()) {
                 targetUnit.battleContext.invalidateAllBuffs();
@@ -6491,6 +6497,9 @@ class DamageCalculatorWrapper {
                         break;
                     case Captain.FlashOfSteel:
                         targetUnit.battleContext.invalidateCooldownCountSkills();
+                        break;
+                    case Captain.StormOfBlows:
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                         break;
                 }
                 switch (allyUnit.weapon) {

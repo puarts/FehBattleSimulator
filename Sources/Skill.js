@@ -2392,6 +2392,7 @@ const Captain = {
     FlashOfSteel: 2019, // 紫電一閃
     RallyingCry: 2018, // 叱咤激励
     MassConfusion: 2044, // 空花乱墜
+    StormOfBlows: 2098, // 雷轟電撃
 };
 
 
