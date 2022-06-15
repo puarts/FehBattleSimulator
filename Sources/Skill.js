@@ -1327,6 +1327,9 @@ const Weapon = {
     MorphFimbulvetr: 2099, //  被造フィンブル
     VultureBladePlus: 2106, // 禿鷹の剣+
     VultureBlade: 2107, // 禿鷹の剣
+
+    // 超英雄 級長たちの夏休み
+    UnyieldingOar: 2112, // 蒼波薙ぐ剛力の櫂
 }
 
 const Support = {

@@ -6033,6 +6033,8 @@ class BattleSimmulatorBase {
                         return true;
                     }
                     break;
+                // 無条件
+                case Weapon.UnyieldingOar:
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case Weapon.WingLeftedSpear:
