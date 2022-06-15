@@ -177,8 +177,8 @@ const SummonerDuelsMapKindOptions = [
     { label: "水没した床", value: MapType.SummonersDuel_12 },
     { label: "山間の道", value: MapType.SummonersDuel_13 },
     { label: "蛇行する砂漠", value: MapType.SummonersDuel_14 },
-    { label: "15", value: MapType.SummonersDuel_15 },
-    { label: "16", value: MapType.SummonersDuel_16 },
+    { label: "中央庭園", value: MapType.SummonersDuel_15 },
+    { label: "行く手阻む巨壁", value: MapType.SummonersDuel_16 },
     { label: "埋められない溝", value: MapType.SummonersDuel_17 },
     { label: "そびえ立つ山林", value: MapType.SummonersDuel_18 },
 ];
