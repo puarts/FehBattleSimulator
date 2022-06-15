@@ -2011,6 +2011,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.RegalSunshade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FrozenDelight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -6700,6 +6707,31 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.weapon) {
+            case Weapon.RegalSunshade:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    let total = 0;
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                        total++;
+                        if (Math.abs(targetUnit.posX - unit.posX) <= 1 ||
+                            Math.abs(targetUnit.posY - unit.posY) <= 1) {
+                            count++;
+                        }
+                    }
+                    let n = 0;
+                    if (total >= 6) {
+                        n = 3;
+                    } else if (total >= 3) {
+                        n = 2;
+                    } else {
+                        n = 1;
+                    }
+                    if (count >= n) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                }
+                break;
             case Weapon.UnyieldingOar:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     if (enemyUnit.hasPositiveStatusEffect(targetUnit) ||
