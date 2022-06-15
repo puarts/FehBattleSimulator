@@ -2011,6 +2011,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MoonlightDrop] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 0, 0, 6);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.UnyieldingOar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -7498,6 +7503,16 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.MoonlightDrop:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        if (5 <= diff && diff <= 14) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        } else if (15 <= diff) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.KarasuOuNoHashizume:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {

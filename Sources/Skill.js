@@ -1330,6 +1330,7 @@ const Weapon = {
 
     // 超英雄 級長たちの夏休み
     UnyieldingOar: 2112, // 蒼波薙ぐ剛力の櫂
+    MoonlightDrop: 2114, // 純白の月の雫
 }
 
 const Support = {
