@@ -234,6 +234,7 @@ const StatusEffectType = {
     SpecialCooldownChargePlusOnePerAttack: 33, // 戦闘中、奥義発動カウント変動量+1
     Treachery: 34, // 強化ダメージ+
     WarpBubble: 35, // 敵ワープ抑制
+    Charge: 36, // 突撃
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。

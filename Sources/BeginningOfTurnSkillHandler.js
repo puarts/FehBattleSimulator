@@ -125,6 +125,20 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.AssaultTroop3: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
+                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found || skillOwner.restHpPercentage === 100) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
+                }
+            }
+                break;
             case PassiveC.DarklingGuardian:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.applyDefBuff(6);

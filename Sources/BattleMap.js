@@ -1940,6 +1940,17 @@ class BattleMap {
             }
         }
 
+        if (unit.hasStatusEffect(StatusEffectType.Charge)) {
+            for (let tile of unit.placedTile.getMovableNeighborTiles(unit, 3, false, true)) {
+                let diffX = Math.abs(tile.posX - unit.posX);
+                let diffY = Math.abs(tile.posY - unit.posY);
+                if ((tile.posX === unit.posX && 2 <= diffY && diffY <= 3) ||
+                    (tile.posY === unit.posY && 2 <= diffX && diffX <= 3)) {
+                    yield tile;
+                }
+            }
+        }
+
         // 味方を自身の周囲にワープさせるスキル
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
             for (let skillId of ally.enumerateSkills()) {

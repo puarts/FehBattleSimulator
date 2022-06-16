@@ -2325,6 +2325,9 @@ const PassiveC = {
     // 再移動制限
     CantoControl3: 2067, // 再移動制限3
 
+    // 一斉突撃
+    AssaultTroop3: 2117, // 一斉突撃3
+
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神
