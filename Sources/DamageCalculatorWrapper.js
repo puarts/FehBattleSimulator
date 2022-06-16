@@ -2011,6 +2011,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WhitecapBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RegalSunshade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -7540,6 +7545,15 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.WhitecapBowPlus:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                                targetUnit.battleContext.attackCount = 2;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.FrozenDelight:
                     if (targetUnit.battleContext.initiatesCombat) {
                         let buff = targetUnit.getBuffTotalInCombat(enemyUnit);

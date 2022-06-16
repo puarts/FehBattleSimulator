@@ -1333,6 +1333,7 @@ const Weapon = {
     MoonlightDrop: 2114, // 純白の月の雫
     FrozenDelight: 2115, // 真夏の涼の氷菓子
     RegalSunshade: 2116, // 強靭なる烈女の大傘
+    WhitecapBowPlus: 2120, // 白波の弓+
 }
 
 const Support = {
