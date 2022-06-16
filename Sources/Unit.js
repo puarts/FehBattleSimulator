@@ -369,6 +369,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Treachery.webp";
         case StatusEffectType.WarpBubble:
             return g_imageRootPath + "StatusEffect_WarpBubble.webp";
+        case StatusEffectType.Charge:
+            return g_imageRootPath + "StatusEffect_Charge.webp";
         default: return "";
     }
 }
