@@ -46,6 +46,7 @@ const Hero = {
     HarmonizedSonya: 787,
     DuoIke: 798,
     HarmonizedRoy: 816,
+    HarmonizedEdelgard: 830,
 };
 
 function isThiefIndex(heroIndex) {
