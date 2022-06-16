@@ -1970,8 +1970,8 @@ class BattleMap {
             switch (skillId) {
                 case Weapon.SilentPower:
                     for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                        if (unit.partnerHeroIndex == ally.heroIndex) {
-                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                        if (unit.partnerHeroIndex === ally.heroIndex) {
+                            for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
                                 yield tile;
                             }
                         }
@@ -2189,7 +2189,7 @@ class BattleMap {
                                 }
                             }
                         } else {
-                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                            for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
                                 yield tile;
                             }
                         }
