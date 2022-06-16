@@ -1327,6 +1327,13 @@ const Weapon = {
     MorphFimbulvetr: 2099, //  被造フィンブル
     VultureBladePlus: 2106, // 禿鷹の剣+
     VultureBlade: 2107, // 禿鷹の剣
+
+    // 超英雄 級長たちの夏休み
+    UnyieldingOar: 2112, // 蒼波薙ぐ剛力の櫂
+    MoonlightDrop: 2114, // 純白の月の雫
+    FrozenDelight: 2115, // 真夏の涼の氷菓子
+    RegalSunshade: 2116, // 強靭なる烈女の大傘
+    WhitecapBowPlus: 2120, // 白波の弓+
 }
 
 const Support = {
@@ -2304,6 +2311,7 @@ const PassiveC = {
     AtkSpdMenace: 1733, // 攻撃速さの脅嚇
     AtkDefMenace: 1708, // 攻撃守備の脅嚇
     AtkResMenace: 1710, // 攻撃魔防の脅嚇
+    SpdDefMenace: 2113, // 速さ守備の脅嚇
     SpdResMenace: 2056, // 速さ魔防の脅嚇
     DefResMenace: 1728, // 守備魔防の脅嚇
 
@@ -2317,6 +2325,9 @@ const PassiveC = {
 
     // 再移動制限
     CantoControl3: 2067, // 再移動制限3
+
+    // 一斉突撃
+    AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用
     SeimeiNoKagayaki: 773, // 生命の輝き

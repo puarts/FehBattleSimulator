@@ -2011,6 +2011,33 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WhitecapBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.RegalSunshade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FrozenDelight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MoonlightDrop] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 0, 0, 6);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.UnyieldingOar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.JinroMusumeNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -6685,6 +6712,40 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.weapon) {
+            case Weapon.RegalSunshade:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    let total = 0;
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                        total++;
+                        if (Math.abs(targetUnit.posX - unit.posX) <= 1 ||
+                            Math.abs(targetUnit.posY - unit.posY) <= 1) {
+                            count++;
+                        }
+                    }
+                    let n = 0;
+                    if (total >= 6) {
+                        n = 3;
+                    } else if (total >= 3) {
+                        n = 2;
+                    } else {
+                        n = 1;
+                    }
+                    if (count >= n) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                }
+                break;
+            case Weapon.UnyieldingOar:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    if (enemyUnit.hasPositiveStatusEffect(targetUnit) ||
+                        targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                }
+                break;
             case Weapon.FalcionEchoes:
                 if (targetUnit.battleContext.initiatesCombat && targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage === 100) {
@@ -7484,6 +7545,34 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.WhitecapBowPlus:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                                targetUnit.battleContext.attackCount = 2;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.FrozenDelight:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
+                        let debuff = enemyUnit.getDebuffTotalInCombat();
+                        if (buff + debuff >= 12) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
+                case Weapon.MoonlightDrop:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        if (5 <= diff && diff <= 14) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        } else if (15 <= diff) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.KarasuOuNoHashizume:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.isTransformed || enemyUnit.battleContext.restHpPercentage >= 75) {

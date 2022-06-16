@@ -995,6 +995,17 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedEdelgard: {
+                let targetOrigins = duoUnit.heroInfo.origin.split('|');
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                        unit.applyAtkBuff(6);
+                    }
+                }
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.BonusDoubler);
+                break;
+            }
             case Hero.HarmonizedRoy: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
@@ -6033,6 +6044,9 @@ class BattleSimmulatorBase {
                         return true;
                     }
                     break;
+                // 無条件
+                case Weapon.FrozenDelight:
+                case Weapon.UnyieldingOar:
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case Weapon.WingLeftedSpear:

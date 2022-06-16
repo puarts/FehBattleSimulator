@@ -46,6 +46,7 @@ const Hero = {
     HarmonizedSonya: 787,
     DuoIke: 798,
     HarmonizedRoy: 816,
+    HarmonizedEdelgard: 830,
 };
 
 function isThiefIndex(heroIndex) {
@@ -234,6 +235,7 @@ const StatusEffectType = {
     SpecialCooldownChargePlusOnePerAttack: 33, // 戦闘中、奥義発動カウント変動量+1
     Treachery: 34, // 強化ダメージ+
     WarpBubble: 35, // 敵ワープ抑制
+    Charge: 36, // 突撃
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -367,6 +369,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Treachery.webp";
         case StatusEffectType.WarpBubble:
             return g_imageRootPath + "StatusEffect_WarpBubble.webp";
+        case StatusEffectType.Charge:
+            return g_imageRootPath + "StatusEffect_Charge.webp";
         default: return "";
     }
 }
@@ -4875,6 +4879,8 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
+                // 残り+1
+                case Weapon.UnyieldingOar:
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case PassiveB.MurderousLion:
@@ -4882,6 +4888,8 @@ class Unit extends BattleMapElement {
                 case PassiveB.SpdDefNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     break;
+                // 残り
+                case Weapon.FrozenDelight:
                 case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
