@@ -951,7 +951,7 @@
             </p>
             <input id="ocrSettingFile" type="file" @change="ocrSettingFileChanged" multiple="multiple"
                 accept="image/*" /><br />
-            <div v-if="showOcrImage">
+            <div v-show="showOcrImage">
                 <span class="normal" v-bind:style="debugMenuStyle">
                     切り抜き時のオフセット: <input type="number" v-model="ocrCropX" class="numeric" /><input type="number"
                         v-model="ocrCropY" class="numeric" /></span>
