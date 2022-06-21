@@ -443,13 +443,13 @@ class BattleSimmulatorBase {
             },
             lightSeasonChanged: function () {
                 if (g_app == null) { return; }
-                self.globalBattleContext.isAstraSeason = !self.globalBattleContext.isLightSeason;
+                self.vm.globalBattleContext.isAstraSeason = !self.vm.globalBattleContext.isLightSeason;
                 g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 g_appData.resetCurrentAetherRaidDefensePreset();
             },
             astraSeasonChanged: function () {
                 if (g_app == null) { return; }
-                self.globalBattleContext.isLightSeason = !self.globalBattleContext.isAstraSeason;
+                self.vm.globalBattleContext.isLightSeason = !self.vm.globalBattleContext.isAstraSeason;
                 g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 g_appData.resetCurrentAetherRaidDefensePreset();
             },
@@ -483,7 +483,7 @@ class BattleSimmulatorBase {
             },
             healHpFullForAllUnits: function () {
                 if (g_app == null) { return; }
-                for (let unit of self.units) {
+                for (let unit of self.vm.units) {
                     unit.resetAllState();
                 }
                 g_appData.__showStatusToAttackerInfo();
@@ -496,7 +496,7 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             activateAllUnit: function () {
-                for (let unit of self.units) {
+                for (let unit of self.vm.units) {
                     unit.isActionDone = false;
                 }
                 updateAllUi();
@@ -606,13 +606,13 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             ocrSettingFileChanged: function (event) {
-                self.showOcrImage = false;
+                self.vm.showOcrImage = false;
                 const files = event.target.files;
                 if (files.length == 0) {
                     return;
                 }
 
-                self.showOcrImage = true;
+                self.vm.showOcrImage = true;
                 self._imageProcessor.showOcrSettingSourceImage(files);
             },
         };
