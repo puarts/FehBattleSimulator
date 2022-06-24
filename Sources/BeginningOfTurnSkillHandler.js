@@ -134,7 +134,7 @@ class BeginningOfTurnSkillHandler {
                         break;
                     }
                 }
-                if (found || skillOwner.restHpPercentage === 100) {
+                if (found || skillOwner.battleContext.restHpPercentage === 100) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
                 }
             }
