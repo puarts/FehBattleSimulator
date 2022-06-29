@@ -2030,6 +2030,7 @@ const PassiveB = {
     BeliefInLove: 1235, // 愛を信じますか?
     FaithfulLoyalty: 2016, // 信じつづける誓い
     RagingStorm: 1303, // 狂嵐
+    Chivalry: 2123, // 騎士道
 
     // 干渉
     AtkSpdSnag3: 1685, // 攻撃速さの干渉3
