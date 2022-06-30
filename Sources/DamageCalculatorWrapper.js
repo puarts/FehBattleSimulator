@@ -775,6 +775,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (defUnit.passiveB) {
+            case PassiveB.Chivalry: {
+                let percentage = atkUnit.battleContext.restHpPercentage * 0.5;
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+            }
+                break;
             case PassiveB.AssuredRebirth: {
                 let percentage = 0;
                 let count = 0;
@@ -2011,6 +2016,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.Chivalry] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                enemyUnit.addSpurs(-5, -5, -5, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.EbonBolverk] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WhitecapBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(5, 5, 0, 0);
@@ -8037,6 +8052,8 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case PassiveB.Chivalry:
+                return atkUnit.battleContext.restHpPercentage * 0.5 / 100;
             case Weapon.GodlyBreath:
                 if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
                     return 0.3;

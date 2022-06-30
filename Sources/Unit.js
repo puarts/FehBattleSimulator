@@ -4880,6 +4880,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 残り+1
+                case PassiveB.Chivalry:
                 case Weapon.UnyieldingOar:
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
