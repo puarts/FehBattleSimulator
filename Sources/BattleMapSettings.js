@@ -1333,7 +1333,10 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
             return;
     }
 }
-
+/**
+ * @param  {BattleMap} map
+ * @param  {MapType} type
+ */
 function __resetBattleMapPlacementForAetherRaid(map, type) {
     switch (type) {
         case MapType.None:
