@@ -6063,6 +6063,7 @@ class BattleSimmulatorBase {
                 case Weapon.BlazingPolearms:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
+                case PassiveB.SpdResNearTrace3:
                 case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:
                 case PassiveB.AtkResFarTrace3:
