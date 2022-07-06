@@ -6075,6 +6075,7 @@ class DamageCalculatorWrapper {
         }
         switch (targetUnit.passiveB) {
             case PassiveB.MoonlightBangle:
+            case PassiveB.MoonlitBangleF:
                 {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
                     let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
@@ -9570,6 +9571,7 @@ class DamageCalculatorWrapper {
                 break;
             case PassiveB.SolarBrace2:
             case PassiveB.MoonlightBangle:
+            case PassiveB.MoonlitBangleF:
                 targetUnit.battleContext.invalidatesReduceCooldownCount = true;
                 break;
 

@@ -2057,6 +2057,7 @@ const PassiveB = {
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
     MoonlightBangle: 1798, // 華月の腕輪
+    MoonlitBangleF: 2127, // 華月の腕輪・遠
     Prescience: 1822, // 未来を知る力
     DivineRecreation: 1910, // それは興味深いね
     HodrsZeal: 2043, // ヘズルの聖騎士

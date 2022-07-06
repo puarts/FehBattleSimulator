@@ -4854,6 +4854,7 @@ class Unit extends BattleMapElement {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 case Weapon.BowOfTwelve:
+                case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
                 case Weapon.WingLeftedSpear:

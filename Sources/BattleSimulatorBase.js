@@ -6056,6 +6056,7 @@ class BattleSimmulatorBase {
                 case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
+                case PassiveB.MoonlitBangleF:
                 case Weapon.DolphinDiveAxe:
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
