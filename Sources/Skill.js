@@ -1340,6 +1340,7 @@ const Weapon = {
 
     // 超英雄 あの日の砂の城
     CaringConch: 2126, // 深き優しさの聖器
+    ChilledBreath: 2129, // 夏氷のブレス
 }
 
 const Support = {
