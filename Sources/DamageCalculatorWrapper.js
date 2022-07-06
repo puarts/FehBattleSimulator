@@ -2016,6 +2016,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MaryuHuinNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Gjallarbru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -9604,6 +9612,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.MaryuHuinNoKen:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.ThundersMjolnir:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.battleContext.invalidateCooldownCountSkills();
