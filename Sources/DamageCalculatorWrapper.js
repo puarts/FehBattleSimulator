@@ -5617,9 +5617,25 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TaguelFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
                 if (!self.__isNextToOtherUnitsExceptDragonAndBeast(targetUnit)) {
                     targetUnit.addAllSpur(3);
+                }
+            } else {
+                // <錬成効果>
+                if (!self.__isNextToOtherUnitsExceptDragonAndBeast(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                    if (!isWeaponTypeBreathOrBeast(enemyUnit.weaponType)) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
                 }
             }
         };
@@ -7608,6 +7624,19 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.TaguelFang:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            let diff = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                            if (diff >= 5) {
+                                targetUnit.battleContext.additionalDamage += 7;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.WhitecapBowPlus:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.battleContext.initiatesCombat) {
