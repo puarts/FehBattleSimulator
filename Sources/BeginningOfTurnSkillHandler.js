@@ -1660,6 +1660,21 @@ class BeginningOfTurnSkillHandler {
                         x.applyAtkBuff(6);
                         x.applySpdBuff(6);
                     }); break;
+            case PassiveC.HumanVirtue2: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    if (!isWeaponTypeBreathOrBeast(unit.weaponType)) {
+                        found = true;
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                    }
+                }
+                if (found) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applySpdBuff(6);
+                }
+                break;
+            }
             case PassiveC.HoneArmor: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Armor, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
             case PassiveC.HoneCavalry: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Cavalry, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
             case PassiveC.HoneFlyier: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Flying, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;

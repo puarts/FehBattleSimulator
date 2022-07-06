@@ -7578,6 +7578,31 @@ class DamageCalculatorWrapper {
 
 
         }
+
+        switch (targetUnit.passiveC) {
+            case PassiveC.HumanVirtue2: {
+                let atkMax = 0;
+                let spdMax = 0;
+                let defMax = 0;
+                let resMax = 0;
+                let buffTotals = [];
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                    if (!isWeaponTypeBreathOrBeast(unit.weaponType) && !unit.hasStatusEffect(StatusEffectType.Panic)) {
+                        atkMax = Math.max(atkMax, unit.atkBuff);
+                        spdMax = Math.max(spdMax, unit.spdBuff);
+                        defMax = Math.max(defMax, unit.defBuff);
+                        resMax = Math.max(resMax, unit.resBuff);
+                        buffTotals.push(unit.buffTotal);
+                    }
+                }
+                targetUnit.addSpurs(atkMax, spdMax, defMax, resMax);
+
+                buffTotals.sort((a, b) => b - a);
+                let amount = Math.min(40, buffTotals.slice(0, 3).reduce((a, b) => a + b, 0));
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(amount / 100.0, enemyUnit);
+                break;
+            }
+        }
     }
 
     __isThereAllyIn2Spaces(targetUnit) {

@@ -2363,6 +2363,7 @@ const PassiveC = {
     OstiasPulse2: 1828, // 盟主の鼓動・承
     Jagan: 811, // 邪眼
     HitoNoKanouseiWo: 850, // 人の可能性を
+    HumanVirtue2: 2124, // 人の可能性を!・承
     ImpenetrableDark: 1178, // 見通せぬ深き暗闇
     MilaNoHaguruma: 1352, // ミラの歯車
     InevitableDeath: 1420, // 死からは逃れられぬ
