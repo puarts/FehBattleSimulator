@@ -638,6 +638,13 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CaringConch:
+                    if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackUnit)) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                    break;
                 case Weapon.QuickMulagir:
                     if (attackUnit.isWeaponSpecialRefined) {
                         if (attackUnit.battleContext.initiatesCombat) {

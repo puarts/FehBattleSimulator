@@ -1337,6 +1337,9 @@ const Weapon = {
 
     // 2022年6月 伝承マークス
     EbonBolverk: 2122, // 黒斧ベルヴェルク
+
+    // 超英雄 あの日の砂の城
+    CaringConch: 2126, // 深き優しさの聖器
 }
 
 const Support = {
