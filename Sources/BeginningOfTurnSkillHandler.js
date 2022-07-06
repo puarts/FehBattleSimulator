@@ -813,9 +813,17 @@ class BeginningOfTurnSkillHandler {
                     unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
                 break;
             case Weapon.Gjallarbru:
-                this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => this.__getStatusEvalUnit(unit).hp <= this.__getStatusEvalUnit(skillOwner).hp - 3,
-                    unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
+                if (!skillOwner.isWeaponRefined) {
+                    // <通常効果>
+                    this.__applySkillToEnemiesInCross(skillOwner,
+                        unit => this.__getStatusEvalUnit(unit).hp <= this.__getStatusEvalUnit(skillOwner).hp - 3,
+                        unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
+                } else {
+                    // <錬成効果>
+                    this.__applySkillToEnemiesInCross(skillOwner,
+                        unit => this.__getStatusEvalUnit(unit).hp <= this.__getStatusEvalUnit(skillOwner).hp - 1,
+                        unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
+                }
                 break;
             case Weapon.SerujuNoKyoufu:
                 if (skillOwner.isWeaponSpecialRefined) {

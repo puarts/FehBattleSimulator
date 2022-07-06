@@ -2016,6 +2016,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Gjallarbru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addSpurs(4, 4, 0, 0);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DivineWhimsy] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -6581,6 +6588,11 @@ class DamageCalculatorWrapper {
                         break;
                 }
                 switch (allyUnit.weapon) {
+                    case Weapon.Gjallarbru:
+                        if (allyUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.invalidateAllOwnDebuffs();
+                        }
+                        break;
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
                         break;
@@ -10190,6 +10202,11 @@ class DamageCalculatorWrapper {
             }
         }
         switch (allyUnit.weapon) {
+            case Weapon.Gjallarbru:
+                if (allyUnit.isWeaponSpecialRefined) {
+                    targetUnit.addSpurs(4, 4, 0, 0);
+                }
+                break;
             case Weapon.YoukoohNoTsumekiba:
                 if (allyUnit.isWeaponSpecialRefined) {
                     targetUnit.addSpurs(0, 0, 2, 2);
