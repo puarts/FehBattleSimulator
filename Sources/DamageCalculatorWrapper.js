@@ -2016,6 +2016,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DivineWhimsy] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.CoralSaberPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(5, 0, 5, 0);
@@ -8337,6 +8343,10 @@ class DamageCalculatorWrapper {
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
             atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
+        }
+
+        if (defUnit.hasStatusEffect(StatusEffectType.Exposure)) {
+            atkUnit.battleContext.additionalDamage += 10;
         }
 
         switch (atkUnit.passiveB) {

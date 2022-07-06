@@ -995,6 +995,23 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoThorr: {
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (unit.posX === duoUnit.posX || unit.posY === duoUnit.posY) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                }
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (Math.abs(unit.posX - duoUnit.posX) <= 2 ||
+                        Math.abs(unit.posY - duoUnit.posY) <= 2) {
+                        unit.clearPositiveStatusEffects();
+                        if (!unit.hasStatusEffect(StatusEffectType.Panic)) {
+                            unit.resetBuffs();
+                        }
+                    }
+                }
+                break;
+            }
             case Hero.HarmonizedEdelgard: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {

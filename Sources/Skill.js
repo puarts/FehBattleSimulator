@@ -1342,6 +1342,7 @@ const Weapon = {
     CaringConch: 2126, // 深き優しさの聖器
     ChilledBreath: 2129, // 夏氷のブレス
     CoralSaberPlus: 2131, // 珊瑚の剣+
+    DivineWhimsy: 2133, // 戦神と戯神の気紛れ
 }
 
 const Support = {
