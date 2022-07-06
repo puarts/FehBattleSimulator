@@ -2245,12 +2245,14 @@ const PassiveC = {
 
     // 信義
     AtkSpdOath3: 1077, // 攻撃速さの信義3
+    AtkSpdOath4: 2128, // 攻撃速さの信義4
     AtkDefOath3: 1045,
     AtkResOath3: 982,
     DefResOath3: 1092,
     SpdDefOath3: 1233,
     SpdResOath3: 1602,
 
+    // 開放
     AtkOpening3: 779,
     SpdOpening3: 815, // 速さの開放3
     DefOpening3: 885,

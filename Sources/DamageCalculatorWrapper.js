@@ -2016,6 +2016,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveC.AtkSpdOath4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(3, 3, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.CaringConch] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
