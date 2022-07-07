@@ -47,6 +47,7 @@ const Hero = {
     DuoIke: 798,
     HarmonizedRoy: 816,
     HarmonizedEdelgard: 830,
+    DuoThorr: 836,
 };
 
 function isThiefIndex(heroIndex) {
@@ -236,6 +237,7 @@ const StatusEffectType = {
     Treachery: 34, // 強化ダメージ+
     WarpBubble: 35, // 敵ワープ抑制
     Charge: 36, // 突撃
+    Exposure: 37, // 弱点露呈
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -287,6 +289,7 @@ NegativeStatusEffectTable[StatusEffectType.DeepWounds] = 0;
 NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
 NegativeStatusEffectTable[StatusEffectType.FalseStart] = 0;
 NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
+NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -371,6 +374,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_WarpBubble.webp";
         case StatusEffectType.Charge:
             return g_imageRootPath + "StatusEffect_Charge.webp";
+        case StatusEffectType.Exposure:
+            return g_imageRootPath + "StatusEffect_Exposure.webp";
         default: return "";
     }
 }
@@ -4854,6 +4859,7 @@ class Unit extends BattleMapElement {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 case Weapon.BowOfTwelve:
+                case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
                 case Weapon.WingLeftedSpear:
@@ -4887,6 +4893,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.MurderousLion:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
+                case PassiveB.SpdResNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     break;
                 // 残り

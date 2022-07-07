@@ -1337,6 +1337,12 @@ const Weapon = {
 
     // 2022年6月 伝承マークス
     EbonBolverk: 2122, // 黒斧ベルヴェルク
+
+    // 超英雄 あの日の砂の城
+    CaringConch: 2126, // 深き優しさの聖器
+    ChilledBreath: 2129, // 夏氷のブレス
+    CoralSaberPlus: 2131, // 珊瑚の剣+
+    DivineWhimsy: 2133, // 戦神と戯神の気紛れ
 }
 
 const Support = {
@@ -2054,6 +2060,7 @@ const PassiveB = {
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
     MoonlightBangle: 1798, // 華月の腕輪
+    MoonlitBangleF: 2127, // 華月の腕輪・遠
     Prescience: 1822, // 未来を知る力
     DivineRecreation: 1910, // それは興味深いね
     HodrsZeal: 2043, // ヘズルの聖騎士
@@ -2062,6 +2069,7 @@ const PassiveB = {
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
+    SpdResNearTrace3: 2130, // 速さ魔防の近影3
     AtkSpdFarTrace3: 1843, // 攻撃速さの遠影3
     AtkDefFarTrace3: 1715, // 攻撃守備の遠影3
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
@@ -2241,12 +2249,14 @@ const PassiveC = {
 
     // 信義
     AtkSpdOath3: 1077, // 攻撃速さの信義3
+    AtkSpdOath4: 2128, // 攻撃速さの信義4
     AtkDefOath3: 1045,
     AtkResOath3: 982,
     DefResOath3: 1092,
     SpdDefOath3: 1233,
     SpdResOath3: 1602,
 
+    // 開放
     AtkOpening3: 779,
     SpdOpening3: 815, // 速さの開放3
     DefOpening3: 885,

@@ -125,6 +125,29 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.DivineWhimsy: {
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                let units = [];
+                let minSpd = Number.MAX_SAFE_INTEGER;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    let spd = unit.getSpdInPrecombat();
+                    if (spd < minSpd) {
+                        units = [unit];
+                        minSpd = spd;
+                    } else if (spd === minSpd) {
+                        units.push(unit);
+                    }
+                }
+                for (let unit of units) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                        u.reserveToAddStatusEffect(StatusEffectType.Stall);
+                    }
+                }
+            }
+                break;
             case Weapon.EbonBolverk: {
                 let count = 0;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
@@ -1148,6 +1171,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.SpdDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applySpdBuff(5); }); break;
             case PassiveC.SpdResOath3: this.__applyOathSkill(skillOwner, x => { x.applyResBuff(5); x.applySpdBuff(5); }); break;
             case PassiveC.AtkSpdOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applySpdBuff(5); }); break;
+            case PassiveC.AtkSpdOath4: this.__applyOath4Skill(skillOwner, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
             case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyDefBuff(5); }); break;
             case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyResBuff(5); }); break;
             case PassiveC.DefResOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applyResBuff(5); }); break;
@@ -2098,6 +2122,13 @@ class BeginningOfTurnSkillHandler {
     __applyOathSkill(skillOwnerUnit, buffFunc) {
         if (this.__isNextToOtherUnits(skillOwnerUnit)) {
             buffFunc(skillOwnerUnit);
+        }
+    }
+
+    __applyOath4Skill(skillOwnerUnit, buffFunc) {
+        if (this.__isThereAllyIn2Spaces(skillOwnerUnit)) {
+            buffFunc(skillOwnerUnit);
+            skillOwnerUnit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
         }
     }
 

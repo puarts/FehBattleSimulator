@@ -2016,6 +2016,37 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DivineWhimsy] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CoralSaberPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(5, 0, 5, 0);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ChilledBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AtkSpdOath4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(3, 3, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CaringConch] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.Chivalry] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
                 enemyUnit.addSpurs(-5, -5, -5, 0);
@@ -3818,6 +3849,10 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 3;
             enemyUnit.defSpur -= 3;
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdResNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 3;
+            enemyUnit.resSpur -= 3;
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkSpdFarTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.atkSpur -= 3;
@@ -6068,6 +6103,7 @@ class DamageCalculatorWrapper {
         }
         switch (targetUnit.passiveB) {
             case PassiveB.MoonlightBangle:
+            case PassiveB.MoonlitBangleF:
                 {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
                     let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
@@ -8309,6 +8345,10 @@ class DamageCalculatorWrapper {
             atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
         }
 
+        if (defUnit.hasStatusEffect(StatusEffectType.Exposure)) {
+            atkUnit.battleContext.additionalDamage += 10;
+        }
+
         switch (atkUnit.passiveB) {
             case PassiveB.HodrsZeal: {
                 let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getEvalAtkInCombat(atkUnit);
@@ -8988,6 +9028,13 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.ChilledBreath:
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                    if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.Mafu:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(defUnit.weaponType)) {
@@ -9563,6 +9610,7 @@ class DamageCalculatorWrapper {
                 break;
             case PassiveB.SolarBrace2:
             case PassiveB.MoonlightBangle:
+            case PassiveB.MoonlitBangleF:
                 targetUnit.battleContext.invalidatesReduceCooldownCount = true;
                 break;
 
