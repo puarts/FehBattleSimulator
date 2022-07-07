@@ -2028,6 +2028,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
+        this._applySkillEffectForUnitFuncDict[Weapon.SeahouseAxePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(5, 0, 5, 0);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+
         this._applySkillEffectForUnitFuncDict[Weapon.ChilledBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(6, 6, 0, 0);

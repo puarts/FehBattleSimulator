@@ -1343,6 +1343,7 @@ const Weapon = {
     ChilledBreath: 2129, // 夏氷のブレス
     CoralSaberPlus: 2131, // 珊瑚の剣+
     DivineWhimsy: 2133, // 戦神と戯神の気紛れ
+    SeahouseAxePlus: 2134, // 竜の落とし子の斧+
 }
 
 const Support = {
