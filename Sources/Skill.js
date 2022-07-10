@@ -1343,6 +1343,9 @@ const Weapon = {
     ChilledBreath: 2129, // 夏氷のブレス
     CoralSaberPlus: 2131, // 珊瑚の剣+
     DivineWhimsy: 2133, // 戦神と戯神の気紛れ
+
+    // 2022年7月 武器錬成
+    HeartbeatLance: 2125, // 鎧好きの堅槍
 }
 
 const Support = {

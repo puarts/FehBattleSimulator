@@ -2022,6 +2022,27 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HeartbeatLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, 0, -5, 0);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addSpurs(-5, 0, -5, 0);
+                        let amounts = [
+                            targetUnit.maxHp - enemyUnit.maxHp,
+                            targetUnit.getAtkInPrecombat() - enemyUnit.getAtkInPrecombat(),
+                            targetUnit.getSpdInPrecombat() - enemyUnit.getSpdInPrecombat(),
+                            targetUnit.getDefInPrecombat() - enemyUnit.getDefInPrecombat(),
+                            targetUnit.getResInPrecombat() - enemyUnit.getResInPrecombat(),
+                        ];
+                        let count = amounts.filter(x => x > 1).length;
+                        let spur = Math.trunc(enemyUnit.getAtkInPrecombat() * (count * 5 + 10) / 100.0);
+                        enemyUnit.atkSpur -= spur;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AnkokuNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
