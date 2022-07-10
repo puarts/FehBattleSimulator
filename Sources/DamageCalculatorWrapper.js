@@ -7062,9 +7062,7 @@ class DamageCalculatorWrapper {
                     let condC = targetUnit.hasPositiveStatusEffect(enemyUnit);
                     let condD = enemyUnit.hasNegativeStatusEffect();
                     let conditions = [condA, condB, condC, condD];
-                    // let conditions = [false, false, false, false];
                     let count = conditions.filter(x => x).length;
-                    console.log(`count: ${count}`);
                     let amount = Math.min(count * 3, 9);
                     enemyUnit.addAllSpur(-amount);
                 }
