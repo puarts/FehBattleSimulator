@@ -1344,6 +1344,9 @@ const Weapon = {
     CoralSaberPlus: 2131, // 珊瑚の剣+
     DivineWhimsy: 2133, // 戦神と戯神の気紛れ
     SeahouseAxePlus: 2134, // 竜の落とし子の斧+
+
+    // 2022年7月 武器錬成
+    HeartbeatLance: 2125, // 鎧好きの堅槍
 }
 
 const Support = {
@@ -2364,6 +2367,7 @@ const PassiveC = {
     OstiasPulse2: 1828, // 盟主の鼓動・承
     Jagan: 811, // 邪眼
     HitoNoKanouseiWo: 850, // 人の可能性を
+    HumanVirtue2: 2124, // 人の可能性を!・承
     ImpenetrableDark: 1178, // 見通せぬ深き暗闇
     MilaNoHaguruma: 1352, // ミラの歯車
     InevitableDeath: 1420, // 死からは逃れられぬ
@@ -3137,9 +3141,9 @@ const BeastCommonSkillMap =
 
             [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
+            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
 
             [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee],
             [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee],
             [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
             [Weapon.GroomsWings, BeastCommonSkillType.InfantryMelee],

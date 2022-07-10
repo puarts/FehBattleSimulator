@@ -7665,8 +7665,22 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case Weapon.TrasenshiNoTsumekiba:
-                    this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-4));
-                    this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-4));
+                    if (!unit.isWeaponRefined) {
+                        this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-4));
+                        this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-4));
+                    } else {
+                        this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-5));
+                        this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-5));
+                        if (unit.isWeaponSpecialRefined) {
+                            let units = Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 2));
+                            units = units.concat(Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)));
+                            // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
+                            let unitSet = new Set(units);
+                            for (let u of unitSet) {
+                                u.increaseSpecialCount(1);
+                            }
+                        }
+                    }
                     break;
                 case Weapon.RazuwarudoNoMaiken:
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {

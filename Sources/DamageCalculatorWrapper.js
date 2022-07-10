@@ -1012,8 +1012,14 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.YonkaiNoSaiki:
                 case Weapon.AnkokuNoKen:
-                    if (atkUnit.battleContext.restHpPercentage >= 50) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
+                    if (!atkUnit.isWeaponRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 50) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                    } else {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
                     }
                     break;
                 case Weapon.SoulCaty:
@@ -2016,6 +2022,71 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HeartbeatLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, 0, -5, 0);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addSpurs(-5, 0, -5, 0);
+                        let amounts = [
+                            targetUnit.maxHp - enemyUnit.maxHp,
+                            targetUnit.getAtkInPrecombat() - enemyUnit.getAtkInPrecombat(),
+                            targetUnit.getSpdInPrecombat() - enemyUnit.getSpdInPrecombat(),
+                            targetUnit.getDefInPrecombat() - enemyUnit.getDefInPrecombat(),
+                            targetUnit.getResInPrecombat() - enemyUnit.getResInPrecombat(),
+                        ];
+                        let count = amounts.filter(x => x > 1).length;
+                        let spur = Math.trunc(enemyUnit.getAtkInPrecombat() * (count * 5 + 10) / 100.0);
+                        enemyUnit.atkSpur -= spur;
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AnkokuNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        if (enemyUnit.getSpdInPrecombat() >= enemyUnit.getEvalDefInPrecombat() + 1) {
+                            enemyUnit.spdSpur -= 8;
+                        } else {
+                            enemyUnit.defSpur -= 8;
+                        }
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TrasenshiNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(5, 0, 5, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addSpurs(5, 0, 5, 0);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MaryuHuinNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Gjallarbru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addSpurs(4, 4, 0, 0);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DivineWhimsy] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -5617,9 +5688,25 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TaguelFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
                 if (!self.__isNextToOtherUnitsExceptDragonAndBeast(targetUnit)) {
                     targetUnit.addAllSpur(3);
+                }
+            } else {
+                // <錬成効果>
+                if (!self.__isNextToOtherUnitsExceptDragonAndBeast(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                    if (!isWeaponTypeBreathOrBeast(enemyUnit.weaponType)) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
                 }
             }
         };
@@ -6588,6 +6675,11 @@ class DamageCalculatorWrapper {
                         break;
                 }
                 switch (allyUnit.weapon) {
+                    case Weapon.Gjallarbru:
+                        if (allyUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.invalidateAllOwnDebuffs();
+                        }
+                        break;
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
                         break;
@@ -6970,9 +7062,7 @@ class DamageCalculatorWrapper {
                     let condC = targetUnit.hasPositiveStatusEffect(enemyUnit);
                     let condD = enemyUnit.hasNegativeStatusEffect();
                     let conditions = [condA, condB, condC, condD];
-                    // let conditions = [false, false, false, false];
                     let count = conditions.filter(x => x).length;
-                    console.log(`count: ${count}`);
                     let amount = Math.min(count * 3, 9);
                     enemyUnit.addAllSpur(-amount);
                 }
@@ -7549,6 +7639,31 @@ class DamageCalculatorWrapper {
 
 
         }
+
+        switch (targetUnit.passiveC) {
+            case PassiveC.HumanVirtue2: {
+                let atkMax = 0;
+                let spdMax = 0;
+                let defMax = 0;
+                let resMax = 0;
+                let buffTotals = [];
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                    if (!isWeaponTypeBreathOrBeast(unit.weaponType) && !unit.hasStatusEffect(StatusEffectType.Panic)) {
+                        atkMax = Math.max(atkMax, unit.atkBuff);
+                        spdMax = Math.max(spdMax, unit.spdBuff);
+                        defMax = Math.max(defMax, unit.defBuff);
+                        resMax = Math.max(resMax, unit.resBuff);
+                        buffTotals.push(unit.buffTotal);
+                    }
+                }
+                targetUnit.addSpurs(atkMax, spdMax, defMax, resMax);
+
+                buffTotals.sort((a, b) => b - a);
+                let amount = Math.min(40, buffTotals.slice(0, 3).reduce((a, b) => a + b, 0));
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(amount / 100.0, enemyUnit);
+                break;
+            }
+        }
     }
 
     __isThereAllyIn2Spaces(targetUnit) {
@@ -7603,6 +7718,19 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.TaguelFang:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            let diff = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                            if (diff >= 5) {
+                                targetUnit.battleContext.additionalDamage += 7;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.WhitecapBowPlus:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.battleContext.initiatesCombat) {
@@ -9570,6 +9698,18 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.AnkokuNoKen:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                }
+                break;
+            case Weapon.MaryuHuinNoKen:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.ThundersMjolnir:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.battleContext.invalidateCooldownCountSkills();
@@ -10197,6 +10337,11 @@ class DamageCalculatorWrapper {
             }
         }
         switch (allyUnit.weapon) {
+            case Weapon.Gjallarbru:
+                if (allyUnit.isWeaponSpecialRefined) {
+                    targetUnit.addSpurs(4, 4, 0, 0);
+                }
+                break;
             case Weapon.YoukoohNoTsumekiba:
                 if (allyUnit.isWeaponSpecialRefined) {
                     targetUnit.addSpurs(0, 0, 2, 2);

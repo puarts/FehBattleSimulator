@@ -333,13 +333,13 @@ targetUnit.battleContext.reducesCooldownCount = true;
 
 自身の奥義発動カウント変動量-を無効
 __applyInvalidationSkillEffect() {
-    defUnit.battleContext.reducesCooldownCount = false;
+    enemyUnit.battleContext.reducesCooldownCount = false;
 }
 
 敵の奥義発動カウント変動量+を無効
 __applyInvalidationSkillEffect() {
-    defUnit.battleContext.increaseCooldownCountForAttack = false;
-    defUnit.battleContext.increaseCooldownCountForDefense = false;
+    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
 }
 
 自身の攻撃による奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
