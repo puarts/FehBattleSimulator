@@ -1012,8 +1012,14 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.YonkaiNoSaiki:
                 case Weapon.AnkokuNoKen:
-                    if (atkUnit.battleContext.restHpPercentage >= 50) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
+                    if (!atkUnit.isWeaponRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 50) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                    } else {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
                     }
                     break;
                 case Weapon.SoulCaty:
@@ -2016,6 +2022,23 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AnkokuNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        if (enemyUnit.getSpdInPrecombat() >= enemyUnit.getEvalDefInPrecombat() + 1) {
+                            enemyUnit.spdSpur -= 8;
+                        } else {
+                            enemyUnit.defSpur -= 8;
+                        }
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TrasenshiNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -9649,6 +9672,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.AnkokuNoKen:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                }
+                break;
             case Weapon.MaryuHuinNoKen:
                 if (targetUnit.isWeaponSpecialRefined) {
                     enemyUnit.battleContext.reducesCooldownCount = false;
