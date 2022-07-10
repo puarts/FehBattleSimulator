@@ -2016,6 +2016,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TrasenshiNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(5, 0, 5, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addSpurs(5, 0, 5, 0);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MaryuHuinNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
