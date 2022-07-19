@@ -1347,6 +1347,9 @@ const Weapon = {
 
     // 2022年7月 武器錬成
     HeartbeatLance: 2125, // 鎧好きの堅槍
+
+    // 新英雄&開花英雄&ユーミル
+    MilasTestament: 2136, // 大地母神の聖書
 }
 
 const Support = {

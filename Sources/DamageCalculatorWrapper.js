@@ -2022,6 +2022,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MilasTestament] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HeartbeatLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, 0, -5, 0);
@@ -7718,6 +7724,12 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.MilasTestament:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        let amount = Math.trunc(enemyUnit.getEvalAtkInCombat(targetUnit) * 0.1);
+                        targetUnit.battleContext.additionalDamage += amount;
+                    }
+                    break;
                 case Weapon.TaguelFang:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -9698,6 +9710,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.MilasTestament:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.AnkokuNoKen:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {

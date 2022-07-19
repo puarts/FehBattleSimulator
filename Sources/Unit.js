@@ -576,6 +576,12 @@ class BattleContext {
 
         // 「敵から攻撃を受ける際に発動する奥義」が発動できないかどうか
         this.preventedDefenderSpecial = false;
+
+        // 奥義以外の祈りが発動したかどうか
+        this.isMiracleWithoutSpecialActivated = false;
+
+        // スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.weaponSkillCondSatisfied = false;
     }
 
     invalidateFollowupAttackSkills() {
@@ -691,6 +697,8 @@ class BattleContext {
         this.damageReductionRatioBySpecial = 0;
         this.isOnDefensiveTile = false;
         this.preventedDefenderSpecial = false;
+        this.isMiracleWithoutSpecialActivated = false;
+        this.weaponSkillCondSatisfied = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
