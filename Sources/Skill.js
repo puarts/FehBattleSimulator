@@ -2089,6 +2089,7 @@ const PassiveB = {
     FlowRefresh3: 1763, // 怒涛・再起3
     FlowGuard3: 1912, // 怒涛・キャンセル3
     FlowForce3: 2088, // 怒涛・不屈3
+    FlowFeather3: 2139, // 怒涛・天馬行空3
 
     // 拍節
     SpdDefTempo3: 2046, // 速さ守備の拍節3
