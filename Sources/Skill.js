@@ -1351,6 +1351,7 @@ const Weapon = {
     // 新英雄&開花英雄&ユーミル
     MilasTestament: 2136, // 大地母神の聖書
     TriEdgeLance: 2138, // 天馬姉妹の三角槍
+    UpFrontBladePlus: 2140, // 正々堂々の剣+
 }
 
 const Support = {
