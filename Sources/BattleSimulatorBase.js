@@ -6080,6 +6080,7 @@ class BattleSimmulatorBase {
                 case Weapon.FlowerLance:
                 case Weapon.BlazingPolearms:
                 case PassiveB.AtkDefNearTrace3:
+                case PassiveB.AtkResNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
                 case PassiveB.SpdResNearTrace3:
                 case PassiveB.AtkSpdFarTrace3:

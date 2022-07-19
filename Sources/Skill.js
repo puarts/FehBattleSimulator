@@ -2078,6 +2078,7 @@ const PassiveB = {
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
+    AtkResNearTrace3: 2143, // 攻撃魔防の近影3
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
     SpdResNearTrace3: 2130, // 速さ魔防の近影3
     AtkSpdFarTrace3: 1843, // 攻撃速さの遠影3
