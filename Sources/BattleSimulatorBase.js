@@ -6062,6 +6062,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
                 case Weapon.FrozenDelight:
                 case Weapon.UnyieldingOar:

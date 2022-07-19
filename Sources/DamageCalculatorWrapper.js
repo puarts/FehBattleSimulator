@@ -2022,6 +2022,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TriEdgeLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MilasTestament] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
@@ -7724,6 +7731,12 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.TriEdgeLance:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let res = enemyUnit.getEvalResInCombat(targetUnit);
+                        targetUnit.battleContext.additionalDamage += Math.trunc(res * 0.2);
+                    }
+                    break;
                 case Weapon.MilasTestament:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         let amount = Math.trunc(enemyUnit.getEvalAtkInCombat(targetUnit) * 0.1);
