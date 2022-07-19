@@ -582,6 +582,8 @@ class BattleContext {
 
         // スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.weaponSkillCondSatisfied = false;
+
+        this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
 
     invalidateFollowupAttackSkills() {
@@ -699,6 +701,7 @@ class BattleContext {
         this.preventedDefenderSpecial = false;
         this.isMiracleWithoutSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
+        this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。

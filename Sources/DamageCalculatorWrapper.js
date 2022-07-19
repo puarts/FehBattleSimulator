@@ -3559,6 +3559,13 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 6;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveC.EverlivingDomain] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.inCombatMiracleHpPercentageThreshold = 75;
+                targetUnit.defSpur += 4;
+                targetUnit.resSpur += 4;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveC.DomainOfFlame] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.atkSpur += 4;
@@ -6766,6 +6773,11 @@ class DamageCalculatorWrapper {
                         case PassiveC.Worldbreaker:
                             targetUnit.battleContext.increaseCooldownCountForBoth();
                             break;
+                        case PassiveC.EverlivingDomain: {
+                            let threshold = targetUnit.battleContext.inCombatMiracleHpPercentageThreshold;
+                            targetUnit.battleContext.inCombatMiracleHpPercentageThreshold = Math.min(threshold, 75);
+                            break;
+                        }
                         case PassiveC.DomainOfIce:
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                             break;
@@ -10281,6 +10293,10 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveC.OpeningRetainer:
                     targetUnit.atkSpur += 4;
+                    break;
+                case PassiveC.EverlivingDomain:
+                    targetUnit.defSpur += 4;
+                    targetUnit.resSpur += 4;
                     break;
                 case PassiveC.DomainOfFlame:
                     targetUnit.atkSpur += 4;

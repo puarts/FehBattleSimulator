@@ -2384,6 +2384,7 @@ const PassiveC = {
     OrdersRestraint: 1724, // 束縛、秩序、安定
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
+    EverlivingDomain: 2144, // 永生結界
     Worldbreaker: 1913, // 神槌大地を穿つ
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者

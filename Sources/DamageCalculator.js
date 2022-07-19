@@ -907,6 +907,12 @@ class DamageCalculator {
     }
 
     __canActivateMiracle(unit, atkUnit) {
+        let threshold = unit.battleContext.inCombatMiracleHpPercentageThreshold;
+        if (threshold !== Number.MAX_SAFE_INTEGER) {
+            if (unit.restHpPercentage >= threshold) {
+                return true;
+            }
+        }
         switch (unit.weapon) {
             case Weapon.MilasTestament:
                 if (unit.battleContext.weaponSkillCondSatisfied && !unit.isMiracleWithoutSpecialActivated) {
