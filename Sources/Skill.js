@@ -1352,6 +1352,7 @@ const Weapon = {
     MilasTestament: 2136, // 大地母神の聖書
     TriEdgeLance: 2138, // 天馬姉妹の三角槍
     UpFrontBladePlus: 2140, // 正々堂々の剣+
+    EverlivingBreath: 2142, // 永生のブレス
 }
 
 const Support = {

@@ -7586,6 +7586,17 @@ class BattleSimmulatorBase {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EverlivingBreath: {
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true));
+                    units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
+                    // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
+                    let unitSet = new Set(units);
+                    for (let u of unitSet) {
+                        u.heal(10);
+                        u.clearNegativeStatusEffects();
+                    }
+                    break;
+                }
                 case Weapon.AzureLance:
                     if (unit.isWeaponSpecialRefined) {
                         unit.applyAtkBuff(6);
@@ -7973,6 +7984,17 @@ class BattleSimmulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EverlivingBreath: {
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supporterUnit, 2, true));
+                    units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
+                    // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
+                    let unitSet = new Set(units);
+                    for (let u of unitSet) {
+                        u.heal(10);
+                        u.clearNegativeStatusEffects();
+                    }
+                    break;
+                }
                 case Weapon.AzureLance:
                     if (supporterUnit.isWeaponSpecialRefined) {
                         supporterUnit.applyAtkBuff(6);
