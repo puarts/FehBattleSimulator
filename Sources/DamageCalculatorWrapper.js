@@ -4484,6 +4484,7 @@ class DamageCalculatorWrapper {
                 }
             };
             this._applySkillEffectForUnitFuncDict[Weapon.StoutLancePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.StoutAxePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.CourtlyBowPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.CourtlyCandlePlus] = func;
         }
@@ -10138,6 +10139,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.StoutLancePlus:
+            case Weapon.StoutAxePlus:
             case Weapon.CourtlyMaskPlus:
             case Weapon.CourtlyBowPlus:
             case Weapon.CourtlyCandlePlus:

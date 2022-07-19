@@ -1353,6 +1353,7 @@ const Weapon = {
     TriEdgeLance: 2138, // 天馬姉妹の三角槍
     UpFrontBladePlus: 2140, // 正々堂々の剣+
     EverlivingBreath: 2142, // 永生のブレス
+    StoutAxePlus: 2145, // 堅固の斧+
 }
 
 const Support = {
