@@ -2294,6 +2294,7 @@ const PassiveC = {
     HokoNoJugeki3: 733, // 歩行の柔撃3
     HokoNoKokyu3: 921, // 歩行の呼吸3
     HokoNoMajin3: 961, // 歩行の魔刃3
+    InfNullFollow3: 2137, // 歩行の見切り追撃3
 
     ArmoredStride3: 1304, // 重装の遊撃3
 
