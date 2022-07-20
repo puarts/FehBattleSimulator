@@ -8057,6 +8057,8 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.PlegianAxePlus:
+                case Weapon.VultureAxePlus:
+                case Weapon.VultureAxe:
                 case Weapon.VultureBladePlus:
                 case Weapon.VultureBlade:
                     if (targetUnit.battleContext.isSolo || calcPotentialDamage) {

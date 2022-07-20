@@ -1354,6 +1354,8 @@ const Weapon = {
     UpFrontBladePlus: 2140, // 正々堂々の剣+
     EverlivingBreath: 2142, // 永生のブレス
     StoutAxePlus: 2145, // 堅固の斧+
+    VultureAxePlus: 2147, // 禿鷹の斧+
+    VultureAxe: 2148, // 禿鷹の斧
 }
 
 const Support = {
