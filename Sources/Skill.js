@@ -1347,6 +1347,13 @@ const Weapon = {
 
     // 2022年7月 武器錬成
     HeartbeatLance: 2125, // 鎧好きの堅槍
+
+    // 新英雄&開花英雄&ユーミル
+    MilasTestament: 2136, // 大地母神の聖書
+    TriEdgeLance: 2138, // 天馬姉妹の三角槍
+    UpFrontBladePlus: 2140, // 正々堂々の剣+
+    EverlivingBreath: 2142, // 永生のブレス
+    StoutAxePlus: 2145, // 堅固の斧+
 }
 
 const Support = {
@@ -2072,6 +2079,7 @@ const PassiveB = {
 
     // 近影、遠影
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
+    AtkResNearTrace3: 2143, // 攻撃魔防の近影3
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
     SpdResNearTrace3: 2130, // 速さ魔防の近影3
     AtkSpdFarTrace3: 1843, // 攻撃速さの遠影3
@@ -2085,6 +2093,7 @@ const PassiveB = {
     FlowRefresh3: 1763, // 怒涛・再起3
     FlowGuard3: 1912, // 怒涛・キャンセル3
     FlowForce3: 2088, // 怒涛・不屈3
+    FlowFeather3: 2139, // 怒涛・天馬行空3
 
     // 拍節
     SpdDefTempo3: 2046, // 速さ守備の拍節3
@@ -2291,6 +2300,7 @@ const PassiveC = {
     HokoNoJugeki3: 733, // 歩行の柔撃3
     HokoNoKokyu3: 921, // 歩行の呼吸3
     HokoNoMajin3: 961, // 歩行の魔刃3
+    InfNullFollow3: 2137, // 歩行の見切り追撃3
 
     ArmoredStride3: 1304, // 重装の遊撃3
 
@@ -2375,6 +2385,7 @@ const PassiveC = {
     OrdersRestraint: 1724, // 束縛、秩序、安定
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
+    EverlivingDomain: 2144, // 永生結界
     Worldbreaker: 1913, // 神槌大地を穿つ
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者

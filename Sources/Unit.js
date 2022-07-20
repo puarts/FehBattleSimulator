@@ -576,6 +576,14 @@ class BattleContext {
 
         // 「敵から攻撃を受ける際に発動する奥義」が発動できないかどうか
         this.preventedDefenderSpecial = false;
+
+        // 奥義以外の祈りが発動したかどうか
+        this.isMiracleWithoutSpecialActivated = false;
+
+        // スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.weaponSkillCondSatisfied = false;
+
+        this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
 
     invalidateFollowupAttackSkills() {
@@ -691,6 +699,9 @@ class BattleContext {
         this.damageReductionRatioBySpecial = 0;
         this.isOnDefensiveTile = false;
         this.preventedDefenderSpecial = false;
+        this.isMiracleWithoutSpecialActivated = false;
+        this.weaponSkillCondSatisfied = false;
+        this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -4886,12 +4897,14 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 残り+1
+                case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
                 case Weapon.UnyieldingOar:
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case PassiveB.MurderousLion:
                 case PassiveB.AtkDefNearTrace3:
+                case PassiveB.AtkResNearTrace3:
                 case PassiveB.SpdDefNearTrace3:
                 case PassiveB.SpdResNearTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);

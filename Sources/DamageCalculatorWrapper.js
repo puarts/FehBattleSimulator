@@ -2022,6 +2022,25 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.EverlivingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TriEdgeLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MilasTestament] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HeartbeatLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, 0, -5, 0);
@@ -3540,6 +3559,13 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 6;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveC.EverlivingDomain] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.inCombatMiracleHpPercentageThreshold = 75;
+                targetUnit.defSpur += 4;
+                targetUnit.resSpur += 4;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveC.DomainOfFlame] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.atkSpur += 4;
@@ -3923,6 +3949,10 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.atkSpur -= 3;
             enemyUnit.defSpur -= 3;
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkResNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 3;
+            enemyUnit.resSpur -= 3;
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 3;
@@ -4454,6 +4484,7 @@ class DamageCalculatorWrapper {
                 }
             };
             this._applySkillEffectForUnitFuncDict[Weapon.StoutLancePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.StoutAxePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.CourtlyBowPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.CourtlyCandlePlus] = func;
         }
@@ -5961,6 +5992,7 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.SpringyBowPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SpringyAxePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SpringyLancePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UpFrontBladePlus] = func;
         }
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6742,6 +6774,11 @@ class DamageCalculatorWrapper {
                         case PassiveC.Worldbreaker:
                             targetUnit.battleContext.increaseCooldownCountForBoth();
                             break;
+                        case PassiveC.EverlivingDomain: {
+                            let threshold = targetUnit.battleContext.inCombatMiracleHpPercentageThreshold;
+                            targetUnit.battleContext.inCombatMiracleHpPercentageThreshold = Math.min(threshold, 75);
+                            break;
+                        }
                         case PassiveC.DomainOfIce:
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                             break;
@@ -7718,6 +7755,18 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.TriEdgeLance:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let res = enemyUnit.getEvalResInCombat(targetUnit);
+                        targetUnit.battleContext.additionalDamage += Math.trunc(res * 0.2);
+                    }
+                    break;
+                case Weapon.MilasTestament:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        let amount = Math.trunc(enemyUnit.getEvalAtkInCombat(targetUnit) * 0.1);
+                        targetUnit.battleContext.additionalDamage += amount;
+                    }
+                    break;
                 case Weapon.TaguelFang:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -8071,6 +8120,17 @@ class DamageCalculatorWrapper {
                 case PassiveB.AssuredRebirth:
                     if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
                         targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                    break;
+                case PassiveB.FlowFeather3:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 10) {
+                            let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            let amount = Math.trunc(Math.min(7, Math.max(0, diff * 0.70)));
+                            targetUnit.battleContext.additionalDamage += amount;
+                            targetUnit.battleContext.damageReductionValue += amount;
+                        }
                     }
                     break;
                 case PassiveB.FlowFlight3:
@@ -9698,6 +9758,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.MilasTestament:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.AnkokuNoKen:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -10074,6 +10139,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.StoutLancePlus:
+            case Weapon.StoutAxePlus:
             case Weapon.CourtlyMaskPlus:
             case Weapon.CourtlyBowPlus:
             case Weapon.CourtlyCandlePlus:
@@ -10229,6 +10295,10 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveC.OpeningRetainer:
                     targetUnit.atkSpur += 4;
+                    break;
+                case PassiveC.EverlivingDomain:
+                    targetUnit.defSpur += 4;
+                    targetUnit.resSpur += 4;
                     break;
                 case PassiveC.DomainOfFlame:
                     targetUnit.atkSpur += 4;

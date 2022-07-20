@@ -125,6 +125,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.InfNullFollow3:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp)
+                }
+                break;
             case Weapon.DivineWhimsy: {
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reduceSpecialCount(1);

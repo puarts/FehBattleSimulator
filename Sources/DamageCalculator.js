@@ -859,10 +859,11 @@ class DamageCalculator {
                 }
             }
 
-            if (this.__canActivateMiracle(defUnit, atkUnit)
-                && (defUnit.restHp - totalDamage > 1)
-                && (defUnit.restHp - totalDamage - currentDamage <= 0)
-            ) {
+            let canActivateMiracle = this.__canActivateMiracle(defUnit, atkUnit);
+            let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
+            if (canActivateMiracle &&
+                (defUnit.restHp - totalDamage > 1) &&
+                (defUnit.restHp - totalDamage - currentDamage <= 0)) {
                 if (this.isLogEnabled) this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
                 // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
                 if (defUnit.battleContext.nextAttackAddReducedDamageActivated) {
@@ -872,10 +873,14 @@ class DamageCalculator {
                     defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
                 }
                 totalDamage = defUnit.restHp - 1;
-                if (defUnit.special === Special.Miracle ||
-                    defUnit.special === Special.LifeUnending) {
-                    defUnit.battleContext.isSpecialActivated = true;
-                    this.__restoreMaxSpecialCount(defUnit);
+                if (canActivateSpecialMiracle) {
+                    if (defUnit.special === Special.Miracle ||
+                        defUnit.special === Special.LifeUnending) {
+                        defUnit.battleContext.isSpecialActivated = true;
+                        this.__restoreMaxSpecialCount(defUnit);
+                    }
+                } else {
+                    defUnit.battleContext.isMiracleWithoutSpecialActivated = true;
                 }
             }
             else {
@@ -902,7 +907,20 @@ class DamageCalculator {
     }
 
     __canActivateMiracle(unit, atkUnit) {
+        let threshold = unit.battleContext.inCombatMiracleHpPercentageThreshold;
+        if (threshold !== Number.MAX_SAFE_INTEGER) {
+            if (unit.restHpPercentage >= threshold) {
+                return true;
+            }
+        }
         switch (unit.weapon) {
+            case Weapon.MilasTestament:
+                if (unit.battleContext.weaponSkillCondSatisfied && !unit.isMiracleWithoutSpecialActivated) {
+                    if (unit.restHpPercentage >= 25) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.BowOfTwelve:
                 if (unit.battleContext.initiatesCombat ||
                     (unit.battleContext.restHpPercentage >= 75 &&
@@ -919,6 +937,13 @@ class DamageCalculator {
                 }
                 break;
         }
+        if (this.__canActivateSpecialMiracle(unit, atkUnit)) {
+            return true;
+        }
+        return false;
+    }
+
+    __canActivateSpecialMiracle(unit, atkUnit) {
         switch (unit.special) {
             case Special.LifeUnending:
             case Special.Miracle:
