@@ -534,5 +534,5 @@ perTurnStatusToString() {}
 3. AetherRaidMapImageFilesに画像を追加
 4. tileTypeToThumbを修正
 5. getMapBackgroundImage
-6. breakableObjCountOfCurrentMapTypeを修正
+6. getBreakableObjCountOfCurrentMapType(壊れる壁の数)を修正
 7. __resetBattleMapPlacementForAetherRaidで特殊なタイルを設定(x: 左から0~, y: 上から0~)

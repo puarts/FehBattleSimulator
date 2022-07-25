@@ -225,6 +225,8 @@ function getBreakableObjCountOfCurrentMapType(type) {
             return 3;
         case MapType.K0013:
             return 4;
+        case MapType.K0015:
+            return 2;
         case MapType.Arena_3:
             return 14;
         case MapType.Arena_7:

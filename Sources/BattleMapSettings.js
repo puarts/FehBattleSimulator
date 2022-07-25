@@ -1442,8 +1442,10 @@ function __resetBattleMapPlacementForAetherRaid(map, type) {
             map.setTileType(2, 4, TileType.Forest);
             break;
         case MapType.K0015:
-            map.__placeObjForcibly(map._walls[0], 1, 3);
-            map.__placeObjForcibly(map._walls[1], 4, 3);
+            map._breakableWalls[0].breakCount = 2
+            map._breakableWalls[1].breakCount = 2
+            map.__placeObjForcibly(map._breakableWalls[0], 1, 3);
+            map.__placeObjForcibly(map._breakableWalls[1], 4, 3);
             break;
         default:
             return;
