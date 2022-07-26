@@ -2022,6 +2022,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(-4, 0, -4, 0);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.IlluminatingHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;

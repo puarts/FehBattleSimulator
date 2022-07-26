@@ -306,6 +306,9 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.AtkDefBulwark3:
+                    targetUnit.reserveHeal(7);
+                    break;
                 case Weapon.EbonBolverk:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.reserveHeal(7);

@@ -2465,13 +2465,17 @@ class Unit extends BattleMapElement {
 
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
-        return (this.passiveB == PassiveB.DetailedReport && moveUnit.isRangedWeaponType());
+        let hasSkills =
+            this.passiveB === PassiveB.DetailedReport ||
+            this.passiveB === PassiveB.AtkDefBulwark3;
+        return hasSkills && moveUnit.isRangedWeaponType();
     }
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToAdjacentTiles(moveUnit) {
         return (this.passiveB == PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
             || (this.passiveB == PassiveB.DetailedReport)
+            || (this.passiveB == PassiveB.AtkDefBulwark3)
             || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
     }
 
