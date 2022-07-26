@@ -2102,6 +2102,9 @@ const PassiveB = {
 
     // 拍節
     SpdDefTempo3: 2046, // 速さ守備の拍節3
+
+    // 防壁
+    AtkDefBulwark3: 2150, // 攻撃守備の防壁3
 };
 
 const PassiveC = {
