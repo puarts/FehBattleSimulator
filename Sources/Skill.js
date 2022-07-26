@@ -1356,6 +1356,9 @@ const Weapon = {
     StoutAxePlus: 2145, // 堅固の斧+
     VultureAxePlus: 2147, // 禿鷹の斧+
     VultureAxe: 2148, // 禿鷹の斧
+
+    // 2022年7月 神階アスク
+    IlluminatingHorn: 2149, // 絶光の角
 }
 
 const Support = {
@@ -3132,6 +3135,7 @@ WeaponTypesAddAtk2AfterTransform[Weapon.BridesFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.GroomsWings] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SkyPirateClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.TwinCrestPower] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.IlluminatingHorn] = 0;
 
 function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
     return weapon in WeaponTypesAddAtk2AfterTransform;
@@ -3151,6 +3155,7 @@ const BeastCommonSkillMap =
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
+            [Weapon.IlluminatingHorn, BeastCommonSkillType.InfantryMelee2],
 
             [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
