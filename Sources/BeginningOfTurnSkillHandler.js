@@ -125,6 +125,36 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.OpenedDomain: {
+                // 専用スキルでヒーローズ出典が確定なので不要だが念のため
+                let ownerOrigin = skillOwner.heroInfo.origin.replace("暗黒竜と光の剣", "紋章の謎");
+                let found = false;
+                let targetUnits = [];
+                units: for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    targetUnits.push(unit);
+                    for (let origin of unit.heroInfo.origin.split('|')) {
+                        origin = origin.replace("暗黒竜と光の剣", "紋章の謎");
+                        if (ownerOrigin.includes(origin)) {
+                            // 同じ出典なので次の英雄を探す
+                            continue units;
+                        }
+                    }
+                    // 異なる出典のユニットが見つかった
+                    found = true;
+                }
+                if (found) {
+                    targetUnits.push(skillOwner); // 自身も対象に
+                    targetUnits.forEach(unit => {
+                            unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
+                            unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
+                            if (unit.isSpecialCountMax) {
+                                unit.reduceSpecialCount(1);
+                            }
+                        }
+                    )
+                }
+            }
+                break;
             case PassiveC.InfNullFollow3:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp)

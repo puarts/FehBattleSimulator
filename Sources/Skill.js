@@ -2397,6 +2397,7 @@ const PassiveC = {
     HolyGround: 1977, // 地上の最後の女神
     FaithInHumanity: 2089, // 人の可能性を信じる
     DarklingGuardian: 2097, // 闇の樹海の守護竜
+    OpenedDomain: 2151, // みんなが繋がる世界
 };
 
 const PassiveS = {
