@@ -1092,55 +1092,51 @@
             });
         }
 
-        $(function () {
+        window.addEventListener('load', (event) => {
+            const isLocal = typeof weaponInfos == 'undefined';
+            console.log(`isLocal=${isLocal}`);
+            let additionalScripts = [];
+            if (isLocal) {
+                additionalScripts = [
+                    "GlobalDefinitions_Debug.js",
+                    "Cell.js",
+                    "Table.js",
+                    "Utilities.js",
+                    "Logger.js",
+                    "Skill.js",
+                    "BattleMapElement.js",
+                    "Tile.js",
+                    "Structures.js",
+                    "HeroInfo.js",
+                    "Unit.js",
+                    "UnitManager.js",
+                    "BattleMap.js",
+                    "BattleMapSettings.js",
+                    "GlobalBattleContext.js",
+                    "DamageCalculationUtility.js",
+                    "DamageCalculator.js",
+                    "PostCombatSkillHander.js",
+                    "DamageCalculatorWrapper.js",
+                    "BeginningOfTurnSkillHandler.js",
+                    "TurnSetting.js",
+                    "AudioManager.js",
+                    "AetherRaidDefensePresets.js",
+                    "SkillDatabase.js",
+                    "HeroDatabase.js",
+                    "SettingManager.js",
+                    "AppData.js",
+                    "Main_ImageProcessing.js",
+                    "Main_OriginalAi.js",
+                    "Main_MouseAndTouch.js",
+                    "BattleSimulatorBase.js",
+                    "UnitBuilderMain.js",
+                    "VueComponents.js",
+                    "SampleSkillInfos.js",
+                    "SampleHeroInfos.js",
+                ];
+            }
             const startTime = Date.now();
-            loadScripts([
-                "GlobalDefinitions_Debug.js",
-                "Cell.js",
-                "Table.js",
-                "Utilities.js",
-                "Logger.js",
-                "Skill.js",
-                "BattleMapElement.js",
-                "Tile.js",
-                "Structures.js",
-                "HeroInfo.js",
-                "Unit.js",
-                "UnitManager.js",
-                "BattleMap.js",
-                "BattleMapSettings.js",
-                "GlobalBattleContext.js",
-                "DamageCalculationUtility.js",
-                "DamageCalculator.js",
-                "PostCombatSkillHander.js",
-                "DamageCalculatorWrapper.js",
-                "BeginningOfTurnSkillHandler.js",
-                "TurnSetting.js",
-                "AudioManager.js",
-                "AetherRaidDefensePresets.js",
-                "SkillDatabase.js",
-                "HeroDatabase.js",
-                "SettingManager.js",
-                "AppData.js",
-                "Main_ImageProcessing.js",
-                "Main_OriginalAi.js",
-                "Main_MouseAndTouch.js",
-                "BattleSimulatorBase.js",
-                "UnitBuilderMain.js",
-                "VueComponents.js",
-                "SampleSkillInfos.js",
-                "SampleHeroInfos.js",
-            ], () => {
-                // const weaponInfos = [new SkillInfo(1, '鉄の剣', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false, AssistType.None, true, 0, WeaponType.Sword, 50, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Iron_Sword', SkillType.Weapon)];
-                // const supportInfos = [new SkillInfo(411, '歌う', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.Refresh, false, 0, WeaponType.None, 150, false, [], [], false, false, 'Sing', SkillType.Support)];
-                // const specialInfos = [new SkillInfo(450, '華炎', 0, 4, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 200, true, [WeaponType.ExceptStaff,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Ignis', SkillType.Special)];
-                // const passiveAInfos = [new SkillInfo(508, 'HP3', 0, 0, 5, 0, 0, 0, 0, [], [], 0, 1, 1, false, true, 0, false, false, AssistType.None, false, 0, WeaponType.None, 160, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'HP_Plus_5', SkillType.PassiveA)];
-                // const passiveBInfos = [new SkillInfo(588, '叩き込み', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 150, true, [WeaponType.Sword, WeaponType.Lance, WeaponType.Axe, WeaponType.Breath, WeaponType.Beast,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Knock_Back', SkillType.PassiveB)];
-                // const passiveCInfos = [new SkillInfo(668, '生の息吹3', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, true, 0, false, false, AssistType.None, false, 0, WeaponType.None, 200, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, false, 'Breath_of_Life_3', SkillType.PassiveC)];
-                // const passiveSInfos = [];
-                // var heroInfos = [new HeroInfo('ウェンディ', 'Gwendolyn.png', MoveType.Armor, '槍', 1, 49, 30, 24, 38, 28, 23, 8, 5, 12, 6, '0/0', '0/0', '0/0', '0/0', '0/0', 1307, -1, 477, -1, 590, 698, SeasonType.None, BlessingType.None, '可憐な重騎士', ['ウェンディ',], 0, [1307, 74,], [], 1, false, '封印の剣', 'ガチャ', '2017-02-02', [477,], [], [590,], [698,])];
-
-
+            loadScripts(additionalScripts, () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
@@ -1153,11 +1149,10 @@
                 let initMessage = document.getElementById("initMessage");
                 initMessage.textContent = "";
 
-                loadLazyImages();
+                if (isLocal) {
+                    loadLazyImages();
+                }
             });
-        });
-        window.addEventListener('load', (event) => {
-            // initUnitBuilder();
         });
     </script>
 </body>

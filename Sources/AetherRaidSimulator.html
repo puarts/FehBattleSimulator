@@ -2446,45 +2446,55 @@
             });
         }
 
-        $(function () {
+        window.addEventListener('load', (event) => {
+            // let endTime = Date.now();
+            // let diffTime = endTime - g_startTime;
+            // g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
+
+            const isLocal = typeof weaponInfos == 'undefined';
+            console.log(`isLocal=${isLocal}`);
+            let additionalScripts = [];
+            if (isLocal) {
+                additionalScripts = [
+                    "GlobalDefinitions_Debug.js",
+                    "Cell.js",
+                    "Table.js",
+                    "Utilities.js",
+                    "Logger.js",
+                    "Skill.js",
+                    "BattleMapElement.js",
+                    "Tile.js",
+                    "Structures.js",
+                    "HeroInfo.js",
+                    "Unit.js",
+                    "UnitManager.js",
+                    "BattleMap.js",
+                    "BattleMapSettings.js",
+                    "GlobalBattleContext.js",
+                    "DamageCalculationUtility.js",
+                    "DamageCalculator.js",
+                    "PostCombatSkillHander.js",
+                    "DamageCalculatorWrapper.js",
+                    "BeginningOfTurnSkillHandler.js",
+                    "TurnSetting.js",
+                    "AudioManager.js",
+                    "AetherRaidDefensePresets.js",
+                    "SkillDatabase.js",
+                    "HeroDatabase.js",
+                    "SettingManager.js",
+                    "AppData.js",
+                    "Main_ImageProcessing.js",
+                    "Main_OriginalAi.js",
+                    "Main_MouseAndTouch.js",
+                    "BattleSimulatorBase.js",
+                    "AetherRaidSimulatorMain.js",
+                    "VueComponents.js",
+                    "SampleSkillInfos.js",
+                    "SampleHeroInfos.js",
+                ];
+            }
             const startTime = Date.now();
-            loadScripts([
-                "GlobalDefinitions_Debug.js",
-                "Cell.js",
-                "Table.js",
-                "Utilities.js",
-                "Logger.js",
-                "Skill.js",
-                "BattleMapElement.js",
-                "Tile.js",
-                "Structures.js",
-                "HeroInfo.js",
-                "Unit.js",
-                "UnitManager.js",
-                "BattleMap.js",
-                "BattleMapSettings.js",
-                "GlobalBattleContext.js",
-                "DamageCalculationUtility.js",
-                "DamageCalculator.js",
-                "PostCombatSkillHander.js",
-                "DamageCalculatorWrapper.js",
-                "BeginningOfTurnSkillHandler.js",
-                "TurnSetting.js",
-                "AudioManager.js",
-                "AetherRaidDefensePresets.js",
-                "SkillDatabase.js",
-                "HeroDatabase.js",
-                "SettingManager.js",
-                "AppData.js",
-                "Main_ImageProcessing.js",
-                "Main_OriginalAi.js",
-                "Main_MouseAndTouch.js",
-                "BattleSimulatorBase.js",
-                "AetherRaidSimulatorMain.js",
-                "VueComponents.js",
-                "SampleSkillInfos.js",
-                "SampleHeroInfos.js",
-            ], () => {
+            loadScripts(additionalScripts, () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
@@ -2492,17 +2502,15 @@
                     passiveSInfos);
                 g_app.registerHeroOptions(heroInfos, false);
 
-                loadLazyImages();
-            });
-        });
-        window.addEventListener('load', (event) => {
-            let endTime = Date.now();
-            let diffTime = endTime - g_startTime;
-            g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
-            initAetherRaidBoard(heroInfos);
+                if (isLocal) {
+                    loadLazyImages();
+                }
 
-            createDialogs();
-            importUrl(location.search);
+                initAetherRaidBoard(heroInfos);
+
+                createDialogs();
+                importUrl(location.search);
+            });
         });
     </script>
 </body>

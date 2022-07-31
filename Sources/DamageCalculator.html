@@ -383,34 +383,40 @@
 
 
         $(function () {
+            const isLocal = typeof weaponInfos == 'undefined';
+            console.log(`isLocal=${isLocal}`);
+            let additionalScripts = [];
+            if (isLocal) {
+                additionalScripts = [
+                    "GlobalDefinitions_Debug.js",
+                    "Utilities.js",
+                    "Logger.js",
+                    "Skill.js",
+                    "BattleMapElement.js",
+                    "Tile.js",
+                    "BattleMap.js",
+                    "GlobalBattleContext.js",
+                    "Structures.js",
+                    "Table.js",
+                    "HeroInfo.js",
+                    "Unit.js",
+                    "UnitManager.js",
+                    "SkillDatabase.js",
+                    "HeroDatabase.js",
+                    "DamageCalculationUtility.js",
+                    "DamageCalculator.js",
+                    "PostCombatSkillHander.js",
+                    "DamageCalculatorWrapper.js",
+                    "BeginningOfTurnSkillHandler.js",
+                    "SampleSkillInfos.js",
+                    "SampleHeroInfos.js",
+                    "VueComponents.js",
+                    "KeyRepeatHandler.js",
+                    "DamageCalculatorMain.js",
+                ];
+            }
             const startTime = Date.now();
-            loadScripts([
-                "GlobalDefinitions_Debug.js",
-                "Utilities.js",
-                "Logger.js",
-                "Skill.js",
-                "BattleMapElement.js",
-                "Tile.js",
-                "BattleMap.js",
-                "GlobalBattleContext.js",
-                "Structures.js",
-                "Table.js",
-                "HeroInfo.js",
-                "Unit.js",
-                "UnitManager.js",
-                "SkillDatabase.js",
-                "HeroDatabase.js",
-                "DamageCalculationUtility.js",
-                "DamageCalculator.js",
-                "PostCombatSkillHander.js",
-                "DamageCalculatorWrapper.js",
-                "BeginningOfTurnSkillHandler.js",
-                "SampleSkillInfos.js",
-                "SampleHeroInfos.js",
-                "VueComponents.js",
-                "KeyRepeatHandler.js",
-                "DamageCalculatorMain.js",
-            ], () => {
+            loadScripts(additionalScripts, () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
