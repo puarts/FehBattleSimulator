@@ -470,7 +470,7 @@ class BeginningOfTurnSkillHandler {
                         skillOwner.applyAllBuff(4);
                     }
                     if (skillOwner.isWeaponSpecialRefined) {
-                        for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
+                        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
                             unit.reserveToApplyAtkDebuff(-7);
                             unit.reserveToApplyDefDebuff(-7);
                             unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);

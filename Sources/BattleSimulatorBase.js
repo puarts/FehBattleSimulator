@@ -8761,7 +8761,17 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
     if (unit.groupId == UnitGroupType.Ally && obj instanceof TrapBase) {
         // トラップ床発動
         if (obj.isExecutable) {
-            if (unit.passiveB != PassiveB.Wanakaijo3) {
+            let trapCondSatisfied = false;
+            switch (obj.constructor) {
+                case HeavyTrap:
+                case BoltTrap:
+                    trapCondSatisfied = unit.passiveB != PassiveB.Wanakaijo3;
+                    break;
+                case HexTrap:
+                    trapCondSatisfied = unit.hp <= obj.level * 5 + 35;
+                    break;
+            }
+            if (trapCondSatisfied) {
                 if (endsActionIfActivateTrap) {
                     g_app.endUnitActionAndGainPhaseIfPossible(unit);
                 }
