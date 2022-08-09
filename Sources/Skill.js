@@ -2264,6 +2264,7 @@ const PassiveC = {
     ResSmoke1: 1409,
     ResSmoke2: 1410,
     ResSmoke3: 730, // 魔防の紫煙3
+    DefResSmoke3: 2164, // 守備魔防の紫煙3
 
     AtkPloy3: 722, // 攻撃の謀策3
     SpdPloy3: 723, // 速さの謀策3

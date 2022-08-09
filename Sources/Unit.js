@@ -2759,6 +2759,13 @@ class Unit extends BattleMapElement {
         return false;
     }
 
+    applyBuffs(atk, spd, def, res) {
+        this.applyAtkBuff(atk);
+        this.applySpdBuff(spd);
+        this.applyDefBuff(def);
+        this.applyResBuff(res);
+    }
+
     reserveToApplyAtkDebuff(amount) {
         if (this.reservedAtkDebuff > amount) {
             this.reservedAtkDebuff = amount;
@@ -2821,6 +2828,13 @@ class Unit extends BattleMapElement {
             return true;
         }
         return false;
+    }
+
+    applyDebuffs(atk, spd, def, res) {
+        this.applyAtkDebuff(atk);
+        this.applySpdDebuff(spd);
+        this.applyDefDebuff(def);
+        this.applyResDebuff(res);
     }
 
     modifySpecialCount() {
