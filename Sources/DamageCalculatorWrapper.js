@@ -2022,6 +2022,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LunaArc] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FloridCanePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addSpurs(5, 5, 0, 0);
@@ -8843,15 +8855,18 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.LunaArc:
-                if (atkUnit.battleContext.initiatesCombat) {
-                    let value = 0;
-                    if (isPrecombat) {
-                        value = defUnit.getDefInPrecombat();
+                if (!atkUnit.isWeaponRefined) {
+                    // <通常効果>
+                    if (atkUnit.battleContext.initiatesCombat) {
+                        let value = isPrecombat ? defUnit.getDefInPrecombat() : defUnit.getDefInCombat(atkUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                     }
-                    else {
-                        value = defUnit.getDefInCombat(atkUnit);
+                } else {
+                    // <錬成効果>
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let value = isPrecombat ? defUnit.getDefInPrecombat() : defUnit.getDefInCombat(atkUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                     }
-                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                 }
                 break;
             case Weapon.BladeOfRenais:
@@ -9303,6 +9318,14 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.LunaArc:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (defUnit.isPhysicalAttacker() &&
+                        atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.SoothingScent:
                 if (atkUnit.battleContext.weaponSkillCondSatisfied) {
                     if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 1) {
@@ -9845,6 +9868,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.LunaArc:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                }
+                break;
             case Weapon.MilasTestament:
                 if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                     enemyUnit.battleContext.reducesCooldownCount = false;
