@@ -2022,6 +2022,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LoftyLeaflet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(-4, 0, -4, 0);
         }
@@ -7771,6 +7777,15 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.LoftyLeaflet:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let amount = Math.trunc(targetUnit.getEvalSpdInCombat(enemyUnit) * 0.15);
+                        targetUnit.battleContext.additionalDamage += amount;
+                        let buffs = enemyUnit.getBuffsInCombat(targetUnit);
+                        targetUnit.addSpurs(...buffs);
+                        enemyUnit.addSpurs(...buffs.map(a => -a));
+                    }
+                    break;
                 case Weapon.TriEdgeLance:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let res = enemyUnit.getEvalResInCombat(targetUnit);

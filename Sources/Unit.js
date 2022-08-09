@@ -2260,6 +2260,15 @@ class Unit extends BattleMapElement {
             + this.getResDebuffInCombat();
     }
 
+    getDebuffsInCombat() {
+        return [
+            this.getAtkDebuffInCombat(),
+            this.getSpdDebuffInCombat(),
+            this.getDefDebuffInCombat(),
+            this.getResDebuffInCombat(),
+        ];
+    }
+
     get buffTotal() {
         if (this.isPanicEnabled) {
             return 0;
@@ -3448,6 +3457,25 @@ class Unit extends BattleMapElement {
             () => Number(this.defBuff),
             () => this.battleContext.invalidatesOwnDefDebuff
         );
+    }
+
+    getBuffsInCombat(enemyUnit) {
+        return [
+            this.getAtkBuffInCombat(enemyUnit),
+            this.getSpdBuffInCombat(enemyUnit),
+            this.getDefBuffInCombat(enemyUnit),
+            this.getResBuffInCombat(enemyUnit),
+        ];
+    }
+
+    // 自分のBuffと相手のDebuff
+    getBuffsEnemyDebuffsInCombat(enemyUnit) {
+        return [
+            [this.getAtkBuffInCombat(enemyUnit), enemyUnit.getAtkDebuffInCombat()],
+            [this.getSpdBuffInCombat(enemyUnit), enemyUnit.getSpdDebuffInCombat()],
+            [this.getDefBuffInCombat(enemyUnit), enemyUnit.getDefDebuffInCombat()],
+            [this.getResBuffInCombat(enemyUnit), enemyUnit.getResDebuffInCombat()],
+        ]
     }
 
     __getStatusInCombat(getInvalidatesFunc, getStatusWithoutBuffFunc, getBuffFunc, getInvalidateOwnDebuffFunc) {
