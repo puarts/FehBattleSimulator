@@ -995,6 +995,16 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoNina :
+                duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (unit.posX === duoUnit.posX || unit.posY === duoUnit.posY ||
+                        unit.hasNegativeStatusEffect()) {
+                        unit.applyAllDebuff(-7);
+                        unit.addStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+                break;
             case Hero.DuoThorr: {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
                     if (unit.posX === duoUnit.posX || unit.posY === duoUnit.posY) {
@@ -3695,6 +3705,7 @@ class BattleSimmulatorBase {
                 || unit.heroIndex == Hero.SummerByleth
                 || unit.heroIndex == Hero.PirateVeronica
                 || unit.heroIndex == Hero.DuoHilda
+                || unit.heroIndex == Hero.DuoNina
             ) {
                 if (this.data.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;

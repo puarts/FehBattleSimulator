@@ -526,6 +526,8 @@ Main.js
         // 同じ出典のキャラクターに付与
         this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ZZZ);
     }
+再使用
+__initializeUnitsPerTurn(targetUnits) {}
 
 ターン毎のインポート、エクスポート設定
 fromPerTurnStatusString(value) {}
