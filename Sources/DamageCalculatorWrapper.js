@@ -641,6 +641,11 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.ShishiouNoTsumekiba:
+                if (defUnit.isWeaponRefined) {
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.7);
+                }
+                break;
             case Weapon.GodlyBreath:
                 if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
@@ -1462,12 +1467,6 @@ class DamageCalculatorWrapper {
                 defUnit.battleContext.canCounterattackToAllDistance = true;
             }
         };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.ShishiouNoTsumekiba] = (defUnit, atkUnit, calcPotentialDamage) => {
-            defUnit.addAllSpur(4);
-            if (defUnit.isTransformed) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
-            }
-        };
         self._applySkillEffectForDefUnitFuncDict[Weapon.OgonNoTanken] = (defUnit, atkUnit, calcPotentialDamage) => {
             if (defUnit.isSpecialCharged) {
                 defUnit.battleContext.canCounterattackToAllDistance = true;
@@ -2022,6 +2021,39 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ShishiouNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.7, enemyUnit);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.addSpurs(-5, 0, -5, 0);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        if (targetUnit.isTransformed) {
+                            let amount = Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8;
+                            if (amount >= 0) {
+                                amount = Math.min(8, amount);
+                                targetUnit.addSpurs(amount, 0, amount, amount);
+                            }
+                        }
+                    }
+                }
+            }
+            if (targetUnit.isTransformed) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.LunaArc] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
