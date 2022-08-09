@@ -2691,6 +2691,13 @@ class Unit extends BattleMapElement {
         this.reserveToApplyResDebuff(amount);
     }
 
+    reserveToApplyDebuffs(atk, spd, def, res) {
+        this.reserveToApplyAtkDebuff(atk);
+        this.reserveToApplySpdDebuff(spd);
+        this.reserveToApplyDefDebuff(def);
+        this.reserveToApplyResDebuff(res);
+    }
+
     applyAllDebuff(amount) {
         this.applyAtkDebuff(amount);
         this.applySpdDebuff(amount);
