@@ -1275,10 +1275,23 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case PassiveC.DivineFang:
+            case PassiveC.DivineFangPlus:
                 for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
                     if (!otherUnit.isOnMap) { continue; }
                     if (skillOwner.isNextTo(otherUnit)) {
                         otherUnit.reserveToAddStatusEffect(StatusEffectType.EffectiveAgainstDragons);
+                    }
+                }
+                if (skillId === PassiveC.DivineFangPlus) {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        found = true;
+                        unit.applyBuffs(6, 6, 0, 0);
+                        unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                    }
+                    if (found) {
+                        skillOwner.applyBuffs(6, 6, 0, 0);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
                     }
                 }
                 break;

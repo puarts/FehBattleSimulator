@@ -2385,6 +2385,7 @@ const PassiveC = {
     WithEveryone2: 1879, // みんなと一緒に・承
     SolitaryDream: 898, // ひとりぼっちのゆめ
     DivineFang: 915, // 神竜王の牙
+    DivineFangPlus: 2161, // 神竜王の牙・神
     KyokoNoKisaku3: 726, // 恐慌の奇策3
     AirOrders3: 819, // 先導の伝令・天3
     GroundOrders3: 911, // 先導の伝令・地3
