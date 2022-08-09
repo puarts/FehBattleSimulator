@@ -478,6 +478,9 @@ applySupportSkill() {
 __canActivateCanto(unit) {}
 unit.calcMoveCountForCanto() {}
 
+再移動(ワープ)
+* enumerateWarpCantoTiles(unit) {}
+
 移動可能[ワープ]
 const TeleportationSkillDictに登録
 Main.js

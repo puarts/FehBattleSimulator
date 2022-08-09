@@ -2294,6 +2294,26 @@ class BattleMap {
                     yield tile;
                 }
             }
+            // ワープ再移動のタイルを生成
+            if (unit.isCantoActivated()) {
+                yield* this.enumerateWarpCantoTiles(unit);
+            }
+        }
+    }
+
+    * enumerateWarpCantoTiles(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.LoftyLeaflet:
+                    for (let tile of this.enumerateTiles(tile => tile.isUnitPlacableForUnit(unit))) {
+                        // 現在位置のタイルは含まれないのでunit.pos<X, Y>, tile.pos<X, Y>が共に等しい場合の判定は不要
+                        if (Math.abs(unit.posX - tile.posX) <= 1 &&
+                            Math.abs(unit.posY - tile.posY) <= 1) {
+                            yield tile;
+                        }
+                    }
+                    break;
+            }
         }
     }
 

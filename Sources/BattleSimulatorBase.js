@@ -6014,6 +6014,7 @@ class BattleSimmulatorBase {
 
     __activateCantoIfPossible(unit) {
         if (this.__canActivateCanto(unit)) {
+            unit.isCantoActivating = true;
             this.writeDebugLogLine("再移動の発動");
             let count = unit.calcMoveCountForCanto();
             // 4マス以内にいるだけで再移動発動時に効果を発揮する
@@ -6042,8 +6043,12 @@ class BattleSimmulatorBase {
             return false;
         }
 
+        // 移動力が0かつワープでの移動先が無い場合再移動は発動しない
         if (unit.calcMoveCountForCanto() === 0) {
-            return false;
+            let movableWarpTileCount = Array.from(this.map.enumerateWarpCantoTiles(unit)).length;
+            if (movableWarpTileCount === 0) {
+                return false;
+            }
         }
 
         // スキル毎の追加条件
@@ -6062,6 +6067,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.LoftyLeaflet:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
                 case Weapon.FrozenDelight:

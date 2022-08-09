@@ -1359,7 +1359,10 @@ const Weapon = {
 
     // 2022年7月 神階アスク
     IlluminatingHorn: 2149, // 絶光の角
-}
+
+    // 超英雄 危ないお宝対決
+    LoftyLeaflet: 2152, // 気高き怪盗の予告状
+};
 
 const Support = {
     None: -1,

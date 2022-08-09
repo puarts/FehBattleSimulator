@@ -1303,6 +1303,7 @@ class Unit extends BattleMapElement {
 
         this.moveCountForCanto = 0; // 再移動の移動マス数
         this.isCantoActivatedInCurrentTurn = false; // 現在ターンで再移動が1度でも発動したかどうか
+        this.isCantoActivating = false; // 再移動中かどうか
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
         this.originalMerge = 0;
@@ -1385,7 +1386,7 @@ class Unit extends BattleMapElement {
 
         this.moveCountForCanto = moveCountForCanto;
 
-        if (this.moveCountForCanto > 0) {
+        if (this.isCantoActivated()) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
             if (cantoControlledIfCantoActivated) {
@@ -1402,11 +1403,12 @@ class Unit extends BattleMapElement {
     /// 再移動の発動を終了します。
     deactivateCanto() {
         this.moveCountForCanto = 0;
+        this.isCantoActivating = false;
     }
 
     /// 再移動が発動しているとき、trueを返します。
     isCantoActivated() {
-        return this.moveCountForCanto > 0;
+        return this.isCantoActivating;
     }
 
     chaseTargetTileToString() {
@@ -1787,6 +1789,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restMoveCount
             + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
             + ValueDelimiter + boolToInt(this.isCombatDone)
+            + ValueDelimiter + boolToInt(this.isCantoActivating)
             ;
     }
 
@@ -1878,6 +1881,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isCantoActivating = intToBool(Number(splited[i])); ++i; }
     }
 
 
