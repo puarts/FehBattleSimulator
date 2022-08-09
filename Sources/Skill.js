@@ -1364,6 +1364,7 @@ const Weapon = {
     LoftyLeaflet: 2152, // 気高き怪盗の予告状
     SoothingScent: 2163, // 影潜む密偵の香水瓶
     FloridKnifePlus: 2154, // 薔薇のナイフ+
+    ShadowyQuill: 2156, // 双夜舞う怪盗の羽根
 };
 
 const Support = {

@@ -1246,6 +1246,10 @@ class Unit extends BattleMapElement {
         this.initPosX = 0;
         this.initPosY = 0;
 
+        // 元の場所に再移動の際に使用
+        this.fromPosX = 0;
+        this.fromPosY = 0;
+
         // 迅雷やノヴァの聖戦士が発動したかを記録しておく
         this.isOneTimeActionActivatedForWeapon = false;
         this.isOneTimeActionActivatedForSpecial = false;
@@ -1790,6 +1794,8 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
             + ValueDelimiter + boolToInt(this.isCombatDone)
             + ValueDelimiter + boolToInt(this.isCantoActivating)
+            + ValueDelimiter + this.fromPosX
+            + ValueDelimiter + this.fromPosY
             ;
     }
 
@@ -1882,6 +1888,8 @@ class Unit extends BattleMapElement {
         if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isCantoActivating = intToBool(Number(splited[i])); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.fromPosX = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
     }
 
 
@@ -3336,6 +3344,8 @@ class Unit extends BattleMapElement {
     }
 
     setPos(x, y) {
+        this.fromPosX = this.posX;
+        this.fromPosY = this.posY;
         this.posX = x;
         this.posY = y;
     }

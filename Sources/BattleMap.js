@@ -2304,6 +2304,14 @@ class BattleMap {
     * enumerateWarpCantoTiles(unit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ShadowyQuill:
+                    for (let tile of this.enumerateTiles()) {
+                        if (tile.posX === unit.fromPosX &&
+                            tile.posY === unit.fromPosY) {
+                            yield tile;
+                        }
+                    }
+                    break;
                 case Weapon.SoothingScent:
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
                         for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
