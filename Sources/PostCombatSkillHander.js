@@ -641,6 +641,13 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SoothingScent:
+                    if (attackUnit.battleContext.weaponSkillCondSatisfied) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.reserveTakeDamage(10);
+                        }
+                    }
+                    break;
                 case Weapon.CaringConch:
                     if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackUnit)) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {

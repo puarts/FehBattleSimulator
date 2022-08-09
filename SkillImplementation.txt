@@ -476,7 +476,7 @@ applySupportSkill() {
 
 再移動(N)
 __canActivateCanto(unit) {}
-unit.calcMoveCountForCanto() {}
+unit.calcMoveCountForCanto() {} // ワープの場合は必要なし
 
 再移動(ワープ)
 * enumerateWarpCantoTiles(unit) {}

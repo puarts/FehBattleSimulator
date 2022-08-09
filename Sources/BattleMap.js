@@ -2304,6 +2304,13 @@ class BattleMap {
     * enumerateWarpCantoTiles(unit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SoothingScent:
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                            yield tile;
+                        }
+                    }
+                    break;
                 case Weapon.LoftyLeaflet:
                     for (let tile of this.enumerateTiles(tile => tile.isUnitPlacableForUnit(unit))) {
                         // 現在位置のタイルは含まれないのでunit.pos<X, Y>, tile.pos<X, Y>が共に等しい場合の判定は不要

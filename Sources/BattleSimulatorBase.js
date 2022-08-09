@@ -6067,6 +6067,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.SoothingScent:
                 case Weapon.LoftyLeaflet:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
