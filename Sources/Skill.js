@@ -1363,6 +1363,7 @@ const Weapon = {
     // 超英雄 危ないお宝対決
     LoftyLeaflet: 2152, // 気高き怪盗の予告状
     SoothingScent: 2163, // 影潜む密偵の香水瓶
+    FloridKnifePlus: 2154, // 薔薇のナイフ+
 };
 
 const Support = {
