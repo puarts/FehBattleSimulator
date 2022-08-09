@@ -7667,6 +7667,14 @@ class BattleSimmulatorBase {
                         u.applyDefDebuff(-6);
                     }
                     break;
+                case PassiveB.AtkResSnag3:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applyDebuffs(-6, 0, 0, -6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applyDebuffs(-6, 0, 0, -6);
+                    }
+                    break;
                 case PassiveB.SpdResSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applySpdDebuff(-6);

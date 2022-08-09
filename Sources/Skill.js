@@ -2064,6 +2064,7 @@ const PassiveB = {
     // 干渉
     AtkSpdSnag3: 1685, // 攻撃速さの干渉3
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
+    AtkResSnag3: 2153, // 攻撃魔坊の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
     DefResSnag3: 1867, // 守備魔防の干渉3
