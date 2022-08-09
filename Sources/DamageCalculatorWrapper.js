@@ -5792,7 +5792,8 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.DivineBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage) {
                 let statusPlus = 0;
-                for (let allyUnit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                let spaces = targetUnit.isWeaponRefined ? 4 : 2;
+                for (let allyUnit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
                     if (isWeaponTypeBreath(allyUnit.weaponType)
                         || allyUnit.hasEffective(EffectiveType.Dragon)) {
                         statusPlus += 3;
@@ -5805,6 +5806,13 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += statusPlus;
                 targetUnit.defSpur += statusPlus;
                 targetUnit.resSpur += statusPlus;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                    targetUnit.addSpurs(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPush3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -7800,6 +7808,15 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.DivineBreath:
+                    if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        let amount = Math.trunc(diff * 0.25);
+                        if (amount >= 0) {
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += amount;
+                        }
+                    }
+                    break;
                 case Weapon.ShadowyQuill:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let damage = targetUnit.getBuffsEnemyDebuffsInCombat(enemyUnit)
@@ -10872,6 +10889,22 @@ class DamageCalculatorWrapper {
                                     targetUnit.addAllSpur(2);
                                 }
                                 break;
+                        }
+                    }
+
+                    if (this.__isNear(unit, targetUnit, 4)) {
+                        // 4マス以内で発動する戦闘中バフ
+                        for (let skillId of unit.enumerateSkills()) {
+                            switch (skillId) {
+                                case Weapon.DivineBreath:
+                                    if (unit.isWeaponRefined) {
+                                        if (isWeaponTypeBreath(targetUnit.weaponType) ||
+                                            targetUnit.hasEffective(EffectiveType.Dragon)) {
+                                            targetUnit.addAllSpur(3);
+                                        }
+                                    }
+                                    break;
+                            }
                         }
                     }
 
