@@ -1469,6 +1469,7 @@ const Special = {
     Luna: 467, // 月光
     Aether: 470, // 天空
     LunaFlash: 889, // 月光閃
+    LunarFlash2: 2160, // 月光閃・承
     Glimmer: 462, // 凶星
     Deadeye: 1481, // 狙撃
     Astra: 461, // 流星
@@ -2700,6 +2701,7 @@ NormalAttackSpecialDict[Special.Moonbow] = 0;
 NormalAttackSpecialDict[Special.Luna] = 0;
 NormalAttackSpecialDict[Special.Aether] = 0;
 NormalAttackSpecialDict[Special.LunaFlash] = 0;
+NormalAttackSpecialDict[Special.LunarFlash2] = 0;
 NormalAttackSpecialDict[Special.Glimmer] = 0;
 NormalAttackSpecialDict[Special.Deadeye] = 0;
 NormalAttackSpecialDict[Special.Astra] = 0;

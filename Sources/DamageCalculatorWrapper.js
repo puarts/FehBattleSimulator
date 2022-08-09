@@ -9986,6 +9986,16 @@ class DamageCalculatorWrapper {
             }
         };
 
+        this._applySpecialSkillEffectFuncDict[Special.LunarFlash2] = (targetUnit, enemyUnit) => {
+            {
+                // 月光閃・承
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.2);
+                targetUnit.battleContext.specialSufferPercentage = 20;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        };
+
         {
             let func = (targetUnit, enemyUnit) => {
                 // 凶星
