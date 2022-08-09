@@ -48,22 +48,11 @@
 </head>
 
 <body>
-    <!-- 重要なところは予め接続 -->
-    <link rel="preconnect" href="//cdnjs.cloudflare.com">
-    <link rel="preconnect" href="//code.jquery.com">
-
+    <p>
+        FEHの全英雄のアイコン一覧です。特定の英雄について説明用の資料を作る時などに使います。
+    </p>
     <!-- jquery -->
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-            integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
     <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-
-    <!-- select2 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-
-    <!-- jquery-ui -->
-    <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
     <!-- vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
@@ -77,8 +66,8 @@
     <div id="app">
         名前検索:
         <input type="text" v-model="nameQuery" @input="g_appData.applyFilter()">
-        <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"><label
-            for="needsFullMatching">完全一致</label>
+        <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"
+            @change="g_appData.applyFilter()"><label for="needsFullMatching">完全一致</label>
         <fieldset class="submenuField">
             <div v-for="heroInfo in filteredHeroInfos" style="float:left;position:relative;width:40px;height:40px;">
                 <a title="heroInfo.name + 'の詳細情報(ステータス、個性、習得スキル等)'"
@@ -91,18 +80,6 @@
                     </span>
                 </a>
             </div>
-
-            <!-- <div style="float:left;position:relative;width:40px;height:40px;">
-                <a title="伝承ルフレ(女) の詳細情報(ステータス、個性、習得スキル等)" href="https://puarts.com/?fehhero=232#main-content">
-                    <img src="/blog/images/FehHeroThumbs/L-Robin-F-icon-v2.png"
-                        data-src="/blog/images/FehHeroThumbs/L-Robin-F-icon-v2.png" class="heroThumb" alt="伝承ルフレ(女)の画像"
-                        width="40" height="40">
-                    <span style="position:absolute;bottom:0px;right:0px;">
-                        <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" width="15"
-                            height="15">
-                    </span>
-                </a>
-            </div> -->
         </fieldset>
     </div>
 
@@ -137,49 +114,16 @@
         }
 
         window.addEventListener('load', (event) => {
-            // let endTime = Date.now();
-            // let diffTime = endTime - g_startTime;
-            // g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
-
-            const isLocal = typeof weaponInfos == 'undefined';
+            const isLocal = typeof heroInfos == 'undefined';
             console.log(`isLocal=${isLocal}`);
             let additionalScripts = [];
             if (isLocal) {
                 additionalScripts = [
                     "GlobalDefinitions_Debug.js",
-                    // "Cell.js",
-                    // "Table.js",
                     "Utilities.js",
-                    // "Logger.js",
                     "Skill.js",
-                    // "BattleMapElement.js",
-                    // "Tile.js",
-                    // "Structures.js",
                     "HeroInfo.js",
-                    // "Unit.js",
-                    // "UnitManager.js",
-                    // "BattleMap.js",
-                    // "BattleMapSettings.js",
-                    // "GlobalBattleContext.js",
-                    // "DamageCalculationUtility.js",
-                    // "DamageCalculator.js",
-                    // "PostCombatSkillHander.js",
-                    // "DamageCalculatorWrapper.js",
-                    // "BeginningOfTurnSkillHandler.js",
-                    // "TurnSetting.js",
-                    // "AudioManager.js",
-                    // "AetherRaidDefensePresets.js",
-                    // "SkillDatabase.js",
-                    "HeroDatabase.js",
-                    // "SettingManager.js",
                     "HeroIconListerMain.js",
-                    // "Main_ImageProcessing.js",
-                    // "Main_OriginalAi.js",
-                    // "Main_MouseAndTouch.js",
-                    // "BattleSimulatorBase.js",
-                    // "AetherRaidSimulatorMain.js",
-                    // "VueComponents.js",
-                    // "SampleSkillInfos.js",
                     "SampleHeroInfos.js",
                 ];
             }
