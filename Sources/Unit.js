@@ -158,32 +158,6 @@ const PartnerLevel =
 };
 
 
-const BlessingType =
-{
-    None: -1,
-    Hp5_Atk3: 0,
-    Hp5_Spd4: 1,
-    Hp5_Def5: 2,
-    Hp5_Res5: 3,
-    Hp3_Atk2: 4,
-    Hp3_Spd3: 5,
-    Hp3_Def4: 6,
-    Hp3_Res4: 7,
-    Hp3: 8,
-};
-
-const BlessingTypeOptions = [
-    { id: BlessingType.None, text: "なし" },
-    { id: BlessingType.Hp5_Atk3, text: "HP+5 攻撃+3" },
-    { id: BlessingType.Hp5_Spd4, text: "HP+5 速さ+4" },
-    { id: BlessingType.Hp5_Def5, text: "HP+5 守備+5" },
-    { id: BlessingType.Hp5_Res5, text: "HP+5 魔防+5" },
-    { id: BlessingType.Hp3_Atk2, text: "HP+3 攻撃+2" },
-    { id: BlessingType.Hp3_Spd3, text: "HP+3 速さ+3" },
-    { id: BlessingType.Hp3_Def4, text: "HP+3 守備+4" },
-    { id: BlessingType.Hp3_Res4, text: "HP+3 魔防+4" },
-    { id: BlessingType.Hp3, text: "HP+3" },
-];
 
 const CombatResult = {
     Win: 2,

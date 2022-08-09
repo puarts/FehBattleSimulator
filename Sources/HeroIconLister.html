@@ -1,0 +1,201 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>英雄アイコンリスト</title>
+    <link rel="stylesheet" href="../../css/main.css?20181201" type="text/css" />
+    <script>
+        const g_startTime = Date.now();
+    </script>
+    <script>
+        // 画像の遅延ロード用の処理。以下の要素を作ると遅延ロードされる
+        // <img src="dummy.png" data-src="actual.png" class="lazy" />
+        document.addEventListener("DOMContentLoaded", function () {
+            let lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+            let lazyInputs = [].slice.call(document.querySelectorAll("input.lazy"));
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            if (lazyImage.tagName == "IMG") {
+                                lazyImage.src = lazyImage.dataset.src;
+                                if (typeof lazyImage.dataset.srcset === "undefined") {
+                                } else {
+                                    lazyImage.srcset = lazyImage.dataset.srcset;
+                                }
+                            }
+                            else if (lazyImage.tagName == "INPUT") {
+                                lazyImage.style.backgroundImage = `url("${lazyImage.dataset.src}")`;
+                            }
+                            lazyImage.classList.remove("lazy");
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+
+                lazyImages.forEach(function (lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+                lazyInputs.forEach(function (lazyInput) {
+                    lazyImageObserver.observe(lazyInput);
+                });
+            } else {
+                // Possibly fall back to a more compatible method here
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <!-- 重要なところは予め接続 -->
+    <link rel="preconnect" href="//cdnjs.cloudflare.com">
+    <link rel="preconnect" href="//code.jquery.com">
+
+    <!-- jquery -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
+    <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <!-- select2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+    <!-- jquery-ui -->
+    <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+
+    <style>
+        .button {
+            width: 120px
+        }
+    </style>
+
+    <div id="app">
+        名前検索:
+        <input type="text" v-model="nameQuery" @input="g_appData.applyFilter()">
+        <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"><label
+            for="needsFullMatching">完全一致</label>
+        <fieldset class="submenuField">
+            <div v-for="heroInfo in filteredHeroInfos" style="float:left;position:relative;width:40px;height:40px;">
+                <a title="heroInfo.name + 'の詳細情報(ステータス、個性、習得スキル等)'"
+                    v-bind:href="heroInfo.detailPageUrl + '#main-content'">
+                    <img v-bind:src="heroInfo.iconUrl" class="heroThumb" v-bind:alt="heroInfo.name + 'の画像'" width="40"
+                        height="40">
+                    <span style="position:absolute;bottom:0px;right:0px;" v-if="heroInfo.seasonType != SeasonType.None">
+                        <img v-bind:src="'https://puarts.com/AetherRaidTacticsBoard/images/Season_'+getSeasonTypeName(heroInfo.seasonType)+'.png'"
+                            width="15" height="15">
+                    </span>
+                </a>
+            </div>
+
+            <!-- <div style="float:left;position:relative;width:40px;height:40px;">
+                <a title="伝承ルフレ(女) の詳細情報(ステータス、個性、習得スキル等)" href="https://puarts.com/?fehhero=232#main-content">
+                    <img src="/blog/images/FehHeroThumbs/L-Robin-F-icon-v2.png"
+                        data-src="/blog/images/FehHeroThumbs/L-Robin-F-icon-v2.png" class="heroThumb" alt="伝承ルフレ(女)の画像"
+                        width="40" height="40">
+                    <span style="position:absolute;bottom:0px;right:0px;">
+                        <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" width="15"
+                            height="15">
+                    </span>
+                </a>
+            </div> -->
+        </fieldset>
+    </div>
+
+    <script>
+        function createScriptElement(src, onloadFunc) {
+            let element = document.createElement("script");
+            element.type = "text/javascript";
+            element.src = src;
+            element.onload = onloadFunc;
+            // document.body.appendChild(element);
+            let headElement = document.getElementsByTagName('head')[0];
+            headElement.appendChild(element);
+        }
+
+        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
+            if (index == scriptFileNames.length) {
+                allScriptLoaded();
+                return;
+            }
+
+            let jsRootPath = "./";
+            // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
+            let reloadSuffix = "20200513";
+            let scriptFileName = scriptFileNames[index];
+            let src = jsRootPath + scriptFileName + "?" + reloadSuffix;
+            const startTime = Date.now();
+            createScriptElement(src, x => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load ${src}`);
+                loadScripts(scriptFileNames, allScriptLoaded, ++index);
+            });
+        }
+
+        window.addEventListener('load', (event) => {
+            // let endTime = Date.now();
+            // let diffTime = endTime - g_startTime;
+            // g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
+
+            const isLocal = typeof weaponInfos == 'undefined';
+            console.log(`isLocal=${isLocal}`);
+            let additionalScripts = [];
+            if (isLocal) {
+                additionalScripts = [
+                    "GlobalDefinitions_Debug.js",
+                    // "Cell.js",
+                    // "Table.js",
+                    "Utilities.js",
+                    // "Logger.js",
+                    "Skill.js",
+                    // "BattleMapElement.js",
+                    // "Tile.js",
+                    // "Structures.js",
+                    "HeroInfo.js",
+                    // "Unit.js",
+                    // "UnitManager.js",
+                    // "BattleMap.js",
+                    // "BattleMapSettings.js",
+                    // "GlobalBattleContext.js",
+                    // "DamageCalculationUtility.js",
+                    // "DamageCalculator.js",
+                    // "PostCombatSkillHander.js",
+                    // "DamageCalculatorWrapper.js",
+                    // "BeginningOfTurnSkillHandler.js",
+                    // "TurnSetting.js",
+                    // "AudioManager.js",
+                    // "AetherRaidDefensePresets.js",
+                    // "SkillDatabase.js",
+                    "HeroDatabase.js",
+                    // "SettingManager.js",
+                    "HeroIconListerMain.js",
+                    // "Main_ImageProcessing.js",
+                    // "Main_OriginalAi.js",
+                    // "Main_MouseAndTouch.js",
+                    // "BattleSimulatorBase.js",
+                    // "AetherRaidSimulatorMain.js",
+                    // "VueComponents.js",
+                    // "SampleSkillInfos.js",
+                    "SampleHeroInfos.js",
+                ];
+            }
+            const startTime = Date.now();
+            loadScripts(additionalScripts, () => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load all scripts`);
+                console.log("initializing application");
+
+                init(heroInfos);
+            });
+        });
+    </script>
+
+
+
+</body>
+
+</html>
