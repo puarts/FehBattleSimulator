@@ -6078,6 +6078,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.FloridCanePlus:
                 case Weapon.ShadowyQuill:
                 case Weapon.FloridKnifePlus:
                 case Weapon.SoothingScent:

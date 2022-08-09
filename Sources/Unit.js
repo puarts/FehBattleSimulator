@@ -4967,6 +4967,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 残り+1
+                case Weapon.FloridCanePlus:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
                 case Weapon.UnyieldingOar:

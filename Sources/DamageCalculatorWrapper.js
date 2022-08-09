@@ -2022,6 +2022,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FloridCanePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ShadowyQuill] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
