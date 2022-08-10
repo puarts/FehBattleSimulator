@@ -64,16 +64,30 @@
     </style>
 
     <div id="app">
-        名前検索:
-        <input type="text" v-model="nameQuery" @input="g_appData.applyFilter()">
-        <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"
-            @change="g_appData.applyFilter()"><label for="needsFullMatching">完全一致</label>
-        <fieldset class="submenuField">
-            <div v-for="heroInfo in filteredHeroInfos" style="float:left;position:relative;width:40px;height:40px;">
+        <dl>
+            <dt>アイコンサイズ:</dt>
+            <dd>
+                <input type="number" v-model="iconSize">
+            </dd>
+            <dt>背景色:</dt>
+            <dd>
+                色: <input type="color" v-model="bgColor" @change="g_appData.updateBgColor()"><br />
+                不透明度: <input type="range" v-model="bgOpacity" max="255" min="0" step="1"
+                    @change="g_appData.updateBgColor()">
+            </dd>
+            <dt>名前検索:</dt>
+            <dd>
+                <input type="text" v-model="nameQuery" @input="g_appData.applyFilter()">
+                <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"
+                    @change="g_appData.applyFilter()"><label for="needsFullMatching">完全一致</label>
+            </dd>
+        </dl>
+        <fieldset class="submenuField" v-bind:style="`background-color:${bgColorWithAlpha};`">
+            <div v-for="heroInfo in filteredHeroInfos" style="float:left;position:relative;">
                 <a title="heroInfo.name + 'の詳細情報(ステータス、個性、習得スキル等)'"
                     v-bind:href="heroInfo.detailPageUrl + '#main-content'">
-                    <img v-bind:src="heroInfo.iconUrl" class="heroThumb" v-bind:alt="heroInfo.name + 'の画像'" width="40"
-                        height="40">
+                    <img v-bind:src="heroInfo.iconUrl" class="heroThumb" v-bind:alt="heroInfo.name + 'の画像'"
+                        v-bind:width="iconSize" v-bind:height="iconSize">
                     <span style="position:absolute;bottom:0px;right:0px;" v-if="heroInfo.seasonType != SeasonType.None">
                         <img v-bind:src="'https://puarts.com/AetherRaidTacticsBoard/images/Season_'+getSeasonTypeName(heroInfo.seasonType)+'.png'"
                             width="15" height="15">
@@ -123,6 +137,7 @@
                     "Utilities.js",
                     "Skill.js",
                     "HeroInfo.js",
+                    "HeroDatabase.js",
                     "HeroIconListerMain.js",
                     "SampleHeroInfos.js",
                 ];

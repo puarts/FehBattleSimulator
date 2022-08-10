@@ -6,63 +6,87 @@ function compareHeroInfoWeaponType(a, b) {
     return a.weaponTypeValue - b.weaponTypeValue;
 }
 
-class AppData {
-    constructor() {
+class AppData extends HeroDatabase {
+    constructor(heroInfos) {
+        super(heroInfos);
         /** @type {HeroInfo[]} */
         this.heroInfos = [];
         /** @type {HeroInfo[]} */
         this.filteredHeroInfos = [];
 
+        /** @type {number} */
+        this.iconSize = 40;
+
+        this.bgColor = "#000000";
+        this.bgOpacity = 0;
+        this.bgColorWithAlpha = "#00000000";
+
         this.nameQuery = "";
         this.needsFullMatching = false;
     }
 
-    applyFilter() {
-        this.filteredHeroInfos = [];
-        const nameQueries = this.nameQuery.split(' ').filter(function (el) {
-            return el != "" && el != null;
-        });
-        for (const info of this.heroInfos) {
-            if (this.__isMatched(info.name, nameQueries, this.needsFullMatching)) {
-                this.filteredHeroInfos.push(info);
-            }
+    updateBgColor() {
+        let alpha = Number(this.bgOpacity);
+        let padd = "";
+        if (alpha < 16) {
+            padd = "0";
         }
-
-        this.filteredHeroInfos = this.filteredHeroInfos.sort(compareHeroInfoWeaponType);
+        this.bgColorWithAlpha = this.bgColor + padd + alpha.toString(16);
+        console.log(this.bgColorWithAlpha);
     }
 
-    __isMatched(name, queries, needsFullMatching) {
-        if (queries.length === 0) {
-            return true;
-        }
-
-        if (needsFullMatching) {
-            for (const query of queries) {
-                if (name === query) {
-                    return true;
+    applyFilter() {
+        this.filteredHeroInfos = [];
+        const nameQueries = this.__getNameQueries();
+        if (this.needsFullMatching) {
+            // 完全一致の時は指定された名前順にアイコンを列挙
+            for (const query of nameQueries) {
+                if (query in this._nameToInfoDict) {
+                    const info = this._nameToInfoDict[query];
+                    this.filteredHeroInfos.push(info);
                 }
             }
         }
         else {
-            for (const query of queries) {
-                if (name.includes(query)) {
-                    return true;
+            for (const info of this.heroInfos) {
+                if (this.__isMatched(info.name, nameQueries)) {
+                    this.filteredHeroInfos.push(info);
                 }
+            }
+            this.filteredHeroInfos = this.filteredHeroInfos.sort(compareHeroInfoWeaponType);
+        }
+    }
+
+
+    __getNameQueries() {
+        return this.nameQuery.split(' ').filter(function (el) {
+            return el != "" && el != null;
+        });
+    }
+
+    __isMatched(name, queries) {
+        if (queries.length === 0) {
+            return true;
+        }
+
+        for (const query of queries) {
+            if (name.includes(query)) {
+                return true;
             }
         }
         return false;
     }
 }
 
-const g_appData = new AppData();
-
-const g_app = new Vue({
-    el: "#app",
-    data: g_appData
-});
+let g_appData = null;
 
 
 function init(heroInfos) {
+    g_appData = new AppData(heroInfos);
+    const vm = new Vue({
+        el: "#app",
+        data: g_appData
+    });
     g_appData.heroInfos = heroInfos;
     g_appData.applyFilter();
 }
