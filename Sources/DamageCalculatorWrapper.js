@@ -2043,7 +2043,7 @@ class DamageCalculatorWrapper {
                         if (targetUnit.isTransformed) {
                             let amount = Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8;
                             if (amount >= 0) {
-                                amount = Math.min(8, amount);
+                                amount = Math.min(10, amount);
                                 targetUnit.addSpurs(amount, 0, amount, amount);
                             }
                         }
@@ -5854,7 +5854,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                     targetUnit.battleContext.weaponSkillCondSatisfied = true;
-                    targetUnit.addSpurs(4);
+                    targetUnit.addAllSpur(4);
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
                 }
             }
