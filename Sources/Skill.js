@@ -1366,6 +1366,9 @@ const Weapon = {
     FloridKnifePlus: 2154, // 薔薇のナイフ+
     ShadowyQuill: 2156, // 双夜舞う怪盗の羽根
     FloridCanePlus: 2158, // 薔薇のステッキ+
+
+    // 2022年8月 武器錬成
+    WandererBlade: 2162, // 流浪の鋭剣
 };
 
 const Support = {
@@ -3168,18 +3171,21 @@ const BeastCommonSkillType = {
 const BeastCommonSkillMap =
     new Map(
         [
+            // 次世代歩行
             [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
             [Weapon.IlluminatingHorn, BeastCommonSkillType.InfantryMelee2],
 
+            // 錬成すると次世代歩行
+            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
 
+            // 旧世代歩行
             [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee],
             [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
             [Weapon.GroomsWings, BeastCommonSkillType.InfantryMelee],
         ]

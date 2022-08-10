@@ -641,6 +641,12 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.WandererBlade:
+                if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+                break;
             case Weapon.ShishiouNoTsumekiba:
                 if (defUnit.isWeaponRefined) {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.7);
@@ -1015,7 +1021,13 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.YonkaiNoSaiki:
+                case Weapon.YonkaiNoSaiki: {
+                    let threshold = atkUnit.isWeaponRefined ? 25 : 50;
+                    if (atkUnit.battleContext.restHpPercentage >= threshold) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                }
+                    break;
                 case Weapon.AnkokuNoKen:
                     if (!atkUnit.isWeaponRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 50) {
@@ -2021,6 +2033,32 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WandererBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.JinroOuNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.addSpurs(-5, 0, -5, 0);
+                    targetUnit.battleContext.invalidateBuffs(true, false, true, false);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.YonkaiNoSaiki] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ShishiouNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -2043,7 +2081,7 @@ class DamageCalculatorWrapper {
                         if (targetUnit.isTransformed) {
                             let amount = Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8;
                             if (amount >= 0) {
-                                amount = Math.min(8, amount);
+                                amount = Math.min(10, amount);
                                 targetUnit.addSpurs(amount, 0, amount, amount);
                             }
                         }
@@ -5280,11 +5318,26 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Flykoogeru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                x.getDefInPrecombat() > targetUnit.getDefInPrecombat())
-            ) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
+            let hasHigherDefAlly = self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
+                x => x.getDefInPrecombat() > targetUnit.getDefInPrecombat());
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (calcPotentialDamage || !hasHigherDefAlly) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                }
+            } else {
+                // <錬成効果>
+                if (calcPotentialDamage || !hasHigherDefAlly || self.__isSolo(targetUnit)) {
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SyuryouNoEijin] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5854,7 +5907,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                     targetUnit.battleContext.weaponSkillCondSatisfied = true;
-                    targetUnit.addSpurs(4);
+                    targetUnit.addAllSpur(4);
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
                 }
             }
@@ -6825,9 +6878,18 @@ class DamageCalculatorWrapper {
                         targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
                         break;
                     case Weapon.Flykoogeru:
-                        if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat()) {
-                            targetUnit.atkSpur += 4;
-                            targetUnit.spdSpur += 4;
+                        if (!targetUnit.isWeaponRefined) {
+                            // <通常効果>
+                            if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat()) {
+                                targetUnit.addSpurs(4, 4, 0, 0);
+                            }
+                        } else {
+                            // <錬成効果>
+                            if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat() ||
+                                !allyUnit.isCombatDone) {
+                                targetUnit.addSpurs(4, 4, 4, 4);
+                                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                            }
                         }
                         break;
                     case Weapon.YoukoohNoTsumekiba:
@@ -7183,6 +7245,16 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.YonkaiNoSaiki:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit) + enemyUnit.getBuffTotalInCombat(targetUnit);
+                        let amount = Math.min(Math.trunc(buff * 0.4), 10);
+                        targetUnit.addSpurs(amount, amount, 0, 0);
+                    }
+                }
+                break;
             case Weapon.IlluminatingHorn:
                 if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                     targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
@@ -7852,6 +7924,29 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.WandererBlade:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                    }
+                    break;
+                case Weapon.YonkaiNoSaiki:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >=
+                                enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.Flykoogeru:
+                    if (targetUnit.isWeaponRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let spd = targetUnit.getEvalSpdInCombat(enemyUnit);
+                        targetUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                    }
+                    break;
                 case Weapon.DivineBreath:
                     if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
@@ -8407,6 +8502,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.WandererBlade:
+                if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
             case PassiveB.Chivalry:
                 return atkUnit.battleContext.restHpPercentage * 0.5 / 100;
             case Weapon.GodlyBreath:
