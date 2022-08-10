@@ -209,6 +209,7 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
 targetUnit.battleContext.invalidatesAtkBuff = true;
+targetUnit.battleContext.invalidateBuffs(true, true, true, true);
 
 自身の弱化を無効(弱化無効)
 targetUnit.battleContext.invalidateAllOwnDebuffs();

@@ -2027,6 +2027,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.JinroOuNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.addSpurs(-5, 0, -5, 0);
+                    targetUnit.battleContext.invalidateBuffs(true, false, true, false);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.YonkaiNoSaiki] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {

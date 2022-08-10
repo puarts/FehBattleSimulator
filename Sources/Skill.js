@@ -3168,18 +3168,21 @@ const BeastCommonSkillType = {
 const BeastCommonSkillMap =
     new Map(
         [
+            // 次世代歩行
             [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
             [Weapon.IlluminatingHorn, BeastCommonSkillType.InfantryMelee2],
 
+            // 錬成すると次世代歩行
+            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
             [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
 
+            // 旧世代歩行
             [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee],
             [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
             [Weapon.GroomsWings, BeastCommonSkillType.InfantryMelee],
         ]

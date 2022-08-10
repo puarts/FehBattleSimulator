@@ -729,6 +729,13 @@ class BattleContext {
         this.invalidatesResBuff = true;
     }
 
+    invalidateBuffs(atk, spd, def, res) {
+        this.invalidatesAtkBuff = atk;
+        this.invalidatesSpdBuff = spd;
+        this.invalidatesDefBuff = def;
+        this.invalidatesResBuff = res;
+    }
+
     invalidateAllOwnDebuffs() {
         this.invalidatesOwnAtkDebuff = true;
         this.invalidatesOwnSpdDebuff = true;
