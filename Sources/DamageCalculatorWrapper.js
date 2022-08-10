@@ -641,6 +641,12 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.WandererBlade:
+                if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+                break;
             case Weapon.ShishiouNoTsumekiba:
                 if (defUnit.isWeaponRefined) {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.7);
@@ -2027,6 +2033,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WandererBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.JinroOuNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -7913,6 +7924,13 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.WandererBlade:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                    }
+                    break;
                 case Weapon.YonkaiNoSaiki:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat) {
@@ -8484,6 +8502,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.WandererBlade:
+                if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
             case PassiveB.Chivalry:
                 return atkUnit.battleContext.restHpPercentage * 0.5 / 100;
             case Weapon.GodlyBreath:

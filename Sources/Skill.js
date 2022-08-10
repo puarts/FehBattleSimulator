@@ -1366,6 +1366,9 @@ const Weapon = {
     FloridKnifePlus: 2154, // 薔薇のナイフ+
     ShadowyQuill: 2156, // 双夜舞う怪盗の羽根
     FloridCanePlus: 2158, // 薔薇のステッキ+
+
+    // 2022年8月 武器錬成
+    WandererBlade: 2162, // 流浪の鋭剣
 };
 
 const Support = {
