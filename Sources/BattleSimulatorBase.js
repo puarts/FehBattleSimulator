@@ -897,7 +897,7 @@ class BattleSimmulatorBase {
         switch (duoUnit.heroIndex) {
             case Hero.DuoCorrin:
             case Hero.DuoLyn:
-                if (!duoUnit.isActionDone || !duoUnit.isCombatDone) {
+                if (!duoUnit.isActionDone || !duoUnit.isAttackDone) {
                     return false;
                 }
                 break;
@@ -3089,7 +3089,9 @@ class BattleSimmulatorBase {
         this.damageCalc.clearLog();
 
         let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack, this.data.gameMode);
+        atkUnit.isAttackDone = true;
         atkUnit.isCombatDone = true;
+        defUnit.isCombatDone = true;
 
         // this.clearSimpleLog();
         this.writeSimpleLogLine(this.damageCalc.simpleLog);
@@ -3636,6 +3638,7 @@ class BattleSimmulatorBase {
         let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
 
         this.__initializeUnitsPerTurn(targetUnits);
+        this.__initializeAllUnitsOnMapPerTurn(this.enumerateAllyUnitsOnMap());
 
         if (this.data.gameMode != GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
@@ -3711,6 +3714,12 @@ class BattleSimmulatorBase {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
                 }
             }
+        }
+    }
+
+    __initializeAllUnitsOnMapPerTurn(units) {
+        for (let unit of units) {
+            unit.isCombatDone = false;
         }
     }
 

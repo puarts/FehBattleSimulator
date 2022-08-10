@@ -5280,11 +5280,26 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Flykoogeru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                x.getDefInPrecombat() > targetUnit.getDefInPrecombat())
-            ) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
+            let hasHigherDefAlly = self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
+                x => x.getDefInPrecombat() > targetUnit.getDefInPrecombat());
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (calcPotentialDamage || !hasHigherDefAlly) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                }
+            } else {
+                // <錬成効果>
+                if (calcPotentialDamage || !hasHigherDefAlly || self.__isSolo(targetUnit)) {
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SyuryouNoEijin] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6825,9 +6840,18 @@ class DamageCalculatorWrapper {
                         targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
                         break;
                     case Weapon.Flykoogeru:
-                        if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat()) {
-                            targetUnit.atkSpur += 4;
-                            targetUnit.spdSpur += 4;
+                        if (!targetUnit.isWeaponRefined) {
+                            // <通常効果>
+                            if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat()) {
+                                targetUnit.addSpurs(4, 4, 0, 0);
+                            }
+                        } else {
+                            // <錬成効果>
+                            if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat() ||
+                                !allyUnit.isCombatDone) {
+                                targetUnit.addSpurs(4, 4, 4, 4);
+                                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                            }
                         }
                         break;
                     case Weapon.YoukoohNoTsumekiba:
@@ -7852,6 +7876,12 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.Flykoogeru:
+                    if (targetUnit.isWeaponRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let spd = targetUnit.getEvalSpdInCombat(enemyUnit);
+                        targetUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                    }
+                    break;
                 case Weapon.DivineBreath:
                     if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);

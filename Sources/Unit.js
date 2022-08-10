@@ -1212,6 +1212,9 @@ class Unit extends BattleMapElement {
         this.defAppliedGrowthRate = 0.0;
 
         this.isActionDone = false;
+        // このターン自分から攻撃を行ったか
+        this.isAttackDone = false;
+        // このターン戦闘を行なったか
         this.isCombatDone = false;
         this.isBonusChar = false;
 
@@ -1793,10 +1796,11 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
             + ValueDelimiter + this.restMoveCount
             + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
-            + ValueDelimiter + boolToInt(this.isCombatDone)
+            + ValueDelimiter + boolToInt(this.isAttackDone)
             + ValueDelimiter + boolToInt(this.isCantoActivating)
             + ValueDelimiter + this.fromPosX
             + ValueDelimiter + this.fromPosY
+            + ValueDelimiter + boolToInt(this.isCombatDone)
             ;
     }
 
@@ -1887,10 +1891,11 @@ class Unit extends BattleMapElement {
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isAttackDone = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isCantoActivating = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.fromPosX = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
     }
 
 
@@ -2655,7 +2660,7 @@ class Unit extends BattleMapElement {
         }
 
         this.isActionDone = false;
-        this.isCombatDone = false;
+        this.isAttackDone = false;
         this.resetBuffs();
         this.setMoveCountFromMoveType();
         this.clearPositiveStatusEffects();
