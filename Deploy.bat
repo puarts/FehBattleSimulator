@@ -22,7 +22,7 @@ rem ダメージ計算機
 call %~dp0MergeSourcesAndCompress.bat FehDamageCalculator GlobalDefinitions,Utilities,Logger,Skill,BattleMapElement,Tile,BattleMap,GlobalBattleContext,Structures,Table,HeroInfo,Unit,UnitManager,SkillDatabase,HeroDatabase,DamageCalculationUtility,DamageCalculator,PostCombatSkillHander,DamageCalculatorWrapper,BeginningOfTurnSkillHandler,SampleSkillInfos,SampleHeroInfos,VueComponents,KeyRepeatHandler,DamageCalculatorMain
 
 rem 英雄アイコンリスト
-call %~dp0MergeSourcesAndCompress.bat FehHeroIconLister GlobalDefinitions,Utilities,Logger,Skill,HeroInfo,HeroIconListerMain,SampleHeroInfos
+call %~dp0MergeSourcesAndCompress.bat FehHeroIconLister GlobalDefinitions,Utilities,Logger,Skill,HeroInfo,HeroDatabase,HeroIconListerMain,SampleHeroInfos
 
 rem その他ツールで使うファイル
 echo other files
