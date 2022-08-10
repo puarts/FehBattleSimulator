@@ -2,9 +2,6 @@
  * @param  {HeroInfo} a
  * @param  {HeroInfo} b
  */
-function compareHeroInfoWeaponType(a, b) {
-    return a.weaponTypeValue - b.weaponTypeValue;
-}
 
 class AppData extends HeroDatabase {
     constructor(heroInfos) {
@@ -17,9 +14,10 @@ class AppData extends HeroDatabase {
         /** @type {number} */
         this.iconSize = 40;
 
-        this.bgColor = "#000000";
-        this.bgOpacity = 0;
+        this.bgColor = "#ffffff";
+        this.bgOpacity = 255;
         this.bgColorWithAlpha = "#00000000";
+        this.updateBgColor();
 
         this.nameQuery = "";
         this.needsFullMatching = false;
@@ -53,7 +51,7 @@ class AppData extends HeroDatabase {
                     this.filteredHeroInfos.push(info);
                 }
             }
-            this.filteredHeroInfos = this.filteredHeroInfos.sort(compareHeroInfoWeaponType);
+            this.filteredHeroInfos = this.filteredHeroInfos.sort((a, b) => a.weaponTypeValue - b.weaponTypeValue);
         }
     }
 

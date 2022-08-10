@@ -52,7 +52,7 @@
         FEHの全英雄のアイコン一覧です。特定の英雄について説明用の資料を作る時などに使います。
     </p>
     <!-- jquery -->
-    <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 
     <!-- vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
@@ -64,24 +64,29 @@
     </style>
 
     <div id="app">
-        <dl>
-            <dt>アイコンサイズ:</dt>
-            <dd>
-                <input type="number" v-model="iconSize">
-            </dd>
-            <dt>背景色:</dt>
-            <dd>
-                色: <input type="color" v-model="bgColor" @change="g_appData.updateBgColor()"><br />
-                不透明度: <input type="range" v-model="bgOpacity" max="255" min="0" step="1"
-                    @change="g_appData.updateBgColor()">
-            </dd>
-            <dt>名前検索:</dt>
-            <dd>
-                <input type="text" v-model="nameQuery" @input="g_appData.applyFilter()">
-                <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"
-                    @change="g_appData.applyFilter()"><label for="needsFullMatching">完全一致</label>
-            </dd>
-        </dl>
+        <details>
+            <summary>詳細設定</summary>
+            <dl>
+                <dt>アイコンサイズ:</dt>
+                <dd>
+                    <input type="range" v-model="iconSize" max="200" min="10" step="1">
+                </dd>
+                <dt>背景色:</dt>
+                <dd>
+                    <input type="color" v-model="bgColor" @change="g_appData.updateBgColor()"><br />
+                </dd>
+                <dt>背景不透明度:</dt>
+                <dd>
+                    <input type="range" v-model="bgOpacity" max="255" min="0" step="1"
+                        @change="g_appData.updateBgColor()">
+                </dd>
+            </dl>
+        </details>
+        名前検索:
+        <input type="text" v-model="nameQuery" @input="g_appData.applyFilter()">
+        <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"
+            @change="g_appData.applyFilter()"><label for="needsFullMatching">完全一致</label>
+
         <fieldset class="submenuField" v-bind:style="`background-color:${bgColorWithAlpha};`">
             <div v-for="heroInfo in filteredHeroInfos" style="float:left;position:relative;">
                 <a title="heroInfo.name + 'の詳細情報(ステータス、個性、習得スキル等)'"
@@ -90,7 +95,7 @@
                         v-bind:width="iconSize" v-bind:height="iconSize">
                     <span style="position:absolute;bottom:0px;right:0px;" v-if="heroInfo.seasonType != SeasonType.None">
                         <img v-bind:src="'https://puarts.com/AetherRaidTacticsBoard/images/Season_'+getSeasonTypeName(heroInfo.seasonType)+'.png'"
-                            width="15" height="15">
+                            v-bind:width="iconSize*15/40" v-bind:height="iconSize*15/40">
                     </span>
                 </a>
             </div>
