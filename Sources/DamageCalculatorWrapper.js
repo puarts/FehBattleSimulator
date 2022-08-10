@@ -1015,7 +1015,13 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.YonkaiNoSaiki:
+                case Weapon.YonkaiNoSaiki: {
+                    let threshold = atkUnit.isWeaponRefined ? 25 : 50;
+                    if (atkUnit.battleContext.restHpPercentage >= threshold) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                }
+                    break;
                 case Weapon.AnkokuNoKen:
                     if (!atkUnit.isWeaponRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 50) {
@@ -2021,6 +2027,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.YonkaiNoSaiki] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ShishiouNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -7207,6 +7225,16 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.YonkaiNoSaiki:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit) + enemyUnit.getBuffTotalInCombat(targetUnit);
+                        let amount = Math.min(Math.trunc(buff * 0.4), 10);
+                        targetUnit.addSpurs(amount, amount, 0, 0);
+                    }
+                }
+                break;
             case Weapon.IlluminatingHorn:
                 if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                     targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
@@ -7876,6 +7904,16 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.YonkaiNoSaiki:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >=
+                                enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.Flykoogeru:
                     if (targetUnit.isWeaponRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let spd = targetUnit.getEvalSpdInCombat(enemyUnit);
