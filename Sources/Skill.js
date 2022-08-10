@@ -1359,7 +1359,14 @@ const Weapon = {
 
     // 2022年7月 神階アスク
     IlluminatingHorn: 2149, // 絶光の角
-}
+
+    // 超英雄 危ないお宝対決
+    LoftyLeaflet: 2152, // 気高き怪盗の予告状
+    SoothingScent: 2163, // 影潜む密偵の香水瓶
+    FloridKnifePlus: 2154, // 薔薇のナイフ+
+    ShadowyQuill: 2156, // 双夜舞う怪盗の羽根
+    FloridCanePlus: 2158, // 薔薇のステッキ+
+};
 
 const Support = {
     None: -1,
@@ -1462,6 +1469,7 @@ const Special = {
     Luna: 467, // 月光
     Aether: 470, // 天空
     LunaFlash: 889, // 月光閃
+    LunarFlash2: 2160, // 月光閃・承
     Glimmer: 462, // 凶星
     Deadeye: 1481, // 狙撃
     Astra: 461, // 流星
@@ -1865,6 +1873,7 @@ const PassiveB = {
     ChillSpdDef2: 1319, // 速さ守備の封印2
     ChillSpdRes2: 1371, // 速さ魔防の封印2
     ChillDefRes2: 1613, // 守備魔防の封印2
+    ChillDefRes3: 2157, // 守備魔防の封印3
 
     BoldFighter3: 601, // 攻撃隊形3
     VengefulFighter3: 602, // 迎撃隊形3
@@ -2057,6 +2066,7 @@ const PassiveB = {
     // 干渉
     AtkSpdSnag3: 1685, // 攻撃速さの干渉3
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
+    AtkResSnag3: 2153, // 攻撃魔坊の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
     DefResSnag3: 1867, // 守備魔防の干渉3
@@ -2260,6 +2270,7 @@ const PassiveC = {
     ResSmoke1: 1409,
     ResSmoke2: 1410,
     ResSmoke3: 730, // 魔防の紫煙3
+    DefResSmoke3: 2164, // 守備魔防の紫煙3
 
     AtkPloy3: 722, // 攻撃の謀策3
     SpdPloy3: 723, // 速さの謀策3
@@ -2375,6 +2386,7 @@ const PassiveC = {
     WithEveryone2: 1879, // みんなと一緒に・承
     SolitaryDream: 898, // ひとりぼっちのゆめ
     DivineFang: 915, // 神竜王の牙
+    DivineFangPlus: 2161, // 神竜王の牙・神
     KyokoNoKisaku3: 726, // 恐慌の奇策3
     AirOrders3: 819, // 先導の伝令・天3
     GroundOrders3: 911, // 先導の伝令・地3
@@ -2689,6 +2701,7 @@ NormalAttackSpecialDict[Special.Moonbow] = 0;
 NormalAttackSpecialDict[Special.Luna] = 0;
 NormalAttackSpecialDict[Special.Aether] = 0;
 NormalAttackSpecialDict[Special.LunaFlash] = 0;
+NormalAttackSpecialDict[Special.LunarFlash2] = 0;
 NormalAttackSpecialDict[Special.Glimmer] = 0;
 NormalAttackSpecialDict[Special.Deadeye] = 0;
 NormalAttackSpecialDict[Special.Astra] = 0;

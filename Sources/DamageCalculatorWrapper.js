@@ -641,6 +641,11 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.ShishiouNoTsumekiba:
+                if (defUnit.isWeaponRefined) {
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.7);
+                }
+                break;
             case Weapon.GodlyBreath:
                 if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
@@ -1462,12 +1467,6 @@ class DamageCalculatorWrapper {
                 defUnit.battleContext.canCounterattackToAllDistance = true;
             }
         };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.ShishiouNoTsumekiba] = (defUnit, atkUnit, calcPotentialDamage) => {
-            defUnit.addAllSpur(4);
-            if (defUnit.isTransformed) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
-            }
-        };
         self._applySkillEffectForDefUnitFuncDict[Weapon.OgonNoTanken] = (defUnit, atkUnit, calcPotentialDamage) => {
             if (defUnit.isSpecialCharged) {
                 defUnit.battleContext.canCounterattackToAllDistance = true;
@@ -2022,6 +2021,80 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ShishiouNoTsumekiba] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.7, enemyUnit);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.addSpurs(-5, 0, -5, 0);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        if (targetUnit.isTransformed) {
+                            let amount = Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8;
+                            if (amount >= 0) {
+                                amount = Math.min(8, amount);
+                                targetUnit.addSpurs(amount, 0, amount, amount);
+                            }
+                        }
+                    }
+                }
+            }
+            if (targetUnit.isTransformed) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.LunaArc] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FloridCanePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ShadowyQuill] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.battleContext.refersMinOfDefOrRes = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FloridKnifePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SoothingScent] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.LoftyLeaflet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(-4, 0, -4, 0);
         }
@@ -5763,7 +5836,8 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.DivineBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage) {
                 let statusPlus = 0;
-                for (let allyUnit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                let spaces = targetUnit.isWeaponRefined ? 4 : 2;
+                for (let allyUnit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
                     if (isWeaponTypeBreath(allyUnit.weaponType)
                         || allyUnit.hasEffective(EffectiveType.Dragon)) {
                         statusPlus += 3;
@@ -5776,6 +5850,13 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += statusPlus;
                 targetUnit.defSpur += statusPlus;
                 targetUnit.resSpur += statusPlus;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                    targetUnit.addSpurs(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPush3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -7771,6 +7852,31 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.DivineBreath:
+                    if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        let amount = Math.trunc(diff * 0.25);
+                        if (amount >= 0) {
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += amount;
+                        }
+                    }
+                    break;
+                case Weapon.ShadowyQuill:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let damage = targetUnit.getBuffsEnemyDebuffsInCombat(enemyUnit)
+                            .reduce((i, a) => i + Math.max(a[0], Math.abs(a[1])), 0);
+                        targetUnit.battleContext.additionalDamage += damage;
+                    }
+                    break;
+                case Weapon.LoftyLeaflet:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let amount = Math.trunc(targetUnit.getEvalSpdInCombat(enemyUnit) * 0.15);
+                        targetUnit.battleContext.additionalDamage += amount;
+                        let buffs = enemyUnit.getBuffsInCombat(targetUnit);
+                        targetUnit.addSpurs(...buffs);
+                        enemyUnit.addSpurs(...buffs.map(a => -a));
+                    }
+                    break;
                 case Weapon.TriEdgeLance:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let res = enemyUnit.getEvalResInCombat(targetUnit);
@@ -8781,15 +8887,18 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.LunaArc:
-                if (atkUnit.battleContext.initiatesCombat) {
-                    let value = 0;
-                    if (isPrecombat) {
-                        value = defUnit.getDefInPrecombat();
+                if (!atkUnit.isWeaponRefined) {
+                    // <通常効果>
+                    if (atkUnit.battleContext.initiatesCombat) {
+                        let value = isPrecombat ? defUnit.getDefInPrecombat() : defUnit.getDefInCombat(atkUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                     }
-                    else {
-                        value = defUnit.getDefInCombat(atkUnit);
+                } else {
+                    // <錬成効果>
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let value = isPrecombat ? defUnit.getDefInPrecombat() : defUnit.getDefInCombat(atkUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                     }
-                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                 }
                 break;
             case Weapon.BladeOfRenais:
@@ -9241,6 +9350,21 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.LunaArc:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (defUnit.isPhysicalAttacker() &&
+                        atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
+                        return true;
+                    }
+                }
+                break;
+            case Weapon.SoothingScent:
+                if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                    if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 1) {
+                        return true;
+                    }
+                }
+                break;
             case Weapon.ChilledBreath:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
@@ -9776,6 +9900,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.LunaArc:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                }
+                break;
             case Weapon.MilasTestament:
                 if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                     enemyUnit.battleContext.reducesCooldownCount = false;
@@ -9914,6 +10045,16 @@ class DamageCalculatorWrapper {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.2);
                 targetUnit.battleContext.specialSufferPercentage = 20;
+            }
+        };
+
+        this._applySpecialSkillEffectFuncDict[Special.LunarFlash2] = (targetUnit, enemyUnit) => {
+            {
+                // 月光閃・承
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.2);
+                targetUnit.battleContext.specialSufferPercentage = 20;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
             }
         };
 
@@ -10820,6 +10961,22 @@ class DamageCalculatorWrapper {
                                     targetUnit.addAllSpur(2);
                                 }
                                 break;
+                        }
+                    }
+
+                    if (this.__isNear(unit, targetUnit, 4)) {
+                        // 4マス以内で発動する戦闘中バフ
+                        for (let skillId of unit.enumerateSkills()) {
+                            switch (skillId) {
+                                case Weapon.DivineBreath:
+                                    if (unit.isWeaponRefined) {
+                                        if (isWeaponTypeBreath(targetUnit.weaponType) ||
+                                            targetUnit.hasEffective(EffectiveType.Dragon)) {
+                                            targetUnit.addAllSpur(3);
+                                        }
+                                    }
+                                    break;
+                            }
                         }
                     }
 

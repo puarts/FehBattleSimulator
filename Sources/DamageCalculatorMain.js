@@ -852,6 +852,7 @@ class DamageCalcData {
             Special.SublimeHeaven, // 覇天(+攻撃25%、獣なら50%)
             // Special.HolyKnightAura, // グランベルの聖騎士(+攻撃25%)
             Special.LunaFlash, // 月光閃(守備魔防-20%、+速さ20%)
+            Special.LunarFlash2, // 月光閃・承(守備魔防-20%、+速さ20%)
             Special.ShiningEmblem, // 光炎の紋章(+速さ35%)
             Special.Sirius, // 天狼(+速さ30%)
             // Special.HerosBlood, // 英雄の血脈(+速さ30%)

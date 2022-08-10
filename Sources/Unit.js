@@ -48,6 +48,7 @@ const Hero = {
     HarmonizedRoy: 816,
     HarmonizedEdelgard: 830,
     DuoThorr: 836,
+    DuoNina: 847,
 };
 
 function isThiefIndex(heroIndex) {
@@ -1220,6 +1221,10 @@ class Unit extends BattleMapElement {
         this.initPosX = 0;
         this.initPosY = 0;
 
+        // 元の場所に再移動の際に使用
+        this.fromPosX = 0;
+        this.fromPosY = 0;
+
         // 迅雷やノヴァの聖戦士が発動したかを記録しておく
         this.isOneTimeActionActivatedForWeapon = false;
         this.isOneTimeActionActivatedForSpecial = false;
@@ -1277,6 +1282,7 @@ class Unit extends BattleMapElement {
 
         this.moveCountForCanto = 0; // 再移動の移動マス数
         this.isCantoActivatedInCurrentTurn = false; // 現在ターンで再移動が1度でも発動したかどうか
+        this.isCantoActivating = false; // 再移動中かどうか
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
         this.originalMerge = 0;
@@ -1359,7 +1365,7 @@ class Unit extends BattleMapElement {
 
         this.moveCountForCanto = moveCountForCanto;
 
-        if (this.moveCountForCanto > 0) {
+        if (this.isCantoActivated()) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
             if (cantoControlledIfCantoActivated) {
@@ -1376,11 +1382,12 @@ class Unit extends BattleMapElement {
     /// 再移動の発動を終了します。
     deactivateCanto() {
         this.moveCountForCanto = 0;
+        this.isCantoActivating = false;
     }
 
     /// 再移動が発動しているとき、trueを返します。
     isCantoActivated() {
-        return this.moveCountForCanto > 0;
+        return this.isCantoActivating;
     }
 
     chaseTargetTileToString() {
@@ -1761,6 +1768,9 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restMoveCount
             + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
             + ValueDelimiter + boolToInt(this.isCombatDone)
+            + ValueDelimiter + boolToInt(this.isCantoActivating)
+            + ValueDelimiter + this.fromPosX
+            + ValueDelimiter + this.fromPosY
             ;
     }
 
@@ -1852,6 +1862,9 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isCantoActivating = intToBool(Number(splited[i])); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.fromPosX = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
     }
 
 
@@ -2228,6 +2241,15 @@ class Unit extends BattleMapElement {
             + this.getSpdDebuffInCombat()
             + this.getDefDebuffInCombat()
             + this.getResDebuffInCombat();
+    }
+
+    getDebuffsInCombat() {
+        return [
+            this.getAtkDebuffInCombat(),
+            this.getSpdDebuffInCombat(),
+            this.getDefDebuffInCombat(),
+            this.getResDebuffInCombat(),
+        ];
     }
 
     get buffTotal() {
@@ -2644,6 +2666,13 @@ class Unit extends BattleMapElement {
         this.reserveToApplyResDebuff(amount);
     }
 
+    reserveToApplyDebuffs(atk, spd, def, res) {
+        this.reserveToApplyAtkDebuff(atk);
+        this.reserveToApplySpdDebuff(spd);
+        this.reserveToApplyDefDebuff(def);
+        this.reserveToApplyResDebuff(res);
+    }
+
     applyAllDebuff(amount) {
         this.applyAtkDebuff(amount);
         this.applySpdDebuff(amount);
@@ -2720,6 +2749,13 @@ class Unit extends BattleMapElement {
         return false;
     }
 
+    applyBuffs(atk, spd, def, res) {
+        this.applyAtkBuff(atk);
+        this.applySpdBuff(spd);
+        this.applyDefBuff(def);
+        this.applyResBuff(res);
+    }
+
     reserveToApplyAtkDebuff(amount) {
         if (this.reservedAtkDebuff > amount) {
             this.reservedAtkDebuff = amount;
@@ -2782,6 +2818,13 @@ class Unit extends BattleMapElement {
             return true;
         }
         return false;
+    }
+
+    applyDebuffs(atk, spd, def, res) {
+        this.applyAtkDebuff(atk);
+        this.applySpdDebuff(spd);
+        this.applyDefDebuff(def);
+        this.applyResDebuff(res);
     }
 
     modifySpecialCount() {
@@ -3283,6 +3326,8 @@ class Unit extends BattleMapElement {
     }
 
     setPos(x, y) {
+        this.fromPosX = this.posX;
+        this.fromPosY = this.posY;
         this.posX = x;
         this.posY = y;
     }
@@ -3418,6 +3463,25 @@ class Unit extends BattleMapElement {
             () => Number(this.defBuff),
             () => this.battleContext.invalidatesOwnDefDebuff
         );
+    }
+
+    getBuffsInCombat(enemyUnit) {
+        return [
+            this.getAtkBuffInCombat(enemyUnit),
+            this.getSpdBuffInCombat(enemyUnit),
+            this.getDefBuffInCombat(enemyUnit),
+            this.getResBuffInCombat(enemyUnit),
+        ];
+    }
+
+    // 自分のBuffと相手のDebuff
+    getBuffsEnemyDebuffsInCombat(enemyUnit) {
+        return [
+            [this.getAtkBuffInCombat(enemyUnit), enemyUnit.getAtkDebuffInCombat()],
+            [this.getSpdBuffInCombat(enemyUnit), enemyUnit.getSpdDebuffInCombat()],
+            [this.getDefBuffInCombat(enemyUnit), enemyUnit.getDefDebuffInCombat()],
+            [this.getResBuffInCombat(enemyUnit), enemyUnit.getResDebuffInCombat()],
+        ]
     }
 
     __getStatusInCombat(getInvalidatesFunc, getStatusWithoutBuffFunc, getBuffFunc, getInvalidateOwnDebuffFunc) {
@@ -4848,6 +4912,7 @@ class Unit extends BattleMapElement {
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.FloridKnifePlus:
                 case Weapon.BowOfTwelve:
                 case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
@@ -4876,6 +4941,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 残り+1
+                case Weapon.FloridCanePlus:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
                 case Weapon.UnyieldingOar:

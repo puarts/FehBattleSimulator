@@ -995,6 +995,16 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoNina :
+                duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (unit.posX === duoUnit.posX || unit.posY === duoUnit.posY ||
+                        unit.hasNegativeStatusEffect()) {
+                        unit.applyAllDebuff(-7);
+                        unit.addStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+                break;
             case Hero.DuoThorr: {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
                     if (unit.posX === duoUnit.posX || unit.posY === duoUnit.posY) {
@@ -3695,6 +3705,7 @@ class BattleSimmulatorBase {
                 || unit.heroIndex == Hero.SummerByleth
                 || unit.heroIndex == Hero.PirateVeronica
                 || unit.heroIndex == Hero.DuoHilda
+                || unit.heroIndex == Hero.DuoNina
             ) {
                 if (this.data.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
@@ -6014,6 +6025,7 @@ class BattleSimmulatorBase {
 
     __activateCantoIfPossible(unit) {
         if (this.__canActivateCanto(unit)) {
+            unit.isCantoActivating = true;
             this.writeDebugLogLine("再移動の発動");
             let count = unit.calcMoveCountForCanto();
             // 4マス以内にいるだけで再移動発動時に効果を発揮する
@@ -6042,8 +6054,12 @@ class BattleSimmulatorBase {
             return false;
         }
 
+        // 移動力が0かつワープでの移動先が無い場合再移動は発動しない
         if (unit.calcMoveCountForCanto() === 0) {
-            return false;
+            let movableWarpTileCount = Array.from(this.map.enumerateWarpCantoTiles(unit)).length;
+            if (movableWarpTileCount === 0) {
+                return false;
+            }
         }
 
         // スキル毎の追加条件
@@ -6062,6 +6078,11 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.FloridCanePlus:
+                case Weapon.ShadowyQuill:
+                case Weapon.FloridKnifePlus:
+                case Weapon.SoothingScent:
+                case Weapon.LoftyLeaflet:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
                 case Weapon.FrozenDelight:
@@ -7645,6 +7666,14 @@ class BattleSimmulatorBase {
                     for (let u of this.__findNearestEnemies(targetUnit, 4)) {
                         u.applyAtkDebuff(-6);
                         u.applyDefDebuff(-6);
+                    }
+                    break;
+                case PassiveB.AtkResSnag3:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        u.applyDebuffs(-6, 0, 0, -6);
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        u.applyDebuffs(-6, 0, 0, -6);
                     }
                     break;
                 case PassiveB.SpdResSnag3:
