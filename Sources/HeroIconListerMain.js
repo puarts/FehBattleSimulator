@@ -1,7 +1,4 @@
-/**
- * @param  {HeroInfo} a
- * @param  {HeroInfo} b
- */
+
 
 class AppData extends HeroDatabase {
     constructor(heroInfos) {

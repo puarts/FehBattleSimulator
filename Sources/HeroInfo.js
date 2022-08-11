@@ -381,7 +381,7 @@ class HeroInfo {
     }
 
     get iconUrl() {
-        return "https://puarts.com/blog/images/FehHeroThumbs/" + this.icon;
+        return g_heroIconRootPath + this.icon;
     }
 
     getIconImgTag(size) {
