@@ -4761,11 +4761,10 @@ class Unit extends BattleMapElement {
             return true;
         }
 
-        if (this.weaponInfo.canCounterattackToAllDistance) {
-            return true;
-        }
-        if (this.passiveAInfo != null && this.passiveAInfo.canCounterattackToAllDistance) {
-            return true;
+        for (let skillInfo of this.enumerateSkillInfos()) {
+            if (skillInfo.canCounterattackToAllDistance) {
+                return true;
+            }
         }
 
         return false;
