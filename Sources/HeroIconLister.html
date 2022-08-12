@@ -58,12 +58,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
     <!-- rasterizehtml -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/rasterizehtml/1.3.1/rasterizeHTML.min.js"
-        integrity="sha512-uvXxdUlpiyB3amYur1jdi9YpiBZ+aRS2aKVkY0PZwBo06MjD1r5hSVuFq2bHA8WmIMAVn/swaBdgMwP/5dyQlQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/rasterizehtml/1.3.1/rasterizeHTML.allinone.min.js"
-        integrity="sha512-8oluEnt1t+gexGfDJb99W//rKC167lnwXrpJYdmYt+hUlptb6zuGORyZsTQD2+5vcNlyli8iP8V4j+IUNwNlMw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://puarts.com/js/rasterizeHTML.allinone.js"></script>
 
     <style>
         .button {
@@ -95,6 +90,9 @@
             <input type="text" v-model="nameQuery" @input="g_appData.applyFilter()">
             <input id="needsFullMatching" v-model="needsFullMatching" type="checkbox"
                 @change="g_appData.applyFilter()"><label for="needsFullMatching">完全一致</label>
+            <input id="showsAllDefault" v-model="showsAllDefault" type="checkbox"
+                @change="g_appData.applyFilter()"><label for="showsAllDefault">デフォルト全表示</label>
+
         </p>
         <input type="button" @click="saveAsImage()" value="画像として保存(PCのみ)"><br />
 
@@ -104,7 +102,7 @@
             <div v-for="heroInfo in filteredHeroInfos" style="float:left;position:relative;">
                 <a title="heroInfo.name + 'の詳細情報(ステータス、個性、習得スキル等)'"
                     v-bind:href="heroInfo.detailPageUrl + '#main-content'">
-                    <img v-bind:src="heroInfo.iconUrl" class="heroThumb" v-bind:alt="heroInfo.name + 'の画像'"
+                    <img v-bind:src="heroInfo.iconUrl" class="heroThumb" v-bind:alt="heroInfo.name"
                         v-bind:width="iconSize" v-bind:height="iconSize">
                     <span style="position:absolute;bottom:0px;right:0px;" v-if="heroInfo.seasonType != SeasonType.None">
                         <img v-bind:src="'https://puarts.com/AetherRaidTacticsBoard/images/Season_'+getSeasonTypeName(heroInfo.seasonType)+'.png'"
@@ -213,6 +211,10 @@
                 console.log("initializing application");
 
                 init(heroInfos);
+
+                if (isLocal) {
+                    loadLazyImages();
+                }
             });
         });
     </script>

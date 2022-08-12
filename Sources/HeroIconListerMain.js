@@ -18,6 +18,7 @@ class AppData extends HeroDatabase {
 
         this.nameQuery = "";
         this.needsFullMatching = false;
+        this.showsAllDefault = false;
     }
 
     updateBgColor() {
@@ -33,6 +34,10 @@ class AppData extends HeroDatabase {
     applyFilter() {
         this.filteredHeroInfos = [];
         const nameQueries = this.__getNameQueries();
+        if (nameQueries.length == 0 && !this.showsAllDefault) {
+            return;
+        }
+
         if (this.needsFullMatching) {
             // 完全一致の時は指定された名前順にアイコンを列挙
             for (const query of nameQueries) {
