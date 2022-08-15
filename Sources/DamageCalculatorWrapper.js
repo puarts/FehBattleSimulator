@@ -9877,7 +9877,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.FellBreath:
-                    if (atkUnit.isWeaponRefined) break;
+                    if (defUnit.isWeaponRefined) break;
                     if (atkUnit.battleContext.restHpPercentage < 100) {
                         --followupAttackPriority;
                     }
