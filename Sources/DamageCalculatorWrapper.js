@@ -10304,6 +10304,15 @@ class DamageCalculatorWrapper {
             }
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         };
+
+        this._applySpecialSkillEffectFuncDict[Special.DevinePulse] = (targetUnit, enemyUnit) => {
+            {
+                // 天刻の拍動
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.25);
+            }
+        }
+
         this._applySpecialSkillEffectFuncDict[Special.VitalAstra] = (targetUnit, enemyUnit) => {
             let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
             targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);

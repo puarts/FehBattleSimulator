@@ -457,6 +457,9 @@ class BattleContext {
         // 氷の聖鏡発動時などの軽減ダメージ保持用
         this.reducedDamageForNextAttack = 0;
 
+        // 次の自分の攻撃のダメージ加算
+        this.additionalDamageOfNextAttack = 0;
+
         // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生するか
         this.nextAttackEffectAfterSpecialActivated = false;
 
@@ -479,6 +482,9 @@ class BattleContext {
 
         // 防御系奥義によるダメージ軽減率
         this.damageReductionRatioBySpecial = 0;
+
+        // 次の敵の攻撃ダメージ軽減
+        this.damageReductionRatiosOfNextAttack = [];
 
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
@@ -635,6 +641,8 @@ class BattleContext {
         this.refersRes = false;
         this.refersResForSpecial = false;
         this.reducedDamageForNextAttack = 0;
+        this.additionalDamageOfNextAttack = 0;
+        this.damageReductionRatiosOfNextAttack = [];
         this.nextAttackEffectAfterSpecialActivated = false;
 
         // 自身の発動カウント変動量-1を無効

@@ -304,6 +304,11 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveTakeDamage(N);
 }
 
+奥義実装
+__getCount<N>Specials() {}
+NormalAttackSpecialDict か DefenseSpecialDict を選択
+__init__applySpecialSkillEffect() {}
+
 戦闘後、奥義発動カウント-N
 __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
   targetUnit.specialCount -= N;

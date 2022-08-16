@@ -441,6 +441,8 @@ class DamageCalculator {
         let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
+        fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttack;
+        atkUnit.battleContext.additionalDamageOfNextAttack = 0;
         if (context.isFirstAttack(atkUnit)) {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
         }
@@ -770,6 +772,12 @@ class DamageCalculator {
 
             // 奥義以外のダメージ軽減
             {
+                // 次の攻撃のダメージ軽減
+                for (let ratio of defUnit.battleContext.damageReductionRatiosOfNextAttack) {
+                    defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                }
+                defUnit.battleContext.damageReductionRatiosOfNextAttack = [];
+
                 // 計算機の外側で設定されたダメージ軽減率
                 damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatio;
 
@@ -820,6 +828,14 @@ class DamageCalculator {
             let currentDamage = 0;
             if (activatesAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
+                switch (atkUnit.special) {
+                    case Special.DevinePulse: {
+                        atkUnit.battleContext.damageReductionRatiosOfNextAttack.push(0.75);
+                        let spd = atkUnit.getSpdInCombat(defUnit);
+                        atkUnit.battleContext.additionalDamageOfNextAttack += Math.trunc(spd * 0.2);
+                    }
+                        break;
+                }
                 // 奥義発動
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog("奥義によるダメージ" + currentDamage);

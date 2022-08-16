@@ -1563,6 +1563,7 @@ const Special = {
     HolyKnightAura: 1702, // グランベルの聖騎士
 
     SublimeHeaven: 1752, // 覇天
+    DevinePulse: 2167, // 天刻の拍動
 
     RequiemDance: 1800, // 鎮魂の舞
 };
@@ -2749,6 +2750,7 @@ NormalAttackSpecialDict[Special.SeidrShell] = 0; // 魔弾
 NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
 NormalAttackSpecialDict[Special.RighteousWind] = 0;
 NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
+NormalAttackSpecialDict[Special.DevinePulse] = 0;
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
