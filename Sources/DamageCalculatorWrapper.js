@@ -2033,6 +2033,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdPreempt3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.InnerWellspring] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -8341,6 +8344,13 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.SpdPreempt3:
+                    if (enemyUnit.battleContext.initiatesCombat && enemyUnit.isRangedWeaponType()) {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.isVantageActivatable = true;
+                        }
+                    }
+                    break;
                 case PassiveB.AssuredRebirth:
                     if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
                         targetUnit.battleContext.followupAttackPriorityIncrement++;

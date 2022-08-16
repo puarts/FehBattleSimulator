@@ -2122,6 +2122,9 @@ const PassiveB = {
 
     // 防壁
     AtkDefBulwark3: 2150, // 攻撃守備の防壁3
+
+    // 先制
+    SpdPreempt3: 2168, // 速さの先制3
 };
 
 const PassiveC = {
