@@ -8347,7 +8347,9 @@ class DamageCalculatorWrapper {
                 case PassiveB.SpdPreempt3:
                     if (enemyUnit.battleContext.initiatesCombat && enemyUnit.isRangedWeaponType()) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
-                            targetUnit.battleContext.isVantageActivatable = true;
+                            if (!targetUnit.battleContext.isSaviorActivated) {
+                                targetUnit.battleContext.isVantageActivatable = true;
+                            }
                         }
                     }
                     break;
