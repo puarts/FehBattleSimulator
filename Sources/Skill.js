@@ -1369,6 +1369,9 @@ const Weapon = {
 
     // 2022年8月 武器錬成
     WandererBlade: 2162, // 流浪の鋭剣
+
+    // 2022年 総選挙
+    InnerWellspring: 2166, // 内より溢れる魔力
 };
 
 const Support = {
