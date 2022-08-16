@@ -185,7 +185,7 @@ const StatusEffectType = {
     EffectiveAgainstDragons: 7, // 竜特効付与
     Isolation: 8, // 補助不可
     BonusDoubler: 9, // 強化増幅
-    SieldDragonArmor: 10, // 竜特効、重装特効無効
+    ShieldArmor: 10, // 重装特効無効
     TotalPenaltyDamage: 11, // 敵弱化ダメージ+(Dominance)
     ResonantBlades: 12, // 双界効果・刃
     Desperation: 13, // 攻め立て
@@ -213,6 +213,7 @@ const StatusEffectType = {
     WarpBubble: 35, // 敵ワープ抑制
     Charge: 36, // 突撃
     Exposure: 37, // 弱点露呈
+    ShieldDragon: 38, // 竜特効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -278,9 +279,12 @@ function isPositiveStatusEffect(type) {
 
 function statusEffectTypeToIconFilePath(value) {
     switch (value) {
-        case StatusEffectType.Panic: return g_imageRootPath + "Penalty_Panic.png";
-        case StatusEffectType.Gravity: return g_imageRootPath + "MovementRestriction.png";
-        case StatusEffectType.MobilityIncreased: return g_imageRootPath + "MovementUp.png";
+        case StatusEffectType.Panic:
+            return g_imageRootPath + "StatusEffect_Panic.png";
+        case StatusEffectType.Gravity:
+            return g_imageRootPath + "StatusEffect_MobilityDecreased.png";
+        case StatusEffectType.MobilityIncreased:
+            return g_imageRootPath + "StatusEffect_MobilityIncreased.png";
         case StatusEffectType.EffectiveAgainstDragons:
             return g_imageRootPath + "StatusEffect_EffectiveAgainstDragons.png";
         case StatusEffectType.Isolation:
@@ -293,16 +297,18 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_BonusDoubler.png";
         case StatusEffectType.CounterattacksDisrupted:
             return g_imageRootPath + "StatusEffect_CounterattacksDisrupted.png";
-        case StatusEffectType.SieldDragonArmor:
-            return g_imageRootPath + "StatusEffect_SieldDragonArmor.png";
+        case StatusEffectType.ShieldArmor:
+            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstArmored.png";
+        case StatusEffectType.ShieldDragon:
+            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstDragon.png";
         case StatusEffectType.TotalPenaltyDamage:
-            return g_imageRootPath + "TotalPenaltyDamage.png";
+            return g_imageRootPath + "StatusEffect_Dominance.png";
         case StatusEffectType.ResonantBlades:
-            return g_imageRootPath + "StatusEffect_ResonantBlades.png";
+            return g_imageRootPath + "StatusEffect_ResonanceBlades.png";
         case StatusEffectType.Desperation:
-            return g_imageRootPath + "Desperation.png";
+            return g_imageRootPath + "StatusEffect_Desperation.png";
         case StatusEffectType.ResonantShield:
-            return g_imageRootPath + "StatusEffect_ResonantShield.png";
+            return g_imageRootPath + "StatusEffect_ResonanceShields.png";
         case StatusEffectType.Vantage:
             return g_imageRootPath + "StatusEffect_Vantage.png";
         case StatusEffectType.DeepWounds:
@@ -310,11 +316,11 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.FallenStar:
             return g_imageRootPath + "StatusEffect_FallenStar.png";
         case StatusEffectType.FollowUpAttackPlus:
-            return g_imageRootPath + "StatusEffect_FollowUpAttackPlus.png";
+            return g_imageRootPath + "StatusEffect_GuaranteedFollowUps.png";
         case StatusEffectType.FollowUpAttackMinus:
-            return g_imageRootPath + "StatusEffect_FollowUpAttackMinus.png";
+            return g_imageRootPath + "StatusEffect_FoeCannotFollowUp.png";
         case StatusEffectType.ShieldFlying:
-            return g_imageRootPath + "StatusEffect_ShieldFlying.png";
+            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstFlying.png";
         case StatusEffectType.Dodge:
             return g_imageRootPath + "StatusEffect_Dodge.png";
         case StatusEffectType.TriangleAttack:
@@ -4778,9 +4784,14 @@ class Unit extends BattleMapElement {
             }
         }
         else if (effective == EffectiveType.Armor
-            || effective == EffectiveType.Dragon
         ) {
-            if (this.hasStatusEffect(StatusEffectType.SieldDragonArmor)) {
+            if (this.hasStatusEffect(StatusEffectType.ShieldArmor)) {
+                return true;
+            }
+        }
+        else if (effective == EffectiveType.Dragon
+        ) {
+            if (this.hasStatusEffect(StatusEffectType.ShieldDragon)) {
                 return true;
             }
         }
