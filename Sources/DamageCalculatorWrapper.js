@@ -2034,6 +2034,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Geirdriful] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let count = targetUnit.getPositiveStatusEffects().length + targetUnit.getNegativeStatusEffects().length;
+                targetUnit.addAllSpur(count * 2);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.NewDivinity] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, 0, 0, -5);
@@ -7973,6 +7981,13 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.Geirdriful:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                    }
+                    break;
                 case Weapon.RemoteBreath:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         if (isNormalAttackSpecial(enemyUnit.special)) {

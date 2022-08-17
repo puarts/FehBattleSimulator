@@ -1374,6 +1374,7 @@ const Weapon = {
     InnerWellspring: 2166, // 内より溢れる魔力
     HolytideTyrfing: 2169, // 聖日ティルフィング
     RemoteBreath: 2172, // 悠遠のブレス
+    Geirdriful: 2175, // ゲイルドリヴル
 };
 
 const Support = {
