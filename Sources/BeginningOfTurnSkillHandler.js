@@ -1638,6 +1638,13 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.DefTactic1: this.__applyTacticSkill(skillOwner, x => { x.applyDefBuff(2); }); break;
             case PassiveC.DefTactic2: this.__applyTacticSkill(skillOwner, x => { x.applyDefBuff(4); }); break;
             case PassiveC.DefTactic3: this.__applyTacticSkill(skillOwner, x => { x.applyDefBuff(6); }); break;
+            case PassiveC.InfSpdTactic:
+                this.__applyTacticSkill(skillOwner, unit => {
+                    unit.applySpdBuff(6);
+                    if (unit.moveType === MoveType.Infantry) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    }
+                }); break;
             case Weapon.YoheidanNoSenfu:
                 if (skillOwner.isWeaponSpecialRefined) {
                     this.__applyTacticSkill(skillOwner, x => { x.applyResBuff(6); });

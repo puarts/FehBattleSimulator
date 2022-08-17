@@ -2227,6 +2227,7 @@ const PassiveC = {
 
     KodoNoGenen3: 909, // 鼓動の幻煙3
 
+    // 指揮
     AtkTactic1: 1291,
     AtkTactic2: 1292,
     AtkTactic3: 706, // 攻撃の指揮3
@@ -2239,6 +2240,8 @@ const PassiveC = {
     ResTactic1: 1297,
     ResTactic2: 1298,
     ResTactic3: 709,
+    // 重視
+    InfSpdTactic: 2177, // 速指揮・歩行重視
 
     ArmorMarch3: 734, // 重装の行軍3
 
