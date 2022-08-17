@@ -827,6 +827,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             }
+            case PassiveB.NewDivinity:
             case PassiveB.DragonWall3:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -2033,6 +2034,62 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Geirdriful] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let count = targetUnit.getPositiveStatusEffects().length + targetUnit.getNegativeStatusEffects().length;
+                targetUnit.addAllSpur(count * 2);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.NewDivinity] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, 0, 0, -5);
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 40) {
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addSpurs(7, 0, 0, 7);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.RemoteBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAllSpur(5);
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack++;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+            if (dist > 0) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                let amount = Math.min(dist, 4);
+                targetUnit.addSpurs(amount, amount, 0, 0);
+                if (dist >= 2) {
+                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HolytideTyrfing] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+            if (dist !== 0) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdPreempt3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.InnerWellspring] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WandererBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addSpurs(5, 5, 0, 0);
@@ -7924,6 +7981,32 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.Geirdriful:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                    }
+                    break;
+                case Weapon.RemoteBreath:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        if (isNormalAttackSpecial(enemyUnit.special)) {
+                            let diff =
+                                targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 5) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.HolytideTyrfing: {
+                    let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                    if (dist > 0) {
+                        let def = enemyUnit.getDefInCombat(targetUnit);
+                        targetUnit.battleContext.additionalDamage += dist * Math.trunc(def * 0.1);
+                    }
+                }
+                    break;
                 case Weapon.WandererBlade:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
@@ -8336,6 +8419,15 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.SpdPreempt3:
+                    if (enemyUnit.battleContext.initiatesCombat && enemyUnit.isRangedWeaponType()) {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                            if (!targetUnit.battleContext.isSaviorActivated) {
+                                targetUnit.battleContext.isVantageActivatable = true;
+                            }
+                        }
+                    }
+                    break;
                 case PassiveB.AssuredRebirth:
                     if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
                         targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -8637,6 +8729,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             }
+            case PassiveB.NewDivinity:
             case PassiveB.DragonWall3:
             case Weapon.NewFoxkitFang:
                 {
@@ -10299,6 +10392,15 @@ class DamageCalculatorWrapper {
             }
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         };
+
+        this._applySpecialSkillEffectFuncDict[Special.DevinePulse] = (targetUnit, enemyUnit) => {
+            {
+                // 天刻の拍動
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.25);
+            }
+        }
+
         this._applySpecialSkillEffectFuncDict[Special.VitalAstra] = (targetUnit, enemyUnit) => {
             let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
             targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);

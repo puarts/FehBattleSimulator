@@ -7985,6 +7985,7 @@ class BattleSimmulatorBase {
             case Support.Rescue:
             case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
             case Support.ToChangeFate:
+            case Support.AFateChanged:
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
@@ -8292,6 +8293,22 @@ class BattleSimmulatorBase {
                     }
             }
             switch (supporterUnit.support) {
+                case Support.AFateChanged:
+                    if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                        supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                        supporterUnit.isActionDone = false;
+                        supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    }
+                    for (let effect of targetUnit.getPositiveStatusEffects()) {
+                        supporterUnit.addStatusEffect(effect);
+                    }
+                    if (!targetUnit.hasStatusEffect(StatusEffectType.Panic)) {
+                        supporterUnit.applyAtkBuff(targetUnit.atkBuff);
+                        supporterUnit.applySpdBuff(targetUnit.spdBuff);
+                        supporterUnit.applyDefBuff(targetUnit.defBuff);
+                        supporterUnit.applyResBuff(targetUnit.resBuff);
+                    }
+                    break;
                 case Support.ToChangeFate:
                     if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                         supporterUnit.applyAtkBuff(6);
@@ -8394,6 +8411,7 @@ class BattleSimmulatorBase {
 
         switch (unit.support) {
             case Support.ToChangeFate:
+            case Support.AFateChanged:
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition:

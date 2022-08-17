@@ -125,6 +125,22 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.HeirToLight:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applySpdBuff(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+                break;
+            case Weapon.InnerWellspring:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    if (skillOwner.isSpecialCountMax) {
+                        skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case PassiveC.OpenedDomain: {
                 // 専用スキルでヒーローズ出典が確定なので不要だが念のため
                 let ownerOrigin = skillOwner.heroInfo.origin.replace("暗黒竜と光の剣", "紋章の謎");
@@ -1622,6 +1638,13 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.DefTactic1: this.__applyTacticSkill(skillOwner, x => { x.applyDefBuff(2); }); break;
             case PassiveC.DefTactic2: this.__applyTacticSkill(skillOwner, x => { x.applyDefBuff(4); }); break;
             case PassiveC.DefTactic3: this.__applyTacticSkill(skillOwner, x => { x.applyDefBuff(6); }); break;
+            case PassiveC.InfSpdTactic:
+                this.__applyTacticSkill(skillOwner, unit => {
+                    unit.applySpdBuff(6);
+                    if (unit.moveType === MoveType.Infantry) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    }
+                }); break;
             case Weapon.YoheidanNoSenfu:
                 if (skillOwner.isWeaponSpecialRefined) {
                     this.__applyTacticSkill(skillOwner, x => { x.applyResBuff(6); });

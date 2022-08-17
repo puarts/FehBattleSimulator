@@ -463,6 +463,9 @@ class BattleContext {
         // 氷の聖鏡発動時などの軽減ダメージ保持用
         this.reducedDamageForNextAttack = 0;
 
+        // 次の自分の攻撃のダメージ加算
+        this.additionalDamageOfNextAttack = 0;
+
         // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生するか
         this.nextAttackEffectAfterSpecialActivated = false;
 
@@ -486,11 +489,17 @@ class BattleContext {
         // 防御系奥義によるダメージ軽減率
         this.damageReductionRatioBySpecial = 0;
 
+        // 次の敵の攻撃ダメージ軽減
+        this.damageReductionRatiosOfNextAttack = [];
+
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
 
-        // 最初の攻撃前の奥義発動カウント軽減値
+        // 最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttack = 0;
+
+        // 最初の攻撃前の奥義発動カウント増加値
+        this.specialCountIncreaseBeforeFirstAttack = 0;
 
         // 攻撃時の追加ダメージ
         this.additionalDamage = 0;
@@ -641,6 +650,8 @@ class BattleContext {
         this.refersRes = false;
         this.refersResForSpecial = false;
         this.reducedDamageForNextAttack = 0;
+        this.additionalDamageOfNextAttack = 0;
+        this.damageReductionRatiosOfNextAttack = [];
         this.nextAttackEffectAfterSpecialActivated = false;
 
         // 自身の発動カウント変動量-1を無効
@@ -658,6 +669,7 @@ class BattleContext {
         this.isSaviorActivated = false;
 
         this.specialCountReductionBeforeFirstAttack = 0;
+        this.specialCountIncreaseBeforeFirstAttack = 0;
         this.additionalDamageOfFirstAttack = 0;
 
         this.invalidatesDamageReductionExceptSpecial = false;
@@ -1326,6 +1338,10 @@ class Unit extends BattleMapElement {
      */
     get isCaptain() {
         return this.slotOrder == 0;
+    }
+
+    get fromPos() {
+        return [this.fromPosX, this.fromPosY];
     }
 
     /**
@@ -2535,6 +2551,8 @@ class Unit extends BattleMapElement {
         this.isDuoOrHarmonicSkillActivatedInThisTurn = false;
         this.initPosX = this.posX;
         this.initPosY = this.posY;
+        this.fromPosX = this.posX;
+        this.fromPosY = this.posY;
         if (this.groupId == UnitGroupType.Enemy) {
             this.isEnemyActionTriggered = false;
         }
@@ -4988,6 +5006,17 @@ class Unit extends BattleMapElement {
             }
         }
         return moveCountForCanto;
+    }
+
+    // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
+    static calcAttackerMoveDistance(unit1, unit2) {
+        let unit = unit1.battleContext.initiatesCombat ? unit1 : unit2;
+        if (unit.fromPosX === -1 || unit.fromPosY === -1) {
+            return 0;
+        }
+        let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
+        // console.log(`dist: ${dist}, name: ${unit.nameWithGroup}, pos: (${unit.fromPosX}, ${unit.fromPosY}) => (${unit.posX}, ${unit.posY})`);
+        return dist;
     }
 }
 

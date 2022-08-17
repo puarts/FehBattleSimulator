@@ -304,6 +304,11 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveTakeDamage(N);
 }
 
+奥義実装
+__getCount<N>Specials() {}
+NormalAttackSpecialDict か DefenseSpecialDict を選択
+__init__applySpecialSkillEffect() {}
+
 戦闘後、奥義発動カウント-N
 __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
   targetUnit.specialCount -= N;
@@ -356,6 +361,12 @@ resetMaxSpecialCount() {
 
 奥義発動可能状態
 if (unit.isSpecialCharged) {}
+
+自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意)
+targetUnit.battleContext.specialCountReductionBeforeFirstAttack += N;
+
+敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)
+enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 
 奥義ダメージ+N
 __init__applySpecialSkillEffect() {
@@ -422,6 +433,11 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         (x, y) => x.getEvalSpdInCombat(y)
         N / 100, M);
     }
+}
+1回ごとの攻撃で呼ばれる
+DamageCalculator.js
+__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+    fixedAddDamage += N;
 }
 
 奥義発動時、ダメージ+N

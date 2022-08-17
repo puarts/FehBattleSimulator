@@ -1369,6 +1369,12 @@ const Weapon = {
 
     // 2022年8月 武器錬成
     WandererBlade: 2162, // 流浪の鋭剣
+
+    // 2022年 総選挙
+    InnerWellspring: 2166, // 内より溢れる魔力
+    HolytideTyrfing: 2169, // 聖日ティルフィング
+    RemoteBreath: 2172, // 悠遠のブレス
+    Geirdriful: 2175, // ゲイルドリヴル
 };
 
 const Support = {
@@ -1383,6 +1389,7 @@ const Support = {
     FoulPlay: 1840, // トリック
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
+    AFateChanged: 2176, // 運命は変わった!
 
     Sing: 411, // 歌う
     Dance: 412, // 踊る
@@ -1560,6 +1567,7 @@ const Special = {
     HolyKnightAura: 1702, // グランベルの聖騎士
 
     SublimeHeaven: 1752, // 覇天
+    DevinePulse: 2167, // 天刻の拍動
 
     RequiemDance: 1800, // 鎮魂の舞
 };
@@ -1831,6 +1839,12 @@ const PassiveA = {
     // 迫撃
     SurgeSparrow: 1797, // 鬼神飛燕の迫撃
     SturdySurge: 1962, // 鬼神金剛の迫撃
+
+    // 激突
+    AtkSpdClash4: 2170, // 攻撃速さの激突4
+
+    // 秘奥
+    AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 };
 
 const PassiveB = {
@@ -1840,6 +1854,7 @@ const PassiveB = {
     QuickRiposte3: 599, // 切り返し3
     DragonWall3: 1621, // 竜鱗障壁3
     TrueDragonWall: 2078, // 真竜鱗障壁
+    NewDivinity: 2174, // 新たなる神竜王
     DragonsIre3: 1493, // 竜の逆鱗3
     DragonsWrath: 1863, // 竜の魔鱗3
     Vantage3: 596, // 待ち伏せ3
@@ -2118,6 +2133,9 @@ const PassiveB = {
 
     // 防壁
     AtkDefBulwark3: 2150, // 攻撃守備の防壁3
+
+    // 先制
+    SpdPreempt3: 2168, // 速さの先制3
 };
 
 const PassiveC = {
@@ -2209,6 +2227,7 @@ const PassiveC = {
 
     KodoNoGenen3: 909, // 鼓動の幻煙3
 
+    // 指揮
     AtkTactic1: 1291,
     AtkTactic2: 1292,
     AtkTactic3: 706, // 攻撃の指揮3
@@ -2221,6 +2240,8 @@ const PassiveC = {
     ResTactic1: 1297,
     ResTactic2: 1298,
     ResTactic3: 709,
+    // 重視
+    InfSpdTactic: 2177, // 速指揮・歩行重視
 
     ArmorMarch3: 734, // 重装の行軍3
 
@@ -2416,6 +2437,7 @@ const PassiveC = {
     FaithInHumanity: 2089, // 人の可能性を信じる
     DarklingGuardian: 2097, // 闇の樹海の守護竜
     OpenedDomain: 2151, // みんなが繋がる世界
+    HeirToLight: 2171, // 光をつぐもの
 };
 
 const PassiveS = {
@@ -2746,6 +2768,7 @@ NormalAttackSpecialDict[Special.SeidrShell] = 0; // 魔弾
 NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
 NormalAttackSpecialDict[Special.RighteousWind] = 0;
 NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
+NormalAttackSpecialDict[Special.DevinePulse] = 0;
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {

@@ -319,6 +319,12 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AtkResFinish4:
+                    if (atkUnit.isSpecialActivated || atkUnit.tmpSpecialCount === 0 && !isPrecombat) {
+                        atkUnit.battleContext.healedHpByAttack = 7;
+                        fixedAddDamage += 5;
+                    }
+                    break;
                 case Weapon.HurricaneDagger:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
@@ -426,6 +432,14 @@ class DamageCalculator {
         if (this.isLogEnabled) this.__logAttackerAndAttackee(atkUnit, defUnit, context);
 
         this.__calcAndSetCooldownCount(atkUnit, defUnit);
+        // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
+        if (context.isFirstAttack(atkUnit)) {
+            let totalCount =
+                atkUnit.tmpSpecialCount
+                - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
+                + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
+            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
+        }
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 
@@ -441,6 +455,8 @@ class DamageCalculator {
         let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
+        fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttack;
+        atkUnit.battleContext.additionalDamageOfNextAttack = 0;
         if (context.isFirstAttack(atkUnit)) {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
         }
@@ -748,9 +764,6 @@ class DamageCalculator {
 
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
-        if (context.isFirstAttack(atkUnit)) {
-            atkUnit.tmpSpecialCount = Math.max(0, atkUnit.tmpSpecialCount - atkUnit.battleContext.specialCountReductionBeforeFirstAttack);
-        }
         let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
@@ -770,6 +783,12 @@ class DamageCalculator {
 
             // 奥義以外のダメージ軽減
             {
+                // 次の攻撃のダメージ軽減
+                for (let ratio of defUnit.battleContext.damageReductionRatiosOfNextAttack) {
+                    defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                }
+                defUnit.battleContext.damageReductionRatiosOfNextAttack = [];
+
                 // 計算機の外側で設定されたダメージ軽減率
                 damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatio;
 
@@ -820,6 +839,14 @@ class DamageCalculator {
             let currentDamage = 0;
             if (activatesAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
+                switch (atkUnit.special) {
+                    case Special.DevinePulse: {
+                        atkUnit.battleContext.damageReductionRatiosOfNextAttack.push(0.75);
+                        let spd = atkUnit.getSpdInCombat(defUnit);
+                        atkUnit.battleContext.additionalDamageOfNextAttack += Math.trunc(spd * 0.2);
+                    }
+                        break;
+                }
                 // 奥義発動
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog("奥義によるダメージ" + currentDamage);
@@ -914,11 +941,18 @@ class DamageCalculator {
             }
         }
         switch (unit.weapon) {
+            case Weapon.HolytideTyrfing:
+                if (Unit.calcAttackerMoveDistance(unit, atkUnit) !== 0 &&
+                    unit.battleContext.restHpPercentage >= 25 &&
+                    !unit.battleContext.isMiracleWithoutSpecialActivated) {
+                    return true;
+                }
+                break;
             case Weapon.MilasTestament:
-                if (unit.battleContext.weaponSkillCondSatisfied && !unit.isMiracleWithoutSpecialActivated) {
-                    if (unit.restHpPercentage >= 25) {
-                        return true;
-                    }
+                if (unit.battleContext.weaponSkillCondSatisfied &&
+                    unit.battleContext.restHpPercentage >= 25 &&
+                    !unit.battleContext.isMiracleWithoutSpecialActivated) {
+                    return true;
                 }
                 break;
             case Weapon.BowOfTwelve:

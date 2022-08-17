@@ -556,6 +556,11 @@ class PostCombatSkillHander {
                         targetUnit.reserveTakeDamage(5);
                     }
                     break;
+                case Weapon.InnerWellspring:
+                    if (targetUnit.battleContext.isSpecialActivated) {
+                        targetUnit.specialCount -= 1;
+                    }
+                    break;
                 case PassiveB.OgiNoRasen3:
                 case Weapon.MakenMistoruthin:
                     if (targetUnit.battleContext.isSpecialActivated) {

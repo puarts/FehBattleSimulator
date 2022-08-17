@@ -255,6 +255,12 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                     updateCellBgColor(tile.posX, tile.posY, color);
                 }
             }
+            for (let tile of g_dragoverTileHistory.data) {
+                const alpha = "a0";
+                let color = "#cbd600";
+                color = "#88ccff" + alpha;
+                updateCellBgColor(tile.posX, tile.posY, color);
+            }
         }
     } catch (e) {
         console.error(e);
@@ -273,6 +279,12 @@ function dragoverImplForTargetTile(unit, targetTile) {
         let unitPlacedOnTargetTile = targetTile.placedUnit;
         if (unitPlacedOnTargetTile != null && unit.groupId != unitPlacedOnTargetTile.groupId) {
             let attackTile = findBestActionTile(targetTile, unit.attackRange);
+            // TODO: 応急処置なのできちんと修正する
+            if (attackTile === null) {
+                attackTile = unit.placedTile;
+                unit.fromPosX = attackTile.posX;
+                unit.fromPosY = attackTile.posY;
+            }
             g_app.showDamageCalcSummary(unit, unitPlacedOnTargetTile, attackTile);
         }
     }
