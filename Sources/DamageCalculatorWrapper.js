@@ -827,6 +827,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             }
+            case PassiveB.NewDivinity:
             case PassiveB.DragonWall3:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -2033,6 +2034,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.NewDivinity] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, 0, 0, -5);
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 40) {
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addSpurs(7, 0, 0, 7);
@@ -8705,6 +8714,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             }
+            case PassiveB.NewDivinity:
             case PassiveB.DragonWall3:
             case Weapon.NewFoxkitFang:
                 {
