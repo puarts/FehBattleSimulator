@@ -783,12 +783,6 @@ class DamageCalculator {
 
             // 奥義以外のダメージ軽減
             {
-                // 次の攻撃のダメージ軽減
-                for (let ratio of defUnit.battleContext.damageReductionRatiosOfNextAttack) {
-                    defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
-                }
-                defUnit.battleContext.damageReductionRatiosOfNextAttack = [];
-
                 // 計算機の外側で設定されたダメージ軽減率
                 damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatio;
 
@@ -815,6 +809,12 @@ class DamageCalculator {
 
             // 奥義によるダメージ軽減
             let isDefenderSpecialActivated = false;
+            // 奥義の次の攻撃のダメージ軽減
+            for (let ratio of defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack) {
+                damageReductionRatio *= 1.0 - ratio;
+            }
+            defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack = [];
+
             if (activatesDefenderSpecial) {
                 if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
@@ -841,7 +841,7 @@ class DamageCalculator {
                 atkUnit.battleContext.isSpecialActivated = true;
                 switch (atkUnit.special) {
                     case Special.DevinePulse: {
-                        atkUnit.battleContext.damageReductionRatiosOfNextAttack.push(0.75);
+                        atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
                         let spd = atkUnit.getSpdInCombat(defUnit);
                         atkUnit.battleContext.additionalDamageOfNextAttack += Math.trunc(spd * 0.2);
                     }
