@@ -1389,6 +1389,7 @@ const Support = {
     FoulPlay: 1840, // トリック
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
+    AFateChanged: 2176, // 運命は変わった!
 
     Sing: 411, // 歌う
     Dance: 412, // 踊る
