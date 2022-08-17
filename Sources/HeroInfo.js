@@ -424,28 +424,36 @@ class HeroInfo {
 
     get maxDragonflower() {
         let releaseDate = this.releaseDateAsNumber;
+        let i = 1;
+        if (releaseDate > 20220816) {
+            return 5 * i;
+        }
+
+        ++i;
         if (releaseDate > 20210816) {
-            return 5;
+            return 5 * i;
         }
 
+        ++i;
         if (releaseDate > 20200817) {
-            return 10;
+            return 5 * i;
         }
 
+        ++i;
         switch (this._moveType) {
             case MoveType.Infantry:
                 if (releaseDate < 20190220) {
                     // 第2世代と第3世代が境界
-                    return 20;
+                    return 5 * (i + 1);
                 }
                 else {
-                    return 15;
+                    return 5 * i;
                 }
             case MoveType.Flying:
             case MoveType.Armor:
             case MoveType.Cavalry:
             default:
-                return 15;
+                return 5 * i;
         }
     }
 
