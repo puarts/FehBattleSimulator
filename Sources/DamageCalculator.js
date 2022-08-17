@@ -319,6 +319,12 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AtkResFinish4:
+                    if (atkUnit.isSpecialActivated || atkUnit.tmpSpecialCount === 0 && !isPrecombat) {
+                        atkUnit.battleContext.healedHpByAttack = 7;
+                        fixedAddDamage += 5;
+                    }
+                    break;
                 case Weapon.HurricaneDagger:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
@@ -426,6 +432,14 @@ class DamageCalculator {
         if (this.isLogEnabled) this.__logAttackerAndAttackee(atkUnit, defUnit, context);
 
         this.__calcAndSetCooldownCount(atkUnit, defUnit);
+        // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
+        if (context.isFirstAttack(atkUnit)) {
+            let totalCount =
+                atkUnit.tmpSpecialCount
+                - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
+                + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
+            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
+        }
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 
@@ -750,13 +764,6 @@ class DamageCalculator {
 
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
-        if (context.isFirstAttack(atkUnit)) {
-            let totalCount =
-                atkUnit.tmpSpecialCount
-                - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
-                + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
-            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
-        }
         let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
