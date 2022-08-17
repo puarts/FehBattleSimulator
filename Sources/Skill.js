@@ -1836,6 +1836,9 @@ const PassiveA = {
     // 迫撃
     SurgeSparrow: 1797, // 鬼神飛燕の迫撃
     SturdySurge: 1962, // 鬼神金剛の迫撃
+
+    // 激突
+    AtkSpdClash4: 2170, // 攻撃速さの激突4
 };
 
 const PassiveB = {

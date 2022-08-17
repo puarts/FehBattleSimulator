@@ -2033,6 +2033,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+            if (dist > 0) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                let amount = Math.min(dist, 4);
+                targetUnit.addSpurs(amount, amount, 0, 0);
+                if (dist >= 2) {
+                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HolytideTyrfing] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
             if (dist !== 0) {
