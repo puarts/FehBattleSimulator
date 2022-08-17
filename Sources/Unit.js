@@ -484,7 +484,7 @@ class BattleContext {
         this.damageReductionRatioBySpecial = 0;
 
         // 次の敵の攻撃ダメージ軽減
-        this.damageReductionRatiosOfNextAttack = [];
+        this.damageReductionRatiosBySpecialOfNextAttack = [];
 
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
@@ -645,7 +645,7 @@ class BattleContext {
         this.refersResForSpecial = false;
         this.reducedDamageForNextAttack = 0;
         this.additionalDamageOfNextAttack = 0;
-        this.damageReductionRatiosOfNextAttack = [];
+        this.damageReductionRatiosBySpecialOfNextAttack = [];
         this.nextAttackEffectAfterSpecialActivated = false;
 
         // 自身の発動カウント変動量-1を無効
@@ -741,7 +741,7 @@ class BattleContext {
         return 1 - (1 - sourceRatio) * (1 - modifiedRatio);
     }
 
-    // 範囲奥義のダメージ軽減積
+    // 奥義のダメージ軽減積
     static multDamageReductionRatioForSpecial(sourceRatio, ratio) {
         return 1 - (1 - sourceRatio) * (1 - ratio);
     }
