@@ -2427,6 +2427,7 @@ const PassiveC = {
     FaithInHumanity: 2089, // 人の可能性を信じる
     DarklingGuardian: 2097, // 闇の樹海の守護竜
     OpenedDomain: 2151, // みんなが繋がる世界
+    HeirToLight: 2171, // 光をつぐもの
 };
 
 const PassiveS = {

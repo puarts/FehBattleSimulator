@@ -125,6 +125,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.HeirToLight:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applySpdBuff(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+                break;
             case Weapon.InnerWellspring:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
