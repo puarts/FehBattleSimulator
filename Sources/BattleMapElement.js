@@ -9,4 +9,8 @@ class BattleMapElement {
         this.posY = -1;
         this.isSelected = false;
     }
+
+    get pos() {
+        return [this.posX, this.posY];
+    }
 }

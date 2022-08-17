@@ -1330,6 +1330,10 @@ class Unit extends BattleMapElement {
         return this.slotOrder == 0;
     }
 
+    get fromPos() {
+        return [this.fromPosX, this.fromPosY];
+    }
+
     /**
      * @param  {StatusType} statusType
      */
@@ -2537,6 +2541,8 @@ class Unit extends BattleMapElement {
         this.isDuoOrHarmonicSkillActivatedInThisTurn = false;
         this.initPosX = this.posX;
         this.initPosY = this.posY;
+        this.fromPosX = this.posX;
+        this.fromPosY = this.posY;
         if (this.groupId == UnitGroupType.Enemy) {
             this.isEnemyActionTriggered = false;
         }
@@ -4985,6 +4991,17 @@ class Unit extends BattleMapElement {
             }
         }
         return moveCountForCanto;
+    }
+
+    // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
+    static calcAttackerMoveDistance(unit1, unit2) {
+        let unit = unit1.battleContext.initiatesCombat ? unit1 : unit2;
+        if (unit.fromPosX === -1 || unit.fromPosY === -1) {
+            return 0;
+        }
+        let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
+        // console.log(`dist: ${dist}, name: ${unit.nameWithGroup}, pos: (${unit.fromPosX}, ${unit.fromPosY}) => (${unit.posX}, ${unit.posY})`);
+        return dist;
     }
 }
 

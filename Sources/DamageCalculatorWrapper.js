@@ -2033,6 +2033,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HolytideTyrfing] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+            if (dist !== 0) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdPreempt3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 4;
         }
@@ -7932,6 +7938,14 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.HolytideTyrfing: {
+                    let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                    if (dist > 0) {
+                        let def = enemyUnit.getDefInCombat(targetUnit);
+                        targetUnit.battleContext.additionalDamage += dist * Math.trunc(def * 0.1);
+                    }
+                }
+                    break;
                 case Weapon.WandererBlade:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {

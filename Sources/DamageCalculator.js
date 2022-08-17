@@ -930,11 +930,18 @@ class DamageCalculator {
             }
         }
         switch (unit.weapon) {
+            case Weapon.HolytideTyrfing:
+                if (Unit.calcAttackerMoveDistance(unit, atkUnit) !== 0 &&
+                    unit.battleContext.restHpPercentage >= 25 &&
+                    !unit.battleContext.isMiracleWithoutSpecialActivated) {
+                    return true;
+                }
+                break;
             case Weapon.MilasTestament:
-                if (unit.battleContext.weaponSkillCondSatisfied && !unit.isMiracleWithoutSpecialActivated) {
-                    if (unit.restHpPercentage >= 25) {
-                        return true;
-                    }
+                if (unit.battleContext.weaponSkillCondSatisfied &&
+                    unit.battleContext.restHpPercentage >= 25 &&
+                    !unit.battleContext.isMiracleWithoutSpecialActivated) {
+                    return true;
                 }
                 break;
             case Weapon.BowOfTwelve:
