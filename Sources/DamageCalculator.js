@@ -751,7 +751,11 @@ class DamageCalculator {
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
         if (context.isFirstAttack(atkUnit)) {
-            atkUnit.tmpSpecialCount = Math.max(0, atkUnit.tmpSpecialCount - atkUnit.battleContext.specialCountReductionBeforeFirstAttack);
+            let totalCount =
+                atkUnit.tmpSpecialCount
+                - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
+                + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
+            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
         }
         let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {

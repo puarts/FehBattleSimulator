@@ -1373,6 +1373,7 @@ const Weapon = {
     // 2022年 総選挙
     InnerWellspring: 2166, // 内より溢れる魔力
     HolytideTyrfing: 2169, // 聖日ティルフィング
+    RemoteBreath: 2172, // 悠遠のブレス
 };
 
 const Support = {

@@ -2033,6 +2033,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.RemoteBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAllSpur(5);
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack++;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
             if (dist > 0) {
@@ -7950,6 +7959,17 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.RemoteBreath:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        if (isNormalAttackSpecial(enemyUnit.special)) {
+                            let diff =
+                                targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 5) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.HolytideTyrfing: {
                     let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
                     if (dist > 0) {
