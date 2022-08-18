@@ -1375,6 +1375,7 @@ const Weapon = {
     HolytideTyrfing: 2169, // 聖日ティルフィング
     RemoteBreath: 2172, // 悠遠のブレス
     Geirdriful: 2175, // ゲイルドリヴル
+    BreakerLance: 2178, // 壊刃の戦槍
 };
 
 const Support = {

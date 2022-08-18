@@ -125,6 +125,21 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.BreakerLance: {
+                let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let statusFunc = x => {
+                    let unit = this.__getStatusEvalUnit(x);
+                    return unit.getAtkInPrecombat() + unit.getDefInPrecombat();
+                };
+                let units = this.__findMaxStatusUnits(group, statusFunc);
+                for (let unit of units) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyDebuffs(-6, 0, -6, 0);
+                        u.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+            }
+                break;
             case PassiveC.HeirToLight:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.applyAtkBuff(6);
