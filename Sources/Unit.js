@@ -4957,6 +4957,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case Weapon.HolytideTyrfing:
                 case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
