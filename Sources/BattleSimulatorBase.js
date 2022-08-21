@@ -7592,14 +7592,21 @@ class BattleSimmulatorBase {
             g_appData.map.removeUnit(targetUnit);
         }
 
-        moveUnit(unit, result.assistUnitTileAfterAssist, false, executesTrap);
+        // 罠は移動補助スキルの後に効果を発動するのでexecutesTrapをtrueで呼び出す
+        moveUnit(unit, result.assistUnitTileAfterAssist, false, false);
         if (movesTargetUnit) {
-            moveUnit(targetUnit, result.targetUnitTileAfterAssist, false, executesTrap);
+            moveUnit(targetUnit, result.targetUnitTileAfterAssist, false, false);
         }
 
         if (applysMovementSkill) {
             this.__applyMovementAssistSkill(unit, targetUnit);
             this.__applyMovementAssistSkill(targetUnit, unit);
+        }
+
+        // 移動補助スキルの処理が終了したので罠を発動させる
+        if (executesTrap) {
+            executeTrapIfPossible(unit, false);
+            executeTrapIfPossible(targetUnit, false);
         }
         return true;
     }
