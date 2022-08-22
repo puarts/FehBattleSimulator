@@ -995,7 +995,7 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
-            case Hero.DuoNina :
+            case Hero.DuoNina:
                 duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
                     if (unit.posX === duoUnit.posX || unit.posY === duoUnit.posY ||
@@ -1285,7 +1285,8 @@ class BattleSimmulatorBase {
                 break;
             case Hero.SpringIdunn:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 5, 5)) {
-                    unit.addStatusEffect(StatusEffectType.SieldDragonArmor);
+                    unit.addStatusEffect(StatusEffectType.ShieldArmor);
+                    unit.addStatusEffect(StatusEffectType.ShieldDragon);
                     unit.applyDefBuff(6);
                     unit.applyResBuff(6);
                 }
