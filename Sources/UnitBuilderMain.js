@@ -4,11 +4,7 @@ class UnitBuilderMain extends BattleSimmulatorBase {
     constructor() {
         super({
             unitSelected: (event) => {
-                let name = event.item.name;
-                if (name == undefined) {
-                    name = event.item.classList[0];
-                }
-
+                let name = event.currentTarget.id;
                 this.setCurrentUnit(name);
             },
             loadTeamMaxScore: () => {
@@ -141,6 +137,7 @@ function initUnitBuilder() {
         g_appData.isDebugMenuEnabled = false;
         g_appData.applyDebugMenuVisibility();
         importUrl(location.search);
+        g_appData.setGameMode(GameMode.Arena);
         g_app.setCurrentUnit(unit.id);
         g_appData.updateArenaScoreForAll();
     });

@@ -366,6 +366,18 @@
         .detailsDefault {
             text-align: left;
         }
+
+        .iconButton {
+            width: auto;
+            padding: 0;
+            margin: 0;
+            background: none;
+            border: 0;
+            font-size: 0;
+            line-height: 0;
+            overflow: visible;
+            cursor: pointer;
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -452,23 +464,22 @@
                                         style="font-size:12px"><br />スコア:{{arenaScore}}</span>
                                 </td>
                                 <td style="padding: 5px;background-color: #ccf8c8; ">
-                                    <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
-                                        <div v-for="unit in allyUnits" v-bind:class="unit.id"
-                                            style="position:relative;float:left;">
-                                            <span class="paramHeader"
-                                                style="padding:3px; position:absolute;right:0px;bottom:-5px;">
-                                                {{unit.arenaScore}}
-                                            </span>
-                                            <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 50px;" />
-                                        </div>
-                                    </draggable>
+                                    <button v-for="unit in allyUnits" type="button"
+                                        @click="g_app.setCurrentUnit(unit.id)" class="iconButton"
+                                        style="position:relative;">
+                                        <img v-bind:src="unit.icon" style="max-width: 50px;" />
+                                        <span class="paramHeader"
+                                            style="padding:3px; position:absolute;right:0px;bottom:0px;">
+                                            {{unit.arenaScore}}
+                                        </span>
+                                    </button>
                                 </td>
                             </tr>
                         </table>
                     </div>
                     <div class="block">
                         <div style="padding: 5px;">
-                            <input type="button" class="buttonUi" @click="loadTeamMaxScore" value="全員の査定最大化"></input>
+                            <input type="button" class="buttonUi" @click="loadTeamMaxScore" value="全員の査定最大化">
                         </div>
                     </div>
                 </td>

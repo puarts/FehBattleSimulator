@@ -4198,8 +4198,8 @@ class Unit extends BattleMapElement {
      */
     __updateAndGetTotalSp() {
         this.weaponSp = this.__getWeaponSp();
-        this.supportSp = this.specialInfo != null ? this.specialInfo.sp : 0;
-        this.specialSp = this.supportInfo != null ? this.supportInfo.sp : 0;
+        this.supportSp = this.supportInfo != null ? this.supportInfo.sp : 0;
+        this.specialSp = this.specialInfo != null ? this.specialInfo.sp : 0;
         this.passiveASp = this.passiveAInfo != null ? this.passiveAInfo.sp : 0;
         this.passiveBSp = this.passiveBInfo != null ? this.passiveBInfo.sp : 0;
         this.passiveCSp = this.passiveCInfo != null ? this.passiveCInfo.sp : 0;

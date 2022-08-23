@@ -329,6 +329,18 @@
             color: white;
             text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
         }
+
+        .iconButton {
+            width: auto;
+            padding: 0;
+            margin: 0;
+            background: none;
+            border: 0;
+            font-size: 0;
+            line-height: 0;
+            overflow: visible;
+            cursor: pointer;
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -773,8 +785,9 @@
                                     style="font-size:12px"><br />査定:{{arenaScore}}({{primeArenaScore}})</span>
                             </td>
                             <td>
-                                <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected">
-                                    <span v-for="unit in allyUnits" v-bind:class="unit.id" style="position:relative">
+                                <draggable tag="div" @end="enemyUnitSorted">
+                                    <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in allyUnits"
+                                        v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
                                             <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
                                                 絆{{summonerLevelToString(unit.summonerLevel)}}</div>
@@ -784,7 +797,7 @@
                                         </span>
                                         <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
 
-                                    </span>
+                                    </button>
                                     <!-- <img v-for="unit in allyUnits" :key="unit.id" src="https://puarts.com/images/dummy.png" v-bind:data-src="unit.icon"
                                         class="lazy" v-bind:name="unit.id" style="max-width: 35px;" /> -->
                                 </draggable>
@@ -799,9 +812,9 @@
                                     style="font-size:12px"><br />失敗レート:{{aetherRaidDefenseLiftLoss}}</span>
                             </td>
                             <td>
-                                <draggable tag="div" @end="enemyUnitSorted" @choose="unitSelected"
-                                    style="position:relative">
-                                    <span v-for="unit in enemyUnits" v-bind:class="unit.id" style="position:relative">
+                                <draggable tag="div" @end="enemyUnitSorted" style="position:relative">
+                                    <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in enemyUnits"
+                                        v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
                                             <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
                                                 {{summonerLevelToString(unit.summonerLevel)}}</div>
@@ -810,7 +823,7 @@
                                                 Bonus</div>
                                         </span>
                                         <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
-                                    </span>
+                                    </button>
                                 </draggable>
                             </td>
                         </tr>
