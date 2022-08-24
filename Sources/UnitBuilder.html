@@ -404,9 +404,7 @@
                     <table>
                         <tr>
                             <td>
-                                シーズン:
-                            </td>
-                            <td>
+                                シーズン:<br />
                                 <div class="block">
                                     <input id="isLightSeason" type="checkbox"
                                         v-model="globalBattleContext.isLightSeason" @change="lightSeasonChanged"><label
@@ -466,7 +464,7 @@
                                 <td style="padding: 5px;background-color: #ccf8c8; ">
                                     <button v-for="unit in allyUnits" type="button"
                                         @click="g_app.setCurrentUnit(unit.id)" class="iconButton"
-                                        style="position:relative;">
+                                        v-bind:style="g_appData.currentUnit == unit ? 'position:relative;background-color: #ffffffff;border: 1px solid #ddddddff' : 'position:relative'">
                                         <img v-bind:src="unit.icon" style="max-width: 50px;" />
                                         <span class="paramHeader"
                                             style="padding:3px; position:absolute;right:0px;bottom:0px;">
