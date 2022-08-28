@@ -475,6 +475,10 @@
                             </tr>
                         </table>
                     </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
                     <div class="block">
                         <div style="padding: 5px;">
                             <input type="button" class="buttonUi" @click="loadTeamMaxScore" value="全員の査定最大化">
@@ -495,6 +499,9 @@
             </tr>
             <tr v-bind:style="debugMenuStyle">
                 <td>
+                    <div>
+                        <input type="button" value="ユニットの選択解除" @click="g_appData.clearCurrentItemSelection()">
+                    </div>
                     currentItemIndex={{currentItemIndex}}
                 </td>
             </tr>
