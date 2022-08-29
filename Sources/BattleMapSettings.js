@@ -1338,6 +1338,9 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
  * @param  {MapType} type
  */
 function __resetBattleMapPlacementForAetherRaid(map, type) {
+    for (let breakableWall of map._breakableWalls) {
+        breakableWall.reset();
+    }
     switch (type) {
         case MapType.None:
             break;

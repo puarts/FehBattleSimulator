@@ -937,6 +937,10 @@ class BreakableWall extends DefenceStructureBase {
 
         --this.breakCount;
     }
+
+    reset(breakCount = 1) {
+        this.breakCount = breakCount;
+    }
 }
 
 /// ユニットが通行可能な配置物であるかどうかを判定します。
