@@ -2134,6 +2134,7 @@ const PassiveB = {
     FlowFeather3: 2139, // 怒涛・天馬行空3
 
     // 拍節
+    AtkResTempo3: 2184, // 攻撃魔防の拍節3
     SpdDefTempo3: 2046, // 速さ守備の拍節3
 
     // 防壁
