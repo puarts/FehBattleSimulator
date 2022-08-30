@@ -1376,6 +1376,9 @@ const Weapon = {
     RemoteBreath: 2172, // 悠遠のブレス
     Geirdriful: 2175, // ゲイルドリヴル
     BreakerLance: 2178, // 壊刃の戦槍
+
+    // 2022年8月 伝承ディアドラ
+    SpiritForestWrit: 2182, // 精霊の森の秘本
 };
 
 const Support = {

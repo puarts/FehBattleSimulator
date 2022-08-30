@@ -2034,6 +2034,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SpiritForestWrit] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addSpurs(-6, 0, 0, -6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.refersMinOfDefOrRes = true;
+                let diff = targetUnit.getResInPrecombat() - enemyUnit.getResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.min(Math.trunc(diff * 0.8), 12);
+                    enemyUnit.addSpurs(-amount, 0, 0, -amount);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BreakerLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, -6, 0);
