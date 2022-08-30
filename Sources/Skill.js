@@ -1491,6 +1491,7 @@ const Special = {
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
     Glacies: 451, // 氷華
+    CircletOfBalance: 2183, // 聖神と暗黒神の冠
     DraconicAura: 457, // 竜裂
     DragonFang: 452, // 竜穿
     Sirius: 956, // 天狼
@@ -2738,6 +2739,7 @@ NormalAttackSpecialDict[Special.Bonfire] = 0;
 NormalAttackSpecialDict[Special.Ignis] = 0;
 NormalAttackSpecialDict[Special.Iceberg] = 0;
 NormalAttackSpecialDict[Special.Glacies] = 0;
+NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
 NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
 NormalAttackSpecialDict[Special.DraconicAura] = 0;
 NormalAttackSpecialDict[Special.DragonFang] = 0;

@@ -10327,6 +10327,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.8);
             }
         };
+
+        this._applySpecialSkillEffectFuncDict[Special.CircletOfBalance] = (targetUnit, enemyUnit) => {
+            // 聖神と暗黒神の冠
+            let totalRes = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
+        }
+
         this._applySpecialSkillEffectFuncDict[Special.HolyKnightAura] = (targetUnit, enemyUnit) => {
             // グランベルの聖騎士
             {
