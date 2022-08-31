@@ -2034,6 +2034,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SpiritForestWrit] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addSpurs(-6, 0, 0, -6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.refersMinOfDefOrRes = true;
+                let diff = targetUnit.getResInPrecombat() - enemyUnit.getResInPrecombat();
+                if (diff >= 1) {
+                    let amount = Math.min(Math.trunc(diff * 0.8), 12);
+                    enemyUnit.addSpurs(-amount, 0, 0, -amount);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BreakerLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, -6, 0);
@@ -2667,9 +2679,11 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 6;
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkResTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(-3, 0, 0, -3);
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            enemyUnit.spdSpur -= 3;
-            enemyUnit.defSpur -= 3;
+            enemyUnit.addSpurs(0, -3, -3, 0);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SharpWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -10166,6 +10180,7 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.passiveB) {
+            case PassiveB.AtkResTempo3:
             case PassiveB.SpdDefTempo3:
                 targetUnit.battleContext.invalidateCooldownCountSkills();
                 break;
@@ -10315,6 +10330,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.8);
             }
         };
+
+        this._applySpecialSkillEffectFuncDict[Special.CircletOfBalance] = (targetUnit, enemyUnit) => {
+            // 聖神と暗黒神の冠
+            let totalRes = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
+        }
+
         this._applySpecialSkillEffectFuncDict[Special.HolyKnightAura] = (targetUnit, enemyUnit) => {
             // グランベルの聖騎士
             {

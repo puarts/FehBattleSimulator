@@ -167,6 +167,12 @@ class DamageCalculator {
             }
         }
 
+        // 1マップ1回の効果が発動したかどうかをBattleContextからUnitに保存する
+        if (damageType === DamageType.ActualDamage) {
+            atkUnit.isOncePerMapSpecialActivated |= atkUnit.battleContext.isOncePerMapSpecialActivated;
+            defUnit.isOncePerMapSpecialActivated |= defUnit.battleContext.isOncePerMapSpecialActivated;
+        }
+
         result.damageHistory = context.damageHistory;
         return result;
     }
@@ -908,6 +914,9 @@ class DamageCalculator {
                     }
                 } else {
                     defUnit.battleContext.isMiracleWithoutSpecialActivated = true;
+                    if (defUnit.special === Special.CircletOfBalance) {
+                        defUnit.battleContext.isOncePerMapSpecialActivated = true;
+                    }
                 }
             }
             else {
@@ -940,36 +949,53 @@ class DamageCalculator {
                 return true;
             }
         }
-        switch (unit.weapon) {
-            case Weapon.HolytideTyrfing:
-                if (Unit.calcAttackerMoveDistance(unit, atkUnit) !== 0 &&
-                    unit.battleContext.restHpPercentage >= 25 &&
-                    !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                    return true;
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case Special.CircletOfBalance: {
+                    let condA =
+                        (unit.isSpecialCharged || atkUnit.isSpecialCharged) ||
+                        (unit.isSpecialActivated || atkUnit.isSpecialActivated);
+                    let condB = unit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType);
+                    // 1回発動したかどうかはコンテキストかユニットの両方を見る必要がある
+                    // ユニットが保持する値はリアルタイムに保持されずにDamageTypeがActualDamageの時に戦闘後にユニットにコピーされる
+                    let isOncePerMapSpecialActivated =
+                        unit.isOncePerMapSpecialActivated ||
+                        unit.battleContext.isOncePerMapSpecialActivated;
+                    if ((condA || condB) && !isOncePerMapSpecialActivated) {
+                        return true;
+                    }
                 }
-                break;
-            case Weapon.MilasTestament:
-                if (unit.battleContext.weaponSkillCondSatisfied &&
-                    unit.battleContext.restHpPercentage >= 25 &&
-                    !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                    return true;
-                }
-                break;
-            case Weapon.BowOfTwelve:
-                if (unit.battleContext.initiatesCombat ||
-                    (unit.battleContext.restHpPercentage >= 75 &&
-                        (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff))) {
-                    return true;
-                }
-                break;
-            case Weapon.Thirufingu:
-                if (unit.battleContext.restHpPercentage >= 50) return true;
-                break;
-            case Weapon.HelsReaper:
-                if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
-                    return true;
-                }
-                break;
+                    break;
+                case Weapon.HolytideTyrfing:
+                    if (Unit.calcAttackerMoveDistance(unit, atkUnit) !== 0 &&
+                        unit.battleContext.restHpPercentage >= 25 &&
+                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
+                        return true;
+                    }
+                    break;
+                case Weapon.MilasTestament:
+                    if (unit.battleContext.weaponSkillCondSatisfied &&
+                        unit.battleContext.restHpPercentage >= 25 &&
+                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
+                        return true;
+                    }
+                    break;
+                case Weapon.BowOfTwelve:
+                    if (unit.battleContext.initiatesCombat ||
+                        (unit.battleContext.restHpPercentage >= 75 &&
+                            (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff))) {
+                        return true;
+                    }
+                    break;
+                case Weapon.Thirufingu:
+                    if (unit.battleContext.restHpPercentage >= 50) return true;
+                    break;
+                case Weapon.HelsReaper:
+                    if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
+                        return true;
+                    }
+                    break;
+            }
         }
         if (this.__canActivateSpecialMiracle(unit, atkUnit)) {
             return true;

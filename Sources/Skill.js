@@ -1376,6 +1376,9 @@ const Weapon = {
     RemoteBreath: 2172, // 悠遠のブレス
     Geirdriful: 2175, // ゲイルドリヴル
     BreakerLance: 2178, // 壊刃の戦槍
+
+    // 2022年8月 伝承ディアドラ
+    SpiritForestWrit: 2182, // 精霊の森の秘本
 };
 
 const Support = {
@@ -1488,6 +1491,7 @@ const Special = {
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
     Glacies: 451, // 氷華
+    CircletOfBalance: 2183, // 聖神と暗黒神の冠
     DraconicAura: 457, // 竜裂
     DragonFang: 452, // 竜穿
     Sirius: 956, // 天狼
@@ -2130,6 +2134,7 @@ const PassiveB = {
     FlowFeather3: 2139, // 怒涛・天馬行空3
 
     // 拍節
+    AtkResTempo3: 2184, // 攻撃魔防の拍節3
     SpdDefTempo3: 2046, // 速さ守備の拍節3
 
     // 防壁
@@ -2735,6 +2740,7 @@ NormalAttackSpecialDict[Special.Bonfire] = 0;
 NormalAttackSpecialDict[Special.Ignis] = 0;
 NormalAttackSpecialDict[Special.Iceberg] = 0;
 NormalAttackSpecialDict[Special.Glacies] = 0;
+NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
 NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
 NormalAttackSpecialDict[Special.DraconicAura] = 0;
 NormalAttackSpecialDict[Special.DragonFang] = 0;
