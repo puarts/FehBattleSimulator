@@ -2053,6 +2053,7 @@ const PassiveB = {
     EvenFollowUp3: 1574, // 追撃隊形・偶数3
 
     HikariToYamito: 981, // 光と闇と
+    LightAndDark2: 2185, // 光と闇と・承
 
     GohoshiNoYorokobi1: 1252, // ご奉仕の喜び1
     GohoshiNoYorokobi2: 1253, // ご奉仕の喜び2

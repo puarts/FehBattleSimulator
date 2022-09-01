@@ -511,6 +511,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:
                 case PassiveB.HikariToYamito:
+                case PassiveB.LightAndDark2:
                     return true;
             }
         }
@@ -5739,6 +5740,11 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.HikariToYamito] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addAllSpur(-2);
             targetUnit.battleContext.invalidateAllBuffs();
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveB.LightAndDark2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addAllSpur(-5);
+            targetUnit.battleContext.invalidateAllBuffs();
+            targetUnit.battleContext.invalidateAllOwnDebuffs();
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ShiseiNaga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
