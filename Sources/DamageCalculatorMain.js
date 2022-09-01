@@ -856,6 +856,7 @@ class DamageCalcData {
             Special.LunarFlash2, // 月光閃・承(守備魔防-20%、+速さ20%)
             Special.ShiningEmblem, // 光炎の紋章(+速さ35%)
             Special.Sirius, // 天狼(+速さ30%)
+            Special.SiriusPlus, // 天狼(+速さ35%)
             // Special.HerosBlood, // 英雄の血脈(+速さ30%)
             // Special.RighteousWind, // 聖風(+速さ30%)
             Special.RegnalAstra, // 剣姫の流星(+速さ40%)

@@ -1495,6 +1495,7 @@ const Special = {
     DraconicAura: 457, // 竜裂
     DragonFang: 452, // 竜穿
     Sirius: 956, // 天狼
+    SiriusPlus: 2186, // 天狼・神
     RupturedSky: 954, // 破天
     TwinBlades: 1043, // 双刃
     Taiyo: 493, // 太陽
@@ -2746,6 +2747,7 @@ NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
 NormalAttackSpecialDict[Special.DraconicAura] = 0;
 NormalAttackSpecialDict[Special.DragonFang] = 0;
 NormalAttackSpecialDict[Special.Sirius] = 0; // 天狼
+NormalAttackSpecialDict[Special.SiriusPlus] = 0; // 天狼
 NormalAttackSpecialDict[Special.RupturedSky] = 0; // 破天
 NormalAttackSpecialDict[Special.TwinBlades] = 0; // 双刃
 NormalAttackSpecialDict[Special.Taiyo] = 0;

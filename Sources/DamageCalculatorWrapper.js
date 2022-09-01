@@ -10185,6 +10185,11 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidateCooldownCountSkills();
                 break;
         }
+        switch (targetUnit.special) {
+            case Special.SiriusPlus:
+                enemyUnit.battleContext.reducesCooldownCount = false;
+                break;
+        }
         switch (targetUnit.passiveB) {
             case PassiveB.AtkResTempo3:
             case PassiveB.SpdDefTempo3:
@@ -10400,6 +10405,14 @@ class DamageCalculatorWrapper {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
                 targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.SiriusPlus] = (targetUnit, enemyUnit) => {
+            // 天狼+
+            {
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.35);
+                targetUnit.battleContext.specialDamageRatioToHeal = 0.35;
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.TwinBlades] = (targetUnit, enemyUnit) => {
