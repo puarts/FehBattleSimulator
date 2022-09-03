@@ -32,6 +32,15 @@ class PostCombatSkillHander {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
 
+    // 戦闘後スキル評価時にenumerateUnitsInTheSameGroupOnMapは護られているユニットを含まないのでそのユニットを含めてマップにいるユニットを列挙する
+    enumerateUnitsInTheSameGroupOnMapIncludingSavedUnit(targetUnit, withTargetUnit = false) {
+        return this._unitManager.enumerateUnitsWithPredicator(x =>
+            x.groupId == targetUnit.groupId
+            && x.ownerType !== OwnerType.TrashBox // 護られるユニットは一時的にplacedTileが外れるのでゴミ箱に送られているかで判断
+            && (withTargetUnit || x != targetUnit)
+        );
+    }
+
     enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
         return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);
     }
@@ -328,7 +337,7 @@ class PostCombatSkillHander {
                     break;
                 case PassiveB.TrueDragonWall: {
                     let found = false;
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMapIncludingSavedUnit(targetUnit)) {
                         if (isWeaponTypeBreathOrBeast(unit.weaponType)) {
                             found = true;
                             break;
