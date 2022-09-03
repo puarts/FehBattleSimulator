@@ -347,7 +347,8 @@ class Tile extends BattleMapElement {
     }
 
     __getTileMoveWeight(unit, isPathfinderEnabled = true) {
-        if (isPathfinderEnabled && this.__canActivatePathfinder(unit)) {
+        if (isPathfinderEnabled && this.__canActivatePathfinder(unit) &&
+            this._moveWeights[unit.moveType] !== CanNotReachTile) {
             return 0;
         }
 
