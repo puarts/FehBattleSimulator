@@ -37,6 +37,7 @@ const SeasonType = {
     Water: 5,
     Wind: 6,
     Earth: 7,
+    Chaos: 8,
 };
 
 /**

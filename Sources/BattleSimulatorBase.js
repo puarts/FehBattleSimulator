@@ -441,15 +441,30 @@ class BattleSimmulatorBase {
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
             },
+            chaosSeasonChanged: function () {
+                if (g_app == null) { return; }
+                if (self.vm.globalBattleContext.isChaosSeason) {
+                    self.vm.globalBattleContext.isLightSeason = false;
+                    self.vm.globalBattleContext.isAstraSeason = false;
+                }
+                else {
+                    self.vm.globalBattleContext.isLightSeason = true;
+                    self.vm.globalBattleContext.isAstraSeason = false;
+                }
+                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                g_appData.resetCurrentAetherRaidDefensePreset();
+            },
             lightSeasonChanged: function () {
                 if (g_app == null) { return; }
                 self.vm.globalBattleContext.isAstraSeason = !self.vm.globalBattleContext.isLightSeason;
+                self.vm.globalBattleContext.setChaosSeasonFromCurrentSeasons();
                 g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 g_appData.resetCurrentAetherRaidDefensePreset();
             },
             astraSeasonChanged: function () {
                 if (g_app == null) { return; }
                 self.vm.globalBattleContext.isLightSeason = !self.vm.globalBattleContext.isAstraSeason;
+                self.vm.globalBattleContext.setChaosSeasonFromCurrentSeasons();
                 g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 g_appData.resetCurrentAetherRaidDefensePreset();
             },

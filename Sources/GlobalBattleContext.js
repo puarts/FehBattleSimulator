@@ -38,6 +38,9 @@ class GlobalBattleContext {
         this.isEarthSeason = false;
         this.isWindSeason = false;
         this.isWaterSeason = false;
+
+        // isLightSeasonとisAstraSeasonから判定できるので保存はしない一時変数
+        this.isChaosSeason = false;
     }
 
     moveSummonerDuelsPointAreaOffset(groupType) {
@@ -202,6 +205,9 @@ class GlobalBattleContext {
     }
 
     *enumerateCurrentSeasons() {
+        if (this.isChaosSeason) {
+            yield SeasonType.Chaos;
+        }
         if (this.isLightSeason) {
             yield SeasonType.Light;
             yield SeasonType.Dark;
@@ -222,5 +228,9 @@ class GlobalBattleContext {
         if (this.isWindSeason) {
             yield SeasonType.Wind;
         }
+    }
+
+    setChaosSeasonFromCurrentSeasons() {
+        this.isChaosSeason = !this.isLightSeason && !this.isAstraSeason;
     }
 }

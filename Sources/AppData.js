@@ -1575,6 +1575,8 @@ class AppData extends UnitManager {
             ++i;
         }
         if (Number.isInteger(Number(splited[i]))) { this.resonantBattleInterval = Number(splited[i]); ++i; }
+
+        this.setChaosSeasonFromCurrentSeasons();
     }
 
     setGameMode(gameMode) {
