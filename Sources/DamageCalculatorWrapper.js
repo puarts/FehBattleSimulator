@@ -511,6 +511,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:
                 case PassiveB.HikariToYamito:
+                case PassiveB.LightAndDark2:
                     return true;
             }
         }
@@ -5740,6 +5741,11 @@ class DamageCalculatorWrapper {
             enemyUnit.addAllSpur(-2);
             targetUnit.battleContext.invalidateAllBuffs();
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.LightAndDark2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addAllSpur(-5);
+            targetUnit.battleContext.invalidateAllBuffs();
+            targetUnit.battleContext.invalidateAllOwnDebuffs();
+        };
         this._applySkillEffectForUnitFuncDict[Weapon.ShiseiNaga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
                 targetUnit.atkSpur += 6;
@@ -10179,6 +10185,11 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidateCooldownCountSkills();
                 break;
         }
+        switch (targetUnit.special) {
+            case Special.SiriusPlus:
+                enemyUnit.battleContext.reducesCooldownCount = false;
+                break;
+        }
         switch (targetUnit.passiveB) {
             case PassiveB.AtkResTempo3:
             case PassiveB.SpdDefTempo3:
@@ -10394,6 +10405,14 @@ class DamageCalculatorWrapper {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.3);
                 targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.SiriusPlus] = (targetUnit, enemyUnit) => {
+            // 天狼+
+            {
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.35);
+                targetUnit.battleContext.specialDamageRatioToHeal = 0.35;
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.TwinBlades] = (targetUnit, enemyUnit) => {
