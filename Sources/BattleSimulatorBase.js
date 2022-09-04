@@ -2515,7 +2515,7 @@ class BattleSimmulatorBase {
     }
 
     __getEditingTargetUnit() {
-        return g_appData.currentUnit.hasPairUpUnit && g_appData.currentUnit.isEditingPairUpUnit ? g_appData.currentUnit.pairUpUnit : g_appData.currentUnit;
+        return g_appData.currentUnit.canHavePairUpUnit && g_appData.currentUnit.isEditingPairUpUnit ? g_appData.currentUnit.pairUpUnit : g_appData.currentUnit;
     }
 
     setHeroByIndex(unitIndex, heroIndex) {
