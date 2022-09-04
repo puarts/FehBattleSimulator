@@ -757,7 +757,8 @@ class AppData extends UnitManager {
             }
         }
 
-        let canApplyPairUpBoost = unit.hasPairUpUnit && this.examinesIsCurrentSeason(unit.providableBlessingSeason);
+        let canApplyPairUpBoost = unit.hasPairUpUnit
+            && (this.gameMode != GameMode.SummonerDuels || this.examinesIsCurrentSeason(unit.providableBlessingSeason));
         unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate, updateBlessingEffects,
             this.isPairUpBoostsEnabled && canApplyPairUpBoost);
 
