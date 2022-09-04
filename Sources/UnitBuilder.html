@@ -498,8 +498,10 @@
                                 <div v-show="unit.canHavePairUpUnit" style="margin: 5px;">
                                     <input type="button" value="ダブル前衛を編集" @click="unit.isEditingPairUpUnit = false"
                                         v-if="unit.isEditingPairUpUnit" class="buttonUi">
-                                    <input type="button" value="ダブル後衛を編集" @click="unit.isEditingPairUpUnit = true"
-                                        v-if="!unit.isEditingPairUpUnit" class="buttonUi">
+                                    <span v-if="!unit.isEditingPairUpUnit">
+                                        <input type="button" value="ダブル後衛を編集" @click="unit.isEditingPairUpUnit = true"
+                                            class="buttonUi">
+                                    </span>
                                 </div>
 
                                 <unit-detail v-model="unit" v-if="!unit.canHavePairUpUnit || !unit.isEditingPairUpUnit">
@@ -583,12 +585,22 @@
     </style>
     <script type="text/x-template" id="unit-detail-template">
         <div v-if="value != null">
-            <div class="unitStatusAndSkillContainer" style="float:left;display:block;padding: 10px 0px 10px 10px;" >
+            <div class="unitStatusAndSkillContainer" style="float:left;display:block;padding: 10px 0px 10px 10px;position:relative;" >
+                <div style="float:right;position:absolute;top:4px;right:4px" v-if="value.hasPairUpUnit">
+                    <div style="position:relative">
+                    <img src="https://puarts.com/AetherRaidTacticsBoard/images/PairUp.png" width="30"
+                        height="30" style="position:absolute; right:25px" />
+                    <img v-bind:src="value.pairUpUnit.icon" width="30"
+                        height="30" />
+                    </div>
+                </div>
                 <div class='paramHeader' style="text-align:left;">
                     <table>
                         <tr>
                             <td rowspan="2">
-                                <img v-bind:src="value.icon" width="50" height="50" style="padding: 0px 10px 0px 0px " />
+                                <div style="padding: 0px 10px 0px 0px;position:relative">
+                                    <img v-bind:src="value.icon" width="50" height="50" />
+                                </div>
                             </td>
                             <td class="paramHeader">
                                 ★
