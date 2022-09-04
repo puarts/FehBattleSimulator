@@ -590,8 +590,12 @@
                     <div style="position:relative">
                     <img src="https://puarts.com/AetherRaidTacticsBoard/images/PairUp.png" width="30"
                         height="30" style="position:absolute; right:25px" />
-                    <img v-bind:src="value.pairUpUnit.icon" width="30"
-                        height="30" />
+                    <button type="button"
+                        @click="value.isEditingPairUpUnit = true" class="iconButton"
+                        style="position:relative">
+                        <img v-bind:src="value.pairUpUnit.icon" width="30"
+                            height="30" />
+                    </button>
                     </div>
                 </div>
                 <div class='paramHeader' style="text-align:left;">
