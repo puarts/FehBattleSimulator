@@ -289,6 +289,12 @@ class AppData extends UnitManager {
 
         this.isDisplayingMapMessage = false;
 
+        /**
+         * ユニットコピー用の一時変数
+         * @type {String}
+         */
+        this.copiedUnitString = "";
+
         /** @type {Unit[]} */
         this.enemyUnits = [];
         /** @type {Unit[]} */
@@ -480,6 +486,25 @@ class AppData extends UnitManager {
         this.registerTemplateImages();
         this.applyDebugMenuVisibility();
         this.updateTargetInfoTdStyle();
+    }
+
+    copyCurrentUnit() {
+        const currentUnit = this.currentUnit;
+        if (currentUnit == null) {
+            return;
+        }
+        const editTargetUnit = currentUnit.isEditingPairUpUnit ? currentUnit.pairUpUnit : currentUnit;
+        this.copiedUnitString = editTargetUnit.turnWideStatusToString();
+    }
+    pasteToCurrentUnit() {
+        const currentUnit = this.currentUnit;
+        if (currentUnit == null || this.copiedUnitString == "") {
+            return;
+        }
+
+        this.currentUnit.fromTurnWideStatusString(this.copiedUnitString);
+        this.initializeByHeroInfo(this.currentUnit, this.currentUnit.heroIndex, false, true);
+        this.updateSlotOrders();
     }
 
     resetBattleMapPlacement(withUnits = false) {
@@ -818,6 +843,13 @@ class AppData extends UnitManager {
         }
 
         this.registerSkillInfos(heroInfo);
+
+        if (heroInfo == unit.heroInfo) {
+            // ユニットのコピーペースト時に再初期化でリセットされてしまうのを防ぐために
+            // 同じ情報だったらスキップするようにしたが、もし何か他の処理で都合が悪ければ、
+            // 強制更新フラグを引数で渡せるようにする
+            return;
+        }
 
         unit.initByHeroInfo(heroInfo);
 
@@ -1187,11 +1219,20 @@ class AppData extends UnitManager {
         let allyCount = this.getAllyCount();
         this.updateEnemyAndAllyUnitCount(enemyCount, allyCount);
     }
+    updateSlotOrders() {
+        for (let i = 0; i < this.enemyUnits.length; ++i) {
+            let unit = this.enemyUnits[i];
+            unit.slotOrder = i;
+        }
+        for (let i = 0; i < this.allyUnits.length; ++i) {
+            let unit = this.allyUnits[i];
+            unit.slotOrder = i;
+        }
+    }
     updateEnemyAndAllyUnitCount(enemyCount, allyCount) {
         this.enemyUnits = [];
         for (let i = 0; i < enemyCount; ++i) {
             let unit = this.units[i];
-            unit.slotOrder = i;
             this.enemyUnits.push(unit);
         }
         let allyOffset = MaxEnemyUnitCount;
@@ -1199,9 +1240,10 @@ class AppData extends UnitManager {
         this.allyUnits = [];
         for (let i = allyOffset; i < allyEnd; ++i) {
             let unit = this.units[i];
-            unit.slotOrder = i - allyOffset;
             this.allyUnits.push(unit);
         }
+
+        this.updateSlotOrders();
     }
 
     examinesEnemyActionTriggered(unit) {
