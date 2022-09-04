@@ -587,13 +587,6 @@
                 <div class='paramHeader' style="text-align:left;">
                     <table>
                         <tr>
-                            <td  class="paramHeader">
-                                <span  class="normal">
-                                ユニット{{value.slotOrder + 1}}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
                             <td rowspan="2">
                                 <img v-bind:src="value.icon" width="50" height="50" style="padding: 0px 10px 0px 0px " />
                             </td>
@@ -947,7 +940,7 @@
                         <tr>
                             <td style="padding: 10px 0px 0px 0px"></td>
                         </tr>
-                        <tr>
+                        <tr  v-if="!value.isPairUpUnit">
                             <td></td>
                             <td class='paramHeader'>
                                 合計SP
@@ -958,7 +951,7 @@
                                 </span>
                             </td>
                         </tr>
-                        <tr>
+                        <tr  v-if="!value.isPairUpUnit">
                             <td></td>
                             <td class='paramHeader'>
                                 スコア
@@ -1007,17 +1000,17 @@
                             </option>
                         </select>
                     </dd>
-                    <dt v-if="value.providableBlessingSeason == SeasonType.None">
+                    <dt v-if="value.providableBlessingSeason == SeasonType.None && !value.isPairUpUnit">
                         <label class="title">祝福:</label></dt>
-                    <dd v-if="value.providableBlessingSeason == SeasonType.None">
+                    <dd v-if="value.providableBlessingSeason == SeasonType.None && !value.isPairUpUnit">
                         <select v-model="value.grantedBlessing" @change="g_app.vm.grantedBlessingChanged">
                             <option v-for="option in g_appData.seasonOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
                         </select>
                     </dd>
-                    <dt><label class="title">祝福効果: </label></dt>
-                    <dd>  
+                    <dt v-if="!value.isPairUpUnit" ><label class="title">祝福効果: </label></dt>
+                    <dd v-if="!value.isPairUpUnit">  
                         <select v-model="value.blessing1" @change="updateStatus(value);">
                             <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
                                 {{ option.text }}
@@ -1049,14 +1042,12 @@
             <div class="card">
                 <input type="button" class="buttonUi" value="凸と花を最大化" @click="value.maximizeMergeAndDragonflower();updateStatus(value);" />
                 <input type="button" class="buttonUi" value="リセット" @click="resetUnit(value)" />
-            </div>
-            <div class="card">
-                <input type="button" class="buttonUi" @click="g_app.setUnitToMaxArenaScore(value)" value="最大査定に設定"></input>
+                <input type="button" class="buttonUi" @click="g_app.setUnitToMaxArenaScore(value)"  v-if="!value.isPairUpUnit" value="最大査定に設定"></input>
                 <input type="button" class="buttonUi" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();updateUrl();" >
                 <input type="button" class="buttonUi" value="スキル全て外す" @click="value.clearReservedSkills();value.clearSkills();updateUrl();" >
             </div>
             <div class="card">
-            <fieldset style="font-size:12px;">
+            <fieldset style="font-size:12px;"  v-if="!value.isPairUpUnit">
                 <legend>闘技場スコア詳細</legend>
                 
                 <span>スコア: {{value.arenaScore}}({{value.arenaScore*2}})</span><br/>

@@ -1286,6 +1286,11 @@ class Unit extends BattleMapElement {
          **/
         this.isEditingPairUpUnit = false;
 
+        /** 自身がダブル後衛ユニットかどうか
+         *  @type {Boolean}
+         **/
+        this.isPairUpUnit = false;
+
         this.blessingCount = 2;
 
         // 査定計算用
@@ -4523,6 +4528,7 @@ class Unit extends BattleMapElement {
     __createPairUpUnitInstance() {
         this.pairUpUnit = new Unit();
         this.pairUpUnit.heroIndex = -1;
+        this.pairUpUnit.isPairUpUnit = true;
     }
 
     updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects = true, isPairUpBoostsEnabled = false) {
