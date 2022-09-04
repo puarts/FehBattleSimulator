@@ -757,7 +757,9 @@ class AppData extends UnitManager {
             }
         }
 
-        unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate, updateBlessingEffects, this.isPairUpBoostsEnabled);
+        let canApplyPairUpBoost = unit.hasPairUpUnit && this.examinesIsCurrentSeason(unit.providableBlessingSeason);
+        unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate, updateBlessingEffects,
+            this.isPairUpBoostsEnabled && canApplyPairUpBoost);
 
         // 砦レベル差
         {

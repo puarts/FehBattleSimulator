@@ -107,7 +107,11 @@ function initAetherRaidBoard(
 
     using(new ScopedStopwatch(time => g_app.writeDebugLogLine("保存状態の復元: " + time + " ms")), () => {
         // g_app.resetUnitsForTesting();
+        g_appData.isPairUpBoostsEnabled = true;
         loadSettings();
-        g_appData.setGameMode(GameMode.SummonerDuels);
+        if (g_appData.gameMode != GameMode.SummonerDuels) {
+            g_appData.setGameMode(GameMode.SummonerDuels);
+            resetPlacement();
+        }
     });
 }

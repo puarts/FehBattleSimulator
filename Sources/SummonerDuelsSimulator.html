@@ -900,10 +900,32 @@
                     <div class="jquery" id="unitSettings">
                         <ul class="contents">
                             <li v-for="unit in enemyUnits">
-                                <unit-detail v-model="unit"></unit-detail>
+                                <div v-show="unit.canHavePairUpUnit" style="margin: 5px;">
+                                    <input type="button" value="ダブル前衛を編集" @click="unit.isEditingPairUpUnit = false"
+                                        v-if="unit.isEditingPairUpUnit" class="buttonUi">
+                                    <span v-if="!unit.isEditingPairUpUnit">
+                                        <input type="button" value="ダブル後衛を編集" @click="unit.isEditingPairUpUnit = true"
+                                            class="buttonUi">
+                                    </span>
+                                </div>
+                                <unit-detail v-model="unit" v-if="!unit.canHavePairUpUnit || !unit.isEditingPairUpUnit">
+                                </unit-detail>
+                                <unit-detail v-model="unit.pairUpUnit"
+                                    v-show="unit.canHavePairUpUnit && unit.isEditingPairUpUnit"></unit-detail>
                             </li>
                             <li v-for="unit in allyUnits">
-                                <unit-detail v-model="unit"></unit-detail>
+                                <div v-show="unit.canHavePairUpUnit" style="margin: 5px;">
+                                    <input type="button" value="ダブル前衛を編集" @click="unit.isEditingPairUpUnit = false"
+                                        v-if="unit.isEditingPairUpUnit" class="buttonUi">
+                                    <span v-if="!unit.isEditingPairUpUnit">
+                                        <input type="button" value="ダブル後衛を編集" @click="unit.isEditingPairUpUnit = true"
+                                            class="buttonUi">
+                                    </span>
+                                </div>
+                                <unit-detail v-model="unit" v-if="!unit.canHavePairUpUnit || !unit.isEditingPairUpUnit">
+                                </unit-detail>
+                                <unit-detail v-model="unit.pairUpUnit"
+                                    v-show="unit.canHavePairUpUnit && unit.isEditingPairUpUnit"></unit-detail>
                             </li>
                             <li v-for="structure in offenceStructureStorage.objs">
                                 <structure-detail v-model="structure">
@@ -1545,7 +1567,7 @@
         </span>
     </script>
     <script type="text/x-template" id="unit-detail-template">
-        <table border='0' style='border-width: 0px;border-style:none;'>
+        <table border='0' style='border-width: 0px;border-style:none;' v-if="value != null">
             <tr>
                 <td>
                     <table border='0' style='border-width: 0px;border-style:none;'>
