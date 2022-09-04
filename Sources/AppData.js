@@ -281,6 +281,12 @@ class AppData extends UnitManager {
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
 
+        /** 
+         * ダブル補正が有効かどうか
+         * @type {Boolean}
+         */
+        this.isPairUpBoostsEnabled = false;
+
         this.isDisplayingMapMessage = false;
 
         /** @type {Unit[]} */
@@ -724,8 +730,13 @@ class AppData extends UnitManager {
     __updateStatusBySkillsAndMerges(
         unit,
         updatesPureGrowthRate = false,
-        updateBlessingEffects = true
+        updateBlessingEffects = true,
+        withPairUpUnit = true
     ) {
+        if (withPairUpUnit && unit.hasPairUpUnit) {
+            this.__updateStatusBySkillsAndMerges(unit.pairUpUnit, updatesPureGrowthRate, updateBlessingEffects, false);
+        }
+
         this.skillDatabase.updateUnitSkillInfo(unit);
 
         // 祝福効果の更新
@@ -743,7 +754,7 @@ class AppData extends UnitManager {
             }
         }
 
-        unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate, updateBlessingEffects);
+        unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate, updateBlessingEffects, this.isPairUpBoostsEnabled);
 
         // 砦レベル差
         {
@@ -785,8 +796,15 @@ class AppData extends UnitManager {
      * @param  {Unit} unit
      * @param  {Number} heroIndex
      * @param  {Boolean} initEditableAttrs=true
+     * @param  {Boolean} withPairUpUnit=true
      */
-    initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true) {
+    initializeByHeroInfo(unit, heroIndex, initEditableAttrs = true, withPairUpUnit = true) {
+        unit.heroIndex = heroIndex;
+        if (heroIndex == -1) {
+            unit.setToNone();
+            return;
+        }
+
         let heroInfo = this.heroInfos.getHeroInfo(heroIndex);
         if (heroInfo == null) {
             console.log("heroInfo was not found:" + heroIndex);
@@ -795,7 +813,6 @@ class AppData extends UnitManager {
 
         this.registerSkillInfos(heroInfo);
 
-        unit.heroIndex = heroIndex;
         unit.initByHeroInfo(heroInfo);
 
         if (this.gameMode != GameMode.ResonantBattles
@@ -827,6 +844,10 @@ class AppData extends UnitManager {
         if (initEditableAttrs) {
             unit.specialCount = unit.maxSpecialCount;
             unit.hp = unit.maxHpWithSkills;
+        }
+
+        if (withPairUpUnit && unit.canHavePairUpUnit && unit.pairUpUnit != null) {
+            this.initializeByHeroInfo(unit.pairUpUnit, unit.pairUpUnit.heroIndex, initEditableAttrs, false);
         }
     }
 
@@ -1576,7 +1597,7 @@ class AppData extends UnitManager {
         }
         if (Number.isInteger(Number(splited[i]))) { this.resonantBattleInterval = Number(splited[i]); ++i; }
 
-        this.setChaosSeasonFromCurrentSeasons();
+        this.globalBattleContext.setChaosSeasonFromCurrentSeasons();
     }
 
     setGameMode(gameMode) {

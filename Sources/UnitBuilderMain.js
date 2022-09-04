@@ -132,6 +132,7 @@ function updateStatus(unit) {
 function initUnitBuilder() {
     using(new ScopedStopwatch(time => g_app.writeDebugLogLine("初期化: " + time + " ms")), () => {
         g_appData.setGameMode(GameMode.Arena);
+        g_appData.isPairUpBoostsEnabled = true;
         let unit = g_appData.allyUnits[0];
         g_app.setCurrentUnit(unit.id);
         g_appData.isDebugMenuEnabled = false;
@@ -140,5 +141,7 @@ function initUnitBuilder() {
         g_appData.setGameMode(GameMode.Arena);
         g_app.setCurrentUnit(unit.id);
         g_appData.updateArenaScoreForAll();
+        updateUrl();
+
     });
 }

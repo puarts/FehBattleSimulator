@@ -26,7 +26,10 @@ class TurnSetting {
     pushTile(tile) {
         this._tiles.push(tile);
     }
-
+    /**
+     * @param  {String} serialId
+     * @returns {Unit}
+     */
     __findUnit(serialId) {
         for (let i = 0; i < this._units.length; ++i) {
             let unit = this._units[i];

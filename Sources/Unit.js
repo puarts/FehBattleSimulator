@@ -1276,6 +1276,16 @@ class Unit extends BattleMapElement {
         /** @type {Unit} */
         this.snapshot = null;
 
+        /** ダブル後衛ユニット
+         *  @type {Unit}
+         **/
+        this.pairUpUnit = null;
+
+        /** ダブル後衛ユニットを編集中かどうか
+         *  @type {Boolean}
+         **/
+        this.isEditingPairUpUnit = false;
+
         this.blessingCount = 2;
 
         // 査定計算用
@@ -1329,6 +1339,15 @@ class Unit extends BattleMapElement {
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
     }
+
+    /**
+     * ダブル後衛ユニットを設定可能かどうか
+     * @returns {Boolean}
+     */
+    get canHavePairUpUnit() {
+        return this.heroInfo != null && this.heroInfo.canHavePairUpUnit;
+    }
+
     /**
      * @returns {Number}
      */
@@ -1721,6 +1740,12 @@ class Unit extends BattleMapElement {
     }
 
     turnWideStatusToString() {
+        let compressedPairUpUnitSetting = "0";
+        if (this.hasPairUpUnit) {
+            // ValueDelimiter の入れ子は対応していないのでURIに圧縮してしまう
+            const pairUpUnitSetting = this.pairUpUnit.turnWideStatusToString();
+            compressedPairUpUnitSetting = LZString.compressToEncodedURIComponent(pairUpUnitSetting);
+        }
         return this.heroIndex
             + ValueDelimiter + this.weapon
             + ValueDelimiter + this.support
@@ -1765,6 +1790,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.blessing6
             + ValueDelimiter + this.ascendedAsset
             + ValueDelimiter + this.captain
+            + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
 
@@ -1808,12 +1834,16 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.fromPosX
             + ValueDelimiter + this.fromPosY
             + ValueDelimiter + boolToInt(this.isCombatDone)
+            + ValueDelimiter + boolToInt(this.isCombatDone)
             ;
     }
 
-
+    /**
+     * @param  {String} value
+     */
     fromTurnWideStatusString(value) {
         let splited = value.split(ValueDelimiter);
+        let elemCount = splited.length;
         let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.heroIndex = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.weapon = Number(splited[i]); ++i; }
@@ -1859,6 +1889,17 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.blessing6 = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.ascendedAsset = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.captain = Number(splited[i]); ++i; }
+        if (i < elemCount) { this.__setPairUpUnitFromCompressedUri(splited[i]); ++i; }
+    }
+
+    __setPairUpUnitFromCompressedUri(settingText) {
+        this.__createPairUpUnitInstance();
+        if (settingText === "0") {
+            return;
+        }
+
+        let decompressed = LZString.decompressFromEncodedURIComponent(settingText);
+        this.pairUpUnit.fromTurnWideStatusString(decompressed);
     }
 
     fromPerTurnStatusString(value) {
@@ -4391,12 +4432,32 @@ class Unit extends BattleMapElement {
         return this.heroInfo.detailPageUrl;
     }
 
+    setToNone() {
+        this.heroInfo = null;
+        this.heroIndex = -1;
+        this._maxHpWithSkills = 0;
+        this.atkWithSkills = 0;
+        this.spdWithSkills = 0;
+        this.defWithSkills = 0;
+        this.resWithSkills = 0;
+        this.weaponRefinement = WeaponRefinementType.None;
+        this.weapon = Weapon.None;
+        this.support = Support.None;
+        this.special = Special.None;
+        this.passiveA = PassiveA.None;
+        this.passiveB = PassiveB.None;
+        this.passiveC = PassiveC.None;
+        this.passiveS = PassiveS.None;
+        this.merge = 0;
+        this.dragonflower = 0;
+    }
+
     /**
      * データベースの英雄情報からユニットを初期化します。
      * @param  {HeroInfo} heroInfo
      */
     initByHeroInfo(heroInfo) {
-        let isHeroInfoChanged = this.heroInf != heroInfo;
+        let isHeroInfoChanged = this.heroInfo != heroInfo;
         if (!isHeroInfoChanged) {
             return;
         }
@@ -4444,10 +4505,19 @@ class Unit extends BattleMapElement {
         this.defDecrement = heroInfo.defDecrement;
         this.resDecrement = heroInfo.resDecrement;
 
+        if (this.canHavePairUpUnit && this.pairUpUnit == null) {
+            this.__createPairUpUnitInstance();
+        }
+
         // this.updatePureGrowthRate();
     }
 
-    updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects = true) {
+    __createPairUpUnitInstance() {
+        this.pairUpUnit = new Unit();
+        this.pairUpUnit.heroIndex = -1;
+    }
+
+    updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects = true, isPairUpBoostsEnabled = false) {
         this.updateBaseStatus(updatesPureGrowthRate);
 
         this.maxHpWithSkillsWithoutAdd = this.hpLvN;
@@ -4538,6 +4608,18 @@ class Unit extends BattleMapElement {
             this.defWithSkills += 2;
             this.resWithSkills += 2;
         }
+
+        // ダブル補正
+        if (isPairUpBoostsEnabled && this.hasPairUpUnit) {
+            this.atkWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.atkWithSkills - 25) / 10));
+            this.spdWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.spdWithSkills - 10) / 10));
+            this.defWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.defWithSkills - 10) / 10));
+            this.resWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.resWithSkills - 10) / 10));
+        }
+    }
+
+    get hasPairUpUnit() {
+        return this.canHavePairUpUnit && this.pairUpUnit != null && this.pairUpUnit.heroInfo != null;
     }
 
     /// ステータスにスキルの加算値を加算します。

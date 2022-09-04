@@ -52,6 +52,21 @@ function getSeasonTypeName(seasonType) {
     throw new Error(`invalid seasonType ${seasonType}`);
 }
 
+/**
+ * @param  {SeasonType} seasonType
+ */
+function isLegendarySeason(seasonType) {
+    switch (seasonType) {
+        case SeasonType.Fire:
+        case SeasonType.Earth:
+        case SeasonType.Water:
+        case SeasonType.Wind:
+            return true;
+        default:
+            return false;
+    }
+}
+
 const IvType = {
     None: 0,
     Asset: 1, // 得意
@@ -325,6 +340,15 @@ class HeroInfo {
         this.passiveSOptionsForHallOfForms = [];
 
         this.__updateLv1Statuses();
+    }
+
+    /**
+     * ダブル後衛ユニットを設定可能かどうか
+     * @returns {Boolean}
+     */
+    get canHavePairUpUnit() {
+        // 伝承ロイ以降の伝承英雄
+        return isLegendarySeason(this.seasonType) && this.releaseDateAsNumber >= 20190227;
     }
 
     get totalStatus() {

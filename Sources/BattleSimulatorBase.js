@@ -261,9 +261,9 @@ class BattleSimmulatorBase {
                 // updateAllUi();
             },
             heroIndexChanged: function (e) {
-                if (g_app == null) { return; }
-                let currentUnit = g_app.__getCurrentUnit();
+                let currentUnit = self.__getEditingTargetUnit();
                 if (currentUnit == null) { return; }
+
                 g_appData.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
                 g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 console.log("heroIndexChanged");
@@ -281,7 +281,7 @@ class BattleSimmulatorBase {
             weaponChanged: function () {
                 console.log("weaponChanged");
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 unit.weaponRefinement = WeaponRefinementType.None;
                 g_appData.__updateStatusBySkillsAndMerges(unit);
@@ -292,7 +292,7 @@ class BattleSimmulatorBase {
             weaponOptionChanged: function () {
                 console.log("weaponOptionChanged");
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 unit.resetMaxSpecialCount();
@@ -301,14 +301,14 @@ class BattleSimmulatorBase {
             },
             supportChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateUnitSkillInfo(unit);
                 g_appData.updateArenaScore(unit);
             },
             specialChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateUnitSkillInfo(unit);
                 unit.resetMaxSpecialCount();
@@ -317,7 +317,7 @@ class BattleSimmulatorBase {
             },
             specialCountChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 updateAllUi();
             },
@@ -328,7 +328,7 @@ class BattleSimmulatorBase {
             },
             passiveAChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 unit.resetMaxSpecialCount();
@@ -337,7 +337,7 @@ class BattleSimmulatorBase {
             },
             passiveBChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateUnitSkillInfo(unit);
                 g_appData.updateArenaScore(unit);
@@ -347,7 +347,7 @@ class BattleSimmulatorBase {
             },
             passiveCChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 g_app.updateAllUnitSpur();
@@ -355,7 +355,7 @@ class BattleSimmulatorBase {
             },
             passiveSChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 g_app.updateAllUnitSpur();
@@ -366,7 +366,7 @@ class BattleSimmulatorBase {
             },
             captainChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 g_app.updateAllUnitSpur();
@@ -374,28 +374,28 @@ class BattleSimmulatorBase {
             },
             mergeChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 updateAllUi();
             },
             dragonflowerChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 updateAllUi();
             },
             summonerLevelChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 updateAllUi();
             },
             grantedBlessingChanged: function () {
                 if (g_app == null) { return; }
-                let currentUnit = g_app.__getCurrentUnit();
+                let currentUnit = g_app.__getEditingTargetUnit();
                 if (currentUnit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(currentUnit);
                 g_appData.updateArenaScoreOfUnit(currentUnit);
@@ -414,7 +414,7 @@ class BattleSimmulatorBase {
             },
             ivChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 unit.updatePureGrowthRate();
                 g_appData.__updateStatusBySkillsAndMerges(unit);
@@ -423,21 +423,21 @@ class BattleSimmulatorBase {
             },
             addChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
                 updateAllUi();
             },
             blessingChanged: function () {
                 // if (g_app == null) { return; }
-                // let unit = g_app.__getCurrentUnit();
+                // let unit = g_app.__getEditingTargetUnit();
                 // if (unit == null) { return; }
                 // g_appData.__updateStatusBySkillsAndMerges(unit);
                 updateAllUi();
             },
             transformedChanged: function () {
                 if (g_app == null) { return; }
-                let unit = g_app.__getCurrentUnit();
+                let unit = g_app.__getEditingTargetUnit();
                 if (unit == null) { return; }
                 g_appData.__updateStatusBySkillsAndMerges(unit);
             },
@@ -518,7 +518,7 @@ class BattleSimmulatorBase {
             },
             isBonusCharChanged: function () {
                 if (g_app == null) { return; }
-                let currentUnit = g_app.__getCurrentUnit();
+                let currentUnit = g_app.__getEditingTargetUnit();
                 if (currentUnit == null) { return; }
                 let value = currentUnit.isBonusChar;
                 for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit)) {
@@ -2502,6 +2502,10 @@ class BattleSimmulatorBase {
 
     __getCurrentUnit() {
         return g_appData.currentUnit;
+    }
+
+    __getEditingTargetUnit() {
+        return g_appData.currentUnit.hasPairUpUnit && g_appData.currentUnit.isEditingPairUpUnit ? g_appData.currentUnit.pairUpUnit : g_appData.currentUnit;
     }
 
     setHeroByIndex(unitIndex, heroIndex) {

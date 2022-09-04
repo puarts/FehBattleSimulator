@@ -129,7 +129,7 @@
 
         .buttonUi {
             font-size: 11px;
-            width: 100px;
+            width: 120px;
         }
 
         .plusButtonUi {
@@ -453,6 +453,18 @@
             <tr>
                 <td>
                     <div class="block">
+                        <div style="padding: 5px;">
+                            <input type="button" class="buttonUi" @click="loadTeamMaxScore" value="全員の査定最大化">
+                            <input id="isPairUpBoostsEnabled" v-model="isPairUpBoostsEnabled" type="checkbox"
+                                @change="g_appData.__updateStatusBySkillsAndMergeForAllHeroes()"><label
+                                for="isPairUpBoostsEnabled">ダブル補正有効</label>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="block">
                         <table
                             style="padding: 5px; border-style: solid; border-width: 2px; border-color:#6aa5a2; border-radius: 5px;">
                             <tr>
@@ -477,21 +489,23 @@
                     </div>
                 </td>
             </tr>
-            <tr>
-                <td>
-                    <div class="block">
-                        <div style="padding: 5px;">
-                            <input type="button" class="buttonUi" @click="loadTeamMaxScore" value="全員の査定最大化">
-                        </div>
-                    </div>
-                </td>
-            </tr>
+
             <tr>
                 <td valign="top">
                     <div class="jquery" id="unitSettings">
                         <ul class="contents">
                             <li v-for="unit in allyUnits">
-                                <unit-detail v-model="unit"></unit-detail>
+                                <div v-show="unit.canHavePairUpUnit" style="margin: 5px;">
+                                    <input type="button" value="ダブル前衛を編集" @click="unit.isEditingPairUpUnit = false"
+                                        v-if="unit.isEditingPairUpUnit" class="buttonUi">
+                                    <input type="button" value="ダブル後衛を編集" @click="unit.isEditingPairUpUnit = true"
+                                        v-if="!unit.isEditingPairUpUnit" class="buttonUi">
+                                </div>
+
+                                <unit-detail v-model="unit" v-if="!unit.canHavePairUpUnit || !unit.isEditingPairUpUnit">
+                                </unit-detail>
+                                <unit-detail v-model="unit.pairUpUnit"
+                                    v-show="unit.canHavePairUpUnit && unit.isEditingPairUpUnit"></unit-detail>
                             </li>
                         </ul>
                     </div>
@@ -568,7 +582,7 @@
         }
     </style>
     <script type="text/x-template" id="unit-detail-template">
-        <div>
+        <div v-if="value != null">
             <div class="unitStatusAndSkillContainer" style="float:left;display:block;padding: 10px 0px 10px 10px;" >
                 <div class='paramHeader' style="text-align:left;">
                     <table>
@@ -809,6 +823,9 @@
                                 </select2>
                                 <a v-bind:href="value.weaponInfo.detailPageUrl" target="_blank" v-if="value.weaponInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span  class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >
+                                    ({{value.weapon}})
+                                </span>
                             </td>
                         </tr>
                         <tr>
@@ -834,6 +851,9 @@
                                 </select2>
                                 <a v-bind:href="value.supportInfo.detailPageUrl" target="_blank" v-if="value.supportInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span  class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >
+                                    ({{value.support}})
+                                </span>
                             </td>
                         </tr>
                         <tr>
@@ -849,6 +869,9 @@
                                 </select2>
                                 <a v-bind:href="value.specialInfo.detailPageUrl" target="_blank" v-if="value.specialInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span  class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >
+                                    ({{value.special}})
+                                </span>
                             </td>
                         </tr>
                         <tr>
@@ -863,7 +886,9 @@
                                 </select2>
                                 <a v-bind:href="value.passiveAInfo.detailPageUrl" target="_blank" v-if="value.passiveAInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
-
+                                <span  class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >
+                                    ({{value.passiveA}})
+                                </span>
                             </td>
                         </tr>
                         <tr>
@@ -878,6 +903,9 @@
                                 </select2>
                                 <a v-bind:href="value.passiveBInfo.detailPageUrl" target="_blank" v-if="value.passiveBInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span  class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >
+                                    ({{value.passiveB}})
+                                </span>
 
                             </td>
                         </tr>
@@ -893,6 +921,9 @@
                                 </select2>
                                 <a v-bind:href="value.passiveCInfo.detailPageUrl" target="_blank" v-if="value.passiveCInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span  class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >
+                                    ({{value.passiveC}})
+                                </span>
 
                             </td>
                         </tr>
@@ -908,6 +939,9 @@
                                 </select2>
                                 <a v-bind:href="value.passiveSInfo.detailPageUrl" target="_blank" v-if="value.passiveSInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                                <span  class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >
+                                    ({{value.passiveS}})
+                                </span>
                             </td>
                         </tr>
                         <tr>
