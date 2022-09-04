@@ -4196,6 +4196,10 @@ class Unit extends BattleMapElement {
     }
 
     calcCurrentArenaScore(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
+        if (this.heroInfo == null) {
+            return 0;
+        }
+
         let totalSp = this.__updateAndGetTotalSp();
         let merge = this.__getArenaMerges(majorSeason, minorSeason);
         let rating = this.__getArenaRating();
@@ -4320,6 +4324,10 @@ class Unit extends BattleMapElement {
     }
 
     calcArenaBaseStatusScore() {
+        if (this.heroInfo == null) {
+            return 0;
+        }
+
         let rating = this.__getArenaRating();
         let score = calcArenaBaseStatusScore(rating);
         return score;

@@ -636,6 +636,9 @@ class AppData extends UnitManager {
         __registerPassiveSOptions(this.passiveSOptions, passiveBs);
         __registerPassiveSOptions(this.passiveSOptions, passiveCs);
     }
+    /**
+     * @param  {Unit} unit
+     */
     __updateUnitSkillInfo(unit) {
         this.skillDatabase.updateUnitSkillInfo(unit);
     }

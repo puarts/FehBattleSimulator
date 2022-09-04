@@ -37,8 +37,6 @@ class UnitBuilderMain extends BattleSimmulatorBase {
             this.writeDebugLogLine(`${unit.id}: ` + unitSetting);
             unit.fromTurnWideStatusString(unitSetting);
             this.data.initializeByHeroInfo(unit, unit.heroIndex, false);
-            unit.fromTurnWideStatusString(unitSetting);
-            this.data.__updateUnitSkillInfo(unit);
             this.data.__updateStatusBySkillsAndMerges(unit, true);
             this.data.updateArenaScore(unit);
         }
@@ -142,6 +140,5 @@ function initUnitBuilder() {
         g_app.setCurrentUnit(unit.id);
         g_appData.updateArenaScoreForAll();
         updateUrl();
-
     });
 }
