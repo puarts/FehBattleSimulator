@@ -2488,6 +2488,7 @@ const Captain = {
     RallyingCry: 2018, // 叱咤激励
     MassConfusion: 2044, // 空花乱墜
     StormOfBlows: 2098, // 雷轟電撃
+    Dauntless: 2181, // 剛毅果断
 };
 
 

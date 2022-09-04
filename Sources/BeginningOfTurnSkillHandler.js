@@ -176,12 +176,12 @@ class BeginningOfTurnSkillHandler {
                 if (found) {
                     targetUnits.push(skillOwner); // 自身も対象に
                     targetUnits.forEach(unit => {
-                            unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
-                            unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
-                            if (unit.isSpecialCountMax) {
-                                unit.reduceSpecialCount(1);
-                            }
+                        unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
+                        unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
+                        if (unit.isSpecialCountMax) {
+                            unit.reduceSpecialCount(1);
                         }
+                    }
                     )
                 }
             }
@@ -2012,6 +2012,18 @@ class BeginningOfTurnSkillHandler {
                     if (isAllyAvailable) {
                         skillOwner.applyAllBuff(5);
                     }
+                }
+                break;
+            case Captain.Dauntless:
+                if (skillOwner.isCaptain
+                    && 2 <= this.globalBattleContext.currentTurn && this.globalBattleContext.currentTurn <= 5
+                ) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3, true)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    }
+                    this.__applySkillToEnemiesInCross(skillOwner,
+                        unit => true,
+                        unit => unit.reserveToAddStatusEffect(StatusEffectType.Guard));
                 }
                 break;
         }
