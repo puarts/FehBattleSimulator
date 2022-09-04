@@ -495,12 +495,18 @@
                     <div class="jquery" id="unitSettings">
                         <ul class="contents">
                             <li v-for="unit in allyUnits">
-                                <div v-show="unit.canHavePairUpUnit" style="margin: 5px;">
-                                    <input type="button" value="ダブル前衛を編集" @click="unit.isEditingPairUpUnit = false"
-                                        v-if="unit.isEditingPairUpUnit" class="buttonUi">
-                                    <span v-if="!unit.isEditingPairUpUnit">
-                                        <input type="button" value="ダブル後衛を編集" @click="unit.isEditingPairUpUnit = true"
-                                            class="buttonUi">
+                                <div style="margin: 5px;">
+                                    <input type="button" class="buttonUi" style="width:80px"
+                                        @click="g_appData.copyCurrentUnit()" value="コピー">
+                                    <input type="button" class="buttonUi" style="width:80px"
+                                        @click="g_appData.pasteToCurrentUnit();" value="ペースト">
+                                    <span v-show="unit.canHavePairUpUnit">
+                                        <input type="button" value="ダブル前衛を編集" @click="unit.isEditingPairUpUnit = false"
+                                            v-if="unit.isEditingPairUpUnit" class="buttonUi">
+                                        <span v-if="!unit.isEditingPairUpUnit">
+                                            <input type="button" value="ダブル後衛を編集"
+                                                @click="unit.isEditingPairUpUnit = true" class="buttonUi">
+                                        </span>
                                     </span>
                                 </div>
 
