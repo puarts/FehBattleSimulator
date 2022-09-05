@@ -1379,6 +1379,10 @@ const Weapon = {
 
     // 2022年8月 伝承ディアドラ
     SpiritForestWrit: 2182, // 精霊の森の秘本
+
+    // 超英雄 炎の祭りは甘くない
+    // https://www.youtube.com/watch?v=h6jmLA7aQhw
+    FirelightLance: 2189, // 炎と風舞う霊槍
 };
 
 const Support = {

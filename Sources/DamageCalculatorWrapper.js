@@ -2035,6 +2035,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FirelightLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SpiritForestWrit] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 enemyUnit.addSpurs(-6, 0, 0, -6);
@@ -8007,6 +8012,13 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.FirelightLance:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 4) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
                 case Weapon.Geirdriful:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
@@ -8924,6 +8936,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.FirelightLance:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(defUnit.getEvalAtkInCombat(atkUnit) * 0.15);
+                }
+                break;
             case Weapon.NewHeightBow:
                 if (this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
                     let amount = isPrecombat ? atkUnit.getEvalSpdInCombat(defUnit) : atkUnit.getEvalSpdInCombat(defUnit);
