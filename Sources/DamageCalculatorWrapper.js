@@ -4790,6 +4790,13 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MoonGradivus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.increaseCooldownCountForDefense = true;
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addSpurs(0, 5, 5, 5);
+                    enemyUnit.addSpurs(0, 0, -5, 0);
+                    targetUnit.battleContext.invalidateBuffs(true, true, false, false);
+                }
+            }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.WindParthia] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat
@@ -8063,6 +8070,14 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.MoonGradivus:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                            targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                        }
+                    }
+                    break;
                 case Weapon.FirelightLance:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 4) {
