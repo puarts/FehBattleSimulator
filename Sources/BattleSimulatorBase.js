@@ -6101,6 +6101,10 @@ class BattleSimmulatorBase {
             }
         }
 
+        if (unit.hasStatusEffect(StatusEffectType.Canto1)) {
+            return true;
+        }
+
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {

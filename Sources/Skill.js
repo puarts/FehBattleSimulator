@@ -1385,6 +1385,7 @@ const Weapon = {
     FirelightLance: 2189, // 炎と風舞う霊槍
     BreathOfFlame: 2192, // 炎祭のブレス
     FrameGunbaiPlus: 2194, // 炎の軍配+
+    KindlingTaiko: 2196, // 原初の炎の太鼓
 };
 
 const Support = {

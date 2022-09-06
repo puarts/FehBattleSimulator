@@ -214,6 +214,7 @@ const StatusEffectType = {
     Charge: 36, // 突撃
     Exposure: 37, // 弱点露呈
     ShieldDragon: 38, // 竜特効
+    Canto1: 39, // 再移動(1)
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -357,6 +358,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Charge.webp";
         case StatusEffectType.Exposure:
             return g_imageRootPath + "StatusEffect_Exposure.webp";
+        case StatusEffectType.Canto1:
+            return g_imageRootPath + "StatusEffect_Canto1.webp";
         default: return "";
     }
 }
@@ -5055,6 +5058,9 @@ class Unit extends BattleMapElement {
         let moveCountForCanto = 0;
         if (this.hasStatusEffect(StatusEffectType.CantoControl)) {
             return isMeleeWeaponType(this.weaponType) ? 1 : 0;
+        }
+        if (this.hasStatusEffect(StatusEffectType.Canto1)) {
+            moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用

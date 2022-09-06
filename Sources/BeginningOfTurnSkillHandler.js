@@ -125,6 +125,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.KindlingTaiko:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                }
+                break;
             case Weapon.BreathOfFlame:
                 if (skillOwner.isSpecialCountMax) {
                     skillOwner.reduceSpecialCount(1);

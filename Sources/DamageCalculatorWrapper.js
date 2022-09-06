@@ -2035,6 +2035,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KindlingTaiko] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (enemyUnit.color !== ColorType.Red) {
+                        targetUnit.atkSpur += Math.trunc(targetUnit.getAtkInPrecombat() * 0.2);
+                        enemyUnit.atkSpur -= Math.trunc(enemyUnit.getAtkInPrecombat() * 0.2);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FrameGunbaiPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(5, 0, 5, 0);
