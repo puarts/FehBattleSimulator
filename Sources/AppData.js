@@ -503,7 +503,8 @@ class AppData extends UnitManager {
         }
 
         this.currentUnit.fromTurnWideStatusString(this.copiedUnitString);
-        this.initializeByHeroInfo(this.currentUnit, this.currentUnit.heroIndex, false, true);
+        this.initializeByHeroInfo(currentUnit, currentUnit.heroIndex, false, true);
+        this.currentUnit.reserveCurrentSkills();
         this.updateSlotOrders();
     }
 
@@ -1731,7 +1732,9 @@ class AppData extends UnitManager {
 
         this.aetherRaidDefensePresetDescription = preset.getProviderHtml();
     }
-
+    /**
+     * @returns {Unit}
+     */
     get currentUnit() {
         if (this.currentItemIndex < 0) {
             return null;
