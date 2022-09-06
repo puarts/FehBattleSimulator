@@ -788,7 +788,7 @@ class DamageCalculator {
             this.__applySkillEffectsPerAttack(defUnit, atkUnit);
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
-                !defUnit.battleContext.preventedDefenderSpecial && this.__canActivateDefenderSpecial(defUnit, atkUnit);
+                !defUnit.battleContext.preventedDefenderSpecial && this.__isSatisfiedDefenderSpecialCond(defUnit, atkUnit);
             let damageReductionRatio = 1.0;
             let damageReductionValue = 0;
 
@@ -967,17 +967,18 @@ class DamageCalculator {
         }
     }
 
-    __canActivateDefenderSpecial(defUnit, atkUnit) {
+    __isSatisfiedDefenderSpecialCond(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
                 case Special.GodlikeReflexes:
                     if (defUnit.getEvalSpdInCombat(atkUnit) >= atkUnit.getEvalSpdInCombat(defUnit) - 4) {
                         return true;
+                    } else {
+                        return false;
                     }
-                    break;
             }
         }
-        return false;
+        return true;
     }
 
     __getHealAmountByAttack(targetUnit, defUnit, currentDamage) {
