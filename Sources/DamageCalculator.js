@@ -948,6 +948,14 @@ class DamageCalculator {
     __applySkillEffectsPerAttack(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.VerdictOfSacae:
+                    if (atkUnit.battleContext.passiveASkillCondSatisfied) {
+                        if (atkUnit.isSpecialCharged || atkUnit.isSpecialActivated) {
+                            atkUnit.battleContext.additionalDamagePerAttack += 5;
+                            atkUnit.battleContext.healedHpByAttack = 7;
+                        }
+                    }
+                    break
                 case Special.GodlikeReflexes:
                     if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) - 4) {
                         if (atkUnit.isSpecialCharged || atkUnit.isSpecialActivated) {

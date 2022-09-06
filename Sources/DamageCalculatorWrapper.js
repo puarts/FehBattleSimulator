@@ -2035,6 +2035,17 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.VerdictOfSacae] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let count = 0;
+            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4)) {
+                count++;
+            }
+            if (count >= 1) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                let amount = Math.min(count * 4 + 4, 12);
+                targetUnit.addAllSpur(amount);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FirelightLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);

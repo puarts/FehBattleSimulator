@@ -576,8 +576,11 @@ class BattleContext {
         // 1マップで1回の奥義効果が発動したかどうか
         this.isOncePerMapSpecialActivated = false;
 
-        // スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        // 武器スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.weaponSkillCondSatisfied = false;
+
+        // Aスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.passiveASkillCondSatisfied = false;
 
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
@@ -701,6 +704,7 @@ class BattleContext {
         this.isMiracleWithoutSpecialActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
+        this.passiveASkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
 

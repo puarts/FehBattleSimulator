@@ -1803,6 +1803,7 @@ const PassiveA = {
 
     SacaNoOkite: 586, // サカの掟
     LawsOfSacae2: 1753, // サカの掟・承
+    VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
 
     // 防城戦
