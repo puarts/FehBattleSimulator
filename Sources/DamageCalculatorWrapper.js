@@ -2035,6 +2035,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FieryFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 0, 6, 0);
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.2);
+                enemyUnit.addSpurs(-amount, 0, -amount, 0);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.KindlingTaiko] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(6, 6, 0, 0);

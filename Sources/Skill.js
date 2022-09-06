@@ -1386,6 +1386,7 @@ const Weapon = {
     BreathOfFlame: 2192, // 炎祭のブレス
     FrameGunbaiPlus: 2194, // 炎の軍配+
     KindlingTaiko: 2196, // 原初の炎の太鼓
+    FieryFang: 2188, // 炎虎の爪牙
 };
 
 const Support = {
@@ -3168,6 +3169,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
@@ -3218,6 +3220,7 @@ const BeastCommonSkillMap =
     new Map(
         [
             // 次世代歩行
+            [Weapon.FieryFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
