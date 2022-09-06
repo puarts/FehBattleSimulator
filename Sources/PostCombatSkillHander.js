@@ -315,6 +315,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FirelightLance:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4, true)) {
+                            unit.reduceSpecialCount(1);
+                        }
+                    }
+                    break;
                 case PassiveB.AtkDefBulwark3:
                     targetUnit.reserveHeal(7);
                     break;

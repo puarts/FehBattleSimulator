@@ -1379,6 +1379,14 @@ const Weapon = {
 
     // 2022年8月 伝承ディアドラ
     SpiritForestWrit: 2182, // 精霊の森の秘本
+
+    // 超英雄 炎の祭りは甘くない
+    // https://www.youtube.com/watch?v=h6jmLA7aQhw
+    FirelightLance: 2189, // 炎と風舞う霊槍
+    BreathOfFlame: 2192, // 炎祭のブレス
+    FrameGunbaiPlus: 2194, // 炎の軍配+
+    KindlingTaiko: 2196, // 原初の炎の太鼓
+    FieryFang: 2188, // 炎虎の爪牙
 };
 
 const Support = {
@@ -1551,6 +1559,7 @@ const Special = {
     Seikabuto: 476, // 聖兜
     IceMirror: 480, // 氷の聖鏡
     IceMirror2: 1629, // 氷の聖鏡・承
+    GodlikeReflexes: 2190, // 神速回避
 
     ShippuNoSyukuhuku: 499, // 疾風の祝福
     DaichiNoSyukuhuku: 500, // 大地の祝福
@@ -1798,6 +1807,7 @@ const PassiveA = {
 
     SacaNoOkite: 586, // サカの掟
     LawsOfSacae2: 1753, // サカの掟・承
+    VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
 
     // 防城戦
@@ -1862,7 +1872,8 @@ const PassiveB = {
     TrueDragonWall: 2078, // 真竜鱗障壁
     NewDivinity: 2174, // 新たなる神竜王
     DragonsIre3: 1493, // 竜の逆鱗3
-    DragonsWrath: 1863, // 竜の魔鱗3
+    DragonsWrath3: 1863, // 竜の魔鱗3
+    DragonsWrath4: 2193, // 竜の魔鱗4
     Vantage3: 596, // 待ち伏せ3
     Desperation3: 597, // 攻め立て3
     Cancel1: 1286,//キャンセル1
@@ -2361,6 +2372,7 @@ const PassiveC = {
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     AtkResHold: 2084, // 攻撃魔防の大牽制
     SpdDefRein3: 1485, // 速さ守備の牽制3
+    SpdDefHold: 2197, // 速さ守備の大牽制
     SpdResRein3: 1538, // 速さ魔防の牽制3
     SpdResHold: 2029, // 速さ魔防の大牽制
     DefResRein3: 1787, // 守備魔防の牽制3
@@ -2724,6 +2736,7 @@ DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
 DefenseSpecialDict[Special.IceMirror] = 0;
 DefenseSpecialDict[Special.IceMirror2] = 0;
 DefenseSpecialDict[Special.NegatingFang] = 0;
+DefenseSpecialDict[Special.GodlikeReflexes] = 0;
 
 /// 防御系の奥義かどうかを判定します。
 function isDefenseSpecial(special) {
@@ -3156,6 +3169,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
@@ -3206,6 +3220,7 @@ const BeastCommonSkillMap =
     new Map(
         [
             // 次世代歩行
+            [Weapon.FieryFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],

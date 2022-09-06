@@ -1101,6 +1101,7 @@ class BattleSimmulatorBase {
                     unit.addStatusEffect(StatusEffectType.GrandStrategy);
                 }
                 break;
+            case Hero.HarmonizedTana:
             case Hero.HarmonizedAzura:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__refreshHighestHpUnitsInSameOrigin(duoUnit);
@@ -6099,6 +6100,10 @@ class BattleSimmulatorBase {
             if (movableWarpTileCount === 0) {
                 return false;
             }
+        }
+
+        if (unit.hasStatusEffect(StatusEffectType.Canto1)) {
+            return true;
         }
 
         // スキル毎の追加条件

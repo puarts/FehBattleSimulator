@@ -2035,6 +2035,57 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FieryFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 0, 6, 0);
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.2);
+                enemyUnit.addSpurs(-amount, 0, -amount, 0);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.KindlingTaiko] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (enemyUnit.color !== ColorType.Red) {
+                        targetUnit.atkSpur += Math.trunc(targetUnit.getAtkInPrecombat() * 0.2);
+                        enemyUnit.atkSpur -= Math.trunc(enemyUnit.getAtkInPrecombat() * 0.2);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FrameGunbaiPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 0, 5, 0);
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.2);
+                enemyUnit.addSpurs(-amount, 0, -amount, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BreathOfFlame] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.VerdictOfSacae] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let count = 0;
+            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4)) {
+                count++;
+            }
+            if (count >= 1) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                let amount = Math.min(count * 4 + 4, 12);
+                targetUnit.addAllSpur(amount);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FirelightLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SpiritForestWrit] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 enemyUnit.addSpurs(-6, 0, 0, -6);
@@ -3380,8 +3431,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
+        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.EerieScripture] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -8007,6 +8063,13 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.FirelightLance:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 4) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                    break;
                 case Weapon.Geirdriful:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
@@ -8503,11 +8566,16 @@ class DamageCalculatorWrapper {
 
             for (let skillId of [targetUnit.passiveA, targetUnit.passiveB, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
-                    case PassiveB.DragonsWrath:
+                    case PassiveB.DragonsWrath3:
                         if (enemyUnit.battleContext.initiatesCombat) {
                             let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
                             targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.2);
                         }
+                        break;
+                    case PassiveB.DragonsWrath4: {
+                        let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.25);
+                    }
                         break;
                     case PassiveC.DomainOfFlame:
                         if (this.__isThereAllyIn2Spaces(targetUnit)) {
@@ -8924,6 +8992,11 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.FirelightLance:
+                if (atkUnit.battleContext.restHpPercentage >= 25) {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(defUnit.getEvalAtkInCombat(atkUnit) * 0.15);
+                }
+                break;
             case Weapon.NewHeightBow:
                 if (this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
                     let amount = isPrecombat ? atkUnit.getEvalSpdInCombat(defUnit) : atkUnit.getEvalSpdInCombat(defUnit);
@@ -10051,6 +10124,9 @@ class DamageCalculatorWrapper {
     __applyDamageReductionRatioBySpecial(defUnit, atkUnit) {
         let attackRange = atkUnit.getActualAttackRange(defUnit);
         switch (defUnit.special) {
+            case Special.GodlikeReflexes:
+                defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+                break;
             case Special.NegatingFang:
                 defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
                 break;
@@ -11398,6 +11474,9 @@ class DamageCalculatorWrapper {
                     switch (unit.passiveC) {
                         case PassiveC.AtkResHold:
                             targetUnit.addSpurs(-4, 0, 0, -4);
+                            break;
+                        case PassiveC.SpdDefHold:
+                            targetUnit.addSpurs(0, -4, -4, 0);
                             break;
                         case PassiveC.SpdResHold:
                             targetUnit.addSpurs(0, -4, 0, -4);

@@ -49,6 +49,7 @@ const Hero = {
     HarmonizedEdelgard: 830,
     DuoThorr: 836,
     DuoNina: 847,
+    HarmonizedTana: 860,
 };
 
 function isThiefIndex(heroIndex) {
@@ -214,6 +215,7 @@ const StatusEffectType = {
     Charge: 36, // 突撃
     Exposure: 37, // 弱点露呈
     ShieldDragon: 38, // 竜特効
+    Canto1: 39, // 再移動(1)
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -357,6 +359,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Charge.webp";
         case StatusEffectType.Exposure:
             return g_imageRootPath + "StatusEffect_Exposure.webp";
+        case StatusEffectType.Canto1:
+            return g_imageRootPath + "StatusEffect_Canto1.webp";
         default: return "";
     }
 }
@@ -510,6 +514,9 @@ class BattleContext {
         // 奥義発動時の追加ダメージ
         this.additionalDamageOfSpecial = 0;
 
+        // 攻撃ごとに変化する可能性がある追加ダメージ
+        this.additionalDamagePerAttack = 0;
+
         // 固定ダメージ軽減
         this.damageReductionValue = 0;
 
@@ -573,8 +580,11 @@ class BattleContext {
         // 1マップで1回の奥義効果が発動したかどうか
         this.isOncePerMapSpecialActivated = false;
 
-        // スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        // 武器スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.weaponSkillCondSatisfied = false;
+
+        // Aスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.passiveASkillCondSatisfied = false;
 
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
@@ -698,6 +708,7 @@ class BattleContext {
         this.isMiracleWithoutSpecialActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
+        this.passiveASkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
     }
 
@@ -5048,6 +5059,9 @@ class Unit extends BattleMapElement {
         let moveCountForCanto = 0;
         if (this.hasStatusEffect(StatusEffectType.CantoControl)) {
             return isMeleeWeaponType(this.weaponType) ? 1 : 0;
+        }
+        if (this.hasStatusEffect(StatusEffectType.Canto1)) {
+            moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
