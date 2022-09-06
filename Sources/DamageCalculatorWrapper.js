@@ -3431,8 +3431,10 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
+        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
+            }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.DragonsWrath4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
@@ -8564,17 +8566,16 @@ class DamageCalculatorWrapper {
 
             for (let skillId of [targetUnit.passiveA, targetUnit.passiveB, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
-                    case PassiveB.DragonsWrath:
+                    case PassiveB.DragonsWrath3:
                         if (enemyUnit.battleContext.initiatesCombat) {
                             let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
                             targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.2);
                         }
                         break;
-                    case PassiveB.DragonsWrath4:
-                        if (enemyUnit.battleContext.initiatesCombat) {
-                            let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
-                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.25);
-                        }
+                    case PassiveB.DragonsWrath4: {
+                        let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.25);
+                    }
                         break;
                     case PassiveC.DomainOfFlame:
                         if (this.__isThereAllyIn2Spaces(targetUnit)) {
