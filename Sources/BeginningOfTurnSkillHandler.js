@@ -125,6 +125,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.DarkSpikesT:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+                    skillOwner.reserveTakeDamage(1);
+                }
+                break;
             case Weapon.KindlingTaiko:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Canto1);

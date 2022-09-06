@@ -4828,8 +4828,13 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DarkSpikesT] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DeckSwabberPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
