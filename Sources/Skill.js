@@ -1555,6 +1555,7 @@ const Special = {
     Seikabuto: 476, // 聖兜
     IceMirror: 480, // 氷の聖鏡
     IceMirror2: 1629, // 氷の聖鏡・承
+    GodlikeReflexes: 2190, // 神速回避
 
     ShippuNoSyukuhuku: 499, // 疾風の祝福
     DaichiNoSyukuhuku: 500, // 大地の祝福
@@ -2728,6 +2729,7 @@ DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
 DefenseSpecialDict[Special.IceMirror] = 0;
 DefenseSpecialDict[Special.IceMirror2] = 0;
 DefenseSpecialDict[Special.NegatingFang] = 0;
+DefenseSpecialDict[Special.GodlikeReflexes] = 0;
 
 /// 防御系の奥義かどうかを判定します。
 function isDefenseSpecial(special) {

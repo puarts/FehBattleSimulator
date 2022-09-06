@@ -10068,6 +10068,9 @@ class DamageCalculatorWrapper {
     __applyDamageReductionRatioBySpecial(defUnit, atkUnit) {
         let attackRange = atkUnit.getActualAttackRange(defUnit);
         switch (defUnit.special) {
+            case Special.GodlikeReflexes:
+                defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+                break;
             case Special.NegatingFang:
                 defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
                 break;

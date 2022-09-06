@@ -510,6 +510,9 @@ class BattleContext {
         // 奥義発動時の追加ダメージ
         this.additionalDamageOfSpecial = 0;
 
+        // 攻撃ごとに変化する可能性がある追加ダメージ
+        this.additionalDamagePerAttack = 0;
+
         // 固定ダメージ軽減
         this.damageReductionValue = 0;
 
