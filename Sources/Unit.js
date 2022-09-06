@@ -440,6 +440,9 @@ class BattleContext {
         // 回復を無効化
         this.invalidatesHeal = false;
 
+        // [回復不可]を無効にする割合
+        this.nullInvalidatesHealRatio = 0;
+
         // 強化無効
         this.invalidatesAtkBuff = false;
         this.invalidatesSpdBuff = false;
@@ -696,6 +699,7 @@ class BattleContext {
         this.invalidatesInvalidationOfFollowupAttack = false;
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
+        this.nullInvalidatesHealRatio = 0;
         this.isAdvantageForColorless = false;
         this.additionalDamageOfSpecial = 0;
         this.rateOfAtkMinusDefForAdditionalDamage = 0;

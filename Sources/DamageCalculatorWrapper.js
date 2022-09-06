@@ -4811,11 +4811,19 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.WindParthia] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat
-                || (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
-            ) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2))) {
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.5;
+                if (targetUnit.isWeaponRefined) {
+                    targetUnit.battleContext.nullInvalidatesHealRatio = 0.6;
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DarkSpikesT] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -10223,6 +10231,16 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.WindParthia:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
+                }
+                break;
             case Weapon.LunaArc:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {

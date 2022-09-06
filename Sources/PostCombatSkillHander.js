@@ -108,10 +108,10 @@ class PostCombatSkillHander {
         // 不治の幻煙による回復無効化
         {
             if (atkUnit.battleContext.invalidatesHeal) {
-                defUnit.reservedHeal = 0;
+                defUnit.reservedHeal = Math.trunc(defUnit.reservedHeal * defUnit.battleContext.nullInvalidatesHealRatio);
             }
             if (defUnit.battleContext.invalidatesHeal) {
-                atkUnit.reservedHeal = 0;
+                atkUnit.reservedHeal = Math.trunc(atkUnit.reservedHeal * atkUnit.battleContext.nullInvalidatesHealRatio);
             }
         }
 

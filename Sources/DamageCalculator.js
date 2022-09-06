@@ -1061,18 +1061,20 @@ class DamageCalculator {
     }
 
     __heal(unit, healedHp, enemyUnit) {
-        if (enemyUnit.battleContext.invalidatesHeal) {
-            return;
-        }
-        if (unit.hasStatusEffect(StatusEffectType.DeepWounds)) {
-            return;
+        if (enemyUnit.battleContext.invalidatesHeal || unit.hasStatusEffect(StatusEffectType.DeepWounds)) {
+            healedHp = Math.trunc(healedHp * unit.battleContext.nullInvalidatesHealRatio);
+            if (this.isLogEnabled) {
+                this.writeDebugLog(`${unit.getNameWithGroup()}は[回復不可]を${unit.battleContext.nullInvalidatesHealRatio}無効`);
+            }
         }
 
         unit.restHp += healedHp;
         if (unit.restHp > unit.maxHpWithSkills) {
             unit.restHp = unit.maxHpWithSkills;
         }
-        if (this.isLogEnabled) this.writeDebugLog(unit.getNameWithGroup() + "は" + healedHp + "回復: HP=" + unit.restHp + "/" + unit.maxHpWithSkills);
+        if (this.isLogEnabled) {
+            this.writeDebugLog(`${unit.getNameWithGroup()}は${healedHp}回復: HP=${unit.restHp}/${unit.maxHpWithSkills}`);
+        }
     }
 
     __calcUnitAttackDamage(defUnit, atkUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context) {
