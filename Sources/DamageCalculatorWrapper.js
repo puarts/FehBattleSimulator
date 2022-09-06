@@ -2961,7 +2961,7 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
             if (types.size >= 3) {
-                targetUnit.battleContext.healedHpByAttack = 5;
+                targetUnit.battleContext.healedHpByAttack += 5;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -3709,7 +3709,7 @@ class DamageCalculatorWrapper {
                 }
                 if (buffTotal >= 25) {
                     targetUnit.atkSpur += 5;
-                    targetUnit.battleContext.healedHpByAttack = 5;
+                    targetUnit.battleContext.healedHpByAttack += 5;
                 }
                 if (buffTotal >= 60) {
                     targetUnit.battleContext.isVantageActivatable = true;
@@ -4067,7 +4067,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
                     targetUnit.addAllSpur(4);
-                    targetUnit.battleContext.healedHpByAttack = 7;
+                    targetUnit.battleContext.healedHpByAttack += 7;
                 }
             }
         };
@@ -4365,7 +4365,7 @@ class DamageCalculatorWrapper {
                     x => x.moveType === MoveType.Cavalry || x.moveType === MoveType.Flying)
                 ) {
                     targetUnit.battleContext.followupAttackPriorityIncrement++;
-                    targetUnit.battleContext.healedHpByAttack = 5;
+                    targetUnit.battleContext.healedHpByAttack += 5;
                 }
             }
         };
@@ -4786,6 +4786,18 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.defSpur -= 6;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                    let amount = 3 + Math.min(dist, 3) * 2;
+                    targetUnit.addSpurs(amount, 0, amount, amount);
+                    targetUnit.battleContext.healedHpByAttack += 7;
+                    enemyUnit.addSpurs(-6, 0, -6, 0);
+                    if (dist >= 1) {
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MoonGradivus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5353,7 +5365,7 @@ class DamageCalculatorWrapper {
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(4);
-                        targetUnit.battleContext.healedHpByAttack = 7;
+                        targetUnit.battleContext.healedHpByAttack += 7;
                     }
                 }
             }
@@ -7134,7 +7146,7 @@ class DamageCalculatorWrapper {
                                 types.add(otherUnit.moveType);
                             }
                             if (types.size >= 3) {
-                                targetUnit.battleContext.healedHpByAttack = 5;
+                                targetUnit.battleContext.healedHpByAttack += 5;
                             }
                         }
                             break;
@@ -7646,7 +7658,7 @@ class DamageCalculatorWrapper {
                         || targetUnit.hasNegativeStatusEffect()
                     ) {
                         let value = Math.trunc(0.2 * enemyUnit.getDefInCombat(targetUnit));
-                        targetUnit.battleContext.healedHpByAttack = value;
+                        targetUnit.battleContext.healedHpByAttack += value;
                     }
                 }
                 break;

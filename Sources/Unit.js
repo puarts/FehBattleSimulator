@@ -532,6 +532,9 @@ class BattleContext {
         // 自分の攻撃でダメージを与えた時のHP回復量
         this.healedHpByAttack = 0;
 
+        // 自分の攻撃でダメージを与えた時のHP回復量
+        this.healedHpByAttackPerAttack = 0;
+
         // 追撃不可を無効
         this.invalidatesInvalidationOfFollowupAttack = false;
 
@@ -689,6 +692,7 @@ class BattleContext {
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
+        this.healedHpByAttackPerAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
@@ -5130,7 +5134,6 @@ class Unit extends BattleMapElement {
             return 0;
         }
         let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
-        // console.log(`dist: ${dist}, name: ${unit.nameWithGroup}, pos: (${unit.fromPosX}, ${unit.fromPosY}) => (${unit.posX}, ${unit.posY})`);
         return dist;
     }
 }

@@ -327,7 +327,7 @@ class DamageCalculator {
             switch (skillId) {
                 case PassiveA.AtkResFinish4:
                     if (atkUnit.isSpecialActivated || atkUnit.tmpSpecialCount === 0 && !isPrecombat) {
-                        atkUnit.battleContext.healedHpByAttack = 7;
+                        atkUnit.battleContext.healedHpByAttackPerAttack += 7;
                         fixedAddDamage += 5;
                     }
                     break;
@@ -943,6 +943,7 @@ class DamageCalculator {
 
     __initContextPerAttack(unit) {
         unit.battleContext.additionalDamagePerAttack = 0;
+        unit.battleContext.healedHpByAttackPerAttack = 0;
     }
 
     __applySkillEffectsPerAttack(atkUnit, defUnit) {
@@ -952,7 +953,7 @@ class DamageCalculator {
                     if (atkUnit.battleContext.passiveASkillCondSatisfied) {
                         if (atkUnit.isSpecialCharged || atkUnit.isSpecialActivated) {
                             atkUnit.battleContext.additionalDamagePerAttack += 5;
-                            atkUnit.battleContext.healedHpByAttack = 7;
+                            atkUnit.battleContext.healedHpByAttackPerAttack += 7;
                         }
                     }
                     break
@@ -982,7 +983,7 @@ class DamageCalculator {
     }
 
     __getHealAmountByAttack(targetUnit, defUnit, currentDamage) {
-        let healedHp = targetUnit.battleContext.healedHpByAttack;
+        let healedHp = targetUnit.battleContext.healedHpByAttack + targetUnit.battleContext.healedHpByAttackPerAttack;
         healedHp += floorNumberWithFloatError(currentDamage * targetUnit.battleContext.damageRatioToHeal);
         return healedHp;
     }

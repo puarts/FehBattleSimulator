@@ -296,7 +296,7 @@ HP N回復
 targetUnit.reserveHeal(N);
 
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
-targetUnit.battleContext.healedHpByAttack = N
+targetUnit.battleContext.healedHpByAttack += N
 
 戦闘後、HP N回復/Nダメージ
 __applySkillEffectAfterCombatForUnit() {
@@ -516,6 +516,9 @@ Main.js
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
+
+攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離[激突]
+let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
 
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
