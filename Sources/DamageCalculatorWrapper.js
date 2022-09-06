@@ -2035,6 +2035,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BreathOfFlame] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.VerdictOfSacae] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let count = 0;
             for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4)) {

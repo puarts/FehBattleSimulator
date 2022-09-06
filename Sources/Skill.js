@@ -1383,6 +1383,7 @@ const Weapon = {
     // 超英雄 炎の祭りは甘くない
     // https://www.youtube.com/watch?v=h6jmLA7aQhw
     FirelightLance: 2189, // 炎と風舞う霊槍
+    BreathOfFlame: 2192, // 炎祭のブレス
 };
 
 const Support = {

@@ -125,6 +125,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.BreathOfFlame:
+                if (skillOwner.isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case Weapon.BreakerLance: {
                 let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
                 let statusFunc = x => {
