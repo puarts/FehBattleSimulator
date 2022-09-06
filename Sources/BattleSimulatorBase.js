@@ -1101,6 +1101,7 @@ class BattleSimmulatorBase {
                     unit.addStatusEffect(StatusEffectType.GrandStrategy);
                 }
                 break;
+            case Hero.HarmonizedTana:
             case Hero.HarmonizedAzura:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__refreshHighestHpUnitsInSameOrigin(duoUnit);
