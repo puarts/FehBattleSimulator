@@ -642,6 +642,15 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.ShiseiNaga:
+                if (defUnit.battleContext.weaponSkillCondSatisfied) {
+                    let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                    if (resDiff > 0) {
+                        let percentage = Math.min(resDiff * 4, 40);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    }
+                }
+                break;
             case Weapon.WandererBlade:
                 if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
                     let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
@@ -5841,9 +5850,28 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidateAllOwnDebuffs();
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ShiseiNaga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
-                targetUnit.atkSpur += 6;
-                targetUnit.resSpur += 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat() || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                        if (isWeaponTypeBreath(enemyUnit.weaponType)) {
+                            targetUnit.battleContext.canCounterattackToAllDistance = true;
+                        }
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Uchikudakumono] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -8735,6 +8763,16 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.ShiseiNaga:
+                if (defUnit.battleContext.weaponSkillCondSatisfied) {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = Math.min(resDiff * 4, 40);
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`ダメージ${percentage}%軽減`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
             case Weapon.WandererBlade:
                 if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
@@ -8957,7 +8995,7 @@ class DamageCalculatorWrapper {
     }
 
     __applyDamageReductionRatio(atkUnit, defUnit) {
-        for (let skillId of [defUnit.weapon, defUnit.passiveB, defUnit.special]) {
+        for (let skillId of defUnit.enumerateSkills()) {
             let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
             if (ratio > 0) {
                 defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
