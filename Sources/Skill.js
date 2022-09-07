@@ -1387,6 +1387,9 @@ const Weapon = {
     FrameGunbaiPlus: 2194, // 炎の軍配+
     KindlingTaiko: 2196, // 原初の炎の太鼓
     FieryFang: 2188, // 炎虎の爪牙
+
+    // 2022年9月 武器錬成
+    TempestsClaw: 2187, // 黒疾風の爪斧
 };
 
 const Support = {

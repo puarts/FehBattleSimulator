@@ -2044,6 +2044,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TempestsClaw] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (isWeaponTypeTome(enemyUnit.weaponType) && enemyUnit.color === ColorType.Blue) {
+                enemyUnit.battleContext.isEffectiveToOpponent = true;
+            }
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(5, 0, 5, 0);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TenteiNoHado] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(4);
@@ -7422,7 +7431,6 @@ class DamageCalculatorWrapper {
             return;
         }
 
-        atkUnit.battleContext.isEffectiveToOpponent = false;
         for (let effective of atkUnit.weaponInfo.effectives) {
             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, effective)) {
                 atkUnit.battleContext.isEffectiveToOpponent = true;
@@ -8129,6 +8137,11 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.TempestsClaw:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.15);
+                    }
+                    break;
                 case Weapon.MoonGradivus:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
