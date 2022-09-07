@@ -178,7 +178,6 @@ canDisableAttackOrderSwapSkill(restHpPercentage) {
     return true;
 }
 
-
 絶対追撃
 targetUnit.battleContext.followupAttackPriorityIncrement++;
 
