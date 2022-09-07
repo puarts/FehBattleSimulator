@@ -642,6 +642,15 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.ShiseiNaga:
+                if (defUnit.battleContext.weaponSkillCondSatisfied) {
+                    let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                    if (resDiff > 0) {
+                        let percentage = Math.min(resDiff * 4, 40);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    }
+                }
+                break;
             case Weapon.WandererBlade:
                 if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
                     let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
@@ -2035,6 +2044,29 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneEljudnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-6, 0, -6, 0);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TempestsClaw] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (isWeaponTypeTome(enemyUnit.weaponType) && enemyUnit.color === ColorType.Blue) {
+                enemyUnit.battleContext.isEffectiveToOpponent = true;
+            }
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(5, 0, 5, 0);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TenteiNoHado] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FieryFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(6, 0, 6, 0);
@@ -2961,7 +2993,7 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
             if (types.size >= 3) {
-                targetUnit.battleContext.healedHpByAttack = 5;
+                targetUnit.battleContext.healedHpByAttack += 5;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -3709,7 +3741,7 @@ class DamageCalculatorWrapper {
                 }
                 if (buffTotal >= 25) {
                     targetUnit.atkSpur += 5;
-                    targetUnit.battleContext.healedHpByAttack = 5;
+                    targetUnit.battleContext.healedHpByAttack += 5;
                 }
                 if (buffTotal >= 60) {
                     targetUnit.battleContext.isVantageActivatable = true;
@@ -4067,7 +4099,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
                     targetUnit.addAllSpur(4);
-                    targetUnit.battleContext.healedHpByAttack = 7;
+                    targetUnit.battleContext.healedHpByAttack += 7;
                 }
             }
         };
@@ -4365,7 +4397,7 @@ class DamageCalculatorWrapper {
                     x => x.moveType === MoveType.Cavalry || x.moveType === MoveType.Flying)
                 ) {
                     targetUnit.battleContext.followupAttackPriorityIncrement++;
-                    targetUnit.battleContext.healedHpByAttack = 5;
+                    targetUnit.battleContext.healedHpByAttack += 5;
                 }
             }
         };
@@ -4787,22 +4819,54 @@ class DamageCalculatorWrapper {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.defSpur -= 6;
             }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                    let amount = 3 + Math.min(dist, 3) * 2;
+                    targetUnit.addSpurs(amount, 0, amount, amount);
+                    targetUnit.battleContext.healedHpByAttack += 7;
+                    enemyUnit.addSpurs(-6, 0, -6, 0);
+                    if (dist >= 1) {
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                }
+            }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MoonGradivus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.increaseCooldownCountForDefense = true;
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addSpurs(0, 5, 5, 5);
+                    enemyUnit.addSpurs(0, 0, -5, 0);
+                    targetUnit.battleContext.invalidateBuffs(true, true, false, false);
+                }
+            }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.WindParthia] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat
-                || (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
-            ) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2))) {
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.5;
+                if (targetUnit.isWeaponRefined) {
+                    targetUnit.battleContext.nullInvalidatesHealRatio = 0.6;
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DarkSpikesT] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DeckSwabberPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5346,7 +5410,7 @@ class DamageCalculatorWrapper {
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(4);
-                        targetUnit.battleContext.healedHpByAttack = 7;
+                        targetUnit.battleContext.healedHpByAttack += 7;
                     }
                 }
             }
@@ -5803,9 +5867,28 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidateAllOwnDebuffs();
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ShiseiNaga] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
-                targetUnit.atkSpur += 6;
-                targetUnit.resSpur += 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat() || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                    targetUnit.atkSpur += 6;
+                    targetUnit.resSpur += 6;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                        if (isWeaponTypeBreath(enemyUnit.weaponType)) {
+                            targetUnit.battleContext.canCounterattackToAllDistance = true;
+                        }
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Uchikudakumono] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -7127,7 +7210,7 @@ class DamageCalculatorWrapper {
                                 types.add(otherUnit.moveType);
                             }
                             if (types.size >= 3) {
-                                targetUnit.battleContext.healedHpByAttack = 5;
+                                targetUnit.battleContext.healedHpByAttack += 5;
                             }
                         }
                             break;
@@ -7356,7 +7439,6 @@ class DamageCalculatorWrapper {
             return;
         }
 
-        atkUnit.battleContext.isEffectiveToOpponent = false;
         for (let effective of atkUnit.weaponInfo.effectives) {
             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, effective)) {
                 atkUnit.battleContext.isEffectiveToOpponent = true;
@@ -7639,7 +7721,7 @@ class DamageCalculatorWrapper {
                         || targetUnit.hasNegativeStatusEffect()
                     ) {
                         let value = Math.trunc(0.2 * enemyUnit.getDefInCombat(targetUnit));
-                        targetUnit.battleContext.healedHpByAttack = value;
+                        targetUnit.battleContext.healedHpByAttack += value;
                     }
                 }
                 break;
@@ -8063,6 +8145,19 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.TempestsClaw:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.15);
+                    }
+                    break;
+                case Weapon.MoonGradivus:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                            targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                        }
+                    }
+                    break;
                 case Weapon.FirelightLance:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 4) {
@@ -8689,6 +8784,16 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.ShiseiNaga:
+                if (defUnit.battleContext.weaponSkillCondSatisfied) {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = Math.min(resDiff * 4, 40);
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`ダメージ${percentage}%軽減`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
             case Weapon.WandererBlade:
                 if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
@@ -8911,7 +9016,7 @@ class DamageCalculatorWrapper {
     }
 
     __applyDamageReductionRatio(atkUnit, defUnit) {
-        for (let skillId of [defUnit.weapon, defUnit.passiveB, defUnit.special]) {
+        for (let skillId of defUnit.enumerateSkills()) {
             let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
             if (ratio > 0) {
                 defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
@@ -10196,6 +10301,16 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.WindParthia:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
+                }
+                break;
             case Weapon.LunaArc:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {

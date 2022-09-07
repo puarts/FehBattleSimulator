@@ -440,6 +440,9 @@ class BattleContext {
         // 回復を無効化
         this.invalidatesHeal = false;
 
+        // [回復不可]を無効にする割合
+        this.nullInvalidatesHealRatio = 0;
+
         // 強化無効
         this.invalidatesAtkBuff = false;
         this.invalidatesSpdBuff = false;
@@ -531,6 +534,9 @@ class BattleContext {
 
         // 自分の攻撃でダメージを与えた時のHP回復量
         this.healedHpByAttack = 0;
+
+        // 自分の攻撃でダメージを与えた時のHP回復量
+        this.healedHpByAttackPerAttack = 0;
 
         // 追撃不可を無効
         this.invalidatesInvalidationOfFollowupAttack = false;
@@ -689,9 +695,11 @@ class BattleContext {
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
+        this.healedHpByAttackPerAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
+        this.nullInvalidatesHealRatio = 0;
         this.isAdvantageForColorless = false;
         this.additionalDamageOfSpecial = 0;
         this.rateOfAtkMinusDefForAdditionalDamage = 0;
@@ -4707,6 +4715,7 @@ class Unit extends BattleMapElement {
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
             switch (this.weapon) {
+                case Weapon.DarkSpikesT:
                 case Weapon.HikariNoKen:
                 case Weapon.Ragnell:
                 case Weapon.Alondite:
@@ -5130,7 +5139,6 @@ class Unit extends BattleMapElement {
             return 0;
         }
         let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
-        // console.log(`dist: ${dist}, name: ${unit.nameWithGroup}, pos: (${unit.fromPosX}, ${unit.fromPosY}) => (${unit.posX}, ${unit.posY})`);
         return dist;
     }
 }
