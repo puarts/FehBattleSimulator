@@ -2565,8 +2565,9 @@ class Unit extends BattleMapElement {
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
         let hasSkills =
-            this.passiveB === PassiveB.DetailedReport ||
-            this.passiveB === PassiveB.AtkDefBulwark3;
+            this.passiveB === PassiveB.AtkDefBulwark3 ||
+            this.passiveB === PassiveB.SpdDefBulwark3 ||
+            this.passiveB === PassiveB.DetailedReport;
         return hasSkills && moveUnit.isRangedWeaponType();
     }
 
@@ -2575,6 +2576,7 @@ class Unit extends BattleMapElement {
         return (this.passiveB == PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
             || (this.passiveB == PassiveB.DetailedReport)
             || (this.passiveB == PassiveB.AtkDefBulwark3)
+            || (this.passiveB == PassiveB.SpdDefBulwark3)
             || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
     }
 

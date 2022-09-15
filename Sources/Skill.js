@@ -1391,10 +1391,15 @@ const Weapon = {
     // 2022年9月 武器錬成
     TempestsClaw: 2187, // 黒疾風の爪斧
 
-    // 魔器リーヴ
+    // 魔器リーヴ(敵)
     // 英語表記
     // https://ja.wikipedia.org/wiki/%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A5%E3%83%BC%E3%82%BA%E3%83%8B%E3%83%AB
     ArcaneEljudnir: 2199, // 魔器エリューズニル
+
+    // 新英雄＆開花英雄＆魔器リーヴ
+    CrimsonBlades: 2201, // 朱傭兵の双剣
+    WindGenesis: 2203, // 風呼びの根源
+    FumingFreikugel: 2205, // 劫火フライクーゲル
 };
 
 const Support = {
@@ -1866,6 +1871,7 @@ const PassiveA = {
 
     // 激突
     AtkSpdClash4: 2170, // 攻撃速さの激突4
+    AtkDefClash4: 2207, // 攻撃守備の激突4
 
     // 秘奥
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
@@ -2045,6 +2051,7 @@ const PassiveB = {
     Kazenagi3: 629, // 風薙ぎ3
     Mizunagi3: 630, // 水薙ぎ3
 
+    Velocity3: 2206, // 回避・拍節3
     Frenzy3: 1768, // 回避・攻め立て3
     Spurn3: 1391, // 回避・怒り3
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3
@@ -2157,9 +2164,11 @@ const PassiveB = {
     // 拍節
     AtkResTempo3: 2184, // 攻撃魔防の拍節3
     SpdDefTempo3: 2046, // 速さ守備の拍節3
+    SpdResTempo3: 2204, // 速さ魔坊の拍節3
 
     // 防壁
     AtkDefBulwark3: 2150, // 攻撃守備の防壁3
+    SpdDefBulwark3: 2202, // 速さ守備の防壁3
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3

@@ -858,6 +858,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case PassiveB.Bushido2:
+            case PassiveB.Velocity3:
             case PassiveB.Frenzy3:
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
@@ -2044,6 +2045,32 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FumingFreikugel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let isThereHigherDefAlly = self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
+                    unit => targetUnit.getDefInPrecombat() < unit.getDefInPrecombat());
+            if (!isThereHigherDefAlly || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WindGenesis] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                let amount = 11 - Math.max(enemyUnit.maxSpecialCount, 3) * 2;
+                enemyUnit.addSpurs(-amount, -amount, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CrimsonBlades] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let hpPercentage = targetUnit.battleContext.restHpPercentage;
+            if (hpPercentage >= 20) {
+                enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+            }
+            if (hpPercentage >= 40) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneEljudnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, -6, 0);
@@ -2178,6 +2205,18 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+            if (dist > 0) {
+                targetUnit.addSpurs(6, 0, 6, 0);
+                let amount = Math.min(dist, 4);
+                targetUnit.addSpurs(amount, amount, 0, 0);
+                if (dist >= 2) {
+                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HolytideTyrfing] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
             if (dist !== 0) {
@@ -2294,6 +2333,9 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(-4, 0, -4, 0);
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(0, -4, -4, 0);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IlluminatingHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -2768,6 +2810,9 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(0, -3, -3, 0);
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdResTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(0, -3, 0, -3);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SharpWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -4838,7 +4883,7 @@ class DamageCalculatorWrapper {
                 if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                     targetUnit.addSpurs(0, 5, 5, 5);
                     enemyUnit.addSpurs(0, 0, -5, 0);
-                    targetUnit.battleContext.invalidateBuffs(true, true, false, false);
+                    targetUnit.battleContext.invalidateBuffs(true, false, true, false);
                 }
             }
         };
@@ -6623,6 +6668,13 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.weapon) {
+            case Weapon.FumingFreikugel:
+                if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                    let spd = targetUnit.getSpdInCombat(enemyUnit);
+                    let ratio = 0.2 + 0.1 * targetUnit.maxSpecialCount;
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                }
+                break;
             case Weapon.DrybladeLance:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
@@ -7109,9 +7161,15 @@ class DamageCalculatorWrapper {
                             // <錬成効果>
                             if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat() ||
                                 !allyUnit.isCombatDone) {
-                                targetUnit.addSpurs(4, 4, 4, 4);
+                                targetUnit.addAllSpur(4);
                                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
                             }
+                        }
+                        break;
+                    case Weapon.FumingFreikugel:
+                        if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat() || !allyUnit.isCombatDone) {
+                            targetUnit.addAllSpur(3);
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
                         }
                         break;
                     case Weapon.YoukoohNoTsumekiba:
@@ -8153,8 +8211,9 @@ class DamageCalculatorWrapper {
                 case Weapon.MoonGradivus:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                            targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
-                            targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                            let def = targetUnit.getEvalDefInCombat(enemyUnit);
+                            targetUnit.battleContext.additionalDamage += Math.trunc(def * 0.20);
+                            targetUnit.battleContext.damageReductionValue += Math.trunc(def * 0.20);
                         }
                     }
                     break;
@@ -8989,6 +9048,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case PassiveB.Bushido2:
+            case PassiveB.Velocity3:
             case PassiveB.Frenzy3:
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
@@ -10382,8 +10442,10 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.passiveB) {
+            case PassiveB.Velocity3:
             case PassiveB.AtkResTempo3:
             case PassiveB.SpdDefTempo3:
+            case PassiveB.SpdResTempo3:
                 targetUnit.battleContext.invalidateCooldownCountSkills();
                 break;
             case PassiveB.SolarBrace2:
