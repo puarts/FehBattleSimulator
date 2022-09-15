@@ -2044,6 +2044,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CrimsonBlades] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let hpPercentage = targetUnit.battleContext.restHpPercentage;
+            if (hpPercentage >= 20) {
+                enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+            }
+            if (hpPercentage >= 40) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneEljudnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, -6, 0);

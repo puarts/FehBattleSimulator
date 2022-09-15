@@ -1391,10 +1391,13 @@ const Weapon = {
     // 2022年9月 武器錬成
     TempestsClaw: 2187, // 黒疾風の爪斧
 
-    // 魔器リーヴ
+    // 魔器リーヴ(敵)
     // 英語表記
     // https://ja.wikipedia.org/wiki/%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A5%E3%83%BC%E3%82%BA%E3%83%8B%E3%83%AB
     ArcaneEljudnir: 2199, // 魔器エリューズニル
+
+    // 新英雄＆開花英雄＆魔器リーヴ
+    CrimsonBlades: 2201, // 朱傭兵の双剣
 };
 
 const Support = {
