@@ -4838,7 +4838,7 @@ class DamageCalculatorWrapper {
                 if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                     targetUnit.addSpurs(0, 5, 5, 5);
                     enemyUnit.addSpurs(0, 0, -5, 0);
-                    targetUnit.battleContext.invalidateBuffs(true, true, false, false);
+                    targetUnit.battleContext.invalidateBuffs(true, false, true, false);
                 }
             }
         };
@@ -8153,8 +8153,9 @@ class DamageCalculatorWrapper {
                 case Weapon.MoonGradivus:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                            targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
-                            targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                            let def = targetUnit.getEvalDefInCombat(enemyUnit);
+                            targetUnit.battleContext.additionalDamage += Math.trunc(def * 0.20);
+                            targetUnit.battleContext.damageReductionValue += Math.trunc(def * 0.20);
                         }
                     }
                     break;
