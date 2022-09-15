@@ -2789,6 +2789,9 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(0, -3, -3, 0);
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdResTempo3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(0, -3, 0, -3);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SharpWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -10405,6 +10408,7 @@ class DamageCalculatorWrapper {
         switch (targetUnit.passiveB) {
             case PassiveB.AtkResTempo3:
             case PassiveB.SpdDefTempo3:
+            case PassiveB.SpdResTempo3:
                 targetUnit.battleContext.invalidateCooldownCountSkills();
                 break;
             case PassiveB.SolarBrace2:
