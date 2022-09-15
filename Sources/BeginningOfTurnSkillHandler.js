@@ -125,6 +125,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.WindGenesis:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.applyAtkBuff(6);
+                    skillOwner.applySpdBuff(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
+                }
+                break;
             case Weapon.DarkSpikesT:
                 if (skillOwner.isWeaponSpecialRefined) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);

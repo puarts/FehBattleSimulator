@@ -1398,6 +1398,7 @@ const Weapon = {
 
     // 新英雄＆開花英雄＆魔器リーヴ
     CrimsonBlades: 2201, // 朱傭兵の双剣
+    WindGenesis: 2203, // 風呼びの根源
 };
 
 const Support = {

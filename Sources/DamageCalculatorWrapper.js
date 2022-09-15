@@ -2044,6 +2044,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WindGenesis] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                let amount = 11 - Math.max(enemyUnit.maxSpecialCount, 3) * 2;
+                enemyUnit.addSpurs(-amount, -amount, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.CrimsonBlades] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let hpPercentage = targetUnit.battleContext.restHpPercentage;
             if (hpPercentage >= 20) {
