@@ -2050,6 +2050,7 @@ const PassiveB = {
     Kazenagi3: 629, // 風薙ぎ3
     Mizunagi3: 630, // 水薙ぎ3
 
+    Velocity3: 2206, // 回避・拍節3
     Frenzy3: 1768, // 回避・攻め立て3
     Spurn3: 1391, // 回避・怒り3
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3

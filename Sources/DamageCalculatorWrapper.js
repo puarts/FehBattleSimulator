@@ -858,6 +858,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case PassiveB.Bushido2:
+            case PassiveB.Velocity3:
             case PassiveB.Frenzy3:
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
@@ -9035,6 +9036,7 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case PassiveB.Bushido2:
+            case PassiveB.Velocity3:
             case PassiveB.Frenzy3:
             case PassiveB.Spurn3:
             case PassiveB.KaihiIchigekiridatsu3:
@@ -10428,6 +10430,7 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.passiveB) {
+            case PassiveB.Velocity3:
             case PassiveB.AtkResTempo3:
             case PassiveB.SpdDefTempo3:
             case PassiveB.SpdResTempo3:
