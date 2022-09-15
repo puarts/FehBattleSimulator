@@ -463,7 +463,7 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
 
 奥義発動時、ダメージ+N
 __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
-    targetUnit.battleContext.additionalDamageOfSpecial += N
+    targetUnit.battleContext.additionalDamageOfSpecial += N;
 }
 
 奥義によるダメージ+N
@@ -478,6 +478,9 @@ __canActivateMiracle() {
 
 戦闘中に攻撃していれば
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
+
+戦闘を行なっている時[戦闘を行っていない時]
+unit.isCombatDone
 
 「歌う」「踊る」使用時
 __applyRefresh(skillOwnerUnit, targetUnit) {}

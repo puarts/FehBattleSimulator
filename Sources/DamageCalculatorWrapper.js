@@ -2044,6 +2044,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FumingFreikugel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let isThereHigherDefAlly = self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
+                    unit => targetUnit.getDefInPrecombat() < unit.getDefInPrecombat());
+            if (!isThereHigherDefAlly || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WindGenesis] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -6646,6 +6655,13 @@ class DamageCalculatorWrapper {
 
         }
         switch (targetUnit.weapon) {
+            case Weapon.FumingFreikugel:
+                if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                    let spd = targetUnit.getSpdInCombat(enemyUnit);
+                    let ratio = 0.2 + 0.1 * targetUnit.maxSpecialCount;
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                }
+                break;
             case Weapon.DrybladeLance:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
@@ -7132,9 +7148,15 @@ class DamageCalculatorWrapper {
                             // <錬成効果>
                             if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat() ||
                                 !allyUnit.isCombatDone) {
-                                targetUnit.addSpurs(4, 4, 4, 4);
+                                targetUnit.addAllSpur(4);
                                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
                             }
+                        }
+                        break;
+                    case Weapon.FumingFreikugel:
+                        if (targetUnit.getDefInPrecombat() > allyUnit.getDefInPrecombat() || !allyUnit.isCombatDone) {
+                            targetUnit.addAllSpur(3);
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.2, enemyUnit);
                         }
                         break;
                     case Weapon.YoukoohNoTsumekiba:
