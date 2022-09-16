@@ -2045,6 +2045,19 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CrimsonWarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+            let hpPercentage = targetUnit.battleContext.restHpPercentage;
+            if (hpPercentage >= 20) {
+                enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+            }
+            if (hpPercentage >= 40) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FumingFreikugel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let isThereHigherDefAlly = self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
                     unit => targetUnit.getDefInPrecombat() < unit.getDefInPrecombat());
