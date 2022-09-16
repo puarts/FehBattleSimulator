@@ -1401,6 +1401,7 @@ const Weapon = {
     WindGenesis: 2203, // 風呼びの根源
     FumingFreikugel: 2205, // 劫火フライクーゲル
     CrimsonWarAxe: 2208, // 朱傭兵の戦斧
+    WarriorsSword: 2200, // 武人の鉄剣
 };
 
 const Support = {
