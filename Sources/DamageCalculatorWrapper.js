@@ -6669,6 +6669,8 @@ class DamageCalculatorWrapper {
         }
         switch (targetUnit.weapon) {
             case Weapon.FumingFreikugel:
+                // 条件(weaponSkillCondSatisfied)は戦闘中以降に有効になるので必要はないが念の為範囲奥義を除くためにbreakする
+                if (isPrecombat) break;
                 if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                     let spd = targetUnit.getSpdInCombat(enemyUnit);
                     let ratio = 0.2 + 0.1 * targetUnit.maxSpecialCount;

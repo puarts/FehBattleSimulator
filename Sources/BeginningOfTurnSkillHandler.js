@@ -144,7 +144,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.BreathOfFlame:
-                if (skillOwner.isSpecialCountMax) {
+                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;
@@ -174,7 +174,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.InnerWellspring:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
-                    if (skillOwner.isSpecialCountMax) {
+                    if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                         skillOwner.reduceSpecialCount(1);
                     }
                 }
@@ -201,7 +201,7 @@ class BeginningOfTurnSkillHandler {
                     targetUnits.forEach(unit => {
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
-                        if (unit.isSpecialCountMax) {
+                        if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                             unit.reduceSpecialCount(1);
                         }
                     }
