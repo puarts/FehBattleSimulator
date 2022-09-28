@@ -1360,6 +1360,8 @@ class Unit extends BattleMapElement {
 
         this.restMoveCount = 0; // 再移動(残り)で参照する残り移動量
 
+        this.restSupportSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
     }
@@ -1858,7 +1860,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.fromPosX
             + ValueDelimiter + this.fromPosY
             + ValueDelimiter + boolToInt(this.isCombatDone)
-            + ValueDelimiter + boolToInt(this.isCombatDone)
+            + ValueDelimiter + this.restSupportSkillAvailableTurn
             ;
     }
 
@@ -1968,6 +1970,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.fromPosX = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.restSupportSkillAvailableTurn = Number(splited[i]); ++i; }
     }
 
 

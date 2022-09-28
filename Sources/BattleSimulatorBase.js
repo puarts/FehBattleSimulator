@@ -3745,6 +3745,10 @@ class BattleSimmulatorBase {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
                 }
             }
+            // "「その後」以降の効果は、その効果が発動後3ターンの間発動しない"処理
+            if (unit.restSupportSkillAvailableTurn >= 1) {
+                unit.restSupportSkillAvailableTurn--;
+            }
         }
     }
 
@@ -8345,6 +8349,20 @@ class BattleSimmulatorBase {
                     }
             }
             switch (supporterUnit.support) {
+                case Support.DragonsDance:
+                    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+                    if (g_appData.globalBattleContext.currentTurn >= 2 &&
+                        supporterUnit.restSupportSkillAvailableTurn === 0) {
+                        this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
+                        supporterUnit.isActionDone = false;
+                        supporterUnit.applyBuffs(6, 6, 0, 0);
+                        supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                        supporterUnit.restSupportSkillAvailableTurn = 3;
+                        this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+                    } else {
+                        this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
+                    }
+                    break;
                 case Support.AFateChanged:
                     if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                         supporterUnit.addStatusEffect(StatusEffectType.Isolation);

@@ -1431,6 +1431,7 @@ const Support = {
     FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
     CallToFlame: 2079, // オイデ、ヒノコタチ
+    DragonsDance: 2210, // 尊き竜の血を継ぐ娘
 
     RallyAttack: 418,
     RallySpeed: 417,
@@ -2824,6 +2825,7 @@ function isNormalAttackSpecial(special) {
 /// 再行動補助スキルかどうかを判定します。
 function isRefreshSupportSkill(skillId) {
     switch (skillId) {
+        case Support.DragonsDance:
         case Support.CallToFlame:
         case Support.Sing:
         case Support.Dance:
