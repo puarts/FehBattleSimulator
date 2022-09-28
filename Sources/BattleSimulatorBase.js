@@ -7905,6 +7905,16 @@ class BattleSimmulatorBase {
 
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FaithfulBreath:
+                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
+                        unit.applyDefDebuff(-6);
+                        unit.applyResDebuff(-6);
+                    }
+                    for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                        unit.applyDefDebuff(-6);
+                        unit.applyResDebuff(-6);
+                    }
+                    break;
                 case Weapon.EnvelopingBreath:
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
                         if (this.__isInCloss(unit, skillOwnerUnit) || this.__isInCloss(unit, targetUnit)) {

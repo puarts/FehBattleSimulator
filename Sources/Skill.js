@@ -1402,6 +1402,9 @@ const Weapon = {
     FumingFreikugel: 2205, // 劫火フライクーゲル
     CrimsonWarAxe: 2208, // 朱傭兵の戦斧
     WarriorsSword: 2200, // 武人の鉄剣
+
+    // 2022年9月 伝承ニニアン
+    FaithfulBreath: 2209, // 神舞のブレス
 };
 
 const Support = {

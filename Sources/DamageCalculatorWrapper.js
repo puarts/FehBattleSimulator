@@ -2045,6 +2045,17 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FaithfulBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 40) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    if (enemyUnit.color === ColorType.Blue || enemyUnit.hasNegativeStatusEffect()) {
+
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WarriorsSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -9834,6 +9845,15 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.FaithfulBreath:
+                if (atkUnit.battleContext.restHpPercentage >= 40) {
+                    if (atkUnit.battleContext.initiatesCombat) {
+                        if (defUnit.color === ColorType.Blue || defUnit.hasNegativeStatusEffect()) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.LunaArc:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (defUnit.isPhysicalAttacker() &&
