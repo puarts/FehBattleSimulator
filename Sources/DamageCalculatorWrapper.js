@@ -2050,9 +2050,6 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(6, 6, 0, 0);
                 if (targetUnit.battleContext.initiatesCombat) {
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                    if (enemyUnit.color === ColorType.Blue || enemyUnit.hasNegativeStatusEffect()) {
-
-                    }
                 }
             }
         }
