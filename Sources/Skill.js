@@ -1402,6 +1402,9 @@ const Weapon = {
     FumingFreikugel: 2205, // 劫火フライクーゲル
     CrimsonWarAxe: 2208, // 朱傭兵の戦斧
     WarriorsSword: 2200, // 武人の鉄剣
+
+    // 2022年9月 伝承ニニアン
+    FaithfulBreath: 2209, // 神舞のブレス
 };
 
 const Support = {
@@ -1428,6 +1431,7 @@ const Support = {
     FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
     CallToFlame: 2079, // オイデ、ヒノコタチ
+    DragonsDance: 2210, // 尊き竜の血を継ぐ娘
 
     RallyAttack: 418,
     RallySpeed: 417,
@@ -2821,6 +2825,7 @@ function isNormalAttackSpecial(special) {
 /// 再行動補助スキルかどうかを判定します。
 function isRefreshSupportSkill(skillId) {
     switch (skillId) {
+        case Support.DragonsDance:
         case Support.CallToFlame:
         case Support.Sing:
         case Support.Dance:
