@@ -1883,6 +1883,7 @@ const PassiveA = {
     AtkDefClash4: 2207, // 攻撃守備の激突4
 
     // 秘奥
+    AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 };
 

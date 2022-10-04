@@ -325,6 +325,7 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AtkSpdFinish4:
                 case PassiveA.AtkResFinish4:
                     if (atkUnit.isSpecialActivated || atkUnit.tmpSpecialCount === 0 && !isPrecombat) {
                         atkUnit.battleContext.healedHpByAttackPerAttack += 7;
