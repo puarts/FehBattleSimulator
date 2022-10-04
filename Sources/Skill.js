@@ -1410,6 +1410,7 @@ const Weapon = {
     MoonlightStone: 2211, // 月夜の魔女の竜石
     StarlightStone: 2213, // 星夜の魔術師の竜石
     SerenityBreathPlus: 2215, // 幽静のブレス+
+    GhostlyLanterns: 2217, // 赤と青の奇なる鬼火
 };
 
 const Support = {

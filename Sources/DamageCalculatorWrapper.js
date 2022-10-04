@@ -2045,6 +2045,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.GhostlyLanterns] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.StarlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.addSpurs(-5, 0, 0, -5);
@@ -8266,6 +8274,13 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.GhostlyLanterns:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                            enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                        }
+                    }
+                    break;
                 case Weapon.WarriorsSword:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
