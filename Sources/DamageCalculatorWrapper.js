@@ -2047,6 +2047,12 @@ class DamageCalculatorWrapper {
         let self = this;
         this._applySkillEffectForUnitFuncDict[Weapon.StarlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addSpurs(-5, 0, 0, -5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.StarlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
                 targetUnit.atkSpur += 5;
                 enemyUnit.atkSpur -= 5;
