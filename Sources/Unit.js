@@ -50,6 +50,7 @@ const Hero = {
     DuoThorr: 836,
     DuoNina: 847,
     HarmonizedTana: 860,
+    DuoDuma: 873,
 };
 
 function isThiefIndex(heroIndex) {

@@ -1895,11 +1895,14 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForDefUnitFuncDict[PassiveA.CloseReversal] = (defUnit, atkUnit, calcPotentialDamage) => {
             defUnit.defSpur += 5;
         };
-        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantStance] = (defUnit, atkUnit, calcPotentialDamage) => {
-            defUnit.resSpur += 5;
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantFerocity] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.atkSpur += 5;
         };
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantDart] = (defUnit, atkUnit, calcPotentialDamage) => {
             defUnit.spdSpur += 5;
+        };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantStance] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.resSpur += 5;
         };
     }
 
@@ -2045,6 +2048,43 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SurpriseBreathPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 0, 0, 5);
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                enemyUnit.addSpurs(-amount, 0, 0, -amount);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.GhostlyLanterns] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.StarlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addSpurs(-5, 0, 0, -5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.StarlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MoonlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FaithfulBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 40) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -2204,6 +2244,11 @@ class DamageCalculatorWrapper {
             }
             if (targetUnit.battleContext.restHpPercentage >= 40) {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addSpurs(7, 7, 0, 0);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -4998,6 +5043,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.DragonsIre4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat && targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-4, 0, 0, -4);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.DragonsIre3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat && targetUnit.battleContext.restHpPercentage >= 50) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -8232,6 +8284,13 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.GhostlyLanterns:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                            enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                        }
+                    }
+                    break;
                 case Weapon.WarriorsSword:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -10822,6 +10881,13 @@ class DamageCalculatorWrapper {
 
     __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
         switch (targetUnit.weapon) {
+            case Weapon.StarlightStone:
+                if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                    if (enemyUnit.battleContext.canFollowupAttack) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
+                    }
+                }
+                break;
             case Weapon.MaryuNoBreath:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {

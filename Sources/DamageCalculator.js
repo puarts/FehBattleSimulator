@@ -325,6 +325,7 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AtkSpdFinish4:
                 case PassiveA.AtkResFinish4:
                     if (atkUnit.isSpecialActivated || atkUnit.tmpSpecialCount === 0 && !isPrecombat) {
                         atkUnit.battleContext.healedHpByAttackPerAttack += 7;
@@ -839,6 +840,8 @@ class DamageCalculator {
                     if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
                         defUnit.passiveB === PassiveB.HardyFighter3) {
                         damageReductionValue += 5;
+                    } else if (defUnit.weapon === Weapon.MoonlightStone) {
+                        damageReductionValue += 8;
                     }
                     this.__restoreMaxSpecialCount(defUnit);
                 }

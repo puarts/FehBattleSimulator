@@ -1405,6 +1405,13 @@ const Weapon = {
 
     // 2022年9月 伝承ニニアン
     FaithfulBreath: 2209, // 神舞のブレス
+
+    // 超英雄 神と竜との収穫祭
+    MoonlightStone: 2211, // 月夜の魔女の竜石
+    StarlightStone: 2213, // 星夜の魔術師の竜石
+    SerenityBreathPlus: 2215, // 幽静のブレス+
+    GhostlyLanterns: 2217, // 赤と青の奇なる鬼火
+    SurpriseBreathPlus: 2220, // 一驚のブレス+
 };
 
 const Support = {
@@ -1610,8 +1617,9 @@ const PassiveA = {
     None: -1,
     CloseCounter: 561, // 近距離反撃
     CloseReversal: 1803, // 近反・金剛の構え
-    DistantStance: 1884, // 遠反・明鏡の構え
+    DistantFerocity: 2218, // 遠反・鬼神の構え
     DistantDart: 2050, // 遠反・飛燕の構え
+    DistantStance: 1884, // 遠反・明鏡の構え
     DistantCounter: 562, // 遠距離反撃
     DistantStorm: 2015, // 遠反・攻撃の渾身
     DistantPressure: 1795, // 遠反・速さの渾身
@@ -1880,6 +1888,7 @@ const PassiveA = {
     AtkDefClash4: 2207, // 攻撃守備の激突4
 
     // 秘奥
+    AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 };
 
@@ -1892,6 +1901,7 @@ const PassiveB = {
     TrueDragonWall: 2078, // 真竜鱗障壁
     NewDivinity: 2174, // 新たなる神竜王
     DragonsIre3: 1493, // 竜の逆鱗3
+    DragonsIre4: 2214, // 竜の逆鱗4
     DragonsWrath3: 1863, // 竜の魔鱗3
     DragonsWrath4: 2193, // 竜の魔鱗4
     Vantage3: 596, // 待ち伏せ3
