@@ -1616,8 +1616,9 @@ const PassiveA = {
     None: -1,
     CloseCounter: 561, // 近距離反撃
     CloseReversal: 1803, // 近反・金剛の構え
-    DistantStance: 1884, // 遠反・明鏡の構え
+    DistantFerocity: 2218, // 遠反・鬼神の構え
     DistantDart: 2050, // 遠反・飛燕の構え
+    DistantStance: 1884, // 遠反・明鏡の構え
     DistantCounter: 562, // 遠距離反撃
     DistantStorm: 2015, // 遠反・攻撃の渾身
     DistantPressure: 1795, // 遠反・速さの渾身
