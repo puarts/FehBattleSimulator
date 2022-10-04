@@ -1405,6 +1405,9 @@ const Weapon = {
 
     // 2022年9月 伝承ニニアン
     FaithfulBreath: 2209, // 神舞のブレス
+
+    // 超英雄 神と竜との収穫祭
+    MoonlightStone: 2211, // 月夜の魔女の竜石
 };
 
 const Support = {

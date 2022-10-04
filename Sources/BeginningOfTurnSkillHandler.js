@@ -1101,6 +1101,7 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reduceSpecialCount(2);
                 }
                 break;
+            case Weapon.MoonlightStone:
             case PassiveB.HardyFighter3:
             case PassiveB.TateNoKodo3:
                 if (this.globalBattleContext.currentTurn == 1) {

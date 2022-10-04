@@ -839,6 +839,8 @@ class DamageCalculator {
                     if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
                         defUnit.passiveB === PassiveB.HardyFighter3) {
                         damageReductionValue += 5;
+                    } else if (defUnit.weapon === Weapon.MoonlightStone) {
+                        damageReductionValue += 8;
                     }
                     this.__restoreMaxSpecialCount(defUnit);
                 }
