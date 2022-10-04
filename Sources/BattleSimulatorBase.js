@@ -1020,6 +1020,16 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoDuma:
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit)) {
+                    if (Math.abs(unit.posX - duoUnit.posX) <= 2 &&
+                        Math.abs(unit.posY - duoUnit.posY) <= 2) {
+                        unit.clearNegativeStatusEffects();
+                        unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                        unit.heal(30);
+                    }
+                }
+                break;
             case Hero.DuoNina:
                 duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
