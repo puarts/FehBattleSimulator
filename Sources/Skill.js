@@ -1411,6 +1411,7 @@ const Weapon = {
     StarlightStone: 2213, // 星夜の魔術師の竜石
     SerenityBreathPlus: 2215, // 幽静のブレス+
     GhostlyLanterns: 2217, // 赤と青の奇なる鬼火
+    SurpriseBreathPlus: 2220, // 一驚のブレス+
 };
 
 const Support = {
