@@ -2045,6 +2045,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.StarlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MoonlightStone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(5);
@@ -10834,6 +10843,13 @@ class DamageCalculatorWrapper {
 
     __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
         switch (targetUnit.weapon) {
+            case Weapon.StarlightStone:
+                if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                    if (enemyUnit.battleContext.canFollowupAttack) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
+                    }
+                }
+                break;
             case Weapon.MaryuNoBreath:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
