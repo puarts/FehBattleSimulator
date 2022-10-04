@@ -1897,6 +1897,7 @@ const PassiveB = {
     TrueDragonWall: 2078, // 真竜鱗障壁
     NewDivinity: 2174, // 新たなる神竜王
     DragonsIre3: 1493, // 竜の逆鱗3
+    DragonsIre4: 2214, // 竜の逆鱗4
     DragonsWrath3: 1863, // 竜の魔鱗3
     DragonsWrath4: 2193, // 竜の魔鱗4
     Vantage3: 596, // 待ち伏せ3
