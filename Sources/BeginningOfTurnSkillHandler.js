@@ -2244,6 +2244,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case PassiveC.Upheaval:
+            case PassiveC.WoefulUpheaval:
                 if (this.globalBattleContext.currentTurn == 1) {
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                         unit.reserveTakeDamage(7);

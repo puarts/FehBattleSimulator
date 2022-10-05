@@ -608,6 +608,7 @@ class DamageCalculatorWrapper {
         }
 
         switch (unit.passiveC) {
+            case PassiveC.WoefulUpheaval:
             case PassiveC.WithEveryone2:
             case PassiveC.AdFarSave3:
             case PassiveC.ArFarSave3:
@@ -8813,6 +8814,14 @@ class DamageCalculatorWrapper {
 
             for (let skillId of [targetUnit.passiveA, targetUnit.passiveB, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
+                    case PassiveC.WoefulUpheaval: {
+                        let atkDiff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalAtkInCombat(targetUnit);
+                        let hpDiff = enemyUnit.maxHpWithSkills - enemyUnit.battleContext.restHp;
+                        let total = Math.max(atkDiff, 0) + hpDiff;
+                        let ratio = Math.min(total * 3.0 / 100.0, 0.3);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
+                    }
+                        break;
                     case PassiveB.DragonsWrath3:
                         if (enemyUnit.battleContext.initiatesCombat) {
                             let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
