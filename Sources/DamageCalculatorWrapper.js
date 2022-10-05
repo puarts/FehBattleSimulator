@@ -5964,7 +5964,22 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Death] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                targetUnit.addAllSpur(4);
+            } else {
+                // <錬成効果>
+                targetUnit.addAllSpur(5);
+                let amount = Math.min(targetUnit.maxSpecialCount, 1) + 1;
+                enemyUnit.addSpurs(0, -amount, 0, -amount);
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.RebbekkaNoRyoukyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isBuffed) {
