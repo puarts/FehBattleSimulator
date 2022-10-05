@@ -2044,6 +2044,31 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BrazenCatFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || (self.__isSolo(targetUnit) || calcPotentialDamage)) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ZekkaiNoSoukyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -12260,7 +12285,6 @@ class DamageCalculatorWrapper {
                     targetUnit.addAllSpur(4);
                     break;
                 case Weapon.ShirejiaNoKaze:
-                case Weapon.BrazenCatFang:
                 case Weapon.VengefulLance:
                     targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
                     break;
