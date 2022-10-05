@@ -2049,6 +2049,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.RazingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SurpriseBreathPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(5, 0, 0, 5);
@@ -8285,6 +8292,21 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.RazingBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                if (targetUnit.battleContext.initiatesCombat) {
+                                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                                }
+                                if (enemyUnit.battleContext.initiatesCombat) {
+                                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.GhostlyLanterns:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 5) {
