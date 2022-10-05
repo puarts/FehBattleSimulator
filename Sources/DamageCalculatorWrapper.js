@@ -1214,11 +1214,6 @@ class DamageCalculatorWrapper {
                 atkUnit.atkSpur += 6;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.ZekkaiNoSoukyu] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (defUnit.battleContext.restHpPercentage === 100) {
-                atkUnit.addAllSpur(4);
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.GeneiFeather] = (atkUnit, defUnit, calcPotentialDamage) => {
             if (self.__isThereAnyAllyUnit(atkUnit, x => x.isActionDone)) {
                 atkUnit.atkSpur += 6;
@@ -2049,6 +2044,26 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ZekkaiNoSoukyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat && enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        };
         this._applySkillEffectForUnitFuncDict[Weapon.RazingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -9932,6 +9947,16 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.ZekkaiNoSoukyu:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (defUnit.isMeleeWeaponType() &&
+                            atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.FaithfulBreath:
                 if (atkUnit.battleContext.restHpPercentage >= 40) {
                     if (atkUnit.battleContext.initiatesCombat) {
@@ -10494,6 +10519,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.ZekkaiNoSoukyu:
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                }
+                break;
             case Weapon.WindParthia:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
