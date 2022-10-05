@@ -514,10 +514,12 @@ class PostCombatSkillHander {
                 case PassiveB.SeimeiNoGofu3:
                     targetUnit.reserveHeal(6);
                     break;
-                case Weapon.TaguelChildFang:
-                    if (targetUnit.hpPercentage <= 75) {
+                case Weapon.TaguelChildFang: {
+                    let percentage = targetUnit.isWeaponRefined ? 90 : 75;
+                    if (targetUnit.hpPercentage <= percentage) {
                         targetUnit.specialCount -= 2;
                     }
+                }
                     break;
                 case Weapon.MasyouNoYari:
                     if (targetUnit.isWeaponRefined) {

@@ -2044,6 +2044,23 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TaguelChildFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                // <錬成効果>
+                if (self.__isSolo(targetUnit) || calcPotentialDamage || targetUnit.battleContext.restHpPercentage <= 90) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        }
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BrazenCatFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -9336,6 +9353,14 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.TaguelChildFang:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 50) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                    }
+                }
+                break;
             case Weapon.FirelightLance:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(defUnit.getEvalAtkInCombat(atkUnit) * 0.15);
