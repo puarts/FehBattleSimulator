@@ -8970,46 +8970,50 @@ class DamageCalculatorWrapper {
         }
 
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-            switch (unit.passiveC) {
-                case PassiveC.DomainOfFlame: {
-                    let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
-                    targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+            for (let skillId of unit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveC.DomainOfFlame: {
+                        let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+                    }
+                        break;
+                    case PassiveC.HokoNoGogeki3:
+                        if (targetUnit.moveType === MoveType.Infantry) {
+                            DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
+                        }
+                        break;
+                    case PassiveC.HokoNoJugeki3:
+                        if (targetUnit.moveType === MoveType.Infantry) {
+                            DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                        }
+                        break;
                 }
-                    break;
-                case PassiveC.HokoNoGogeki3:
-                    if (targetUnit.moveType === MoveType.Infantry) {
-                        DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
-                    }
-                    break;
-                case PassiveC.HokoNoJugeki3:
-                    if (targetUnit.moveType === MoveType.Infantry) {
-                        DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
-                    }
-                    break;
             }
         }
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 1, false)) {
-            switch (unit.passiveC) {
-                case PassiveC.HokoNoKokyu3:
-                    if (targetUnit.moveType === MoveType.Infantry
-                        && targetUnit.isPhysicalAttacker()
-                    ) {
-                        targetUnit.defSpur += 2;
-                        targetUnit.resSpur += 2;
-                        targetUnit.battleContext.increaseCooldownCountForBoth();
-                    }
-                    break;
-                case PassiveC.HokoNoMajin3:
-                    if (!calcPotentialDamage) {
+            for (let skillId of unit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveC.HokoNoKokyu3:
                         if (targetUnit.moveType === MoveType.Infantry
                             && targetUnit.isPhysicalAttacker()
                         ) {
-                            targetUnit.atkSpur += 2;
-                            targetUnit.spdSpur += 2;
-                            targetUnit.battleContext.refersMinOfDefOrRes = true;
+                            targetUnit.defSpur += 2;
+                            targetUnit.resSpur += 2;
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
                         }
-                    }
-                    break;
+                        break;
+                    case PassiveC.HokoNoMajin3:
+                        if (!calcPotentialDamage) {
+                            if (targetUnit.moveType === MoveType.Infantry
+                                && targetUnit.isPhysicalAttacker()
+                            ) {
+                                targetUnit.atkSpur += 2;
+                                targetUnit.spdSpur += 2;
+                                targetUnit.battleContext.refersMinOfDefOrRes = true;
+                            }
+                        }
+                        break;
+                }
             }
         }
     }
