@@ -4721,6 +4721,7 @@ class Unit extends BattleMapElement {
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
             switch (this.weapon) {
+                case Weapon.ZekkaiNoSoukyu:
                 case Weapon.DarkSpikesT:
                 case Weapon.HikariNoKen:
                 case Weapon.Ragnell:

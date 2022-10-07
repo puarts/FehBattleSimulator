@@ -608,6 +608,7 @@ class DamageCalculatorWrapper {
         }
 
         switch (unit.passiveC) {
+            case PassiveC.WoefulUpheaval:
             case PassiveC.WithEveryone2:
             case PassiveC.AdFarSave3:
             case PassiveC.ArFarSave3:
@@ -1211,11 +1212,6 @@ class DamageCalculatorWrapper {
             atkUnit.spdSpur += 4;
             if (atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0) {
                 atkUnit.atkSpur += 6;
-            }
-        };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.ZekkaiNoSoukyu] = (atkUnit, defUnit, calcPotentialDamage) => {
-            if (defUnit.battleContext.restHpPercentage === 100) {
-                atkUnit.addAllSpur(4);
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.GeneiFeather] = (atkUnit, defUnit, calcPotentialDamage) => {
@@ -2048,6 +2044,75 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.TaguelChildFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                // <錬成効果>
+                if (self.__isSolo(targetUnit) || calcPotentialDamage || targetUnit.battleContext.restHpPercentage <= 90) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        }
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BrazenCatFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || (self.__isSolo(targetUnit) || calcPotentialDamage)) {
+                    targetUnit.addSpurs(6, 6, 0, 0);
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                        if (targetUnit.isTransformed) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ZekkaiNoSoukyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat && enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[Weapon.RazingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SurpriseBreathPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(5, 0, 0, 5);
@@ -5941,7 +6006,22 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Death] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                targetUnit.addAllSpur(4);
+            } else {
+                // <錬成効果>
+                targetUnit.addAllSpur(5);
+                let amount = Math.min(targetUnit.maxSpecialCount, 1) + 1;
+                enemyUnit.addSpurs(0, -amount, 0, -amount);
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.RebbekkaNoRyoukyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isBuffed) {
@@ -8284,6 +8364,21 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.RazingBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                if (targetUnit.battleContext.initiatesCombat) {
+                                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                                }
+                                if (enemyUnit.battleContext.initiatesCombat) {
+                                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.GhostlyLanterns:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 5) {
@@ -8813,6 +8908,14 @@ class DamageCalculatorWrapper {
 
             for (let skillId of [targetUnit.passiveA, targetUnit.passiveB, targetUnit.passiveC, targetUnit.passiveS]) {
                 switch (skillId) {
+                    case PassiveC.WoefulUpheaval: {
+                        let atkDiff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalAtkInCombat(targetUnit);
+                        let hpDiff = enemyUnit.maxHpWithSkills - enemyUnit.battleContext.restHp;
+                        let total = Math.max(atkDiff, 0) + hpDiff;
+                        let ratio = Math.min(total * 3.0 / 100.0, 0.3);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
+                    }
+                        break;
                     case PassiveB.DragonsWrath3:
                         if (enemyUnit.battleContext.initiatesCombat) {
                             let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
@@ -8867,46 +8970,50 @@ class DamageCalculatorWrapper {
         }
 
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-            switch (unit.passiveC) {
-                case PassiveC.DomainOfFlame: {
-                    let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
-                    targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+            for (let skillId of unit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveC.DomainOfFlame: {
+                        let d = Math.max(targetUnit.getEvalAtkInCombat() - enemyUnit.getEvalResInCombat(), 0);
+                        targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(d * 0.3);
+                    }
+                        break;
+                    case PassiveC.HokoNoGogeki3:
+                        if (targetUnit.moveType === MoveType.Infantry) {
+                            DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
+                        }
+                        break;
+                    case PassiveC.HokoNoJugeki3:
+                        if (targetUnit.moveType === MoveType.Infantry) {
+                            DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
+                        }
+                        break;
                 }
-                    break;
-                case PassiveC.HokoNoGogeki3:
-                    if (targetUnit.moveType === MoveType.Infantry) {
-                        DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
-                    }
-                    break;
-                case PassiveC.HokoNoJugeki3:
-                    if (targetUnit.moveType === MoveType.Infantry) {
-                        DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
-                    }
-                    break;
             }
         }
         for (let unit of this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 1, false)) {
-            switch (unit.passiveC) {
-                case PassiveC.HokoNoKokyu3:
-                    if (targetUnit.moveType === MoveType.Infantry
-                        && targetUnit.isPhysicalAttacker()
-                    ) {
-                        targetUnit.defSpur += 2;
-                        targetUnit.resSpur += 2;
-                        targetUnit.battleContext.increaseCooldownCountForBoth();
-                    }
-                    break;
-                case PassiveC.HokoNoMajin3:
-                    if (!calcPotentialDamage) {
+            for (let skillId of unit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveC.HokoNoKokyu3:
                         if (targetUnit.moveType === MoveType.Infantry
                             && targetUnit.isPhysicalAttacker()
                         ) {
-                            targetUnit.atkSpur += 2;
-                            targetUnit.spdSpur += 2;
-                            targetUnit.battleContext.refersMinOfDefOrRes = true;
+                            targetUnit.defSpur += 2;
+                            targetUnit.resSpur += 2;
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
                         }
-                    }
-                    break;
+                        break;
+                    case PassiveC.HokoNoMajin3:
+                        if (!calcPotentialDamage) {
+                            if (targetUnit.moveType === MoveType.Infantry
+                                && targetUnit.isPhysicalAttacker()
+                            ) {
+                                targetUnit.atkSpur += 2;
+                                targetUnit.spdSpur += 2;
+                                targetUnit.battleContext.refersMinOfDefOrRes = true;
+                            }
+                        }
+                        break;
+                }
             }
         }
     }
@@ -9250,6 +9357,14 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.TaguelChildFang:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 50) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                    }
+                }
+                break;
             case Weapon.FirelightLance:
                 if (atkUnit.battleContext.restHpPercentage >= 25) {
                     atkUnit.battleContext.additionalDamage += Math.trunc(defUnit.getEvalAtkInCombat(atkUnit) * 0.15);
@@ -9901,6 +10016,16 @@ class DamageCalculatorWrapper {
         }
 
         switch (atkUnit.weapon) {
+            case Weapon.ZekkaiNoSoukyu:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (defUnit.isMeleeWeaponType() &&
+                            atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + 5) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case Weapon.FaithfulBreath:
                 if (atkUnit.battleContext.restHpPercentage >= 40) {
                     if (atkUnit.battleContext.initiatesCombat) {
@@ -10463,6 +10588,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.ZekkaiNoSoukyu:
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                }
+                break;
             case Weapon.WindParthia:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -12182,7 +12314,6 @@ class DamageCalculatorWrapper {
                     targetUnit.addAllSpur(4);
                     break;
                 case Weapon.ShirejiaNoKaze:
-                case Weapon.BrazenCatFang:
                 case Weapon.VengefulLance:
                     targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
                     break;
