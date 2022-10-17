@@ -3625,7 +3625,7 @@ class BattleSimmulatorBase {
     /**
      * @param  {Unit[]} targetUnits
      */
-    __applySkillsForBeginningOfTurn(targetUnits) {
+    __applySkillsForBeginningOfTurn(targetUnits, enemyUnits) {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.resetOneTimeActionActivationStates();
 
@@ -3641,6 +3641,11 @@ class BattleSimmulatorBase {
         for (let unit of targetUnits) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動スキルを適用..");
             this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
+        }
+        // ターン開始時スキル(敵ユニット)
+        for (let unit of enemyUnits) {
+            this.writeDebugLogLine(unit.getNameWithGroup() + "の敵ターン開始時発動スキルを適用..");
+            this.beginningOfTurnSkillHandler.applyEnemySkillsForBeginningOfTurn(unit);
         }
         // ターン開始時効果(通常)による効果を反映
         this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
@@ -3669,7 +3674,7 @@ class BattleSimmulatorBase {
     /**
      * @param  {Unit[]} targetUnits
      */
-    __simulateBeginningOfTurn(targetUnits) {
+    __simulateBeginningOfTurn(targetUnits, enemyUnits) {
         g_appData.isCombatOccuredInCurrentTurn = false;
 
         if (targetUnits.length == 0) {
@@ -3688,7 +3693,7 @@ class BattleSimmulatorBase {
             }
         }
 
-        this.__applySkillsForBeginningOfTurn(targetUnits);
+        this.__applySkillsForBeginningOfTurn(targetUnits, enemyUnits);
 
         if (this.data.gameMode == GameMode.SummonerDuels) {
             this.data.globalBattleContext.initializeSummonerDuelsTurnContext(
@@ -3927,7 +3932,7 @@ class BattleSimmulatorBase {
         this.__enqueueCommand("敵ターン開始", function () {
             self.vm.globalBattleContext.currentPhaseType = UnitGroupType.Enemy;
             self.audioManager.playSoundEffect(SoundEffectId.EnemyPhase);
-            self.__simulateBeginningOfTurn(self.__getOnMapEnemyUnitList());
+            self.__simulateBeginningOfTurn(self.__getOnMapEnemyUnitList(), self.__getOnMapAllyUnitList());
 
             // 安全柵の実行(他の施設と実行タイミングが異なるので、別途処理している)
             let safetyFence = self.__findSafetyFence();
@@ -3975,7 +3980,7 @@ class BattleSimmulatorBase {
                 g_appData.resonantBattleItems = [];
             }
             self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
-            self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList());
+            self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList(), self.__getOnMapEnemyUnitList());
         });
     }
 

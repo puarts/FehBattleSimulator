@@ -1417,6 +1417,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=wc9QPu8FmaQ
     // https://www.youtube.com/watch?v=aPQ6_XG9Tek
     ArcaneGrima: 2224, // 魔器ギムレー
+    BladeOfFavors: 2227, // 厚情の剛剣
 };
 
 const Support = {

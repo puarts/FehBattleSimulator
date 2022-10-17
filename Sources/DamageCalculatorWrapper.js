@@ -2045,6 +2045,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BladeOfFavors] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addSpurs(-5, -5, -5, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.Dragonhide] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat ||  enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.addAllSpur(-8);
@@ -7704,6 +7710,13 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.BladeOfFavors:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                }
+                break;
             case Weapon.YonkaiNoSaiki:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
