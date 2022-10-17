@@ -617,6 +617,7 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
+            case PassiveC.AsNearSave3:
             case PassiveC.ArNearSave3:
             case PassiveC.AdNearSave3:
             case PassiveC.DrNearSave3:
@@ -4657,6 +4658,12 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 4;
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AsNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 4;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveC.ArNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.atkSpur += 4;
