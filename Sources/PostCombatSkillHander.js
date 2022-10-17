@@ -479,6 +479,7 @@ class PostCombatSkillHander {
                     break;
                 case Weapon.RauarRabbitPlus:
                 case Weapon.BlarRabbitPlus:
+                case Weapon.GronnRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
                 case Weapon.HiddenThornsPlus:

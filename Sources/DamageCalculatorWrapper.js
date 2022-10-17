@@ -6697,6 +6697,7 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[Weapon.RauarRabbitPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.BlarRabbitPlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.GronnRabbitPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.ConchBouquetPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.MelonFloatPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.HiddenThornsPlus] = func;
