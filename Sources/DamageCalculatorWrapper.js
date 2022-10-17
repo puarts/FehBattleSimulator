@@ -2046,6 +2046,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.defSpur += 5;
+                enemyUnit.defSpur -= 5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.MysticBoost4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.atkSpur -= 5;
         }
@@ -7737,6 +7743,12 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.DefiersLancePlus:
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+                    enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                }
+                break;
             case Weapon.BladeOfFavors:
                 if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                     enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);

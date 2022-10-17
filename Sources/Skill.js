@@ -1422,6 +1422,7 @@ const Weapon = {
     ReinLancePlus: 2232, // 牽制の槍+
     YmirEverliving: 2223, // 永生ユーミル
     GronnRabbitPlus: 2235, // グルンラビット+
+    DefiersLancePlus: 2237, // 守備逆用の槍+
 };
 
 const Support = {

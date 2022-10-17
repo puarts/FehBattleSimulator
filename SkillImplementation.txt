@@ -289,10 +289,10 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 
 敵の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ減少(能力値ごとに計算)[敵強化減少]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
-    targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-    targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-    targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-    targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
+    enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
+    enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
+    enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+    enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
 }
 
 敵が[有利/不利]な状態異常を受けている時
