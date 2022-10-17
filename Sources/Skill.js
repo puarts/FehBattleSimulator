@@ -1418,6 +1418,8 @@ const Weapon = {
     // https://www.youtube.com/watch?v=aPQ6_XG9Tek
     ArcaneGrima: 2224, // 魔器ギムレー
     BladeOfFavors: 2227, // 厚情の剛剣
+    ReinLance: 2233, // 牽制の槍
+    ReinLancePlus: 2232, // 牽制の槍+
 };
 
 const Support = {

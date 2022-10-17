@@ -11961,6 +11961,8 @@ class DamageCalculatorWrapper {
                             break;
                         case Weapon.ReinSword:
                         case Weapon.ReinSwordPlus:
+                        case Weapon.ReinLance:
+                        case Weapon.ReinLancePlus:
                         case Weapon.ReinAxe:
                         case Weapon.ReinAxePlus:
                         case Weapon.ReinBow:
