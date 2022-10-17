@@ -1420,6 +1420,7 @@ const Weapon = {
     BladeOfFavors: 2227, // 厚情の剛剣
     ReinLance: 2233, // 牽制の槍
     ReinLancePlus: 2232, // 牽制の槍+
+    YmirEverliving: 2223, // 永生ユーミル
 };
 
 const Support = {

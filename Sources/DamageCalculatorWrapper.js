@@ -2045,6 +2045,28 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.YmirEverliving] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
+                targetUnit.addAllSpur(5);
+                let hps = [];
+                for (let unit of self.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    hps.push(unit.battleContext.restHp);
+                }
+                hps.sort();
+                let amount;
+                if (hps.length <= 1) {
+                    amount = 0;
+                } else {
+                    hps = hps.filter((elem, index, self) => self.indexOf(elem) === index);
+                    if (hps.length === 1) {
+                        hps.push(hps[0]);
+                    }
+                    amount = Math.min(Math.trunc(hps[1] * 0.4), 20);
+                }
+                targetUnit.atkSpur += amount;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BladeOfFavors] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 enemyUnit.addSpurs(-5, -5, -5, 0);

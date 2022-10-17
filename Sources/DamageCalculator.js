@@ -1006,6 +1006,12 @@ class DamageCalculator {
         }
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.YmirEverliving:
+                    if (unit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType) &&
+                        unit.battleContext.restHpPercentage >= 25) {
+                        return true;
+                    }
+                    break;
                 case Special.CircletOfBalance: {
                     let condA =
                         (unit.isSpecialCharged || atkUnit.isSpecialCharged) ||
