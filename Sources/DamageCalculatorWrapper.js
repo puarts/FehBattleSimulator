@@ -2044,6 +2044,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.Dragonhide] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat ||  enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addAllSpur(-8);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneGrima] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
