@@ -510,6 +510,7 @@ class DamageCalculatorWrapper {
         for (let skillId of [targetUnit.passiveB, targetUnit.passiveS]) {
             switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:
+                case PassiveB.MysticBoost4:
                 case PassiveB.HikariToYamito:
                 case PassiveB.LightAndDark2:
                     return true;
@@ -2045,6 +2046,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.MysticBoost4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 5;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.YmirEverliving] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
                 targetUnit.addAllSpur(5);
@@ -10052,6 +10056,10 @@ class DamageCalculatorWrapper {
 
     __canDisableCounterAttack(atkUnit, defUnit) {
         if (defUnit.hasPassiveSkill(PassiveB.MikiriHangeki3)) {
+            return false;
+        }
+
+        if (defUnit.hasPassiveSkill(PassiveB.MysticBoost4) && atkUnit.weaponType === WeaponType.Staff) {
             return false;
         }
 

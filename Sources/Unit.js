@@ -4967,6 +4967,7 @@ class Unit extends BattleMapElement {
         for (let skillId of [this.passiveB, this.passiveS]) {
             switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:
+                case PassiveB.MysticBoost4:
                     return true;
             }
         }

@@ -2095,6 +2095,7 @@ const PassiveB = {
     RunaBracelet: 667, // 月の腕輪
     LunarBrace2: 1947, // 月の腕輪・承
     SeimeiNoGofu3: 772, // 生命の護符
+    MysticBoost4: 2234, // 生命の護符4
 
     ShisyaNoChojiriwo: 1114, // 死者の帳尻を
     YunesSasayaki: 976, // ユンヌの囁き
