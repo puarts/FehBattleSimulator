@@ -315,6 +315,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArcaneGrima:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.FirelightLance:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4, true)) {

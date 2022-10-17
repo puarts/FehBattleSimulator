@@ -325,6 +325,12 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArcaneGrima:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);
+                        atkUnit.atkSpur += Math.trunc(atk * 0.15);
+                    }
+                    break;
                 case PassiveA.AtkSpdFinish4:
                 case PassiveA.AtkResFinish4:
                     if (atkUnit.isSpecialActivated || atkUnit.tmpSpecialCount === 0 && !isPrecombat) {

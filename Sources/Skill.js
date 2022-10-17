@@ -1412,6 +1412,11 @@ const Weapon = {
     SerenityBreathPlus: 2215, // 幽静のブレス+
     GhostlyLanterns: 2217, // 赤と青の奇なる鬼火
     SurpriseBreathPlus: 2220, // 一驚のブレス+
+
+    // 新英雄＆開花英雄＆魔器ルフレ
+    // https://www.youtube.com/watch?v=wc9QPu8FmaQ
+    // https://www.youtube.com/watch?v=aPQ6_XG9Tek
+    ArcaneGrima: 2224, // 魔器ギムレー
 };
 
 const Support = {
