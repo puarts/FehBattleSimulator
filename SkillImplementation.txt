@@ -30,6 +30,8 @@ if (targetUnit.isTransformed) {}
 applySkillForBeginningOfTurn(skillId, skillOwner) {}
 ターン開始時(回復)
 applyHealSkillForBeginningOfTurn(skillId, skillOwner) {}
+敵ターン開始時
+applyEnemySkillForBeginningOfTurn(skillId, skillOwner) {}
 ターン開始時(ダメージ)
 applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
 
