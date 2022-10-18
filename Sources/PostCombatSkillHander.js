@@ -315,6 +315,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArcaneGrima:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.FirelightLance:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 4, true)) {
@@ -474,6 +479,7 @@ class PostCombatSkillHander {
                     break;
                 case Weapon.RauarRabbitPlus:
                 case Weapon.BlarRabbitPlus:
+                case Weapon.GronnRabbitPlus:
                 case Weapon.ConchBouquetPlus:
                 case Weapon.MelonFloatPlus:
                 case Weapon.HiddenThornsPlus:
@@ -513,6 +519,9 @@ class PostCombatSkillHander {
                 case PassiveB.SealSpdRes2: enemyUnit.applySpdDebuff(-5); enemyUnit.applyResDebuff(-5); break;
                 case PassiveB.SeimeiNoGofu3:
                     targetUnit.reserveHeal(6);
+                    break;
+                case PassiveB.MysticBoost4:
+                    targetUnit.reserveHeal(10);
                     break;
                 case Weapon.TaguelChildFang: {
                     let percentage = targetUnit.isWeaponRefined ? 90 : 75;

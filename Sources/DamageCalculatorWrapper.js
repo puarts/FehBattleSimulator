@@ -510,6 +510,7 @@ class DamageCalculatorWrapper {
         for (let skillId of [targetUnit.passiveB, targetUnit.passiveS]) {
             switch (skillId) {
                 case PassiveB.SeimeiNoGofu3:
+                case PassiveB.MysticBoost4:
                 case PassiveB.HikariToYamito:
                 case PassiveB.LightAndDark2:
                     return true;
@@ -617,6 +618,7 @@ class DamageCalculatorWrapper {
                     return true;
                 }
                 break;
+            case PassiveC.AsNearSave3:
             case PassiveC.ArNearSave3:
             case PassiveC.AdNearSave3:
             case PassiveC.DrNearSave3:
@@ -2044,6 +2046,55 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.defSpur += 5;
+                enemyUnit.defSpur -= 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.MysticBoost4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 5;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.YmirEverliving] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
+                targetUnit.addAllSpur(5);
+                let hps = [];
+                for (let unit of self.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    hps.push(unit.battleContext.restHp);
+                }
+                hps.sort();
+                let amount;
+                if (hps.length <= 1) {
+                    amount = 0;
+                } else {
+                    hps = hps.filter((elem, index, self) => self.indexOf(elem) === index);
+                    if (hps.length === 1) {
+                        hps.push(hps[0]);
+                    }
+                    amount = Math.min(Math.trunc(hps[1] * 0.4), 20);
+                }
+                targetUnit.atkSpur += amount;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BladeOfFavors] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addSpurs(-5, -5, -5, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.Dragonhide] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat ||  enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addAllSpur(-8);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneGrima] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TaguelChildFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 // <錬成効果>
@@ -4645,6 +4696,12 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 4;
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AsNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 4;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveC.ArNearSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.atkSpur += 4;
@@ -6646,6 +6703,7 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[Weapon.RauarRabbitPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.BlarRabbitPlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.GronnRabbitPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.ConchBouquetPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.MelonFloatPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.HiddenThornsPlus] = func;
@@ -7685,6 +7743,19 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.DefiersLancePlus:
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
+                    enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                }
+                break;
+            case Weapon.BladeOfFavors:
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                }
+                break;
             case Weapon.YonkaiNoSaiki:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
@@ -10001,6 +10072,10 @@ class DamageCalculatorWrapper {
             return false;
         }
 
+        if (defUnit.hasPassiveSkill(PassiveB.MysticBoost4) && atkUnit.weaponType === WeaponType.Staff) {
+            return false;
+        }
+
         if (defUnit.weapon === Weapon.NiflsBite) {
             if (this.__isThereAllyIn2Spaces(defUnit) && atkUnit.isRangedWeaponType()) {
                 return false;
@@ -11929,6 +12004,8 @@ class DamageCalculatorWrapper {
                             break;
                         case Weapon.ReinSword:
                         case Weapon.ReinSwordPlus:
+                        case Weapon.ReinLance:
+                        case Weapon.ReinLancePlus:
                         case Weapon.ReinAxe:
                         case Weapon.ReinAxePlus:
                         case Weapon.ReinBow:

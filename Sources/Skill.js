@@ -1412,6 +1412,17 @@ const Weapon = {
     SerenityBreathPlus: 2215, // 幽静のブレス+
     GhostlyLanterns: 2217, // 赤と青の奇なる鬼火
     SurpriseBreathPlus: 2220, // 一驚のブレス+
+
+    // 新英雄＆開花英雄＆魔器ルフレ
+    // https://www.youtube.com/watch?v=wc9QPu8FmaQ
+    // https://www.youtube.com/watch?v=aPQ6_XG9Tek
+    ArcaneGrima: 2224, // 魔器ギムレー
+    BladeOfFavors: 2227, // 厚情の剛剣
+    ReinLance: 2233, // 牽制の槍
+    ReinLancePlus: 2232, // 牽制の槍+
+    YmirEverliving: 2223, // 永生ユーミル
+    GronnRabbitPlus: 2235, // グルンラビット+
+    DefiersLancePlus: 2237, // 守備逆用の槍+
 };
 
 const Support = {
@@ -1679,6 +1690,7 @@ const PassiveA = {
     JaryuNoUroko: 585, // 邪竜の鱗
     DragonSkin2: 1754, // 邪竜の鱗・承
     Dragonscale: 1492, // 邪竜の大鱗
+    Dragonhide: 2225, // 邪竜の重鱗
 
     // 密集
     AtkSpdForm3: 964,
@@ -2085,6 +2097,7 @@ const PassiveB = {
     RunaBracelet: 667, // 月の腕輪
     LunarBrace2: 1947, // 月の腕輪・承
     SeimeiNoGofu3: 772, // 生命の護符
+    MysticBoost4: 2234, // 生命の護符4
 
     ShisyaNoChojiriwo: 1114, // 死者の帳尻を
     YunesSasayaki: 976, // ユンヌの囁き
@@ -2425,6 +2438,7 @@ const PassiveC = {
     AdFarSave3: 1993, // 鎧の護り手・遠間3
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrFarSave3: 1931, // 盾の護り手・遠間3
+    AsNearSave3: 2226, // 刃の護り手・近間3
     DrNearSave3: 1636, // 盾の護り手・近間3
     AdNearSave3: 1667, // 鎧の護り手・近間3
     ArNearSave3: 1857, // 兜の護り手・近間3

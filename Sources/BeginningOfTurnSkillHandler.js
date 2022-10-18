@@ -51,6 +51,12 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    applyEnemySkillsForBeginningOfTurn(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            this.applyEnemySkillForBeginningOfTurn(skillId, unit);
+        }
+    }
+
     /**
      * @param  {Unit} unit
      */
@@ -125,6 +131,20 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.BladeOfFavors: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
+                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
+                        found = true;
+                        unit.reserveToApplyDebuffs(-6, -6, -6, 0);
+                    }
+                }
+                if (found) {
+                    skillOwner.applyBuffs(6, 6, 6, 0);
+                }
+            }
+                break;
             case Weapon.WindGenesis:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.applyAtkBuff(6);
@@ -2049,6 +2069,27 @@ class BeginningOfTurnSkillHandler {
                         unit => true,
                         unit => unit.reserveToAddStatusEffect(StatusEffectType.Guard));
                 }
+                break;
+        }
+    }
+
+    applyEnemySkillForBeginningOfTurn(skillId, skillOwner) {
+        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
+
+        switch (skillId) {
+            case Weapon.BladeOfFavors: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
+                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
+                        found = true;
+                        unit.reserveToApplyDebuffs(-6, -6, -6, 0);
+                    }
+                }
+                if (found) {
+                    skillOwner.applyBuffs(6, 6, 6, 0);
+                }
+            }
                 break;
         }
     }
