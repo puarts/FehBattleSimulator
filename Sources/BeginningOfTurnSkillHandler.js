@@ -1302,6 +1302,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.AtkSpdOath4: this.__applyOath4Skill(skillOwner, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
             case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyDefBuff(5); }); break;
             case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyResBuff(5); }); break;
+            case PassiveC.AtkResOath4: this.__applyOath4Skill(skillOwner, x => { x.applyAtkBuff(6); x.applyResBuff(6); }); break;
             case PassiveC.DefResOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applyResBuff(5); }); break;
             case PassiveC.UpheavalPlus:
                 if (this.globalBattleContext.currentTurn === 1) {

@@ -2658,6 +2658,11 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(3, 3, 0, 0);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AtkResOath4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(3, 0, 0, 3);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.CaringConch] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);

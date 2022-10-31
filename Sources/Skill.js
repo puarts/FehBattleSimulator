@@ -2379,6 +2379,7 @@ const PassiveC = {
     AtkSpdOath4: 2128, // 攻撃速さの信義4
     AtkDefOath3: 1045,
     AtkResOath3: 982,
+    AtkResOath4: 2242, // 攻撃魔防の信義4
     DefResOath3: 1092,
     SpdDefOath3: 1233,
     SpdResOath3: 1602,
