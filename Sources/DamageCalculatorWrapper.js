@@ -2049,6 +2049,7 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.RiteOfSouls] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
