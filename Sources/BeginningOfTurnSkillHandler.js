@@ -131,6 +131,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.RiteOfSouls:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
+                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
+                        if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + 1) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                }
+                break;
             case Weapon.BladeOfFavors: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {

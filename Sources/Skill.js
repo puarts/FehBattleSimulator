@@ -1423,6 +1423,11 @@ const Weapon = {
     YmirEverliving: 2223, // 永生ユーミル
     GronnRabbitPlus: 2235, // グルンラビット+
     DefiersLancePlus: 2237, // 守備逆用の槍+
+
+    // 神階ラルヴァ
+    // https://www.youtube.com/watch?v=UFUWblZaLc8
+    // https://www.youtube.com/watch?v=fjnDwCpDu_g
+    RiteOfSouls: 2240, // 魂の秘儀
 };
 
 const Support = {
