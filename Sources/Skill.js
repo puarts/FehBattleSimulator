@@ -1423,6 +1423,11 @@ const Weapon = {
     YmirEverliving: 2223, // 永生ユーミル
     GronnRabbitPlus: 2235, // グルンラビット+
     DefiersLancePlus: 2237, // 守備逆用の槍+
+
+    // 神階ラルヴァ
+    // https://www.youtube.com/watch?v=UFUWblZaLc8
+    // https://www.youtube.com/watch?v=fjnDwCpDu_g
+    RiteOfSouls: 2240, // 魂の秘儀
 };
 
 const Support = {
@@ -1848,6 +1853,7 @@ const PassiveA = {
     LawsOfSacae2: 1753, // サカの掟・承
     VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
+    Duality: 2241, // 魂の秘儀
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -2373,6 +2379,7 @@ const PassiveC = {
     AtkSpdOath4: 2128, // 攻撃速さの信義4
     AtkDefOath3: 1045,
     AtkResOath3: 982,
+    AtkResOath4: 2242, // 攻撃魔防の信義4
     DefResOath3: 1092,
     SpdDefOath3: 1233,
     SpdResOath3: 1602,

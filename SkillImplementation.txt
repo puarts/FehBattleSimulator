@@ -45,6 +45,9 @@ const BeastCommonSkillMap =
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
 
+[相性計算]
+static calcAttackerTriangleAdvantage(atkUnit, defUnit) {}
+
 無属性の敵と戦闘時、自分は3すくみ有利、敵は3すくみ不利となる[レイヴン]
 targetUnit.battleContext.isAdvantageForColorless = true; 
 

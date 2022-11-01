@@ -60,6 +60,38 @@ class DamageCalculationUtility {
 
     /// 相性有利不利を判定して返します。
     static calcAttackerTriangleAdvantage(atkUnit, defUnit) {
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.Duality:
+                    switch (defUnit.color) {
+                        case ColorType.Red:
+                        case ColorType.Blue:
+                        case ColorType.Green:
+                            if (defUnit.isAdvantageForColorless() && atkUnit.color === ColorType.Colorless) {
+                                return TriangleAdvantage.None;
+                            } else {
+                                return TriangleAdvantage.Advantageous;
+                            }
+                    }
+                    break;
+            }
+        }
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.Duality:
+                    switch (atkUnit.color) {
+                        case ColorType.Red:
+                        case ColorType.Blue:
+                        case ColorType.Green:
+                            if (atkUnit.isAdvantageForColorless() && defUnit.color === ColorType.Colorless) {
+                                return TriangleAdvantage.None;
+                            } else {
+                                return TriangleAdvantage.Disadvantageous;
+                            }
+                    }
+                    break;
+            }
+        }
         // 無色に有利な効果を持つ場合
         if (atkUnit.isAdvantageForColorless() && defUnit.color === ColorType.Colorless) {
             return TriangleAdvantage.Advantageous;

@@ -131,6 +131,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.RiteOfSouls:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
+                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
+                        if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + 1) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                }
+                break;
             case Weapon.BladeOfFavors: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
@@ -1292,6 +1302,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.AtkSpdOath4: this.__applyOath4Skill(skillOwner, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
             case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyDefBuff(5); }); break;
             case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyResBuff(5); }); break;
+            case PassiveC.AtkResOath4: this.__applyOath4Skill(skillOwner, x => { x.applyAtkBuff(6); x.applyResBuff(6); }); break;
             case PassiveC.DefResOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applyResBuff(5); }); break;
             case PassiveC.UpheavalPlus:
                 if (this.globalBattleContext.currentTurn === 1) {

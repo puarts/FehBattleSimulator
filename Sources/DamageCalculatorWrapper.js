@@ -2046,6 +2046,17 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.Duality] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.RiteOfSouls] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.defSpur += 5;
@@ -2645,6 +2656,11 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveC.AtkSpdOath4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(3, 3, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AtkResOath4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(3, 0, 0, 3);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.CaringConch] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -9428,6 +9444,12 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.RiteOfSouls:
+                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                    let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(res * 0.2);
+                }
+                break;
             case Weapon.TaguelChildFang:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 50) {

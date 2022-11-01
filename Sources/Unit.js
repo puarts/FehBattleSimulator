@@ -3444,6 +3444,9 @@ class Unit extends BattleMapElement {
     }
 
     getTriangleAdeptAdditionalRatio() {
+        if (this.passiveA === PassiveA.Duality) {
+            return 0;
+        }
         if (isTriangleAdeptSkill(this.passiveA)
             || isTriangleAdeptSkill(this.weapon)
             || (this.weapon === Weapon.Forukuvangu && this.isWeaponSpecialRefined)
