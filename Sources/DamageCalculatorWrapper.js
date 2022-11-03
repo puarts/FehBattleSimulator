@@ -517,6 +517,11 @@ class DamageCalculatorWrapper {
             }
         }
         switch (targetUnit.weapon) {
+            case Weapon.SpiritForestWrit:
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    return true;
+                }
+                break;
             case Weapon.SplashyBucketPlus:
                 return true;
             case Weapon.Aureola:
@@ -2343,7 +2348,6 @@ class DamageCalculatorWrapper {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 enemyUnit.addSpurs(-6, 0, 0, -6);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
-                targetUnit.battleContext.refersMinOfDefOrRes = true;
                 let diff = targetUnit.getResInPrecombat() - enemyUnit.getResInPrecombat();
                 if (diff >= 1) {
                     let amount = Math.min(Math.trunc(diff * 0.8), 12);

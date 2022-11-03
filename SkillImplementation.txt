@@ -413,6 +413,9 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
+敵の「敵の守備か魔防の低い方でダメージ計算」を無効化
+__canInvalidatesReferenceLowerMit(targetUnit, enemyUnit) {}
+
 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×N%軽減(最大M)[回避]
 戦闘前
 __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
