@@ -7766,6 +7766,10 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.WyvernOno:
+                targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                break;
             case Weapon.DefiersLancePlus:
                 if (enemyUnit.battleContext.restHpPercentage >= 75) {
                     targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
