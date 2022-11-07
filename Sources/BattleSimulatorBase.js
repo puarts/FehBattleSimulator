@@ -920,6 +920,7 @@ class BattleSimmulatorBase {
         }
 
         switch (duoUnit.heroIndex) {
+            case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
             case Hero.DuoLyn:
                 if (!duoUnit.isActionDone || !duoUnit.isAttackDone) {
@@ -1247,6 +1248,7 @@ class BattleSimmulatorBase {
                     duoUnit.addStatusEffect(StatusEffectType.Vantage);
                 }
                 break;
+            case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
             case Hero.DuoLyn:
                 {
