@@ -2051,6 +2051,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.SealRes4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.resSpur -= 4;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.Duality] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -8357,6 +8360,12 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.passiveB) {
+            case PassiveB.SealRes4:
+                if (!enemyUnit.battleContext.invalidatesOwnResDebuff) {
+                    let amount = Math.max(7 - enemyUnit.resDebuffTotal, 0);
+                    enemyUnit.resSpur -= amount;
+                }
+                break;
             case PassiveB.BindingNecklace:
                 if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                     targetUnit.addAllSpur(2);
@@ -8947,6 +8956,11 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.SealRes4:
+                    if (enemyUnit.resDebuffTotal > 0) {
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
                 case PassiveB.SpdPreempt3:
                     if (enemyUnit.battleContext.initiatesCombat && enemyUnit.isRangedWeaponType()) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
