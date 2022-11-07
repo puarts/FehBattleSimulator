@@ -1435,6 +1435,8 @@ const Weapon = {
     FloweryScroll: 2247, // 艶花忍法帳
     WyvernOno: 2249, // 愛竜への情の竜斧
     FlamefrostBow: 2251, // 炎と氷の王女の輝弓
+    WyvernYumiPlus: 2253, // 竜忍の弓+
+    WyvernKatanaPlus: 2255, // 竜忍の剣+
 };
 
 const Support = {
