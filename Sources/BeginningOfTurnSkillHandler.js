@@ -1495,6 +1495,52 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
+            case PassiveC.ChaosNamedPlus:
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => {
+                        return this.__getStatusEvalUnit(unit).getAtkInPrecombat()
+                    },
+                    unit => {
+                        unit.reserveToApplyAtkDebuff(-7);
+                        for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                            u.reserveToApplyAtkDebuff(-7);
+                        }
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => {
+                        return this.__getStatusEvalUnit(unit).getSpdInPrecombat()
+                    },
+                    unit => {
+                        unit.reserveToApplySpdDebuff(-7);
+                        for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                            u.reserveToApplySpdDebuff(-7);
+                        }
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => {
+                        return this.__getStatusEvalUnit(unit).getDefInPrecombat()
+                    },
+                    unit => {
+                        unit.reserveToApplyDefDebuff(-7);
+                        for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                            u.reserveToApplyDefDebuff(-7);
+                        }
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    });
+                this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                    unit => {
+                        return this.__getStatusEvalUnit(unit).getResInPrecombat()
+                    },
+                    unit => {
+                        unit.reserveToApplyResDebuff(-7);
+                        for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                            u.reserveToApplyResDebuff(-7);
+                        }
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    });
+                break;
             case Weapon.AkaNoKen:
             case Weapon.DarkExcalibur:
                 if (skillOwner.weaponRefinement == WeaponRefinementType.Special) {

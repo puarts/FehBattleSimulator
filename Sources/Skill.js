@@ -2490,6 +2490,7 @@ const PassiveC = {
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神
     ChaosNamed: 868, // 我が名は混沌
+    ChaosNamedPlus: 2244, // 我が名は混沌・神
     SurtrsMenace: 767, // 炎王の威嚇
     SurtrsPortent: 1792, // 炎王の脅嚇
     WithEveryone: 754, // みんなと一緒に
