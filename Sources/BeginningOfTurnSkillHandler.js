@@ -1204,6 +1204,9 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.ArdentDurandal:
+                if (skillOwner.isWeaponRefined) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                }
                 for (let unit of this.__findMaxStatusUnits(
                     skillOwner.groupId,
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat(),
