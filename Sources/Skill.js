@@ -1434,6 +1434,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=dUleRGz3uqs
     FloweryScroll: 2247, // 艶花忍法帳
     WyvernOno: 2249, // 愛竜への情の竜斧
+    FlamefrostBow: 2251, // 炎と氷の王女の輝弓
 };
 
 const Support = {

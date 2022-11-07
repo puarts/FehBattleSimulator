@@ -7766,6 +7766,16 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.FlamefrostBow: {
+                let maxBuff = enemyUnit.getBuffTotalInCombat(targetUnit);
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                    maxBuff = Math.max(unit.buffTotal, maxBuff);
+                }
+
+                let amount = Math.trunc(maxBuff * 0.7);
+                targetUnit.addSpurs(amount, 0, amount, amount);
+            }
+                break;
             case Weapon.WyvernOno:
                 targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                 targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
