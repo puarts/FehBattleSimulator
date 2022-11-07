@@ -2429,6 +2429,7 @@ const PassiveC = {
     // 牽制
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
     AtkDefRein3: 1519, // 攻撃守備の牽制3
+    AtkDefHold: 2250, // 攻撃守備の大牽制
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     AtkResHold: 2084, // 攻撃魔防の大牽制
     SpdDefRein3: 1485, // 速さ守備の牽制3
