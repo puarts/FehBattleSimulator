@@ -2504,6 +2504,7 @@ const PassiveC = {
     UpheavalPlus: 2070, // メガクェイク・神
     WoefulUpheaval: 2219, // 試練メガクェイク
     VisionOfArcadia: 933, // 理想郷となるように
+    VisionOfArcadia2: 2243, // 理想郷となる…・承
     OstiasPulse: 753, // オスティアの鼓動
     OstiasPulse2: 1828, // 盟主の鼓動・承
     Jagan: 811, // 邪眼

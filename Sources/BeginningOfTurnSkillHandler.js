@@ -1191,6 +1191,22 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
+            case PassiveC.VisionOfArcadia2:
+                if (this.__isThereAnyAllyUnit(skillOwner, x => isWeaponTypeBreathOrBeast(x.weaponType))) {
+                    let units = this.__findMaxStatusUnits(
+                        skillOwner.groupId,
+                        x => this.__getStatusEvalUnit(x).getAtkInPrecombat(),
+                        skillOwner);
+                    units.push(skillOwner);
+                    for (let unit of units) {
+                        unit.applyAtkBuff(6);
+                        unit.applySpdBuff(6);
+                        unit.applyDefBuff(6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                    }
+                }
+                break;
             case PassiveC.VisionOfArcadia:
                 if (this.__isThereAnyAllyUnit(skillOwner, x => isWeaponTypeBreathOrBeast(x.weaponType))) {
                     for (let unit of this.__findMaxStatusUnits(
