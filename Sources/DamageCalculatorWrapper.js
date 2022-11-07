@@ -8455,6 +8455,11 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.FloweryScroll:
+                    if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit)) {
+                        targetUnit.battleContext.isVantageActivatable = true;
+                    }
+                    break;
                 case Weapon.RazingBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {

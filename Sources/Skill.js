@@ -1428,6 +1428,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=UFUWblZaLc8
     // https://www.youtube.com/watch?v=fjnDwCpDu_g
     RiteOfSouls: 2240, // 魂の秘儀
+
+    // 超英雄 竜騎の忍たち
+    // https://www.youtube.com/watch?v=VUff_9pScjA
+    // https://www.youtube.com/watch?v=dUleRGz3uqs
+    FloweryScroll: 2247, // 艶花忍法帳
 };
 
 const Support = {
