@@ -2051,6 +2051,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ChaosManifest] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(5, 0, 0, 5);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArdentDurandal] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -7232,11 +7239,6 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
-            case Weapon.ChaosManifest:
-                if (enemyUnit.hasNegativeStatusEffect()) {
-                    targetUnit.atkSpur += 6;
-                }
-                break;
             case Weapon.HigasaPlus:
             case Weapon.TairyoNoYuPlus:
             case Weapon.KaigaraNoNaifuPlus:
@@ -8500,6 +8502,29 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.ChaosManifest:
+                    if (!targetUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.atkSpur += 6;
+                        }
+                    } else {
+                        // <錬成効果>
+                        if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.addSpurs(6, 0, 0, 5);
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            let debuffTotal = enemyUnit.debuffTotal;
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                                debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                            }
+                            let ratio = debuffTotal * 2.0 / 100.0;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            // <特殊錬成効果>
+                        }
+                    }
+                    break;
                 case Weapon.FloweryScroll:
                     if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit)) {
                         targetUnit.battleContext.isVantageActivatable = true;
@@ -9508,6 +9533,17 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.ChaosManifest:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit) && !isPrecombat) {
+                        let debuffTotal = defUnit.debuffTotal;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                            debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                        }
+                        atkUnit.battleContext.additionalDamage += Math.abs(debuffTotal);
+                    }
+                }
+                break;
             case Weapon.ArdentDurandal:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
@@ -10532,9 +10568,16 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Gyorru:
-                case Weapon.ChaosManifest:
                     if (defUnit.hasNegativeStatusEffect()) {
                         ++followupAttackPriority;
+                    }
+                    break;
+                case Weapon.ChaosManifest:
+                    if (!atkUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (defUnit.hasNegativeStatusEffect()) {
+                            ++followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.Sekuvaveku:
