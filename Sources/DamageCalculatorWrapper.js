@@ -2051,6 +2051,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.SealDef4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.defSpur -= 4;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SealRes4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.resSpur -= 4;
         }
@@ -8374,6 +8377,12 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.passiveB) {
+            case PassiveB.SealDef4:
+                if (!enemyUnit.battleContext.invalidatesOwnDefDebuff) {
+                    let amount = Math.max(7 - enemyUnit.defDebuffTotal, 0);
+                    enemyUnit.defSpur -= amount;
+                }
+                break;
             case PassiveB.SealRes4:
                 if (!enemyUnit.battleContext.invalidatesOwnResDebuff) {
                     let amount = Math.max(7 - enemyUnit.resDebuffTotal, 0);
@@ -8970,6 +8979,11 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.SealDef4:
+                    if (enemyUnit.defDebuffTotal > 0) {
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
                 case PassiveB.SealRes4:
                     if (enemyUnit.resDebuffTotal > 0) {
                         targetUnit.battleContext.reducesCooldownCount = true;
