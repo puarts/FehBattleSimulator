@@ -8517,11 +8517,8 @@ class DamageCalculatorWrapper {
                             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
                                 debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
                             }
-                            let ratio = debuffTotal * 2.0 / 100.0;
+                            let ratio = -1 * debuffTotal * 2.0 / 100.0;
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
-                        }
-                        if (targetUnit.isWeaponSpecialRefined) {
-                            // <特殊錬成効果>
                         }
                     }
                     break;
