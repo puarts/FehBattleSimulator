@@ -2051,6 +2051,19 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.LanceOfHeroics] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = Math.min(dist, 4) * 2;
+                targetUnit.addAllSpur(amount);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SnideBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(5, 5, 0, 0);
@@ -7834,6 +7847,21 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.LanceOfHeroics:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
+                        let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
+                        let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
+                        let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
+                        targetUnit.atkSpur += atkAdd;
+                        targetUnit.spdSpur += spdAdd;
+                        targetUnit.defSpur += defAdd;
+                        targetUnit.resSpur += resAdd;
+                    }
+                }
+                break;
             case Weapon.SnideBow: {
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {

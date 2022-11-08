@@ -1440,6 +1440,7 @@ const Weapon = {
 
     // 2022年11月 武器錬成
     SnideBow: 2246, // 冷笑の遊弓
+    LanceOfHeroics: 2245, // 正義の直槍
 };
 
 const Support = {
@@ -3144,6 +3145,7 @@ function isPrecombatSpecial(special) {
 
 // 二分探索したいだけで値はどうでもいいので0を入れておきます
 const TeleportationSkillDict = {};
+TeleportationSkillDict[Weapon.LanceOfHeroics] = 0;
 TeleportationSkillDict[Weapon.FlowerLance] = 0;
 TeleportationSkillDict[Weapon.FujinYumi] = 0;
 TeleportationSkillDict[Weapon.Gurimowaru] = 0;
