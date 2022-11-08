@@ -5873,6 +5873,13 @@ class DamageCalculatorWrapper {
             if (self.isOddTurn || enemyUnit.battleContext.restHpPercentage < 100) {
                 targetUnit.addAllSpur(4);
             }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    let amount = Math.trunc(targetUnit.getAtkInPrecombat() * 0.1);
+                    enemyUnit.addSpurs(-amount, 0, -amount, 0);
+                }
+            }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TsubakiNoKinnagitou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() - 3) {
@@ -11222,6 +11229,14 @@ class DamageCalculatorWrapper {
 
     __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
         switch (targetUnit.weapon) {
+            case Weapon.MagetsuNoSaiki:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.isOddTurn || enemyUnit.battleContext.restHpPercentage < 100) {
+                        let percentage = enemyUnit.battleContext.canFollowupAttack ? 60 : 30;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
+                    }
+                }
+                break;
             case Weapon.StarlightStone:
                 if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                     if (enemyUnit.battleContext.canFollowupAttack) {

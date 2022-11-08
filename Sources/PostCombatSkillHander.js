@@ -315,6 +315,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MagetsuNoSaiki:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            targetUnit.reserveHeal(7);
+                        }
+                    }
+                    break;
                 case Weapon.ArcaneGrima:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);
