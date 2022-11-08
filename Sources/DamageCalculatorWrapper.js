@@ -5788,16 +5788,48 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.BoranNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
                 let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x => true);
-                if (count === 0) {
-                    targetUnit.addAllSpur(6);
+                let amount = 0;
+                switch (count) {
+                    case 0:
+                        amount = 6;
+                        break;
+                    case 1:
+                        amount = 4;
+                        break;
+                    case 2:
+                        amount = 2;
+                        break;
                 }
-                else if (count === 1) {
-                    targetUnit.addAllSpur(4);
+                targetUnit.addAllSpur(amount);
+            } else {
+                // <錬成効果>
+                let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x => true);
+                let amount = 0;
+                switch (count) {
+                    case 0:
+                        amount = 7;
+                        break;
+                    case 1:
+                        amount = 5;
+                        break;
+                    case 2:
+                        amount = 3;
+                        break;
                 }
-                else if (count === 2) {
-                    targetUnit.addAllSpur(2);
+                targetUnit.addAllSpur(amount);
+                if (count <= 1) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let percentage = Math.max(30 - count * 10, 0);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
+                    }
                 }
             }
         };
@@ -8509,6 +8541,19 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.BoranNoBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            let atk = targetUnit.getEvalAtkInCombat(enemyUnit);
+                            let res = enemyUnit.getEvalResInCombat(targetUnit);
+                            let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x => true);
+                            if (atk > res) {
+                                let percentage = Math.max(30 - count * 10, 0);
+                                targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc((atk - res) * percentage / 100.0);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.ChaosManifest:
                     if (!targetUnit.isWeaponRefined) {
                         // <通常効果>
