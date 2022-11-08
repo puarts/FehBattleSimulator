@@ -1437,6 +1437,9 @@ const Weapon = {
     FlamefrostBow: 2251, // 炎と氷の王女の輝弓
     WyvernYumiPlus: 2253, // 竜忍の弓+
     WyvernKatanaPlus: 2255, // 竜忍の剣+
+
+    // 2022年11月 武器錬成
+    SnideBow: 2246, // 冷笑の遊弓
 };
 
 const Support = {
