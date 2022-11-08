@@ -1441,6 +1441,9 @@ const Weapon = {
     // 2022年11月 武器錬成
     SnideBow: 2246, // 冷笑の遊弓
     LanceOfHeroics: 2245, // 正義の直槍
+
+    // ガングレト
+    ArcaneDownfall: 2257, // 魔器・絶死ヘル
 };
 
 const Support = {

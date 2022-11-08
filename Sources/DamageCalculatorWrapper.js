@@ -2051,6 +2051,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneDownfall] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.LanceOfHeroics] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(4);
