@@ -517,6 +517,11 @@ class DamageCalculatorWrapper {
             }
         }
         switch (targetUnit.weapon) {
+            case Weapon.SpiritForestWrit:
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    return true;
+                }
+                break;
             case Weapon.SplashyBucketPlus:
                 return true;
             case Weapon.Aureola:
@@ -2046,6 +2051,32 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ChaosManifest] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(5, 0, 0, 5);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ArdentDurandal] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SealDef4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.defSpur -= 4;
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SealRes4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.resSpur -= 4;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.Duality] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -2343,7 +2374,6 @@ class DamageCalculatorWrapper {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 enemyUnit.addSpurs(-6, 0, 0, -6);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
-                targetUnit.battleContext.refersMinOfDefOrRes = true;
                 let diff = targetUnit.getResInPrecombat() - enemyUnit.getResInPrecombat();
                 if (diff >= 1) {
                     let amount = Math.min(Math.trunc(diff * 0.8), 12);
@@ -7209,11 +7239,6 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
-            case Weapon.ChaosManifest:
-                if (enemyUnit.hasNegativeStatusEffect()) {
-                    targetUnit.atkSpur += 6;
-                }
-                break;
             case Weapon.HigasaPlus:
             case Weapon.TairyoNoYuPlus:
             case Weapon.KaigaraNoNaifuPlus:
@@ -7759,6 +7784,20 @@ class DamageCalculatorWrapper {
             targetUnit.resSpur += resAdd;
         }
         switch (targetUnit.weapon) {
+            case Weapon.FlamefrostBow: {
+                let maxBuff = enemyUnit.getBuffTotalInCombat(targetUnit);
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                    maxBuff = Math.max(unit.buffTotal, maxBuff);
+                }
+
+                let amount = Math.trunc(maxBuff * 0.7);
+                targetUnit.addSpurs(amount, 0, amount, amount);
+            }
+                break;
+            case Weapon.WyvernOno:
+                targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+                break;
             case Weapon.DefiersLancePlus:
                 if (enemyUnit.battleContext.restHpPercentage >= 75) {
                     targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
@@ -8353,6 +8392,18 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.passiveB) {
+            case PassiveB.SealDef4:
+                if (!enemyUnit.battleContext.invalidatesOwnDefDebuff) {
+                    let amount = Math.max(7 - enemyUnit.defDebuffTotal, 0);
+                    enemyUnit.defSpur -= amount;
+                }
+                break;
+            case PassiveB.SealRes4:
+                if (!enemyUnit.battleContext.invalidatesOwnResDebuff) {
+                    let amount = Math.max(7 - enemyUnit.resDebuffTotal, 0);
+                    enemyUnit.resSpur -= amount;
+                }
+                break;
             case PassiveB.BindingNecklace:
                 if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                     targetUnit.addAllSpur(2);
@@ -8451,6 +8502,31 @@ class DamageCalculatorWrapper {
                 }
             }
             switch (targetUnit.weapon) {
+                case Weapon.ChaosManifest:
+                    if (!targetUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.atkSpur += 6;
+                        }
+                    } else {
+                        // <錬成効果>
+                        if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.addSpurs(6, 0, 0, 5);
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            let debuffTotal = enemyUnit.debuffTotal;
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                                debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                            }
+                            let ratio = -1 * debuffTotal * 2.0 / 100.0;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
+                        }
+                    }
+                    break;
+                case Weapon.FloweryScroll:
+                    if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit)) {
+                        targetUnit.battleContext.isVantageActivatable = true;
+                    }
+                    break;
                 case Weapon.RazingBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -8938,6 +9014,16 @@ class DamageCalculatorWrapper {
 
             }
             switch (targetUnit.passiveB) {
+                case PassiveB.SealDef4:
+                    if (enemyUnit.defDebuffTotal > 0) {
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
+                case PassiveB.SealRes4:
+                    if (enemyUnit.resDebuffTotal > 0) {
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                    }
+                    break;
                 case PassiveB.SpdPreempt3:
                     if (enemyUnit.battleContext.initiatesCombat && enemyUnit.isRangedWeaponType()) {
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
@@ -9444,6 +9530,25 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (atkUnit.weapon) {
+            case Weapon.ChaosManifest:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit) && !isPrecombat) {
+                        let debuffTotal = defUnit.debuffTotal;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                            debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                        }
+                        atkUnit.battleContext.additionalDamage += Math.abs(debuffTotal);
+                    }
+                }
+                break;
+            case Weapon.ArdentDurandal:
+                if (atkUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let def = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);
+                    }
+                }
+                break;
             case Weapon.RiteOfSouls:
                 if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                     let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
@@ -10460,9 +10565,16 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Gyorru:
-                case Weapon.ChaosManifest:
                     if (defUnit.hasNegativeStatusEffect()) {
                         ++followupAttackPriority;
+                    }
+                    break;
+                case Weapon.ChaosManifest:
+                    if (!atkUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (defUnit.hasNegativeStatusEffect()) {
+                            ++followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.Sekuvaveku:
@@ -11987,6 +12099,9 @@ class DamageCalculatorWrapper {
                             break;
                     }
                     switch (unit.passiveC) {
+                        case PassiveC.AtkDefHold:
+                            targetUnit.addSpurs(-4, 0, -4, 0);
+                            break;
                         case PassiveC.AtkResHold:
                             targetUnit.addSpurs(-4, 0, 0, -4);
                             break;

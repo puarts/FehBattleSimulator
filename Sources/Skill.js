@@ -1428,6 +1428,15 @@ const Weapon = {
     // https://www.youtube.com/watch?v=UFUWblZaLc8
     // https://www.youtube.com/watch?v=fjnDwCpDu_g
     RiteOfSouls: 2240, // 魂の秘儀
+
+    // 超英雄 竜騎の忍たち
+    // https://www.youtube.com/watch?v=VUff_9pScjA
+    // https://www.youtube.com/watch?v=dUleRGz3uqs
+    FloweryScroll: 2247, // 艶花忍法帳
+    WyvernOno: 2249, // 愛竜への情の竜斧
+    FlamefrostBow: 2251, // 炎と氷の王女の輝弓
+    WyvernYumiPlus: 2253, // 竜忍の弓+
+    WyvernKatanaPlus: 2255, // 竜忍の剣+
 };
 
 const Support = {
@@ -2039,9 +2048,11 @@ const PassiveB = {
     SealDef1: 1459,
     SealDef2: 1460,
     SealDef3: 609, // 守備封じ3
+    SealDef4: 2252, // 守備封じ4
     SealRes1: 1461,
     SealRes2: 1462,
     SealRes3: 610, // 魔防封じ3
+    SealRes4: 2248, // 魔防封じ4
     SealAtkSpd1: 1463,
     SealAtkSpd2: 611, // 攻撃速さ封じ2
     SealAtkDef1: 1464,
@@ -2422,6 +2433,7 @@ const PassiveC = {
     // 牽制
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
     AtkDefRein3: 1519, // 攻撃守備の牽制3
+    AtkDefHold: 2250, // 攻撃守備の大牽制
     AtkResRein3: 1490, // 攻撃魔防の牽制3
     AtkResHold: 2084, // 攻撃魔防の大牽制
     SpdDefRein3: 1485, // 速さ守備の牽制3
@@ -2478,6 +2490,7 @@ const PassiveC = {
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神
     ChaosNamed: 868, // 我が名は混沌
+    ChaosNamedPlus: 2244, // 我が名は混沌・神
     SurtrsMenace: 767, // 炎王の威嚇
     SurtrsPortent: 1792, // 炎王の脅嚇
     WithEveryone: 754, // みんなと一緒に
@@ -2492,6 +2505,7 @@ const PassiveC = {
     UpheavalPlus: 2070, // メガクェイク・神
     WoefulUpheaval: 2219, // 試練メガクェイク
     VisionOfArcadia: 933, // 理想郷となるように
+    VisionOfArcadia2: 2243, // 理想郷となる…・承
     OstiasPulse: 753, // オスティアの鼓動
     OstiasPulse2: 1828, // 盟主の鼓動・承
     Jagan: 811, // 邪眼
