@@ -2083,6 +2083,7 @@ class BattleMap {
                 case PassiveB.Kyuen2:
                 case PassiveB.Kyuen3:
                 case Weapon.FlowerLance:
+                case Weapon.LanceOfHeroics:
                     for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                         let threshold = 0;
                         switch (skillId) {
@@ -2093,6 +2094,7 @@ class BattleMap {
                                 threshold = 50;
                                 break;
                             case Weapon.FlowerLance:
+                            case Weapon.LanceOfHeroics:
                                 threshold = 80;
                                 break;
                         }
