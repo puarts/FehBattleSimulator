@@ -5887,7 +5887,8 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SyuryouNoEijin] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
                 let atk = false;
                 let spd = false;
                 let def = false;
@@ -5906,10 +5907,64 @@ class DamageCalculatorWrapper {
                         res = true;
                     }
                 }
-                if (atk) { targetUnit.atkSpur += 5; }
-                if (spd) { targetUnit.spdSpur += 5; }
-                if (def) { targetUnit.defSpur += 5; }
-                if (res) { targetUnit.resSpur += 5; }
+                if (atk) {
+                    targetUnit.atkSpur += 5;
+                }
+                if (spd) {
+                    targetUnit.spdSpur += 5;
+                }
+                if (def) {
+                    targetUnit.defSpur += 5;
+                }
+                if (res) {
+                    targetUnit.resSpur += 5;
+                }
+            } else {
+                // <錬成効果>
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(4);
+                }
+                let atk = false;
+                let spd = false;
+                let def = false;
+                let res = false;
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3, false)) {
+                    if (unit.getAtkInPrecombat() > targetUnit.getAtkInPrecombat() - 4) {
+                        atk = true;
+                    }
+                    if (unit.getSpdInPrecombat() > targetUnit.getSpdInPrecombat() - 4) {
+                        spd = true;
+                    }
+                    if (unit.getDefInPrecombat() > targetUnit.getDefInPrecombat() - 4) {
+                        def = true;
+                    }
+                    if (unit.getResInPrecombat() > targetUnit.getResInPrecombat() - 4) {
+                        res = true;
+                    }
+                }
+                if (atk) {
+                    targetUnit.atkSpur += 6;
+                }
+                if (spd) {
+                    targetUnit.spdSpur += 6;
+                }
+                if (def) {
+                    targetUnit.defSpur += 6;
+                }
+                if (res) {
+                    targetUnit.resSpur += 6;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (enemyUnit.battleContext.restHpPercentage >= 100 && targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
+                        }
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.BerukaNoSatsufu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -10897,6 +10952,13 @@ class DamageCalculatorWrapper {
                 break;
         }
         switch (targetUnit.weapon) {
+            case Weapon.SyuryouNoEijin:
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                }
+                break;
             case Weapon.ZekkaiNoSoukyu:
                 if (targetUnit.isWeaponRefined) {
                     if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
