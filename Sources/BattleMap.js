@@ -2835,30 +2835,30 @@ class BattleMap {
         if (!this.isIconOverlayDisabled) {
             let shadowCss = this.__getShadowCss();
             if (this.isExpansionUnitFunc != null && this.isExpansionUnitFunc(unit)) {
-                cell.innerText += "<span style='position:absolute;bottom:0;right:0;'><img src='"
+                cell.innerText += "<span style='position:absolute;bottom:0;right:0;pointer-events: none;'><img src='"
                     + g_imageRootPath + "ExpansionUnit.png" + "' style='width:15px' ></span>";
             }
 
-            cell.innerText += "<span style='font-size:10px;color:" + color + ";position:absolute;bottom:0;left:0;" + shadowCss + ";'>"
+            cell.innerText += "<span style='font-size:10px;color:" + color + ";position:absolute;bottom:0;left:0;" + shadowCss + ";pointer-events: none'>"
                 + unit.hp + "</span>";
             if (unit.maxSpecialCount > 0) {
                 let specialCount = unit.specialCount;
                 if (unit.specialCount == 0) {
                     specialCount = "<img src='" + g_imageRootPath + "Special.png" + "' style='width:12px;height:12px'>";
                 }
-                cell.innerText += "<span style='font-size:10px;color:#ffbbee;position:absolute;bottom:12px;left:0;" + shadowCss + ";'>"
+                cell.innerText += "<span style='font-size:10px;color:#ffbbee;position:absolute;bottom:12px;left:0;" + shadowCss + ";pointer-events: none;'>"
                     + specialCount + "</span>";
             }
 
             // 隊長マーク
             if (unit.isCaptain) {
                 const captainIcon = g_imageRootPath + "CaptainIcon.webp";
-                cell.innerText += `<span style='position:absolute;top:0;right:0;${shadowCss};'><img src='${captainIcon}' style='height:11px'></span>`;
+                cell.innerText += `<span style='position:absolute;top:0;right:0;${shadowCss};pointer-events: none;'><img src='${captainIcon}' style='height:11px;'></span>`;
             }
 
             // バフ、デバフ
             if (unit.isBuffed || unit.isDebuffed) {
-                cell.innerText += "<span style='position:absolute;bottom:0;right:0;" + shadowCss + ";'>"
+                cell.innerText += "<span style='position:absolute;bottom:0;right:0;" + shadowCss + ";pointer-events: none;'>"
                 if (unit.isBuffed) {
                     cell.innerText += "<img src='" + g_imageRootPath + "BuffIcon.png" + "' style='height:12px'>";
                 }
@@ -2870,7 +2870,7 @@ class BattleMap {
 
             // 状態異常
             if (unit.hasAnyStatusEffect) {
-                cell.innerText += "<span style='position:absolute;top:0;right:0;" + shadowCss + ";'>"
+                cell.innerText += "<span style='position:absolute;top:0;right:0;" + shadowCss + ";pointer-events: none;'>"
                 for (let statusEffect of unit.statusEffects) {
                     cell.innerText += "<img src='" + statusEffectTypeToIconFilePath(statusEffect) + "' style='height:11px'>";
                 }
