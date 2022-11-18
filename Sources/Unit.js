@@ -5124,6 +5124,7 @@ class Unit extends BattleMapElement {
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case PassiveB.MurderousLion:
+                case PassiveB.AtkSpdNearTrace3:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.AtkResNearTrace3:
                 case PassiveB.SpdDefNearTrace3:

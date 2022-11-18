@@ -4557,6 +4557,10 @@ class DamageCalculatorWrapper {
                 }
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkSpdNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 3;
+            enemyUnit.spdSpur -= 3;
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.atkSpur -= 3;
             enemyUnit.defSpur -= 3;
