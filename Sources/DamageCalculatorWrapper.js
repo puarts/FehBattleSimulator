@@ -2624,6 +2624,9 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(0, -4, -4, 0);
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdResBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(0, -4, 0, -4);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.IlluminatingHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
