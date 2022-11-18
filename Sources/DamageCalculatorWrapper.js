@@ -2437,11 +2437,13 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
                 targetUnit.addSpurs(7, 7, 0, 0);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
                 targetUnit.addSpurs(7, 0, 0, 7);
             }
         }
@@ -6317,6 +6319,7 @@ class DamageCalculatorWrapper {
                     // <特殊錬成効果>
                     if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                         if (isWeaponTypeBreath(enemyUnit.weaponType)) {
                             targetUnit.battleContext.canCounterattackToAllDistance = true;
                         }
