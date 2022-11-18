@@ -131,6 +131,19 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.CoyotesLance: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                    found = true;
+                    unit.applyBuffs(6, 6, 0, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                }
+                if (found) {
+                    skillOwner.applyBuffs(6, 6, 0, 0);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                }
+            }
+                break;
             case Weapon.RiteOfSouls:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                     if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||

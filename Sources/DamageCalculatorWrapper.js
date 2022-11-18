@@ -2051,6 +2051,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CoyotesLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                let amount = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3) * 3;
+                targetUnit.addSpurs(amount, amount, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.QuickRiposte4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
         }

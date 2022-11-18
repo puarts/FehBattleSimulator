@@ -1442,8 +1442,9 @@ const Weapon = {
     SnideBow: 2246, // 冷笑の遊弓
     LanceOfHeroics: 2245, // 正義の直槍
 
-    // ガングレト
+    // 特別召喚 新英雄&開花英雄&魔器ガングレト
     ArcaneDownfall: 2257, // 魔器・絶死ヘル
+    CoyotesLance: 2262, // 草原の狼の白槍
 };
 
 const Support = {
