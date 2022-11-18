@@ -1443,9 +1443,12 @@ const Weapon = {
     LanceOfHeroics: 2245, // 正義の直槍
 
     // 特別召喚 新英雄&開花英雄&魔器ガングレト
+    // https://www.youtube.com/watch?v=K3j2clDw45o
+    // https://www.youtube.com/watch?v=Ag-JbZ0BVD8
     ArcaneDownfall: 2257, // 魔器・絶死ヘル
     CoyotesLance: 2262, // 草原の狼の白槍
     RespitePlus: 2265, // サンクチュアリ+
+    AwokenBreath: 2258, // 目覚めし竜のブレス
 };
 
 const Support = {

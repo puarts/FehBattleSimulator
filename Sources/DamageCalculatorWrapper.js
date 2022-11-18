@@ -2051,6 +2051,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AwokenBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidateAllBuffs();
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.CoyotesLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -8764,6 +8771,7 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
+                case Weapon.AwokenBreath:
                 case Weapon.RemoteBreath:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         if (isNormalAttackSpecial(enemyUnit.special)) {
