@@ -1445,6 +1445,7 @@ const Weapon = {
     // 特別召喚 新英雄&開花英雄&魔器ガングレト
     ArcaneDownfall: 2257, // 魔器・絶死ヘル
     CoyotesLance: 2262, // 草原の狼の白槍
+    RespitePlus: 2265, // サンクチュアリ+
 };
 
 const Support = {

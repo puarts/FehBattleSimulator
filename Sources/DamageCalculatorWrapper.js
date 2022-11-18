@@ -7534,6 +7534,7 @@ class DamageCalculatorWrapper {
                             targetUnit.battleContext.invalidateAllOwnDebuffs();
                         }
                         break;
+                    case Weapon.RespitePlus:
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
                         break;
@@ -11754,6 +11755,7 @@ class DamageCalculatorWrapper {
                     targetUnit.spdSpur += 4;
                 }
                 break;
+            case Weapon.RespitePlus:
             case Weapon.TannenbatonPlus:
                 targetUnit.defSpur += 2;
                 targetUnit.resSpur += 2;
