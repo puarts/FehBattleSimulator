@@ -2051,6 +2051,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.QuickRiposte4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneDownfall] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -10205,6 +10208,11 @@ class DamageCalculatorWrapper {
                     case PassiveB.QuickRiposte3:
                         if (defUnit.battleContext.restHpPercentage >= 70) {
                             // this.writeDebugLogLine("HP" + defUnit.battleContext.restHpPercentage + "%で切り返し発動、" + defUnit.getNameWithGroup() + "は絶対追撃");
+                            ++followupAttackPriority;
+                        }
+                        break;
+                    case PassiveB.QuickRiposte4:
+                        if (defUnit.battleContext.restHpPercentage >= 25) {
                             ++followupAttackPriority;
                         }
                         break;
