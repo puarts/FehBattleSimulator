@@ -2572,6 +2572,7 @@ class Unit extends BattleMapElement {
         let hasSkills =
             this.passiveB === PassiveB.AtkDefBulwark3 ||
             this.passiveB === PassiveB.SpdDefBulwark3 ||
+            this.passiveB === PassiveB.SpdResBulwark3 ||
             this.passiveB === PassiveB.DetailedReport;
         return hasSkills && moveUnit.isRangedWeaponType();
     }
@@ -2582,6 +2583,7 @@ class Unit extends BattleMapElement {
             || (this.passiveB == PassiveB.DetailedReport)
             || (this.passiveB == PassiveB.AtkDefBulwark3)
             || (this.passiveB == PassiveB.SpdDefBulwark3)
+            || (this.passiveB == PassiveB.SpdResBulwark3)
             || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
     }
 
@@ -5124,6 +5126,7 @@ class Unit extends BattleMapElement {
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case PassiveB.MurderousLion:
+                case PassiveB.AtkSpdNearTrace3:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.AtkResNearTrace3:
                 case PassiveB.SpdDefNearTrace3:

@@ -6166,6 +6166,7 @@ class BattleSimmulatorBase {
                 case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                 case Weapon.BlazingPolearms:
+                case PassiveB.AtkSpdNearTrace3:
                 case PassiveB.AtkDefNearTrace3:
                 case PassiveB.AtkResNearTrace3:
                 case PassiveB.SpdDefNearTrace3:

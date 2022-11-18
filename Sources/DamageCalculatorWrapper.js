@@ -890,6 +890,18 @@ class DamageCalculatorWrapper {
                 }
                 break;
         }
+        switch (defUnit.passiveC) {
+            case PassiveC.AllTogether: {
+                let count = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                    count++;
+                }
+                let percentage = Math.min(count * 40, 80);
+                let ratio = percentage / 100.0;
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+            }
+                break;
+        }
 
         switch (defUnit.special) {
             case Special.VitalAstra:
@@ -2051,6 +2063,35 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveC.AllTogether] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+            }
+            let count = 0;
+            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                count++;
+            }
+            let percentage = Math.min(count * 20, 40);
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AwokenBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidateAllBuffs();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CoyotesLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                let amount = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3) * 3;
+                targetUnit.addSpurs(amount, amount, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.QuickRiposte4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.25, enemyUnit);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneDownfall] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -2437,12 +2478,20 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
                 targetUnit.addSpurs(7, 7, 0, 0);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
                 targetUnit.addSpurs(7, 0, 0, 7);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.SpdResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                targetUnit.addSpurs(0, 7, 0, 7);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.RemoteBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -2597,6 +2646,9 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(0, -4, -4, 0);
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpdResBulwark3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(0, -4, 0, -4);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IlluminatingHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -4544,6 +4596,10 @@ class DamageCalculatorWrapper {
                 }
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkSpdNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 3;
+            enemyUnit.spdSpur -= 3;
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefNearTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.atkSpur -= 3;
             enemyUnit.defSpur -= 3;
@@ -6317,6 +6373,7 @@ class DamageCalculatorWrapper {
                     // <特殊錬成効果>
                     if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
                         if (isWeaponTypeBreath(enemyUnit.weaponType)) {
                             targetUnit.battleContext.canCounterattackToAllDistance = true;
                         }
@@ -7516,6 +7573,7 @@ class DamageCalculatorWrapper {
                             targetUnit.battleContext.invalidateAllOwnDebuffs();
                         }
                         break;
+                    case Weapon.RespitePlus:
                     case Weapon.TannenbatonPlus:
                         targetUnit.battleContext.reducesCooldownCount = true;
                         break;
@@ -8745,6 +8803,7 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
+                case Weapon.AwokenBreath:
                 case Weapon.RemoteBreath:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         if (isNormalAttackSpecial(enemyUnit.special)) {
@@ -10205,6 +10264,11 @@ class DamageCalculatorWrapper {
                             ++followupAttackPriority;
                         }
                         break;
+                    case PassiveB.QuickRiposte4:
+                        if (defUnit.battleContext.restHpPercentage >= 25) {
+                            ++followupAttackPriority;
+                        }
+                        break;
                     case PassiveB.DragonsIre3:
                         if (defUnit.battleContext.restHpPercentage >= 50) {
                             ++followupAttackPriority;
@@ -11580,6 +11644,9 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of [allyUnit.passiveC, allyUnit.passiveS, allyUnit.getCaptainSkill()]) {
             switch (skillId) {
+                case PassiveC.AllTogether:
+                    targetUnit.addAllSpur(4);
+                    break;
                 case Captain.Effulgence:
                     targetUnit.addSpurs(4, 4, 0, 0);
                     break;
@@ -11731,6 +11798,7 @@ class DamageCalculatorWrapper {
                     targetUnit.spdSpur += 4;
                 }
                 break;
+            case Weapon.RespitePlus:
             case Weapon.TannenbatonPlus:
                 targetUnit.defSpur += 2;
                 targetUnit.resSpur += 2;

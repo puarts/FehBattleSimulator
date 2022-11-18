@@ -336,6 +336,7 @@ class PostCombatSkillHander {
                     break;
                 case PassiveB.AtkDefBulwark3:
                 case PassiveB.SpdDefBulwark3:
+                case PassiveB.SpdResBulwark3:
                     targetUnit.reserveHeal(7);
                     break;
                 case Weapon.EbonBolverk:

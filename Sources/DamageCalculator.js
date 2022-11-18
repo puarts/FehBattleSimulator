@@ -331,13 +331,6 @@ class DamageCalculator {
                         atkUnit.atkSpur += Math.trunc(atk * 0.15);
                     }
                     break;
-                case PassiveA.AtkSpdFinish4:
-                case PassiveA.AtkResFinish4:
-                    if (atkUnit.isSpecialActivated || atkUnit.tmpSpecialCount === 0 && !isPrecombat) {
-                        atkUnit.battleContext.healedHpByAttackPerAttack += 7;
-                        fixedAddDamage += 5;
-                    }
-                    break;
                 case Weapon.HurricaneDagger:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
@@ -843,6 +836,7 @@ class DamageCalculator {
                 }
 
                 if (isDefenderSpecialActivated) {
+                    defUnit.battleContext.isSpecialActivated = true;
                     if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
                         defUnit.passiveB === PassiveB.HardyFighter3) {
                         damageReductionValue += 5;
@@ -958,17 +952,22 @@ class DamageCalculator {
     __applySkillEffectsPerAttack(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AtkSpdFinish4:
+                case PassiveA.AtkResFinish4:
+                case PassiveA.SpdResFinish4:
                 case PassiveA.VerdictOfSacae:
                     if (atkUnit.battleContext.passiveASkillCondSatisfied) {
-                        if (atkUnit.isSpecialCharged || atkUnit.isSpecialActivated) {
+                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
                             atkUnit.battleContext.additionalDamagePerAttack += 5;
                             atkUnit.battleContext.healedHpByAttackPerAttack += 7;
                         }
                     }
-                    break
+                    break;
                 case Special.GodlikeReflexes:
                     if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) - 4) {
-                        if (atkUnit.isSpecialCharged || atkUnit.isSpecialActivated) {
+                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || atkUnit.isSpecialActivated) {
                             atkUnit.battleContext.additionalDamagePerAttack += Math.trunc(atkUnit.getSpdInCombat(defUnit) * 0.15);
                         }
                     }

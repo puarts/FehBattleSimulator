@@ -1442,8 +1442,13 @@ const Weapon = {
     SnideBow: 2246, // 冷笑の遊弓
     LanceOfHeroics: 2245, // 正義の直槍
 
-    // ガングレト
+    // 特別召喚 新英雄&開花英雄&魔器ガングレト
+    // https://www.youtube.com/watch?v=K3j2clDw45o
+    // https://www.youtube.com/watch?v=Ag-JbZ0BVD8
     ArcaneDownfall: 2257, // 魔器・絶死ヘル
+    CoyotesLance: 2262, // 草原の狼の白槍
+    RespitePlus: 2265, // サンクチュアリ+
+    AwokenBreath: 2258, // 目覚めし竜のブレス
 };
 
 const Support = {
@@ -1924,6 +1929,7 @@ const PassiveA = {
     // 秘奥
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
+    SpdResFinish4: 2259, // 速さ魔防の秘奥4
 };
 
 const PassiveB = {
@@ -1931,6 +1937,7 @@ const PassiveB = {
     QuickRiposte1: 1254, // 切り返し1
     QuickRiposte2: 1255, // 切り返し2
     QuickRiposte3: 599, // 切り返し3
+    QuickRiposte4: 2264, // 切り返し4
     DragonWall3: 1621, // 竜鱗障壁3
     TrueDragonWall: 2078, // 真竜鱗障壁
     NewDivinity: 2174, // 新たなる神竜王
@@ -2197,6 +2204,7 @@ const PassiveB = {
     AssuredRebirth: 2066, // 我が復活は成った
 
     // 近影、遠影
+    AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
     AtkDefNearTrace3: 1719, // 攻撃守備の近影3
     AtkResNearTrace3: 2143, // 攻撃魔防の近影3
     SpdDefNearTrace3: 1695, // 速さ守備の近影3
@@ -2222,6 +2230,7 @@ const PassiveB = {
     // 防壁
     AtkDefBulwark3: 2150, // 攻撃守備の防壁3
     SpdDefBulwark3: 2202, // 速さ守備の防壁3
+    SpdResBulwark3: 2260, // 速さ魔防の防壁3
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3
@@ -2534,6 +2543,7 @@ const PassiveC = {
     DarklingGuardian: 2097, // 闇の樹海の守護竜
     OpenedDomain: 2151, // みんなが繋がる世界
     HeirToLight: 2171, // 光をつぐもの
+    AllTogether: 2261, // ずっとみんなと一緒
 };
 
 const PassiveS = {
