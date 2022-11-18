@@ -890,6 +890,18 @@ class DamageCalculatorWrapper {
                 }
                 break;
         }
+        switch (defUnit.passiveC) {
+            case PassiveC.AllTogether: {
+                let count = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                    count++;
+                }
+                let percentage = Math.min(count * 40, 80);
+                let ratio = percentage / 100.0;
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+            }
+                break;
+        }
 
         switch (defUnit.special) {
             case Special.VitalAstra:
@@ -2051,6 +2063,17 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveC.AllTogether] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+            }
+            let count = 0;
+            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                count++;
+            }
+            let percentage = Math.min(count * 20, 40);
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AwokenBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAllSpur(5);
@@ -11621,6 +11644,9 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of [allyUnit.passiveC, allyUnit.passiveS, allyUnit.getCaptainSkill()]) {
             switch (skillId) {
+                case PassiveC.AllTogether:
+                    targetUnit.addAllSpur(4);
+                    break;
                 case Captain.Effulgence:
                     targetUnit.addSpurs(4, 4, 0, 0);
                     break;

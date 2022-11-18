@@ -2543,6 +2543,7 @@ const PassiveC = {
     DarklingGuardian: 2097, // 闇の樹海の守護竜
     OpenedDomain: 2151, // みんなが繋がる世界
     HeirToLight: 2171, // 光をつぐもの
+    AllTogether: 2261, // ずっとみんなと一緒
 };
 
 const PassiveS = {
