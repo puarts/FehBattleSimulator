@@ -101,7 +101,15 @@ class BeginningOfTurnSkillHandler {
      */
     applyTransformSkillForBeginningOfTurn(skillOwner) {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
-            if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
+            let hasTransformSkills = false;
+            for (let skillId of skillOwner.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveB.BeastAgility3:
+                        hasTransformSkills = true;
+                        break;
+                }
+            }
+            if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner) || hasTransformSkills) {
                 skillOwner.isTransformed = true;
                 if (skillOwner.moveType === MoveType.Flying &&
                     isWeaponTypeBeast(skillOwner.weaponType) &&

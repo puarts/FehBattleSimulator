@@ -2241,6 +2241,9 @@ const PassiveB = {
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3
+
+    // 絶対化身
+    BeastAgility3: 2270, // 絶対化身・敏捷3
 };
 
 const PassiveC = {
