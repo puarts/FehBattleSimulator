@@ -852,6 +852,7 @@ class DamageCalcData {
             Special.DevinePulse, // 天刻の拍動(速さの25%、次の自分の攻撃のダメージ+速さの20%)
             Special.SublimeHeaven, // 覇天(+攻撃25%、獣なら50%)
             // Special.HolyKnightAura, // グランベルの聖騎士(+攻撃25%)
+            Special.Enclosure, // 閉界(攻撃+25%)
             Special.LunaFlash, // 月光閃(守備魔防-20%、+速さ20%)
             Special.LunarFlash2, // 月光閃・承(守備魔防-20%、+速さ20%)
             Special.ShiningEmblem, // 光炎の紋章(+速さ35%)

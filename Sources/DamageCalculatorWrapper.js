@@ -11039,129 +11039,127 @@ class DamageCalculatorWrapper {
                 }
                 break;
         }
-        switch (targetUnit.weapon) {
-            case Weapon.SyuryouNoEijin:
-                if (targetUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                        enemyUnit.battleContext.reducesCooldownCount = false;
-                    }
-                }
-                break;
-            case Weapon.ZekkaiNoSoukyu:
-                if (targetUnit.isWeaponRefined) {
-                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                        enemyUnit.battleContext.reducesCooldownCount = false;
-                    }
-                }
-                break;
-            case Weapon.WindParthia:
-                if (targetUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        enemyUnit.battleContext.reducesCooldownCount = false;
-                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Special.Enclosure:
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                    break;
+                case Weapon.SyuryouNoEijin:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
                         }
                     }
-                }
-                break;
-            case Weapon.LunaArc:
-                if (targetUnit.isWeaponSpecialRefined) {
+                    break;
+                case Weapon.ZekkaiNoSoukyu:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
+                case Weapon.WindParthia:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.LunaArc:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
+                case Weapon.MilasTestament:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
+                case Weapon.AnkokuNoKen:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
+                case Weapon.MaryuHuinNoKen:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
+                case Weapon.ThundersMjolnir:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        targetUnit.battleContext.invalidateCooldownCountSkills();
                     }
-                }
-                break;
-            case Weapon.MilasTestament:
-                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                    enemyUnit.battleContext.reducesCooldownCount = false;
-                }
-                break;
-            case Weapon.AnkokuNoKen:
-                if (targetUnit.isWeaponSpecialRefined) {
-                    if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    break;
+                case Weapon.ProfessorialGuide:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.battleContext.invalidateCooldownCountSkills();
                     }
-                }
-                break;
-            case Weapon.MaryuHuinNoKen:
-                if (targetUnit.isWeaponSpecialRefined) {
-                    enemyUnit.battleContext.reducesCooldownCount = false;
-                }
-                break;
-            case Weapon.ThundersMjolnir:
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    targetUnit.battleContext.invalidateCooldownCountSkills();
-                }
-                break;
-            case Weapon.ProfessorialGuide:
-                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                    targetUnit.battleContext.invalidateCooldownCountSkills();
-                }
-                break;
-            case Weapon.FiremansHook:
-                if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
-                    targetUnit.battleContext.invalidatesReduceCooldownCount = true;
-                }
-                break;
-            case Weapon.SpendyScimitar:
-                if (targetUnit.battleContext.initiatesCombat && targetUnit.dragonflower >= 2) {
-                    targetUnit.battleContext.invalidateCooldownCountSkills();
-                }
-                break;
-            case Weapon.WhirlingGrace:
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                    break;
+                case Weapon.FiremansHook:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
                         targetUnit.battleContext.invalidatesReduceCooldownCount = true;
                     }
-                }
-                break;
-            case Weapon.HolyYewfelle:
-                if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                    targetUnit.battleContext.invalidatesReduceCooldownCount = true;
-                }
-                break;
-            case Weapon.SyunsenAiraNoKen:
-                if (targetUnit.isWeaponRefined) {
-                    targetUnit.battleContext.invalidateCooldownCountSkills();
-                }
-                break;
-            case Weapon.TenteiNoKen:
-                targetUnit.battleContext.invalidateCooldownCountSkills();
-                break;
-        }
-        switch (targetUnit.special) {
-            case Special.SiriusPlus:
-                enemyUnit.battleContext.reducesCooldownCount = false;
-                break;
-        }
-        switch (targetUnit.passiveB) {
-            case PassiveB.Velocity3:
-            case PassiveB.AtkResTempo3:
-            case PassiveB.SpdDefTempo3:
-            case PassiveB.SpdResTempo3:
-                targetUnit.battleContext.invalidateCooldownCountSkills();
-                break;
-            case PassiveB.SolarBrace2:
-            case PassiveB.MoonlightBangle:
-            case PassiveB.MoonlitBangleF:
-                targetUnit.battleContext.invalidatesReduceCooldownCount = true;
-                break;
-
-        }
-        switch (targetUnit.passiveC) {
-            case PassiveC.FaithInHumanity: {
-                let count = 0;
-                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                    if (!isWeaponTypeBreathOrBeast(unit.weaponType) && unit.buffTotal >= 10) {
-                        count++
+                    break;
+                case Weapon.SpendyScimitar:
+                    if (targetUnit.battleContext.initiatesCombat && targetUnit.dragonflower >= 2) {
+                        targetUnit.battleContext.invalidateCooldownCountSkills();
                     }
-                }
-                if (count >= 2) {
+                    break;
+                case Weapon.WhirlingGrace:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
+                            targetUnit.battleContext.invalidatesReduceCooldownCount = true;
+                        }
+                    }
+                    break;
+                case Weapon.HolyYewfelle:
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.battleContext.invalidatesReduceCooldownCount = true;
+                    }
+                    break;
+                case Weapon.SyunsenAiraNoKen:
+                    if (targetUnit.isWeaponRefined) {
+                        targetUnit.battleContext.invalidateCooldownCountSkills();
+                    }
+                    break;
+                case Weapon.TenteiNoKen:
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
+                    break;
+                case Special.SiriusPlus:
                     enemyUnit.battleContext.reducesCooldownCount = false;
-                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
-                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    break;
+                case PassiveB.Velocity3:
+                case PassiveB.AtkResTempo3:
+                case PassiveB.SpdDefTempo3:
+                case PassiveB.SpdResTempo3:
+                    targetUnit.battleContext.invalidateCooldownCountSkills();
+                    break;
+                case PassiveB.SolarBrace2:
+                case PassiveB.MoonlightBangle:
+                case PassiveB.MoonlitBangleF:
+                    targetUnit.battleContext.invalidatesReduceCooldownCount = true;
+                    break;
+                case PassiveC.FaithInHumanity: {
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                        if (!isWeaponTypeBreathOrBeast(unit.weaponType) && unit.buffTotal >= 10) {
+                            count++
+                        }
+                    }
+                    if (count >= 2) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
@@ -11319,6 +11317,14 @@ class DamageCalculatorWrapper {
                 // 竜穿
                 let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.5);
+            }
+        };
+        this._applySpecialSkillEffectFuncDict[Special.Enclosure] = (targetUnit, enemyUnit) => {
+            {
+                // 閉界
+                let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.25);
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.ShiningEmblem] = (targetUnit, enemyUnit) => {

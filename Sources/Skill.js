@@ -1570,6 +1570,7 @@ const Special = {
     CircletOfBalance: 2183, // 聖神と暗黒神の冠
     DraconicAura: 457, // 竜裂
     DragonFang: 452, // 竜穿
+    Enclosure: 2272, // 閉界
     Sirius: 956, // 天狼
     SiriusPlus: 2186, // 天狼・神
     RupturedSky: 954, // 破天
@@ -2851,6 +2852,7 @@ NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
 NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
 NormalAttackSpecialDict[Special.DraconicAura] = 0;
 NormalAttackSpecialDict[Special.DragonFang] = 0;
+NormalAttackSpecialDict[Special.Enclosure] = 0; // 閉界
 NormalAttackSpecialDict[Special.Sirius] = 0; // 天狼
 NormalAttackSpecialDict[Special.SiriusPlus] = 0; // 天狼
 NormalAttackSpecialDict[Special.RupturedSky] = 0; // 破天
