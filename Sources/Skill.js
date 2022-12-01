@@ -1454,6 +1454,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=d1I-I39AyEc
     // https://www.youtube.com/watch?v=OfeB6gGmV_8
     EnclosingDark: 2239, // 絶闇エンブラ
+    EnclosingClaw: 2269, // 絶闇の翼爪
 };
 
 const Support = {
@@ -3265,6 +3266,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;

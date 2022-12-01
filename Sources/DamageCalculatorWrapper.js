@@ -2063,6 +2063,23 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.EnclosingClaw] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let func = unit => {
+                    let xDiff = Math.abs(targetUnit.posX - unit.posX);
+                    let yDiff = Math.abs(targetUnit.posY - unit.posY);
+                    return xDiff <= 1 || yDiff <= 1;
+                }
+                let count = self.__countEnemiesWithinSpecifiedSpaces(targetUnit, 99, func);
+                let amount = Math.min(count * 3, 9);
+                enemyUnit.addAllSpur(-amount);
+                if (count >= 2) {
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.EnclosingDark] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -11047,6 +11064,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.EnclosingClaw:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Special.Enclosure:
                     enemyUnit.battleContext.reducesCooldownCount = false;
                     break;
