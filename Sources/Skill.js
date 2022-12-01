@@ -1449,6 +1449,11 @@ const Weapon = {
     CoyotesLance: 2262, // 草原の狼の白槍
     RespitePlus: 2265, // サンクチュアリ+
     AwokenBreath: 2258, // 目覚めし竜のブレス
+
+    // 伝承神階英雄召喚 (ヴェロニカ＆エンブラ)
+    // https://www.youtube.com/watch?v=d1I-I39AyEc
+    // https://www.youtube.com/watch?v=OfeB6gGmV_8
+    EnclosingDark: 2239, // 絶闇エンブラ
 };
 
 const Support = {

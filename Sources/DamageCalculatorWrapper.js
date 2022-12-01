@@ -2063,6 +2063,22 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.EnclosingDark] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                let count = self.__countAlliesWithinSpecifiedSpaces(enemyUnit, 2);
+                if (count === 1) {
+                    enemyUnit.addSpurs(0, -4, 0, -4);
+                } else if (count >= 2) {
+                    enemyUnit.addAllSpur(0, -8, 0, -8);
+                    targetUnit.battleContext.invalidatesCounterattack = true;
+                }
+            }
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.isDesperationActivatable = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.AllTogether] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(4);
