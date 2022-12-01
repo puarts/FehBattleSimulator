@@ -7983,6 +7983,12 @@ class DamageCalculatorWrapper {
             targetUnit.defSpur += defAdd;
             targetUnit.resSpur += resAdd;
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
+            enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+            enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+            enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+            enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+        }
         switch (targetUnit.weapon) {
             case Weapon.LanceOfHeroics:
                 if (targetUnit.isWeaponSpecialRefined) {

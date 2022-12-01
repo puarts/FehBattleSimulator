@@ -2430,6 +2430,7 @@ const PassiveC = {
     AtkDefGap3: 1159,
 
     PanicSmoke3: 1000, // 恐慌の幻煙3
+    PanicSmoke4: 2273, // 恐慌の幻煙4
 
     // 奮起
     RouseAtkSpd3: 1510,
