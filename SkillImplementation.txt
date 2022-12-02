@@ -199,6 +199,7 @@ targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
+targetUnit.battleContext.invalidatesCounterattack = true;
 
 全距離反撃
 unit.battleContext.canCounterattackToAllDistance = true;

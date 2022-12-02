@@ -1449,6 +1449,14 @@ const Weapon = {
     CoyotesLance: 2262, // 草原の狼の白槍
     RespitePlus: 2265, // サンクチュアリ+
     AwokenBreath: 2258, // 目覚めし竜のブレス
+    VultureLancePlus: 2267, // 禿鷹の槍+
+    VultureLance: 2268, // 禿鷹の槍
+
+    // 伝承神階英雄召喚 (ヴェロニカ＆エンブラ)
+    // https://www.youtube.com/watch?v=d1I-I39AyEc
+    // https://www.youtube.com/watch?v=OfeB6gGmV_8
+    EnclosingDark: 2239, // 絶闇エンブラ
+    EnclosingClaw: 2269, // 絶闇の翼爪
 };
 
 const Support = {
@@ -1565,6 +1573,7 @@ const Special = {
     CircletOfBalance: 2183, // 聖神と暗黒神の冠
     DraconicAura: 457, // 竜裂
     DragonFang: 452, // 竜穿
+    Enclosure: 2272, // 閉界
     Sirius: 956, // 天狼
     SiriusPlus: 2186, // 天狼・神
     RupturedSky: 954, // 破天
@@ -2234,6 +2243,9 @@ const PassiveB = {
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3
+
+    // 絶対化身
+    BeastAgility3: 2270, // 絶対化身・敏捷3
 };
 
 const PassiveC = {
@@ -2424,6 +2436,7 @@ const PassiveC = {
     AtkDefGap3: 1159,
 
     PanicSmoke3: 1000, // 恐慌の幻煙3
+    PanicSmoke4: 2273, // 恐慌の幻煙4
 
     // 奮起
     RouseAtkSpd3: 1510,
@@ -2544,6 +2557,7 @@ const PassiveC = {
     OpenedDomain: 2151, // みんなが繋がる世界
     HeirToLight: 2171, // 光をつぐもの
     AllTogether: 2261, // ずっとみんなと一緒
+    Severance: 2271, // すべてが閉じた世界
 };
 
 const PassiveS = {
@@ -2846,6 +2860,7 @@ NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
 NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
 NormalAttackSpecialDict[Special.DraconicAura] = 0;
 NormalAttackSpecialDict[Special.DragonFang] = 0;
+NormalAttackSpecialDict[Special.Enclosure] = 0; // 閉界
 NormalAttackSpecialDict[Special.Sirius] = 0; // 天狼
 NormalAttackSpecialDict[Special.SiriusPlus] = 0; // 天狼
 NormalAttackSpecialDict[Special.RupturedSky] = 0; // 破天
@@ -3257,6 +3272,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;

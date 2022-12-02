@@ -218,6 +218,9 @@ const StatusEffectType = {
     Exposure: 37, // 弱点露呈
     ShieldDragon: 38, // 竜特効
     Canto1: 39, // 再移動(1)
+    FoePenaltyDoubler: 40, // 敵弱化増幅
+    Undefended: 41, // 護られ不可
+    Feud: 42, // 暗闘
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。

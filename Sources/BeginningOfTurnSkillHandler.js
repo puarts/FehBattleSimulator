@@ -101,7 +101,15 @@ class BeginningOfTurnSkillHandler {
      */
     applyTransformSkillForBeginningOfTurn(skillOwner) {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
-            if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner)) {
+            let hasTransformSkills = false;
+            for (let skillId of skillOwner.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveB.BeastAgility3:
+                        hasTransformSkills = true;
+                        break;
+                }
+            }
+            if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner) || hasTransformSkills) {
                 skillOwner.isTransformed = true;
                 if (skillOwner.moveType === MoveType.Flying &&
                     isWeaponTypeBeast(skillOwner.weaponType) &&
@@ -131,6 +139,23 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.Severance: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
+                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
+                        found = true;
+                        unit.reserveToAddStatusEffect(StatusEffectType.Undefended);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Feud);
+                    }
+                }
+                if (found) {
+                    skillOwner.reserveToResetDebuffs();
+                    skillOwner.reserveToClearNegativeStatusEffects();
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                }
+            }
+                break;
             case Weapon.CoyotesLance: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
