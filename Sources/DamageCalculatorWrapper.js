@@ -587,6 +587,9 @@ class DamageCalculatorWrapper {
     }
 
     __getSaverUnitIfPossible(atkUnit, defUnit) {
+        if (defUnit.hasStatusEffect(StatusEffectType.Undefended)) {
+            return null;
+        }
         let saverUnit = null;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false)) {
             if ((defUnit.placedTile === null || defUnit.placedTile === undefined)
@@ -968,6 +971,9 @@ class DamageCalculatorWrapper {
                 break;
             case PassiveC.ImpenetrableDark:
                 return true;
+        }
+        if (enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return true;
         }
         return false;
     }
@@ -13261,6 +13267,9 @@ class DamageCalculatorWrapper {
                 break;
             case PassiveC.ImpenetrableDark:
                 return true;
+        }
+        if (enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return true;
         }
         return false;
     }

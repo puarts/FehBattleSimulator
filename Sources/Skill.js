@@ -2555,6 +2555,7 @@ const PassiveC = {
     OpenedDomain: 2151, // みんなが繋がる世界
     HeirToLight: 2171, // 光をつぐもの
     AllTogether: 2261, // ずっとみんなと一緒
+    Severance: 2271, // すべてが閉じた世界
 };
 
 const PassiveS = {
