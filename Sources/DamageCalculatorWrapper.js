@@ -2069,6 +2069,42 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ShintakuNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.isBuffedInCombat(enemyUnit)) {
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    targetUnit.addAllSpur(4);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                        let atk = 0;
+                        let spd = 0;
+                        let def = 0;
+                        let res = 0;
+                        for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                            if (!unit.hasStatusEffect(StatusEffectType.Panic)) {
+                                atk = Math.max(atk, unit.atkBuff);
+                                spd = Math.max(spd, unit.spdBuff);
+                                def = Math.max(def, unit.defBuff);
+                                res = Math.max(res, unit.resBuff);
+                            }
+                        }
+                        targetUnit.atkSpur += atk;
+                        targetUnit.spdSpur += spd;
+                        targetUnit.defSpur += def;
+                        targetUnit.resSpur += res;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RetainersReport] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
                 targetUnit.addAllSpur(4);
@@ -8852,7 +8888,6 @@ class DamageCalculatorWrapper {
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.restHpPercentage >= 25 &&
                                 targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                                console.log(`TEST`);
                                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
                             }
                         }
@@ -11032,11 +11067,6 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.Gyorru:
                     if (atkUnit.hasNegativeStatusEffect()) {
-                        --followupAttackPriority;
-                    }
-                    break;
-                case Weapon.ShintakuNoBreath:
-                    if (defUnit.isBuffed) {
                         --followupAttackPriority;
                     }
                     break;

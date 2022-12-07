@@ -145,6 +145,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ShintakuNoBreath:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        found = true;
+                        unit.applyBuffs(0, 0, 6, 6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    }
+                }
+                break;
             case Weapon.ReginRave:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.isEvenTurn) {

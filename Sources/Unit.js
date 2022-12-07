@@ -2615,6 +2615,19 @@ class Unit extends BattleMapElement {
             this.resBuff > 0;
     }
 
+    // 強化無効を考慮
+    isBuffedInCombat(enemyUnit) {
+        if (this.isPanicEnabled) {
+            return false;
+        }
+        let isBuffed =
+            this.getAtkBuffInCombat(enemyUnit) > 0 ||
+            this.getSpdBuffInCombat(enemyUnit) > 0 ||
+            this.getDefBuffInCombat(enemyUnit) > 0 ||
+            this.getResBuffInCombat(enemyUnit) > 0;
+        return isBuffed;
+    }
+
     get isDebuffed() {
         return this.atkDebuff < 0 ||
             this.spdDebuff < 0 ||
