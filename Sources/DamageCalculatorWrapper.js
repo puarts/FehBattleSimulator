@@ -12439,6 +12439,9 @@ class DamageCalculatorWrapper {
                             break;
                     }
                     switch (unit.passiveC) {
+                        case PassiveC.AtkSpdHold:
+                            targetUnit.addSpurs(-4, -4, 0, 0);
+                            break;
                         case PassiveC.AtkDefHold:
                             targetUnit.addSpurs(-4, 0, -4, 0);
                             break;
