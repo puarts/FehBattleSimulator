@@ -704,6 +704,14 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AsameiNoTanken:
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.reserveTakeDamage(5);
+                            unit.addStatusEffect(StatusEffectType.Exposure);
+                        }
+                    }
+                    break;
                 case Weapon.SoothingScent:
                     if (attackUnit.battleContext.weaponSkillCondSatisfied) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {

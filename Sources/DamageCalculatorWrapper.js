@@ -6278,12 +6278,29 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.AsameiNoTanken] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!enemyUnit.battleContext.isRestHpFull) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
-                if (!targetUnit.battleContext.initiatesCombat) {
-                    targetUnit.battleContext.isVantageActivatable = true;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (!enemyUnit.battleContext.isRestHpFull) {
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                    if (!targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.isVantageActivatable = true;
 
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || !enemyUnit.battleContext.isRestHpFull) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+                if (enemyUnit.battleContext.initiatesCombat && !enemyUnit.battleContext.isRestHpFull) {
+                    targetUnit.battleContext.isVantageActivatable = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                        targetUnit.addSpurs(5, 5, 0, 0);
+                    }
                 }
             }
         };
