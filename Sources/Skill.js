@@ -1992,6 +1992,7 @@ const PassiveB = {
     ChillRes3: 617, // 魔防の封印3
     ChillAtkDef2: 1524, // 攻撃守備の封印2
     ChillAtkRes2: 1169, // 攻撃魔防の封印2
+    ChillAtkRes3: 2281, // 攻撃魔防の封印3
     ChillAtkSpd2: 1239, // 攻撃速さの封印2
     ChillSpdDef2: 1319, // 速さ守備の封印2
     ChillSpdRes2: 1371, // 速さ魔防の封印2

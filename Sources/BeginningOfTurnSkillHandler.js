@@ -2126,6 +2126,20 @@ class BeginningOfTurnSkillHandler {
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-5); }); break;
+            case PassiveB.ChillAtkRes3: {
+                let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let statusFunc = x => {
+                    let unit = this.__getStatusEvalUnit(x);
+                    return unit.getAtkInPrecombat() + unit.getResInPrecombat();
+                };
+                let units = this.__findMaxStatusUnits(group, statusFunc);
+                for (let unit of units) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyDebuffs(-6, 0, 0, -6);
+                    }
+                }
+            }
+                break;
             case PassiveB.ChillDefRes3: {
                 let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
                 let statusFunc = x => {
@@ -2135,7 +2149,7 @@ class BeginningOfTurnSkillHandler {
                 let units = this.__findMaxStatusUnits(group, statusFunc);
                 for (let unit of units) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
-                        u.reserveToApplyDebuffs(0, 0, -7, -7);
+                        u.reserveToApplyDebuffs(0, 0, -6, -6);
                     }
                 }
             }
