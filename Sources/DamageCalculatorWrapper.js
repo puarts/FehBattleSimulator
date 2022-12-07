@@ -2069,6 +2069,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ReginRave] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Seidr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -8058,6 +8065,18 @@ class DamageCalculatorWrapper {
             enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
         }
         switch (targetUnit.weapon) {
+            case Weapon.ReginRave:
+                if (targetUnit.isWeaponRefined) {
+                    if (targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() + 1 ||
+                        targetUnit.hasPositiveStatusEffect()) {
+                        targetUnit.addAllSpur(4);
+                    }
+                    if (targetUnit.getAtkInCombat(enemyUnit) >= enemyUnit.getAtkInCombat(targetUnit) ||
+                        targetUnit.hasPositiveStatusEffect()) {
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
+                break;
             case Weapon.LanceOfHeroics:
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -8801,6 +8820,15 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.ReginRave:
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                                targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                console.log(`TEST`);
+                                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                            }
+                        }
+                        break;
                     case PassiveB.BeastAgility3:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit)) {
                             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -10870,8 +10898,10 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.ReginRave:
-                    if (atkUnit.getAtkInCombat(defUnit) > defUnit.getAtkInCombat(atkUnit) || atkUnit.isMobilityIncreased) {
-                        ++followupAttackPriority;
+                    if (!atkUnit.isWeaponRefined) {
+                        if (atkUnit.getAtkInCombat(defUnit) > defUnit.getAtkInCombat(atkUnit) || atkUnit.isMobilityIncreased) {
+                            ++followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.FlameSiegmund:

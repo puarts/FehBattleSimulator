@@ -145,6 +145,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ReginRave:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.isEvenTurn) {
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                }
+                break;
             case Weapon.Seidr: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {

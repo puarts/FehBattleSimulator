@@ -2471,6 +2471,13 @@ class Unit extends BattleMapElement {
             ) {
                 return true;
             }
+        } else {
+            let hasBuff =
+                this.atkBuff > 0 ||
+                this.spdBuff > 0 ||
+                this.defBuff > 0 ||
+                this.resBuff > 0;
+            return hasBuff;
         }
 
         return false;
@@ -5126,6 +5133,13 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 残り+1
+                case Weapon.ReginRave:
+                    if (this.isWeaponSpecialRefined) {
+                        if (this.hasPositiveStatusEffect()) {
+                            moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
+                        }
+                    }
+                    break;
                 case Weapon.FloridCanePlus:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:

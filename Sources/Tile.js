@@ -683,9 +683,20 @@ class Tile extends BattleMapElement {
         }
 
         let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
-        if (weight != CanNotReachTile && weight != 0) {
-            if (unit.weapon == Weapon.FujinYumi && unit.isWeaponRefined && unit.hpPercentage >= 50) {
-                weight = 1;
+        if (weight !== CanNotReachTile && weight !== 0) {
+            for (let skillId of unit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.ReginRave:
+                        if (unit.isWeaponRefined) {
+                            weight = 1;
+                        }
+                        break;
+                    case Weapon.FujinYumi:
+                        if (unit.isWeaponRefined && unit.hpPercentage >= 50) {
+                            weight = 1;
+                        }
+                        break;
+                }
             }
         }
         if (this._obj == null) {
