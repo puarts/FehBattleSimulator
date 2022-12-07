@@ -2069,6 +2069,32 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.ProdigyPolearm] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                let count = 0;
+                if (targetUnit.maxHp <= enemyUnit.maxHp + 5) {
+                    count++;
+                }
+                if (targetUnit.getAtkInPrecombat() <= enemyUnit.getAtkInPrecombat() + 5) {
+                    count++;
+                }
+                if (targetUnit.getSpdInPrecombat() <= enemyUnit.getSpdInPrecombat() + 5) {
+                    count++;
+                }
+                if (targetUnit.getDefInPrecombat() <= enemyUnit.getDefInPrecombat() + 5) {
+                    count++;
+                }
+                if (targetUnit.getResInPrecombat() <= enemyUnit.getResInPrecombat() + 5) {
+                    count++;
+                }
+                let percentage = count * 5 + 10;
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * percentage / 100.0);
+                enemyUnit.addSpurs(-amount, 0, -amount, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpecialSpiral4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         }
