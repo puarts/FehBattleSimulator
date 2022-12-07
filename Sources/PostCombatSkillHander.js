@@ -612,6 +612,7 @@ class PostCombatSkillHander {
                     }
                     break;
                 case PassiveB.OgiNoRasen3:
+                case PassiveB.SpecialSpiral4:
                 case Weapon.MakenMistoruthin:
                     if (targetUnit.battleContext.isSpecialActivated) {
                         targetUnit.specialCount -= 2;

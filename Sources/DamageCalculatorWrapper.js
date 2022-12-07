@@ -2069,6 +2069,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpecialSpiral4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneEclipse] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -7130,91 +7133,92 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.additionalDamageOfSpecial += damage;
             }
         }
-        switch (targetUnit.passiveB) {
-            case PassiveB.MoonlightBangle:
-            case PassiveB.MoonlitBangleF:
-                {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.SpecialSpiral4:
+                    targetUnit.battleContext.additionalDamageOfSpecial += 5;
+                    break;
+                case PassiveB.MoonlightBangle:
+                case PassiveB.MoonlitBangleF: {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
                     let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
                     targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * ratio);
                 }
-                break;
-            case PassiveB.RunaBracelet: {
-                let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
-                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.5);
-            }
-                break;
-            case PassiveB.Bushido:
-                targetUnit.battleContext.additionalDamageOfSpecial += 10;
-                break;
-            case PassiveB.Ikari3:
-                if (targetUnit.restHpPercentage <= 75) {
+                    break;
+                case PassiveB.RunaBracelet: {
+                    let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.5);
+                }
+                    break;
+                case PassiveB.Bushido:
                     targetUnit.battleContext.additionalDamageOfSpecial += 10;
-                }
-                break;
-            case PassiveB.Spurn3:
-                if (targetUnit.restHpPercentage <= 75) {
-                    targetUnit.battleContext.additionalDamageOfSpecial += 5;
-                }
-                break;
-
-        }
-        switch (targetUnit.weapon) {
-            case Weapon.FumingFreikugel:
-                // 条件(weaponSkillCondSatisfied)は戦闘中以降に有効になるので必要はないが念の為範囲奥義を除くためにbreakする
-                if (isPrecombat) break;
-                if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                    let spd = targetUnit.getSpdInCombat(enemyUnit);
-                    let ratio = 0.2 + 0.1 * targetUnit.maxSpecialCount;
-                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
-                }
-                break;
-            case Weapon.DrybladeLance:
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                    let spd = isPrecombat ? targetUnit.getEvalSpdInPrecombat() : targetUnit.getEvalSpdInCombat();
-                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
-                }
-                break;
-            case Weapon.ManatsuNoBreath:
-                if (targetUnit.isWeaponSpecialRefined) {
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                        let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                        let res = isPrecombat ? enemyUnit.getResInPrecombat() : enemyUnit.getResInCombat();
-                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(res * ratio);
+                    break;
+                case PassiveB.Ikari3:
+                    if (targetUnit.restHpPercentage <= 75) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
                     }
-                }
-                break;
-            case Weapon.Watou:
-            case Weapon.WatouPlus:
-            case Weapon.Wabo:
-            case Weapon.WaboPlus:
-            case Weapon.BigSpoon:
-            case Weapon.BigSpoonPlus:
-            case Weapon.Wakon:
-            case Weapon.WakonPlus:
-            case Weapon.TankyuPlus:
-            case Weapon.BabyCarrot:
-            case Weapon.BabyCarrotPlus:
-            case Weapon.KyoufuArmars:
-            case Weapon.KieiWayuNoKen:
-            case Weapon.Toron:
-            case Weapon.IhoNoHIken:
-            case Weapon.DarkExcalibur:
-                targetUnit.battleContext.additionalDamageOfSpecial += 10;
-                break;
-            case Weapon.Shamsir:
-                targetUnit.battleContext.additionalDamageOfSpecial += 7;
-                break;
-            case Weapon.RunaNoEiken:
-            case Weapon.Otokureru:
-            case Weapon.MumeiNoIchimonNoKen:
-            case Weapon.SyaniNoSeisou:
-            case Weapon.DevilAxe:
-                if (targetUnit.isWeaponSpecialRefined) {
+                    break;
+                case PassiveB.Spurn3:
+                    if (targetUnit.restHpPercentage <= 75) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 5;
+                    }
+                    break;
+                case Weapon.FumingFreikugel:
+                    // 条件(weaponSkillCondSatisfied)は戦闘中以降に有効になるので必要はないが念の為範囲奥義を除くためにbreakする
+                    if (isPrecombat) break;
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let spd = targetUnit.getSpdInCombat(enemyUnit);
+                        let ratio = 0.2 + 0.1 * targetUnit.maxSpecialCount;
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                    }
+                    break;
+                case Weapon.DrybladeLance:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                        let spd = isPrecombat ? targetUnit.getEvalSpdInPrecombat() : targetUnit.getEvalSpdInCombat();
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                    }
+                    break;
+                case Weapon.ManatsuNoBreath:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                            let res = isPrecombat ? enemyUnit.getResInPrecombat() : enemyUnit.getResInCombat();
+                            targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(res * ratio);
+                        }
+                    }
+                    break;
+                case Weapon.Watou:
+                case Weapon.WatouPlus:
+                case Weapon.Wabo:
+                case Weapon.WaboPlus:
+                case Weapon.BigSpoon:
+                case Weapon.BigSpoonPlus:
+                case Weapon.Wakon:
+                case Weapon.WakonPlus:
+                case Weapon.TankyuPlus:
+                case Weapon.BabyCarrot:
+                case Weapon.BabyCarrotPlus:
+                case Weapon.KyoufuArmars:
+                case Weapon.KieiWayuNoKen:
+                case Weapon.Toron:
+                case Weapon.IhoNoHIken:
+                case Weapon.DarkExcalibur:
                     targetUnit.battleContext.additionalDamageOfSpecial += 10;
-                }
-                break;
+                    break;
+                case Weapon.Shamsir:
+                    targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                    break;
+                case Weapon.RunaNoEiken:
+                case Weapon.Otokureru:
+                case Weapon.MumeiNoIchimonNoKen:
+                case Weapon.SyaniNoSeisou:
+                case Weapon.DevilAxe:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    }
+                    break;
+            }
         }
     }
 
