@@ -2084,7 +2084,7 @@ class Unit extends BattleMapElement {
     // 応援を強制的に実行可能かどうか
     canRallyForcibly() {
         for (let skillId of this.enumerateSkills()) {
-            if (canRallyForcibly(skillId)) {
+            if (canRallyForcibly(skillId, this)) {
                 return true;
             }
         }

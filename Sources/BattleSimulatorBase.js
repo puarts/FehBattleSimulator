@@ -7695,6 +7695,18 @@ class BattleSimmulatorBase {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RetainersReport:
+                    if (unit.isWeaponSpecialRefined) {
+                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
+                            if (this.__isInCloss(unit, u) ||
+                                this.__isInCloss(targetUnit, u)) {
+                                u.applyDebuffs(-7, 0, -7, -7);
+                                u.addStatusEffect(StatusEffectType.Guard);
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.EverlivingBreath: {
                     let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true));
                     units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
@@ -8112,6 +8124,18 @@ class BattleSimmulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RetainersReport:
+                    if (supporterUnit.isWeaponSpecialRefined) {
+                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
+                            if (this.__isInCloss(supporterUnit, u) ||
+                                this.__isInCloss(targetUnit, u)) {
+                                u.applyDebuffs(-7, 0, -7, -7);
+                                u.addStatusEffect(StatusEffectType.Guard);
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.EverlivingBreath: {
                     let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supporterUnit, 2, true));
                     units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));

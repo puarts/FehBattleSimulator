@@ -1467,6 +1467,9 @@ const Weapon = {
     Seidr: 2280, // セイズ
     UnboundBowPlus: 2283, // 孤絶の弓+
     UnboundBow: 2284, // 孤絶の弓
+
+    // 2022年12月 武器錬成
+    RetainersReport: 2286, // 参謀役の書
 };
 
 const Support = {
@@ -3161,8 +3164,13 @@ function weaponTypeToString(weaponType) {
 }
 
 /// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
-function canRallyForcibly(skill) {
+function canRallyForcibly(skill, unit) {
     switch (skill) {
+        case Weapon.RetainersReport:
+            if (unit.isWeaponSpecialRefined) {
+                return true;
+            }
+            break;
         case Support.Uchikudakumono:
         case PassiveB.AtkFeint3:
         case PassiveB.SpdFeint3:
