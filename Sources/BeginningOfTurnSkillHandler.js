@@ -139,6 +139,9 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ArcaneEclipse:
+                if (this.globalBattleContext.currentTurn === 1) { skillOwner.reduceSpecialCount(1); }
+                break;
             case PassiveC.Severance: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {

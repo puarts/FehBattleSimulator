@@ -1457,6 +1457,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=OfeB6gGmV_8
     EnclosingDark: 2239, // 絶闇エンブラ
     EnclosingClaw: 2269, // 絶闇の翼爪
+
+    // 第７部開幕記念（新英雄＆魔器英雄＆セイズ）
+    // https://www.youtube.com/watch?v=wc39sRcMPxA
+    // https://www.youtube.com/watch?v=knWaDA3MDZA
+    ArcaneEclipse: 2274, // 魔器ルナイクリプス
 };
 
 const Support = {
