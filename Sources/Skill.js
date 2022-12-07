@@ -2569,6 +2569,7 @@ const PassiveC = {
     HeirToLight: 2171, // 光をつぐもの
     AllTogether: 2261, // ずっとみんなと一緒
     Severance: 2271, // すべてが閉じた世界
+    FutureFocused: 2282, // 共に未来を見つめて
 };
 
 const PassiveS = {

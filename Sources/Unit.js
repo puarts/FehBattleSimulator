@@ -1435,6 +1435,10 @@ class Unit extends BattleMapElement {
         this.originalTile = null;
     }
 
+    distance(otherUnit) {
+        return Math.abs(this.posX - otherUnit.posX) + Math.abs(this.posY - otherUnit.posY);
+    }
+
     canActivateCanto() {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return false;

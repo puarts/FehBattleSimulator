@@ -57,6 +57,12 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    applyAfterEnemySkillsSkillsForBeginningOfTurn(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            this.applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, unit);
+        }
+    }
+
     /**
      * @param  {Unit} unit
      */
@@ -2231,6 +2237,41 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.applyBuffs(6, 6, 6, 0);
                 }
             }
+                break;
+        }
+    }
+
+    applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {
+        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
+
+        switch (skillId) {
+            case PassiveC.FutureFocused:
+                if (this.isOddTurn) {
+                    let units = [];
+                    let distance = Number.MAX_SAFE_INTEGER;
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        let inCross =
+                            skillOwner.posX === unit.posX ||
+                            skillOwner.posY === unit.posY;
+                        if (!inCross) {
+                            continue;
+                        }
+                        let d = skillOwner.distance(unit);
+                        if (d > distance) {
+                            continue;
+                        } else if (d === distance) {
+                            units.push(unit);
+                        } else {
+                            units = [unit]
+                            distance = d;
+                        }
+                    }
+                    for (let unit of units) {
+                        if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3) {
+                            unit.isActionDone = true;
+                        }
+                    }
+                }
                 break;
         }
     }

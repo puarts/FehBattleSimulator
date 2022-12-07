@@ -3669,6 +3669,12 @@ class BattleSimmulatorBase {
         // 化身によりステータス変化する
         this.data.__updateStatusBySkillsAndMergeForAllHeroes();
 
+        // セイズなど敵軍のターン開始時スキル発動後の効果
+        for (let unit of enemyUnits) {
+            this.writeDebugLogLine(unit.getNameWithGroup() + "の敵軍のターン開始時スキル発動後のスキルを適用..");
+            this.beginningOfTurnSkillHandler.applyAfterEnemySkillsSkillsForBeginningOfTurn(unit);
+        }
+
         // マップの更新(ターン開始時の移動マスの変化をマップに反映)
         this.data.map.updateTiles();
     }
