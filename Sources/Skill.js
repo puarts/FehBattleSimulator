@@ -1465,6 +1465,8 @@ const Weapon = {
     ProdigyPolearm: 2276, // 天才肌の薄薙刀
     AidPlus: 2278, // エイド+
     Seidr: 2280, // セイズ
+    UnboundBowPlus: 2283, // 孤絶の弓+
+    UnboundBow: 2284, // 孤絶の弓
 };
 
 const Support = {

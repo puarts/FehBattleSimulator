@@ -6958,6 +6958,8 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundBladePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundLancePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UnboundAxePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UnboundBow] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UnboundBowPlus] = func;
         }
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -12480,6 +12482,8 @@ class DamageCalculatorWrapper {
                         case Weapon.UnboundBladePlus:
                         case Weapon.UnboundLancePlus:
                         case Weapon.UnboundAxePlus:
+                        case Weapon.UnboundBow:
+                        case Weapon.UnboundBowPlus:
                             if (this.__isSolo(unit)) {
                                 targetUnit.atkSpur -= 5;
                                 targetUnit.defSpur -= 5;
