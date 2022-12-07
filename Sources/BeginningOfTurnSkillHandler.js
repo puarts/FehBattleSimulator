@@ -1272,7 +1272,6 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
                 }
                 break;
-            case Weapon.StaffOfTwelvePlus:
             case Weapon.DemonicTome:
             case PassiveC.HajimariNoKodo3:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
@@ -2320,6 +2319,8 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveHeal(7);
                 }
                 break;
+            case Weapon.AidPlus:
+            case Weapon.StaffOfTwelvePlus:
             case PassiveC.SeimeiNoKagayaki:
             case PassiveC.SparklingBoostPlus: {
                 let targetUnits = [];
@@ -2335,7 +2336,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 for (let unit of targetUnits) {
-                    let amount = skillId === PassiveC.SeimeiNoKagayaki ? 10 : 20;
+                    let amount = skillId === PassiveC.SparklingBoostPlus ? 20 : 10;
                     unit.reserveHeal(amount);
                 }
             }
