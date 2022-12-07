@@ -1464,6 +1464,7 @@ const Weapon = {
     ArcaneEclipse: 2274, // 魔器ルナイクリプス
     ProdigyPolearm: 2276, // 天才肌の薄薙刀
     AidPlus: 2278, // エイド+
+    Seidr: 2280, // セイズ
 };
 
 const Support = {

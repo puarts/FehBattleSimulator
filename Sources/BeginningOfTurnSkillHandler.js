@@ -139,6 +139,17 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.Seidr: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                }
+            }
+                break;
             case Weapon.ArcaneEclipse:
                 if (this.globalBattleContext.currentTurn === 1) { skillOwner.reduceSpecialCount(1); }
                 break;
