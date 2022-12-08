@@ -3669,6 +3669,12 @@ class BattleSimmulatorBase {
         // 化身によりステータス変化する
         this.data.__updateStatusBySkillsAndMergeForAllHeroes();
 
+        // セイズなど敵軍のターン開始時スキル発動後の効果
+        for (let unit of enemyUnits) {
+            this.writeDebugLogLine(unit.getNameWithGroup() + "の敵軍のターン開始時スキル発動後のスキルを適用..");
+            this.beginningOfTurnSkillHandler.applyAfterEnemySkillsSkillsForBeginningOfTurn(unit);
+        }
+
         // マップの更新(ターン開始時の移動マスの変化をマップに反映)
         this.data.map.updateTiles();
     }
@@ -6130,6 +6136,13 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ReginRave:
+                    if (unit.isWeaponSpecialRefined) {
+                        if (unit.hasPositiveStatusEffect()) {
+                            return true;
+                        }
+                    }
+                    break;
                 case Weapon.OkamijoouNoKiba:
                     if (unit.isTransformed) return true;
                     break;
@@ -7682,6 +7695,18 @@ class BattleSimmulatorBase {
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RetainersReport:
+                    if (unit.isWeaponSpecialRefined) {
+                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
+                            if (this.__isInCloss(unit, u) ||
+                                this.__isInCloss(targetUnit, u)) {
+                                u.applyDebuffs(-7, 0, -7, -7);
+                                u.addStatusEffect(StatusEffectType.Guard);
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.EverlivingBreath: {
                     let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true));
                     units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
@@ -8099,6 +8124,18 @@ class BattleSimmulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RetainersReport:
+                    if (supporterUnit.isWeaponSpecialRefined) {
+                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
+                            if (this.__isInCloss(supporterUnit, u) ||
+                                this.__isInCloss(targetUnit, u)) {
+                                u.applyDebuffs(-7, 0, -7, -7);
+                                u.addStatusEffect(StatusEffectType.Guard);
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.EverlivingBreath: {
                     let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supporterUnit, 2, true));
                     units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));

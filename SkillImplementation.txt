@@ -34,6 +34,8 @@ applyHealSkillForBeginningOfTurn(skillId, skillOwner) {}
 applyEnemySkillForBeginningOfTurn(skillId, skillOwner) {}
 ターン開始時(ダメージ)
 applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
+敵軍のターン開始時スキル発動後
+applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {}
 
 獣の共通の化身スキル
 const WeaponTypesAddAtk2AfterTransform = {};
@@ -488,6 +490,23 @@ __calcFixedSpecialAddDamage() {
     targetUnit.battleContext.additionalDamageOfSpecial += N;
 }
 
+最初の受けた攻撃のダメージをN%軽減し、軽減した値を、自身の次の攻撃のダメージに加算(他のスキルによる軽減値も含む)(その戦闘中のみ)
+__init__applySkillEffectForUnitFuncDict() {
+    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(N / 100.0, enemyUnit);
+}
+__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+        fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+        atkUnit.battleContext.reducedDamageForNextAttack = 0;
+    }
+}
+__calcUnitAttackDamage() {
+    if (!context.isFirstAttack(atkUnit)) break;
+    defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+}
+
 ダメージをHPが1残るように軽減(祈り)
 __canActivateMiracle() {
     return true;
@@ -530,6 +549,14 @@ updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
 補助後、自分を行動可能にする[再行動]
 applySupportSkill() {
     // case Support.FutureVision
+}
+
+自身が移動可能な地形を平地のように移動可能
+Tile.js
+getMoveWeight() {
+    if (weight !== CanNotReachTile && weight !== 0) {
+        weight = 1;
+    }
 }
 
 再移動(N)

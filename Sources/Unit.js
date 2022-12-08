@@ -1435,6 +1435,10 @@ class Unit extends BattleMapElement {
         this.originalTile = null;
     }
 
+    distance(otherUnit) {
+        return Math.abs(this.posX - otherUnit.posX) + Math.abs(this.posY - otherUnit.posY);
+    }
+
     canActivateCanto() {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return false;
@@ -2080,7 +2084,7 @@ class Unit extends BattleMapElement {
     // 応援を強制的に実行可能かどうか
     canRallyForcibly() {
         for (let skillId of this.enumerateSkills()) {
-            if (canRallyForcibly(skillId)) {
+            if (canRallyForcibly(skillId, this)) {
                 return true;
             }
         }
@@ -2467,6 +2471,13 @@ class Unit extends BattleMapElement {
             ) {
                 return true;
             }
+        } else {
+            let hasBuff =
+                this.atkBuff > 0 ||
+                this.spdBuff > 0 ||
+                this.defBuff > 0 ||
+                this.resBuff > 0;
+            return hasBuff;
         }
 
         return false;
@@ -2602,6 +2613,19 @@ class Unit extends BattleMapElement {
             this.spdBuff > 0 ||
             this.defBuff > 0 ||
             this.resBuff > 0;
+    }
+
+    // 強化無効を考慮
+    isBuffedInCombat(enemyUnit) {
+        if (this.isPanicEnabled) {
+            return false;
+        }
+        let isBuffed =
+            this.getAtkBuffInCombat(enemyUnit) > 0 ||
+            this.getSpdBuffInCombat(enemyUnit) > 0 ||
+            this.getDefBuffInCombat(enemyUnit) > 0 ||
+            this.getResBuffInCombat(enemyUnit) > 0;
+        return isBuffed;
     }
 
     get isDebuffed() {
@@ -5122,6 +5146,13 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 残り+1
+                case Weapon.ReginRave:
+                    if (this.isWeaponSpecialRefined) {
+                        if (this.hasPositiveStatusEffect()) {
+                            moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
+                        }
+                    }
+                    break;
                 case Weapon.FloridCanePlus:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:

@@ -1457,6 +1457,20 @@ const Weapon = {
     // https://www.youtube.com/watch?v=OfeB6gGmV_8
     EnclosingDark: 2239, // 絶闇エンブラ
     EnclosingClaw: 2269, // 絶闇の翼爪
+
+    // 第７部開幕記念（新英雄＆魔器英雄＆セイズ）
+    // https://www.youtube.com/watch?v=wc39sRcMPxA
+    // https://www.youtube.com/watch?v=knWaDA3MDZA
+    ArcaneEclipse: 2274, // 魔器ルナイクリプス
+    ProdigyPolearm: 2276, // 天才肌の薄薙刀
+    AidPlus: 2278, // エイド+
+    Seidr: 2280, // セイズ
+    UnboundBowPlus: 2283, // 孤絶の弓+
+    UnboundBow: 2284, // 孤絶の弓
+    Aurgelmir: 2285, // アウルゲルミル
+
+    // 2022年12月 武器錬成
+    RetainersReport: 2286, // 参謀役の書
 };
 
 const Support = {
@@ -1984,6 +1998,7 @@ const PassiveB = {
     ChillRes3: 617, // 魔防の封印3
     ChillAtkDef2: 1524, // 攻撃守備の封印2
     ChillAtkRes2: 1169, // 攻撃魔防の封印2
+    ChillAtkRes3: 2281, // 攻撃魔防の封印3
     ChillAtkSpd2: 1239, // 攻撃速さの封印2
     ChillSpdDef2: 1319, // 速さ守備の封印2
     ChillSpdRes2: 1371, // 速さ魔防の封印2
@@ -2061,6 +2076,7 @@ const PassiveB = {
     SabotageRes3: 867, // 魔防の混乱3
 
     OgiNoRasen3: 654, // 奥義の螺旋3
+    SpecialSpiral4: 2275, // 奥義の螺旋4
 
     SealAtk1: 1455,
     SealAtk2: 1456,
@@ -2461,6 +2477,7 @@ const PassiveC = {
 
     // 牽制
     AtkSpdRein3: 1448, // 攻撃速さの牽制3
+    AtkSpdHold: 2277, // 攻撃速さの大牽制
     AtkDefRein3: 1519, // 攻撃守備の牽制3
     AtkDefHold: 2250, // 攻撃守備の大牽制
     AtkResRein3: 1490, // 攻撃魔防の牽制3
@@ -2558,6 +2575,7 @@ const PassiveC = {
     HeirToLight: 2171, // 光をつぐもの
     AllTogether: 2261, // ずっとみんなと一緒
     Severance: 2271, // すべてが閉じた世界
+    FutureFocused: 2282, // 共に未来を見つめて
 };
 
 const PassiveS = {
@@ -3147,8 +3165,13 @@ function weaponTypeToString(weaponType) {
 }
 
 /// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
-function canRallyForcibly(skill) {
+function canRallyForcibly(skill, unit) {
     switch (skill) {
+        case Weapon.RetainersReport:
+            if (unit.isWeaponSpecialRefined) {
+                return true;
+            }
+            break;
         case Support.Uchikudakumono:
         case PassiveB.AtkFeint3:
         case PassiveB.SpdFeint3:

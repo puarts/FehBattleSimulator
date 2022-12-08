@@ -57,6 +57,12 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    applyAfterEnemySkillsSkillsForBeginningOfTurn(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            this.applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, unit);
+        }
+    }
+
     /**
      * @param  {Unit} unit
      */
@@ -139,6 +145,37 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ShintakuNoBreath:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        found = true;
+                        unit.applyBuffs(0, 0, 6, 6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    }
+                }
+                break;
+            case Weapon.ReginRave:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.isEvenTurn) {
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                }
+                break;
+            case Weapon.Seidr: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                }
+            }
+                break;
+            case Weapon.ArcaneEclipse:
+                if (this.globalBattleContext.currentTurn === 1) { skillOwner.reduceSpecialCount(1); }
+                break;
             case PassiveC.Severance: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
@@ -1269,7 +1306,6 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
                 }
                 break;
-            case Weapon.StaffOfTwelvePlus:
             case Weapon.DemonicTome:
             case PassiveC.HajimariNoKodo3:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
@@ -2113,6 +2149,20 @@ class BeginningOfTurnSkillHandler {
                 this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
                     unit => { return this.__getStatusEvalUnit(unit).getDefInPrecombat() },
                     unit => { unit.reserveToApplyDefDebuff(-5); }); break;
+            case PassiveB.ChillAtkRes3: {
+                let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let statusFunc = x => {
+                    let unit = this.__getStatusEvalUnit(x);
+                    return unit.getAtkInPrecombat() + unit.getResInPrecombat();
+                };
+                let units = this.__findMaxStatusUnits(group, statusFunc);
+                for (let unit of units) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyDebuffs(-6, 0, 0, -6);
+                    }
+                }
+            }
+                break;
             case PassiveB.ChillDefRes3: {
                 let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
                 let statusFunc = x => {
@@ -2122,7 +2172,7 @@ class BeginningOfTurnSkillHandler {
                 let units = this.__findMaxStatusUnits(group, statusFunc);
                 for (let unit of units) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
-                        u.reserveToApplyDebuffs(0, 0, -7, -7);
+                        u.reserveToApplyDebuffs(0, 0, -6, -6);
                     }
                 }
             }
@@ -2204,6 +2254,41 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.applyBuffs(6, 6, 6, 0);
                 }
             }
+                break;
+        }
+    }
+
+    applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {
+        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
+
+        switch (skillId) {
+            case PassiveC.FutureFocused:
+                if (this.isOddTurn) {
+                    let units = [];
+                    let distance = Number.MAX_SAFE_INTEGER;
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        let inCross =
+                            skillOwner.posX === unit.posX ||
+                            skillOwner.posY === unit.posY;
+                        if (!inCross) {
+                            continue;
+                        }
+                        let d = skillOwner.distance(unit);
+                        if (d > distance) {
+                            continue;
+                        } else if (d === distance) {
+                            units.push(unit);
+                        } else {
+                            units = [unit]
+                            distance = d;
+                        }
+                    }
+                    for (let unit of units) {
+                        if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3) {
+                            unit.isActionDone = true;
+                        }
+                    }
+                }
                 break;
         }
     }
@@ -2317,6 +2402,8 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveHeal(7);
                 }
                 break;
+            case Weapon.AidPlus:
+            case Weapon.StaffOfTwelvePlus:
             case PassiveC.SeimeiNoKagayaki:
             case PassiveC.SparklingBoostPlus: {
                 let targetUnits = [];
@@ -2332,7 +2419,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 for (let unit of targetUnits) {
-                    let amount = skillId === PassiveC.SeimeiNoKagayaki ? 10 : 20;
+                    let amount = skillId === PassiveC.SparklingBoostPlus ? 20 : 10;
                     unit.reserveHeal(amount);
                 }
             }
