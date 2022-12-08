@@ -1000,158 +1000,156 @@ class DamageCalculatorWrapper {
     }
 
     /**
-     * 戦闘順入れ替えスキルを適用します。
+     * 戦闘順入れ替えスキルを適用します。戦闘中バフが決定する前に呼び出されます（戦闘中のステータス比較を行う処理は入れないでください）。
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
     __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
         {
-            switch (defUnit.weapon) {
-                case Weapon.Urvan:
-                    {
+            // defUnitのスキル効果
+            for (let skillId of defUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.Urvan:
                         if (defUnit.isWeaponSpecialRefined) {
                             // 敵に攻め立て強制
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                    }
-                    break;
-            }
-
-            switch (defUnit.passiveB) {
-                case PassiveB.HolyWarsEnd:
-                    if (defUnit.battleContext.restHpPercentage >= 50) {
-                        defUnit.battleContext.isDefDesperationActivatable = true;
-                    }
-                    break;
+                        break;
+                    case PassiveB.HolyWarsEnd:
+                        if (defUnit.battleContext.restHpPercentage >= 50) {
+                            defUnit.battleContext.isDefDesperationActivatable = true;
+                        }
+                        break;
+                }
             }
         }
 
         {
-            switch (atkUnit.weapon) {
-                case Weapon.KeenCoyoteBow:
-                    if (atkUnit.battleContext.restHpPercentage >= 25) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-                case Weapon.NewDawn:
-                case Weapon.Thunderbrand:
-                    if (defUnit.battleContext.restHpPercentage >= 50) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-                case Weapon.TalreganAxe:
-                    atkUnit.battleContext.isDesperationActivatable = true;
-                    break;
-                case Weapon.DarkSpikesT:
-                    if (atkUnit.battleContext.restHpPercentage <= 99) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-                case Weapon.Forusethi:
-                    if (atkUnit.isWeaponRefined) {
+            // atkUnitのスキル効果
+            for (let skillId of defUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.KeenCoyoteBow:
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                    }
-                    else {
-                        if (atkUnit.battleContext.restHpPercentage >= 50) {
+                        break;
+                    case Weapon.NewDawn:
+                    case Weapon.Thunderbrand:
+                        if (defUnit.battleContext.restHpPercentage >= 50) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                    }
-                    break;
-                case Weapon.YonkaiNoSaiki: {
-                    let threshold = atkUnit.isWeaponRefined ? 25 : 50;
-                    if (atkUnit.battleContext.restHpPercentage >= threshold) {
+                        break;
+                    case Weapon.TalreganAxe:
                         atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                }
-                    break;
-                case Weapon.AnkokuNoKen:
-                    if (!atkUnit.isWeaponRefined) {
-                        if (atkUnit.battleContext.restHpPercentage >= 50) {
+                        break;
+                    case Weapon.DarkSpikesT:
+                        if (atkUnit.battleContext.restHpPercentage <= 99) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                    } else {
-                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        break;
+                    case Weapon.Forusethi:
+                        if (atkUnit.isWeaponRefined) {
+                            if (atkUnit.battleContext.restHpPercentage >= 25) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        else {
+                            if (atkUnit.battleContext.restHpPercentage >= 50) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
+                    case Weapon.YonkaiNoSaiki: {
+                        let threshold = atkUnit.isWeaponRefined ? 25 : 50;
+                        if (atkUnit.battleContext.restHpPercentage >= threshold) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
                     }
-                    break;
-                case Weapon.SoulCaty:
-                    if (atkUnit.isWeaponSpecialRefined) {
+                        break;
+                    case Weapon.AnkokuNoKen:
+                        if (!atkUnit.isWeaponRefined) {
+                            if (atkUnit.battleContext.restHpPercentage >= 50) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        } else {
+                            if (atkUnit.battleContext.restHpPercentage >= 25) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
+                    case Weapon.SoulCaty:
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            if (atkUnit.battleContext.restHpPercentage <= 75) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        else {
+                            if (atkUnit.battleContext.restHpPercentage <= 50) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
+                    case Weapon.Hitode:
+                    case Weapon.HitodePlus:
+                    case Weapon.NangokuJuice:
+                    case Weapon.NangokuJuicePlus:
+                    case Weapon.SakanaNoYumi:
+                    case Weapon.SakanaNoYumiPlus:
                         if (atkUnit.battleContext.restHpPercentage <= 75) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                    }
-                    else {
+                        break;
+                    case Weapon.IhoNoHIken:
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            if (atkUnit.battleContext.restHpPercentage <= 75) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
+                    case Weapon.HigaimosoNoYumi:
+                        if (atkUnit.hasNegativeStatusEffect()
+                            || !atkUnit.battleContext.isRestHpFull
+                        ) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                        break;
+                    case PassiveB.HodrsZeal:
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                        break;
+                    case PassiveB.YngviAscendant:
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                        break;
+                    case PassiveB.Frenzy3:
                         if (atkUnit.battleContext.restHpPercentage <= 50) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                    }
-                    break;
-                case Weapon.Hitode:
-                case Weapon.HitodePlus:
-                case Weapon.NangokuJuice:
-                case Weapon.NangokuJuicePlus:
-                case Weapon.SakanaNoYumi:
-                case Weapon.SakanaNoYumiPlus:
-                    if (atkUnit.battleContext.restHpPercentage <= 75) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-                case Weapon.IhoNoHIken:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        if (atkUnit.battleContext.restHpPercentage <= 75) {
+                        break;
+                    case PassiveB.KyusyuTaikei3:
+                        atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (atkUnit.battleContext.restHpPercentage <= 80) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                    }
-                    break;
-                case Weapon.HigaimosoNoYumi:
-                    if (atkUnit.hasNegativeStatusEffect()
-                        || !atkUnit.battleContext.isRestHpFull
-                    ) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-            }
-            switch (atkUnit.passiveB) {
-                case PassiveB.HodrsZeal:
-                    atkUnit.battleContext.isDesperationActivatable = true;
-                    break;
-                case PassiveB.YngviAscendant:
-                    atkUnit.battleContext.isDesperationActivatable = true;
-                    break;
-                case PassiveB.Frenzy3:
-                    if (atkUnit.battleContext.restHpPercentage <= 50) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-                case PassiveB.KyusyuTaikei3:
-                    atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                    if (atkUnit.battleContext.restHpPercentage <= 80) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-                case PassiveB.DiveBomb3:
-                    if (atkUnit.battleContext.restHpPercentage >= 80 && defUnit.battleContext.restHpPercentage >= 80) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
-                case PassiveB.KillingIntent:
+                        break;
+                    case PassiveB.DiveBomb3:
+                        if (atkUnit.battleContext.restHpPercentage >= 80 && defUnit.battleContext.restHpPercentage >= 80) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                        break;
+                    case PassiveB.KillingIntent:
                     {
                         if (defUnit.battleContext.restHpPercentage < 100 || defUnit.hasNegativeStatusEffect()) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
                     }
-                    break;
-                case PassiveB.SphiasSoul:
-                case PassiveB.Desperation3: // 攻め立て3
-                    if (atkUnit.battleContext.restHpPercentage <= 75) {
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                    }
-                    break;
+                        break;
+                    case PassiveB.SphiasSoul:
+                    case PassiveB.Desperation3: // 攻め立て3
+                        if (atkUnit.battleContext.restHpPercentage <= 75) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                        break;
+                }
             }
-
         }
     }
 
@@ -6230,9 +6228,24 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Tangurisuni] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.isBuffed || targetUnit.isMobilityIncreased) {
-                targetUnit.addAllSpur(3);
-                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.isBuffedInCombat(enemyUnit) || targetUnit.isMobilityIncreased) {
+                    targetUnit.addAllSpur(3);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ChisouGeiborugu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -8884,6 +8897,18 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.Tangurisuni:
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                                if (enemyUnit.battleContext.initiatesCombat && isRangedWeaponType(enemyUnit.weaponType)) {
+                                    if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                                        targetUnit.battleContext.isVantageActivatable = true;
+                                        targetUnit.battleContext.isDefDesperationActivatable = true;
+                                    }
+                                }
+                            }
+                        }
+                        break;
                     case Weapon.ReginRave:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.restHpPercentage >= 25 &&
