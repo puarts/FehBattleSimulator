@@ -1467,6 +1467,7 @@ const Weapon = {
     Seidr: 2280, // セイズ
     UnboundBowPlus: 2283, // 孤絶の弓+
     UnboundBow: 2284, // 孤絶の弓
+    Aurgelmir: 2285, // アウルゲルミル
 
     // 2022年12月 武器錬成
     RetainersReport: 2286, // 参謀役の書

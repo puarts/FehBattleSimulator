@@ -490,6 +490,23 @@ __calcFixedSpecialAddDamage() {
     targetUnit.battleContext.additionalDamageOfSpecial += N;
 }
 
+最初の受けた攻撃のダメージをN%軽減し、軽減した値を、自身の次の攻撃のダメージに加算(他のスキルによる軽減値も含む)(その戦闘中のみ)
+__init__applySkillEffectForUnitFuncDict() {
+    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(N / 100.0, enemyUnit);
+}
+__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+        fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+        atkUnit.battleContext.reducedDamageForNextAttack = 0;
+    }
+}
+__calcUnitAttackDamage() {
+    if (!context.isFirstAttack(atkUnit)) break;
+    defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+}
+
 ダメージをHPが1残るように軽減(祈り)
 __canActivateMiracle() {
     return true;

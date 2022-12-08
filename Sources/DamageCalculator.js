@@ -346,6 +346,7 @@ class DamageCalculator {
                         atkUnit.battleContext.additionalDamageOfSpecial += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
                     }
                     break;
+                case Weapon.Aurgelmir:
                 case PassiveB.DivineRecreation:
                 case Weapon.Ginnungagap:
                     if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
@@ -1125,6 +1126,13 @@ class DamageCalculator {
 
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Aurgelmir:
+                    if (!context.isFirstAttack(atkUnit)) break;
+                    if (defUnit.battleContext.weaponSkillCondSatisfied) {
+                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                    }
+                    break;
                 case Weapon.Ginnungagap:
                     // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
                     if (!context.isFirstAttack(atkUnit)) break;
