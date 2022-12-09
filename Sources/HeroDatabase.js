@@ -5,7 +5,11 @@ class HeroDatabase {
      * @param {HeroInfo[]} heroInfos
      */
     constructor(heroInfos) {
+        /** @type {HeroInfo[]} */
         this._heroInfos = heroInfos;
+
+        /** @type {HeroInfo[]} */
+        this.heroInfosWithoutEnemy = Array.from(heroInfos.filter(x => !x.name.includes("敵")));
 
         /** @type {{String, HeroInfo}} */
         this._nameToInfoDict = {};

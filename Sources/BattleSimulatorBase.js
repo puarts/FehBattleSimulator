@@ -2038,7 +2038,8 @@ class BattleSimmulatorBase {
     findSimilarHeroNameInfo(partialName, epithet) {
         let result = this.__findSimilarNameInfo(
             partialName,
-            g_appData.heroInfos.data,
+            // 敵を画像認識したいことはないと思うので、敵が除外されたリストから探す
+            g_appData.heroInfos.heroInfosWithoutEnemy,
             info => {
                 if (info.pureNames.length == 0) {
                     return 10000;
