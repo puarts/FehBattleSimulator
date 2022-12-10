@@ -8223,12 +8223,6 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
-            case Weapon.IlluminatingHorn:
-                if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                    targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
-                    targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
-                }
-                break;
             case Weapon.Kormt:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     let condA = this.__isThereAllyInSpecifiedSpaces(targetUnit, 3);
@@ -8313,12 +8307,6 @@ class DamageCalculatorWrapper {
                         }
                         targetUnit.atkSpur += maxBuff;
                     }
-                }
-                break;
-            case Weapon.PastelPoleaxe:
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
-                    targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                 }
                 break;
             case Weapon.WingLeftedSpear:
@@ -8892,6 +8880,17 @@ class DamageCalculatorWrapper {
             }
         }
 
+        // マリア算（アスク、ディミトリ算）
+        function mariaCalc(ratio = 0.20) {
+            applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit));
+        }
+
+        // ステータスによる固定ダメージ増加・軽減
+        function applyFixedValueSkill(status, ratio = 0.20) {
+            targetUnit.battleContext.additionalDamage += Math.trunc(status * ratio);
+            targetUnit.battleContext.damageReductionValue += Math.trunc(status * ratio);
+        }
+
         {
             if (targetUnit.isCaptain) {
                 switch (targetUnit.captain) {
@@ -8905,6 +8904,16 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.PastelPoleaxe:
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            mariaCalc();
+                        }
+                        break;
+                    case Weapon.IlluminatingHorn:
+                        if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                            mariaCalc();
+                        }
+                        break;
                     case Weapon.Tangurisuni:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -9003,9 +9012,7 @@ class DamageCalculatorWrapper {
                     case Weapon.MoonGradivus:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                                let def = targetUnit.getEvalDefInCombat(enemyUnit);
-                                targetUnit.battleContext.additionalDamage += Math.trunc(def * 0.20);
-                                targetUnit.battleContext.damageReductionValue += Math.trunc(def * 0.20);
+                                mariaCalc();
                             }
                         }
                         break;
