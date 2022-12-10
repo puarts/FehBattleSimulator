@@ -972,9 +972,6 @@ class DamageCalculatorWrapper {
             case PassiveC.ImpenetrableDark:
                 return true;
         }
-        if (enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
-            return true;
-        }
         return false;
     }
     /**
@@ -12357,6 +12354,7 @@ class DamageCalculatorWrapper {
             if (!ignoresSkillEffectFromAllies) {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                     if (ignoresSkillEffectFromAlliesByFeudSkill && feudFunc(unit)) continue;
+                    if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) continue;
                     // 距離に関係ないもの
                     {
                         switch (unit.passiveC) {
@@ -13451,9 +13449,6 @@ class DamageCalculatorWrapper {
                 break;
             case PassiveC.ImpenetrableDark:
                 return true;
-        }
-        if (enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
-            return true;
         }
         return false;
     }
