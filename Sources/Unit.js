@@ -273,6 +273,8 @@ NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
 NegativeStatusEffectTable[StatusEffectType.FalseStart] = 0;
 NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
 NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
+NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
+NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
