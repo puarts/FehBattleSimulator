@@ -368,6 +368,12 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Exposure.webp";
         case StatusEffectType.Canto1:
             return g_imageRootPath + "StatusEffect_Canto1.webp";
+        case StatusEffectType.FoePenaltyDoubler:
+            return g_imageRootPath + "StatusEffect_FoePenaltyDoubler.webp";
+        case StatusEffectType.Undefended:
+            return g_imageRootPath + "StatusEffect_Undefended.webp";
+        case StatusEffectType.Feud:
+            return g_imageRootPath + "StatusEffect_Feud.webp";
         default: return "";
     }
 }
