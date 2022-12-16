@@ -6928,6 +6928,15 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpecialFighter4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 40) {
+                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5
+                targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.Cancel1] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage === 100) {
                 targetUnit.battleContext.reducesCooldownCount = true;

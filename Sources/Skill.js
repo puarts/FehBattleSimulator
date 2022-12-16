@@ -2013,6 +2013,7 @@ const PassiveB = {
     VengefulFighter3: 602, // 迎撃隊形3
     WaryFighter3: 600, // 守備隊形3
     SpecialFighter3: 603,// 奥義隊形3
+    SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
     SlickFighter3: 1497, // 正面隊形・自己3
     WilyFighter3: 2003, //正面隊形・敵方3
