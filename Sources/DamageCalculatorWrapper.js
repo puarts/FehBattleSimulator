@@ -2064,6 +2064,26 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.SolemnAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    let percentage = enemyUnit.battleContext.restHpPercentage;
+                    if (percentage >= 20) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    }
+                    if (percentage >= 40) {
+                        let atk = enemyUnit.getAtkInPrecombat();
+                        let amount = Math.max(Math.min(Math.trunc(atk * 0.25) - 8, 10), 0);
+                        enemyUnit.addSpurs(-amount, -amount, 0, 0);
+                    }
+                    if (percentage >= 60) {
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Aurgelmir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;

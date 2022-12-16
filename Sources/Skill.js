@@ -1471,6 +1471,10 @@ const Weapon = {
 
     // 2022年12月 武器錬成
     RetainersReport: 2286, // 参謀役の書
+    // 超英雄（おねだり大作戦）
+    // https://www.youtube.com/watch?v=JYEaDRQvPnc
+    // https://www.youtube.com/watch?v=vflGqP434Yc
+    SolemnAxe: 2288, // 荘厳なる祝福の聖斧
 };
 
 const Support = {
