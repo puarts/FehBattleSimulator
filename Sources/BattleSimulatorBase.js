@@ -1021,7 +1021,7 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
-            case Hero.HarmonizedCordelia:
+            case Hero.HarmonizedCordelia: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
                     if (this.__areSameOrigin(unit, targetOrigins)) {
@@ -1031,6 +1031,7 @@ class BattleSimmulatorBase {
                     }
                 }
                 break;
+            }
             case Hero.DuoDuma:
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit)) {
                     if (Math.abs(unit.posX - duoUnit.posX) <= 2 &&
