@@ -13223,6 +13223,9 @@ class DamageCalculatorWrapper {
                     case PassiveC.SpdResHold:
                         targetUnit.addSpurs(0, -4, 0, -4);
                         break;
+                    case PassiveC.DefResHold:
+                        targetUnit.addSpurs(0, 0, -4, -4);
+                        break;
                     case Captain.Eminence:
                         targetUnit.addSpurs(0, 0, -3, -3);
                         break;
