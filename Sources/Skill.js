@@ -1477,6 +1477,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=vflGqP434Yc
     SolemnAxe: 2288, // 荘厳なる祝福の聖斧
     SevenfoldGifts: 2290, // 皆への七つの贈り物
+    PeppyBowPlus: 2291, // 聖夜の弓+
 };
 
 const Support = {
