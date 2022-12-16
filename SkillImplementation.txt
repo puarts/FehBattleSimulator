@@ -404,6 +404,9 @@ __init__applySpecialSkillEffect() {
 敵から攻撃を受ける際に発動する奥義を装備していたら
 if (isDefenseSpecial(skillOwner.special)) {}
 
+攻撃時発動の奥義装備時
+if (isNormalAttackSpecial(skillOwner.special)) {}
+
 「敵から攻撃を受ける際に発動する奥義」を発動できない
 enemyUnit.battleContext.preventedDefenderSpecial = true;
 

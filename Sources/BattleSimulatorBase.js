@@ -1021,6 +1021,17 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedCordelia: {
+                let targetOrigins = duoUnit.heroInfo.origin.split('|');
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                        unit.applyBuffs(6, 6, 0, 0);
+                        unit.addStatusEffect(StatusEffectType.ResonantBlades);
+                        unit.addStatusEffect(StatusEffectType.Treachery);
+                    }
+                }
+                break;
+            }
             case Hero.DuoDuma:
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit)) {
                     if (Math.abs(unit.posX - duoUnit.posX) <= 2 &&
@@ -7884,36 +7895,41 @@ class BattleSimmulatorBase {
     __applyRefresh(skillOwnerUnit, targetUnit) {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
-        switch (skillOwnerUnit.support) {
-            case Support.CallToFlame:
-                targetUnit.applyAtkBuff(6);
-                targetUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
-                if (isWeaponTypeBreath(targetUnit.weaponType)) {
-                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                }
-                break;
-            case Support.Play:
-                if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
-                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
-                        unit.applyAllDebuff(-4);
+        for (let skillId of skillOwnerUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.SevenfoldGifts:
+                    targetUnit.applyAllBuff(6);
+                    targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus)
+                    break;
+                case Support.CallToFlame:
+                    targetUnit.applyAtkBuff(6);
+                    targetUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    if (isWeaponTypeBreath(targetUnit.weaponType)) {
+                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                     }
-                }
-                break;
-            case Support.GrayWaves:
+                    break;
+                case Support.Play:
+                    if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
+                        for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
+                            unit.applyAllDebuff(-4);
+                        }
+                    }
+                    break;
+                case Support.GrayWaves:
                 {
                     if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
                         targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                     }
                 }
-                break;
-            case Support.GrayWaves2: {
-                if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
-                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    break;
+                case Support.GrayWaves2: {
+                    if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                    targetUnit.addStatusEffect(StatusEffectType.NullPanic);
                 }
-                targetUnit.addStatusEffect(StatusEffectType.NullPanic);
-            }
-                break;
-            case Support.GentleDream:
+                    break;
+                case Support.GentleDream:
                 {
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit, false)) {
                         if (unit.posX == skillOwnerUnit.posX
@@ -7926,8 +7942,8 @@ class BattleSimmulatorBase {
                         }
                     }
                 }
-                break;
-            case Support.WhimsicalDream:
+                    break;
+                case Support.WhimsicalDream:
                 {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
                         if (skillOwnerUnit === unit) continue;
@@ -7941,20 +7957,16 @@ class BattleSimmulatorBase {
                         }
                     }
                 }
-                break;
-            case Support.SweetDreams:
-                targetUnit.applyAllBuff(3);
-                for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
-                    unit.applyAllDebuff(-4);
-                }
-                break;
-            case Support.FrightfulDream:
-                this.__applyRuse(skillOwnerUnit, targetUnit, unit => unit.applyAllDebuff(-3));
-                break;
-        }
-
-        for (let skillId of skillOwnerUnit.enumerateSkills()) {
-            switch (skillId) {
+                    break;
+                case Support.SweetDreams:
+                    targetUnit.applyAllBuff(3);
+                    for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                        unit.applyAllDebuff(-4);
+                    }
+                    break;
+                case Support.FrightfulDream:
+                    this.__applyRuse(skillOwnerUnit, targetUnit, unit => unit.applyAllDebuff(-3));
+                    break;
                 case Weapon.FaithfulBreath:
                     for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
                         unit.applyDefDebuff(-6);

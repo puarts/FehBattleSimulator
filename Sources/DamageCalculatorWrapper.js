@@ -2064,6 +2064,49 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.PeppyCanePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, 0, 0, -5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.InseverableSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.PeppyBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, 0, -5, 0);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SevenfoldGifts] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SolemnAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    let percentage = enemyUnit.battleContext.restHpPercentage;
+                    if (percentage >= 20) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    }
+                    if (percentage >= 40) {
+                        let atk = enemyUnit.getAtkInPrecombat();
+                        let amount = Math.max(Math.min(Math.trunc(atk * 0.25) - 8, 10), 0);
+                        enemyUnit.addSpurs(-amount, -amount, 0, 0);
+                    }
+                    if (percentage >= 60) {
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Aurgelmir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
@@ -6908,6 +6951,15 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.SpecialFighter4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 40) {
+                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5
+                targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.Cancel1] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage === 100) {
                 targetUnit.battleContext.reducesCooldownCount = true;
@@ -7935,6 +7987,19 @@ class DamageCalculatorWrapper {
                 }
             }
             if (targetUnit.battleContext.initiatesCombat && triangleAttackerCount >= 2) {
+                targetUnit.battleContext.attackCount = 2;
+            }
+        }
+
+        // デュアルアタック
+        if (targetUnit.hasStatusEffect(StatusEffectType.DualStrike)) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 1, false)) {
+                if (unit.hasStatusEffect(StatusEffectType.DualStrike)) {
+                    found = true;
+                }
+            }
+            if (targetUnit.battleContext.initiatesCombat && found) {
                 targetUnit.battleContext.attackCount = 2;
             }
         }
@@ -13163,6 +13228,9 @@ class DamageCalculatorWrapper {
                         break;
                     case PassiveC.SpdResHold:
                         targetUnit.addSpurs(0, -4, 0, -4);
+                        break;
+                    case PassiveC.DefResHold:
+                        targetUnit.addSpurs(0, 0, -4, -4);
                         break;
                     case Captain.Eminence:
                         targetUnit.addSpurs(0, 0, -3, -3);

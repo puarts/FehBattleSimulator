@@ -1471,6 +1471,15 @@ const Weapon = {
 
     // 2022年12月 武器錬成
     RetainersReport: 2286, // 参謀役の書
+
+    // 超英雄（おねだり大作戦）
+    // https://www.youtube.com/watch?v=JYEaDRQvPnc
+    // https://www.youtube.com/watch?v=vflGqP434Yc
+    SolemnAxe: 2288, // 荘厳なる祝福の聖斧
+    SevenfoldGifts: 2290, // 皆への七つの贈り物
+    PeppyBowPlus: 2291, // 聖夜の弓+
+    InseverableSpear: 2293, // 母娘の静やかな祝福
+    PeppyCanePlus: 2295, // 聖夜のステッキ+
 };
 
 const Support = {
@@ -2009,6 +2018,7 @@ const PassiveB = {
     VengefulFighter3: 602, // 迎撃隊形3
     WaryFighter3: 600, // 守備隊形3
     SpecialFighter3: 603,// 奥義隊形3
+    SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
     SlickFighter3: 1497, // 正面隊形・自己3
     WilyFighter3: 2003, //正面隊形・敵方3
@@ -2487,6 +2497,7 @@ const PassiveC = {
     SpdResRein3: 1538, // 速さ魔防の牽制3
     SpdResHold: 2029, // 速さ魔防の大牽制
     DefResRein3: 1787, // 守備魔防の牽制3
+    DefResHold: 2294, // 守備魔防の大牽制
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
     EvenTempest3: 1681, // 迅雷風烈・偶数3
