@@ -2064,6 +2064,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.InseverableSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PeppyBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, 0, -5, 0);
@@ -7975,6 +7981,19 @@ class DamageCalculatorWrapper {
                 }
             }
             if (targetUnit.battleContext.initiatesCombat && triangleAttackerCount >= 2) {
+                targetUnit.battleContext.attackCount = 2;
+            }
+        }
+
+        // デュアルアタック
+        if (targetUnit.hasStatusEffect(StatusEffectType.DualStrike)) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 1, false)) {
+                if (unit.hasStatusEffect(StatusEffectType.DualStrike)) {
+                    found = true;
+                }
+            }
+            if (targetUnit.battleContext.initiatesCombat && found) {
                 targetUnit.battleContext.attackCount = 2;
             }
         }

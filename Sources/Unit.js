@@ -221,6 +221,7 @@ const StatusEffectType = {
     FoePenaltyDoubler: 40, // 敵弱化増幅
     Undefended: 41, // 護られ不可
     Feud: 42, // 暗闘
+    DualStrike: 43, // デュアルアタック
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -374,6 +375,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Undefended.webp";
         case StatusEffectType.Feud:
             return g_imageRootPath + "StatusEffect_Feud.webp";
+        case StatusEffectType.DualStrike:
+            return g_imageRootPath + "StatusEffect_DualStrike.webp";
         default: return "";
     }
 }

@@ -1478,6 +1478,7 @@ const Weapon = {
     SolemnAxe: 2288, // 荘厳なる祝福の聖斧
     SevenfoldGifts: 2290, // 皆への七つの贈り物
     PeppyBowPlus: 2291, // 聖夜の弓+
+    InseverableSpear: 2293, // 母娘の静やかな祝福
 };
 
 const Support = {

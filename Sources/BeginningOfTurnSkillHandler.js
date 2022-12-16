@@ -145,6 +145,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.InseverableSpear:
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+                        unit.reserveToAddStatusEffect(StatusEffectType.DualStrike);
+                    }
+                }
+                break;
             case Weapon.ShintakuNoBreath:
                 if (skillOwner.isWeaponSpecialRefined) {
                     let found = false;
