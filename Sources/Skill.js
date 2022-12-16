@@ -1479,6 +1479,7 @@ const Weapon = {
     SevenfoldGifts: 2290, // 皆への七つの贈り物
     PeppyBowPlus: 2291, // 聖夜の弓+
     InseverableSpear: 2293, // 母娘の静やかな祝福
+    PeppyCanePlus: 2295, // 聖夜のステッキ+
 };
 
 const Support = {
