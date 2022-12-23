@@ -8846,13 +8846,13 @@ class DamageCalculatorWrapper {
         switch (targetUnit.passiveB) {
             case PassiveB.SealDef4:
                 if (!enemyUnit.battleContext.invalidatesOwnDefDebuff) {
-                    let amount = Math.max(7 - enemyUnit.defDebuffTotal, 0);
+                    let amount = Math.max(7 - Math.abs(enemyUnit.defDebuffTotal), 0);
                     enemyUnit.defSpur -= amount;
                 }
                 break;
             case PassiveB.SealRes4:
                 if (!enemyUnit.battleContext.invalidatesOwnResDebuff) {
-                    let amount = Math.max(7 - enemyUnit.resDebuffTotal, 0);
+                    let amount = Math.max(7 - Math.abs(enemyUnit.resDebuffTotal), 0);
                     enemyUnit.resSpur -= amount;
                 }
                 break;
