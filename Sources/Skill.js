@@ -1480,6 +1480,9 @@ const Weapon = {
     PeppyBowPlus: 2291, // 聖夜の弓+
     InseverableSpear: 2293, // 母娘の静やかな祝福
     PeppyCanePlus: 2295, // 聖夜のステッキ+
+
+    // 伝承英雄 (修羅の如き双刃 シェズ)
+    AsuraBlades: 2297, // アスラの双刃
 };
 
 const Support = {

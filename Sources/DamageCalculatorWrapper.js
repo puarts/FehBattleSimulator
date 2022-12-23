@@ -2064,6 +2064,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AsuraBlades] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidateAllOwnDebuffs();
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PeppyCanePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, 0, 0, -5);
@@ -8966,6 +8969,11 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.AsuraBlades:
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                        break;
                     case Weapon.PastelPoleaxe:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             mariaCalc();
