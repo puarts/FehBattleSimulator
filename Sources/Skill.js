@@ -1910,6 +1910,7 @@ const PassiveA = {
     VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
     Duality: 2241, // 魂の秘儀
+    SwiftSlice: 2298, // 連閃
 
     // 防城戦
     AtkSpdBojosen3: 1473,

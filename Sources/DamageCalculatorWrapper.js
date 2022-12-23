@@ -2064,6 +2064,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.SwiftSlice] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(8);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AsuraBlades] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidateAllOwnDebuffs();
         }
@@ -8192,6 +8197,99 @@ class DamageCalculatorWrapper {
             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
                 atkUnit.battleContext.isEffectiveToOpponent = true;
                 return;
+            }
+        }
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.SwiftSlice: {
+                    let weaponType = defUnit.weaponType;
+                    let threshold = 5;
+                    let isNotDragonOrBeast = (!isWeaponTypeBreath(weaponType)) && (!isWeaponTypeBeast(weaponType));
+                    if (isNotDragonOrBeast && defUnit.moveType === MoveType.Infantry) {
+                        threshold = 20;
+                    }
+                    if (atkUnit.battleContext.initiatesCombat &&
+                        atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + threshold) {
+                        if (weaponType === WeaponType.Sword) {
+                            // 剣
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Sword)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (weaponType === WeaponType.Lance) {
+                            // 槍
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Lance)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (weaponType === WeaponType.Axe) {
+                            // 斧
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Axe)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (weaponType === WeaponType.Staff) {
+                            // 杖
+                            // NOTE: 現在杖特効/特効無効は存在しないので強制的に特効にする
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                            // TODO: 杖特効を実装
+                            // if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Staff)) {
+                            //     atkUnit.battleContext.isEffectiveToOpponent = true;
+                            // }
+                        } else if (weaponType === WeaponType.ColorlessBow) {
+                            // 無属性弓
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.ColorlessBow)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (
+                            weaponType === WeaponType.RedBow ||
+                            weaponType === WeaponType.BlueBow ||
+                            weaponType === WeaponType.GreenBow
+                        ) {
+                            // 色弓
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                            // TODO: 色弓特効を実装
+                        } else if (
+                            weaponType === WeaponType.RedBeast ||
+                            weaponType === WeaponType.BlueBeast ||
+                            weaponType === WeaponType.GreenBeast ||
+                            weaponType === WeaponType.ColorlessBeast
+                        ) {
+                            // 獣
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Beast)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (
+                            weaponType === WeaponType.RedBreath ||
+                            weaponType === WeaponType.BlueBreath ||
+                            weaponType === WeaponType.GreenBreath ||
+                            weaponType === WeaponType.ColorlessBreath
+                        ) {
+                            // 竜
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (
+                            weaponType === WeaponType.RedDagger ||
+                            weaponType === WeaponType.BlueDagger ||
+                            weaponType === WeaponType.GreenDagger ||
+                            weaponType === WeaponType.ColorlessDagger
+                        ) {
+                            // 暗器
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                        } else if (
+                            weaponType === WeaponType.RedTome ||
+                            weaponType === WeaponType.BlueTome ||
+                            weaponType === WeaponType.GreenTome ||
+                            weaponType === WeaponType.ColorlessTome
+                        ) {
+                            // 魔法
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Tome)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else {
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                        }
+                    }
+                }
+                    break;
             }
         }
     }
