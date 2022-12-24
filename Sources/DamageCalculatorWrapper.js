@@ -2064,6 +2064,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.SwiftSlice] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(8);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AsuraBlades] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidateAllOwnDebuffs();
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PeppyCanePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, 0, 0, -5);
@@ -2324,6 +2332,9 @@ class DamageCalculatorWrapper {
                     }
                 }
             }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SealSpd4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SealDef4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.defSpur -= 4;
@@ -8191,6 +8202,99 @@ class DamageCalculatorWrapper {
                 return;
             }
         }
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.SwiftSlice: {
+                    let weaponType = defUnit.weaponType;
+                    let threshold = 5;
+                    let isNotDragonOrBeast = (!isWeaponTypeBreath(weaponType)) && (!isWeaponTypeBeast(weaponType));
+                    if (isNotDragonOrBeast && defUnit.moveType === MoveType.Infantry) {
+                        threshold = 20;
+                    }
+                    if (atkUnit.battleContext.initiatesCombat &&
+                        atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) + threshold) {
+                        if (weaponType === WeaponType.Sword) {
+                            // 剣
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Sword)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (weaponType === WeaponType.Lance) {
+                            // 槍
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Lance)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (weaponType === WeaponType.Axe) {
+                            // 斧
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Axe)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (weaponType === WeaponType.Staff) {
+                            // 杖
+                            // NOTE: 現在杖特効/特効無効は存在しないので強制的に特効にする
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                            // TODO: 杖特効を実装
+                            // if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Staff)) {
+                            //     atkUnit.battleContext.isEffectiveToOpponent = true;
+                            // }
+                        } else if (weaponType === WeaponType.ColorlessBow) {
+                            // 無属性弓
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.ColorlessBow)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (
+                            weaponType === WeaponType.RedBow ||
+                            weaponType === WeaponType.BlueBow ||
+                            weaponType === WeaponType.GreenBow
+                        ) {
+                            // 色弓
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                            // TODO: 色弓特効を実装
+                        } else if (
+                            weaponType === WeaponType.RedBeast ||
+                            weaponType === WeaponType.BlueBeast ||
+                            weaponType === WeaponType.GreenBeast ||
+                            weaponType === WeaponType.ColorlessBeast
+                        ) {
+                            // 獣
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Beast)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (
+                            weaponType === WeaponType.RedBreath ||
+                            weaponType === WeaponType.BlueBreath ||
+                            weaponType === WeaponType.GreenBreath ||
+                            weaponType === WeaponType.ColorlessBreath
+                        ) {
+                            // 竜
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (
+                            weaponType === WeaponType.RedDagger ||
+                            weaponType === WeaponType.BlueDagger ||
+                            weaponType === WeaponType.GreenDagger ||
+                            weaponType === WeaponType.ColorlessDagger
+                        ) {
+                            // 暗器
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                        } else if (
+                            weaponType === WeaponType.RedTome ||
+                            weaponType === WeaponType.BlueTome ||
+                            weaponType === WeaponType.GreenTome ||
+                            weaponType === WeaponType.ColorlessTome
+                        ) {
+                            // 魔法
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Tome)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else {
+                            atkUnit.battleContext.isEffectiveToOpponent = true;
+                        }
+                    }
+                }
+                    break;
+            }
+        }
     }
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
@@ -8844,15 +8948,21 @@ class DamageCalculatorWrapper {
         }
 
         switch (targetUnit.passiveB) {
+            case PassiveB.SealSpd4:
+                if (!enemyUnit.battleContext.invalidatesOwnSpdDebuff) {
+                    let amount = Math.max(7 - Math.abs(enemyUnit.spdDebuffTotal), 0);
+                    enemyUnit.spdSpur -= amount;
+                }
+                break;
             case PassiveB.SealDef4:
                 if (!enemyUnit.battleContext.invalidatesOwnDefDebuff) {
-                    let amount = Math.max(7 - enemyUnit.defDebuffTotal, 0);
+                    let amount = Math.max(7 - Math.abs(enemyUnit.defDebuffTotal), 0);
                     enemyUnit.defSpur -= amount;
                 }
                 break;
             case PassiveB.SealRes4:
                 if (!enemyUnit.battleContext.invalidatesOwnResDebuff) {
-                    let amount = Math.max(7 - enemyUnit.resDebuffTotal, 0);
+                    let amount = Math.max(7 - Math.abs(enemyUnit.resDebuffTotal), 0);
                     enemyUnit.resSpur -= amount;
                 }
                 break;
@@ -8966,6 +9076,11 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.AsuraBlades:
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                        break;
                     case Weapon.PastelPoleaxe:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             mariaCalc();
@@ -9523,6 +9638,11 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.KentoushiNoGoken:
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
+                        break;
+                    case PassiveB.SealSpd4:
+                        if (enemyUnit.spdDebuffTotal > 0) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
                         break;
                     case PassiveB.SealDef4:
                         if (enemyUnit.defDebuffTotal > 0) {

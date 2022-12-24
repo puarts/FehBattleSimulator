@@ -1480,6 +1480,9 @@ const Weapon = {
     PeppyBowPlus: 2291, // 聖夜の弓+
     InseverableSpear: 2293, // 母娘の静やかな祝福
     PeppyCanePlus: 2295, // 聖夜のステッキ+
+
+    // 伝承英雄 (修羅の如き双刃 シェズ)
+    AsuraBlades: 2297, // アスラの双刃
 };
 
 const Support = {
@@ -1907,6 +1910,7 @@ const PassiveA = {
     VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
     Duality: 2241, // 魂の秘儀
+    SwiftSlice: 2298, // 連閃
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -2094,6 +2098,7 @@ const PassiveB = {
     SealSpd1: 1457,
     SealSpd2: 1458,
     SealSpd3: 608,
+    SealSpd4: 2299, // 速さ封じ4
     SealDef1: 1459,
     SealDef2: 1460,
     SealDef3: 609, // 守備封じ3
