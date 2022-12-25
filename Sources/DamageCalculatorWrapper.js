@@ -1133,11 +1133,11 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case PassiveB.KillingIntent:
-                    {
-                        if (defUnit.battleContext.restHpPercentage < 100 || defUnit.hasNegativeStatusEffect()) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
+                        {
+                            if (defUnit.battleContext.restHpPercentage < 100 || defUnit.hasNegativeStatusEffect()) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
                         }
-                    }
                         break;
                     case PassiveB.SphiasSoul:
                     case PassiveB.Desperation3: // 攻め立て3
@@ -2391,7 +2391,7 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.Dragonhide] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.battleContext.initiatesCombat ||  enemyUnit.battleContext.restHpPercentage >= 75) {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.addAllSpur(-8);
                 targetUnit.battleContext.increaseCooldownCountForBoth();
             }
@@ -2537,7 +2537,7 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[Weapon.FumingFreikugel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let isThereHigherDefAlly = self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                    unit => targetUnit.getDefInPrecombat() < unit.getDefInPrecombat());
+                unit => targetUnit.getDefInPrecombat() < unit.getDefInPrecombat());
             if (!isThereHigherDefAlly || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -8230,12 +8230,9 @@ class DamageCalculatorWrapper {
                             }
                         } else if (weaponType === WeaponType.Staff) {
                             // 杖
-                            // NOTE: 現在杖特効/特効無効は存在しないので強制的に特効にする
-                            atkUnit.battleContext.isEffectiveToOpponent = true;
-                            // TODO: 杖特効を実装
-                            // if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Staff)) {
-                            //     atkUnit.battleContext.isEffectiveToOpponent = true;
-                            // }
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Staff)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
                         } else if (weaponType === WeaponType.ColorlessBow) {
                             // 無属性弓
                             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.ColorlessBow)) {
@@ -8246,9 +8243,10 @@ class DamageCalculatorWrapper {
                             weaponType === WeaponType.BlueBow ||
                             weaponType === WeaponType.GreenBow
                         ) {
-                            // 色弓
-                            atkUnit.battleContext.isEffectiveToOpponent = true;
-                            // TODO: 色弓特効を実装
+                            // 色弓特効は今後出るか分からないので弓特効の判定でまとめておく
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Bow)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
                         } else if (
                             weaponType === WeaponType.RedBeast ||
                             weaponType === WeaponType.BlueBeast ||
@@ -8269,20 +8267,12 @@ class DamageCalculatorWrapper {
                             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
                                 atkUnit.battleContext.isEffectiveToOpponent = true;
                             }
-                        } else if (
-                            weaponType === WeaponType.RedDagger ||
-                            weaponType === WeaponType.BlueDagger ||
-                            weaponType === WeaponType.GreenDagger ||
-                            weaponType === WeaponType.ColorlessDagger
-                        ) {
+                        } else if (isWeaponTypeDagger(weaponType)) {
                             // 暗器
-                            atkUnit.battleContext.isEffectiveToOpponent = true;
-                        } else if (
-                            weaponType === WeaponType.RedTome ||
-                            weaponType === WeaponType.BlueTome ||
-                            weaponType === WeaponType.GreenTome ||
-                            weaponType === WeaponType.ColorlessTome
-                        ) {
+                            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dagger)) {
+                                atkUnit.battleContext.isEffectiveToOpponent = true;
+                            }
+                        } else if (isWeaponTypeTome(weaponType)) {
                             // 魔法
                             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Tome)) {
                                 atkUnit.battleContext.isEffectiveToOpponent = true;
@@ -10154,10 +10144,10 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveA.HashinDanryuKen:
-                {
-                    let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
-                    atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.25);
-                }
+                    {
+                        let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.25);
+                    }
                     break;
                 case Weapon.ChaosManifest:
                     if (atkUnit.isWeaponSpecialRefined) {
@@ -10323,21 +10313,21 @@ class DamageCalculatorWrapper {
                 case Weapon.ShiningBow:
                 case Weapon.ShiningBowPlus:
                 case Weapon.ZeroNoGyakukyu:
-                {
-                    let def = 0;
-                    let res = 0;
-                    if (isPrecombat) {
-                        def = defUnit.getDefInPrecombat();
-                        res = defUnit.getResInPrecombat();
+                    {
+                        let def = 0;
+                        let res = 0;
+                        if (isPrecombat) {
+                            def = defUnit.getDefInPrecombat();
+                            res = defUnit.getResInPrecombat();
+                        }
+                        else {
+                            def = defUnit.getDefInCombat(atkUnit);
+                            res = defUnit.getResInCombat(atkUnit);
+                        }
+                        if (res <= def - 5) {
+                            atkUnit.battleContext.additionalDamage += 7;
+                        }
                     }
-                    else {
-                        def = defUnit.getDefInCombat(atkUnit);
-                        res = defUnit.getResInCombat(atkUnit);
-                    }
-                    if (res <= def - 5) {
-                        atkUnit.battleContext.additionalDamage += 7;
-                    }
-                }
                     break;
                 case Weapon.TsubakiNoKinnagitou:
                     if (atkUnit.isWeaponSpecialRefined) {
@@ -10347,13 +10337,13 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.LevinDagger:
-                {
-                    if (!isPrecombat) {
-                        let value = 0;
-                        value = atkUnit.getResInCombat(defUnit);
-                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                    {
+                        if (!isPrecombat) {
+                            let value = 0;
+                            value = atkUnit.getResInCombat(defUnit);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                        }
                     }
-                }
                     break;
                 case Weapon.SatougashiNoAnki:
                     if (atkUnit.battleContext.initiatesCombat) {

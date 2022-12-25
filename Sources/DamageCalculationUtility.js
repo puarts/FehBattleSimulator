@@ -19,9 +19,12 @@ const ColorToTriangleAdvantageTable = [
 
 const EffectiveFuncTable = {};
 EffectiveFuncTable[EffectiveType.None] = unit => { return false; };
+
 EffectiveFuncTable[EffectiveType.Flying] = unit => { return unit.moveType === MoveType.Flying; };
 EffectiveFuncTable[EffectiveType.Armor] = unit => { return unit.moveType === MoveType.Armor; };
 EffectiveFuncTable[EffectiveType.Cavalry] = unit => { return unit.moveType === MoveType.Cavalry; };
+EffectiveFuncTable[EffectiveType.Infantry] = unit => { return unit.moveType === MoveType.Infantry; };
+
 EffectiveFuncTable[EffectiveType.Dragon] = unit => {
     return isWeaponTypeBreath(unit.weaponType)
         || unit.weapon === Weapon.Roputous;
@@ -32,7 +35,8 @@ EffectiveFuncTable[EffectiveType.Sword] = unit => { return unit.weaponType === W
 EffectiveFuncTable[EffectiveType.Lance] = unit => { return unit.weaponType === WeaponType.Lance; };
 EffectiveFuncTable[EffectiveType.Axe] = unit => { return unit.weaponType === WeaponType.Axe; };
 EffectiveFuncTable[EffectiveType.ColorlessBow] = unit => { return unit.weaponType === WeaponType.ColorlessBow; };
-EffectiveFuncTable[EffectiveType.Infantry] = unit => { return unit.moveType === MoveType.Infantry; };
+EffectiveFuncTable[EffectiveType.Staff] = unit => { return unit.weaponType === WeaponType.Staff; };
+EffectiveFuncTable[EffectiveType.Dagger] = unit => { return unit.weaponType === WeaponType.Dagger; };
 
 /// ダメージ計算用のユーティリティー関数です。
 class DamageCalculationUtility {

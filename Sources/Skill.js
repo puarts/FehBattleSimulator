@@ -167,10 +167,14 @@ const NoneOption = { id: NoneValue, text: "なし" };
 
 const EffectiveType = {
     None: -1,
+
+    // 移動種
     Armor: 0,
     Infantry: 1,
     Cavalry: 2,
     Flying: 3,
+
+    // 武器種
     Dragon: 4,
     Beast: 5,
     Tome: 6,
@@ -178,6 +182,9 @@ const EffectiveType = {
     Lance: 8,
     Axe: 9,
     ColorlessBow: 10,
+    Staff: 11,
+    Dagger: 12,
+    Bow: 13,
 }
 
 const Weapon = {
