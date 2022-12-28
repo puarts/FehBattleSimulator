@@ -957,6 +957,7 @@ class DamageCalculator {
                 case PassiveA.AtkSpdFinish4:
                 case PassiveA.AtkResFinish4:
                 case PassiveA.SpdResFinish4:
+                case PassiveA.DefResFinish4:
                 case PassiveA.VerdictOfSacae:
                     if (atkUnit.battleContext.passiveASkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;

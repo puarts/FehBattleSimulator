@@ -2744,6 +2744,12 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(0, 7, 0, 7);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.DefResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                targetUnit.addSpurs(0, 0, 7, 7);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RemoteBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;

@@ -1974,6 +1974,7 @@ const PassiveA = {
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
+    DefResFinish4: 2306, // 守備魔防の秘奥4
 };
 
 const PassiveB = {
