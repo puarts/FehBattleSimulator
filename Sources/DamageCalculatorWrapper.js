@@ -2109,8 +2109,8 @@ class DamageCalculatorWrapper {
                         enemyUnit.addSpurs(-amount, -amount, 0, 0);
                     }
                     if (percentage >= 60) {
-                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
                         targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     }
                 }
             }
@@ -6968,7 +6968,7 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.increaseCooldownCountForDefense = true;
                 targetUnit.battleContext.reducesCooldownCount = true;
                 targetUnit.battleContext.nullInvalidatesHealRatio = 0.5
-                targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
+                targetUnit.battleContext.specialDamageRatioToHeal += 0.3;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.Cancel1] = (targetUnit, enemyUnit, calcPotentialDamage) => {
