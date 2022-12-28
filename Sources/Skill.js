@@ -1486,6 +1486,7 @@ const Weapon = {
 
     // 超英雄（神々の新年）
     HeraldingHorn: 2300, // 新年を開く角
+    FangOfFinality: 2302, // 旧年を閉ざす爪牙
 };
 
 const Support = {

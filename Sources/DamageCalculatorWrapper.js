@@ -653,6 +653,12 @@ class DamageCalculatorWrapper {
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         switch (defUnit.weapon) {
+            case Weapon.FangOfFinality: {
+                let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3) + 1;
+                let percentage = Math.min(count * 20, 60);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+            }
+                break;
             case Weapon.ShiseiNaga:
                 if (defUnit.battleContext.weaponSkillCondSatisfied) {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -2067,6 +2073,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FangOfFinality] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HeraldingHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 6;
@@ -9101,6 +9113,14 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.FangOfFinality:
+                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                            let count = this.__countAlliesWithinSpecifiedSpaces(enemyUnit, 3) + 1;
+                            let spd = targetUnit.getSpdInCombat(enemyUnit);
+                            let amount = Math.trunc(spd * (Math.min(count * 10.0, 30.0) / 100.0));
+                            targetUnit.battleContext.additionalDamage += amount;
+                        }
+                        break;
                     case Weapon.AsuraBlades:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
                             targetUnit.battleContext.increaseCooldownCountForBoth();
@@ -9867,6 +9887,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.FangOfFinality: {
+                let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3) + 1;
+                let percentage = Math.min(count * 20, 60);
+                return percentage / 100.0;
+            }
             case Weapon.ShiseiNaga:
                 if (defUnit.battleContext.weaponSkillCondSatisfied) {
                     let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
