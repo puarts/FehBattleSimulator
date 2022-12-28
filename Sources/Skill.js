@@ -1488,6 +1488,7 @@ const Weapon = {
     HeraldingHorn: 2300, // 新年を開く角
     FangOfFinality: 2302, // 旧年を閉ざす爪牙
     KeenRabbitFang: 2304, // 賀正の母兎の爪牙
+    DualityVessel: 2305, // 開神と閉神の祭器
 };
 
 const Support = {

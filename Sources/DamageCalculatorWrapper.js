@@ -357,6 +357,7 @@ class DamageCalculatorWrapper {
         // 戦闘前ダメージ計算に影響するスキル効果の評価
         this.__applyPrecombatSpecialDamageMult(atkUnit);
         this.__applyPrecombatDamageReductionRatio(defUnit, atkUnit);
+        this.__applyPrecombatDamageReduction(defUnit, atkUnit);
         this.__calcFixedAddDamage(atkUnit, defUnit, true);
         this.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
 
@@ -923,6 +924,20 @@ class DamageCalculatorWrapper {
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    }
+
+    __applyPrecombatDamageReduction(defUnit, atkUnit) {
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.DualityVessel: {
+                    let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
+                    if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3) && diff > 0) {
+                        defUnit.battleContext.damageReductionForPrecombat += Math.trunc(diff * 1.5);
+                    }
+                }
+                    break;
+            }
         }
     }
 
@@ -2074,6 +2089,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DualityVessel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.KeenRabbitFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -9129,6 +9151,12 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.DualityVessel:
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            let def = targetUnit.getDefInCombat(enemyUnit);
+                            targetUnit.battleContext.damageReductionValue += Math.trunc(def * 0.2);
+                        }
+                        break;
                     case Weapon.KeenRabbitFang:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
                             targetUnit.battleContext.increaseCooldownCountForBoth();
