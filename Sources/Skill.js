@@ -3317,6 +3317,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.FangOfFinality] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HeraldingHorn] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
