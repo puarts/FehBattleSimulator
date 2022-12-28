@@ -2731,6 +2731,14 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+            if (dist > 0) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+                let amount = Math.min(dist, 3);
+                targetUnit.addSpurs(amount, amount, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
             if (dist > 0) {

@@ -1965,6 +1965,7 @@ const PassiveA = {
     SturdySurge: 1962, // 鬼神金剛の迫撃
 
     // 激突
+    AtkSpdClash3: 2308, // 攻撃速さの激突3
     AtkSpdClash4: 2170, // 攻撃速さの激突4
     AtkDefClash4: 2207, // 攻撃守備の激突4
 
