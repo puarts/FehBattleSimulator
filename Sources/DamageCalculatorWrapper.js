@@ -1917,6 +1917,9 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantDart] = (defUnit, atkUnit, calcPotentialDamage) => {
             defUnit.spdSpur += 5;
         };
+        self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantReversal] = (defUnit, atkUnit, calcPotentialDamage) => {
+            defUnit.defSpur += 5;
+        };
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantStance] = (defUnit, atkUnit, calcPotentialDamage) => {
             defUnit.resSpur += 5;
         };
