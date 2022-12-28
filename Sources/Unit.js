@@ -5165,6 +5165,7 @@ class Unit extends BattleMapElement {
                         }
                     }
                     break;
+                case PassiveB.BeastNTrace3:
                 case Weapon.FloridCanePlus:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:
