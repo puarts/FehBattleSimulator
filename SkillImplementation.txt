@@ -65,6 +65,9 @@ getTriangleAdeptAdditionalRatio() {
     }
 }
 
+3すくみ有利の時
+if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) === TriangleAdvantage.Advantageous) {}
+
 特効を受ける
 const EffectiveFuncTable = {};
 EffectiveFuncTable[EffectiveType.XXX] = unit => { ... };

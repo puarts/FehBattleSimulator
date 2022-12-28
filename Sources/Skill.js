@@ -1483,6 +1483,9 @@ const Weapon = {
 
     // 伝承英雄 (修羅の如き双刃 シェズ)
     AsuraBlades: 2297, // アスラの双刃
+
+    // 超英雄（神々の新年）
+    HeraldingHorn: 2300, // 新年を開く角
 };
 
 const Support = {
@@ -3311,6 +3314,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.HeraldingHorn] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
@@ -3363,6 +3367,7 @@ const BeastCommonSkillMap =
     new Map(
         [
             // 次世代歩行
+            [Weapon.HeraldingHorn, BeastCommonSkillType.InfantryMelee2],
             [Weapon.FieryFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
             [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],

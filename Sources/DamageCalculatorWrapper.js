@@ -2064,6 +2064,19 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HeraldingHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+            }
+            let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+            if (count >= 2) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+            if (count >= 3) {
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.SwiftSlice] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(8);
@@ -8015,105 +8028,114 @@ class DamageCalculatorWrapper {
             }
         }
 
-        switch (targetUnit.passiveB) {
-            case PassiveB.Shishirenzan:
-                if (targetUnit.battleContext.initiatesCombat
-                    && targetUnit.battleContext.isRestHpFull) {
-                    targetUnit.battleContext.attackCount = 2;
-                }
-                break;
-        }
-
-        switch (targetUnit.weapon) {
-            case Weapon.RegalSunshade:
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    let total = 0;
-                    let count = 0;
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-                        total++;
-                        if (Math.abs(targetUnit.posX - unit.posX) <= 1 ||
-                            Math.abs(targetUnit.posY - unit.posY) <= 1) {
-                            count++;
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.HeraldingHorn: {
+                    let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                    if (count >= 1) {
+                        let advantage = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+                        let isAdvantageous = advantage === TriangleAdvantage.Advantageous;
+                        if (isAdvantageous || enemyUnit.battleContext.initiatesCombat) {
+                            targetUnit.battleContext.attackCount = 2;
+                            targetUnit.battleContext.counterattackCount = 2;
                         }
                     }
-                    let n = 0;
-                    if (total >= 6) {
-                        n = 3;
-                    } else if (total >= 3) {
-                        n = 2;
-                    } else {
-                        n = 1;
-                    }
-                    if (count >= n) {
-                        targetUnit.battleContext.attackCount = 2;
-                        targetUnit.battleContext.counterattackCount = 2;
-                    }
                 }
-                break;
-            case Weapon.UnyieldingOar:
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    if (enemyUnit.hasPositiveStatusEffect(targetUnit) ||
-                        targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
-                        targetUnit.battleContext.attackCount = 2;
-                        targetUnit.battleContext.counterattackCount = 2;
-                    }
-                }
-                break;
-            case Weapon.FalcionEchoes:
-                if (targetUnit.battleContext.initiatesCombat && targetUnit.isWeaponSpecialRefined) {
-                    if (targetUnit.battleContext.restHpPercentage === 100) {
+                    break;
+                case PassiveB.Shishirenzan:
+                    if (targetUnit.battleContext.initiatesCombat
+                        && targetUnit.battleContext.isRestHpFull) {
                         targetUnit.battleContext.attackCount = 2;
                     }
-                }
-                break;
-            case Weapon.WhitedownSpear:
-                if (targetUnit.battleContext.initiatesCombat
-                    && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
-                        x.moveType === MoveType.Flying) >= 2
-                ) {
-                    targetUnit.battleContext.attackCount = 2;
-                }
-                break;
-            case Weapon.ShirokiNoTyokusou:
-            case Weapon.ShirokiNoTyouken:
-            case Weapon.ShirokiNoTansou:
-                if (targetUnit.isWeaponSpecialRefined) {
+                    break;
+                case Weapon.RegalSunshade:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let total = 0;
+                        let count = 0;
+                        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                            total++;
+                            if (Math.abs(targetUnit.posX - unit.posX) <= 1 ||
+                                Math.abs(targetUnit.posY - unit.posY) <= 1) {
+                                count++;
+                            }
+                        }
+                        let n = 0;
+                        if (total >= 6) {
+                            n = 3;
+                        } else if (total >= 3) {
+                            n = 2;
+                        } else {
+                            n = 1;
+                        }
+                        if (count >= n) {
+                            targetUnit.battleContext.attackCount = 2;
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    }
+                    break;
+                case Weapon.UnyieldingOar:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (enemyUnit.hasPositiveStatusEffect(targetUnit) ||
+                            targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 10) {
+                            targetUnit.battleContext.attackCount = 2;
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    }
+                    break;
+                case Weapon.FalcionEchoes:
+                    if (targetUnit.battleContext.initiatesCombat && targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage === 100) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
+                case Weapon.WhitedownSpear:
                     if (targetUnit.battleContext.initiatesCombat
                         && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
                             x.moveType === MoveType.Flying) >= 2
                     ) {
                         targetUnit.battleContext.attackCount = 2;
                     }
-                }
-                break;
-            case Weapon.KurohyoNoYari:
-            case Weapon.MogyuNoKen:
-                if (targetUnit.battleContext.initiatesCombat
-                    && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
-                        x.moveType === MoveType.Cavalry
-                        && (x.weaponType === WeaponType.Sword
-                            || x.weaponType === WeaponType.Lance
-                            || x.weaponType === WeaponType.Axe)
-                    )) {
-                    targetUnit.battleContext.attackCount = 2;
-                }
-                break;
-            case Weapon.WakakiKurohyoNoKen:
-            case Weapon.WakakiMogyuNoYari:
-                if (targetUnit.isWeaponSpecialRefined) {
-                    if (!targetUnit.battleContext.initiatesCombat
+                    break;
+                case Weapon.ShirokiNoTyokusou:
+                case Weapon.ShirokiNoTyouken:
+                case Weapon.ShirokiNoTansou:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat
+                            && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
+                                x.moveType === MoveType.Flying) >= 2
+                        ) {
+                            targetUnit.battleContext.attackCount = 2;
+                        }
+                    }
+                    break;
+                case Weapon.KurohyoNoYari:
+                case Weapon.MogyuNoKen:
+                    if (targetUnit.battleContext.initiatesCombat
                         && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
                             x.moveType === MoveType.Cavalry
                             && (x.weaponType === WeaponType.Sword
                                 || x.weaponType === WeaponType.Lance
                                 || x.weaponType === WeaponType.Axe)
                         )) {
-                        targetUnit.battleContext.counterattackCount = 2;
+                        targetUnit.battleContext.attackCount = 2;
                     }
-                }
-                break;
-            case Weapon.GullinkambiEgg:
-                {
+                    break;
+                case Weapon.WakakiKurohyoNoKen:
+                case Weapon.WakakiMogyuNoYari:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (!targetUnit.battleContext.initiatesCombat
+                            && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, x =>
+                                x.moveType === MoveType.Cavalry
+                                && (x.weaponType === WeaponType.Sword
+                                    || x.weaponType === WeaponType.Lance
+                                    || x.weaponType === WeaponType.Axe)
+                            )) {
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    }
+                    break;
+                case Weapon.GullinkambiEgg: {
                     if (targetUnit.battleContext.initiatesCombat
                         && enemyUnit.battleContext.restHpPercentage >= 75
                         && this.globalBattleContext.isCombatOccuredInCurrentTurn
@@ -8121,9 +8143,8 @@ class DamageCalculatorWrapper {
                         targetUnit.battleContext.attackCount = 2;
                     }
                 }
-                break;
-            case Weapon.RazuwarudoNoMaiken:
-                {
+                    break;
+                case Weapon.RazuwarudoNoMaiken: {
                     let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3, x =>
                         x.buffTotal >= 10);
                     if (count >= 2) {
@@ -8131,7 +8152,8 @@ class DamageCalculatorWrapper {
                         targetUnit.battleContext.counterattackCount = 2;
                     }
                 }
-                break;
+                    break;
+            }
         }
     }
 
