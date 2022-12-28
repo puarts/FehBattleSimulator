@@ -1487,6 +1487,7 @@ const Weapon = {
     // 超英雄（神々の新年）
     HeraldingHorn: 2300, // 新年を開く角
     FangOfFinality: 2302, // 旧年を閉ざす爪牙
+    KeenRabbitFang: 2304, // 賀正の母兎の爪牙
 };
 
 const Support = {
@@ -3317,6 +3318,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.KeenRabbitFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FangOfFinality] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.HeraldingHorn] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;

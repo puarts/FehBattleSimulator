@@ -1950,6 +1950,7 @@ class DamageCalculatorWrapper {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.KeenRabbitFang:
                 case Weapon.SparklingFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RaydreamHorn:
@@ -2073,6 +2074,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KeenRabbitFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FangOfFinality] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -9113,6 +9121,11 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.KeenRabbitFang:
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                        break;
                     case Weapon.FangOfFinality:
                         if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
                             let count = this.__countAlliesWithinSpecifiedSpaces(enemyUnit, 3) + 1;
@@ -10836,6 +10849,7 @@ class DamageCalculatorWrapper {
 
         if (atkUnit.isTransformed) {
             switch (atkUnit.weapon) {
+                case Weapon.KeenRabbitFang:
                 case Weapon.SparklingFang:
                 case Weapon.RefreshedFang:
                 case Weapon.RaydreamHorn:
