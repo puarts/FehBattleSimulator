@@ -9408,7 +9408,7 @@ class DamageCalculatorWrapper {
                     case Weapon.FrozenDelight:
                         if (targetUnit.battleContext.initiatesCombat) {
                             let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
-                            let debuff = enemyUnit.getDebuffTotalInCombat();
+                            let debuff = Math.abs(enemyUnit.getDebuffTotalInCombat());
                             if (buff + debuff >= 12) {
                                 targetUnit.battleContext.attackCount = 2;
                             }
