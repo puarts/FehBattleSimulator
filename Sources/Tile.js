@@ -662,11 +662,15 @@ class Tile extends BattleMapElement {
                     return CanNotReachTile;
                 }
 
+                let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
                 // 隣接マスに進軍阻止持ちがいるか確認
                 for (let tile1Space of this.neighbors) {
                     if (tile1Space.isEnemyUnitAvailable(unit)
                         && tile1Space.placedUnit.canActivateObstractToAdjacentTiles(unit)
                     ) {
+                        if (weight === CanNotReachTile) {
+                            return CanNotReachTile;
+                        }
                         return ObstructTile;
                     }
 
@@ -675,6 +679,9 @@ class Tile extends BattleMapElement {
                         if (tile2Spaces.isEnemyUnitAvailable(unit)
                             && tile2Spaces.placedUnit.canActivateObstractToTilesIn2Spaces(unit)
                         ) {
+                            if (weight === CanNotReachTile) {
+                                return CanNotReachTile;
+                            }
                             return ObstructTile;
                         }
                     }
