@@ -1489,6 +1489,7 @@ const Weapon = {
     FangOfFinality: 2302, // 旧年を閉ざす爪牙
     KeenRabbitFang: 2304, // 賀正の母兎の爪牙
     DualityVessel: 2305, // 開神と閉神の祭器
+    WaryRabbitFang: 2307, // 賀正の子兎の爪牙
 };
 
 const Support = {
@@ -3394,6 +3395,23 @@ const BeastCommonSkillMap =
             [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
             [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
             [Weapon.GroomsWings, BeastCommonSkillType.InfantryMelee],
+
+            // 騎馬
+            [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.KeenRabbitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.SparklingFang, BeastCommonSkillType.Cavalry],
+            [Weapon.RefreshedFang, BeastCommonSkillType.Cavalry],
+            [Weapon.RaydreamHorn, BeastCommonSkillType.Cavalry],
+            [Weapon.BrightmareHorn, BeastCommonSkillType.Cavalry],
+            [Weapon.NightmareHorn, BeastCommonSkillType.Cavalry],
+            [Weapon.BrazenCatFang, BeastCommonSkillType.Cavalry],
+            [Weapon.NewBrazenCatFang, BeastCommonSkillType.Cavalry],
+            [Weapon.NewFoxkitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.FoxkitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.TaguelFang, BeastCommonSkillType.Cavalry],
+            [Weapon.TaguelChildFang, BeastCommonSkillType.Cavalry],
+            [Weapon.YoukoohNoTsumekiba, BeastCommonSkillType.Cavalry],
+            [Weapon.JunaruSenekoNoTsumekiba, BeastCommonSkillType.Cavalry],
         ]
     );
 

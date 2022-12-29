@@ -1964,21 +1964,8 @@ class DamageCalculatorWrapper {
         }
 
         if (atkUnit.isTransformed) {
-            switch (atkUnit.weapon) {
-                case Weapon.KeenRabbitFang:
-                case Weapon.SparklingFang:
-                case Weapon.RefreshedFang:
-                case Weapon.RaydreamHorn:
-                case Weapon.BrightmareHorn:
-                case Weapon.NightmareHorn:
-                case Weapon.BrazenCatFang:
-                case Weapon.NewBrazenCatFang:
-                case Weapon.NewFoxkitFang:
-                case Weapon.FoxkitFang:
-                case Weapon.TaguelFang:
-                case Weapon.TaguelChildFang:
-                case Weapon.YoukoohNoTsumekiba:
-                case Weapon.JunaruSenekoNoTsumekiba:
+            switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
+                case BeastCommonSkillType.Cavalry:
                     defUnit.atkSpur -= 4;
                     defUnit.defSpur -= 4;
                     break;
@@ -2089,6 +2076,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.WaryRabbitFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addSpurs(6, 6, 0, 0);
+                let amount = Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.2);
+                enemyUnit.addSpurs(-amount, 0, -amount, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DualityVessel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAllSpur(5);
@@ -10890,21 +10885,8 @@ class DamageCalculatorWrapper {
         }
 
         if (atkUnit.isTransformed) {
-            switch (atkUnit.weapon) {
-                case Weapon.KeenRabbitFang:
-                case Weapon.SparklingFang:
-                case Weapon.RefreshedFang:
-                case Weapon.RaydreamHorn:
-                case Weapon.BrightmareHorn:
-                case Weapon.NightmareHorn:
-                case Weapon.BrazenCatFang:
-                case Weapon.NewBrazenCatFang:
-                case Weapon.NewFoxkitFang:
-                case Weapon.FoxkitFang:
-                case Weapon.TaguelFang:
-                case Weapon.TaguelChildFang:
-                case Weapon.YoukoohNoTsumekiba:
-                case Weapon.JunaruSenekoNoTsumekiba:
+            switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
+                case BeastCommonSkillType.Cavalry:
                     --followupAttackPriority;
                     break;
             }
