@@ -446,6 +446,12 @@ __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
 }
 
+受けた範囲奥義のダメージをNだけ減少(巨影の範囲奥義除く)
+__applyPrecombatDamageReduction(defUnit, atkUnit) {
+    defUnit.battleContext.damageReductionForPrecombat += N;
+}
+
+
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
