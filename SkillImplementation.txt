@@ -42,7 +42,7 @@ const WeaponTypesAddAtk2AfterTransform = {};
 WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
 const BeastCommonSkillMap =
     new Map([
-            [Weapon.XXX, BeastCommonSkillType.YYY],
+            [Weapon.XXX, BeastCommonSkillType.YYY], // 歩行、騎馬を実装済み
 
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)

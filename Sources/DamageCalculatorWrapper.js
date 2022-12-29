@@ -7372,13 +7372,13 @@ class DamageCalculatorWrapper {
         {
             let damage = 0;
             switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
-                case BeastCommonSkillType.InfantryMelee2:
+                case BeastCommonSkillType.Infantry2:
                     damage = 7;
                     break;
-                case BeastCommonSkillType.InfantryMelee:
+                case BeastCommonSkillType.Infantry:
                     damage = 10;
                     break;
-                case BeastCommonSkillType.InfantryMelee2IfRefined:
+                case BeastCommonSkillType.Infantry2IfRefined:
                     damage = targetUnit.isWeaponRefined ? 7 : 10;
                     break;
             }
@@ -11504,12 +11504,12 @@ class DamageCalculatorWrapper {
     __applyInvalidationSkillEffect(targetUnit, enemyUnit, calcPotentialDamage) {
         // 獣の共通武器スキル
         switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
-            case BeastCommonSkillType.InfantryMelee2:
+            case BeastCommonSkillType.Infantry2:
                 if (targetUnit.isTransformed) {
                     targetUnit.battleContext.invalidateCooldownCountSkills();
                 }
                 break;
-            case BeastCommonSkillType.InfantryMelee2IfRefined:
+            case BeastCommonSkillType.Infantry2IfRefined:
                 if (!targetUnit.isWeaponRefined) break;
                 if (targetUnit.isTransformed) {
                     targetUnit.battleContext.invalidateCooldownCountSkills();

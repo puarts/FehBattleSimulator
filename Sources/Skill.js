@@ -3369,32 +3369,36 @@ function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
 // 化身による共通の効果
 // TODO 残りも実装する
 const BeastCommonSkillType = {
-    InfantryMelee: 0, // 初期の歩行近接
-    InfantryMelee2: 1, // アシュ以降の歩行近接
-    InfantryMelee2IfRefined: 2, // 錬成して次世代になる歩行近接
+    Infantry: 0, // 初期の歩行近接
+    Infantry2: 1, // アシュ以降の歩行近接
+    Infantry2IfRefined: 2, // 錬成して次世代になる歩行近接
+    Armor: 3,
+    Cavalry: 4,
+    Flying: 5,
 }
+
 const BeastCommonSkillMap =
     new Map(
         [
             // 次世代歩行
-            [Weapon.HeraldingHorn, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.FieryFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.IlluminatingHorn, BeastCommonSkillType.InfantryMelee2],
+            [Weapon.HeraldingHorn, BeastCommonSkillType.Infantry2],
+            [Weapon.FieryFang, BeastCommonSkillType.Infantry2],
+            [Weapon.WildTigerFang, BeastCommonSkillType.Infantry2],
+            [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
+            [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
+            [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
+            [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
 
             // 錬成すると次世代歩行
-            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
-            [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
-            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
-            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
+            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+            [Weapon.OkamijoouNoKiba, BeastCommonSkillType.Infantry2IfRefined],
+            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
 
             // 旧世代歩行
-            [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.GroomsWings, BeastCommonSkillType.InfantryMelee],
+            [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
+            [Weapon.BridesFang, BeastCommonSkillType.Infantry],
+            [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
 
             // 騎馬
             [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],
