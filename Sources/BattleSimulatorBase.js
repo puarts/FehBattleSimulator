@@ -1021,6 +1021,12 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoAskr:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
+                    unit.applyAllBuff(6);
+                    unit.reduceSpecialCount(1);
+                }
+                break;
             case Hero.HarmonizedCordelia: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
@@ -3774,6 +3780,7 @@ class BattleSimmulatorBase {
                 || unit.heroIndex == Hero.PirateVeronica
                 || unit.heroIndex == Hero.DuoHilda
                 || unit.heroIndex == Hero.DuoNina
+                || unit.heroIndex == Hero.DuoAskr
             ) {
                 if (this.data.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
