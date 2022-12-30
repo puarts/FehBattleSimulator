@@ -42,7 +42,7 @@ const WeaponTypesAddAtk2AfterTransform = {};
 WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
 const BeastCommonSkillMap =
     new Map([
-            [Weapon.XXX, BeastCommonSkillType.YYY],
+            [Weapon.XXX, BeastCommonSkillType.YYY], // 歩行、騎馬を実装済み
 
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
@@ -64,6 +64,9 @@ getTriangleAdeptAdditionalRatio() {
         return 0.2;
     }
 }
+
+3すくみ有利の時
+if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) === TriangleAdvantage.Advantageous) {}
 
 特効を受ける
 const EffectiveFuncTable = {};
@@ -442,6 +445,12 @@ __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
 }
+
+受けた範囲奥義のダメージをNだけ減少(巨影の範囲奥義除く)
+__applyPrecombatDamageReduction(defUnit, atkUnit) {
+    defUnit.battleContext.damageReductionForPrecombat += N;
+}
+
 
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);

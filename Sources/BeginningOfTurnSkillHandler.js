@@ -111,6 +111,7 @@ class BeginningOfTurnSkillHandler {
             for (let skillId of skillOwner.enumerateSkills()) {
                 switch (skillId) {
                     case PassiveB.BeastAgility3:
+                    case PassiveB.BeastNTrace3:
                         hasTransformSkills = true;
                         break;
                 }

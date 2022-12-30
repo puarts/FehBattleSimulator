@@ -546,6 +546,13 @@ class PostCombatSkillHander {
                 case PassiveB.MysticBoost4:
                     targetUnit.reserveHeal(10);
                     break;
+                case Weapon.WaryRabbitFang:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        if (targetUnit.hpPercentage <= 90) {
+                            targetUnit.specialCount -= 2;
+                        }
+                    }
+                    break;
                 case Weapon.TaguelChildFang: {
                     let percentage = targetUnit.isWeaponRefined ? 90 : 75;
                     if (targetUnit.hpPercentage <= percentage) {

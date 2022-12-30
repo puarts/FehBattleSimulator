@@ -712,7 +712,8 @@ class DamageCalculator {
         let damageReductionRatio = defUnit.battleContext.damageReductionRatioForPrecombat;
 
         let reducedDamage = floorNumberWithFloatError(damage * damageReductionRatio);
-        let currentDamage = Math.max(damage - reducedDamage, 0);
+        let damageReduction = defUnit.battleContext.damageReductionForPrecombat;
+        let currentDamage = Math.max(damage - reducedDamage - damageReduction, 0);
 
         if (this.isLogEnabled) {
             if (atkUnit.battleContext.refersRes) {
@@ -956,6 +957,7 @@ class DamageCalculator {
                 case PassiveA.AtkSpdFinish4:
                 case PassiveA.AtkResFinish4:
                 case PassiveA.SpdResFinish4:
+                case PassiveA.DefResFinish4:
                 case PassiveA.VerdictOfSacae:
                     if (atkUnit.battleContext.passiveASkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;

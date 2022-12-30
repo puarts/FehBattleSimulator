@@ -53,6 +53,7 @@ const Hero = {
     DuoDuma: 873,
     DuoLaegijarn: 887,
     HarmonizedCordelia: 908,
+    DuoAskr: 914,
 };
 
 function isThiefIndex(heroIndex) {
@@ -505,6 +506,8 @@ class BattleContext {
 
         // 戦闘前の範囲奥義で有効になるダメージ軽減率
         this.damageReductionRatioForPrecombat = 0;
+        // 戦闘前の範囲奥義のダメージ軽減
+        this.damageReductionForPrecombat = 0;
 
         // 戦闘中常に有効になるダメージ軽減率
         // @NOTE: ダメージ軽減無効を考慮する必要があるので基本this.multDamageReductionRatioメソッドで値を設定する
@@ -701,6 +704,7 @@ class BattleContext {
         this.followupAttackPriorityDecrement = 0;
 
         this.damageReductionRatioForPrecombat = 0;
+        this.damageReductionForPrecombat = 0;
 
         this.isSaviorActivated = false;
 
@@ -5165,6 +5169,7 @@ class Unit extends BattleMapElement {
                         }
                     }
                     break;
+                case PassiveB.BeastNTrace3:
                 case Weapon.FloridCanePlus:
                 case Weapon.TriEdgeLance:
                 case PassiveB.Chivalry:

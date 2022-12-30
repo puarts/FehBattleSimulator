@@ -1490,6 +1490,13 @@ const Weapon = {
 
     // 伝承英雄 (修羅の如き双刃 シェズ)
     AsuraBlades: 2297, // アスラの双刃
+
+    // 超英雄（神々の新年）
+    HeraldingHorn: 2300, // 新年を開く角
+    FangOfFinality: 2302, // 旧年を閉ざす爪牙
+    KeenRabbitFang: 2304, // 賀正の母兎の爪牙
+    DualityVessel: 2305, // 開神と閉神の祭器
+    WaryRabbitFang: 2307, // 賀正の子兎の爪牙
 };
 
 const Support = {
@@ -1698,6 +1705,7 @@ const PassiveA = {
     CloseReversal: 1803, // 近反・金剛の構え
     DistantFerocity: 2218, // 遠反・鬼神の構え
     DistantDart: 2050, // 遠反・飛燕の構え
+    DistantReversal: 2301, // 遠反・金剛の構え
     DistantStance: 1884, // 遠反・明鏡の構え
     DistantCounter: 562, // 遠距離反撃
     DistantStorm: 2015, // 遠反・攻撃の渾身
@@ -1966,6 +1974,7 @@ const PassiveA = {
     SturdySurge: 1962, // 鬼神金剛の迫撃
 
     // 激突
+    AtkSpdClash3: 2308, // 攻撃速さの激突3
     AtkSpdClash4: 2170, // 攻撃速さの激突4
     AtkDefClash4: 2207, // 攻撃守備の激突4
 
@@ -1973,6 +1982,7 @@ const PassiveA = {
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
+    DefResFinish4: 2306, // 守備魔防の秘奥4
 };
 
 const PassiveB = {
@@ -2284,6 +2294,7 @@ const PassiveB = {
 
     // 絶対化身
     BeastAgility3: 2270, // 絶対化身・敏捷3
+    BeastNTrace3: 2303, // 絶対化身・近影3
 };
 
 const PassiveC = {
@@ -3318,6 +3329,10 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.KeenRabbitFang] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.FangOfFinality] = 0;
+WeaponTypesAddAtk2AfterTransform[Weapon.HeraldingHorn] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
@@ -3362,31 +3377,53 @@ function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
 // 化身による共通の効果
 // TODO 残りも実装する
 const BeastCommonSkillType = {
-    InfantryMelee: 0, // 初期の歩行近接
-    InfantryMelee2: 1, // アシュ以降の歩行近接
-    InfantryMelee2IfRefined: 2, // 錬成して次世代になる歩行近接
+    Infantry: 0, // 初期の歩行近接
+    Infantry2: 1, // アシュ以降の歩行近接
+    Infantry2IfRefined: 2, // 錬成して次世代になる歩行近接
+    Armor: 3,
+    Cavalry: 4,
+    Flying: 5,
 }
+
 const BeastCommonSkillMap =
     new Map(
         [
             // 次世代歩行
-            [Weapon.FieryFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.WildTigerFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.RoyalHatariFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.PolishedFang, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.HornOfOpening, BeastCommonSkillType.InfantryMelee2],
-            [Weapon.IlluminatingHorn, BeastCommonSkillType.InfantryMelee2],
+            [Weapon.HeraldingHorn, BeastCommonSkillType.Infantry2],
+            [Weapon.FieryFang, BeastCommonSkillType.Infantry2],
+            [Weapon.WildTigerFang, BeastCommonSkillType.Infantry2],
+            [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
+            [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
+            [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
+            [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
 
             // 錬成すると次世代歩行
-            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
-            [Weapon.OkamijoouNoKiba, BeastCommonSkillType.InfantryMelee2IfRefined],
-            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
-            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.InfantryMelee2IfRefined],
+            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+            [Weapon.OkamijoouNoKiba, BeastCommonSkillType.Infantry2IfRefined],
+            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
 
             // 旧世代歩行
-            [Weapon.RenewedFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.BridesFang, BeastCommonSkillType.InfantryMelee],
-            [Weapon.GroomsWings, BeastCommonSkillType.InfantryMelee],
+            [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
+            [Weapon.BridesFang, BeastCommonSkillType.Infantry],
+            [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
+
+            // 騎馬
+            [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.KeenRabbitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.SparklingFang, BeastCommonSkillType.Cavalry],
+            [Weapon.RefreshedFang, BeastCommonSkillType.Cavalry],
+            [Weapon.RaydreamHorn, BeastCommonSkillType.Cavalry],
+            [Weapon.BrightmareHorn, BeastCommonSkillType.Cavalry],
+            [Weapon.NightmareHorn, BeastCommonSkillType.Cavalry],
+            [Weapon.BrazenCatFang, BeastCommonSkillType.Cavalry],
+            [Weapon.NewBrazenCatFang, BeastCommonSkillType.Cavalry],
+            [Weapon.NewFoxkitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.FoxkitFang, BeastCommonSkillType.Cavalry],
+            [Weapon.TaguelFang, BeastCommonSkillType.Cavalry],
+            [Weapon.TaguelChildFang, BeastCommonSkillType.Cavalry],
+            [Weapon.YoukoohNoTsumekiba, BeastCommonSkillType.Cavalry],
+            [Weapon.JunaruSenekoNoTsumekiba, BeastCommonSkillType.Cavalry],
         ]
     );
 
