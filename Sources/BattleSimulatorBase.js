@@ -3286,6 +3286,7 @@ class BattleSimmulatorBase {
                         }
                     }
                     break;
+                case Special.NjorunsZeal2:
                 case Special.NjorunsZeal:
                     this.__activateRefreshSpecial(atkUnit);
                     atkUnit.addStatusEffect(StatusEffectType.Gravity);

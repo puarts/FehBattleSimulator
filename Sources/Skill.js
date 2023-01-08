@@ -1659,6 +1659,7 @@ const Special = {
     GiftedMagic: 1582, // 天与の魔道
 
     NjorunsZeal: 1021, // ノヴァの聖戦士
+    NjorunsZeal2: 2309, // ノヴァの聖戦士・承
     Galeforce: 496, // 疾風迅雷
     Miracle: 497, // 祈り
     LifeUnending: 1883, // 永遠を生きるもの
