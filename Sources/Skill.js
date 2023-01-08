@@ -1787,6 +1787,7 @@ const PassiveA = {
 
 
     AsherasChosen: 1044, // 女神の三雄
+    AsherasChosenPlus: 2310, // 女神の三雄・神
 
     // 構え
     KishinNoKamae3: 539,
