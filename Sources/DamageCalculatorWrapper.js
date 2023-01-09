@@ -2081,6 +2081,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.GuidesHourglass] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.CrowsCrystal] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -11545,6 +11551,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GuidesHourglass:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                    break;
                 case Weapon.EnclosingClaw:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         enemyUnit.battleContext.reducesCooldownCount = false;
@@ -12173,8 +12186,11 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
-        for (let skillId of [allyUnit.passiveC, allyUnit.passiveS, allyUnit.getCaptainSkill()]) {
+        for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GuidesHourglass:
+                    targetUnit.addAllSpur(4);
+                    break;
                 case PassiveC.AllTogether:
                     targetUnit.addAllSpur(4);
                     break;

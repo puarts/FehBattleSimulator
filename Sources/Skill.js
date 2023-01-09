@@ -1501,6 +1501,7 @@ const Weapon = {
     // 超英雄（カダインの大司祭？）
     ChildsCompass: 2313, // 魔道の寵子の羅針盤
     CrowsCrystal: 2311, // 魔宿す蒼鴉の水晶球
+    GuidesHourglass: 2315, // 導きの教師の砂時計
 };
 
 const Support = {

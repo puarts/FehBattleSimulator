@@ -146,6 +146,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.GuidesHourglass:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                }
+                break;
             case Weapon.CrowsCrystal:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
