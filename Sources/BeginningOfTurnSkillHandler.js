@@ -2229,6 +2229,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
             }
+                break;
             case PassiveB.ChillDefRes3: {
                 let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
                 let statusFunc = x => {
