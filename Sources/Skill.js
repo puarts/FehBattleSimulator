@@ -1992,6 +1992,9 @@ const PassiveA = {
     SpdResFinish3: 2318, // 速さ魔防の秘奥3
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
     DefResFinish4: 2306, // 守備魔防の秘奥4
+
+    // 離撃
+    RemoteSparrow: 2317, // 鬼神飛燕の離撃
 };
 
 const PassiveB = {
