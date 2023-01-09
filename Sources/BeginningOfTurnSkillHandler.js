@@ -2191,6 +2191,19 @@ class BeginningOfTurnSkillHandler {
                 }
             }
                 break;
+            case PassiveB.ChillSpdRes3: {
+                let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let statusFunc = x => {
+                    let unit = this.__getStatusEvalUnit(x);
+                    return unit.getSpdInPrecombat() + unit.getResInPrecombat();
+                };
+                let units = this.__findMaxStatusUnits(group, statusFunc);
+                for (let unit of units) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyDebuffs(0, -6, 0, -6);
+                    }
+                }
+            }
             case PassiveB.ChillDefRes3: {
                 let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
                 let statusFunc = x => {
