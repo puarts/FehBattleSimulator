@@ -146,6 +146,19 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.CelestialGlobe: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+            }
+                break;
             case Weapon.GuidesHourglass:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);

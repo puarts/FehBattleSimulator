@@ -2081,6 +2081,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CelestialGlobe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.GuidesHourglass] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
@@ -10261,6 +10267,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CelestialGlobe:
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                    }
+                    break;
                 case Weapon.Seidr:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);

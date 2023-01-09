@@ -1502,6 +1502,7 @@ const Weapon = {
     ChildsCompass: 2313, // 魔道の寵子の羅針盤
     CrowsCrystal: 2311, // 魔宿す蒼鴉の水晶球
     GuidesHourglass: 2315, // 導きの教師の砂時計
+    CelestialGlobe: 2316, // 魔継ぐ少女の天球儀
 };
 
 const Support = {
