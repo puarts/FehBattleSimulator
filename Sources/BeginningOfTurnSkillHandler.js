@@ -146,6 +146,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.CrowsCrystal:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.TotalPenaltyDamage);
+                }
+                break;
             case Weapon.ChildsCompass:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);

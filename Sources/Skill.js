@@ -1499,7 +1499,8 @@ const Weapon = {
     WaryRabbitFang: 2307, // 賀正の子兎の爪牙
 
     // 超英雄（カダインの大司祭？）
-    ChildsCompass: 2313,
+    ChildsCompass: 2313, // 魔道の寵子の羅針盤
+    CrowsCrystal: 2311, // 魔宿す蒼鴉の水晶球
 };
 
 const Support = {
