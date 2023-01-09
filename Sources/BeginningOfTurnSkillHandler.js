@@ -1328,6 +1328,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.DemonicTome:
             case PassiveC.HajimariNoKodo3:
+            case PassiveC.TimesPulse4:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                     this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
                     skillOwner.reduceSpecialCount(1);

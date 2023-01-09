@@ -2466,6 +2466,7 @@ const PassiveC = {
     ResPloy3: 725, // 魔防の謀策3
 
     HajimariNoKodo3: 957,
+    TimesPulse4: 2314, // 始まりの鼓動4
 
     // 信義
     AtkSpdOath3: 1077, // 攻撃速さの信義3

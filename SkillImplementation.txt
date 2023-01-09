@@ -397,6 +397,10 @@ if (unit.isSpecialCharged) {}
 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
     skillOwner.reduceSpecialCount(N);
 }
+// 戦闘後の時は
+if (targetUnit.isSpecialCountMax) {
+    targetUnit.reduceSpecialCount(N);
+}
 
 戦闘中、奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で奥義を発動済みの時(戦闘前奥義が含まれるのか注意すること)
 atkUnit.isSpecialCharged || atkUnit.isSpecialActivated
