@@ -811,6 +811,15 @@ class DamageCalculator {
                     // 追撃
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
                 }
+
+                // 奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
+                if (defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
+                    for (let ratio of defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated) {
+                        damageReductionRatio *= 1.0 - ratio;
+                    }
+                    // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
+                    defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated = null;
+                }
             }
 
             let invalidatesOnSpecialActivation =
@@ -855,13 +864,23 @@ class DamageCalculator {
             let currentDamage = 0;
             if (activatesAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
-                switch (atkUnit.special) {
-                    case Special.DevinePulse: {
-                        atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
-                        let spd = atkUnit.getSpdInCombat(defUnit);
-                        atkUnit.battleContext.additionalDamageOfNextAttack += Math.trunc(spd * 0.2);
+                for (let skillId of atkUnit.enumerateSkills()) {
+                    switch (skillId) {
+                        case Weapon.ChildsCompass:
+                            if (atkUnit.battleContext.restHpPercentage >= 25) {
+                                // この戦闘中にすでにこの効果が発動済みの場合は[]ではなくnullが入るので処理を止める（1戦闘中1回まで）
+                                if (atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
+                                    atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated.push(0.5);
+                                }
+                            }
+                            break;
+                        case Special.DevinePulse: {
+                            atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
+                            let spd = atkUnit.getSpdInCombat(defUnit);
+                            atkUnit.battleContext.additionalDamageOfNextAttack += Math.trunc(spd * 0.2);
+                        }
+                            break;
                     }
-                        break;
                 }
                 // 奥義発動
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);

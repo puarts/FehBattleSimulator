@@ -1497,6 +1497,9 @@ const Weapon = {
     KeenRabbitFang: 2304, // 賀正の母兎の爪牙
     DualityVessel: 2305, // 開神と閉神の祭器
     WaryRabbitFang: 2307, // 賀正の子兎の爪牙
+
+    // 超英雄（カダインの大司祭？）
+    ChildsCompass: 2313,
 };
 
 const Support = {

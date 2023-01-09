@@ -690,6 +690,7 @@ class Tile extends BattleMapElement {
         }
 
         let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
+        // 自身が移動可能な地形を平地のように移動可能
         if (weight !== CanNotReachTile && weight !== 0) {
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
@@ -704,6 +705,9 @@ class Tile extends BattleMapElement {
                         }
                         break;
                 }
+            }
+            if (unit.hasStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain)) {
+                weight = 1;
             }
         }
         if (this._obj == null) {

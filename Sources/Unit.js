@@ -224,6 +224,7 @@ const StatusEffectType = {
     Undefended: 41, // 護られ不可
     Feud: 42, // 暗闘
     DualStrike: 43, // デュアルアタック
+    UnitCannotBeSlowedByTerrain: 44, // 自身が移動可能な地形を平地のように移動可能
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -290,6 +291,10 @@ function isPositiveStatusEffect(type) {
 }
 
 function statusEffectTypeToIconFilePath(value) {
+    // ステータスアイコン一覧
+    // https://feheroes.fandom.com/wiki/Category:Status_effect_icons
+    // ステータス
+    // https://feheroes.fandom.com/wiki/Status_effects
     switch (value) {
         case StatusEffectType.Panic:
             return g_imageRootPath + "StatusEffect_Panic.png";
@@ -379,6 +384,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Feud.webp";
         case StatusEffectType.DualStrike:
             return g_imageRootPath + "StatusEffect_DualStrike.webp";
+        case StatusEffectType.UnitCannotBeSlowedByTerrain:
+            return g_imageRootPath + "StatusEffect_UnitCannotBeSlowedByTerrain.webp";
         default: return "";
     }
 }
@@ -516,8 +523,11 @@ class BattleContext {
         // 防御系奥義によるダメージ軽減率
         this.damageReductionRatioBySpecial = 0;
 
-        // 次の敵の攻撃ダメージ軽減
+        // 次の敵の攻撃ダメージ軽減(奥義による軽減)
         this.damageReductionRatiosBySpecialOfNextAttack = [];
+
+        // 奥義による攻撃でダメージを与えた時、次の敵の攻撃ダメージ軽減
+        this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
 
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
@@ -691,6 +701,7 @@ class BattleContext {
         this.reducedDamageForNextAttack = 0;
         this.additionalDamageOfNextAttack = 0;
         this.damageReductionRatiosBySpecialOfNextAttack = [];
+        this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
         this.nextAttackEffectAfterSpecialActivated = false;
 
         // 自身の発動カウント変動量-1を無効
