@@ -2081,6 +2081,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MagicalLanternPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit)) {
+                targetUnit.addSpurs(5, 0, 0, 5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.RemoteSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.addSpurs(7, 7, 0, 0);
