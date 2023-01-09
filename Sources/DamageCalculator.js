@@ -973,6 +973,14 @@ class DamageCalculator {
     __applySkillEffectsPerAttack(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.SpdResFinish3:
+                    if (atkUnit.battleContext.passiveASkillCondSatisfied) {
+                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
+                            atkUnit.battleContext.additionalDamagePerAttack += 5;
+                        }
+                    }
+                    break;
                 case PassiveA.AtkSpdFinish4:
                 case PassiveA.AtkResFinish4:
                 case PassiveA.SpdResFinish4:
