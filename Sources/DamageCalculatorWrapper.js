@@ -2081,6 +2081,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BouryakuNoSenkyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MasterBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -8840,8 +8847,18 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.BouryakuNoSenkyu:
-                if (targetUnit.buffTotal + enemyUnit.debuffTotal >= 10) {
-                    enemyUnit.addAllSpur(-5);
+                if (!targetUnit.isWeaponRefined) {
+                    // <通常効果>
+                    if (targetUnit.buffTotal + enemyUnit.debuffTotal >= 10) {
+                        enemyUnit.addAllSpur(-5);
+                    }
+                } else {
+                    // <錬成効果>
+                    if (targetUnit.hasPositiveStatusEffect(targetUnit) || enemyUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.addAllSpur(-5);
+                    }
+                    targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
                 }
                 break;
             case Weapon.Niu: {
@@ -9213,6 +9230,18 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.BouryakuNoSenkyu:
+                        if (targetUnit.isWeaponRefined) {
+                            if (targetUnit.battleContext.initiatesCombat) {
+                                let total = targetUnit.buffTotal + Math.abs(enemyUnit.debuffTotal);
+                                let percentage = Math.min(total * 3, 60);
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
+                                if (total >= 10) {
+                                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                                }
+                            }
+                        }
+                        break;
                     case Weapon.DualityVessel:
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                             let def = targetUnit.getDefInCombat(enemyUnit);
