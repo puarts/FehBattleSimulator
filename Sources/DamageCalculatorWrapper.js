@@ -2081,6 +2081,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MasterBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RagnellAlondite] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -10287,6 +10294,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MasterBow:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                            let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
+                        }
+                    }
+                    break;
                 case Weapon.CelestialGlobe:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
@@ -11589,6 +11604,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MasterBow:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.GuidesHourglass:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         enemyUnit.battleContext.reducesCooldownCount = false;
