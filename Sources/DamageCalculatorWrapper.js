@@ -653,86 +653,61 @@ class DamageCalculatorWrapper {
     }
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
-        switch (defUnit.weapon) {
-            case Weapon.FangOfFinality: {
-                let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3) + 1;
-                let percentage = Math.min(count * 20, 60);
-                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
-            }
-                break;
-            case Weapon.ShiseiNaga:
-                if (defUnit.battleContext.weaponSkillCondSatisfied) {
-                    let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                    if (resDiff > 0) {
-                        let percentage = Math.min(resDiff * 4, 40);
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
-                    }
-                }
-                break;
-            case Weapon.WandererBlade:
-                if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
-                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
-                }
-                break;
-            case Weapon.ShishiouNoTsumekiba:
-                if (defUnit.isWeaponRefined) {
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.7);
-                }
-                break;
-            case Weapon.GodlyBreath:
-                if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
-                }
-                break;
-            case Weapon.Mafu:
-                if (defUnit.isWeaponSpecialRefined) {
-                    if (defUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(atkUnit.weaponType)) {
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
-                    }
-                }
-                break;
-            case Weapon.WindyWarTome:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
-                    let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                    if (diff > 0) {
-                        let percentage = diff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.AsherasChosenPlus:
+                    if (this.__isThereAllyExceptDragonAndBeastWithin1Space(defUnit) === false ||
+                        defUnit.battleContext.restHpPercentage >= 75) {
+                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (resDiff > 0) {
+                            let percentage = Math.min(resDiff * 4, 40);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                         }
-
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                     }
+                    break;
+                case Weapon.FangOfFinality: {
+                    let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3) + 1;
+                    let percentage = Math.min(count * 20, 60);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                 }
-                break;
-            case Weapon.HurricaneDagger:
-                if (defUnit.isWeaponSpecialRefined) {
-                    if (defUnit.battleContext.restHpPercentage >= 25) {
-                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 3, 30);
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    break;
+                case Weapon.ShiseiNaga:
+                    if (defUnit.battleContext.weaponSkillCondSatisfied) {
+                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (resDiff > 0) {
+                            let percentage = Math.min(resDiff * 4, 40);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
                     }
-                }
-                break;
-            case Weapon.RaikenJikurinde:
-                if (defUnit.isWeaponSpecialRefined) {
-                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                    break;
+                case Weapon.WandererBlade:
+                    if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
                         let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
-                }
-                break;
-            case Weapon.CarnageAmatsu:
-                if (this.__isSolo(defUnit)) {
-                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
-                }
-                break;
-            case Weapon.Roputous:
-                if (defUnit.isWeaponRefined) {
-                    if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
-                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                        if (resDiff > 0) {
-                            let percentage = resDiff * 4;
+                    break;
+                case Weapon.ShishiouNoTsumekiba:
+                    if (defUnit.isWeaponRefined) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.7);
+                    }
+                    break;
+                case Weapon.GodlyBreath:
+                    if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                    break;
+                case Weapon.Mafu:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (defUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(atkUnit.weaponType)) {
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                        }
+                    }
+                    break;
+                case Weapon.WindyWarTome:
+                    if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
+                        let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
                             if (percentage > 40) {
                                 percentage = 40;
                             }
@@ -740,14 +715,50 @@ class DamageCalculatorWrapper {
                             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                         }
                     }
-                }
-                break;
-            case Weapon.LilacJadeBreath:
-                if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
-                }
-                break;
-            case Weapon.Areadbhar:
+                    break;
+                case Weapon.HurricaneDagger:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (defUnit.battleContext.restHpPercentage >= 25) {
+                            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 3, 30);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                        }
+                    }
+                    break;
+                case Weapon.RaikenJikurinde:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (defUnit.battleContext.restHpPercentage >= 25) {
+                            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                        }
+                    }
+                    break;
+                case Weapon.CarnageAmatsu:
+                    if (this.__isSolo(defUnit)) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
+                case Weapon.Roputous:
+                    if (defUnit.isWeaponRefined) {
+                        if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
+                            let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                            if (resDiff > 0) {
+                                let percentage = resDiff * 4;
+                                if (percentage > 40) {
+                                    percentage = 40;
+                                }
+
+                                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                            }
+                        }
+                    }
+                    break;
+                case Weapon.LilacJadeBreath:
+                    if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
+                    }
+                    break;
+                case Weapon.Areadbhar:
                 {
                     let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
                     if (diff > 0 && defUnit.battleContext.restHpPercentage >= 25) {
@@ -755,24 +766,24 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                     }
                 }
-                break;
-            case Weapon.GiltGoblet:
-                if (atkUnit.battleContext.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
-                }
-                break;
-            case Weapon.BloodTome:
-                if (isRangedWeaponType(atkUnit.weaponType)) {
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
-                }
-                break;
-            case Weapon.EtherealBreath:
+                    break;
+                case Weapon.GiltGoblet:
+                    if (atkUnit.battleContext.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
+                    }
+                    break;
+                case Weapon.BloodTome:
+                    if (isRangedWeaponType(atkUnit.weaponType)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+                    }
+                    break;
+                case Weapon.EtherealBreath:
                 {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
                 }
-                break;
+                    break;
 
-            case Weapon.NewFoxkitFang:
+                case Weapon.NewFoxkitFang:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
                     if (resDiff > 0) {
@@ -784,22 +795,22 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                     }
                 }
-                break;
-            case Weapon.BrightmareHorn:
-                if (defUnit.battleContext.restHpPercentage >= 25) {
-                    let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                    if (diff > 0) {
-                        let percentage = diff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
+                    break;
+                case Weapon.BrightmareHorn:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
 
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
                     }
-                }
-                break;
-            case Weapon.NightmareHorn:
-            case Weapon.NewBrazenCatFang:
+                    break;
+                case Weapon.NightmareHorn:
+                case Weapon.NewBrazenCatFang:
                 {
                     let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
                     if (diff > 0) {
@@ -811,52 +822,50 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                     }
                 }
-                break;
-        }
-        switch (defUnit.passiveB) {
-            case PassiveB.Chivalry: {
-                let percentage = atkUnit.battleContext.restHpPercentage * 0.5;
-                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
-            }
-                break;
-            case PassiveB.AssuredRebirth: {
-                let percentage = 0;
-                let count = 0;
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 3)) {
-                    if (unit.weaponType === WeaponType.Staff || isWeaponTypeBreath(unit.weaponType)) {
-                        count++;
-                    }
-                }
-                percentage += count * 20;
-                let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                if (diff > 0) {
-                    let p = Math.min(diff * 4, 40);
-                    percentage += p;
-                }
-                percentage = Math.min(percentage, 60);
-                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
-            }
-                break;
-            case PassiveB.TrueDragonWall: {
-                let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                let r = 0;
-                let maxPercentage = 0;
-                if (defUnit.isOneTimeActionActivatedForPassiveB) {
-                    r = 6;
-                    maxPercentage = 60;
-                } else {
-                    r = 4;
-                    maxPercentage = 40
-                }
-                if (resDiff > 0) {
-                    let percentage = resDiff * r;
-                    percentage = Math.min(percentage, maxPercentage);
+                    break;
+                case PassiveB.Chivalry: {
+                    let percentage = atkUnit.battleContext.restHpPercentage * 0.5;
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                 }
-                break;
-            }
-            case PassiveB.NewDivinity:
-            case PassiveB.DragonWall3:
+                    break;
+                case PassiveB.AssuredRebirth: {
+                    let percentage = 0;
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 3)) {
+                        if (unit.weaponType === WeaponType.Staff || isWeaponTypeBreath(unit.weaponType)) {
+                            count++;
+                        }
+                    }
+                    percentage += count * 20;
+                    let diff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                    if (diff > 0) {
+                        let p = Math.min(diff * 4, 40);
+                        percentage += p;
+                    }
+                    percentage = Math.min(percentage, 60);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                }
+                    break;
+                case PassiveB.TrueDragonWall: {
+                    let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                    let r = 0;
+                    let maxPercentage = 0;
+                    if (defUnit.isOneTimeActionActivatedForPassiveB) {
+                        r = 6;
+                        maxPercentage = 60;
+                    } else {
+                        r = 4;
+                        maxPercentage = 40
+                    }
+                    if (resDiff > 0) {
+                        let percentage = resDiff * r;
+                        percentage = Math.min(percentage, maxPercentage);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    }
+                    break;
+                }
+                case PassiveB.NewDivinity:
+                case PassiveB.DragonWall3:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
                     if (resDiff > 0) {
@@ -868,25 +877,25 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                     }
                 }
-                break;
-            case PassiveB.MoonTwinWing:
-                if (defUnit.battleContext.restHpPercentage >= 25) {
-                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
-                }
-                break;
-            case PassiveB.Bushido2:
-            case PassiveB.Velocity3:
-            case PassiveB.Frenzy3:
-            case PassiveB.Spurn3:
-            case PassiveB.KaihiIchigekiridatsu3:
-            case PassiveB.KaihiTatakikomi3:
+                    break;
+                case PassiveB.MoonTwinWing:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
+                case PassiveB.Bushido2:
+                case PassiveB.Velocity3:
+                case PassiveB.Frenzy3:
+                case PassiveB.Spurn3:
+                case PassiveB.KaihiIchigekiridatsu3:
+                case PassiveB.KaihiTatakikomi3:
                 {
                     let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                 }
-                break;
-            case PassiveB.BlueLionRule:
+                    break;
+                case PassiveB.BlueLionRule:
                 {
                     let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
                     if (diff > 0) {
@@ -898,27 +907,23 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
                     }
                 }
-                break;
-        }
-        switch (defUnit.passiveC) {
-            case PassiveC.AllTogether: {
-                let count = 0;
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
-                    count++;
-                }
-                let percentage = Math.min(count * 40, 80);
-                let ratio = percentage / 100.0;
-                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
-            }
-                break;
-        }
-
-        switch (defUnit.special) {
-            case Special.VitalAstra:
-                if (defUnit.isSpecialCharged) {
-                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 3, 30);
+                    break;
+                case PassiveC.AllTogether: {
+                    let count = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                        count++;
+                    }
+                    let percentage = Math.min(count * 40, 80);
+                    let ratio = percentage / 100.0;
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                 }
+                    break;
+                case Special.VitalAstra:
+                    if (defUnit.isSpecialCharged) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 3, 30);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+            }
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
@@ -2076,6 +2081,43 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MagicalLanternPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit)) {
+                targetUnit.addSpurs(5, 0, 0, 5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.RemoteSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addSpurs(7, 7, 0, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CelestialGlobe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.GuidesHourglass] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CrowsCrystal] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ChildsCompass] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = targetUnit.getPositiveStatusEffects().length
+                let amount = Math.min(count * 4, 16);
+                targetUnit.addSpurs(amount, amount, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WaryRabbitFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
@@ -2731,6 +2773,12 @@ class DamageCalculatorWrapper {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.battleContext.passiveASkillCondSatisfied = true;
                 targetUnit.addSpurs(7, 0, 0, 7);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.SpdResFinish3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                targetUnit.addSpurs(0, 6, 0, 6);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.SpdResFinish4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -8031,6 +8079,13 @@ class DamageCalculatorWrapper {
                     targetUnit.defSpur += 6;
                 }
                 break;
+            case PassiveA.AsherasChosenPlus:
+                if (calcPotentialDamage ||
+                    this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(9, 0, 9, 9);
+                }
+                break;
         }
     }
 
@@ -9927,6 +9982,17 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case PassiveA.AsherasChosenPlus:
+                if (this.__isThereAllyExceptDragonAndBeastWithin1Space(defUnit) === false ||
+                    defUnit.battleContext.restHpPercentage >= 75) {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = Math.min(resDiff * 4, 40);
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`ダメージ${percentage}%軽減`);
+                        return percentage / 100.0;
+                    }
+                }
+                break;
             case Weapon.FangOfFinality: {
                 let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3) + 1;
                 let percentage = Math.min(count * 20, 60);
@@ -10212,6 +10278,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CelestialGlobe:
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                    }
+                    break;
                 case Weapon.Seidr:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
@@ -11508,6 +11580,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GuidesHourglass:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                    break;
                 case Weapon.EnclosingClaw:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         enemyUnit.battleContext.reducesCooldownCount = false;
@@ -12136,8 +12215,11 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
-        for (let skillId of [allyUnit.passiveC, allyUnit.passiveS, allyUnit.getCaptainSkill()]) {
+        for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GuidesHourglass:
+                    targetUnit.addAllSpur(4);
+                    break;
                 case PassiveC.AllTogether:
                     targetUnit.addAllSpur(4);
                     break;

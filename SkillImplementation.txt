@@ -397,6 +397,10 @@ if (unit.isSpecialCharged) {}
 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
     skillOwner.reduceSpecialCount(N);
 }
+// 戦闘後の時は
+if (targetUnit.isSpecialCountMax) {
+    targetUnit.reduceSpecialCount(N);
+}
 
 戦闘中、奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で奥義を発動済みの時(戦闘前奥義が含まれるのか注意すること)
 atkUnit.isSpecialCharged || atkUnit.isSpecialActivated
@@ -457,6 +461,26 @@ targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 
 敵から受けた追撃のダメージを80%軽減(追撃:通常の武器は、2回目の攻撃、「2回攻撃」の武器は、3～4回目の攻撃)
 targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+
+次の敵の攻撃のダメージを75%軽減(その戦闘中のみ)
+__calcAttackTotalDamage(
+    context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
+    invalidatesDamageReductionExceptSpecialOnSpecialActivation,
+    invalidatesDamageReductionExceptSpecial) {
+    atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
+}
+
+奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
+// Weapon.ChildsCompass参照
+
+__calcAttackTotalDamage(
+    context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
+    invalidatesDamageReductionExceptSpecialOnSpecialActivation,
+    invalidatesDamageReductionExceptSpecial) {
+    if (atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
+        atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated.push(0.5);
+    }
+}
 
 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を半分無効(無効にする数値は端数切捨て。例えば敵の「ダメージを45%軽減」なら半分の「22%」分を無効にし、「ダメージを23%軽減」にする))[リヴスラ, ダメージ軽減半分無効]
 targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;

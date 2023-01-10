@@ -327,6 +327,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.TimesPulse4:
+                    if (targetUnit.isSpecialCountMax) {
+                        targetUnit.reduceSpecialCount(1);
+                    }
+                    break;
                 case Weapon.MagetsuNoSaiki:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {

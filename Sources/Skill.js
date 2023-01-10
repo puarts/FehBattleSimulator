@@ -1497,6 +1497,13 @@ const Weapon = {
     KeenRabbitFang: 2304, // 賀正の母兎の爪牙
     DualityVessel: 2305, // 開神と閉神の祭器
     WaryRabbitFang: 2307, // 賀正の子兎の爪牙
+
+    // 超英雄（カダインの大司祭？）
+    ChildsCompass: 2313, // 魔道の寵子の羅針盤
+    CrowsCrystal: 2311, // 魔宿す蒼鴉の水晶球
+    GuidesHourglass: 2315, // 導きの教師の砂時計
+    CelestialGlobe: 2316, // 魔継ぐ少女の天球儀
+    MagicalLanternPlus: 2319, // 魔道のランタン+
 };
 
 const Support = {
@@ -1659,6 +1666,7 @@ const Special = {
     GiftedMagic: 1582, // 天与の魔道
 
     NjorunsZeal: 1021, // ノヴァの聖戦士
+    NjorunsZeal2: 2309, // ノヴァの聖戦士・承
     Galeforce: 496, // 疾風迅雷
     Miracle: 497, // 祈り
     LifeUnending: 1883, // 永遠を生きるもの
@@ -1787,6 +1795,7 @@ const PassiveA = {
 
 
     AsherasChosen: 1044, // 女神の三雄
+    AsherasChosenPlus: 2310, // 女神の三雄・神
 
     // 構え
     KishinNoKamae3: 539,
@@ -1981,8 +1990,12 @@ const PassiveA = {
     // 秘奥
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
+    SpdResFinish3: 2318, // 速さ魔防の秘奥3
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
     DefResFinish4: 2306, // 守備魔防の秘奥4
+
+    // 離撃
+    RemoteSparrow: 2317, // 鬼神飛燕の離撃
 };
 
 const PassiveB = {
@@ -2032,6 +2045,7 @@ const PassiveB = {
     ChillAtkSpd2: 1239, // 攻撃速さの封印2
     ChillSpdDef2: 1319, // 速さ守備の封印2
     ChillSpdRes2: 1371, // 速さ魔防の封印2
+    ChillSpdRes3: 2312, // 速さ魔防の封印3
     ChillDefRes2: 1613, // 守備魔防の封印2
     ChillDefRes3: 2157, // 守備魔防の封印3
 
@@ -2461,6 +2475,7 @@ const PassiveC = {
     ResPloy3: 725, // 魔防の謀策3
 
     HajimariNoKodo3: 957,
+    TimesPulse4: 2314, // 始まりの鼓動4
 
     // 信義
     AtkSpdOath3: 1077, // 攻撃速さの信義3

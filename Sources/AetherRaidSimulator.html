@@ -2530,6 +2530,14 @@
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
+                // weaponInfos.push(new SkillInfo(
+                //     '100000', '開発用武器', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                //     AssistType.None, true, 0,
+                //     WeaponType.RedTome, 50, true,
+                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                //     false, false, '',
+                //     SkillType.Weapon)
+                // );
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos);
                 g_app.registerHeroOptions(heroInfos, false);

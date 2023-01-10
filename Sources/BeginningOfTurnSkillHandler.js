@@ -146,6 +146,49 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.MagicalLanternPlus:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                }
+                break;
+            case Weapon.CelestialGlobe: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+            }
+                break;
+            case Weapon.GuidesHourglass:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                }
+                break;
+            case Weapon.CrowsCrystal:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.TotalPenaltyDamage);
+                }
+                break;
+            case Weapon.ChildsCompass:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
+            case Special.NjorunsZeal2:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case Weapon.InseverableSpear:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
@@ -1317,6 +1360,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.DemonicTome:
             case PassiveC.HajimariNoKodo3:
+            case PassiveC.TimesPulse4:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                     this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
                     skillOwner.reduceSpecialCount(1);
@@ -2168,6 +2212,20 @@ class BeginningOfTurnSkillHandler {
                 for (let unit of units) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
                         u.reserveToApplyDebuffs(-6, 0, 0, -6);
+                    }
+                }
+            }
+                break;
+            case PassiveB.ChillSpdRes3: {
+                let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let statusFunc = x => {
+                    let unit = this.__getStatusEvalUnit(x);
+                    return unit.getSpdInPrecombat() + unit.getResInPrecombat();
+                };
+                let units = this.__findMaxStatusUnits(group, statusFunc);
+                for (let unit of units) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyDebuffs(0, -6, 0, -6);
                     }
                 }
             }

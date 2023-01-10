@@ -1021,6 +1021,11 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedLinde:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Dodge);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                break;
             case Hero.DuoAskr:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
                     unit.applyAllBuff(6);
@@ -3286,6 +3291,7 @@ class BattleSimmulatorBase {
                         }
                     }
                     break;
+                case Special.NjorunsZeal2:
                 case Special.NjorunsZeal:
                     this.__activateRefreshSpecial(atkUnit);
                     atkUnit.addStatusEffect(StatusEffectType.Gravity);
