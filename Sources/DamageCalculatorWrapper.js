@@ -6395,8 +6395,24 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SarieruNoOkama] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.isBuffed || enemyUnit.isMobilityIncreased) {
-                targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.isBuffed || enemyUnit.isMobilityIncreased) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.hasPositiveStatusEffect(targetUnit) || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MagetsuNoSaiki] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -11535,8 +11551,10 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.SarieruNoOkama:
-                    if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
-                        --followupAttackPriority;
+                    if (!atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
+                            --followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.ImbuedKoma:
