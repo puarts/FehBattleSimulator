@@ -2081,6 +2081,31 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KokkiNoKosou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                        let amount = Math.min(dist, 3) * 2;
+                        targetUnit.addAllSpur(amount);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BouryakuNoSenkyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -13071,7 +13096,6 @@ class DamageCalculatorWrapper {
                         targetUnit.addAllSpur(4);
                     }
                     break;
-                case Weapon.KokkiNoKosou:
                 case Weapon.MaritaNoKen:
                     targetUnit.addAllSpur(4);
                     break;
