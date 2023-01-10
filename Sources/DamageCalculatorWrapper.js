@@ -11660,7 +11660,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case Weapon.MasterBow:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                             enemyUnit.battleContext.reducesCooldownCount = false;
                         }
                     }
