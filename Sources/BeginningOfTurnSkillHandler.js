@@ -146,6 +146,20 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.BouryakuNoSenkyu: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
+                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
+                        found = true;
+                        unit.reserveToApplyDefDebuff(-7);
+                    }
+                }
+                if (found) {
+                    skillOwner.applyAtkBuff(6);
+                }
+            }
+                break;
             case Weapon.MagicalLanternPlus:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);

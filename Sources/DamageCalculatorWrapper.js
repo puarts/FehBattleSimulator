@@ -2081,6 +2081,54 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KokkiNoKosou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                        let amount = Math.min(dist, 3) * 2;
+                        targetUnit.addAllSpur(amount);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BouryakuNoSenkyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MasterBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.RagnellAlondite] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addSpurs(5, 0, 0, 5);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                    targetUnit.battleContext.invalidateBuffs(true, false, true, false);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MagicalLanternPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit)) {
                 targetUnit.addSpurs(5, 0, 0, 5);
@@ -6347,8 +6395,24 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SarieruNoOkama] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.isBuffed || enemyUnit.isMobilityIncreased) {
-                targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.isBuffed || enemyUnit.isMobilityIncreased) {
+                    targetUnit.addAllSpur(4);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.hasPositiveStatusEffect(targetUnit) || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MagetsuNoSaiki] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6930,11 +6994,25 @@ class DamageCalculatorWrapper {
         };
 
         this._applySkillEffectForUnitFuncDict[Weapon.SnowsGrace] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
-                targetUnit.defSpur += 5;
-                targetUnit.resSpur += 5;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.addAllSpur(5);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DivineBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -8824,8 +8902,18 @@ class DamageCalculatorWrapper {
                 }
                 break;
             case Weapon.BouryakuNoSenkyu:
-                if (targetUnit.buffTotal + enemyUnit.debuffTotal >= 10) {
-                    enemyUnit.addAllSpur(-5);
+                if (!targetUnit.isWeaponRefined) {
+                    // <通常効果>
+                    if (targetUnit.buffTotal + enemyUnit.debuffTotal >= 10) {
+                        enemyUnit.addAllSpur(-5);
+                    }
+                } else {
+                    // <錬成効果>
+                    if (targetUnit.hasPositiveStatusEffect(targetUnit) || enemyUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.addAllSpur(-5);
+                    }
+                    targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
                 }
                 break;
             case Weapon.Niu: {
@@ -9197,6 +9285,18 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.BouryakuNoSenkyu:
+                        if (targetUnit.isWeaponRefined) {
+                            if (targetUnit.battleContext.initiatesCombat) {
+                                let total = targetUnit.buffTotal + Math.abs(enemyUnit.debuffTotal);
+                                let percentage = Math.min(total * 3, 60);
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
+                                if (total >= 10) {
+                                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                                }
+                            }
+                        }
+                        break;
                     case Weapon.DualityVessel:
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                             let def = targetUnit.getDefInCombat(enemyUnit);
@@ -10278,6 +10378,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MasterBow:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                            let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
+                        }
+                    }
+                    break;
                 case Weapon.CelestialGlobe:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
@@ -11443,8 +11551,10 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.SarieruNoOkama:
-                    if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
-                        --followupAttackPriority;
+                    if (!atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
+                            --followupAttackPriority;
+                        }
                     }
                     break;
                 case Weapon.ImbuedKoma:
@@ -11580,6 +11690,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MasterBow:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.GuidesHourglass:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         enemyUnit.battleContext.reducesCooldownCount = false;
@@ -13011,7 +13128,6 @@ class DamageCalculatorWrapper {
                         targetUnit.addAllSpur(4);
                     }
                     break;
-                case Weapon.KokkiNoKosou:
                 case Weapon.MaritaNoKen:
                     targetUnit.addAllSpur(4);
                     break;
