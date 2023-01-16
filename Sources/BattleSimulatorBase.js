@@ -3432,6 +3432,7 @@ class BattleSimmulatorBase {
                         false, true, executesTrap);
                     break;
                 case PassiveB.KaihiIchigekiridatsu3:
+                case PassiveB.CloseCall4:
                 case PassiveB.Ichigekiridatsu:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),

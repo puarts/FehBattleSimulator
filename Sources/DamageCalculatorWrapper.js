@@ -910,6 +910,11 @@ class DamageCalculatorWrapper {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                 }
                     break;
+                case PassiveB.CloseCall4: {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+                    break;
                 case PassiveB.BlueLionRule:
                 {
                     let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
@@ -10427,6 +10432,8 @@ class DamageCalculatorWrapper {
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
+            case PassiveB.CloseCall4:
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
             case PassiveB.BlueLionRule:
                 {
                     let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);

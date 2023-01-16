@@ -2195,6 +2195,7 @@ const PassiveB = {
     Frenzy3: 1768, // 回避・攻め立て3
     Spurn3: 1391, // 回避・怒り3
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3
+    CloseCall4: 2328, // 回避・一撃離脱4
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
     Kirikomi: 589, // 切り込み
     Tatakikomi: 588, // 叩き込み
