@@ -1504,6 +1504,11 @@ const Weapon = {
     GuidesHourglass: 2315, // 導きの教師の砂時計
     CelestialGlobe: 2316, // 魔継ぐ少女の天球儀
     MagicalLanternPlus: 2319, // 魔道のランタン+
+
+    // 新英雄召喚（エンゲージ）
+    // https://www.youtube.com/watch?v=QGX5VWOBwjo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=2y2DLadoezw&ab_channel=NintendoMobile
+    ArcaneQiang: 2321, // 魔器・鍛錬の花槍
 };
 
 const Support = {
