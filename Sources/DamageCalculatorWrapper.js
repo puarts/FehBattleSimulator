@@ -2090,6 +2090,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.PegasusFlight4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(-4, 0, -4, 0);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DreamingSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let units = Array.from(this.enumerateUnitsInTheSameGroupOnMap(targetUnit));
             let partners = units.map(u => u.partnerHeroIndex);
@@ -6599,6 +6602,19 @@ class DamageCalculatorWrapper {
                 let amount = Math.max(0, Math.min(7, Math.floor(resDiff * 0.5)));
                 enemyUnit.atkSpur -= amount;
                 enemyUnit.defSpur -= amount;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveB.PegasusFlight4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.getEvalSpdInPrecombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
+                let resDiff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                let amount = Math.max(0, Math.min(8, Math.floor(resDiff * 0.8)));
+                enemyUnit.atkSpur -= amount;
+                enemyUnit.defSpur -= amount;
+                let targetAmount = targetUnit.getEvalSpdInPrecombat() + targetUnit.getEvalResInPrecombat();
+                let enemyAmount = enemyUnit.getEvalSpdInPrecombat() + enemyUnit.getEvalResInPrecombat();
+                if (targetAmount >= enemyAmount + 1) {
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.WyvernFlight3] = (targetUnit, enemyUnit, calcPotentialDamage) => {

@@ -2245,6 +2245,7 @@ const PassiveB = {
     DetailedReport: 1804, // 異常なしであります
     Surinuke3: 592, // すり抜け3
     Tenmakoku3: 1139, // 天馬行空3
+    PegasusFlight4: 2326, // 天馬行空4
     WyvernFlight3: 1529, // 飛竜行空3
     KodoNoHukanGusu3: 1136, // 鼓動の封緘・偶数3
     OddPulseTie3: 1321, // 鼓動の封緘・奇数3
