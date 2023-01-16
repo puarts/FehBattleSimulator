@@ -308,6 +308,7 @@ class PostCombatSkillHander {
 
 
     __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
+        targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
         for (let skillId of enemyUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveS.GoeiNoGuzo:

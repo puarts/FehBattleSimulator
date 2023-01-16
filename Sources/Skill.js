@@ -1509,6 +1509,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=QGX5VWOBwjo&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=2y2DLadoezw&ab_channel=NintendoMobile
     ArcaneQiang: 2321, // 魔器・鍛錬の花槍
+    JoyousTome: 2323, // 幸福の良書
 };
 
 const Support = {

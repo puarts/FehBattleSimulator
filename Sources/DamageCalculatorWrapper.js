@@ -655,6 +655,15 @@ class DamageCalculatorWrapper {
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.JoyousTome: {
+                    let pred = unit => unit.hpPercentage >= 50;
+                    let count = this.__countAlliesWithinSpecifiedSpaces(defUnit, 3, pred);
+                    if (count > 0) {
+                        let percentage = Math.min(count * 15, 45);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    }
+                }
+                    break;
                 case PassiveA.AsherasChosenPlus:
                     if (this.__isThereAllyExceptDragonAndBeastWithin1Space(defUnit) === false ||
                         defUnit.battleContext.restHpPercentage >= 75) {
@@ -2081,6 +2090,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.JoyousTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.healedHpAfterCombat = 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.SelfImprover] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.battleContext.reducesCooldownCount = true;
@@ -8156,6 +8171,9 @@ class DamageCalculatorWrapper {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 for (let skill of allyUnit.enumerateSkills()) {
                     switch (skill) {
+                        case Weapon.JoyousTome:
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                            break;
                         case Weapon.AchimenesFurl: {
                             let types = new Set();
                             for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
@@ -10103,6 +10121,16 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.JoyousTome: {
+                let pred = unit => unit.hpPercentage >= 50;
+                let count = this.__countAlliesWithinSpecifiedSpaces(defUnit, 3, pred);
+                if (count > 0) {
+                    let percentage = Math.min(count * 15, 45);
+                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`ダメージ${percentage}%軽減`);
+                    return percentage / 100.0;
+                }
+            }
+                break;
             case PassiveA.AsherasChosenPlus:
                 if (this.__isThereAllyExceptDragonAndBeastWithin1Space(defUnit) === false ||
                     defUnit.battleContext.restHpPercentage >= 75) {
@@ -10399,6 +10427,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.JoyousTome: {
+                    if (!isPrecombat) {
+                        let pred = unit => unit.hpPercentage >= 50;
+                        let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3, pred);
+                        atkUnit.battleContext.additionalDamage += Math.min(count * 5, 15);
+                    }
+                }
+                    break;
                 case Weapon.MasterBow:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {

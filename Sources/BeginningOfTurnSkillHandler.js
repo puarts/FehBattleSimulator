@@ -146,6 +146,17 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.JoyousTome: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                    found = true;
+                    unit.reserveHeal(7);
+                }
+                if (found) {
+                    skillOwner.reserveHeal(7);
+                }
+            }
+                break;
             case Weapon.BouryakuNoSenkyu: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
