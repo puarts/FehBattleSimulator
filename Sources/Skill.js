@@ -1940,6 +1940,7 @@ const PassiveA = {
     OstiasCounter: 587, // オスティアの反撃
     Duality: 2241, // 魂の秘儀
     SwiftSlice: 2298, // 連閃
+    SelfImprover: 2329, // 自己研鑽
 
     // 防城戦
     AtkSpdBojosen3: 1473,
