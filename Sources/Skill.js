@@ -1511,6 +1511,7 @@ const Weapon = {
     ArcaneQiang: 2321, // 魔器・鍛錬の花槍
     JoyousTome: 2323, // 幸福の良書
     DreamingSpear: 2325, // 夢想の翼槍
+    Liberation: 2327, // リベラシオン
 };
 
 const Support = {

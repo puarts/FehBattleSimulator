@@ -655,6 +655,12 @@ class DamageCalculatorWrapper {
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Liberation:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
                 case Weapon.JoyousTome: {
                     let pred = unit => unit.hpPercentage >= 50;
                     let count = this.__countAlliesWithinSpecifiedSpaces(defUnit, 3, pred);
@@ -2090,6 +2096,24 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Liberation] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let originSet = new Set();
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                    let origins = unit.heroInfo.origin.split('|');
+                    for (let origin of origins) {
+                        if (origin.indexOf("紋章の謎") >= 0) {
+                            originSet.add("紋章の謎");
+                        } else {
+                            originSet.add(origin);
+                        }
+                    }
+                }
+                let amount = Math.min(originSet.size * 4 + 4, 12);
+                enemyUnit.addSpurs(0, -amount, -amount, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.PegasusFlight4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpurs(-4, 0, -4, 0);
         }
@@ -10161,6 +10185,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.Liberation:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
             case Weapon.JoyousTome: {
                 let pred = unit => unit.hpPercentage >= 50;
                 let count = this.__countAlliesWithinSpecifiedSpaces(defUnit, 3, pred);

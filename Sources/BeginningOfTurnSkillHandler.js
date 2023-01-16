@@ -146,6 +146,17 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.Liberation:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                        if (skillOwner.heroIndex === unit.partnerHeroIndex ||
+                            unit.heroIndex === skillOwner.partnerHeroIndex) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Charge);
+                        }
+                    }
+                }
+                break;
             case Weapon.JoyousTome: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
