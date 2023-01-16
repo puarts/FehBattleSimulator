@@ -3333,6 +3333,7 @@ const EvalSpdAddDict = {};
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
+EvalSpdAddDict[PassiveB.CloseCall4] = 7;
 EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。
