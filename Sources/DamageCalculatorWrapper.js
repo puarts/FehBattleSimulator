@@ -2106,7 +2106,9 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
                 let originSet = new Set();
                 for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-                    let origins = unit.heroInfo.origin.split('|');
+                    let info = unit.heroInfo;
+                    if (info === null) continue;
+                    let origins = info.origin.split('|');
                     for (let origin of origins) {
                         if (origin.indexOf("紋章の謎") >= 0) {
                             originSet.add("紋章の謎");
