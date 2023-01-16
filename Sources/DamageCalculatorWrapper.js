@@ -4605,6 +4605,11 @@ class DamageCalculatorWrapper {
                 enemyUnit.addAllSpur(-5);
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.FlowNTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.FlowForce3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
