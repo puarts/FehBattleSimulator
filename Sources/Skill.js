@@ -1510,6 +1510,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=2y2DLadoezw&ab_channel=NintendoMobile
     ArcaneQiang: 2321, // 魔器・鍛錬の花槍
     JoyousTome: 2323, // 幸福の良書
+    DreamingSpear: 2325, // 夢想の翼槍
 };
 
 const Support = {

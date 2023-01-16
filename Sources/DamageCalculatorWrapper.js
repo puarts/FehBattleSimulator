@@ -2090,6 +2090,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DreamingSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let units = Array.from(this.enumerateUnitsInTheSameGroupOnMap(targetUnit));
+            let partners = units.map(u => u.partnerHeroIndex);
+            if (units.some(u => partners.includes(u.heroIndex))) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.JoyousTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAllSpur(5);
@@ -9310,6 +9319,10 @@ class DamageCalculatorWrapper {
         function mariaCalc(ratio = 0.20) {
             applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit));
         }
+        // クロエ算（魔防マリア算）
+        function resMariaCalc(ratio = 0.20) {
+            applyFixedValueSkill(targetUnit.getResInCombat(enemyUnit));
+        }
 
         // ステータスによる固定ダメージ増加・軽減
         function applyFixedValueSkill(status, ratio = 0.20) {
@@ -9330,6 +9343,11 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.DreamingSpear:
+                        if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                            resMariaCalc()
+                        }
+                        break;
                     case Weapon.BouryakuNoSenkyu:
                         if (targetUnit.isWeaponRefined) {
                             if (targetUnit.battleContext.initiatesCombat) {
