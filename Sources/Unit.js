@@ -469,6 +469,9 @@ class BattleContext {
         // [回復不可]を無効にする割合
         this.nullInvalidatesHealRatio = 0;
 
+        // 戦闘後回復
+        this.healedHpAfterCombat = 0;
+
         // 強化無効
         this.invalidatesAtkBuff = false;
         this.invalidatesSpdBuff = false;
@@ -733,6 +736,7 @@ class BattleContext {
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
         this.nullInvalidatesHealRatio = 0;
+        this.healedHpAfterCombat = 0;
         this.isAdvantageForColorless = false;
         this.additionalDamageOfSpecial = 0;
         this.rateOfAtkMinusDefForAdditionalDamage = 0;
@@ -5181,6 +5185,7 @@ class Unit extends BattleMapElement {
                         }
                     }
                     break;
+                case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:
                 case Weapon.FloridCanePlus:
                 case Weapon.TriEdgeLance:

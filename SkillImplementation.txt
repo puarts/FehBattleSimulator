@@ -331,6 +331,8 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
   targetUnit.reserveTakeDamage(N);
 }
+又は
+targetUnit.battleContext.healedHpAfterCombat += N;
 
 奥義実装
 __getCount<N>Specials() {}

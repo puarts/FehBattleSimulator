@@ -3432,6 +3432,7 @@ class BattleSimmulatorBase {
                         false, true, executesTrap);
                     break;
                 case PassiveB.KaihiIchigekiridatsu3:
+                case PassiveB.CloseCall4:
                 case PassiveB.Ichigekiridatsu:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),
@@ -6183,6 +6184,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:
                 case Weapon.HolytideTyrfing:
                 case Weapon.FloridCanePlus:

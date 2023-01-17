@@ -655,6 +655,21 @@ class DamageCalculatorWrapper {
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Liberation:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
+                case Weapon.JoyousTome: {
+                    let pred = unit => unit.hpPercentage >= 50;
+                    let count = this.__countAlliesWithinSpecifiedSpaces(defUnit, 3, pred);
+                    if (count > 0) {
+                        let percentage = Math.min(count * 15, 45);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    }
+                }
+                    break;
                 case PassiveA.AsherasChosenPlus:
                     if (this.__isThereAllyExceptDragonAndBeastWithin1Space(defUnit) === false ||
                         defUnit.battleContext.restHpPercentage >= 75) {
@@ -892,6 +907,11 @@ class DamageCalculatorWrapper {
                 case PassiveB.KaihiTatakikomi3:
                 {
                     let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+                    break;
+                case PassiveB.CloseCall4: {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                 }
                     break;
@@ -2081,6 +2101,60 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Liberation] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let originSet = new Set();
+                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                    let info = unit.heroInfo;
+                    if (info === null) continue;
+                    let origins = info.origin.split('|');
+                    for (let origin of origins) {
+                        if (origin.indexOf("紋章の謎") >= 0) {
+                            originSet.add("紋章の謎");
+                        } else {
+                            originSet.add(origin);
+                        }
+                    }
+                }
+                let amount = Math.min(originSet.size * 4 + 4, 12);
+                enemyUnit.addSpurs(0, -amount, -amount, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.PegasusFlight4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpurs(-4, 0, -4, 0);
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DreamingSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let units = Array.from(this.enumerateUnitsInTheSameGroupOnMap(targetUnit));
+            let partners = units.map(u => u.partnerHeroIndex);
+            if (units.some(u => partners.includes(u.heroIndex))) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.JoyousTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.healedHpAfterCombat = 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.SelfImprover] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneQiang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (dist !== 0) {
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.KokkiNoKosou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -4589,6 +4663,11 @@ class DamageCalculatorWrapper {
                 enemyUnit.addAllSpur(-5);
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.FlowNTrace3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.FlowForce3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -6556,6 +6635,19 @@ class DamageCalculatorWrapper {
                 enemyUnit.defSpur -= amount;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.PegasusFlight4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.getEvalSpdInPrecombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
+                let resDiff = targetUnit.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+                let amount = Math.max(0, Math.min(8, Math.floor(resDiff * 0.8)));
+                enemyUnit.atkSpur -= amount;
+                enemyUnit.defSpur -= amount;
+                let targetAmount = targetUnit.getEvalSpdInPrecombat() + targetUnit.getEvalResInPrecombat();
+                let enemyAmount = enemyUnit.getEvalSpdInPrecombat() + enemyUnit.getEvalResInPrecombat();
+                if (targetAmount >= enemyAmount + 1) {
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            }
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.WyvernFlight3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.getEvalSpdInPrecombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
                 let defDiff = targetUnit.getEvalDefInPrecombat() - enemyUnit.getEvalDefInPrecombat();
@@ -8135,6 +8227,9 @@ class DamageCalculatorWrapper {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
                 for (let skill of allyUnit.enumerateSkills()) {
                     switch (skill) {
+                        case Weapon.JoyousTome:
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                            break;
                         case Weapon.AchimenesFurl: {
                             let types = new Set();
                             for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
@@ -9124,6 +9219,12 @@ class DamageCalculatorWrapper {
                         unit.spdSpur += value; unit.defSpur += value;
                     });
                 break;
+            case PassiveA.SpdResIdeal4:
+                DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
+                    (unit, value) => {
+                        unit.spdSpur += value; unit.resSpur += value;
+                    });
+                break;
             case PassiveA.DefResIdeal4:
                 DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
                     (unit, value) => {
@@ -9265,6 +9366,10 @@ class DamageCalculatorWrapper {
         function mariaCalc(ratio = 0.20) {
             applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit));
         }
+        // クロエ算（魔防マリア算）
+        function resMariaCalc(ratio = 0.20) {
+            applyFixedValueSkill(targetUnit.getResInCombat(enemyUnit));
+        }
 
         // ステータスによる固定ダメージ増加・軽減
         function applyFixedValueSkill(status, ratio = 0.20) {
@@ -9285,6 +9390,11 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.DreamingSpear:
+                        if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                            resMariaCalc()
+                        }
+                        break;
                     case Weapon.BouryakuNoSenkyu:
                         if (targetUnit.isWeaponRefined) {
                             if (targetUnit.battleContext.initiatesCombat) {
@@ -10082,6 +10192,21 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.Liberation:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
+            case Weapon.JoyousTome: {
+                let pred = unit => unit.hpPercentage >= 50;
+                let count = this.__countAlliesWithinSpecifiedSpaces(defUnit, 3, pred);
+                if (count > 0) {
+                    let percentage = Math.min(count * 15, 45);
+                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`ダメージ${percentage}%軽減`);
+                    return percentage / 100.0;
+                }
+            }
+                break;
             case PassiveA.AsherasChosenPlus:
                 if (this.__isThereAllyExceptDragonAndBeastWithin1Space(defUnit) === false ||
                     defUnit.battleContext.restHpPercentage >= 75) {
@@ -10309,6 +10434,8 @@ class DamageCalculatorWrapper {
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
+            case PassiveB.CloseCall4:
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
             case PassiveB.BlueLionRule:
                 {
                     let defUnitDef = defUnit.getEvalDefInCombat(atkUnit);
@@ -10378,6 +10505,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.JoyousTome: {
+                    if (!isPrecombat) {
+                        let pred = unit => unit.hpPercentage >= 50;
+                        let count = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 3, pred);
+                        atkUnit.battleContext.additionalDamage += Math.min(count * 5, 15);
+                    }
+                }
+                    break;
                 case Weapon.MasterBow:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {

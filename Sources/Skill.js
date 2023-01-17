@@ -1504,6 +1504,14 @@ const Weapon = {
     GuidesHourglass: 2315, // 導きの教師の砂時計
     CelestialGlobe: 2316, // 魔継ぐ少女の天球儀
     MagicalLanternPlus: 2319, // 魔道のランタン+
+
+    // 新英雄召喚（エンゲージ）
+    // https://www.youtube.com/watch?v=QGX5VWOBwjo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=2y2DLadoezw&ab_channel=NintendoMobile
+    ArcaneQiang: 2321, // 魔器・鍛錬の花槍
+    JoyousTome: 2323, // 幸福の良書
+    DreamingSpear: 2325, // 夢想の翼槍
+    Liberation: 2327, // リベラシオン
 };
 
 const Support = {
@@ -1935,6 +1943,7 @@ const PassiveA = {
     OstiasCounter: 587, // オスティアの反撃
     Duality: 2241, // 魂の秘儀
     SwiftSlice: 2298, // 連閃
+    SelfImprover: 2329, // 自己研鑽
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -1975,6 +1984,7 @@ const PassiveA = {
     AtkResIdeal4: 1723,
     SpdDefIdeal3: 2006, // 速さ守備の万全3
     SpdDefIdeal4: 1997, // 速さ守備の万全4
+    SpdResIdeal4: 2324, // 速さ魔防の万全4
     DefResIdeal3: 1984, // 守備魔防の万全3
     DefResIdeal4: 1791, // 守備魔防の万全4
 
@@ -2185,6 +2195,7 @@ const PassiveB = {
     Frenzy3: 1768, // 回避・攻め立て3
     Spurn3: 1391, // 回避・怒り3
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3
+    CloseCall4: 2328, // 回避・一撃離脱4
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
     Kirikomi: 589, // 切り込み
     Tatakikomi: 588, // 叩き込み
@@ -2236,6 +2247,7 @@ const PassiveB = {
     DetailedReport: 1804, // 異常なしであります
     Surinuke3: 592, // すり抜け3
     Tenmakoku3: 1139, // 天馬行空3
+    PegasusFlight4: 2326, // 天馬行空4
     WyvernFlight3: 1529, // 飛竜行空3
     KodoNoHukanGusu3: 1136, // 鼓動の封緘・偶数3
     OddPulseTie3: 1321, // 鼓動の封緘・奇数3
@@ -2292,6 +2304,7 @@ const PassiveB = {
     FlowGuard3: 1912, // 怒涛・キャンセル3
     FlowForce3: 2088, // 怒涛・不屈3
     FlowFeather3: 2139, // 怒涛・天馬行空3
+    FlowNTrace3: 2322, // 怒涛・近影3
 
     // 拍節
     AtkResTempo3: 2184, // 攻撃魔防の拍節3
@@ -3320,6 +3333,7 @@ const EvalSpdAddDict = {};
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
+EvalSpdAddDict[PassiveB.CloseCall4] = 7;
 EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。
