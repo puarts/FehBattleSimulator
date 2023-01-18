@@ -1513,6 +1513,7 @@ const Weapon = {
     DreamingSpear: 2325, // 夢想の翼槍
     Liberation: 2327, // リベラシオン
     ProtectionBowPlus: 2330, // 守護の弓+
+    MonarchBlade: 2332, // 神竜王の剣
 };
 
 const Support = {
