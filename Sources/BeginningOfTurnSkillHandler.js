@@ -394,7 +394,7 @@ class BeginningOfTurnSkillHandler {
                     targetUnits.forEach(unit => {
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
-                        if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                        if (this.__getStatusEvalUnit(unit).isSpecialCountMax) {
                             unit.reduceSpecialCount(1);
                         }
                     }
