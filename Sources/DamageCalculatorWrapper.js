@@ -655,6 +655,12 @@ class DamageCalculatorWrapper {
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MonarchBlade:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
                 case Weapon.Liberation:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
                         let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
@@ -2101,6 +2107,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.MonarchBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ProtectionBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addSpurs(5, 0, 5, 0);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Liberation] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -10192,6 +10210,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.MonarchBlade:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                }
+                break;
             case Weapon.Liberation:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
@@ -10505,6 +10528,13 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MonarchBlade:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (isPrecombat) break;
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
+                    }
+                    break;
                 case Weapon.JoyousTome: {
                     if (!isPrecombat) {
                         let pred = unit => unit.hpPercentage >= 50;
