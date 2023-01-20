@@ -2464,7 +2464,7 @@ class DamageCalculatorWrapper {
                 }
                 let count = self.__countEnemiesWithinSpecifiedSpaces(targetUnit, 99, func);
                 let amount = Math.min(count * 3, 9);
-                enemyUnit.addAllSpur(-amount);
+                enemyUnit.addSpurs(-amount, -amount, -amount, 0);
                 if (count >= 2) {
                     targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     targetUnit.battleContext.reducesCooldownCount = true;
