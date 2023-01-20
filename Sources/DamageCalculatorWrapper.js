@@ -8067,6 +8067,9 @@ class DamageCalculatorWrapper {
         if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
             return;
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
 
         if (!calcPotentialDamage) {
             let feudFunc = this.__getFeudConditionFunc(enemyUnit);
