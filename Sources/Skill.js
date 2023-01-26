@@ -1514,6 +1514,11 @@ const Weapon = {
     Liberation: 2327, // リベラシオン
     ProtectionBowPlus: 2330, // 守護の弓+
     MonarchBlade: 2332, // 神竜王の剣
+
+    // Ｗ神階英雄召喚 (フォデス＆ガトー)
+    // https://www.youtube.com/watch?v=TxylXB-Ge2k&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=c9c9wM1yjFo&ab_channel=NintendoMobile
+    Ravager: 2333, // 滅びの魔拳
 };
 
 const Support = {
@@ -3360,6 +3365,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.Ravager] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.KeenRabbitFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FangOfFinality] = 0;

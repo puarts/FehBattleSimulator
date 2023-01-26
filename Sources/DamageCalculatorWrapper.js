@@ -2107,6 +2107,21 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Ravager] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-6, 0, -6, 0);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                if (targetUnit.isTransformed) {
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+                }
+            }
+            if (targetUnit.isTransformed) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MonarchBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
