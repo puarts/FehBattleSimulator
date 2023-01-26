@@ -1953,6 +1953,7 @@ const PassiveA = {
     SwiftSlice: 2298, // 連閃
     SelfImprover: 2329, // 自己研鑽
     Nightmare: 2334, // 漆黒の悪夢
+    GiftOfMagic: 2337, // 人に魔道を授けし者
 
     // 防城戦
     AtkSpdBojosen3: 1473,

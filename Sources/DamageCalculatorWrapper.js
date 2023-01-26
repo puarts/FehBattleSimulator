@@ -1061,6 +1061,12 @@ class DamageCalculatorWrapper {
             // defUnitのスキル効果
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveA.GiftOfMagic:
+                        if (isRangedWeaponType(atkUnit.weaponType) && atkUnit.battleContext.initiatesCombat) {
+                            // 敵に攻め立て強制
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                        break;
                     case Weapon.Urvan:
                         if (defUnit.isWeaponSpecialRefined) {
                             // 敵に攻め立て強制
@@ -2110,6 +2116,13 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.GiftOfMagic] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
+                enemyUnit.addSpurs(-10, 0, 0, -10);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BrilliantStarlight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, 0, -6);
