@@ -328,6 +328,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BrilliantStarlight:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
                 case PassiveA.Nightmare:
                     if (enemyUnit.battleContext.initiatesCombat) {
                         let units = [];

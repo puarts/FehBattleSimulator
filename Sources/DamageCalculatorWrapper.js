@@ -653,6 +653,9 @@ class DamageCalculatorWrapper {
     }
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+        if (defUnit.hasStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent)) {
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+        }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.MonarchBlade:
@@ -2107,6 +2110,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.BrilliantStarlight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-6, 0, 0, -6);
+                targetUnit.battleContext.invalidateBuffs(true, false, false, true);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.BeastFollowUp3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.followupAttackPriorityIncrement++;
         }
@@ -11280,17 +11289,26 @@ class DamageCalculatorWrapper {
     }
 
     __canDisableCounterAttack(atkUnit, defUnit) {
-        if (defUnit.hasPassiveSkill(PassiveB.MikiriHangeki3)) {
-            return false;
-        }
-
-        if (defUnit.hasPassiveSkill(PassiveB.MysticBoost4) && atkUnit.weaponType === WeaponType.Staff) {
-            return false;
-        }
-
-        if (defUnit.weapon === Weapon.NiflsBite) {
-            if (this.__isThereAllyIn2Spaces(defUnit) && atkUnit.isRangedWeaponType()) {
-                return false;
+        // defUnitが見切り・反撃効果を持っている場合(falseを返す場合)
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.BrilliantStarlight:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        return false;
+                    }
+                    break;
+                case PassiveB.MikiriHangeki3:
+                    return false;
+                case PassiveB.MysticBoost4:
+                    if (atkUnit.weaponType === WeaponType.Staff) {
+                        return false;
+                    }
+                    break;
+                case Weapon.NiflsBite:
+                    if (this.__isThereAllyIn2Spaces(defUnit) && atkUnit.isRangedWeaponType()) {
+                        return false;
+                    }
+                    break;
             }
         }
 

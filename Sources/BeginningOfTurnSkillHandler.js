@@ -147,6 +147,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.BrilliantStarlight:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.applyBuffs(0, 0, 6, 6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent);
+                    }
+                }
+                break;
             case Weapon.Liberation:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);

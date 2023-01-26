@@ -1519,6 +1519,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=TxylXB-Ge2k&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=c9c9wM1yjFo&ab_channel=NintendoMobile
     Ravager: 2333, // 滅びの魔拳
+    BrilliantStarlight: 2336, // 聖光スターライト
 };
 
 const Support = {
