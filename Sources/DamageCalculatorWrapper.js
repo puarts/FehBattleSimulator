@@ -7335,6 +7335,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.Guard4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.atkSpur -= 4;
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        };
 
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
