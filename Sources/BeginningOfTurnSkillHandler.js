@@ -112,6 +112,7 @@ class BeginningOfTurnSkillHandler {
                 switch (skillId) {
                     case PassiveB.BeastAgility3:
                     case PassiveB.BeastNTrace3:
+                    case PassiveB.BeastFollowUp3:
                         hasTransformSkills = true;
                         break;
                 }

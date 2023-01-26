@@ -2107,6 +2107,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.BeastFollowUp3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.followupAttackPriorityIncrement++;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Ravager] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, -6, 0);

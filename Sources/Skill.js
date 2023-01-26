@@ -2329,6 +2329,7 @@ const PassiveB = {
     // 絶対化身
     BeastAgility3: 2270, // 絶対化身・敏捷3
     BeastNTrace3: 2303, // 絶対化身・近影3
+    BeastFollowUp3: 2335, // 絶対化身・追撃3
 };
 
 const PassiveC = {
