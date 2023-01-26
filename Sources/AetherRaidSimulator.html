@@ -2531,12 +2531,50 @@
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
                 // weaponInfos.push(new SkillInfo(
-                //     '100000', '開発用武器', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                //     '100000', '開発用武器1', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
                 //     AssistType.None, true, 0,
-                //     WeaponType.RedTome, 50, true,
+                //     WeaponType.ColorlessBeast, 50, true,
                 //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
                 //     false, false, '',
-                //     SkillType.Weapon)
+                //     SkillType.Weapon));
+                // passiveAInfos.push(new SkillInfo(
+                //     '100001', '開発用Aスキル1', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                //     AssistType.None, true, 0,
+                //     WeaponType.None, 50, true,
+                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                //     false, false, '',
+                //     SkillType.PassiveA)
+                // );
+                // passiveBInfos.push(new SkillInfo(
+                //     '100002', '開発用Bスキル1', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                //     AssistType.None, true, 0,
+                //     WeaponType.None, 50, true,
+                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                //     false, false, '',
+                //     SkillType.PassiveB)
+                // );
+                // weaponInfos.push(new SkillInfo(
+                //     '100010', '開発用武器2', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                //     AssistType.None, true, 0,
+                //     WeaponType.ColorlessTome, 50, true,
+                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                //     false, false, '',
+                //     SkillType.Weapon));
+                // passiveAInfos.push(new SkillInfo(
+                //     '100011', '開発用Aスキル2', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                //     AssistType.None, true, 0,
+                //     WeaponType.None, 50, true,
+                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                //     false, false, '',
+                //     SkillType.PassiveA)
+                // );
+                // passiveBInfos.push(new SkillInfo(
+                //     '100012', '開発用Bスキル2', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                //     AssistType.None, true, 0,
+                //     WeaponType.None, 50, true,
+                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                //     false, false, '',
+                //     SkillType.PassiveB)
                 // );
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos);
