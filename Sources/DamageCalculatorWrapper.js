@@ -2110,6 +2110,12 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.BeastFollowUp3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.followupAttackPriorityIncrement++;
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.Nightmare] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addSpurs(-10, 0, -10, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Ravager] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, -6, 0);

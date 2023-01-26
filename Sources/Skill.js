@@ -1951,6 +1951,7 @@ const PassiveA = {
     Duality: 2241, // 魂の秘儀
     SwiftSlice: 2298, // 連閃
     SelfImprover: 2329, // 自己研鑽
+    Nightmare: 2334, // 漆黒の悪夢
 
     // 防城戦
     AtkSpdBojosen3: 1473,
