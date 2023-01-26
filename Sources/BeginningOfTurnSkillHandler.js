@@ -112,6 +112,7 @@ class BeginningOfTurnSkillHandler {
                 switch (skillId) {
                     case PassiveB.BeastAgility3:
                     case PassiveB.BeastNTrace3:
+                    case PassiveB.BeastFollowUp3:
                         hasTransformSkills = true;
                         break;
                 }
@@ -146,6 +147,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.BrilliantStarlight:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.applyBuffs(0, 0, 6, 6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent);
+                    }
+                }
+                break;
             case Weapon.Liberation:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
@@ -394,7 +403,7 @@ class BeginningOfTurnSkillHandler {
                     targetUnits.forEach(unit => {
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
-                        if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                        if (this.__getStatusEvalUnit(unit).isSpecialCountMax) {
                             unit.reduceSpecialCount(1);
                         }
                     }

@@ -328,6 +328,28 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BrilliantStarlight:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
+                case PassiveA.Nightmare:
+                    if (enemyUnit.battleContext.initiatesCombat) {
+                        let units = [];
+                        let minDistance = Number.MAX_SAFE_INTEGER;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 4)) {
+                            if (unit.isActionDone) continue;
+                            let distance = enemyUnit.distance(unit);
+                            if (distance === minDistance) {
+                                units.push(unit);
+                            } else if (distance < minDistance) {
+                                units = [unit];
+                                minDistance = distance;
+                            }
+                        }
+                        units.map(unit => unit.isActionDone = true);
+                    }
+                    break;
                 case PassiveC.TimesPulse4:
                     if (targetUnit.isSpecialCountMax) {
                         targetUnit.reduceSpecialCount(1);

@@ -1514,6 +1514,12 @@ const Weapon = {
     Liberation: 2327, // リベラシオン
     ProtectionBowPlus: 2330, // 守護の弓+
     MonarchBlade: 2332, // 神竜王の剣
+
+    // Ｗ神階英雄召喚 (フォデス＆ガトー)
+    // https://www.youtube.com/watch?v=TxylXB-Ge2k&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=c9c9wM1yjFo&ab_channel=NintendoMobile
+    Ravager: 2333, // 滅びの魔拳
+    BrilliantStarlight: 2336, // 聖光スターライト
 };
 
 const Support = {
@@ -1946,6 +1952,8 @@ const PassiveA = {
     Duality: 2241, // 魂の秘儀
     SwiftSlice: 2298, // 連閃
     SelfImprover: 2329, // 自己研鑽
+    Nightmare: 2334, // 漆黒の悪夢
+    GiftOfMagic: 2337, // 人に魔道を授けし者
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -2028,6 +2036,7 @@ const PassiveB = {
     Cancel1: 1286,//キャンセル1
     Cancel2: 1287,//キャンセル2
     Cancel3: 631,//キャンセル3
+    Guard4: 2338, // キャンセル4
     Kyuen2: 1121, // 救援の行路2
     Kyuen3: 594, // 救援の行路3
     Ridatsu3: 595, // 離脱の行路3
@@ -2324,6 +2333,7 @@ const PassiveB = {
     // 絶対化身
     BeastAgility3: 2270, // 絶対化身・敏捷3
     BeastNTrace3: 2303, // 絶対化身・近影3
+    BeastFollowUp3: 2335, // 絶対化身・追撃3
 };
 
 const PassiveC = {
@@ -3360,6 +3370,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.Ravager] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.KeenRabbitFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.FangOfFinality] = 0;

@@ -457,6 +457,8 @@ __applyPrecombatDamageReduction(defUnit, atkUnit) {
     defUnit.battleContext.damageReductionForPrecombat += N;
 }
 
+連撃防御
+targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
 
 戦闘中、最初に受けた攻撃のダメージを30%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);

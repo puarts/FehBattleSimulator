@@ -653,6 +653,9 @@ class DamageCalculatorWrapper {
     }
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+        if (defUnit.hasStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent)) {
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+        }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.MonarchBlade:
@@ -1058,6 +1061,12 @@ class DamageCalculatorWrapper {
             // defUnitのスキル効果
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveA.GiftOfMagic:
+                        if (isRangedWeaponType(atkUnit.weaponType) && atkUnit.battleContext.initiatesCombat) {
+                            // 敵に攻め立て強制
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                        break;
                     case Weapon.Urvan:
                         if (defUnit.isWeaponSpecialRefined) {
                             // 敵に攻め立て強制
@@ -2107,6 +2116,43 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.GiftOfMagic] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
+                enemyUnit.addSpurs(-10, 0, 0, -10);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BrilliantStarlight] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-6, 0, 0, -6);
+                targetUnit.battleContext.invalidateBuffs(true, false, false, true);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.BeastFollowUp3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.followupAttackPriorityIncrement++;
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.Nightmare] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addSpurs(-10, 0, -10, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Ravager] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-6, 0, -6, 0);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                if (targetUnit.isTransformed) {
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+                }
+            }
+            if (targetUnit.isTransformed) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MonarchBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -2464,7 +2510,7 @@ class DamageCalculatorWrapper {
                 }
                 let count = self.__countEnemiesWithinSpecifiedSpaces(targetUnit, 99, func);
                 let amount = Math.min(count * 3, 9);
-                enemyUnit.addAllSpur(-amount);
+                enemyUnit.addSpurs(-amount, -amount, -amount, 0);
                 if (count >= 2) {
                     targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     targetUnit.battleContext.reducesCooldownCount = true;
@@ -7289,6 +7335,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.Guard4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.atkSpur -= 4;
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        };
 
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -8065,6 +8118,9 @@ class DamageCalculatorWrapper {
      */
     __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
         if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
+            return;
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
             return;
         }
 
@@ -11253,17 +11309,26 @@ class DamageCalculatorWrapper {
     }
 
     __canDisableCounterAttack(atkUnit, defUnit) {
-        if (defUnit.hasPassiveSkill(PassiveB.MikiriHangeki3)) {
-            return false;
-        }
-
-        if (defUnit.hasPassiveSkill(PassiveB.MysticBoost4) && atkUnit.weaponType === WeaponType.Staff) {
-            return false;
-        }
-
-        if (defUnit.weapon === Weapon.NiflsBite) {
-            if (this.__isThereAllyIn2Spaces(defUnit) && atkUnit.isRangedWeaponType()) {
-                return false;
+        // defUnitが見切り・反撃効果を持っている場合(falseを返す場合)
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.BrilliantStarlight:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        return false;
+                    }
+                    break;
+                case PassiveB.MikiriHangeki3:
+                    return false;
+                case PassiveB.MysticBoost4:
+                    if (atkUnit.weaponType === WeaponType.Staff) {
+                        return false;
+                    }
+                    break;
+                case Weapon.NiflsBite:
+                    if (this.__isThereAllyIn2Spaces(defUnit) && atkUnit.isRangedWeaponType()) {
+                        return false;
+                    }
+                    break;
             }
         }
 
