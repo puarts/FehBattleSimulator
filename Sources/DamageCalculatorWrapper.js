@@ -2093,6 +2093,10 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.increaseCooldownCountForBoth();
         }
 
+        if (targetUnit.hasStatusEffect(StatusEffectType.NeutralizesPenalties)) {
+            targetUnit.battleContext.invalidateAllOwnDebuffs();
+        }
+
         if (gameMode == GameMode.SummonerDuels) {
             if (targetUnit.attackRange == 1 && enemyUnit.attackRange == 2
                 && !targetUnit.battleContext.isSaviorActivated

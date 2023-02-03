@@ -227,6 +227,7 @@ const StatusEffectType = {
     DualStrike: 43, // デュアルアタック
     UnitCannotBeSlowedByTerrain: 44, // 自身が移動可能な地形を平地のように移動可能
     ReduceDamageFromAreaOfEffectSpecialsBy80Percent: 45, // 受けた範囲奥義のダメージを80%軽減
+    NeutralizesPenalties: 46, // 弱化を無効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -390,6 +391,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_UnitCannotBeSlowedByTerrain.webp";
         case StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent:
             return g_imageRootPath + "StatusEffect_ReduceDamageFromAreaOfEffectSpecialsBy80Percent.webp";
+        case StatusEffectType.NeutralizesPenalties:
+            return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
         default: return "";
     }
 }
