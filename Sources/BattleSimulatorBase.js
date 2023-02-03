@@ -7946,18 +7946,21 @@ class BattleSimmulatorBase {
                 }
                     break;
                 case Support.GentleDream:
-                {
+                case Support.GentleDreamPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit, false)) {
-                        if (unit.posX == skillOwnerUnit.posX
-                            || unit.posX == targetUnit.posX
-                            || unit.posY == skillOwnerUnit.posY
-                            || unit.posY == targetUnit.posY
-                        ) {
-                            unit.applyAllBuff(3);
+                        if (unit.posX === skillOwnerUnit.posX ||
+                            unit.posX === targetUnit.posX ||
+                            unit.posY === skillOwnerUnit.posY ||
+                            unit.posY === targetUnit.posY) {
+                            let amount = 3;
+                            if (skillId === Support.GentleDreamPlus) {
+                                amount = 4;
+                                unit.addStatusEffect(StatusEffectType.NeutralizesPenalties);
+                            }
+                            unit.applyAllBuff(amount);
                             unit.addStatusEffect(StatusEffectType.AirOrders);
                         }
                     }
-                }
                     break;
                 case Support.WhimsicalDream:
                 {

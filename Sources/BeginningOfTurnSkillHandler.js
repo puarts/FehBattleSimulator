@@ -147,6 +147,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveB.KillingIntentPlus:
+                for (let enemy of this.__findNearestEnemies(skillOwner, 5)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemy, 2, true)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                    }
+                }
+                break;
             case Weapon.BrilliantStarlight:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {

@@ -1194,6 +1194,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case PassiveB.KillingIntent:
+                    case PassiveB.KillingIntentPlus:
                         {
                             if (defUnit.battleContext.restHpPercentage < 100 || defUnit.hasNegativeStatusEffect()) {
                                 atkUnit.battleContext.isDesperationActivatable = true;
@@ -2090,6 +2091,10 @@ class DamageCalculatorWrapper {
 
         if (targetUnit.hasStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack)) {
             targetUnit.battleContext.increaseCooldownCountForBoth();
+        }
+
+        if (targetUnit.hasStatusEffect(StatusEffectType.NeutralizesPenalties)) {
+            targetUnit.battleContext.invalidateAllOwnDebuffs();
         }
 
         if (gameMode == GameMode.SummonerDuels) {
@@ -7881,6 +7886,7 @@ class DamageCalculatorWrapper {
         }
         switch (targetUnit.passiveB) {
             case PassiveB.KillingIntent:
+            case PassiveB.KillingIntentPlus:
                 if (enemyUnit.battleContext.restHpPercentage < 100 || enemyUnit.hasNegativeStatusEffect()) {
                     enemyUnit.spdSpur -= 5;
                     enemyUnit.resSpur -= 5;

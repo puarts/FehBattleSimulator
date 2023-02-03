@@ -1541,6 +1541,7 @@ const Support = {
     GrayWaves: 789, // ユラリユルレリ
     GrayWaves2: 2017, // ユラリユルレリ・承
     GentleDream: 1061, // やさしいゆめ
+    GentleDreamPlus: 2349, // やさしいゆめ・神
     WhimsicalDream: 1362, // しろいゆめ
     SweetDreams: 1489, // あまいゆめ
     FrightfulDream: 1537, // こわいゆめ
@@ -2195,6 +2196,7 @@ const PassiveB = {
     SpdDefRuse3: 1105,
 
     KillingIntent: 999, // 死んでほしいの
+    KillingIntentPlus: 2348, // 死んでほしいの・神
 
     PoisonStrike3: 604,
     SacaesBlessing: 655,
@@ -3001,6 +3003,7 @@ function isRefreshSupportSkill(skillId) {
         case Support.Dance:
         case Support.GrayWaves:
         case Support.GentleDream:
+        case Support.GentleDreamPlus:
         case Support.WhimsicalDream:
         case Support.SweetDreams:
         case Support.FrightfulDream:
