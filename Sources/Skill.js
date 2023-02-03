@@ -2195,6 +2195,7 @@ const PassiveB = {
     SpdDefRuse3: 1105,
 
     KillingIntent: 999, // 死んでほしいの
+    KillingIntentPlus: 2348, // 死んでほしいの・神
 
     PoisonStrike3: 604,
     SacaesBlessing: 655,
