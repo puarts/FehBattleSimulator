@@ -2122,6 +2122,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DuskbloomBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DawnsweetBox] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -9487,6 +9492,21 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.DawnsweetBox:
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                            if (diff >= 4) {
+                                targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getResInCombat(enemyUnit) * 0.2);
+                            }
+                            if (diff >= 7) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            }
+                        }
+                        break;
                     case Weapon.DawnsweetBox: {
                         let diff = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInCombat(targetUnit);
                         if (diff >= -4) {
