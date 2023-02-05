@@ -883,6 +883,7 @@ class DamageCalcData {
             Special.SeidrShell, // 魔弾(+15)
             // Special.OpenTheFuture, // 開世(+守備50%)
             Special.KuroNoGekko, // 黒の月光(守備魔防-80%)
+            Special.HolyPressure, // 重圧の聖光
         ];
     }
     __getInheritableCount4Specials() {

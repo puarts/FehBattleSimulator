@@ -12271,6 +12271,14 @@ class DamageCalculatorWrapper {
             }
         };
 
+        this._applySpecialSkillEffectFuncDict[Special.Glacies] = (targetUnit, enemyUnit) => {
+            // 重圧の聖光
+            {
+                let totalRes = enemyUnit.getResInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
+            }
+        };
+
         this._applySpecialSkillEffectFuncDict[Special.CircletOfBalance] = (targetUnit, enemyUnit) => {
             // 聖神と暗黒神の冠
             let totalRes = targetUnit.getResInCombat(enemyUnit);

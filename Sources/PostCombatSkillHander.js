@@ -328,6 +328,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Special.HolyPressure:
+                    if (targetUnit.battleContext.isSpecialActivated) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                    break;
                 case Weapon.BrilliantStarlight:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);

@@ -1730,6 +1730,8 @@ const Special = {
     DevinePulse: 2167, // 天刻の拍動
 
     RequiemDance: 1800, // 鎮魂の舞
+
+    HolyPressure: 2344, // 重圧の聖光
 };
 
 const PassiveA = {
@@ -2998,6 +3000,7 @@ NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
 NormalAttackSpecialDict[Special.RighteousWind] = 0;
 NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 NormalAttackSpecialDict[Special.DevinePulse] = 0;
+NormalAttackSpecialDict[Special.HolyPressure] = 0;
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
