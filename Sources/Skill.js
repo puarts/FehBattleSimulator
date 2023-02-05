@@ -2581,6 +2581,7 @@ const PassiveC = {
     EvenRecovery3: 1741, // 快癒・奇数3
 
     // 護り手
+    AsFarSave3: 2351, // 刃の護り手・遠間3
     AdFarSave3: 1993, // 鎧の護り手・遠間3
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrFarSave3: 1931, // 盾の護り手・遠間3

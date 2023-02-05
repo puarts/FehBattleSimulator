@@ -620,6 +620,7 @@ class DamageCalculatorWrapper {
         switch (unit.passiveC) {
             case PassiveC.WoefulUpheaval:
             case PassiveC.WithEveryone2:
+            case PassiveC.AsFarSave3:
             case PassiveC.AdFarSave3:
             case PassiveC.ArFarSave3:
             case PassiveC.DrFarSave3:
@@ -5359,6 +5360,12 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.atkSpur += 4;
                 targetUnit.defSpur += 4;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveC.AsFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 4;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.AdFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
