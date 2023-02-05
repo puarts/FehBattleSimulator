@@ -325,6 +325,11 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.PoeticJustice: {
+                    let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                }
+                    break;
                 case Weapon.ArcaneGrima:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);

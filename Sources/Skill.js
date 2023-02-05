@@ -2059,6 +2059,7 @@ const PassiveB = {
     KyokugiHiKo2: 1395, // 曲技飛行2
     KyokugiHiKo3: 636, // 曲技飛行3
     WrathfulStaff3: 632, // 神罰の杖3
+    PoeticJustice: 2345, // 神罰・因果応報
     DazzlingStaff3: 633, // 幻惑の杖3
     ChillAtk1: 1339,
     ChillAtk2: 1340,

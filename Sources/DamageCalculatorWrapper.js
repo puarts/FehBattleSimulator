@@ -2122,6 +2122,9 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.PoeticJustice] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DuskDawnStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addSpurs(6, 6, 0, 0);
