@@ -2121,6 +2121,16 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.DawnsweetBox] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let atk = targetUnit.getAtkInPrecombat();
+                let func = unit => unit.getAtkInPrecombat() >= atk - 4;
+                let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, func);
+                let amount = Math.min(count * 3 + 4, 10);
+                enemyUnit.addSpurs(-amount, -amount, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.GiftOfMagic] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
                 enemyUnit.addSpurs(-10, 0, 0, -10);
@@ -9470,6 +9480,23 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.DawnsweetBox: {
+                        let diff = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInCombat(targetUnit);
+                        if (diff >= -4) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                        if (diff >= 0) {
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                        }
+                        if (diff >= 4) {
+                            if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) === TriangleAdvantage.Advantageous) {
+                                if (isNormalAttackSpecial(targetUnit.special)) {
+                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                                }
+                            }
+                        }
+                    }
+                        break;
                     case Weapon.DreamingSpear:
                         if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                             resMariaCalc()

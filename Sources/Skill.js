@@ -1520,6 +1520,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=c9c9wM1yjFo&ab_channel=NintendoMobile
     Ravager: 2333, // 滅びの魔拳
     BrilliantStarlight: 2336, // 聖光スターライト
+
+    // 超英雄（特別な贈り物）
+    // https://www.youtube.com/watch?v=Zzc_MVUJIMw&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=x7Myllpq6qk&ab_channel=NintendoMobile
+    DawnsweetBox: 100000, // 白夜王子の菓子箱
 };
 
 const Support = {
