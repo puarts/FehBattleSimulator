@@ -9522,7 +9522,7 @@ class DamageCalculatorWrapper {
                             }
                         }
                         break;
-                    case Weapon.DawnsweetBox:
+                    case Weapon.DuskbloomBow:
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                             let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
                             if (diff >= 1) {
