@@ -1526,6 +1526,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=x7Myllpq6qk&ab_channel=NintendoMobile
     DawnsweetBox: 100000, // 白夜王子の菓子箱
     DuskbloomBow: 2341, // 暗夜の王子の花弓
+    PetalfallBladePlus: 2339, // 桜と薔薇の刀+
 };
 
 const Support = {
