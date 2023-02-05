@@ -2299,6 +2299,12 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.RemoteMirror] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addSpurs(7, 0, 0, 10);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.CelestialGlobe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
