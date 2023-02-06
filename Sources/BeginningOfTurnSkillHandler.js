@@ -147,6 +147,17 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.DuskbloomBow:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.posX === unit.posX ||
+                        skillOwner.posY === unit.posY) {
+                        if (unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat()) {
+                            unit.reserveToApplyDebuffs(0, 0, -7, -7);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                }
+                break;
             case PassiveB.KillingIntentPlus:
                 for (let enemy of this.__findNearestEnemies(skillOwner, 5)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemy, 2, true)) {
@@ -2360,6 +2371,17 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.DuskbloomBow:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.posX === unit.posX ||
+                        skillOwner.posY === unit.posY) {
+                        if (unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat()) {
+                            unit.reserveToApplyDebuffs(0, 0, -7, -7);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                }
+                break;
             case Weapon.BladeOfFavors: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {

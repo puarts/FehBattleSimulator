@@ -620,6 +620,7 @@ class DamageCalculatorWrapper {
         switch (unit.passiveC) {
             case PassiveC.WoefulUpheaval:
             case PassiveC.WithEveryone2:
+            case PassiveC.AsFarSave3:
             case PassiveC.AdFarSave3:
             case PassiveC.ArFarSave3:
             case PassiveC.DrFarSave3:
@@ -2121,6 +2122,36 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.PoeticJustice] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DuskDawnStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.PetalfallBladePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpurs(5, 5, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DuskbloomBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DawnsweetBox] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let atk = targetUnit.getAtkInPrecombat();
+                let func = unit => unit.getAtkInPrecombat() >= atk - 4;
+                let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, func);
+                let amount = Math.min(count * 3 + 4, 10);
+                enemyUnit.addSpurs(-amount, -amount, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.GiftOfMagic] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
                 enemyUnit.addSpurs(-10, 0, 0, -10);
@@ -2280,6 +2311,12 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveA.RemoteSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.addSpurs(7, 7, 0, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.RemoteMirror] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addSpurs(7, 0, 0, 10);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
         }
@@ -5349,6 +5386,12 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.atkSpur += 4;
                 targetUnit.defSpur += 4;
+            }
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveC.AsFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.isSaviorActivated) {
+                targetUnit.atkSpur += 4;
+                targetUnit.spdSpur += 4;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.AdFarSave3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -9470,6 +9513,47 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.PetalfallBladePlus:
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                                targetUnit.battleContext.additionalDamage += 5;
+                            }
+                        }
+                        break;
+                    case Weapon.DuskbloomBow:
+                        if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                            let diff = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 1) {
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                            if (diff >= 4) {
+                                targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getResInCombat(enemyUnit) * 0.2);
+                            }
+                            if (diff >= 7) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            }
+                        }
+                        break;
+                    case Weapon.DawnsweetBox: {
+                        let diff = targetUnit.getEvalSpdInCombat(enemyUnit) - enemyUnit.getEvalSpdInCombat(targetUnit);
+                        if (diff >= -4) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                        if (diff >= 0) {
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                        }
+                        if (diff >= 4) {
+                            if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) === TriangleAdvantage.Advantageous) {
+                                if (isNormalAttackSpecial(targetUnit.special)) {
+                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                                }
+                            }
+                        }
+                    }
+                        break;
                     case Weapon.DreamingSpear:
                         if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                             resMariaCalc()
@@ -12187,6 +12271,14 @@ class DamageCalculatorWrapper {
             {
                 let totalRes = targetUnit.getResInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.8);
+            }
+        };
+
+        this._applySpecialSkillEffectFuncDict[Special.Glacies] = (targetUnit, enemyUnit) => {
+            // 重圧の聖光
+            {
+                let totalRes = enemyUnit.getResInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
             }
         };
 

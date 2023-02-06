@@ -1356,6 +1356,7 @@ class BattleSimmulatorBase {
                     unit.addStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;
+            case Hero.DuoElise:
             case Hero.BridalMicaiah:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 3, 99)) {
                     unit.addStatusEffect(StatusEffectType.TotalPenaltyDamage);
@@ -8399,6 +8400,7 @@ class BattleSimmulatorBase {
                 && supporterUnit.support != Support.Return
                 && supporterUnit.support != Support.NudgePlus
                 && supporterUnit.support != Support.Nudge
+                && supporterUnit.special != Special.HolyPressure
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }

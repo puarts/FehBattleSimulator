@@ -328,6 +328,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Special.HolyPressure:
+                    if (targetUnit.battleContext.isSpecialActivated) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                    break;
                 case Weapon.BrilliantStarlight:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);
@@ -740,6 +747,13 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DuskDawnStaff:
+                    if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackTargetUnit, 2)) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                        }
+                    }
+                    break;
                 case Weapon.AsameiNoTanken:
                     if (attackUnit.isWeaponSpecialRefined) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {

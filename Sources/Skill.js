@@ -1520,6 +1520,14 @@ const Weapon = {
     // https://www.youtube.com/watch?v=c9c9wM1yjFo&ab_channel=NintendoMobile
     Ravager: 2333, // 滅びの魔拳
     BrilliantStarlight: 2336, // 聖光スターライト
+
+    // 超英雄（特別な贈り物）
+    // https://www.youtube.com/watch?v=Zzc_MVUJIMw&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=x7Myllpq6qk&ab_channel=NintendoMobile
+    DawnsweetBox: 100000, // 白夜王子の菓子箱
+    DuskbloomBow: 2341, // 暗夜の王子の花弓
+    PetalfallBladePlus: 2339, // 桜と薔薇の刀+
+    DuskDawnStaff: 2343, // 白夜暗夜の姫の花杖
 };
 
 const Support = {
@@ -1722,6 +1730,8 @@ const Special = {
     DevinePulse: 2167, // 天刻の拍動
 
     RequiemDance: 1800, // 鎮魂の舞
+
+    HolyPressure: 2344, // 重圧の聖光
 };
 
 const PassiveA = {
@@ -2017,6 +2027,7 @@ const PassiveA = {
 
     // 離撃
     RemoteSparrow: 2317, // 鬼神飛燕の離撃
+    RemoteMirror: 2342, // 鬼神明鏡の離撃
 };
 
 const PassiveB = {
@@ -2048,6 +2059,7 @@ const PassiveB = {
     KyokugiHiKo2: 1395, // 曲技飛行2
     KyokugiHiKo3: 636, // 曲技飛行3
     WrathfulStaff3: 632, // 神罰の杖3
+    PoeticJustice: 2345, // 神罰・因果応報
     DazzlingStaff3: 633, // 幻惑の杖3
     ChillAtk1: 1339,
     ChillAtk2: 1340,
@@ -2576,6 +2588,7 @@ const PassiveC = {
     EvenRecovery3: 1741, // 快癒・奇数3
 
     // 護り手
+    AsFarSave3: 2351, // 刃の護り手・遠間3
     AdFarSave3: 1993, // 鎧の護り手・遠間3
     ArFarSave3: 1634, // 兜の護り手・遠間3
     DrFarSave3: 1931, // 盾の護り手・遠間3
@@ -2988,6 +3001,7 @@ NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
 NormalAttackSpecialDict[Special.RighteousWind] = 0;
 NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 NormalAttackSpecialDict[Special.DevinePulse] = 0;
+NormalAttackSpecialDict[Special.HolyPressure] = 0;
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
