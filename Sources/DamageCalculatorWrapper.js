@@ -2132,10 +2132,14 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.increaseCooldownCountForBoth();
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.PetalfallBladePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addSpurs(5, 5, 0, 0);
-            }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.PetalfallBladePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.PetalfallVasePlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DuskbloomBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -9513,6 +9517,7 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.PetalfallVasePlus:
                     case Weapon.PetalfallBladePlus:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {

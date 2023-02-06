@@ -1528,6 +1528,7 @@ const Weapon = {
     DuskbloomBow: 2341, // 暗夜の王子の花弓
     PetalfallBladePlus: 2339, // 桜と薔薇の刀+
     DuskDawnStaff: 2343, // 白夜暗夜の姫の花杖
+    PetalfallVasePlus: 2346, // 桜と薔薇の花瓶+
 };
 
 const Support = {
