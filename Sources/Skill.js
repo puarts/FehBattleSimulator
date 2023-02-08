@@ -1529,6 +1529,9 @@ const Weapon = {
     PetalfallBladePlus: 2339, // 桜と薔薇の刀+
     DuskDawnStaff: 2343, // 白夜暗夜の姫の花杖
     PetalfallVasePlus: 2346, // 桜と薔薇の花瓶+
+
+    // 2023年2月 武器錬成
+    VolunteerBow: 2353, // 義勇兵の弓
 };
 
 const Support = {
