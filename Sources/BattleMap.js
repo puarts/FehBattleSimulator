@@ -1986,6 +1986,7 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AstraBlade:
                 case Weapon.Death:
                     if (unit.isWeaponSpecialRefined) {
                         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {

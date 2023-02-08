@@ -2122,6 +2122,23 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.AstraBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                        let amount = Math.min(dist, 4) * 2;
+                        targetUnit.atkSpur += amount;
+                        enemyUnit.defSpur -= amount;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.VolunteerBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(4);
@@ -5128,9 +5145,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.defSpur -= 3;
                 targetUnit.battleContext.invalidatesCounterattack = true;
             }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.AstraBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.ArmoredWall] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
