@@ -2122,6 +2122,21 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CommandLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                    let amount = Math.min(count * 2, 6);
+                    targetUnit.addAllSpur(amount);
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AstraBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
             if (targetUnit.isWeaponRefined) {

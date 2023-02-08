@@ -1532,6 +1532,7 @@ const Weapon = {
 
     // 2023年2月 武器錬成
     VolunteerBow: 2353, // 義勇兵の弓
+    CommandLance: 2352, // 神使親衛隊隊長の槍
 };
 
 const Support = {
