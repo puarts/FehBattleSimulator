@@ -2122,6 +2122,28 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.KouketsuNoSensou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if ((targetUnit.battleContext.restHpPercentage === 100 && enemyUnit.battleContext.restHpPercentage === 100) ||
+                    (targetUnit.battleContext.restHpPercentage < 100 && enemyUnit.battleContext.restHpPercentage < 100)) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage <= 99 || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FlowerOfJoy] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 let found = false;
@@ -9535,6 +9557,10 @@ class DamageCalculatorWrapper {
         function resMariaCalc(ratio = 0.20) {
             applyFixedValueSkill(targetUnit.getResInCombat(enemyUnit));
         }
+        // ディミトリ算（攻撃マリア算）
+        function atkMariaCalc(ratio = 0.10) {
+            applyFixedValueSkill(targetUnit.getAtkInCombat(enemyUnit));
+        }
 
         // ステータスによる固定ダメージ増加・軽減
         function applyFixedValueSkill(status, ratio = 0.20) {
@@ -9555,6 +9581,13 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.KouketsuNoSensou:
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                                atkMariaCalc();
+                            }
+                        }
+                        break;
                     case Weapon.PetalfallVasePlus:
                     case Weapon.PetalfallBladePlus:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -11793,13 +11826,6 @@ class DamageCalculatorWrapper {
                 case Weapon.AnkigoroshiNoYumi:
                 case Weapon.AnkigoroshiNoYumiPlus:
                     if (isWeaponTypeDagger(defUnit.weaponType)) {
-                        ++followupAttackPriority;
-                    }
-                    break;
-                case Weapon.KouketsuNoSensou:
-                    if ((atkUnit.battleContext.restHpPercentage === 100 && defUnit.battleContext.restHpPercentage === 100)
-                        || (atkUnit.battleContext.restHpPercentage < 100 && defUnit.battleContext.restHpPercentage < 100)
-                    ) {
                         ++followupAttackPriority;
                     }
                     break;
