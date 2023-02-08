@@ -4798,6 +4798,8 @@ class Unit extends BattleMapElement {
                         specialCountMax = 1;
                     }
                     break;
+                // 特殊錬成時に奥義が発動しやすくなる
+                case Weapon.Ifingr:
                 case Weapon.ZekkaiNoSoukyu:
                 case Weapon.DarkSpikesT:
                 case Weapon.HikariNoKen:
@@ -4807,6 +4809,7 @@ class Unit extends BattleMapElement {
                         specialCountMax -= 1;
                     }
                     break;
+                // 錬成時に奥義が発動しやすくなる
                 case Weapon.SyunsenAiraNoKen:
                     if (this.isWeaponRefined) {
                         specialCountMax -= 1;
