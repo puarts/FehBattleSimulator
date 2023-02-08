@@ -328,6 +328,23 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FlowerOfJoy:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            let found = false;
+                            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                                if (unit.posX === targetUnit.posX ||
+                                    unit.posY === targetUnit.posY) {
+                                    found = true;
+                                    unit.reserveHeal(7);
+                                }
+                            }
+                            if (found) {
+                                targetUnit.reserveHeal(7);
+                            }
+                        }
+                    }
+                    break;
                 case Special.HolyPressure:
                     if (targetUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {

@@ -2122,6 +2122,27 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.FlowerOfJoy] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                let found = false;
+                for (let unit of self.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (unit.posX === targetUnit.posX ||
+                        unit.posY === targetUnit.posY) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.PoeticJustice] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 4;
         }
@@ -14183,8 +14204,15 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur += 6;
                             break;
                         case Weapon.FlowerOfJoy:
-                            targetUnit.atkSpur += 3;
-                            targetUnit.spdSpur += 3;
+                            if (!targetUnit.isWeaponRefined) {
+                                // <通常効果>
+                                targetUnit.atkSpur += 3;
+                                targetUnit.spdSpur += 3;
+                            } else {
+                                // <錬成効果>
+                                targetUnit.atkSpur += 4;
+                                targetUnit.spdSpur += 4;
+                            }
                             break;
                         case PassiveC.CrossSpurAtk:
                             targetUnit.atkSpur += 5;
