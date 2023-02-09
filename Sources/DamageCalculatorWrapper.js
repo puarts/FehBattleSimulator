@@ -2122,6 +2122,97 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CommandLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                    let amount = Math.min(count * 2, 6);
+                    targetUnit.addAllSpur(amount);
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AstraBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                        let amount = Math.min(dist, 4) * 2;
+                        targetUnit.atkSpur += amount;
+                        enemyUnit.defSpur -= amount;
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.VolunteerBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                if (isRangedWeaponType(enemyUnit.weaponType)) {
+                    enemyUnit.addSpurs(-5, -5, 0, 0);
+                    targetUnit.battleContext.invalidateAllBuffs();
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.KouketsuNoSensou] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if ((targetUnit.battleContext.restHpPercentage === 100 && enemyUnit.battleContext.restHpPercentage === 100) ||
+                    (targetUnit.battleContext.restHpPercentage < 100 && enemyUnit.battleContext.restHpPercentage < 100)) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage <= 99 || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FlowerOfJoy] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                let found = false;
+                for (let unit of self.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (unit.posX === targetUnit.posX ||
+                        unit.posY === targetUnit.posY) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.PoeticJustice] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 4;
         }
@@ -2132,10 +2223,14 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.increaseCooldownCountForBoth();
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.PetalfallBladePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addSpurs(5, 5, 0, 0);
-            }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addSpurs(5, 5, 0, 0);
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.PetalfallBladePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.PetalfallVasePlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DuskbloomBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -5066,9 +5161,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesCounterattack = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.AstraBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
-        };
         this._applySkillEffectForUnitFuncDict[PassiveB.ArmoredWall] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.battleContext.increaseCooldownCountForBoth();
@@ -7139,9 +7231,26 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Ifingr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.addAllSpur(4);
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                }
+            } else {
+                // <錬成効果>
+                if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(6);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.BookOfShadows] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -9493,6 +9602,10 @@ class DamageCalculatorWrapper {
         function resMariaCalc(ratio = 0.20) {
             applyFixedValueSkill(targetUnit.getResInCombat(enemyUnit));
         }
+        // ディミトリ算（攻撃マリア算）
+        function atkMariaCalc(ratio = 0.10) {
+            applyFixedValueSkill(targetUnit.getAtkInCombat(enemyUnit));
+        }
 
         // ステータスによる固定ダメージ増加・軽減
         function applyFixedValueSkill(status, ratio = 0.20) {
@@ -9513,6 +9626,14 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.KouketsuNoSensou:
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                                atkMariaCalc();
+                            }
+                        }
+                        break;
+                    case Weapon.PetalfallVasePlus:
                     case Weapon.PetalfallBladePlus:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
@@ -11750,13 +11871,6 @@ class DamageCalculatorWrapper {
                 case Weapon.AnkigoroshiNoYumi:
                 case Weapon.AnkigoroshiNoYumiPlus:
                     if (isWeaponTypeDagger(defUnit.weaponType)) {
-                        ++followupAttackPriority;
-                    }
-                    break;
-                case Weapon.KouketsuNoSensou:
-                    if ((atkUnit.battleContext.restHpPercentage === 100 && defUnit.battleContext.restHpPercentage === 100)
-                        || (atkUnit.battleContext.restHpPercentage < 100 && defUnit.battleContext.restHpPercentage < 100)
-                    ) {
                         ++followupAttackPriority;
                     }
                     break;
@@ -14178,8 +14292,15 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur += 6;
                             break;
                         case Weapon.FlowerOfJoy:
-                            targetUnit.atkSpur += 3;
-                            targetUnit.spdSpur += 3;
+                            if (!targetUnit.isWeaponRefined) {
+                                // <通常効果>
+                                targetUnit.atkSpur += 3;
+                                targetUnit.spdSpur += 3;
+                            } else {
+                                // <錬成効果>
+                                targetUnit.atkSpur += 4;
+                                targetUnit.spdSpur += 4;
+                            }
                             break;
                         case PassiveC.CrossSpurAtk:
                             targetUnit.atkSpur += 5;
