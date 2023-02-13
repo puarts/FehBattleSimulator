@@ -5092,37 +5092,37 @@ class Unit extends BattleMapElement {
 
     /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
     canDisableAttackOrderSwapSkill(restHpPercentage) {
-        switch (this.weapon) {
-            case Weapon.StudiedForblaze:
-                if (restHpPercentage >= 25) {
+        for (let skillId of this.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.StudiedForblaze:
+                    if (restHpPercentage >= 25) {
+                        return true;
+                    }
+                    break;
+                case Weapon.ArmorpinDaggerPlus:
+                case Weapon.DawnSuzu:
+                case Weapon.YoiyamiNoDanougi:
+                case Weapon.YoiyamiNoDanougiPlus:
+                case Weapon.SeitenNoMaiougi:
+                case Weapon.SeitenNoMaiougiPlus:
+                case Weapon.RyokuunNoMaiougi:
+                case Weapon.RyokuunNoMaiougiPlus:
+                case Weapon.RyusatsuNoAnkiPlus:
+                case Weapon.CaltropDaggerPlus:
                     return true;
-                }
-                break;
-            case Weapon.ArmorpinDaggerPlus:
-            case Weapon.DawnSuzu:
-            case Weapon.YoiyamiNoDanougi:
-            case Weapon.YoiyamiNoDanougiPlus:
-            case Weapon.SeitenNoMaiougi:
-            case Weapon.SeitenNoMaiougiPlus:
-            case Weapon.RyokuunNoMaiougi:
-            case Weapon.RyokuunNoMaiougiPlus:
-            case Weapon.RyusatsuNoAnkiPlus:
-            case Weapon.CaltropDaggerPlus:
-                return true;
-        }
-        switch (this.passiveS) {
-            case PassiveS.HardyBearing1:
-                if (restHpPercentage == 100) {
+                case PassiveS.HardyBearing1:
+                    if (restHpPercentage == 100) {
+                        return true;
+                    }
+                    break;
+                case PassiveS.HardyBearing2:
+                    if (restHpPercentage >= 50) {
+                        return true;
+                    }
+                    break;
+                case PassiveS.HardyBearing3:
                     return true;
-                }
-                break;
-            case PassiveS.HardyBearing2:
-                if (restHpPercentage >= 50) {
-                    return true;
-                }
-                break;
-            case PassiveS.HardyBearing3:
-                return true;
+            }
         }
         return false;
     }
@@ -5362,34 +5362,34 @@ function isDebufferTier1(attackUnit, targetUnit) {
 
 /// Tier 2 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier2(attackUnit, targetUnit) {
-    switch (attackUnit.weapon) {
-        case Weapon.RogueDagger:
-        case Weapon.RogueDaggerPlus:
-            if (attackUnit.weaponRefinement == WeaponRefinementType.None) {
+    for (let skillId of attackUnit.enumerateSkills()) {
+        switch (skillId) {
+            case Weapon.RogueDagger:
+            case Weapon.RogueDaggerPlus:
+                if (attackUnit.weaponRefinement == WeaponRefinementType.None) {
+                    return true;
+                }
+                break;
+            case Weapon.PoisonDagger:
+            case Weapon.PoisonDaggerPlus:
+                if (targetUnit.moveType == MoveType.Infantry) {
+                    return true;
+                }
+                break;
+            case Weapon.KittyPaddle:
+            case Weapon.KittyPaddlePlus:
+                if (isWeaponTypeTome(targetUnit.weapon)) {
+                    return true;
+                }
+                break;
+            case PassiveB.SealDef3:
+            case PassiveB.SealRes3:
+            case PassiveB.SealAtkDef2:
+            case PassiveB.SealAtkRes2:
+            case PassiveB.SealDefRes2:
+            case PassiveB.SealSpdDef2:
                 return true;
-            }
-            break;
-        case Weapon.PoisonDagger:
-        case Weapon.PoisonDaggerPlus:
-            if (targetUnit.moveType == MoveType.Infantry) {
-                return true;
-            }
-            break;
-        case Weapon.KittyPaddle:
-        case Weapon.KittyPaddlePlus:
-            if (isWeaponTypeTome(targetUnit.weapon)) {
-                return true;
-            }
-            break;
-    }
-    switch (attackUnit.passiveB) {
-        case PassiveB.SealDef3:
-        case PassiveB.SealRes3:
-        case PassiveB.SealAtkDef2:
-        case PassiveB.SealAtkRes2:
-        case PassiveB.SealDefRes2:
-        case PassiveB.SealSpdDef2:
-            return true;
+        }
     }
     return false;
 }
@@ -5401,53 +5401,49 @@ function isDebufferTier2(attackUnit, targetUnit) {
  * @return {boolean}
  */
 function isAfflictor(attackUnit, lossesInCombat) {
-    switch (attackUnit.weapon) {
-        case Weapon.TigerSpirit:
-            if (attackUnit.battleContext.restHpPercentage >= 25) {
-                return true;
-            }
-            break;
-        case Weapon.FlamelickBreath:
-        case Weapon.FrostbiteBreath:
-            if (attackUnit.battleContext.restHpPercentage >= 25) {
-                return true;
-            }
-            break;
-        case Weapon.Pain:
-        case Weapon.PainPlus:
-        case Weapon.Panic:
-        case Weapon.PanicPlus:
-        case Weapon.FlashPlus:
-        case Weapon.Candlelight:
-        case Weapon.CandlelightPlus:
-        case Weapon.DotingStaff:
-        case Weapon.Merankory:
-        case Weapon.MerankoryPlus:
-        case Weapon.CandyStaff:
-        case Weapon.CandyStaffPlus:
-        case Weapon.LegionsAxe:
-        case Weapon.LegionsAxePlus:
-        case Weapon.SneeringAxe:
-        case Weapon.DeathlyDagger:
-        case Weapon.SnipersBow:
-        case Weapon.DokuNoKen:
-            return true;
-        case Weapon.MonstrousBowPlus:
-        case Weapon.GhostNoMadosyoPlus:
-        case Weapon.Scadi:
-        case Weapon.ObsessiveCurse:
-            if (attackUnit.isWeaponRefined) {
-                return true;
-            }
-            return false;
-    }
-    switch (attackUnit.passiveC) {
-        case PassiveC.PanicSmoke3:
-        case PassiveC.FatalSmoke3:
-            return !lossesInCombat;
-    }
-    for (let skillId of [attackUnit.passiveB, attackUnit.passiveS]) {
+    for (let skillId of attackUnit.enumerateSkills()) {
         switch (skillId) {
+            case Weapon.TigerSpirit:
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
+            case Weapon.FlamelickBreath:
+            case Weapon.FrostbiteBreath:
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
+                    return true;
+                }
+                break;
+            case Weapon.Pain:
+            case Weapon.PainPlus:
+            case Weapon.Panic:
+            case Weapon.PanicPlus:
+            case Weapon.FlashPlus:
+            case Weapon.Candlelight:
+            case Weapon.CandlelightPlus:
+            case Weapon.DotingStaff:
+            case Weapon.Merankory:
+            case Weapon.MerankoryPlus:
+            case Weapon.CandyStaff:
+            case Weapon.CandyStaffPlus:
+            case Weapon.LegionsAxe:
+            case Weapon.LegionsAxePlus:
+            case Weapon.SneeringAxe:
+            case Weapon.DeathlyDagger:
+            case Weapon.SnipersBow:
+            case Weapon.DokuNoKen:
+                return true;
+            case Weapon.MonstrousBowPlus:
+            case Weapon.GhostNoMadosyoPlus:
+            case Weapon.Scadi:
+            case Weapon.ObsessiveCurse:
+                if (attackUnit.isWeaponRefined) {
+                    return true;
+                }
+                return false;
+            case PassiveC.PanicSmoke3:
+            case PassiveC.FatalSmoke3:
+                return !lossesInCombat;
             case PassiveB.PoisonStrike3:
                 return !lossesInCombat;
         }

@@ -8312,27 +8312,27 @@ class BattleSimmulatorBase {
             let healedAmount = targetUnit.heal(healAmount);
             this.writeSimpleLogLine(`${targetUnit.getNameWithGroup()}は${healedAmount}回復`);
 
-            switch (supporterUnit.passiveB) {
-                case PassiveB.GohoshiNoYorokobi1:
-                    supporterUnit.heal(Math.floor(healedAmount * 0.5));
-                    break;
-                case PassiveB.GohoshiNoYorokobi2:
-                    supporterUnit.heal(Math.floor(healedAmount * 0.75));
-                    break;
-                case PassiveB.GohoshiNoYorokobi3:
-                    supporterUnit.heal(Math.floor(healedAmount * 1.0));
-                    break;
-            }
-            switch (supporterUnit.support) {
-                case Support.Reconcile:
-                    supporterUnit.heal(7);
-                    break;
-                case Support.Martyr:
-                case Support.MartyrPlus:
-                    supporterUnit.heal(Math.floor(supporterUnit.currentDamage * 0.5));
-                    break;
-            }
+            for (let skillId of supporterUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveB.GohoshiNoYorokobi1:
+                        supporterUnit.heal(Math.floor(healedAmount * 0.5));
+                        break;
+                    case PassiveB.GohoshiNoYorokobi2:
+                        supporterUnit.heal(Math.floor(healedAmount * 0.75));
+                        break;
+                    case PassiveB.GohoshiNoYorokobi3:
+                        supporterUnit.heal(Math.floor(healedAmount * 1.0));
+                        break;
+                    case Support.Reconcile:
+                        supporterUnit.heal(7);
+                        break;
+                    case Support.Martyr:
+                    case Support.MartyrPlus:
+                        supporterUnit.heal(Math.floor(supporterUnit.currentDamage * 0.5));
+                        break;
+                }
 
+            }
             isActivated = true;
         }
 

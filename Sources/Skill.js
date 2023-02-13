@@ -3376,6 +3376,13 @@ function getEvalSpdAdd(unit) {
     for (let skillId of unit.enumerateSkills()) {
         let value = EvalSpdAddDict[skillId];
         amount += value ? value : 0;
+        switch (skillId) {
+            case Weapon.NewBrazenCatFang:
+                if (unit.isWeaponSpecialRefined) {
+                    amount += 10;
+                }
+                break;
+        }
     }
     return amount;
 }
