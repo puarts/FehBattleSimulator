@@ -4820,6 +4820,7 @@ class Unit extends BattleMapElement {
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
             switch (this.weapon) {
+                case Weapon.CrimeanScepter:
                 case Weapon.DuskDawnStaff:
                     if (specialCountMax === 0) {
                         specialCountMax = 1;

@@ -1540,6 +1540,7 @@ const Weapon = {
     Queensblade: 2356, // 女王の護衛の怜剣
     Queenslance: 2358, // 女王の騎士の勇槍
     GronndeerPlus: 2359, // グルンディア+
+    CrimeanScepter: 2361, // クリミア女王の王笏
 };
 
 const Support = {

@@ -397,6 +397,10 @@ targetUnit.battleContext.increaseCooldownCountForBoth();
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCount() {
     specialCountMax -= 1;
+    // 奥義発動カウント最大値の下限は1
+    if (specialCountMax === 0) {
+        specialCountMax = 1;
+    }
 }
 
 奥義発動可能状態

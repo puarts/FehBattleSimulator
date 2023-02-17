@@ -2144,6 +2144,11 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.CrimeanScepter] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.GronndeerPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 5;
@@ -8912,6 +8917,27 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CrimeanScepter: {
+                    let buffs = [];
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                        buffs.push(unit.buffs);
+                    }
+                    buffs.push([
+                        targetUnit.getAtkBuffInCombat(enemyUnit),
+                        targetUnit.getSpdBuffInCombat(enemyUnit),
+                        targetUnit.getDefBuffInCombat(enemyUnit),
+                        targetUnit.getResBuffInCombat(enemyUnit),
+                    ]);
+                    let amounts = buffs.reduce(
+                        (previousValue, currentValue) =>
+                            previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
+                        [0, 0, 0, 0]);
+                    amounts = amounts.map(b => Math.trunc(b * 1.5));
+                    amounts[2] = 0;
+                    amounts[3] = 0;
+                    targetUnit.addSpurs(...amounts);
+                }
+                    break;
                 case Weapon.Queenslance: {
                     let buffs = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
