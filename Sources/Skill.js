@@ -1539,6 +1539,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=d4oj3zIebkE&ab_channel=NintendoMobile
     Queensblade: 2356, // 女王の護衛の怜剣
     Queenslance: 2358, // 女王の騎士の勇槍
+    GronndeerPlus: 2359, // グルンディア+
 };
 
 const Support = {
