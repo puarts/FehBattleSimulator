@@ -3416,6 +3416,7 @@ class BattleSimmulatorBase {
         let executesTrap = false; // トラップは迅雷や再移動の発動後に評価する必要がある
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.Repel4:
                 case PassiveB.KaihiTatakikomi3:
                 case PassiveB.Tatakikomi:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,

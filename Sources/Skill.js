@@ -2232,6 +2232,7 @@ const PassiveB = {
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3
     CloseCall4: 2328, // 回避・一撃離脱4
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
+    Repel4: 2357, // 回避・叩き込み4
     Kirikomi: 589, // 切り込み
     Tatakikomi: 588, // 叩き込み
     Hikikomi: 590, // 引き込み
@@ -3373,6 +3374,7 @@ EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
 EvalSpdAddDict[PassiveB.CloseCall4] = 7;
+EvalSpdAddDict[PassiveB.Repel4] = 7;
 EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。
