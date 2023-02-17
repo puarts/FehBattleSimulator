@@ -1542,6 +1542,9 @@ const Weapon = {
     GronndeerPlus: 2359, // グルンディア+
     CrimeanScepter: 2361, // クリミア女王の王笏
     DefiersAxePlus: 2365, // Defiers Axe+
+
+    // ネルトゥス（敵）
+    HornOfTheLand: 2364, // 地の女神の角
 };
 
 const Support = {
