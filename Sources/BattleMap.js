@@ -1988,7 +1988,7 @@ class BattleMap {
             switch (skillId) {
                 case PassiveB.DazzlingShift:
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                        for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2)) {
+                        for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
                             yield tile;
                         }
                     }
