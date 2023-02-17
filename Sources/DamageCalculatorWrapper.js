@@ -2144,6 +2144,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.Queenslance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Queensblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -8896,6 +8905,27 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Queenslance: {
+                    let buffs = [];
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                        if (targetUnit.partnerHeroIndex === unit.heroIndex ||
+                            unit.partnerHeroIndex === targetUnit.heroIndex) {
+                            buffs.push(unit.buffs);
+                        }
+                    }
+                    buffs.push([
+                        targetUnit.getAtkBuffInCombat(enemyUnit),
+                        targetUnit.getSpdBuffInCombat(enemyUnit),
+                        targetUnit.getDefBuffInCombat(enemyUnit),
+                        targetUnit.getResBuffInCombat(enemyUnit),
+                    ]);
+                    let amounts = buffs.reduce(
+                        (previousValue, currentValue) =>
+                            previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
+                        [0, 0, 0, 0]);
+                    targetUnit.addSpurs(...amounts);
+                }
+                    break;
                 case Weapon.ReginRave:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() + 1 ||

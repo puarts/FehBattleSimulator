@@ -6166,6 +6166,11 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Queenslance:
+                    if (unit.hasPositiveStatusEffect()) {
+                        return true;
+                    }
+                    break;
                 case Weapon.ReginRave:
                     if (unit.isWeaponSpecialRefined) {
                         if (unit.hasPositiveStatusEffect()) {

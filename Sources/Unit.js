@@ -2433,6 +2433,13 @@ class Unit extends BattleMapElement {
         return this.atkBuff + this.spdBuff + this.defBuff + this.resBuff;
     }
 
+    get buffs() {
+        if (this.isPanicEnabled) {
+            return [-this.atkBuff, -this.spdBuff, -this.defBuff, -this.resBuff];
+        }
+        return [this.atkBuff, this.spdBuff, this.defBuff, this.resBuff];
+    }
+
     get debuffTotal() {
         return this.atkDebuffTotal + this.spdDebuffTotal + this.defDebuffTotal + this.resDebuffTotal;
     }
@@ -5191,6 +5198,11 @@ class Unit extends BattleMapElement {
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.Queenslance:
+                    if (this.hasPositiveStatusEffect()) {
+                        moveCountForCanto = Math.max(moveCountForCanto, 1);
+                    }
+                    break;
                 case Weapon.FloridKnifePlus:
                 case Weapon.BowOfTwelve:
                 case PassiveB.MoonlitBangleF:
