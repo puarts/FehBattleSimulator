@@ -793,9 +793,10 @@ class DamageCalculator {
             this.__initContextPerAttack(defUnit);
             this.__applySkillEffectsPerAttack(atkUnit, defUnit);
             this.__applySkillEffectsPerAttack(defUnit, atkUnit);
+            // 奥義発動可能状態（実際に奥義が発動できるかは問わない）
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
-                !defUnit.battleContext.preventedDefenderSpecial && this.__isSatisfiedDefenderSpecialCond(defUnit, atkUnit);
+                this.__isSatisfiedDefenderSpecialCond(defUnit, atkUnit);
             let damageReductionRatio = 1.0;
             let damageReductionValue = 0;
 
@@ -842,7 +843,7 @@ class DamageCalculator {
             }
             defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack = [];
 
-            if (activatesDefenderSpecial) {
+            if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
                 if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
                     if (defUnit.passiveB === PassiveB.HardyFighter3) {
@@ -867,7 +868,7 @@ class DamageCalculator {
             damageReductionValue += defUnit.battleContext.damageReductionValue;
 
             let currentDamage = 0;
-            if (activatesAttackerSpecial) {
+            if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
                 for (let skillId of atkUnit.enumerateSkills()) {
                     switch (skillId) {
@@ -1135,7 +1136,7 @@ class DamageCalculator {
             if (this.isLogEnabled) this.writeDebugLog("ダメージ変化:" + damage + "→" + currentDamage);
         }
 
-        if (activatesDefenderSpecial) {
+        if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
             switch (defUnit.special) {
                 case Special.IceMirror2:
                     if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
@@ -1150,7 +1151,7 @@ class DamageCalculator {
         // 自分の次の攻撃の時にダメージ軽減加算をするための処理
         switch (defUnit.special) {
             case Special.IceMirror:
-                if (activatesDefenderSpecial) {
+                if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
                     if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
                     defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
                     defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;

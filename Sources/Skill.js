@@ -1533,6 +1533,11 @@ const Weapon = {
     // 2023年2月 武器錬成
     VolunteerBow: 2353, // 義勇兵の弓
     CommandLance: 2352, // 神使親衛隊隊長の槍
+
+    // （新英雄＆開花エリンシア)
+    // https://www.youtube.com/watch?v=-0CP0HPc7hw&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=d4oj3zIebkE&ab_channel=NintendoMobile
+    Queensblade: 2356, // 女王の護衛の怜剣
 };
 
 const Support = {
