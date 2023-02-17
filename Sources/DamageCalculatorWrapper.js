@@ -7636,6 +7636,7 @@ class DamageCalculatorWrapper {
                     enemyUnit.defSpur -= 5;
                 }
             };
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersAxePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SunflowerBowPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.VictorfishPlus] = func;
         }
@@ -9226,6 +9227,7 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
+                case Weapon.DefiersAxePlus:
                 case Weapon.SunflowerBowPlus:
                 case Weapon.VictorfishPlus:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
