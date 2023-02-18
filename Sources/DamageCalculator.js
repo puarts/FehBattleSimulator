@@ -468,7 +468,6 @@ class DamageCalculator {
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
         fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttack;
-        fixedAddDamage += atkUnit.battleContext.additionalDamagePerAttack;
         atkUnit.battleContext.additionalDamageOfNextAttack = 0;
         if (context.isFirstAttack(atkUnit)) {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
@@ -869,6 +868,8 @@ class DamageCalculator {
             damageReductionValue += defUnit.battleContext.damageReductionValue;
 
             let currentDamage = 0;
+            normalDamage += atkUnit.battleContext.additionalDamagePerAttack;
+            specialDamage += atkUnit.battleContext.additionalDamagePerAttack;
             if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
                 for (let skillId of atkUnit.enumerateSkills()) {
@@ -1004,7 +1005,7 @@ class DamageCalculator {
                 case Special.GodlikeReflexes:
                     if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) - 4) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.isSpecialActivated) {
+                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
                             atkUnit.battleContext.additionalDamagePerAttack += Math.trunc(atkUnit.getSpdInCombat(defUnit) * 0.15);
                         }
                     }
