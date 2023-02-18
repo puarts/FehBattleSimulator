@@ -829,7 +829,8 @@ class DamageCalculator {
             }
 
             let invalidatesOnSpecialActivation =
-                activatesAttackerSpecial && invalidatesDamageReductionExceptSpecialOnSpecialActivation;
+                activatesAttackerSpecial && invalidatesDamageReductionExceptSpecialOnSpecialActivation &&
+                !atkUnit.battleContext.preventedAttackerSpecial;
             if (invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial) {
                 if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
                 damageReductionRatio = 1.0;
