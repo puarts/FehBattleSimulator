@@ -618,6 +618,9 @@ class BattleContext {
         // 防御床にいるかどうか
         this.isOnDefensiveTile = false;
 
+        // 戦闘中の「攻撃奥義」が発動できないかどうか
+        this.preventedAttackerSpecial = false;
+
         // 「敵から攻撃を受ける際に発動する奥義」が発動できないかどうか
         this.preventedDefenderSpecial = false;
 
@@ -634,6 +637,18 @@ class BattleContext {
         this.passiveASkillCondSatisfied = false;
 
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
+
+        // 範囲奥義を発動できない
+        this.cannotTriggerPrecombatSpecial = false;
+
+        // 防御地形の効果を無効
+        this.invalidatesDefensiveTerrainEffect = false;
+
+        // 支援効果を無効
+        this.invalidatesSupportEffect = false;
+
+        // 自分と戦闘相手以外の自軍と敵軍のスキルを無効化
+        this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
     }
 
     invalidateFollowupAttackSkills() {
@@ -756,12 +771,17 @@ class BattleContext {
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
         this.isOnDefensiveTile = false;
+        this.preventedAttackerSpecial = false;
         this.preventedDefenderSpecial = false;
         this.isMiracleWithoutSpecialActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
         this.passiveASkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
+        this.cannotTriggerPrecombatSpecial = false;
+        this.invalidatesDefensiveTerrainEffect = false;
+        this.invalidatesSupportEffect = false;
+        this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -2411,6 +2431,13 @@ class Unit extends BattleMapElement {
             return 0;
         }
         return this.atkBuff + this.spdBuff + this.defBuff + this.resBuff;
+    }
+
+    get buffs() {
+        if (this.isPanicEnabled) {
+            return [-this.atkBuff, -this.spdBuff, -this.defBuff, -this.resBuff];
+        }
+        return [this.atkBuff, this.spdBuff, this.defBuff, this.resBuff];
     }
 
     get debuffTotal() {
@@ -4793,6 +4820,7 @@ class Unit extends BattleMapElement {
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
             switch (this.weapon) {
+                case Weapon.CrimeanScepter:
                 case Weapon.DuskDawnStaff:
                     if (specialCountMax === 0) {
                         specialCountMax = 1;
@@ -5091,9 +5119,11 @@ class Unit extends BattleMapElement {
 
 
     /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
-    canDisableAttackOrderSwapSkill(restHpPercentage) {
+    canDisableAttackOrderSwapSkill(restHpPercentage, defUnit) {
         for (let skillId of this.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Queensblade:
+                    return true;
                 case Weapon.StudiedForblaze:
                     if (restHpPercentage >= 25) {
                         return true;
@@ -5121,6 +5151,12 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 case PassiveS.HardyBearing3:
+                    return true;
+            }
+        }
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Queensblade:
                     return true;
             }
         }
@@ -5163,6 +5199,11 @@ class Unit extends BattleMapElement {
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                case Weapon.Queenslance:
+                    if (this.hasPositiveStatusEffect()) {
+                        moveCountForCanto = Math.max(moveCountForCanto, 1);
+                    }
+                    break;
                 case Weapon.FloridKnifePlus:
                 case Weapon.BowOfTwelve:
                 case PassiveB.MoonlitBangleF:

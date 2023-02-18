@@ -1986,6 +1986,13 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.DazzlingShift:
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
+                            yield tile;
+                        }
+                    }
+                    break;
                 case Weapon.AstraBlade:
                 case Weapon.Death:
                     if (unit.isWeaponSpecialRefined) {

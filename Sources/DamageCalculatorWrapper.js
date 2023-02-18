@@ -143,7 +143,10 @@ class DamageCalculatorWrapper {
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
         // 攻撃対象以外の戦闘前の範囲奥義ダメージ
         let precombatDamages = new Map();
-        if (atkUnit.canActivatePrecombatSpecial()) {
+        this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit);
+        this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit);
+        if (atkUnit.canActivatePrecombatSpecial() &&
+            !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
             // 範囲攻撃ダメージを周囲の敵に反映
             for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
                 if (tile.placedUnit != null
@@ -257,10 +260,13 @@ class DamageCalculatorWrapper {
             atkUnit.initBattleContext(true);
             defUnit.initBattleContext(false);
 
+            this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit);
+            this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit);
+
             // 戦闘前奥義の計算に影響するマップ関連の設定
             {
-                atkUnit.battleContext.isOnDefensiveTile = atkUnit.isOnMap && atkUnit.placedTile.isDefensiveTile;
-                defUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
+                atkUnit.battleContext.isOnDefensiveTile = atkUnit.isOnMap && atkUnit.placedTile.isDefensiveTile && !atkUnit.battleContext.invalidatesDefensiveTerrainEffect;
+                defUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile && !defUnit.battleContext.invalidatesDefensiveTerrainEffect;
             }
 
             atkUnit.saveCurrentHpAndSpecialCount();
@@ -270,7 +276,9 @@ class DamageCalculatorWrapper {
             let preCombatDamage = 0;
             let preCombatDamageWithOverkill = 0;
 
-            if (!calcPotentialDamage && atkUnit.canActivatePrecombatSpecial()) {
+            if (!calcPotentialDamage &&
+                atkUnit.canActivatePrecombatSpecial() &&
+                !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit);
                 // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();
@@ -288,7 +296,8 @@ class DamageCalculatorWrapper {
                     preCombatDamageWithOverkill = 0;
                     if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
                     self.__initSaverUnit(saverUnit, defUnit);
-                    if (atkUnit.canActivatePrecombatSpecial()) {
+                    if (atkUnit.canActivatePrecombatSpecial() &&
+                        !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
                         // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
                         for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
                             if (tile.placedUnit === saverUnit) {
@@ -316,6 +325,22 @@ class DamageCalculatorWrapper {
         });
 
         return result;
+    }
+
+    __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Queensblade:
+                    atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
+                    defUnit.battleContext.cannotTriggerPrecombatSpecial = true;
+
+                    atkUnit.battleContext.invalidatesDefensiveTerrainEffect = true;
+                    defUnit.battleContext.invalidatesDefensiveTerrainEffect = true;
+
+                    atkUnit.battleContext.invalidatesSupportEffect = true;
+                    defUnit.battleContext.invalidatesSupportEffect = true;
+            }
+        }
     }
 
     /**
@@ -916,7 +941,9 @@ class DamageCalculatorWrapper {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                 }
                     break;
-                case PassiveB.CloseCall4: {
+                case PassiveB.CloseCall4:
+                case PassiveB.Repel4:
+                {
                     let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                 }
@@ -2117,6 +2144,58 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[Weapon.HornOfTheLand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = targetUnit.maxSpecialCount * 2;
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.DazzlingShift] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CrimeanScepter] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addSpurs(6, 6, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.GronndeerPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Queenslance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Queensblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+            targetUnit.battleContext.preventedAttackerSpecial = true;
+            enemyUnit.battleContext.preventedAttackerSpecial = true;
+
+            targetUnit.battleContext.preventedDefenderSpecial = true;
+            enemyUnit.battleContext.preventedDefenderSpecial = true;
+
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            enemyUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+
+            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            enemyUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+
+            targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
+            enemyUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.NewBrazenCatFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
@@ -7566,6 +7645,7 @@ class DamageCalculatorWrapper {
                     enemyUnit.defSpur -= 5;
                 }
             };
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersAxePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SunflowerBowPlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.VictorfishPlus] = func;
         }
@@ -8297,7 +8377,8 @@ class DamageCalculatorWrapper {
                 for (let skillId of allyUnit.enumerateSkills()) {
                     switch (skillId) {
                         case Captain.Erosion:
-                            if (enemyUnit.battleContext.isSaviorActivated) {
+                            if (enemyUnit.battleContext.isSaviorActivated &&
+                                !enemyUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
                                 enemyUnit.defSpur -= 4;
                                 enemyUnit.resSpur -= 4;
                                 targetUnit.battleContext.invalidatesCounterattack = true;
@@ -8849,6 +8930,48 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.CrimeanScepter: {
+                    let buffs = [];
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                        buffs.push(unit.buffs);
+                    }
+                    buffs.push([
+                        targetUnit.getAtkBuffInCombat(enemyUnit),
+                        targetUnit.getSpdBuffInCombat(enemyUnit),
+                        targetUnit.getDefBuffInCombat(enemyUnit),
+                        targetUnit.getResBuffInCombat(enemyUnit),
+                    ]);
+                    let amounts = buffs.reduce(
+                        (previousValue, currentValue) =>
+                            previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
+                        [0, 0, 0, 0]);
+                    amounts = amounts.map(b => Math.trunc(b * 1.5));
+                    amounts[2] = 0;
+                    amounts[3] = 0;
+                    targetUnit.addSpurs(...amounts);
+                }
+                    break;
+                case Weapon.Queenslance: {
+                    let buffs = [];
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                        if (targetUnit.partnerHeroIndex === unit.heroIndex ||
+                            unit.partnerHeroIndex === targetUnit.heroIndex) {
+                            buffs.push(unit.buffs);
+                        }
+                    }
+                    buffs.push([
+                        targetUnit.getAtkBuffInCombat(enemyUnit),
+                        targetUnit.getSpdBuffInCombat(enemyUnit),
+                        targetUnit.getDefBuffInCombat(enemyUnit),
+                        targetUnit.getResBuffInCombat(enemyUnit),
+                    ]);
+                    let amounts = buffs.reduce(
+                        (previousValue, currentValue) =>
+                            previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
+                        [0, 0, 0, 0]);
+                    targetUnit.addSpurs(...amounts);
+                }
+                    break;
                 case Weapon.ReginRave:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.getAtkInPrecombat() >= enemyUnit.getAtkInPrecombat() + 1 ||
@@ -9113,6 +9236,7 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
+                case Weapon.DefiersAxePlus:
                 case Weapon.SunflowerBowPlus:
                 case Weapon.VictorfishPlus:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -10473,6 +10597,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.Queensblade:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return 0.3;
+                }
+                break;
             case Weapon.MonarchBlade:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
@@ -10720,6 +10849,7 @@ class DamageCalculatorWrapper {
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
+            case PassiveB.Repel4:
             case PassiveB.CloseCall4:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
             case PassiveB.BlueLionRule:
@@ -10790,6 +10920,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Queensblade:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.20);
+                    }
+                    break;
                 case Weapon.MonarchBlade:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         if (isPrecombat) break;
@@ -11517,6 +11653,8 @@ class DamageCalculatorWrapper {
         // defUnitが見切り・反撃効果を持っている場合(falseを返す場合)
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Queensblade:
+                    return false;
                 case Weapon.BrilliantStarlight:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
                         return false;
@@ -11534,6 +11672,12 @@ class DamageCalculatorWrapper {
                         return false;
                     }
                     break;
+            }
+        }
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Queensblade:
+                    return false;
             }
         }
 
@@ -12383,11 +12527,19 @@ class DamageCalculatorWrapper {
             }
         };
 
-        this._applySpecialSkillEffectFuncDict[Special.Glacies] = (targetUnit, enemyUnit) => {
+        this._applySpecialSkillEffectFuncDict[Special.HolyPressure] = (targetUnit, enemyUnit) => {
             // 重圧の聖光
             {
                 let totalRes = enemyUnit.getResInCombat(enemyUnit);
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
+            }
+        };
+
+        this._applySpecialSkillEffectFuncDict[Special.LightsRestraint] = (targetUnit, enemyUnit) => {
+            // 抑制の聖光
+            {
+                let totalRes = enemyUnit.getResInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
             }
         };
 
@@ -12555,8 +12707,8 @@ class DamageCalculatorWrapper {
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit);
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(defUnit, atkUnit);
 
-        if (!atkUnit.canDisableAttackOrderSwapSkill(atkUnit.battleContext.restHpPercentage)
-            && !defUnit.canDisableAttackOrderSwapSkill(defUnit.battleContext.restHpPercentage)
+        if (!atkUnit.canDisableAttackOrderSwapSkill(atkUnit.battleContext.restHpPercentage, defUnit)
+            && !defUnit.canDisableAttackOrderSwapSkill(defUnit.battleContext.restHpPercentage, atkUnit)
         ) {
             atkUnit.battleContext.isDesperationActivated = atkUnit.battleContext.isDesperationActivatable || atkUnit.hasStatusEffect(StatusEffectType.Desperation);
             defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantageActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
@@ -13279,7 +13431,7 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (nearestPartner != null) {
+            if (nearestPartner != null && !targetUnit.battleContext.invalidatesSupportEffect) {
                 let unit = nearestPartner;
                 switch (targetUnit.partnerLevel) {
                     case PartnerLevel.C:
@@ -13955,6 +14107,9 @@ class DamageCalculatorWrapper {
     }
 
     __updateUnitSpurFromEnemies(targetUnit, ignoresSkillEffectFromEnemiesByFeudSkill, feudFunc, enemyUnit) {
+        if (targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
+            return;
+        }
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
             if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
             if (this.__isInCloss(unit, targetUnit)) {
@@ -14168,6 +14323,9 @@ class DamageCalculatorWrapper {
     }
 
     __updateUnitSpurFromAllies(targetUnit, ignoresSkillEffectFromAlliesByFeudSkill, feudFunc, calcPotentialDamage) {
+        if (targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
+            return;
+        }
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
             if (ignoresSkillEffectFromAlliesByFeudSkill && feudFunc(unit)) continue;
             if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) continue;
@@ -14335,6 +14493,9 @@ class DamageCalculatorWrapper {
     }
 
     __canDisableEnemySpursFromAlly(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
+            return true;
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.ShikkyuMyurugure:

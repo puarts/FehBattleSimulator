@@ -3416,6 +3416,7 @@ class BattleSimmulatorBase {
         let executesTrap = false; // トラップは迅雷や再移動の発動後に評価する必要がある
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.Repel4:
                 case PassiveB.KaihiTatakikomi3:
                 case PassiveB.Tatakikomi:
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
@@ -6165,6 +6166,11 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Queenslance:
+                    if (unit.hasPositiveStatusEffect()) {
+                        return true;
+                    }
+                    break;
                 case Weapon.ReginRave:
                     if (unit.isWeaponSpecialRefined) {
                         if (unit.hasPositiveStatusEffect()) {
@@ -8401,6 +8407,7 @@ class BattleSimmulatorBase {
                 && supporterUnit.support != Support.NudgePlus
                 && supporterUnit.support != Support.Nudge
                 && supporterUnit.special != Special.HolyPressure
+                && supporterUnit.special != Special.LightsRestraint
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }

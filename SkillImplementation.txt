@@ -95,6 +95,9 @@ isMeleeWeaponType(weaponType)
 2距離
 isRangedWeaponType(weaponType)
 
+防御地形の効果を無効
+atkUnit.battleContext.invalidatesDefensiveTerrainEffect = true;
+
 自分から攻撃した時
 if (targetUnit.battleContext.initiatesCombat) {
 敵から攻撃された時
@@ -195,6 +198,10 @@ targetUnit.battleContext.isVantageActivatable = true;
 canDisableAttackOrderSwapSkill(restHpPercentage) {
     return true;
 }
+
+戦闘中、自分と戦闘相手以外の自軍と敵軍のスキルを無効化
+targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
+enemyUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
 
 絶対追撃
 targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -390,6 +397,10 @@ targetUnit.battleContext.increaseCooldownCountForBoth();
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCount() {
     specialCountMax -= 1;
+    // 奥義発動カウント最大値の下限は1
+    if (specialCountMax === 0) {
+        specialCountMax = 1;
+    }
 }
 
 奥義発動可能状態
@@ -424,8 +435,19 @@ if (isDefenseSpecial(skillOwner.special)) {}
 攻撃時発動の奥義装備時
 if (isNormalAttackSpecial(skillOwner.special)) {}
 
+戦闘中攻撃奥義を発動できない
+enemyUnit.battleContext.preventedAttackerSpecial = true;
+
 「敵から攻撃を受ける際に発動する奥義」を発動できない
 enemyUnit.battleContext.preventedDefenderSpecial = true;
+
+範囲奥義を発動できない
+__applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
+    atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
+}
+
+支援効果を無効
+atkUnit.battleContext.invalidatesSupportEffect = true;
 
 周囲3マス以内に支援を結んでいる味方の組み合わせ(自分は含まない)がいる時
 let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));

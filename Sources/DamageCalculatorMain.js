@@ -865,6 +865,7 @@ class DamageCalcData {
             // Special.ImperialAstra, // 剣皇の流星(+速さ40%)
             Special.TwinBlades, // 双刃(+魔防30%)
             Special.CircletOfBalance, // 聖神と暗黒神の冠(+魔坊40%)
+            Special.LightsRestraint, // 抑制の聖光
         ];
     }
     __getInheritableCount3Specials() {

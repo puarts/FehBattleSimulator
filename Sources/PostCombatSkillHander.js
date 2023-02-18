@@ -345,6 +345,13 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
+                case Special.LightsRestraint:
+                    if (targetUnit.battleContext.isSpecialActivated) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                    break;
                 case Special.HolyPressure:
                     if (targetUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {

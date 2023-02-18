@@ -1533,6 +1533,18 @@ const Weapon = {
     // 2023年2月 武器錬成
     VolunteerBow: 2353, // 義勇兵の弓
     CommandLance: 2352, // 神使親衛隊隊長の槍
+
+    // （新英雄＆開花エリンシア)
+    // https://www.youtube.com/watch?v=-0CP0HPc7hw&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=d4oj3zIebkE&ab_channel=NintendoMobile
+    Queensblade: 2356, // 女王の護衛の怜剣
+    Queenslance: 2358, // 女王の騎士の勇槍
+    GronndeerPlus: 2359, // グルンディア+
+    CrimeanScepter: 2361, // クリミア女王の王笏
+    DefiersAxePlus: 2365, // Defiers Axe+
+
+    // ネルトゥス（敵）
+    HornOfTheLand: 2364, // 地の女神の角
 };
 
 const Support = {
@@ -1736,7 +1748,9 @@ const Special = {
 
     RequiemDance: 1800, // 鎮魂の舞
 
+    // 杖奥義
     HolyPressure: 2344, // 重圧の聖光
+    LightsRestraint: 2362, // 抑制の聖光
 };
 
 const PassiveA = {
@@ -2066,6 +2080,7 @@ const PassiveB = {
     WrathfulStaff3: 632, // 神罰の杖3
     PoeticJustice: 2345, // 神罰・因果応報
     DazzlingStaff3: 633, // 幻惑の杖3
+    DazzlingShift: 2363, // 幻惑・転移
     ChillAtk1: 1339,
     ChillAtk2: 1340,
     ChillAtk3: 614, // 攻撃の封印3
@@ -2227,6 +2242,7 @@ const PassiveB = {
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3
     CloseCall4: 2328, // 回避・一撃離脱4
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
+    Repel4: 2357, // 回避・叩き込み4
     Kirikomi: 589, // 切り込み
     Tatakikomi: 588, // 叩き込み
     Hikikomi: 590, // 引き込み
@@ -3007,6 +3023,7 @@ NormalAttackSpecialDict[Special.RighteousWind] = 0;
 NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 NormalAttackSpecialDict[Special.DevinePulse] = 0;
 NormalAttackSpecialDict[Special.HolyPressure] = 0;
+NormalAttackSpecialDict[Special.LightsRestraint] = 0; // 抑制の聖光
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
@@ -3368,6 +3385,7 @@ EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
 EvalSpdAddDict[PassiveB.CloseCall4] = 7;
+EvalSpdAddDict[PassiveB.Repel4] = 7;
 EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。
