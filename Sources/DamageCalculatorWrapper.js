@@ -1107,7 +1107,7 @@ class DamageCalculatorWrapper {
 
         {
             // atkUnitのスキル効果
-            for (let skillId of defUnit.enumerateSkills()) {
+            for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
                     case Weapon.KeenCoyoteBow:
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
