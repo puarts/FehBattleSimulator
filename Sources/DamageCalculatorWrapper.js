@@ -8040,31 +8040,6 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
-        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-            // 縦3列以内
-            if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
-                switch (unit.weapon) {
-                    case Weapon.FlowerOfEase:
-                        if (targetUnit.hasNegativeStatusEffect()) {
-                            targetUnit.atkSpur -= 3;
-                            targetUnit.defSpur -= 3;
-                            targetUnit.resSpur -= 3;
-                        }
-                        break;
-                }
-            }
-            // 縦3列と横3列
-            if (Math.abs(targetUnit.posX - unit.posX) <= 1 || Math.abs(targetUnit.posY - unit.posY) <= 1) {
-                switch (unit.weapon) {
-                    case Weapon.Dreamflake:
-                        if (targetUnit.hasNegativeStatusEffect()) {
-                            targetUnit.atkSpur -= 5;
-                        }
-                        break;
-                }
-            }
-        }
-
         for (let skillId of targetUnit.enumerateSkills()) {
             // 機先
             this.catchFuncs[skillId]?.(targetUnit, enemyUnit);
@@ -14078,15 +14053,35 @@ class DamageCalculatorWrapper {
         }
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
             if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
+            // 十字方向
             if (this.__isInCloss(unit, targetUnit)) {
-                // 十字方向
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.FlowerOfSorrow:
-                            targetUnit.defSpur -= 4;
-                            targetUnit.resSpur -= 4;
+                            targetUnit.addSpurs(0, 0, -4, -4);
                             break;
                     }
+                }
+            }
+            // 縦3列以内
+            if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
+                switch (unit.weapon) {
+                    case Weapon.FlowerOfEase:
+                        if (targetUnit.hasNegativeStatusEffect()) {
+                            targetUnit.addSpurs(-3, 0, -3, -3);
+                        }
+                        break;
+                }
+            }
+            // 縦3列と横3列
+            if (Math.abs(targetUnit.posX - unit.posX) <= 1 ||
+                Math.abs(targetUnit.posY - unit.posY) <= 1) {
+                switch (unit.weapon) {
+                    case Weapon.Dreamflake:
+                        if (targetUnit.hasNegativeStatusEffect()) {
+                            targetUnit.atkSpur -= 5;
+                        }
+                        break;
                 }
             }
         }
