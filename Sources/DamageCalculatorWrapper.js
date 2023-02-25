@@ -8044,6 +8044,7 @@ class DamageCalculatorWrapper {
             // 機先
             this.catchFuncs[skillId]?.(targetUnit, enemyUnit);
 
+            // TODO: 機先以外のスキルも同様に辞書にいれる
             switch (skillId) {
                 case PassiveB.KillingIntent:
                 case PassiveB.KillingIntentPlus:
