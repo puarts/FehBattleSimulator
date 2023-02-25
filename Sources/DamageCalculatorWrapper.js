@@ -2750,7 +2750,7 @@ class DamageCalculatorWrapper {
                 if (count === 1) {
                     enemyUnit.addSpurs(0, -4, 0, -4);
                 } else if (count >= 2) {
-                    enemyUnit.addAllSpur(0, -8, 0, -8);
+                    enemyUnit.addSpurs(0, -8, 0, -8);
                     targetUnit.battleContext.invalidatesCounterattack = true;
                 }
             }
