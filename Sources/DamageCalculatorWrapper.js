@@ -2144,6 +2144,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        // 回避4
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                enemyUnit.addSpurs(0, -4, -4, 0);
+            };
+            this._applySkillEffectForUnitFuncDict[PassiveB.CloseCall4] = func;
+            this._applySkillEffectForUnitFuncDict[PassiveB.Repel4] = func;
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HornOfTheLand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
