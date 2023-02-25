@@ -91,6 +91,27 @@ class DamageCalculatorWrapper {
         this.__init__applySkillEffectForDefUnitFuncDict();
         this.__init__applySkillEffectForUnitFuncDict();
         this.__init__applySpecialSkillEffect();
+        this.__init__skillFunctions();
+    }
+
+    __init__skillFunctions() {
+        // 機先
+        this.catchFuncs = {
+            // 機先3
+            [PassiveA.AtkSpdCatch3]: (tu, eu) => this.__applyCatch3(tu, eu, 1, 1, 0, 0),
+            [PassiveA.AtkDefCatch3]: (tu, eu) => this.__applyCatch3(tu, eu, 1, 0, 1, 0),
+            [PassiveA.AtkResCatch3]: (tu, eu) => this.__applyCatch3(tu, eu, 1, 0, 0, 1),
+            [PassiveA.SpdDefCatch3]: (tu, eu) => this.__applyCatch3(tu, eu, 0, 1, 1, 0),
+            [PassiveA.SpdResCatch3]: (tu, eu) => this.__applyCatch3(tu, eu, 0, 1, 0, 1),
+            [PassiveA.DefResCatch3]: (tu, eu) => this.__applyCatch3(tu, eu, 0, 0, 1, 1),
+            // 機先4
+            [PassiveA.AtkSpdCatch4]: (tu, eu) => this.__applyCatch4(tu, eu, 1, 1, 0, 0),
+            [PassiveA.AtkDefCatch4]: (tu, eu) => this.__applyCatch4(tu, eu, 1, 0, 1, 0),
+            [PassiveA.AtkResCatch4]: (tu, eu) => this.__applyCatch4(tu, eu, 1, 0, 0, 1),
+            [PassiveA.SpdDefCatch4]: (tu, eu) => this.__applyCatch4(tu, eu, 0, 1, 1, 0),
+            [PassiveA.SpdResCatch4]: (tu, eu) => this.__applyCatch4(tu, eu, 0, 1, 0, 1),
+            [PassiveA.DefResCatch4]: (tu, eu) => this.__applyCatch4(tu, eu, 0, 0, 1, 1),
+        };
     }
 
     get log() {
@@ -8045,94 +8066,10 @@ class DamageCalculatorWrapper {
         }
 
         for (let skillId of targetUnit.enumerateSkills()) {
+            // 機先
+            this.catchFuncs[skillId]?.(targetUnit, enemyUnit);
+
             switch (skillId) {
-                case PassiveA.AtkSpdCatch3:
-                    if (enemyUnit.battleContext.restHpPercentage === 100 || enemyUnit.hasNegativeStatusEffect()) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.spdSpur += 5;
-                    }
-                    break;
-                case PassiveA.AtkDefCatch3:
-                    if (enemyUnit.battleContext.restHpPercentage === 100 || enemyUnit.hasNegativeStatusEffect()) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.defSpur += 5;
-                    }
-                    break;
-                case PassiveA.AtkSpdCatch4:
-                    if (enemyUnit.battleContext.restHpPercentage === 100
-                        || enemyUnit.hasNegativeStatusEffect()
-                    ) {
-                        targetUnit.atkSpur += 7;
-                        targetUnit.spdSpur += 7;
-
-                        if (enemyUnit.battleContext.restHpPercentage === 100
-                            && enemyUnit.hasNegativeStatusEffect()
-                        ) {
-                            targetUnit.atkSpur += 2;
-                            targetUnit.spdSpur += 2;
-                        }
-                    }
-                    break;
-                case PassiveA.AtkDefCatch4:
-                    if (enemyUnit.battleContext.restHpPercentage === 100
-                        || enemyUnit.hasNegativeStatusEffect()
-                    ) {
-                        targetUnit.atkSpur += 7;
-                        targetUnit.defSpur += 7;
-
-                        if (enemyUnit.battleContext.restHpPercentage === 100
-                            && enemyUnit.hasNegativeStatusEffect()
-                        ) {
-                            targetUnit.atkSpur += 2;
-                            targetUnit.defSpur += 2;
-                        }
-                    }
-                    break;
-                case PassiveA.AtkResCatch4:
-                    if (enemyUnit.battleContext.restHpPercentage === 100
-                        || enemyUnit.hasNegativeStatusEffect()
-                    ) {
-                        targetUnit.atkSpur += 7;
-                        targetUnit.resSpur += 7;
-
-                        if (enemyUnit.battleContext.restHpPercentage === 100
-                            && enemyUnit.hasNegativeStatusEffect()
-                        ) {
-                            targetUnit.atkSpur += 2;
-                            targetUnit.resSpur += 2;
-                        }
-                    }
-                    break;
-                case PassiveA.SpdDefCatch4:
-                    if (enemyUnit.battleContext.restHpPercentage === 100
-                        || enemyUnit.hasNegativeStatusEffect()
-                    ) {
-                        targetUnit.spdSpur += 7;
-                        targetUnit.defSpur += 7;
-
-                        if (enemyUnit.battleContext.restHpPercentage === 100
-                            && enemyUnit.hasNegativeStatusEffect()
-                        ) {
-                            targetUnit.spdSpur += 2;
-                            targetUnit.defSpur += 2;
-                        }
-                    }
-                    break;
-                case PassiveA.DefResCatch4:
-                    if (enemyUnit.battleContext.restHpPercentage === 100
-                        || enemyUnit.hasNegativeStatusEffect()
-                    ) {
-                        targetUnit.defSpur += 7;
-                        targetUnit.resSpur += 7;
-
-                        if (enemyUnit.battleContext.restHpPercentage === 100
-                            && enemyUnit.hasNegativeStatusEffect()
-                        ) {
-                            targetUnit.defSpur += 2;
-                            targetUnit.resSpur += 2;
-                        }
-                    }
-                    break;
                 case PassiveB.KillingIntent:
                 case PassiveB.KillingIntentPlus:
                     if (enemyUnit.battleContext.restHpPercentage < 100 || enemyUnit.hasNegativeStatusEffect()) {
@@ -8328,6 +8265,27 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
+            }
+        }
+    }
+
+    // atk, spd, def, resには適用するステータスなら1をそうでない場合は0を渡す
+    __applyCatch3(targetUnit, enemyUnit, atk, spd, def, res) {
+        if (enemyUnit.battleContext.restHpPercentage === 100 ||
+            enemyUnit.hasNegativeStatusEffect()) {
+            targetUnit.addSpurs(5 * atk, 5 * spd, 5 * def, 5 * res);
+        }
+    }
+
+    // atk, spd, def, resには適用するステータスなら1をそうでない場合は0を渡す
+    __applyCatch4(targetUnit, enemyUnit, atk, spd, def, res) {
+        if (enemyUnit.battleContext.restHpPercentage === 100 ||
+            enemyUnit.hasNegativeStatusEffect()) {
+            targetUnit.addSpurs(7 * atk, 7 * spd, 7 * def, 7 * res);
+
+            if (enemyUnit.battleContext.restHpPercentage === 100
+                && enemyUnit.hasNegativeStatusEffect()) {
+                targetUnit.addSpurs(2 * atk, 2 * spd, 2 * def, 2 * res);
             }
         }
     }
