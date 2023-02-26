@@ -1,7 +1,7 @@
-FROM node:14
+FROM node:16
 
-RUN npm install -g jest
-RUN npm install -g eslint
+COPY ./package.json /
+RUN npm install
 
 COPY ./create_tests.sh /
 COPY ./run_tests.sh /
