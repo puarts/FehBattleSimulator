@@ -8042,7 +8042,7 @@ class DamageCalculatorWrapper {
     __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             // 機先
-            this.catchFuncs[skillId]?.(targetUnit, enemyUnit);
+            this.catchFuncs[skillId] && this.catchFuncs[skillId](targetUnit, enemyUnit);
 
             // TODO: 機先以外のスキルも同様に辞書にいれる
             switch (skillId) {
