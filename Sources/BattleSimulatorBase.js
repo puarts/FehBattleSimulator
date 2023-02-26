@@ -3626,6 +3626,11 @@ class BattleSimmulatorBase {
                 + `速${getIncHtml(spdInc)},`
                 + `守${getIncHtml(defInc)},`
                 + `魔${getIncHtml(resInc)})`;
+        } else {
+            html += `(攻${0},`
+                + `速${0},`
+                + `守${0},`
+                + `魔${0})`;
         }
 
         return html;
