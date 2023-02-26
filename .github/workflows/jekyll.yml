@@ -27,4 +27,4 @@ jobs:
       - name: Create Test
         run: ./create_tests.sh
       - name: Run Jest
-        run: ./run_test.sh
+        run: ./run_tests.sh
