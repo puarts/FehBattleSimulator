@@ -27,4 +27,4 @@ jobs:
     - name: Create Test
       run: ./create_tests.sh
     - name: Run Jest
-      run: npm test
+      run: ./run_test.sh
