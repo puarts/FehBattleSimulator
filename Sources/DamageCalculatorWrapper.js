@@ -8869,15 +8869,7 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
-            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
-            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
-            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
-            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`神軍師の策により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
-            targetUnit.atkSpur += atkAdd;
-            targetUnit.spdSpur += spdAdd;
-            targetUnit.defSpur += defAdd;
-            targetUnit.resSpur += resAdd;
+            this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -8947,15 +8939,7 @@ class DamageCalculatorWrapper {
                 case Weapon.LanceOfHeroics:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
-                            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
-                            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
-                            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-                            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
-                            targetUnit.atkSpur += atkAdd;
-                            targetUnit.spdSpur += spdAdd;
-                            targetUnit.defSpur += defAdd;
-                            targetUnit.resSpur += resAdd;
+                            this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                         }
                     }
                     break;
@@ -9464,17 +9448,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.ShinkenFalcion:
                 case Weapon.ChaosRagnell:
-                {
-                    let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
-                    let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
-                    let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
-                    let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
-                    targetUnit.atkSpur += atkAdd;
-                    targetUnit.spdSpur += spdAdd;
-                    targetUnit.defSpur += defAdd;
-                    targetUnit.resSpur += resAdd;
-                }
+                    this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                     break;
                 case PassiveA.SpdDefIdeal3:
                     DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
