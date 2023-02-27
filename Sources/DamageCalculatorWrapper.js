@@ -2165,6 +2165,12 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.PartOfThePlan] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-8, -8, 0, -8);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MatersTactics] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, -5, 0, -5);
@@ -8878,6 +8884,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.PartOfThePlan:
+                    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                    enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    break;
                 case Weapon.CrimeanScepter: {
                     let buffs = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {

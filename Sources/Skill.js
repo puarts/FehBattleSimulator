@@ -1989,6 +1989,7 @@ const PassiveA = {
     SelfImprover: 2329, // 自己研鑽
     Nightmare: 2334, // 漆黒の悪夢
     GiftOfMagic: 2337, // 人に魔道を授けし者
+    PartOfThePlan: 2369, // これも策のうちだよ
 
     // 防城戦
     AtkSpdBojosen3: 1473,
