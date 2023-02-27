@@ -2193,6 +2193,7 @@ const PassiveB = {
     SealAtk1: 1455,
     SealAtk2: 1456,
     SealAtk3: 607,
+    SealAtk4: 2370, // 攻撃封じ4
     SealSpd1: 1457,
     SealSpd2: 1458,
     SealSpd3: 608,

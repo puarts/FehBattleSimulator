@@ -2880,6 +2880,9 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SealAtk4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 4;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SealSpd4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 4;
         }
@@ -9576,6 +9579,12 @@ class DamageCalculatorWrapper {
                         targetUnit.applyResUnity();
                     }
                     break;
+                case PassiveB.SealAtk4:
+                    if (!enemyUnit.battleContext.invalidatesOwnAtkDebuff) {
+                        let amount = Math.max(7 - Math.abs(enemyUnit.atkDebuffTotal), 0);
+                        enemyUnit.atkSpur -= amount;
+                    }
+                    break;
                 case PassiveB.SealSpd4:
                     if (!enemyUnit.battleContext.invalidatesOwnSpdDebuff) {
                         let amount = Math.max(7 - Math.abs(enemyUnit.spdDebuffTotal), 0);
@@ -10353,6 +10362,11 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.KentoushiNoGoken:
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
+                        break;
+                    case PassiveB.SealAtk4:
+                        if (enemyUnit.atkDebuffTotal > 0) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
                         break;
                     case PassiveB.SealSpd4:
                         if (enemyUnit.spdDebuffTotal > 0) {
