@@ -9591,23 +9591,20 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveC.HumanVirtue2: {
-                    let atkMax = 0;
-                    let spdMax = 0;
-                    let defMax = 0;
-                    let resMax = 0;
+                    let maxBuffs = new Array(4).fill(0);
                     let buffTotals = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                        if (!isWeaponTypeBreathOrBeast(unit.weaponType) && !unit.hasStatusEffect(StatusEffectType.Panic)) {
-                            atkMax = Math.max(atkMax, unit.atkBuff);
-                            spdMax = Math.max(spdMax, unit.spdBuff);
-                            defMax = Math.max(defMax, unit.defBuff);
-                            resMax = Math.max(resMax, unit.resBuff);
+                        if (!isWeaponTypeBreathOrBeast(unit.weaponType) &&
+                            !unit.hasStatusEffect(StatusEffectType.Panic)) {
+                            let buffs = unit.buffs;
+                            maxBuffs = maxBuffs.map((v, i) => Math.max(v, buffs[i]));
                             buffTotals.push(unit.buffTotal);
                         }
                     }
-                    targetUnit.addSpurs(atkMax, spdMax, defMax, resMax);
+                    targetUnit.addSpurs(...maxBuffs);
 
                     buffTotals.sort((a, b) => b - a);
+                    // 周囲2マス以内の竜、獣以外の味方の強化の合計値が高い上位3人の強化の合計値(最大40)
                     let amount = Math.min(40, buffTotals.slice(0, 3).reduce((a, b) => a + b, 0));
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(amount / 100.0, enemyUnit);
                     break;
