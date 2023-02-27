@@ -2007,12 +2007,19 @@ const PassiveA = {
     DefResUnity: 2096, // 守備魔防の連帯
 
     // 機先
+    // 機先3
     AtkSpdCatch3: 1648, // 攻撃速さの機先3
     AtkDefCatch3: 1875, // 攻撃守備の機先3
+    AtkResCatch3: 2222, // 攻撃魔防の機先3
+    SpdDefCatch3: 2108, // 速さ守備の機先3
+    SpdResCatch3: 99999, // 速さ魔防の機先3
+    DefResCatch3: 99999, // 守備魔防の機先3
+    // 機先4
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
     AtkDefCatch4: 1703, // 攻撃守備の機先4
     AtkResCatch4: 1845, // 攻撃魔防の機先4
     SpdDefCatch4: 2101, // 速さ守備の機先4
+    SpdResCatch4: 99999, // 速さ魔防の機先4
     DefResCatch4: 1761, // 守備魔防の機先4
 
     // 万全

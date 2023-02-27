@@ -1061,8 +1061,13 @@ function roundFloat(value, precision = 6) {
 /**
  * @param  {Number} number
  */
-function numberToSignedString(number) {
-    return number < 0 ? number : "+" + number;
+function getIncHtml(number) {
+    if (number < 0) {
+        return `<span style="color: #ffaaaa">${number}</span>`
+    } else if (number > 0) {
+        return `<span style="color: #00eeee">+${number}</span>`
+    }
+    return `${number}`;
 }
 
 function getKeyByValue(dict, value) {

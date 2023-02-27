@@ -3598,15 +3598,21 @@ class BattleSimmulatorBase {
         }
 
         if (attackCount > 0) {
-            html += "攻撃: ";
+            html += `奥<span style="color: pink;">${unit.specialCount}</span>  攻撃: `;
             if (preCombatDamage > 0) {
                 html += `${preCombatDamage}+`;
             }
-            html += `${damage}`;
+            if (unit.battleContext.isEffectiveToOpponent) {
+                html += `<span style='color:#00FF00'>${damage}</span>`;
+            } else {
+                html += `${damage}`;
+            }
             if (attackCount > 1) {
                 html += "×" + attackCount;
             }
             html += "<br/>";
+        } else {
+            html += "-<br/>"
         }
         html += `(攻${atk},速${spd},守${def},魔${res})<br/>`;
         let snapshot = unit.snapshot;
@@ -3616,10 +3622,15 @@ class BattleSimmulatorBase {
             let spdInc = snapshot.getSpdIncrementInCombat(enemySnapshot);
             let defInc = snapshot.getDefIncrementInCombat(enemySnapshot);
             let resInc = snapshot.getResIncrementInCombat(enemySnapshot);
-            html += `(攻${numberToSignedString(atkInc)},`
-                + `速${numberToSignedString(spdInc)},`
-                + `守${numberToSignedString(defInc)},`
-                + `魔${numberToSignedString(resInc)})`;
+            html += `(攻${getIncHtml(atkInc)},`
+                + `速${getIncHtml(spdInc)},`
+                + `守${getIncHtml(defInc)},`
+                + `魔${getIncHtml(resInc)})`;
+        } else {
+            html += `(攻${0},`
+                + `速${0},`
+                + `守${0},`
+                + `魔${0})`;
         }
 
         return html;
