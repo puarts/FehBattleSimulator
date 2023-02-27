@@ -2165,6 +2165,18 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveA.PartOfThePlan] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-8, -8, 0, -8);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MatersTactics] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpurs(-5, -5, 0, -5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         // 回避4
         {
             let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -2867,6 +2879,9 @@ class DamageCalculatorWrapper {
                     }
                 }
             }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SealAtk4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.atkSpur -= 4;
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SealSpd4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 4;
@@ -8872,6 +8887,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.PartOfThePlan:
+                    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                    enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    break;
                 case Weapon.CrimeanScepter: {
                     let buffs = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
@@ -9556,6 +9577,12 @@ class DamageCalculatorWrapper {
                     if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                         targetUnit.applyDefUnity();
                         targetUnit.applyResUnity();
+                    }
+                    break;
+                case PassiveB.SealAtk4:
+                    if (!enemyUnit.battleContext.invalidatesOwnAtkDebuff) {
+                        let amount = Math.max(7 - Math.abs(enemyUnit.atkDebuffTotal), 0);
+                        enemyUnit.atkSpur -= amount;
                     }
                     break;
                 case PassiveB.SealSpd4:
@@ -10335,6 +10362,11 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.KentoushiNoGoken:
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
+                        break;
+                    case PassiveB.SealAtk4:
+                        if (enemyUnit.atkDebuffTotal > 0) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
                         break;
                     case PassiveB.SealSpd4:
                         if (enemyUnit.spdDebuffTotal > 0) {

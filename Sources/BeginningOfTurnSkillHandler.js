@@ -147,6 +147,31 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.MatersTactics:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.GrandStrategy);
+                    skillOwner.reserveToApplyAllDebuff(-4);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.GrandStrategy);
+                        let statuses = unit.getStatusesInPrecombat();
+                        statuses[0] -= 15;
+                        let uniqArray = Array.from(new Set(statuses));
+                        uniqArray.sort((a, b) => b - a);
+                        let highStatuses = [uniqArray[0]];
+                        if (uniqArray.length >= 2) {
+                            highStatuses.push(uniqArray[1]);
+                        }
+                        let buffs = statuses.map(s => highStatuses.includes(s) ? -6 : 0);
+                        unit.reserveToApplyDebuffs(...buffs);
+                    }
+
+                    for (let enemy of this.__findNearestEnemies(skillOwner)) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemy, 3, true)) {
+                            unit.reserveToApplyAllDebuff(-3);
+                        }
+                    }
+                }
+                break;
             case Weapon.CrimeanScepter: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {

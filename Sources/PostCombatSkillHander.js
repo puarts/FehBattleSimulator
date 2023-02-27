@@ -576,6 +576,7 @@ class PostCombatSkillHander {
                 case PassiveB.SealAtk1: enemyUnit.applyAtkDebuff(-3); break;
                 case PassiveB.SealAtk2: enemyUnit.applyAtkDebuff(-5); break;
                 case PassiveB.SealAtk3: enemyUnit.applyAtkDebuff(-7); break;
+                case PassiveB.SealAtk4: enemyUnit.applyAtkDebuff(-7); break;
                 case PassiveB.SealSpd1: enemyUnit.applySpdDebuff(-3); break;
                 case PassiveB.SealSpd2: enemyUnit.applySpdDebuff(-5); break;
                 case PassiveB.SealSpd3: enemyUnit.applySpdDebuff(-7); break;

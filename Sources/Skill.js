@@ -1545,6 +1545,11 @@ const Weapon = {
 
     // ネルトゥス（敵）
     HornOfTheLand: 2364, // 地の女神の角
+
+    // 2023年2月 伝承英雄 (聖王の半身 ルフレ)
+    // https://www.youtube.com/watch?v=e0Z0GQ8PJQo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=V3Nw6s9dSAw&ab_channel=NintendoMobile
+    MatersTactics: 2368, // 神軍師の書
 };
 
 const Support = {
@@ -1984,6 +1989,7 @@ const PassiveA = {
     SelfImprover: 2329, // 自己研鑽
     Nightmare: 2334, // 漆黒の悪夢
     GiftOfMagic: 2337, // 人に魔道を授けし者
+    PartOfThePlan: 2369, // これも策のうちだよ
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -2187,6 +2193,7 @@ const PassiveB = {
     SealAtk1: 1455,
     SealAtk2: 1456,
     SealAtk3: 607,
+    SealAtk4: 2370, // 攻撃封じ4
     SealSpd1: 1457,
     SealSpd2: 1458,
     SealSpd3: 608,
