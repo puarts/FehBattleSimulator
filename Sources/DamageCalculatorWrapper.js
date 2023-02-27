@@ -9076,16 +9076,9 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.WingLeftedSpear:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
-
-                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
-                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
-                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
-                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit)
                     }
                     break;
                 case Weapon.HvitrvulturePlus:
@@ -9190,14 +9183,9 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.DivineSeaSpear:
-                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-
-                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
-                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
-                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 1, 0);
                     }
                     break;
                 case Weapon.PeachyParfaitPlus:
@@ -9578,10 +9566,7 @@ class DamageCalculatorWrapper {
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         targetUnit.addAllSpur(2);
                         enemyUnit.addAllSpur(-2);
-
-                        let enemyBuffs = enemyUnit.getBuffsInCombat(targetUnit);
-                        targetUnit.addSpurs(...enemyBuffs);
-                        enemyUnit.addSpurs(...enemyBuffs.map(v => -v));
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit);
                     }
                     break;
                 case PassiveC.HumanVirtue2: {
@@ -9607,11 +9592,19 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applyDebuffReverse(targetUnit, skillName) {
-        let name = skillName ? skillName : "弱化反転効果"
+    __applyBuffAbsorption(targetUnit, enemyUnit,
+                          atk=1, spd=1, def=1, res=1) {
+        let enemyBuffs = enemyUnit.getBuffsInCombat(targetUnit);
+        let enables = [atk, spd, def, res];
+        enemyBuffs = enemyBuffs.map((v, i) => v * enables[i]);
+        targetUnit.addSpurs(...enemyBuffs);
+        enemyUnit.addSpurs(...enemyBuffs.map(v => -v));
+    }
+
+    __applyDebuffReverse(targetUnit, skillName="弱化反転効果") {
         let spurs = targetUnit.debuffTotals.map(i => Math.abs(i) * 2);
         if (this.isLogEnabled) {
-            let message = `${name}により攻+${spurs[0]}, 速+${spurs[1]}, 守+${spurs[2]}, 魔+${spurs[3]}`;
+            let message = `${skillName}により攻+${spurs[0]}, 速+${spurs[1]}, 守+${spurs[2]}, 魔+${spurs[3]}`;
             this.__writeDamageCalcDebugLog(message);
         }
         targetUnit.addSpurs(...spurs);
