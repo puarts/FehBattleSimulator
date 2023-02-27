@@ -1545,6 +1545,11 @@ const Weapon = {
 
     // ネルトゥス（敵）
     HornOfTheLand: 2364, // 地の女神の角
+
+    // 2023年2月 伝承英雄 (聖王の半身 ルフレ)
+    // https://www.youtube.com/watch?v=e0Z0GQ8PJQo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=V3Nw6s9dSAw&ab_channel=NintendoMobile
+    MatersTactics: 2368, // 神軍師の書
 };
 
 const Support = {
