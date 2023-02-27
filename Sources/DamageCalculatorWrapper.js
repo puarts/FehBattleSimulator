@@ -9579,15 +9579,9 @@ class DamageCalculatorWrapper {
                         targetUnit.addAllSpur(2);
                         enemyUnit.addAllSpur(-2);
 
-                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
-
-                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
-                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
-                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
-                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                        let enemyBuffs = enemyUnit.getBuffsInCombat(targetUnit);
+                        targetUnit.addSpurs(...enemyBuffs);
+                        enemyUnit.addSpurs(...enemyBuffs.map(v => -v));
                     }
                     break;
                 case PassiveC.HumanVirtue2: {
