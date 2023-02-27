@@ -8888,10 +8888,7 @@ class DamageCalculatorWrapper {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveA.PartOfThePlan:
-                    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
-                    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
-                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
-                    enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                     break;
                 case Weapon.CrimeanScepter: {
                     let buffs = [];
@@ -9643,6 +9640,16 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+    }
+
+    __applyDebuffReverse(targetUnit, skillName) {
+        let name = skillName ? skillName : "弱化反転効果"
+        let spurs = targetUnit.debuffTotals.map(i => Math.abs(i) * 2);
+        if (this.isLogEnabled) {
+            let message = `${name}により攻+${spurs[0]}, 速+${spurs[1]}, 守+${spurs[2]}, 魔+${spurs[3]}`;
+            this.__writeDamageCalcDebugLog(message);
+        }
+        targetUnit.addSpurs(...spurs);
     }
 
     __isThereAllyIn2Spaces(targetUnit) {

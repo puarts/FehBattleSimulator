@@ -267,6 +267,8 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
         }
         break;
 }
+もしくは
+this.__applyDebuffReverse(targetUnit, "スキルorステータス名");
 
 弱化を受けていれば、戦闘中、敵の弱化の値だけ減少(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7-7で、戦闘中、攻撃-14となる)[弱化増幅]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
