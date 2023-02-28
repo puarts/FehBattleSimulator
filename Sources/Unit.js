@@ -2209,6 +2209,14 @@ class Unit extends BattleMapElement {
         }
         return this.resDebuff;
     }
+    get debuffTotals() {
+        return [
+            this.atkDebuffTotal,
+            this.spdDebuffTotal,
+            this.defDebuffTotal,
+            this.resDebuffTotal,
+        ];
+    }
 
     isMeleeWeaponType() {
         return isMeleeWeaponType(this.weaponType);

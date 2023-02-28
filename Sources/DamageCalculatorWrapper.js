@@ -8869,15 +8869,7 @@ class DamageCalculatorWrapper {
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
-            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
-            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
-            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
-            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`神軍師の策により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
-            targetUnit.atkSpur += atkAdd;
-            targetUnit.spdSpur += spdAdd;
-            targetUnit.defSpur += defAdd;
-            targetUnit.resSpur += resAdd;
+            this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -8888,10 +8880,7 @@ class DamageCalculatorWrapper {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveA.PartOfThePlan:
-                    enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
-                    enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
-                    enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
-                    enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                     break;
                 case Weapon.CrimeanScepter: {
                     let buffs = [];
@@ -8950,15 +8939,7 @@ class DamageCalculatorWrapper {
                 case Weapon.LanceOfHeroics:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                            let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
-                            let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
-                            let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
-                            let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-                            if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
-                            targetUnit.atkSpur += atkAdd;
-                            targetUnit.spdSpur += spdAdd;
-                            targetUnit.defSpur += defAdd;
-                            targetUnit.resSpur += resAdd;
+                            this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                         }
                     }
                     break;
@@ -9095,16 +9076,9 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.WingLeftedSpear:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
-
-                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
-                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
-                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
-                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit)
                     }
                     break;
                 case Weapon.HvitrvulturePlus:
@@ -9209,14 +9183,9 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.DivineSeaSpear:
-                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-
-                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
-                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
-                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 1, 0);
                     }
                     break;
                 case Weapon.PeachyParfaitPlus:
@@ -9467,17 +9436,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.ShinkenFalcion:
                 case Weapon.ChaosRagnell:
-                {
-                    let atkAdd = Math.abs(targetUnit.atkDebuffTotal) * 2;
-                    let spdAdd = Math.abs(targetUnit.spdDebuffTotal) * 2;
-                    let defAdd = Math.abs(targetUnit.defDebuffTotal) * 2;
-                    let resAdd = Math.abs(targetUnit.resDebuffTotal) * 2;
-                    if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${targetUnit.weaponInfo.name}により攻+${atkAdd}, 速+${spdAdd}, 守+${defAdd}, 魔+${resAdd}`);
-                    targetUnit.atkSpur += atkAdd;
-                    targetUnit.spdSpur += spdAdd;
-                    targetUnit.defSpur += defAdd;
-                    targetUnit.resSpur += resAdd;
-                }
+                    this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                     break;
                 case PassiveA.SpdDefIdeal3:
                     DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
@@ -9607,42 +9566,48 @@ class DamageCalculatorWrapper {
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         targetUnit.addAllSpur(2);
                         enemyUnit.addAllSpur(-2);
-
-                        targetUnit.atkSpur += enemyUnit.getAtkBuffInCombat(targetUnit);
-                        targetUnit.spdSpur += enemyUnit.getSpdBuffInCombat(targetUnit);
-                        targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
-                        targetUnit.resSpur += enemyUnit.getResBuffInCombat(targetUnit);
-
-                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
-                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
-                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
-                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit);
                     }
                     break;
                 case PassiveC.HumanVirtue2: {
-                    let atkMax = 0;
-                    let spdMax = 0;
-                    let defMax = 0;
-                    let resMax = 0;
+                    let maxBuffs = new Array(4).fill(0);
                     let buffTotals = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                        if (!isWeaponTypeBreathOrBeast(unit.weaponType) && !unit.hasStatusEffect(StatusEffectType.Panic)) {
-                            atkMax = Math.max(atkMax, unit.atkBuff);
-                            spdMax = Math.max(spdMax, unit.spdBuff);
-                            defMax = Math.max(defMax, unit.defBuff);
-                            resMax = Math.max(resMax, unit.resBuff);
+                        if (!isWeaponTypeBreathOrBeast(unit.weaponType) &&
+                            !unit.hasStatusEffect(StatusEffectType.Panic)) {
+                            let buffs = unit.buffs;
+                            maxBuffs = maxBuffs.map((v, i) => Math.max(v, buffs[i]));
                             buffTotals.push(unit.buffTotal);
                         }
                     }
-                    targetUnit.addSpurs(atkMax, spdMax, defMax, resMax);
+                    targetUnit.addSpurs(...maxBuffs);
 
                     buffTotals.sort((a, b) => b - a);
+                    // 周囲2マス以内の竜、獣以外の味方の強化の合計値が高い上位3人の強化の合計値(最大40)
                     let amount = Math.min(40, buffTotals.slice(0, 3).reduce((a, b) => a + b, 0));
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(amount / 100.0, enemyUnit);
                     break;
                 }
             }
         }
+    }
+
+    __applyBuffAbsorption(targetUnit, enemyUnit,
+                          atk=1, spd=1, def=1, res=1) {
+        let enemyBuffs = enemyUnit.getBuffsInCombat(targetUnit);
+        let enables = [atk, spd, def, res];
+        enemyBuffs = enemyBuffs.map((v, i) => v * enables[i]);
+        targetUnit.addSpurs(...enemyBuffs);
+        enemyUnit.addSpurs(...enemyBuffs.map(v => -v));
+    }
+
+    __applyDebuffReverse(targetUnit, skillName="弱化反転効果") {
+        let spurs = targetUnit.debuffTotals.map(i => Math.abs(i) * 2);
+        if (this.isLogEnabled) {
+            let message = `${skillName}により攻+${spurs[0]}, 速+${spurs[1]}, 守+${spurs[2]}, 魔+${spurs[3]}`;
+            this.__writeDamageCalcDebugLog(message);
+        }
+        targetUnit.addSpurs(...spurs);
     }
 
     __isThereAllyIn2Spaces(targetUnit) {
