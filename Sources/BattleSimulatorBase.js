@@ -3636,7 +3636,9 @@ class BattleSimmulatorBase {
             let incHtml = actualStatuses.map(toIncHtml).join(", ");
             html += `${incHtml}<br/>`;
 
-            html += '<hr>'
+            if (this.vm.isDebugMenuEnabled) {
+                html += `<hr>`;
+            }
 
             // 戦闘中ステータス
             html += `${statusHtml}<br/>`;
@@ -3645,13 +3647,19 @@ class BattleSimmulatorBase {
             let spurs = snapshot.getSpurs();
             let toSpurHtml = (v, i) => `${names[i]}${getIncHtml(v)}`;
             let spurHtml = spurs.map(toSpurHtml).join(", ");
-            html += `${spurHtml}`;
+            if (this.vm.isDebugMenuEnabled) {
+                html += `${spurHtml}`;
+            }
         } else {
             let zeroIncHtml = [0, 0, 0, 0].map((v, i) => `${names[i]}${v}`).join(", ");
             html += zeroIncHtml + '<br/>';
-            html += '<hr>'
+            if (this.vm.isDebugMenuEnabled) {
+                html += `<hr>`;
+            }
             html += `${statusHtml}<br/>`;
-            html += zeroIncHtml;
+            if (this.vm.isDebugMenuEnabled) {
+                html += zeroIncHtml;
+            }
         }
         return html;
     }
