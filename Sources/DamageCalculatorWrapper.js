@@ -14401,7 +14401,7 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur += 6;
                             break;
                         case Weapon.FlowerOfJoy:
-                            if (!targetUnit.isWeaponRefined) {
+                            if (!unit.isWeaponRefined) {
                                 // <通常効果>
                                 targetUnit.atkSpur += 3;
                                 targetUnit.spdSpur += 3;
