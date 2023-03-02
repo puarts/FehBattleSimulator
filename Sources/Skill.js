@@ -2684,6 +2684,7 @@ const PassiveC = {
     HumanVirtue2: 2124, // 人の可能性を!・承
     ImpenetrableDark: 1178, // 見通せぬ深き暗闇
     MilaNoHaguruma: 1352, // ミラの歯車
+    MilasTurnwheel2: 2372, // ミラの歯車・神
     InevitableDeath: 1420, // 死からは逃れられぬ
     WingsOfLight: 1622, // 光輝く翼
     OrdersRestraint: 1724, // 束縛、秩序、安定

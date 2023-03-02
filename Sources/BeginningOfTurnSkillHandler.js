@@ -1156,8 +1156,22 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.MilaNoHaguruma:
                 this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => this.__getStatusEvalUnit(unit).getDefInPrecombat() < this.__getStatusEvalUnit(skillOwner).getDefInPrecombat(),
+                    unit =>
+                        this.__getStatusEvalUnit(unit).getDefInPrecombat() <
+                        this.__getStatusEvalUnit(skillOwner).getDefInPrecombat(),
                     unit => unit.reserveToAddStatusEffect(StatusEffectType.Isolation));
+                break;
+            case PassiveC.MilasTurnwheel2:
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                this.__applySkillToEnemiesInCross(skillOwner,
+                    unit =>
+                        this.__getStatusEvalUnit(unit).getDefInPrecombat() <
+                        this.__getStatusEvalUnit(skillOwner).getDefInPrecombat(),
+                    unit => {
+                        unit.reserveToAddStatusEffect(StatusEffectType.Isolation);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                );
                 break;
             case Weapon.Gjallarbru:
                 if (!skillOwner.isWeaponRefined) {
