@@ -3586,53 +3586,81 @@ class BattleSimmulatorBase {
      * @param  {Number} def
      * @param  {Number} res
      */
-    __createDamageCalcSummaryHtml(unit, enemyUnit, preCombatDamage, damage, attackCount,
-        atk, spd, def, res
-    ) {
-        let html = "HP: " + unit.hp + " → ";
-        if (unit.restHp == 0) {
-            html += "<span style='color:#ffaaaa'>" + unit.restHp + "</span><br/>";
-        }
-        else {
-            html += unit.restHp + "<br/>";
-        }
+    __createDamageCalcSummaryHtml(unit, enemyUnit,
+                                  preCombatDamage, damage, attackCount,
+                                  atk, spd, def, res) {
+        // ダメージに関するサマリー
+        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damage, attackCount);
+        // ステータスやバフに関するサマリー
+        html += this.__createStatusSummaryHtml(unit, atk, spd, def, res);
 
+        return html;
+    }
+
+    __createDamageSummaryHtml(unit, preCombatDamage, damage, attackCount) {
+        // HPリザルト
+        let restHpHtml = unit.restHp == 0 ?
+            `<span style='color:#ffaaaa'>${unit.restHp}</span>` :
+            unit.restHp;
+        let html = `HP: ${unit.hp} → ${restHpHtml}<br/>`;
+
+        // 奥義カウント、ダメージ表示
+        let specialHtml = `<span style="color: pink;">${unit.specialCount}</span>`;
+        let damageHtml = "ー";
         if (attackCount > 0) {
-            html += `奥<span style="color: pink;">${unit.specialCount}</span>  攻撃: `;
-            if (preCombatDamage > 0) {
-                html += `${preCombatDamage}+`;
-            }
-            if (unit.battleContext.isEffectiveToOpponent) {
-                html += `<span style='color:#00FF00'>${damage}</span>`;
-            } else {
-                html += `${damage}`;
-            }
+            let precombatHtml = preCombatDamage > 0 ? `${preCombatDamage}+` : "";
+            // 特効は緑表示にする
+            let combatHtml = unit.battleContext.isEffectiveToOpponent ?
+                `<span style='color:#00FF00'>${damage}</span>` :
+                `${damage}`;
             if (attackCount > 1) {
-                html += "×" + attackCount;
+                combatHtml += `×${attackCount}`;
             }
-            html += "<br/>";
-        } else {
-            html += "-<br/>"
+            damageHtml = `${precombatHtml}${combatHtml}`;
         }
-        html += `(攻${atk},速${spd},守${def},魔${res})<br/>`;
-        let snapshot = unit.snapshot;
-        if (snapshot != null) {
-            let enemySnapshot = enemyUnit.snapshot;
-            let atkInc = snapshot.getAtkIncrementInCombat(enemySnapshot);
-            let spdInc = snapshot.getSpdIncrementInCombat(enemySnapshot);
-            let defInc = snapshot.getDefIncrementInCombat(enemySnapshot);
-            let resInc = snapshot.getResIncrementInCombat(enemySnapshot);
-            html += `(攻${getIncHtml(atkInc)},`
-                + `速${getIncHtml(spdInc)},`
-                + `守${getIncHtml(defInc)},`
-                + `魔${getIncHtml(resInc)})`;
-        } else {
-            html += `(攻${0},`
-                + `速${0},`
-                + `守${0},`
-                + `魔${0})`;
-        }
+        html += `奥${specialHtml}  攻撃: ${damageHtml}<br/>`;
+        return html;
+    }
 
+    __createStatusSummaryHtml(unit, atk, spd, def, res) {
+        let html = "";
+        // 増加分、実際の戦闘中ステータス、紋章バフ表示
+        let snapshot = unit.snapshot;
+        let names = ['攻', '速', '防', '魔'];
+        let actualStatuses = [atk, spd, def, res];
+        let statusHtml = actualStatuses.map((v, i) => `${names[i]}${v}`).join(", ");
+        if (snapshot != null) {
+            // 増加分
+            let displayStatuses = snapshot.getStatusesInPrecombat();
+            let toIncHtml = (v, i) => `${names[i]}${getIncHtml(v - displayStatuses[i])}`;
+            let incHtml = actualStatuses.map(toIncHtml).join(", ");
+            html += `${incHtml}<br/>`;
+
+            if (this.vm.isDebugMenuEnabled) {
+                html += `<hr>`;
+            }
+
+            // 戦闘中ステータス
+            html += `${statusHtml}<br/>`;
+
+            // 紋章バフ
+            let spurs = snapshot.getSpurs();
+            let toSpurHtml = (v, i) => `${names[i]}${getIncHtml(v)}`;
+            let spurHtml = spurs.map(toSpurHtml).join(", ");
+            if (this.vm.isDebugMenuEnabled) {
+                html += `${spurHtml}`;
+            }
+        } else {
+            let zeroIncHtml = [0, 0, 0, 0].map((v, i) => `${names[i]}${v}`).join(", ");
+            html += zeroIncHtml + '<br/>';
+            if (this.vm.isDebugMenuEnabled) {
+                html += `<hr>`;
+            }
+            html += `${statusHtml}<br/>`;
+            if (this.vm.isDebugMenuEnabled) {
+                html += zeroIncHtml;
+            }
+        }
         return html;
     }
 

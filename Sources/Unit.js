@@ -2380,6 +2380,9 @@ class Unit extends BattleMapElement {
         this.defSpur += def;
         this.resSpur += res;
     }
+    getSpurs() {
+        return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];
+    }
 
     get isHarmonicHero() {
         return this.heroInfo != null
