@@ -1251,6 +1251,9 @@ class DamageCalculatorWrapper {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
                         break;
+                    case PassiveB.SoulOfZofia2:
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                        break;
                 }
             }
         }
@@ -2165,6 +2168,14 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        this._applySkillEffectForUnitFuncDict[PassiveB.SoulOfZofia2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.spdSpur -= 5;
+                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.PartOfThePlan] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-8, -8, 0, -8);

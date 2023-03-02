@@ -2275,6 +2275,7 @@ const PassiveB = {
     ShisyaNoChojiriwo: 1114, // 死者の帳尻を
     YunesSasayaki: 976, // ユンヌの囁き
     SphiasSoul: 1076, // ソフィアの魂
+    SoulOfZofia2: 2371, // ソフィアの魂・承
     SDrink: 663, // Sドリンク
     BeokuNoKago: 656, // ベオクの加護
 
