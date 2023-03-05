@@ -7964,6 +7964,21 @@ class BattleSimmulatorBase {
         targetUnit.isActionDone = false;
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.NightmaresEgg:
+                    targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                        if (unit === skillOwnerUnit) { continue; }
+                        unit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                    }
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
+                        if (skillOwnerUnit.posX === unit.posX ||
+                            skillOwnerUnit.posY === unit.posY ||
+                            targetUnit.posX === unit.posX ||
+                            targetUnit.posY === unit.posY) {
+                            unit.addStatusEffect(StatusEffectType.Panic);
+                        }
+                    }
+                    break;
                 case Weapon.SevenfoldGifts:
                     targetUnit.applyAllBuff(6);
                     targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus)

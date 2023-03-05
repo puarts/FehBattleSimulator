@@ -1555,6 +1555,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=fzSP8Axdgh8
     // https://www.youtube.com/watch?v=EMdqOrbGWVA
     BowOfRepose: 2373, // うたた寝の春の弓
+    NightmaresEgg: 2375, // 春に微睡む悪夢の卵
 };
 
 const Support = {
