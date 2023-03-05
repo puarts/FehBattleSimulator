@@ -2168,13 +2168,15 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
-        // this._applySkillEffectForUnitFuncDict[Skill] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.EscapeRoute4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addAtkSpdSpurs(-3);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BowOfRepose] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage <= 99) {
                 targetUnit.addAllSpur(5);
                 let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
                 let amount = Math.min(dist, 4) * 2 + 3;
-                console.log(`aomunt: ${amount}`);
                 enemyUnit.addSpdDefSpurs(-amount);
                 if (dist >= 1) {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);

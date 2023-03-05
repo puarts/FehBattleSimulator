@@ -2380,6 +2380,10 @@ class Unit extends BattleMapElement {
         this.defSpur += def;
         this.resSpur += res;
     }
+    addAtkSpdSpurs(atk, spd = atk) {
+        this.atkSpur += atk;
+        this.spdSpur += spd;
+    }
     addSpdDefSpurs(spd, def = spd) {
         this.spdSpur += spd;
         this.defSpur += def;
@@ -5228,6 +5232,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case PassiveB.EscapeRoute4:
                 case Weapon.FloridKnifePlus:
                 case Weapon.BowOfTwelve:
                 case PassiveB.MoonlitBangleF:

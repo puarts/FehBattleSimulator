@@ -2160,7 +2160,22 @@ class BattleMap {
                         }
                     }
                     break;
-
+                case PassiveB.EscapeRoute4:
+                    if (unit.hpPercentage <= 60) {
+                        for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                    if (unit.hpPercentage <= 99) {
+                        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)) {
+                            for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                    break;
                 case PassiveB.KyokugiHiKo1:
                 case PassiveB.KyokugiHiKo2:
                 case PassiveB.KyokugiHiKo3:

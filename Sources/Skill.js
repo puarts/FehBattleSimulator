@@ -2089,6 +2089,7 @@ const PassiveB = {
     Kyuen2: 1121, // 救援の行路2
     Kyuen3: 594, // 救援の行路3
     Ridatsu3: 595, // 離脱の行路3
+    EscapeRoute4: 2374, // 離脱の行路4
     HentaiHiko1: 1443, // 編隊飛行1
     HentaiHiko2: 1444, // 編隊飛行2
     HentaiHiko3: 635, // 編隊飛行3
@@ -3343,6 +3344,7 @@ TeleportationSkillDict[PassiveB.TeniNoKona] = 0;
 TeleportationSkillDict[PassiveB.Kyuen2] = 0;
 TeleportationSkillDict[PassiveB.Kyuen3] = 0;
 TeleportationSkillDict[PassiveB.Ridatsu3] = 0;
+TeleportationSkillDict[PassiveB.EscapeRoute4] = 0;
 TeleportationSkillDict[PassiveB.KyokugiHiKo1] = 0;
 TeleportationSkillDict[PassiveB.KyokugiHiKo2] = 0;
 TeleportationSkillDict[PassiveB.KyokugiHiKo3] = 0;

@@ -6205,6 +6205,11 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.EscapeRoute4:
+                    if (unit.hpPercentage <= 99) {
+                        return true;
+                    }
+                    break;
                 case Weapon.Queenslance:
                     if (unit.hasPositiveStatusEffect()) {
                         return true;
