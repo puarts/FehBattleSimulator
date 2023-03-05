@@ -569,6 +569,7 @@ class BattleContext {
 
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(奥義発動時)
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
 
         // 敵は反撃不可
         this.invalidatesCounterattack = false;
@@ -623,6 +624,7 @@ class BattleContext {
 
         // 「敵から攻撃を受ける際に発動する奥義」が発動できないかどうか
         this.preventedDefenderSpecial = false;
+        this.preventedDefenderSpecialPerAttack = false;
 
         // 奥義以外の祈りが発動したかどうか
         this.isMiracleWithoutSpecialActivated = false;
@@ -754,6 +756,7 @@ class BattleContext {
 
         this.invalidatesDamageReductionExceptSpecial = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
         this.healedHpByAttackPerAttack = 0;
@@ -776,6 +779,7 @@ class BattleContext {
         this.isOnDefensiveTile = false;
         this.preventedAttackerSpecial = false;
         this.preventedDefenderSpecial = false;
+        this.preventedDefenderSpecialPerAttack = false;
         this.isMiracleWithoutSpecialActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;

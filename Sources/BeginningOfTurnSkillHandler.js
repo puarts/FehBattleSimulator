@@ -147,6 +147,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.SisterlyWarAxe:
+                if (this.isOddTurn) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                break;
             case Weapon.BowOfRepose:
                 if (skillOwner.battleContext.restHpPercentage === 100) {
                     let found = false;

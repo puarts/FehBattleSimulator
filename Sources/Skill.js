@@ -1557,6 +1557,7 @@ const Weapon = {
     BowOfRepose: 2373, // うたた寝の春の弓
     NightmaresEgg: 2375, // 春に微睡む悪夢の卵
     BunnysEggPlus: 2377, // 白兎の卵+
+    SisterlyWarAxe: 2379, // 想い宿す妹達の重斧
 };
 
 const Support = {

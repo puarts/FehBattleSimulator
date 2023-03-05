@@ -2169,7 +2169,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this._applySkillEffectForUnitFuncDict[Weapon.BunnysEggPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.SisterlyWarAxe] = (targetUnit) => {
+            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAtkSpdSpurs(6);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BunnysEggPlus] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(5);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
@@ -8045,6 +8051,7 @@ class DamageCalculatorWrapper {
                         targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
                     }
                     break;
+                case Weapon.SisterlyWarAxe:
                 case Weapon.DrybladeLance:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
