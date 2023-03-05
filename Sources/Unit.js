@@ -649,6 +649,9 @@ class BattleContext {
 
         // 自分と戦闘相手以外の自軍と敵軍のスキルを無効化
         this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
+
+        // 歌う・踊るを使用したどうか
+        this.isRefreshActivated = false;
     }
 
     invalidateFollowupAttackSkills() {
@@ -782,6 +785,7 @@ class BattleContext {
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;
         this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
+        this.isRefreshActivated = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -2980,6 +2984,11 @@ class Unit extends BattleMapElement {
         this.applySpdBuff(spd);
         this.applyDefBuff(def);
         this.applyResBuff(res);
+    }
+
+    applyAtkSpdBuffs(atk, spd = atk) {
+        this.applyAtkBuff(atk);
+        this.applySpdBuff(spd);
     }
 
     reserveToApplyAtkDebuff(amount) {
@@ -5232,6 +5241,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case PassiveB.FirestormDance3:
                 case PassiveB.EscapeRoute4:
                 case Weapon.FloridKnifePlus:
                 case Weapon.BowOfTwelve:

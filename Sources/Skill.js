@@ -2139,6 +2139,7 @@ const PassiveB = {
 
     KyokoNoWakuran3: 896, // 惑乱3
 
+    // 舞い
     BlazeDance1: 1278, // 業火の舞い1
     BlazeDance2: 1279, // 業火の舞い2
     BlazeDance3: 638, // 業火の舞い3
@@ -2152,6 +2153,7 @@ const PassiveB = {
     TorrentDance2: 1242, // 静水の舞い2
     TorrentDance3: 762, // 静水の舞い3
     FirestormDance2: 641, // 業火疾風の舞い2
+    FirestormDance3: 2376, // 業火疾風の舞い3
     CalderaDance1: 1240, // 業火大地の舞い1
     CalderaDance2: 987, // 業火大地の舞い2
     DelugeDance2: 644, // 疾風静水の舞い2

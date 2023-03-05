@@ -6205,6 +6205,11 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FirestormDance3:
+                    if (unit.battleContext.isRefreshActivated) {
+                        return true;
+                    }
+                    break;
                 case PassiveB.EscapeRoute4:
                     if (unit.hpPercentage <= 99) {
                         return true;
@@ -8097,6 +8102,10 @@ class BattleSimmulatorBase {
                 case PassiveB.TorrentDance2: targetUnit.applyResBuff(4); break;
                 case PassiveB.TorrentDance3: targetUnit.applyResBuff(5); break;
                 case PassiveB.FirestormDance2: targetUnit.applyAtkBuff(3); targetUnit.applySpdBuff(3); break;
+                case PassiveB.FirestormDance3:
+                    targetUnit.applyAtkSpdBuffs(6);
+                    targetUnit.addStatusEffect(StatusEffectType.Desperation);
+                    break;
                 case PassiveB.CalderaDance1: targetUnit.applyAtkBuff(2); targetUnit.applyDefBuff(3); break;
                 case PassiveB.CalderaDance2: targetUnit.applyAtkBuff(3); targetUnit.applyDefBuff(4); break;
                 case PassiveB.FirefloodDance2: targetUnit.applyAtkBuff(3); targetUnit.applyResBuff(4); break;
@@ -8492,75 +8501,79 @@ class BattleSimmulatorBase {
         }
 
         if (this.__applySupportSkill(supporterUnit, targetUnit)) {
+            if (supporterUnit.supportInfo.assistType === AssistType.Refresh) {
+                supporterUnit.battleContext.isRefreshActivated = true;
+            }
             if (!supporterUnit.isActionDone) {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
             }
-            switch (supporterUnit.weapon) {
-                case Weapon.JollyJadeLance:
-                    if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
-                        supporterUnit.applyAtkBuff(6);
-                        supporterUnit.applySpdBuff(6);
-                        supporterUnit.isActionDone = false;
-                        supporterUnit.isOneTimeActionActivatedForWeapon = true;
-                    }
-            }
-            switch (supporterUnit.support) {
-                case Support.DragonsDance:
-                    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
-                    if (g_appData.globalBattleContext.currentTurn >= 2 &&
-                        supporterUnit.restSupportSkillAvailableTurn === 0) {
-                        this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
-                        supporterUnit.isActionDone = false;
-                        supporterUnit.applyBuffs(6, 6, 0, 0);
-                        supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                        supporterUnit.restSupportSkillAvailableTurn = 3;
+            for (let skillId of supporterUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.JollyJadeLance:
+                        if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                            supporterUnit.applyAtkBuff(6);
+                            supporterUnit.applySpdBuff(6);
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                        }
+                        break;
+                    case Support.DragonsDance:
                         this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
-                    } else {
-                        this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
-                    }
-                    break;
-                case Support.AFateChanged:
-                    if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                        supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                        supporterUnit.isActionDone = false;
-                        supporterUnit.isOneTimeActionActivatedForSupport = true;
-                    }
-                    for (let effect of targetUnit.getPositiveStatusEffects()) {
-                        supporterUnit.addStatusEffect(effect);
-                    }
-                    if (!targetUnit.hasStatusEffect(StatusEffectType.Panic)) {
-                        supporterUnit.applyAtkBuff(targetUnit.atkBuff);
-                        supporterUnit.applySpdBuff(targetUnit.spdBuff);
-                        supporterUnit.applyDefBuff(targetUnit.defBuff);
-                        supporterUnit.applyResBuff(targetUnit.resBuff);
-                    }
-                    break;
-                case Support.ToChangeFate:
-                    if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                        supporterUnit.applyAtkBuff(6);
-                        supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                        supporterUnit.isActionDone = false;
-                        supporterUnit.isOneTimeActionActivatedForSupport = true;
-                    }
-                    break;
-                case Support.FutureVision:
-                case Support.FutureVision2:
-                    if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                        supporterUnit.isActionDone = false;
-                        supporterUnit.isOneTimeActionActivatedForSupport = true;
-                    }
-                    if (supporterUnit.support === Support.FutureVision2) {
-                        for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
-                            unit.applyAtkDebuff(-7);
-                            unit.applyDefDebuff(-7);
+                        if (g_appData.globalBattleContext.currentTurn >= 2 &&
+                            supporterUnit.restSupportSkillAvailableTurn === 0) {
+                            this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.applyBuffs(6, 6, 0, 0);
+                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                            supporterUnit.restSupportSkillAvailableTurn = 3;
+                            this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+                        } else {
+                            this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
                         }
-                        for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
-                            unit.applyAtkDebuff(-7);
-                            unit.applyDefDebuff(-7);
+                        break;
+                    case Support.AFateChanged:
+                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForSupport = true;
                         }
-                    }
-                    break;
+                        for (let effect of targetUnit.getPositiveStatusEffects()) {
+                            supporterUnit.addStatusEffect(effect);
+                        }
+                        if (!targetUnit.hasStatusEffect(StatusEffectType.Panic)) {
+                            supporterUnit.applyAtkBuff(targetUnit.atkBuff);
+                            supporterUnit.applySpdBuff(targetUnit.spdBuff);
+                            supporterUnit.applyDefBuff(targetUnit.defBuff);
+                            supporterUnit.applyResBuff(targetUnit.resBuff);
+                        }
+                        break;
+                    case Support.ToChangeFate:
+                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                            supporterUnit.applyAtkBuff(6);
+                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForSupport = true;
+                        }
+                        break;
+                    case Support.FutureVision:
+                    case Support.FutureVision2:
+                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForSupport = true;
+                        }
+                        if (supporterUnit.support === Support.FutureVision2) {
+                            for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
+                                unit.applyAtkDebuff(-7);
+                                unit.applyDefDebuff(-7);
+                            }
+                            for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                                unit.applyAtkDebuff(-7);
+                                unit.applyDefDebuff(-7);
+                            }
+                        }
+                        break;
+                }
             }
 
             // 再移動の評価
