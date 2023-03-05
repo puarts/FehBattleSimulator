@@ -2186,10 +2186,10 @@ class DamageCalculatorWrapper {
                 targetUnit.addAtkSpdSpurs(6);
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveB.EscapeRoute4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.EscapeRoute4] = (targetUnit, enemyUnit) => {
             enemyUnit.addAtkSpdSpurs(-3);
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.BowOfRepose] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.BowOfRepose] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage <= 99) {
                 targetUnit.addAllSpur(5);
                 let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
