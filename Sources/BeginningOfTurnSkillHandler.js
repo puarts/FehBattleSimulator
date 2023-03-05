@@ -147,6 +147,18 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.BowOfRepose:
+                if (skillOwner.battleContext.restHpPercentage === 100) {
+                    let found = false;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        found = true;
+                        unit.reserveTakeDamage(1);
+                    }
+                    if (found) {
+                        skillOwner.reserveTakeDamage(1);
+                    }
+                }
+                break;
             case Weapon.MatersTactics:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.GrandStrategy);

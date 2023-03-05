@@ -2168,6 +2168,23 @@ class DamageCalculatorWrapper {
 
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
+        // this._applySkillEffectForUnitFuncDict[Skill] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.BowOfRepose] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.addAllSpur(5);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = Math.min(dist, 4) * 2 + 3;
+                console.log(`aomunt: ${amount}`);
+                enemyUnit.addSpdDefSpurs(-amount);
+                if (dist >= 1) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+                if (dist >= 2) {
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SoulOfZofia2] = (targetUnit, enemyUnit) => {
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -12213,6 +12230,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BowOfRepose:
+                    if (targetUnit.battleContext.restHpPercentage <= 99) {
+                        let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                        if (dist >= 2) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.MasterBow:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
