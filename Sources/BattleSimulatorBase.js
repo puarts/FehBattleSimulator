@@ -1021,6 +1021,17 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedKarla: {
+                let targetOrigins = duoUnit.heroInfo.origin.split('|');
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                        unit.reduceSpecialCount(2);
+                        unit.applyAtkBuff(6);
+                        unit.addStatusEffect(StatusEffectType.ResonantBlades);
+                    }
+                }
+            }
+                break;
             case Hero.HarmonizedLinde:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Dodge);
