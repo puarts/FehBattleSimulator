@@ -4889,8 +4889,24 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.healedHpByAttack += 7;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Taiyo] = (targetUnit) => {
-            targetUnit.battleContext.healedHpByAttack += 10;
+        this._applySkillEffectForUnitFuncDict[Weapon.Taiyo] = (targetUnit, enemyUnit) => {
+            let amount = targetUnit.isWeaponRefined ? 14 : 10;
+            targetUnit.battleContext.healedHpByAttack += amount;
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    enemyUnit.addAtkDefSpurs(-5);
+                    targetUnit.battleContext.nullInvalidatesHealRatio = 0.5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        enemyUnit.addAtkDefSpurs(-5);
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                        if (targetUnit.battleContext.restHpPercentage >= 50) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
+                }
+            }
         };
         // 迫撃
         {
