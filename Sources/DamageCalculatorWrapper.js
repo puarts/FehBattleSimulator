@@ -8664,8 +8664,8 @@ class DamageCalculatorWrapper {
                     switch (skillId) {
                         case Weapon.DaichiBoshiNoBreath:
                             if (allyUnit.isWeaponSpecialRefined) {
-                                if (Math.abs(targetUnit.posX - unit.posX) <= 3 &&
-                                    Math.abs(targetUnit.posY - unit.posY) <= 3) {
+                                if (Math.abs(targetUnit.posX - allyUnit.posX) <= 3 &&
+                                    Math.abs(targetUnit.posY - allyUnit.posY) <= 3) {
                                     targetUnit.battleContext.invalidatesAtkBuff = true;
                                 }
                             }
