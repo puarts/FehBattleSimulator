@@ -2174,7 +2174,21 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this._applySkillEffectForUnitFuncDict[Weapon.NewFoxkitFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.TenteiNoKen] = (targetUnit, enemyUnit) => {
+            enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.NewFoxkitFang] = (targetUnit, enemyUnit) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.initiatesCombat ||
                     enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -7758,7 +7772,6 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[PassiveB.MikiriTsuigeki3] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.SphiasSoul] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.HakutoshinNoNinjin] = func;
-            this._applySkillEffectForUnitFuncDict[Weapon.TenteiNoKen] = func;
         }
         {
             let func = (targetUnit) => {
