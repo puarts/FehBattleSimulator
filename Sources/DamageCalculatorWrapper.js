@@ -2174,6 +2174,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.TenseiAngel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(5);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAtkSpdSpurs(5);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AsherasChosen] = (targetUnit, _enemyUnit, calcPotentialDamage) => {
             if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false) {
                 targetUnit.atkSpur += 6;
@@ -11272,15 +11284,18 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.TenseiAngel:
-                    if (atkUnit.battleContext.initiatesCombat) {
-                        let value = 0;
-                        if (isPrecombat) {
-                            value = defUnit.getResInPrecombat();
+                    if (!atkUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (atkUnit.battleContext.initiatesCombat) {
+                            let value = isPrecombat ? defUnit.getResInPrecombat() : defUnit.getResInCombat(atkUnit);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                         }
-                        else {
-                            value = defUnit.getResInCombat(atkUnit);
+                    } else {
+                        // <錬成効果>
+                        if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                            let value = isPrecombat ? defUnit.getResInPrecombat() : defUnit.getResInCombat(atkUnit);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                         }
-                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                     }
                     break;
                 case Weapon.NewFoxkitFang:

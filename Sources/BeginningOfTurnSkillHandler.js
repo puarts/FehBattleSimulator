@@ -147,6 +147,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.TenseiAngel:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    }
+                    if (skillOwner.isSpecialCountMax) {
+                        skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Weapon.SisterlyWarAxe:
                 if (this.isOddTurn) {
                     skillOwner.reduceSpecialCount(2);
