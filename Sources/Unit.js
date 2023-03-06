@@ -4727,6 +4727,14 @@ class Unit extends BattleMapElement {
         this.updateStatusBySkillsExceptWeapon();
 
         switch (this.weapon) {
+            case Weapon.DaichiBoshiNoBreath:
+                if (this.isWeaponSpecialRefined) {
+                    this.atkWithSkills += 4;
+                    this.spdWithSkills += 4;
+                    this.defWithSkills += 4;
+                    this.resWithSkills += 4;
+                }
+                break;
             case Weapon.SyunsenAiraNoKen:
                 if (this.isWeaponRefined) {
                     this.atkWithSkills += 3;

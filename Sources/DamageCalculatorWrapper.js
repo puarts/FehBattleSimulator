@@ -8584,6 +8584,24 @@ class DamageCalculatorWrapper {
                     }
                 }
             }
+
+            // その他の範囲
+            // 7x7
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                if (feudFunc != null && feudFunc(allyUnit)) continue;
+                for (let skillId of allyUnit.enumerateSkills()) {
+                    switch (skillId) {
+                        case Weapon.DaichiBoshiNoBreath:
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (Math.abs(targetUnit.posX - unit.posX) <= 3 &&
+                                    Math.abs(targetUnit.posY - unit.posY) <= 3) {
+                                    targetUnit.battleContext.invalidatesAtkBuff = true;
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
         }
     }
 
@@ -13541,7 +13559,7 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
+            for (let skillId of targetUnit.enumerateSkills()) {
                 if (skillId === NoneValue) { continue; }
                 switch (skillId) {
                     case PassiveA.AtkSpdBond4:
@@ -14407,7 +14425,8 @@ class DamageCalculatorWrapper {
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DaichiBoshiNoBreath: {
-                            targetUnit.addAllSpur(2);
+                            let amount = unit.isWeaponRefined ? 4 : 2;
+                            targetUnit.addAllSpur(amount);
                         }
                             break;
                     }

@@ -23,6 +23,14 @@ if (targetUnit.isWeaponRefined) {
     }
 }
 
+ステータスアップ
+updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects = true, isPairUpBoostsEnabled = false) {
+    // 錬成していれば攻撃+3
+    if (this.isWeaponRefined) {
+        this.atkWithSkills += 3;
+    }
+}
+
 化身状態なら
 if (targetUnit.isTransformed) {}
 
