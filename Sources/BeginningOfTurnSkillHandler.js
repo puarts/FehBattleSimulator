@@ -147,6 +147,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.TenseiAngel:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    }
+                    if (skillOwner.isSpecialCountMax) {
+                        skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Weapon.SisterlyWarAxe:
                 if (this.isOddTurn) {
                     skillOwner.reduceSpecialCount(2);
@@ -1314,14 +1324,16 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.Merikuru:
-                if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= 50) {
+            case Weapon.Merikuru: {
+                let refined = skillOwner.isWeaponRefined;
+                if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= refined ? 25 : 50) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         if (isPhysicalWeaponType(unit.weaponType)) {
-                            unit.applyAllBuff(4);
+                            unit.applyAllBuff(refined ? 6 : 4);
                         }
                     }
                 }
+            }
                 break;
             case Weapon.HyosyoNoBreath:
                 this.__applyHyosyoNoBreath(skillOwner);

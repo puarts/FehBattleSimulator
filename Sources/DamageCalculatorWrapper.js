@@ -451,6 +451,11 @@ class DamageCalculatorWrapper {
         self.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
         // });
 
+        // 暗闘の対象外になる周囲からのスキル効果
+        // 主に戦闘外の効果。味方の存在などで発動するスキルも書いて良い（ただし大抵の場合他の場所で書ける）
+        self.__applySkillEffectFromAlliesExcludedFromFeud(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectFromAlliesExcludedFromFeud(defUnit, atkUnit, calcPotentialDamage);
+
         // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
         // 1回の攻撃の攻撃回数を設定
         self.__setAttackCount(atkUnit, defUnit);
@@ -2169,7 +2174,93 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this._applySkillEffectForUnitFuncDict[Weapon.HaresLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.Merikuru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TenteiNoKen] = (targetUnit, enemyUnit) => {
+            enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.NewFoxkitFang] = (targetUnit, enemyUnit) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        if (targetUnit.isTransformed) {
+                            enemyUnit.addAllSpur(-4);
+                        }
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TenseiAngel] = (targetUnit) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(5);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAtkSpdSpurs(5);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AsherasChosen] = (targetUnit, _enemyUnit, calcPotentialDamage) => {
+            if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false) {
+                targetUnit.atkSpur += 6;
+                targetUnit.defSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AsherasChosenPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (calcPotentialDamage ||
+                this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(9, 0, 9, 9);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DaichiBoshiNoBreath] = (targetUnit) => {
+            if (targetUnit.isWeaponRefined) {
+                let count = 0;
+                for (let unit of self.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    // in 7x7
+                    if (Math.abs(targetUnit.posX - unit.posX) <= 3 &&
+                        Math.abs(targetUnit.posY - unit.posY) <= 3) {
+                        count++;
+                    }
+                }
+                let amount = Math.min(count, 6);
+                targetUnit.addAllSpur(amount);
+                if (targetUnit.isWeaponSpecialRefined && count >= 1) {
+                    targetUnit.battleContext.invalidatesAtkBuff = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HaresLancePlus] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkDefSpurs(5);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
@@ -4810,8 +4901,24 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.healedHpByAttack += 7;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Taiyo] = (targetUnit) => {
-            targetUnit.battleContext.healedHpByAttack += 10;
+        this._applySkillEffectForUnitFuncDict[Weapon.Taiyo] = (targetUnit, enemyUnit) => {
+            let amount = targetUnit.isWeaponRefined ? 14 : 10;
+            targetUnit.battleContext.healedHpByAttack += amount;
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    enemyUnit.addAtkDefSpurs(-5);
+                    targetUnit.battleContext.nullInvalidatesHealRatio = 0.5;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        enemyUnit.addAtkDefSpurs(-5);
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                        if (targetUnit.battleContext.restHpPercentage >= 50) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
+                }
+            }
         };
         // 迫撃
         {
@@ -7693,7 +7800,6 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[PassiveB.MikiriTsuigeki3] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.SphiasSoul] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.HakutoshinNoNinjin] = func;
-            this._applySkillEffectForUnitFuncDict[Weapon.TenteiNoKen] = func;
         }
         {
             let func = (targetUnit) => {
@@ -8550,44 +8656,48 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            // 周囲3マス以内
-            for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+            // その他の範囲
+            // 7x7
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                 if (feudFunc != null && feudFunc(allyUnit)) continue;
-                for (let skill of allyUnit.enumerateSkills()) {
-                    switch (skill) {
-                        case Weapon.JoyousTome:
-                            targetUnit.battleContext.healedHpAfterCombat += 7;
-                            break;
-                        case Weapon.AchimenesFurl: {
-                            let types = new Set();
-                            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
-                                types.add(otherUnit.moveType);
+                for (let skillId of allyUnit.enumerateSkills()) {
+                    switch (skillId) {
+                        case Weapon.DaichiBoshiNoBreath:
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (Math.abs(targetUnit.posX - allyUnit.posX) <= 3 &&
+                                    Math.abs(targetUnit.posY - allyUnit.posY) <= 3) {
+                                    targetUnit.battleContext.invalidatesAtkBuff = true;
+                                }
                             }
-                            if (types.size >= 3) {
-                                targetUnit.battleContext.healedHpByAttack += 5;
-                            }
-                        }
                             break;
                     }
                 }
             }
         }
+    }
 
-        for (let skillId of targetUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveA.AsherasChosen:
-                    if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false) {
-                        targetUnit.atkSpur += 6;
-                        targetUnit.defSpur += 6;
+    __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (calcPotentialDamage) {
+            return;
+        }
+        // 周囲3マス以内
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+            for (let skill of allyUnit.enumerateSkills()) {
+                switch (skill) {
+                    case Weapon.JoyousTome:
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                        break;
+                    case Weapon.AchimenesFurl: {
+                        let types = new Set();
+                        for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
+                            types.add(otherUnit.moveType);
+                        }
+                        if (types.size >= 3) {
+                            targetUnit.battleContext.healedHpByAttack += 5;
+                        }
                     }
-                    break;
-                case PassiveA.AsherasChosenPlus:
-                    if (calcPotentialDamage ||
-                        this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false ||
-                        enemyUnit.battleContext.restHpPercentage >= 75) {
-                        targetUnit.addSpurs(9, 0, 9, 9);
-                    }
-                    break;
+                        break;
+                }
             }
         }
     }
@@ -8933,6 +9043,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Merikuru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+                        targetUnit.addSpurs(...amounts);
+                    }
+                    break;
                 case PassiveA.PartOfThePlan:
                     this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                     break;
@@ -8958,23 +9075,14 @@ class DamageCalculatorWrapper {
                 }
                     break;
                 case Weapon.Queenslance: {
-                    let buffs = [];
+                    let units = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                         if (targetUnit.partnerHeroIndex === unit.heroIndex ||
                             unit.partnerHeroIndex === targetUnit.heroIndex) {
-                            buffs.push(unit.buffs);
+                            units.push(unit);
                         }
                     }
-                    buffs.push([
-                        targetUnit.getAtkBuffInCombat(enemyUnit),
-                        targetUnit.getSpdBuffInCombat(enemyUnit),
-                        targetUnit.getDefBuffInCombat(enemyUnit),
-                        targetUnit.getResBuffInCombat(enemyUnit),
-                    ]);
-                    let amounts = buffs.reduce(
-                        (previousValue, currentValue) =>
-                            previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
-                        [0, 0, 0, 0]);
+                    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
                     targetUnit.addSpurs(...amounts);
                 }
                     break;
@@ -9644,6 +9752,24 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+    }
+
+    __getHighestBuffs(targetUnit, enemyUnit, units) {
+        let buffs = [];
+        for (let unit of units) {
+            buffs.push(unit.buffs);
+        }
+        buffs.push([
+            targetUnit.getAtkBuffInCombat(enemyUnit),
+            targetUnit.getSpdBuffInCombat(enemyUnit),
+            targetUnit.getDefBuffInCombat(enemyUnit),
+            targetUnit.getResBuffInCombat(enemyUnit),
+        ]);
+        let amounts = buffs.reduce(
+            (previousValue, currentValue) =>
+                previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
+            [0, 0, 0, 0]);
+        return amounts;
     }
 
     __applyBuffAbsorption(targetUnit, enemyUnit,
@@ -11233,15 +11359,18 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.TenseiAngel:
-                    if (atkUnit.battleContext.initiatesCombat) {
-                        let value = 0;
-                        if (isPrecombat) {
-                            value = defUnit.getResInPrecombat();
+                    if (!atkUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (atkUnit.battleContext.initiatesCombat) {
+                            let value = isPrecombat ? defUnit.getResInPrecombat() : defUnit.getResInCombat(atkUnit);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                         }
-                        else {
-                            value = defUnit.getResInCombat(atkUnit);
+                    } else {
+                        // <錬成効果>
+                        if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                            let value = isPrecombat ? defUnit.getResInPrecombat() : defUnit.getResInCombat(atkUnit);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                         }
-                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.25);
                     }
                     break;
                 case Weapon.NewFoxkitFang:
@@ -13520,7 +13649,7 @@ class DamageCalculatorWrapper {
                     break;
             }
 
-            for (let skillId of [targetUnit.passiveA, targetUnit.passiveS]) {
+            for (let skillId of targetUnit.enumerateSkills()) {
                 if (skillId === NoneValue) { continue; }
                 switch (skillId) {
                     case PassiveA.AtkSpdBond4:
@@ -14386,7 +14515,8 @@ class DamageCalculatorWrapper {
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DaichiBoshiNoBreath: {
-                            targetUnit.addAllSpur(2);
+                            let amount = unit.isWeaponRefined ? 4 : 2;
+                            targetUnit.addAllSpur(amount);
                         }
                             break;
                     }

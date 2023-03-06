@@ -23,6 +23,14 @@ if (targetUnit.isWeaponRefined) {
     }
 }
 
+ステータスアップ
+updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects = true, isPairUpBoostsEnabled = false) {
+    // 錬成していれば攻撃+3
+    if (this.isWeaponRefined) {
+        this.atkWithSkills += 3;
+    }
+}
+
 化身状態なら
 if (targetUnit.isTransformed) {}
 
@@ -154,6 +162,9 @@ __updateUnitSpur() {
     }
 }
 
+[暗闘の対象外になる周囲からのスキル効果]
+__applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {}
+
 <ステータス>+N (距離に関係の無い)
 __updateUnitSpur() {}
 
@@ -239,6 +250,12 @@ __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPoten
 [部分強化増幅]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
+}
+
+攻撃、速さ、守備、魔防が強化が<units>の最も高い値だけ増加(能力値ごとに計算)[味方強化増幅]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+    targetUnit.addSpurs(...amounts);
 }
 
 敵の強化の+を無効(強化無効)
