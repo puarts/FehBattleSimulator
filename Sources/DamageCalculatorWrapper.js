@@ -451,6 +451,11 @@ class DamageCalculatorWrapper {
         self.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
         // });
 
+        // 暗闘の対象外になる周囲からのスキル効果
+        // 主に戦闘外の効果。味方の存在などで発動するスキルも書いて良い（ただし大抵の場合他の場所で書ける）
+        self.__applySkillEffectFromAlliesExcludedFromFeud(atkUnit, defUnit, calcPotentialDamage);
+        self.__applySkillEffectFromAlliesExcludedFromFeud(defUnit, atkUnit, calcPotentialDamage);
+
         // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
         // 1回の攻撃の攻撃回数を設定
         self.__setAttackCount(atkUnit, defUnit);
@@ -2169,7 +2174,37 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this._applySkillEffectForUnitFuncDict[Weapon.HaresLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.AsherasChosen] = (targetUnit, _enemyUnit, calcPotentialDamage) => {
+            if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false) {
+                targetUnit.atkSpur += 6;
+                targetUnit.defSpur += 6;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AsherasChosenPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (calcPotentialDamage ||
+                this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpurs(9, 0, 9, 9);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DaichiBoshiNoBreath] = (targetUnit) => {
+            if (targetUnit.isWeaponRefined) {
+                let count = 0;
+                for (let unit of self.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    // in 7x7
+                    if (Math.abs(targetUnit.posX - unit.posX) <= 3 &&
+                        Math.abs(targetUnit.posY - unit.posY) <= 3) {
+                        count++;
+                    }
+                }
+                let amount = Math.min(count, 6);
+                targetUnit.addAllSpur(amount);
+                if (targetUnit.isWeaponSpecialRefined && count >= 1) {
+                    targetUnit.battleContext.invalidatesAtkBuff = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HaresLancePlus] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkDefSpurs(5);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
@@ -8549,45 +8584,31 @@ class DamageCalculatorWrapper {
                     }
                 }
             }
-
-            // 周囲3マス以内
-            for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-                if (feudFunc != null && feudFunc(allyUnit)) continue;
-                for (let skill of allyUnit.enumerateSkills()) {
-                    switch (skill) {
-                        case Weapon.JoyousTome:
-                            targetUnit.battleContext.healedHpAfterCombat += 7;
-                            break;
-                        case Weapon.AchimenesFurl: {
-                            let types = new Set();
-                            for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
-                                types.add(otherUnit.moveType);
-                            }
-                            if (types.size >= 3) {
-                                targetUnit.battleContext.healedHpByAttack += 5;
-                            }
-                        }
-                            break;
-                    }
-                }
-            }
         }
+    }
 
-        for (let skillId of targetUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveA.AsherasChosen:
-                    if (calcPotentialDamage || this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false) {
-                        targetUnit.atkSpur += 6;
-                        targetUnit.defSpur += 6;
+    __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (calcPotentialDamage) {
+            return;
+        }
+        // 周囲3マス以内
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+            for (let skill of allyUnit.enumerateSkills()) {
+                switch (skill) {
+                    case Weapon.JoyousTome:
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                        break;
+                    case Weapon.AchimenesFurl: {
+                        let types = new Set();
+                        for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(allyUnit)) {
+                            types.add(otherUnit.moveType);
+                        }
+                        if (types.size >= 3) {
+                            targetUnit.battleContext.healedHpByAttack += 5;
+                        }
                     }
-                    break;
-                case PassiveA.AsherasChosenPlus:
-                    if (calcPotentialDamage ||
-                        this.__isThereAllyExceptDragonAndBeastWithin1Space(targetUnit) === false ||
-                        enemyUnit.battleContext.restHpPercentage >= 75) {
-                        targetUnit.addSpurs(9, 0, 9, 9);
-                    }
-                    break;
+                        break;
+                }
             }
         }
     }

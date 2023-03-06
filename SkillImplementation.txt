@@ -154,6 +154,9 @@ __updateUnitSpur() {
     }
 }
 
+[暗闘の対象外になる周囲からのスキル効果]
+__applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {}
+
 <ステータス>+N (距離に関係の無い)
 __updateUnitSpur() {}
 
