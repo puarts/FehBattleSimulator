@@ -252,6 +252,12 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     targetUnit.atkSpur += targetUnit.getAtkBuffInCombat(enemyUnit);
 }
 
+攻撃、速さ、守備、魔防が強化が<units>の最も高い値だけ増加(能力値ごとに計算)[味方強化増幅]
+__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+    targetUnit.addSpurs(...amounts);
+}
+
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
 targetUnit.battleContext.invalidatesAtkBuff = true;

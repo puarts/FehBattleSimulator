@@ -2174,6 +2174,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.Merikuru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TenteiNoKen] = (targetUnit, enemyUnit) => {
             enemyUnit.battleContext.followupAttackPriorityDecrement--;
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
@@ -9031,6 +9043,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Merikuru:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+                        targetUnit.addSpurs(...amounts);
+                    }
+                    break;
                 case PassiveA.PartOfThePlan:
                     this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
                     break;
@@ -9056,23 +9075,14 @@ class DamageCalculatorWrapper {
                 }
                     break;
                 case Weapon.Queenslance: {
-                    let buffs = [];
+                    let units = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                         if (targetUnit.partnerHeroIndex === unit.heroIndex ||
                             unit.partnerHeroIndex === targetUnit.heroIndex) {
-                            buffs.push(unit.buffs);
+                            units.push(unit);
                         }
                     }
-                    buffs.push([
-                        targetUnit.getAtkBuffInCombat(enemyUnit),
-                        targetUnit.getSpdBuffInCombat(enemyUnit),
-                        targetUnit.getDefBuffInCombat(enemyUnit),
-                        targetUnit.getResBuffInCombat(enemyUnit),
-                    ]);
-                    let amounts = buffs.reduce(
-                        (previousValue, currentValue) =>
-                            previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
-                        [0, 0, 0, 0]);
+                    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
                     targetUnit.addSpurs(...amounts);
                 }
                     break;
@@ -9742,6 +9752,24 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+    }
+
+    __getHighestBuffs(targetUnit, enemyUnit, units) {
+        let buffs = [];
+        for (let unit of units) {
+            buffs.push(unit.buffs);
+        }
+        buffs.push([
+            targetUnit.getAtkBuffInCombat(enemyUnit),
+            targetUnit.getSpdBuffInCombat(enemyUnit),
+            targetUnit.getDefBuffInCombat(enemyUnit),
+            targetUnit.getResBuffInCombat(enemyUnit),
+        ]);
+        let amounts = buffs.reduce(
+            (previousValue, currentValue) =>
+                previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
+            [0, 0, 0, 0]);
+        return amounts;
     }
 
     __applyBuffAbsorption(targetUnit, enemyUnit,
