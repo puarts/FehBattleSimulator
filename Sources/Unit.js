@@ -56,6 +56,7 @@ const Hero = {
     DuoAskr: 914,
     HarmonizedLinde: 919,
     DuoElise: 932,
+    HarmonizedKarla: 944,
 };
 
 function isThiefIndex(heroIndex) {
@@ -569,6 +570,7 @@ class BattleContext {
 
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(奥義発動時)
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
 
         // 敵は反撃不可
         this.invalidatesCounterattack = false;
@@ -623,6 +625,7 @@ class BattleContext {
 
         // 「敵から攻撃を受ける際に発動する奥義」が発動できないかどうか
         this.preventedDefenderSpecial = false;
+        this.preventedDefenderSpecialPerAttack = false;
 
         // 奥義以外の祈りが発動したかどうか
         this.isMiracleWithoutSpecialActivated = false;
@@ -649,6 +652,9 @@ class BattleContext {
 
         // 自分と戦闘相手以外の自軍と敵軍のスキルを無効化
         this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
+
+        // 歌う・踊るを使用したどうか
+        this.isRefreshActivated = false;
     }
 
     invalidateFollowupAttackSkills() {
@@ -751,6 +757,7 @@ class BattleContext {
 
         this.invalidatesDamageReductionExceptSpecial = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
         this.invalidatesCounterattack = false;
         this.healedHpByAttack = 0;
         this.healedHpByAttackPerAttack = 0;
@@ -773,6 +780,7 @@ class BattleContext {
         this.isOnDefensiveTile = false;
         this.preventedAttackerSpecial = false;
         this.preventedDefenderSpecial = false;
+        this.preventedDefenderSpecialPerAttack = false;
         this.isMiracleWithoutSpecialActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
@@ -782,6 +790,7 @@ class BattleContext {
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;
         this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
+        this.isRefreshActivated = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -2380,6 +2389,18 @@ class Unit extends BattleMapElement {
         this.defSpur += def;
         this.resSpur += res;
     }
+    addAtkSpdSpurs(atk, spd = atk) {
+        this.atkSpur += atk;
+        this.spdSpur += spd;
+    }
+    addAtkDefSpurs(atk, def = atk) {
+        this.atkSpur += atk;
+        this.defSpur += def;
+    }
+    addSpdDefSpurs(spd, def = spd) {
+        this.spdSpur += spd;
+        this.defSpur += def;
+    }
     getSpurs() {
         return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];
     }
@@ -2972,6 +2993,11 @@ class Unit extends BattleMapElement {
         this.applySpdBuff(spd);
         this.applyDefBuff(def);
         this.applyResBuff(res);
+    }
+
+    applyAtkSpdBuffs(atk, spd = atk) {
+        this.applyAtkBuff(atk);
+        this.applySpdBuff(spd);
     }
 
     reserveToApplyAtkDebuff(amount) {
@@ -5224,6 +5250,8 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case PassiveB.FirestormDance3:
+                case PassiveB.EscapeRoute4:
                 case Weapon.FloridKnifePlus:
                 case Weapon.BowOfTwelve:
                 case PassiveB.MoonlitBangleF:

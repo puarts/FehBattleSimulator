@@ -790,8 +790,11 @@ class DamageCalculator {
 
             this.__initContextPerAttack(atkUnit);
             this.__initContextPerAttack(defUnit);
-            this.__applySkillEffectsPerAttack(atkUnit, defUnit);
-            this.__applySkillEffectsPerAttack(defUnit, atkUnit);
+            // 攻撃奥義発動可能状態で実際に奥義が発動できる
+            let canActivateAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0 &&
+                !atkUnit.battleContext.preventedAttackerSpecial;
+            this.__applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial);
+            this.__applySkillEffectsPerAttack(defUnit, atkUnit, canActivateAttackerSpecial);
             // 奥義発動可能状態（実際に奥義が発動できるかは問わない）
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
@@ -827,8 +830,12 @@ class DamageCalculator {
                 }
             }
 
+            let invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack =
+                invalidatesDamageReductionExceptSpecialOnSpecialActivation ||
+                atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack;
             let invalidatesOnSpecialActivation =
-                activatesAttackerSpecial && invalidatesDamageReductionExceptSpecialOnSpecialActivation &&
+                activatesAttackerSpecial &&
+                invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack &&
                 !atkUnit.battleContext.preventedAttackerSpecial;
             if (invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial) {
                 if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
@@ -843,7 +850,10 @@ class DamageCalculator {
             }
             defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack = [];
 
-            if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
+            let preventedDefenderSpecial =
+                defUnit.battleContext.preventedDefenderSpecial ||
+                defUnit.battleContext.preventedDefenderSpecialPerAttack;
+            if (activatesDefenderSpecial && !preventedDefenderSpecial) {
                 if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
                     if (defUnit.passiveB === PassiveB.HardyFighter3) {
@@ -976,11 +986,19 @@ class DamageCalculator {
     __initContextPerAttack(unit) {
         unit.battleContext.additionalDamagePerAttack = 0;
         unit.battleContext.healedHpByAttackPerAttack = 0;
+        unit.battleContext.preventedDefenderSpecialPerAttack = false;
+        unit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
     }
 
-    __applySkillEffectsPerAttack(atkUnit, defUnit) {
+    __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SisterlyWarAxe:
+                    if (atkUnit.battleContext.weaponSkillCondSatisfied && canActivateAttackerSpecial) {
+                        defUnit.battleContext.preventedDefenderSpecialPerAttack = true;
+                        atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = true;
+                    }
+                    break;
                 case PassiveA.SpdResFinish3:
                     if (atkUnit.battleContext.passiveASkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;

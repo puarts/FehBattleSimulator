@@ -1550,6 +1550,15 @@ const Weapon = {
     // https://www.youtube.com/watch?v=e0Z0GQ8PJQo&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=V3Nw6s9dSAw&ab_channel=NintendoMobile
     MatersTactics: 2368, // 神軍師の書
+
+    // 超英雄（春よ永遠に）
+    // https://www.youtube.com/watch?v=fzSP8Axdgh8
+    // https://www.youtube.com/watch?v=EMdqOrbGWVA
+    BowOfRepose: 2373, // うたた寝の春の弓
+    NightmaresEgg: 2375, // 春に微睡む悪夢の卵
+    BunnysEggPlus: 2377, // 白兎の卵+
+    SisterlyWarAxe: 2379, // 想い宿す妹達の重斧
+    HaresLancePlus: 2380, // 黒兎の槍+
 };
 
 const Support = {
@@ -2084,6 +2093,7 @@ const PassiveB = {
     Kyuen2: 1121, // 救援の行路2
     Kyuen3: 594, // 救援の行路3
     Ridatsu3: 595, // 離脱の行路3
+    EscapeRoute4: 2374, // 離脱の行路4
     HentaiHiko1: 1443, // 編隊飛行1
     HentaiHiko2: 1444, // 編隊飛行2
     HentaiHiko3: 635, // 編隊飛行3
@@ -2132,6 +2142,7 @@ const PassiveB = {
 
     KyokoNoWakuran3: 896, // 惑乱3
 
+    // 舞い
     BlazeDance1: 1278, // 業火の舞い1
     BlazeDance2: 1279, // 業火の舞い2
     BlazeDance3: 638, // 業火の舞い3
@@ -2145,6 +2156,7 @@ const PassiveB = {
     TorrentDance2: 1242, // 静水の舞い2
     TorrentDance3: 762, // 静水の舞い3
     FirestormDance2: 641, // 業火疾風の舞い2
+    FirestormDance3: 2376, // 業火疾風の舞い3
     CalderaDance1: 1240, // 業火大地の舞い1
     CalderaDance2: 987, // 業火大地の舞い2
     DelugeDance2: 644, // 疾風静水の舞い2
@@ -2275,6 +2287,7 @@ const PassiveB = {
     ShisyaNoChojiriwo: 1114, // 死者の帳尻を
     YunesSasayaki: 976, // ユンヌの囁き
     SphiasSoul: 1076, // ソフィアの魂
+    SoulOfZofia2: 2371, // ソフィアの魂・承
     SDrink: 663, // Sドリンク
     BeokuNoKago: 656, // ベオクの加護
 
@@ -2683,6 +2696,7 @@ const PassiveC = {
     HumanVirtue2: 2124, // 人の可能性を!・承
     ImpenetrableDark: 1178, // 見通せぬ深き暗闇
     MilaNoHaguruma: 1352, // ミラの歯車
+    MilasTurnwheel2: 2372, // ミラの歯車・神
     InevitableDeath: 1420, // 死からは逃れられぬ
     WingsOfLight: 1622, // 光輝く翼
     OrdersRestraint: 1724, // 束縛、秩序、安定
@@ -3336,6 +3350,7 @@ TeleportationSkillDict[PassiveB.TeniNoKona] = 0;
 TeleportationSkillDict[PassiveB.Kyuen2] = 0;
 TeleportationSkillDict[PassiveB.Kyuen3] = 0;
 TeleportationSkillDict[PassiveB.Ridatsu3] = 0;
+TeleportationSkillDict[PassiveB.EscapeRoute4] = 0;
 TeleportationSkillDict[PassiveB.KyokugiHiKo1] = 0;
 TeleportationSkillDict[PassiveB.KyokugiHiKo2] = 0;
 TeleportationSkillDict[PassiveB.KyokugiHiKo3] = 0;

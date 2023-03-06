@@ -1409,7 +1409,8 @@ class AppData extends UnitManager {
                     let add = 0;
                     if (this.examinesIsCurrentSeason(SeasonType.Light)) {
                         for (let unit of this.allyUnits) {
-                            if (unit.passiveC == PassiveC.MilaNoHaguruma) {
+                            if (unit.passiveC === PassiveC.MilaNoHaguruma ||
+                                unit.passiveC === PassiveC.MilasTurnwheel2) {
                                 ++add;
                             }
                         }
