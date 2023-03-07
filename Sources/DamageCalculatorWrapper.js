@@ -430,6 +430,7 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
+        // 主に暗闘スキルの処理
         this.__applyPreUpdateUnitSpurSkillEffects(atkUnit, defUnit, calcPotentialDamage);
         this.__applyPreUpdateUnitSpurSkillEffects(defUnit, atkUnit, calcPotentialDamage);
 
