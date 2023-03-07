@@ -650,11 +650,16 @@ class BattleContext {
         // 支援効果を無効
         this.invalidatesSupportEffect = false;
 
-        // 自分と戦闘相手以外の自軍と敵軍のスキルを無効化
-        this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
-
         // 歌う・踊るを使用したどうか
         this.isRefreshActivated = false;
+
+        // 暗闘
+        this.disablesSkillsFromEnemiesInCombat = false;
+        // 特定の色の味方からスキル効果が受けられない
+        this.disablesSkillsFromRedEnemiesInCombat = false;
+        this.disablesSkillsFromBlueEnemiesInCombat = false;
+        this.disablesSkillsFromGreenEnemiesInCombat = false;
+        this.disablesSkillsFromColorlessEnemiesInCombat = false;
     }
 
     invalidateFollowupAttackSkills() {
@@ -789,8 +794,12 @@ class BattleContext {
         this.cannotTriggerPrecombatSpecial = false;
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;
-        this.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = false;
         this.isRefreshActivated = false;
+        this.disablesSkillsFromEnemiesInCombat = false;
+        this.disablesSkillsFromRedEnemiesInCombat = false;
+        this.disablesSkillsFromBlueEnemiesInCombat = false;
+        this.disablesSkillsFromGreenEnemiesInCombat = false;
+        this.disablesSkillsFromColorlessEnemiesInCombat = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -2400,6 +2409,10 @@ class Unit extends BattleMapElement {
     addSpdDefSpurs(spd, def = spd) {
         this.spdSpur += spd;
         this.defSpur += def;
+    }
+    addDefResSpurs(def, res = def) {
+        this.defSpur += def;
+        this.resSpur += res;
     }
     getSpurs() {
         return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];
@@ -4323,14 +4336,6 @@ class Unit extends BattleMapElement {
                 return true;
             default: return false;
         }
-    }
-
-    /**
-     * 暗闇スキルを装備しているかどうかを取得します。
-     * @return {boolean}
-     */
-    hasFeudSkill() {
-        return isFeudSkill(this.passiveC);
     }
 
     __hasDuel3Skill() {

@@ -1,86 +1,197 @@
+describe('Test feud skills', () => {
+  beforeEach(() => {
+    // _  0  1  2
+    // 0    da
+    // 1 au
+    // 2 aa
+    heroDatabase = g_testHeroDatabase;
 
+    // 暗闘を持たせるアタッカー
+    atkUnit = heroDatabase.createUnit("アルフォンス");
+    atkUnit.atkWithSkills = 40;
+    atkUnit.passiveA = PassiveA.None;
+    atkUnit.placedTile.posX = 0;
+    atkUnit.placedTile.posY = 1;
 
-test('DamageCalculator_FeudTest', () => test_executeTest(() => {
-  let heroDatabase = g_testHeroDatabase;
-  let atkUnit = heroDatabase.createUnit("アルフォンス");
-  atkUnit.atkWithSkills = 40;
-  atkUnit.passiveA = PassiveA.None;
-  atkUnit.placedTile.posX = 0;
-  atkUnit.placedTile.posY = 1;
+    // アタッカーへのバフ役(攻撃の紋章)
+    atkAllyUnit = heroDatabase.createUnit("アルフォンス");
+    atkAllyUnit.placedTile.posX = 0;
+    atkAllyUnit.placedTile.posY = 2;
 
-  let atkAllyUnit = heroDatabase.createUnit("アルフォンス");
-  atkUnit.placedTile.posX = 0;
-  atkUnit.placedTile.posY = 2;
+    // 攻撃対象へのバフ役(守備の紋章)
+    defAllyUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+    defAllyUnit.placedTile.posX = 1;
+    defAllyUnit.placedTile.posY = 0;
 
-  let calclator = new test_DamageCalculator();
-  calclator.isLogEnabled = false;
-
-  let enemyUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
-  enemyUnit.placedTile.posX = 1;
-  enemyUnit.placedTile.posY = 0;
-
-  // 周囲の敵の全てのスキルを無効にするテスト
-  {
-    let defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
-    enemyUnit.passiveC = PassiveC.SpurDef3;
-    defUnit.defWithSkills = 30;
-    defUnit.spdWithSkills = 0;
-    defUnit.placedTile.posX = 0;
-    defUnit.placedTile.posY = 0;
-
-    calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, enemyUnit];
-
-    // 暗闇なしでテスト
-    {
-      calclator.updateAllUnitSpur();
-      let result = calclator.calcDamage(atkUnit, defUnit);
-      expect(result.atkUnit_normalAttackDamage).toBe(10);
-    }
-
-    // 暗闇で守備-4、かつ、守備の紋章3が無効化
-    atkUnit.passiveC = PassiveC.RedFeud3;
-    {
-      calclator.updateAllUnitSpur();
-      let result = calclator.calcDamage(atkUnit, defUnit);
-      expect(result.atkUnit_normalAttackDamage).toBe(18);
-    }
-  }
-
-  // 周囲の特定の色の敵の効果だけを無効にするテスト
-  {
+    calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    let defUnit = heroDatabase.createUnit("リフ", UnitGroupType.Enemy);
-    let enemyUnit2 = heroDatabase.createUnit("シャロン", UnitGroupType.Enemy);
-    enemyUnit2.placedTile.posX = 1;
-    enemyUnit2.placedTile.posY = 1;
+  });
 
-    enemyUnit.passiveC = PassiveC.AtkSpdRein3;
-    enemyUnit2.passiveC = PassiveC.AtkSpdRein3;
-    defUnit.defWithSkills = 30;
-    defUnit.spdWithSkills = 0;
-    defUnit.placedTile.posX = 0;
-    defUnit.placedTile.posY = 0;
+  describe('Test disable skills from other enemies', () => {
+    beforeEach(() => {
+      // _  0  1  2
+      // 0 du da
+      // 1 au
+      // 2 aa
 
-    calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, enemyUnit, enemyUnit2];
+      // 攻撃対象を設定
+      defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+      defUnit.defWithSkills = 30;
+      defUnit.spdWithSkills = 0;
+      defUnit.placedTile.posX = 0;
+      defUnit.placedTile.posY = 0;
 
-    atkUnit.passiveC = PassiveC.None;
+      // 敵のバフ役に守備の紋章をセット
+      defAllyUnit.passiveC = PassiveC.SpurDef3;
 
-    // 暗闇なしでテスト
-    {
+      calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, defAllyUnit];
+    });
+
+    test('Test without disable skills', () => {
       calclator.updateAllUnitSpur();
       let result = calclator.calcDamage(atkUnit, defUnit);
+
+      // 攻撃の紋章3
+      expect(atkUnit.atkSpur).toBe(4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 守備の紋章3
+      expect(defUnit.defSpur).toBe(4);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      expect(result.atkUnit_normalAttackDamage).toBe((40 + 4) - (30 + 4));
+    });
+
+    test('Test ImpenetrableDark', () => {
+      atkUnit.passiveC = PassiveC.ImpenetrableDark;
+
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+
+      // 攻撃の紋章3
+      expect(atkUnit.atkSpur).toBe(4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 守備の紋章3が無効化
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      expect(result.atkUnit_normalAttackDamage).toBe((40 + 4) - (30));
+    });
+
+    test('Test RedFeud3', () => {
+      atkUnit.passiveC = PassiveC.RedFeud3;
+
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+
+      // 攻撃の紋章3
+      expect(atkUnit.atkSpur).toBe(4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 守備の紋章3が無効化、かつ、暗闇で守備-4、
+      expect(defUnit.defSpur).toBe(0 - 4);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      expect(result.atkUnit_normalAttackDamage).toBe((40 + 4) - (30 - 4));
+    });
+
+    test('Test Queensblade', () => {
+      atkUnit.weapon = Weapon.Queensblade;
+
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+
+      // Queensbladeのバフ
+      expect(atkUnit.atkSpur).toBe(5);
+      expect(atkUnit.spdSpur).toBe(5);
+      expect(atkUnit.defSpur).toBe(5);
+      expect(atkUnit.resSpur).toBe(5);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 守備の紋章3が無効化
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      let additionalDamage = Math.trunc((atkUnit.spdWithSkills + 5) * 0.2);
+      expect(result.atkUnit_normalAttackDamage).toBe((40 + 5 + additionalDamage) - (30));
+    });
+  });
+
+  describe('Test disable skills from particular color', () => {
+    beforeEach(() => {
+      // _  0  1  2
+      // 0 du da
+      // 1 au da2
+      // 2 aa
+      calclator.isLogEnabled = false;
+      // 攻撃対象に直接の暗闘対象ではない白のリフを設定
+      defUnit = heroDatabase.createUnit("リフ", UnitGroupType.Enemy);
+      defUnit.defWithSkills = 30;
+      defUnit.spdWithSkills = 0;
+      defUnit.placedTile.posX = 0;
+      defUnit.placedTile.posY = 0;
+
+      // 周囲の敵のバフ役に赤への暗闘の対象外の青のシャロンを設定
+      defAllyUnit2 = heroDatabase.createUnit("シャロン", UnitGroupType.Enemy);
+      defAllyUnit2.placedTile.posX = 1;
+      defAllyUnit2.placedTile.posY = 1;
+
+      // 敵のバフ役に牽制を持たせる
+      defAllyUnit.passiveC = PassiveC.AtkSpdRein3;
+      defAllyUnit2.passiveC = PassiveC.AtkSpdRein3;
+
+      calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, defAllyUnit, defAllyUnit2];
+    });
+
+    test('Test without disable skills', () => {
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+      // 攻撃の紋章3、牽制x2
+      expect(atkUnit.atkSpur).toBe(4 - 4 - 4);
+      expect(atkUnit.spdSpur).toBe(- 4 - 4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+      expect(atkUnit.spdWithSkills).toBe(27);
+
+      // 攻撃対象にかかるバフがないこと
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      // 暗闘効果が入らないこと
+      expect(atkUnit.battleContext.disablesSkillsFromEnemiesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromRedEnemiesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat).toBe(false);
+
       expect(result.atkUnit_normalAttackDamage).toBe(6);
-    }
+    });
 
-    // 攻撃速さの牽制3の片方だけが無効化
-    atkUnit.passiveC = PassiveC.RedFeud3;
-    {
+    test('Test RedFeud3', () => {
+      atkUnit.passiveC = PassiveC.RedFeud3;
       calclator.updateAllUnitSpur();
       let result = calclator.calcDamage(atkUnit, defUnit);
+
+      // 赤の敵アルフォンスからの牽制だけ無効になること
+      // 攻撃の紋章3、牽制x1
+      expect(atkUnit.atkSpur).toBe(4 - 4);
+      expect(atkUnit.spdSpur).toBe(-4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+      expect(atkUnit.spdWithSkills).toBe(27);
+
+      // 攻撃対象にかかるバフがないこと
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      // 赤の暗闘効果だけが入ること
+      expect(atkUnit.battleContext.disablesSkillsFromEnemiesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromRedEnemiesInCombat).toBe(true);
+      expect(atkUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat).toBe(false);
+
       expect(result.atkUnit_normalAttackDamage).toBe(10);
-    }
-  }
-}));
+    });
+  });
+});
 
 /// 無属性有利のテスト
 test('DamageCalculator_ColorlessAdvantageousTest', () => test_executeTest(() => {

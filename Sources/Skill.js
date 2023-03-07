@@ -3565,23 +3565,6 @@ function isAdvantageousForColorless(weapon) {
     return weapon in AdvantageousAgainstColorlessWeaponTable;
 }
 
-const FeudSkillTable = {};
-FeudSkillTable[PassiveC.RedFeud3] = 0;
-FeudSkillTable[PassiveC.BlueFeud3] = 0;
-FeudSkillTable[PassiveC.GreenFeud3] = 0;
-FeudSkillTable[PassiveC.CFeud3] = 0;
-
-/**
- * 暗闇スキルであるかどうかを取得します。
- * @param  {number} skillId
- * @return {boolean}
- */
-function isFeudSkill(skillId) {
-    return skillId in FeudSkillTable;
-}
-
-
-
 const BreakerSkillToTargetWeaponTypeTable = {};
 BreakerSkillToTargetWeaponTypeTable[PassiveB.Swordbreaker3] = WeaponType.Sword;
 BreakerSkillToTargetWeaponTypeTable[PassiveB.Lancebreaker3] = WeaponType.Lance;
