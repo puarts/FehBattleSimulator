@@ -275,8 +275,8 @@ class DamageCalculatorWrapper {
         let self = this;
         let result;
         using(new ScopedTileChanger(atkUnit, tileToAttack, () => {
-            self.updateUnitSpur(atkUnit, calcPotentialDamage, false, false, null, defUnit);
-            self.updateUnitSpur(defUnit, calcPotentialDamage, false, false, null, atkUnit);
+            self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
+            self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
         }), () => {
             atkUnit.initBattleContext(true);
             defUnit.initBattleContext(false);
@@ -430,10 +430,12 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
+        this.__applyPreUpdateUnitSpurSkillEffects(atkUnit, defUnit, calcPotentialDamage);
+        this.__applyPreUpdateUnitSpurSkillEffects(defUnit, atkUnit, calcPotentialDamage);
 
         // self.profile.profile("__applySkillEffect", () => {
-        self.__applyImpenetrableDark(atkUnit, defUnit, calcPotentialDamage);
-        self.__applyImpenetrableDark(defUnit, atkUnit, calcPotentialDamage);
+        this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
+        this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
 
         self.__applySkillEffect(atkUnit, defUnit, calcPotentialDamage);
         self.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage, gameMode);
@@ -446,7 +448,7 @@ class DamageCalculatorWrapper {
 
         // 紋章を除く味方ユニットからの戦闘中バフ
         // self.profile.profile("__applySkillEffectFromAllies", () => {
-        self.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
+        // self.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
         self.__applySkillEffectFromAllies(atkUnit, defUnit, calcPotentialDamage);
         self.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
         // });
@@ -1031,73 +1033,6 @@ class DamageCalculatorWrapper {
 
     __setBattleContextRelatedToMap(targetUnit) {
         targetUnit.battleContext.isOnDefensiveTile = targetUnit.placedTile.isDefensiveTile;
-    }
-    /**
-     * @param  {Unit} targetUnit
-     * @param  {Unit} enemyUnit
-     * @param  {Boolean} calcPotentialDamage
-     */
-    __canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage) {
-        for (let skillId of targetUnit.enumerateSkills()) {
-            switch (skillId) {
-                // リーダースキル
-                case Captain.AdroitCaptain:
-                    return true;
-
-                // ユニットスキル
-                case Weapon.ShikkyuMyurugure:
-                    if (targetUnit.isWeaponRefined) {
-                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
-                            return true;
-                        }
-                    }
-                    break;
-                case PassiveC.RedFeud3:
-                    if (enemyUnit.color === ColorType.Red) {
-                        return true;
-                    }
-                    break;
-                case PassiveC.BlueFeud3:
-                    if (enemyUnit.color === ColorType.Blue) {
-                        return true;
-                    }
-                    break;
-                case PassiveC.GreenFeud3:
-                    if (enemyUnit.color === ColorType.Green) {
-                        return true;
-                    }
-                    break;
-                case PassiveC.CFeud3:
-                    if (enemyUnit.color === ColorType.Colorless) {
-                        return true;
-                    }
-                    break;
-                case PassiveC.ImpenetrableDark:
-                    return true;
-            }
-        }
-        return false;
-    }
-    /**
-     * @param  {Unit} targetUnit
-     * @param  {Unit} enemyUnit
-     * @param  {boolean} calcPotentialDamage
-     */
-    __applyImpenetrableDark(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (this.__canDisableSkillEffectsFromEnemiesExceptAttackTarget(targetUnit, enemyUnit, calcPotentialDamage)) {
-            // 問答無用で周囲のキャラのスキルを無視する場合
-            this.updateUnitSpur(enemyUnit, calcPotentialDamage, true, false, null, targetUnit);
-
-            // 敵の牽制などが無効化されるので自身の戦闘中バフも更新が必要
-            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, true, null, enemyUnit);
-        } else if (targetUnit.hasFeudSkill()) {
-            // 周囲の特定の条件を満たすキャラのスキルだけを無視する場合
-            console.log("apply feud skill.");
-            this.updateUnitSpur(enemyUnit, calcPotentialDamage, false, false, targetUnit);
-
-            // 敵の牽制などが無効化されるので自身の戦闘中バフも更新が必要
-            this.updateUnitSpur(targetUnit, calcPotentialDamage, false, false, targetUnit);
-        }
     }
 
     /**
@@ -2174,7 +2109,7 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this._applySkillEffectForUnitFuncDict[Weapon.Merikuru] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.Merikuru] = (targetUnit) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.addAllSpur(4);
@@ -2377,9 +2312,6 @@ class DamageCalculatorWrapper {
 
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             enemyUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-
-            targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
-            enemyUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.NewBrazenCatFang] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
@@ -8441,44 +8373,13 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit, calcPotentialDamage) {
-        if (this.__canDisableEnemySpursFromAlly(atkUnit, defUnit, calcPotentialDamage)) {
-            return;
-        }
-        if (calcPotentialDamage) {
-            return;
-        }
-
-        let feudFunc = this.__getFeudConditionFunc(atkUnit);
-
-        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
-            if (feudFunc != null && feudFunc(allyUnit)) continue;
-            switch (allyUnit.weapon) {
-                case Weapon.SunshadeStaff:
-                    defUnit.battleContext.increaseCooldownCountForDefense = true;
-                    defUnit.atkSpur += 6;
-                    break;
-                case Weapon.Geirusukeguru:
-                    if (allyUnit.isWeaponSpecialRefined) {
-                        if (defUnit.isPhysicalAttacker()) {
-                            defUnit.battleContext.increaseCooldownCountForBoth();
-                        }
-                    }
-                    break;
-                case Weapon.MasyumaroNoTsuePlus:
-                    defUnit.defSpur += 3;
-                    defUnit.resSpur += 3;
-                    break;
-            }
-        }
-    }
     /**
      * @param  {Unit} targetUnit
      * @param  {Unit} enemyUnit
      * @param  {Boolean} calcPotentialDamage
      */
     __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (this.__canDisableEnemySpursFromAlly(enemyUnit, targetUnit, calcPotentialDamage)) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat) {
             return;
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
@@ -8486,16 +8387,15 @@ class DamageCalculatorWrapper {
         }
 
         if (!calcPotentialDamage) {
-            let feudFunc = this.__getFeudConditionFunc(enemyUnit);
-
             // 距離に関係ない効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (feudFunc != null && feudFunc(allyUnit)) continue;
+                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
+                    continue
+                }
                 for (let skillId of allyUnit.enumerateSkills()) {
                     switch (skillId) {
                         case Captain.Erosion:
-                            if (enemyUnit.battleContext.isSaviorActivated &&
-                                !enemyUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
+                            if (enemyUnit.battleContext.isSaviorActivated) {
                                 enemyUnit.defSpur -= 4;
                                 enemyUnit.resSpur -= 4;
                                 targetUnit.battleContext.invalidatesCounterattack = true;
@@ -8507,7 +8407,9 @@ class DamageCalculatorWrapper {
 
             // 2マス以内の味方からの効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                if (feudFunc != null && feudFunc(allyUnit)) continue;
+                if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit)) {
+                    continue
+                }
                 for (let skillId of allyUnit.enumerateSkills()) {
                     switch (skillId) {
                         // リーダースキル
@@ -8526,6 +8428,16 @@ class DamageCalculatorWrapper {
                             targetUnit.battleContext.followupAttackPriorityIncrement++;
                             break;
                         // ユニットスキル
+                        case Weapon.Geirusukeguru:
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (targetUnit.isPhysicalAttacker()) {
+                                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                                }
+                            }
+                            break;
+                        case Weapon.SunshadeStaff:
+                            targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                            break;
                         case Weapon.Gjallarbru:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 targetUnit.battleContext.invalidateAllOwnDebuffs();
@@ -8659,7 +8571,9 @@ class DamageCalculatorWrapper {
             // その他の範囲
             // 7x7
             for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (feudFunc != null && feudFunc(allyUnit)) continue;
+                if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit)) {
+                    continue
+                }
                 for (let skillId of allyUnit.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DaichiBoshiNoBreath:
@@ -13051,6 +12965,12 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MasyumaroNoTsuePlus:
+                    targetUnit.addDefResSpurs(3);
+                    break;
+                case Weapon.SunshadeStaff:
+                    targetUnit.atkSpur += 6;
+                    break;
                 case Weapon.GuidesHourglass:
                     targetUnit.addAllSpur(4);
                     break;
@@ -13484,61 +13404,37 @@ class DamageCalculatorWrapper {
      * @param  {boolean} ignoresSkillEffectFromAllies=false
      * @param  {boolean} ignoreSkillEffectFromEnemies=false
      */
-    updateUnitSpur(targetUnit, calcPotentialDamage = false,
-        ignoresSkillEffectFromAllies = false,
-        ignoreSkillEffectFromEnemies = false,
-        feudSkillOwner = null,
-        enemyUnit = null
-    ) {
+    updateUnitSpur(targetUnit, calcPotentialDamage = false, enemyUnit = null) {
         let self = this;
         this.profiler.profile("updateUnitSpur", () => {
-            self.__updateUnitSpur(targetUnit, calcPotentialDamage,
-                ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit);
+            self.__updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit);
         });
-    }
-
-    __getFeudConditionFunc(feudSkillOwner) {
-        if (feudSkillOwner == null) {
-            return null;
-        }
-
-        for (let skillId of feudSkillOwner.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveC.RedFeud3:
-                    return unit => unit.color === ColorType.Red;
-                case PassiveC.BlueFeud3:
-                    return unit => unit.color === ColorType.Blue;
-                case PassiveC.GreenFeud3:
-                    return unit => unit.color === ColorType.Green;
-                case PassiveC.CFeud3:
-                    return unit => unit.color === ColorType.Colorless;
-            }
-        }
-
-        return null;
     }
 
     /**
      * @param  {Unit} targetUnit
      * @param  {boolean} calcPotentialDamage
-     * @param  {boolean} ignoresSkillEffectFromAllies
-     * @param  {Unit} feudSkillOwner
+     * @param  {Unit} enemyUnit
      */
-    __updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit) {
-        let feudFunc = this.__getFeudConditionFunc(feudSkillOwner);
-        let ignoresSkillEffectFromAlliesByFeudSkill = feudFunc != null && targetUnit.groupId !== feudSkillOwner.groupId;
-        let ignoresSkillEffectFromEnemiesByFeudSkill = feudFunc != null && targetUnit.groupId === feudSkillOwner.groupId;
-
+    __updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit = null) {
         targetUnit.resetSpurs();
 
         if (!calcPotentialDamage) {
-            if (!ignoresSkillEffectFromAllies) {
-                this.__updateUnitSpurFromAllies(targetUnit, ignoresSkillEffectFromAlliesByFeudSkill, feudFunc, calcPotentialDamage);
-            }
-
-            // 周囲の敵から受ける戦闘中弱化
-            if (!ignoreSkillEffectFromEnemies) {
-                this.__updateUnitSpurFromEnemies(targetUnit, ignoresSkillEffectFromEnemiesByFeudSkill, feudFunc, enemyUnit);
+            if (enemyUnit) {
+                // 敵が暗闘効果を持っていないかつ自分が暗闘状態でないなら周囲からのバフを適用する
+                if (!enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat &&
+                    !targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+                    this.__updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit);
+                }
+                // 周囲の敵から受ける戦闘中弱化
+                if (!targetUnit.battleContext.disablesSkillsFromEnemiesInCombat &&
+                    !enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
+                    this.__updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit);
+                }
+            } else {
+                this.__updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit);
+                // 周囲の敵から受ける戦闘中弱化
+                this.__updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit);
             }
         }
 
@@ -14236,12 +14132,12 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __updateUnitSpurFromEnemies(targetUnit, ignoresSkillEffectFromEnemiesByFeudSkill, feudFunc, enemyUnit) {
-        if (targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
-            return;
-        }
+    __updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-            if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
+                continue;
+            }
             // 十字方向
             if (this.__isInCloss(unit, targetUnit)) {
                 for (let skillId of unit.enumerateSkills()) {
@@ -14276,7 +14172,10 @@ class DamageCalculatorWrapper {
         }
 
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-            if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
+                continue;
+            }
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
                     case Weapon.Syurugu:
@@ -14375,7 +14274,10 @@ class DamageCalculatorWrapper {
         }
 
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-            if (ignoresSkillEffectFromEnemiesByFeudSkill && feudFunc(unit)) continue;
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
+                continue;
+            }
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
                     case Weapon.UnboundBlade:
@@ -14472,13 +14374,12 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __updateUnitSpurFromAllies(targetUnit, ignoresSkillEffectFromAlliesByFeudSkill, feudFunc, calcPotentialDamage) {
-        if (targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
-            return;
-        }
+    __updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit) {
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-            if (ignoresSkillEffectFromAlliesByFeudSkill && feudFunc(unit)) continue;
-            if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) continue;
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(enemyUnit, targetUnit, unit)) {
+                continue;
+            }
             // 距離に関係ないもの
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
@@ -14643,43 +14544,71 @@ class DamageCalculatorWrapper {
         this.writeDebugLog(message);
     }
 
-    __canDisableEnemySpursFromAlly(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat) {
+    __canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit) {
+        if (targetUnit.battleContext.disablesSkillsFromRedEnemiesInCombat &&
+            allyUnit.color === ColorType.Red) {
             return true;
         }
+        if (targetUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat &&
+            allyUnit.color === ColorType.Blue) {
+            return true;
+        }
+        if (targetUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat &&
+            allyUnit.color === ColorType.Green) {
+            return true;
+        }
+        if (targetUnit.battleContext.disablesSkillsFromColorlessEnemiesInCombat &&
+            allyUnit.color === ColorType.Colorless) {
+            return true;
+        }
+        return false;
+    }
+
+    __applyPreUpdateUnitSpurSkillEffects(targetUnit, enemyUnit, calcPotentialDamage) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Captain.AdroitCaptain:
+                    targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                    break;
+                case Weapon.Queensblade:
+                    targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                    enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                    break;
                 case Weapon.ShikkyuMyurugure:
                     if (targetUnit.isWeaponRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
-                            return true;
+                            targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
                         }
                     }
                     break;
+                case PassiveC.ImpenetrableDark:
+                    targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                    break;
                 case PassiveC.RedFeud3:
                     if (enemyUnit.color === ColorType.Red) {
-                        return true;
+                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
                     }
+                    targetUnit.battleContext.disablesSkillsFromRedEnemiesInCombat = true;
                     break;
                 case PassiveC.BlueFeud3:
                     if (enemyUnit.color === ColorType.Blue) {
-                        return true;
+                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
                     }
+                    targetUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat = true;
                     break;
                 case PassiveC.GreenFeud3:
                     if (enemyUnit.color === ColorType.Green) {
-                        return true;
+                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
                     }
+                    targetUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat = true;
                     break;
                 case PassiveC.CFeud3:
                     if (enemyUnit.color === ColorType.Colorless) {
-                        return true;
+                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
                     }
+                    targetUnit.battleContext.disablesSkillsFromColorlessEnemiesInCombat = true;
                     break;
-                case PassiveC.ImpenetrableDark:
-                    return true;
             }
         }
-        return false;
     }
 }

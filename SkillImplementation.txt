@@ -128,6 +128,15 @@ targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
 enemyUnit.atkSpur -= N
 
+暗闘
+__applyPreUpdateUnitSpurSkillEffects(targetUnit, enemyUnit, calcPotentialDamage) {
+    // 赤への暗闘
+    if (enemyUnit.color === ColorType.Red) {
+        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+    }
+    targetUnit.battleContext.disablesSkillsFromRedEnemiesInCombat = true;
+}
+
 周囲2マス以内の味方は、戦闘中、<ステ>+N
 __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
     for (let skillId of allyUnit.enumerateSkills()) {
@@ -209,10 +218,6 @@ targetUnit.battleContext.isVantageActivatable = true;
 canDisableAttackOrderSwapSkill(restHpPercentage) {
     return true;
 }
-
-戦闘中、自分と戦闘相手以外の自軍と敵軍のスキルを無効化
-targetUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
-enemyUnit.battleContext.disablesSkillsOfAllOtherFoesAndAlliesDuringCombat = true;
 
 絶対追撃
 targetUnit.battleContext.followupAttackPriorityIncrement++;

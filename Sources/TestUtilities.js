@@ -127,9 +127,11 @@ class test_DamageCalculator {
 
     calcDamage(atkUnit, defUnit, applyResultToHp = true) {
         this.damageCalc.isLogEnabled = this.isLogEnabled;
+        this.damageCalc.__applyPreUpdateUnitSpurSkillEffects(atkUnit, defUnit);
+        this.damageCalc.__applyPreUpdateUnitSpurSkillEffects(defUnit, atkUnit);
         this.damageCalc.updateUnitSpur(atkUnit);
         this.damageCalc.updateUnitSpur(defUnit);
-        let result = this.damageCalc.calcDamage(atkUnit, defUnit, null, false);
+        let result = this.damageCalc.calcDamage(atkUnit, defUnit, null);
         if (this.isLogEnabled) {
             console.log(this.damageCalc.log);
         }
