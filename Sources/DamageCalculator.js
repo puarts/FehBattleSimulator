@@ -70,6 +70,8 @@ class DamageCalcResult {
         this.defUnit_normalAttackDamage = 0;
         this.atkUnit_specialAttackDamage = 0;
         this.defUNit_specialAttackDamage = 0;
+        this.atkUnit_specialCount = 0;
+        this.defUnit_specialCount = 0;
 
         this.atkUnit_atk = 0;
         this.atkUnit_spd = 0;
@@ -149,6 +151,8 @@ class DamageCalculator {
         result.atkUnit_spd = atkUnit.getSpdInCombat(defUnit);
         result.atkUnit_def = atkUnit.getDefInCombat(defUnit);
         result.atkUnit_res = atkUnit.getResInCombat(defUnit);
+        result.atkUnit_specialCount = atkUnit.specialCount;
+        result.defUnit_specialCount = defUnit.specialCount;
 
         result.defUnit_atk = defUnit.getAtkInCombat(atkUnit);
         result.defUnit_spd = defUnit.getSpdInCombat(atkUnit);
@@ -173,6 +177,8 @@ class DamageCalculator {
             defUnit.isOncePerMapSpecialActivated |= defUnit.battleContext.isOncePerMapSpecialActivated;
         }
 
+        result.atkUnit_specialCount = atkUnit.tmpSpecialCount;
+        result.defUnit_specialCount = defUnit.tmpSpecialCount;
         result.damageHistory = context.damageHistory;
         return result;
     }
