@@ -162,7 +162,6 @@ describe('Test feud skills', () => {
       expect(atkUnit.battleContext.disablesSkillsFromRedEnemiesInCombat).toBe(false);
       expect(atkUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat).toBe(false);
       expect(atkUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat).toBe(false);
-
       expect(result.atkUnit_normalAttackDamage).toBe(6);
     });
 

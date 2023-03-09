@@ -430,10 +430,6 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
-        // 主に暗闘スキルの処理
-        this.__applyPreUpdateUnitSpurSkillEffects(atkUnit, defUnit, calcPotentialDamage);
-        this.__applyPreUpdateUnitSpurSkillEffects(defUnit, atkUnit, calcPotentialDamage);
-
         // self.profile.profile("__applySkillEffect", () => {
         this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
         this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
@@ -13417,6 +13413,13 @@ class DamageCalculatorWrapper {
      * @param  {Unit} enemyUnit
      */
     __updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit = null) {
+        // 主に暗闘スキルの処理
+        // 暗闘は戦闘中の2人が必要
+        if (targetUnit && enemyUnit) {
+            targetUnit && this.__applyPreUpdateUnitSpurSkillEffects(targetUnit, enemyUnit, calcPotentialDamage);
+            enemyUnit && this.__applyPreUpdateUnitSpurSkillEffects(enemyUnit, targetUnit, calcPotentialDamage);
+        }
+
         targetUnit.resetSpurs();
 
         if (!calcPotentialDamage) {
