@@ -1976,22 +1976,6 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
-        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(defUnit, 2)) {
-            switch (unit.weapon) {
-                case Weapon.ElisesStaff:
-                    if (unit.isWeaponSpecialRefined) {
-                        defUnit.addAllSpur(-4);
-                    }
-                    break;
-                case Weapon.RaisenNoSyo:
-                    if (unit.isWeaponSpecialRefined) {
-                        defUnit.spdSpur -= 5;
-                        defUnit.resSpur -= 5;
-                    }
-                    break;
-            }
-        }
-
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
                 case BeastCommonSkillType.Cavalry:
@@ -8428,7 +8412,22 @@ class DamageCalculatorWrapper {
                         case Captain.StormOfBlows:
                             targetUnit.battleContext.followupAttackPriorityIncrement++;
                             break;
+
                         // ユニットスキル
+                        case Weapon.RaisenNoSyo:
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (enemyUnit.battleContext.initiatesCombat) {
+                                    targetUnit.addSpdResSpurs(-5);
+                                }
+                            }
+                            break;
+                        case Weapon.ElisesStaff:
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (enemyUnit.battleContext.initiatesCombat) {
+                                    targetUnit.addAllSpur(-4);
+                                }
+                            }
+                            break;
                         case Weapon.Geirusukeguru:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 if (targetUnit.isPhysicalAttacker()) {
