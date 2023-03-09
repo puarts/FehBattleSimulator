@@ -3642,7 +3642,7 @@ class BattleSimmulatorBase {
         let statusHtml = actualStatuses.map((v, i) => `${names[i]}${v}`).join(", ");
         if (snapshot != null) {
             // 増加分
-            let displayStatuses = snapshot.getStatusesInPrecombat();
+            let displayStatuses = unit.getStatusesInPrecombat();
             let toIncHtml = (v, i) => `${names[i]}${getIncHtml(v - displayStatuses[i])}`;
             let incHtml = actualStatuses.map(toIncHtml).join(", ");
             html += `${incHtml}<br/>`;
