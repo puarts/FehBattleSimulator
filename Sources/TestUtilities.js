@@ -64,6 +64,12 @@ class test_HeroDatabase extends HeroDatabase {
         unit.specialCount = unit.maxSpecialCount;
         unit.hp = unit.maxHpWithSkills;
     }
+
+    updateUnitSkillInfo(unit) {
+        this.skillDatabase.updateUnitSkillInfo(unit);
+        unit.resetMaxSpecialCount();
+        unit.specialCount = unit.maxSpecialCount;
+    }
 }
 
 class test_BeginningOfTurnSkillHandler {

@@ -116,6 +116,26 @@ describe('Test feud skills', () => {
       let additionalDamage = Math.trunc((atkUnit.spdWithSkills + 5) * 0.2);
       expect(result.atkUnit_normalAttackDamage).toBe((40 + 5 + additionalDamage) - (30));
     });
+
+    test('Test does not disable enemy skills', () => {
+      atkUnit.passiveC = PassiveC.ImpenetrableDark;
+      defUnit.passiveC = PassiveC.AtkSpdRein3;
+      heroDatabase.updateUnitSkillInfo(defUnit);
+
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+
+      // 攻撃の紋章3とdefUnitの攻撃速さの牽制3
+      expect(atkUnit.atkSpur).toBe(4 - 4);
+      expect(atkUnit.spdSpur).toBe(-4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 守備の紋章3が無効化
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      expect(result.atkUnit_normalAttackDamage).toBe((40 + 4 - 4) - (30));
+    });
   });
 
   describe('Test disable skills from particular color', () => {
