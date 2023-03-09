@@ -263,7 +263,7 @@ describe('Test invalidation skills', () => {
   });
 
   // 奥義カウント変動量操作無効
-  describe('Test invalidates special count fluctuation', () => {
+  describe('Test invalidates special cooldown charge fluctuation', () => {
     beforeEach(() => {
       defUnit.special = Special.Aether;
       heroDatabase.updateUnitSkillInfo(defUnit);
@@ -271,7 +271,7 @@ describe('Test invalidation skills', () => {
     });
 
     // 通常
-    test('Test special count reduces by one', () => {
+    test('Test special cooldown charge = 1', () => {
       let result = test_calcDamage(atkUnit, defUnit, false);
       expect(result.atkUnit_totalAttackCount).toBe(1);
       expect(result.defUnit_totalAttackCount).toBe(2);
@@ -280,7 +280,7 @@ describe('Test invalidation skills', () => {
     });
 
     // キャンセル
-    test('Test Guard prevents special count increment', () => {
+    test('Test inflicts special cooldown charge - 1 by Guard', () => {
       atkUnit.passiveB = PassiveB.Cancel3;
       let result = test_calcDamage(atkUnit, defUnit, false);
       expect(result.atkUnit_totalAttackCount).toBe(1);
@@ -290,7 +290,7 @@ describe('Test invalidation skills', () => {
     });
 
     // 呼吸
-    test('Test Guard prevents special count increment', () => {
+    test('Test grants special cooldown charge + 1 perattack by Breath', () => {
       defUnit.passiveA = PassiveA.DartingBreath;
       let result = test_calcDamage(atkUnit, defUnit, false);
       expect(result.atkUnit_totalAttackCount).toBe(1);
