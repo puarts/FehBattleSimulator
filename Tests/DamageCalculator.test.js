@@ -212,6 +212,118 @@ describe('Test feud skills', () => {
   });
 });
 
+// 無効系スキル
+describe('Test invalidation skills', () => {
+  beforeEach(() => {
+    // _  0  1  2
+    // 0 du
+    // 1 au
+    // 2 
+    heroDatabase = g_testHeroDatabase;
+
+    atkUnit = heroDatabase.createUnit("アルフォンス");
+    atkUnit.atkWithSkills = 40;
+    // 飛燕の一撃で速さを5以上差をつける
+    atkUnit.passiveA = PassiveA.HienNoIchigeki3;
+    atkUnit.placedTile.posX = 0;
+    atkUnit.placedTile.posY = 1;
+
+    defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+    defUnit.atkWithSkills = 40;
+    // 剣殺しで絶対追撃をつける
+    defUnit.passiveB = PassiveB.Swordbreaker3;
+    defUnit.placedTile.posX = 0;
+    defUnit.placedTile.posY = 0;
+
+    calclator = new test_DamageCalculator();
+    calclator.isLogEnabled = false;
+
+    calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, defAllyUnit];
+  });
+
+  // 追撃操作無効
+  describe('Test invalidates invalidation of followup attack', () => {
+    // 絶対追撃
+    test('Test followup attack', () => {
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2); // 剣殺しでの追撃
+    });
+
+    // 絶対追撃無効
+    test('Test invalidates followup effect', () => {
+      atkUnit.weapon = Weapon.TenteiNoKen;
+      heroDatabase.updateUnitSkillInfo(atkUnit); // 奥義を変えた場合は奥義カウントをセットするために必要
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(1); // 剣殺しでの絶対追撃を無効
+    });
+  });
+
+  // 奥義カウント変動量操作無効
+  describe('Test invalidates special count fluctuation', () => {
+    beforeEach(() => {
+      defUnit.special = Special.Aether;
+      heroDatabase.updateUnitSkillInfo(defUnit);
+      defUnit.specialCount = defUnit.maxSpecialCount;
+    });
+
+    // 通常
+    test('Test special count reduces by one', () => {
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(2);
+    });
+
+    // キャンセル
+    test('Test Guard prevents special count increment', () => {
+      atkUnit.passiveB = PassiveB.Cancel3;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(5);
+    });
+
+    // 呼吸
+    test('Test Guard prevents special count increment', () => {
+      defUnit.passiveA = PassiveA.DartingBreath;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(0);
+    });
+
+    // 拍節
+    test('Test Tempo invalidates Guard', () => {
+      atkUnit.passiveB = PassiveB.Cancel3;
+      defUnit.passiveB = PassiveB.AtkResTempo3;
+      // 剣殺しが外れるので飛燕の構えと切り返しをつけ他のテストと攻撃回数を合わせる
+      defUnit.passiveA = PassiveA.HienNoKamae3;
+      defUnit.passiveS = PassiveB.QuickRiposte3;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(2);
+    });
+    test('Test Tempo invalidates Breath', () => {
+      atkUnit.passiveB = PassiveB.AtkResTempo3;
+      defUnit.passiveA = PassiveA.DartingBreath;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(2);
+    });
+  });
+});
+
 /// 無属性有利のテスト
 test('DamageCalculator_ColorlessAdvantageousTest', () => test_executeTest(() => {
   let heroDatabase = g_testHeroDatabase;
