@@ -8592,8 +8592,8 @@ class DamageCalculatorWrapper {
         }
         // 周囲3マス以内
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-            for (let skill of allyUnit.enumerateSkills()) {
-                switch (skill) {
+            for (let skillId of allyUnit.enumerateSkills()) {
+                switch (skillId) {
                     case Weapon.JoyousTome:
                         targetUnit.battleContext.healedHpAfterCombat += 7;
                         break;

@@ -210,6 +210,44 @@ describe('Test feud skills', () => {
       expect(result.atkUnit_normalAttackDamage).toBe(10);
     });
   });
+
+  describe('Test does not invalidate after combat ally skills', () => {
+    beforeEach(() => {
+      // _  0  1  2
+      // 0 du da
+      // 1 au
+      // 2 aa
+
+      // 攻撃対象を設定
+      defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+      defUnit.defWithSkills = 30;
+      defUnit.spdWithSkills = 0;
+      defUnit.placedTile.posX = 0;
+      defUnit.placedTile.posY = 0;
+
+      calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, defAllyUnit];
+    });
+    test('Test heal after combat', () => {
+      // 幸福の良書
+      defAllyUnit.weapon = Weapon.JoyousTome;
+      atkUnit.passiveC = PassiveC.ImpenetrableDark;
+
+      expect(defUnit.hp).toBe(45);
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+
+      expect(atkUnit.atkSpur).toBe(4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 攻撃対象にかかるバフがないこと
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+      expect(result.atkUnit_normalAttackDamage).toBe(40 - 30 + 4);
+      expect(result.atkUnit_totalAttackCount).toBe(2);
+      expect(defUnit.hp).toBe(45 - 14 * 2);
+      expect(defUnit.battleContext.healedHpAfterCombat).toBe(7);
+    });
+  });
 });
 
 // 無効系スキル
