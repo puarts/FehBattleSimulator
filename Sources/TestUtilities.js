@@ -64,6 +64,12 @@ class test_HeroDatabase extends HeroDatabase {
         unit.specialCount = unit.maxSpecialCount;
         unit.hp = unit.maxHpWithSkills;
     }
+
+    updateUnitSkillInfo(unit) {
+        this.skillDatabase.updateUnitSkillInfo(unit);
+        unit.resetMaxSpecialCount();
+        unit.specialCount = unit.maxSpecialCount;
+    }
 }
 
 class test_BeginningOfTurnSkillHandler {
@@ -127,10 +133,8 @@ class test_DamageCalculator {
 
     calcDamage(atkUnit, defUnit, applyResultToHp = true) {
         this.damageCalc.isLogEnabled = this.isLogEnabled;
-        this.damageCalc.__applyPreUpdateUnitSpurSkillEffects(atkUnit, defUnit);
-        this.damageCalc.__applyPreUpdateUnitSpurSkillEffects(defUnit, atkUnit);
-        this.damageCalc.updateUnitSpur(atkUnit);
-        this.damageCalc.updateUnitSpur(defUnit);
+        this.damageCalc.updateUnitSpur(atkUnit, defUnit);
+        this.damageCalc.updateUnitSpur(defUnit, atkUnit);
         let result = this.damageCalc.calcDamage(atkUnit, defUnit, null);
         if (this.isLogEnabled) {
             console.log(this.damageCalc.log);

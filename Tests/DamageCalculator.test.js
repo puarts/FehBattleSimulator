@@ -116,6 +116,26 @@ describe('Test feud skills', () => {
       let additionalDamage = Math.trunc((atkUnit.spdWithSkills + 5) * 0.2);
       expect(result.atkUnit_normalAttackDamage).toBe((40 + 5 + additionalDamage) - (30));
     });
+
+    test('Test does not disable enemy skills', () => {
+      atkUnit.passiveC = PassiveC.ImpenetrableDark;
+      defUnit.passiveC = PassiveC.AtkSpdRein3;
+      heroDatabase.updateUnitSkillInfo(defUnit);
+
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+
+      // 攻撃の紋章3とdefUnitの攻撃速さの牽制3
+      expect(atkUnit.atkSpur).toBe(4 - 4);
+      expect(atkUnit.spdSpur).toBe(-4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 守備の紋章3が無効化
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+
+      expect(result.atkUnit_normalAttackDamage).toBe((40 + 4 - 4) - (30));
+    });
   });
 
   describe('Test disable skills from particular color', () => {
@@ -162,7 +182,6 @@ describe('Test feud skills', () => {
       expect(atkUnit.battleContext.disablesSkillsFromRedEnemiesInCombat).toBe(false);
       expect(atkUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat).toBe(false);
       expect(atkUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat).toBe(false);
-
       expect(result.atkUnit_normalAttackDamage).toBe(6);
     });
 
@@ -189,6 +208,156 @@ describe('Test feud skills', () => {
       expect(atkUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat).toBe(false);
 
       expect(result.atkUnit_normalAttackDamage).toBe(10);
+    });
+  });
+
+  describe('Test does not invalidate after combat ally skills', () => {
+    beforeEach(() => {
+      // _  0  1  2
+      // 0 du da
+      // 1 au
+      // 2 aa
+
+      // 攻撃対象を設定
+      defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+      defUnit.defWithSkills = 30;
+      defUnit.spdWithSkills = 0;
+      defUnit.placedTile.posX = 0;
+      defUnit.placedTile.posY = 0;
+
+      calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, defAllyUnit];
+    });
+    test('Test heal after combat', () => {
+      // 幸福の良書
+      defAllyUnit.weapon = Weapon.JoyousTome;
+      atkUnit.passiveC = PassiveC.ImpenetrableDark;
+
+      expect(defUnit.hp).toBe(45);
+      calclator.updateAllUnitSpur();
+      let result = calclator.calcDamage(atkUnit, defUnit);
+
+      expect(atkUnit.atkSpur).toBe(4);
+      expect(atkUnit.atkWithSkills).toBe(40);
+
+      // 攻撃対象にかかるバフがないこと
+      expect(defUnit.defSpur).toBe(0);
+      expect(defUnit.defWithSkills).toBe(30);
+      expect(result.atkUnit_normalAttackDamage).toBe(40 - 30 + 4);
+      expect(result.atkUnit_totalAttackCount).toBe(2);
+      expect(defUnit.hp).toBe(45 - 14 * 2);
+      expect(defUnit.battleContext.healedHpAfterCombat).toBe(7);
+    });
+  });
+});
+
+// 無効系スキル
+describe('Test invalidation skills', () => {
+  beforeEach(() => {
+    // _  0  1  2
+    // 0 du
+    // 1 au
+    // 2 
+    heroDatabase = g_testHeroDatabase;
+
+    atkUnit = heroDatabase.createUnit("アルフォンス");
+    atkUnit.atkWithSkills = 40;
+    // 飛燕の一撃で速さを5以上差をつける
+    atkUnit.passiveA = PassiveA.HienNoIchigeki3;
+    atkUnit.placedTile.posX = 0;
+    atkUnit.placedTile.posY = 1;
+
+    defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+    defUnit.atkWithSkills = 40;
+    // 剣殺しで絶対追撃をつける
+    defUnit.passiveB = PassiveB.Swordbreaker3;
+    defUnit.placedTile.posX = 0;
+    defUnit.placedTile.posY = 0;
+
+    calclator = new test_DamageCalculator();
+    calclator.isLogEnabled = false;
+
+    calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, defAllyUnit];
+  });
+
+  // 追撃操作無効
+  describe('Test invalidates invalidation of followup attack', () => {
+    // 絶対追撃
+    test('Test followup attack', () => {
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2); // 剣殺しでの追撃
+    });
+
+    // 絶対追撃無効
+    test('Test invalidates followup effect', () => {
+      atkUnit.weapon = Weapon.TenteiNoKen;
+      heroDatabase.updateUnitSkillInfo(atkUnit); // 奥義を変えた場合は奥義カウントをセットするために必要
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(1); // 剣殺しでの絶対追撃を無効
+    });
+  });
+
+  // 奥義カウント変動量操作無効
+  describe('Test invalidates special cooldown charge fluctuation', () => {
+    beforeEach(() => {
+      defUnit.special = Special.Aether;
+      heroDatabase.updateUnitSkillInfo(defUnit);
+      defUnit.specialCount = defUnit.maxSpecialCount;
+    });
+
+    // 通常
+    test('Test special cooldown charge = 1', () => {
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(2);
+    });
+
+    // キャンセル
+    test('Test inflicts special cooldown charge - 1 by Guard', () => {
+      atkUnit.passiveB = PassiveB.Cancel3;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(5);
+    });
+
+    // 呼吸
+    test('Test grants special cooldown charge + 1 perattack by Breath', () => {
+      defUnit.passiveA = PassiveA.DartingBreath;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(0);
+    });
+
+    // 拍節
+    test('Test Tempo invalidates Guard', () => {
+      atkUnit.passiveB = PassiveB.Cancel3;
+      defUnit.passiveB = PassiveB.AtkResTempo3;
+      // 剣殺しが外れるので飛燕の構えと切り返しをつけ他のテストと攻撃回数を合わせる
+      defUnit.passiveA = PassiveA.HienNoKamae3;
+      defUnit.passiveS = PassiveB.QuickRiposte3;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(2);
+    });
+    test('Test Tempo invalidates Breath', () => {
+      atkUnit.passiveB = PassiveB.AtkResTempo3;
+      defUnit.passiveA = PassiveA.DartingBreath;
+      let result = test_calcDamage(atkUnit, defUnit, false);
+      expect(result.atkUnit_totalAttackCount).toBe(1);
+      expect(result.defUnit_totalAttackCount).toBe(2);
+      expect(result.atkUnit_specialCount).toBe(0);
+      expect(result.defUnit_specialCount).toBe(2);
     });
   });
 });

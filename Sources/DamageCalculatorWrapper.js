@@ -430,10 +430,6 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
-        // 主に暗闘スキルの処理
-        this.__applyPreUpdateUnitSpurSkillEffects(atkUnit, defUnit, calcPotentialDamage);
-        this.__applyPreUpdateUnitSpurSkillEffects(defUnit, atkUnit, calcPotentialDamage);
-
         // self.profile.profile("__applySkillEffect", () => {
         this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
         this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
@@ -1976,22 +1972,6 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
-        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(defUnit, 2)) {
-            switch (unit.weapon) {
-                case Weapon.ElisesStaff:
-                    if (unit.isWeaponSpecialRefined) {
-                        defUnit.addAllSpur(-4);
-                    }
-                    break;
-                case Weapon.RaisenNoSyo:
-                    if (unit.isWeaponSpecialRefined) {
-                        defUnit.spdSpur -= 5;
-                        defUnit.resSpur -= 5;
-                    }
-                    break;
-            }
-        }
-
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
                 case BeastCommonSkillType.Cavalry:
@@ -8428,7 +8408,22 @@ class DamageCalculatorWrapper {
                         case Captain.StormOfBlows:
                             targetUnit.battleContext.followupAttackPriorityIncrement++;
                             break;
+
                         // ユニットスキル
+                        case Weapon.RaisenNoSyo:
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (enemyUnit.battleContext.initiatesCombat) {
+                                    targetUnit.addSpdResSpurs(-5);
+                                }
+                            }
+                            break;
+                        case Weapon.ElisesStaff:
+                            if (allyUnit.isWeaponSpecialRefined) {
+                                if (enemyUnit.battleContext.initiatesCombat) {
+                                    targetUnit.addAllSpur(-4);
+                                }
+                            }
+                            break;
                         case Weapon.Geirusukeguru:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 if (targetUnit.isPhysicalAttacker()) {
@@ -8597,8 +8592,8 @@ class DamageCalculatorWrapper {
         }
         // 周囲3マス以内
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-            for (let skill of allyUnit.enumerateSkills()) {
-                switch (skill) {
+            for (let skillId of allyUnit.enumerateSkills()) {
+                switch (skillId) {
                     case Weapon.JoyousTome:
                         targetUnit.battleContext.healedHpAfterCombat += 7;
                         break;
@@ -13418,25 +13413,20 @@ class DamageCalculatorWrapper {
      * @param  {Unit} enemyUnit
      */
     __updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit = null) {
+        // 主に暗闘スキルの処理
+        // 暗闘は戦闘中の2人が必要
+        if (targetUnit && enemyUnit) {
+            targetUnit && this.__applyPreUpdateUnitSpurSkillEffects(targetUnit, enemyUnit, calcPotentialDamage);
+            enemyUnit && this.__applyPreUpdateUnitSpurSkillEffects(enemyUnit, targetUnit, calcPotentialDamage);
+        }
+
         targetUnit.resetSpurs();
 
         if (!calcPotentialDamage) {
-            if (enemyUnit) {
-                // 敵が暗闘効果を持っていないかつ自分が暗闘状態でないなら周囲からのバフを適用する
-                if (!enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat &&
-                    !targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
-                    this.__updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit);
-                }
-                // 周囲の敵から受ける戦闘中弱化
-                if (!targetUnit.battleContext.disablesSkillsFromEnemiesInCombat &&
-                    !enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
-                    this.__updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit);
-                }
-            } else {
-                this.__updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit);
-                // 周囲の敵から受ける戦闘中弱化
-                this.__updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit);
-            }
+            // 周囲の味方から受ける紋章バフ
+            this.__updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit);
+            // 周囲の敵から受ける紋章バフ
+            this.__updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit);
         }
 
         let isAllyAvailableRange1 = false;
@@ -14134,7 +14124,17 @@ class DamageCalculatorWrapper {
     }
 
     __updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit) {
+        let disablesSkillsFromEnemiesInCombat = false;
+        if (enemyUnit) {
+            if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
+                targetUnit.battleContext.disablesSkillsFromEnemiesInCombat) {
+                disablesSkillsFromEnemiesInCombat = true;
+            }
+        }
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+                continue;
+            }
             // 特定の色か確認
             if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
                 continue;
@@ -14173,6 +14173,9 @@ class DamageCalculatorWrapper {
         }
 
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+                continue;
+            }
             // 特定の色か確認
             if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
                 continue;
@@ -14275,6 +14278,9 @@ class DamageCalculatorWrapper {
         }
 
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+                continue;
+            }
             // 特定の色か確認
             if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
                 continue;
@@ -14376,6 +14382,12 @@ class DamageCalculatorWrapper {
     }
 
     __updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+        if (enemyUnit && enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat) {
+            return;
+        }
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
             // 特定の色か確認
             if (enemyUnit && this.__canDisableSkillsFrom(enemyUnit, targetUnit, unit)) {
