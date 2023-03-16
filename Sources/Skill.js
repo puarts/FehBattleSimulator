@@ -1565,6 +1565,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=UBg1RsjEu4A
     FrelianLance: 2383, // フレリアの重槍
     FrelianBlade: 2385, // フレリアの麗剣
+    UpFrontLancePlus: 2387, // 正々堂々の槍+
 };
 
 const Support = {

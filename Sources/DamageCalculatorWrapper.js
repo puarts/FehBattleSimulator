@@ -7826,6 +7826,7 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.SpringyAxePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SpringyLancePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UpFrontBladePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UpFrontLancePlus] = func;
         }
         {
             let func = (targetUnit) => {
