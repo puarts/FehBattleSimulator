@@ -8455,6 +8455,11 @@ class DamageCalculatorWrapper {
                             break;
 
                         // ユニットスキル
+                        case PassiveC.Guidance4:
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                            break;
                         case Weapon.RaisenNoSyo:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 if (enemyUnit.battleContext.initiatesCombat) {
@@ -13006,6 +13011,12 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.Guidance4:
+                    let moveType = targetUnit.moveType;
+                    if (moveType === MoveType.Infantry || moveType === MoveType.Armor) {
+                        targetUnit.addAtkSpdSpurs(3);
+                    }
+                    break;
                 case Weapon.MasyumaroNoTsuePlus:
                     targetUnit.addDefResSpurs(3);
                     break;

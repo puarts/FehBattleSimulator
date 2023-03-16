@@ -2471,7 +2471,8 @@ const PassiveC = {
     DistantGuard3: 685, // 遠距離警戒3
     JointDistGuard: 1823, // 遠距離相互警戒
 
-    SorakaranoSendo3: 735,
+    SorakaranoSendo3: 735, // 空からの先導3
+    Guidance4: 2391, // 空からの先導4
     HikonoSendo3: 736,
 
     ThreatenAtk1: 1413,
@@ -3368,6 +3369,7 @@ TeleportationSkillDict[PassiveB.HentaiHiko1] = 0;
 TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
 TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
 TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
+TeleportationSkillDict[PassiveC.Guidance4] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
 TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
 TeleportationSkillDict[Weapon.SilentPower] = 0;

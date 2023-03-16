@@ -2262,6 +2262,13 @@ class BattleMap {
                             }
                         }
                         break;
+                    case PassiveC.Guidance4:
+                        if (unit.moveType == MoveType.Armor || unit.moveType == MoveType.Infantry) {
+                            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 2, false, true)) {
+                                yield tile;
+                            }
+                        }
+                        break;
                     case PassiveC.HikonoSendo3:
                         if (unit.moveType == MoveType.Flying) {
                             // 飛行の先導
