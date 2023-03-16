@@ -392,7 +392,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.UnitCannotBeSlowedByTerrain:
             return g_imageRootPath + "StatusEffect_UnitCannotBeSlowedByTerrain.webp";
         case StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent:
-            return g_imageRootPath + "StatusEffect_ReduceDamageFromAreaOfEffectSpecialsBy80Percent.webp";
+            return g_imageRootPath + "StatusEffect_ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp";
         case StatusEffectType.NeutralizesPenalties:
             return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
         default: return "";
