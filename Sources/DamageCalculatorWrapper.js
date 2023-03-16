@@ -13011,11 +13011,12 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
-                case PassiveC.Guidance4:
+                case PassiveC.Guidance4: {
                     let moveType = targetUnit.moveType;
                     if (moveType === MoveType.Infantry || moveType === MoveType.Armor) {
                         targetUnit.addAtkSpdSpurs(3);
                     }
+                }
                     break;
                 case Weapon.MasyumaroNoTsuePlus:
                     targetUnit.addDefResSpurs(3);
