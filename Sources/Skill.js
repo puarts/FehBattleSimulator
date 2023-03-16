@@ -1559,6 +1559,14 @@ const Weapon = {
     BunnysEggPlus: 2377, // 白兎の卵+
     SisterlyWarAxe: 2379, // 想い宿す妹達の重斧
     HaresLancePlus: 2380, // 黒兎の槍+
+
+    // 新英雄＆魔器ターナ
+    // https://www.youtube.com/watch?v=_sClANnUl7g
+    // https://www.youtube.com/watch?v=UBg1RsjEu4A
+    FrelianLance: 2383, // フレリアの重槍
+    FrelianBlade: 2385, // フレリアの麗剣
+    UpFrontLancePlus: 2387, // 正々堂々の槍+
+    ArcaneNastrond: 2389, // 魔器ナーストレンド
 };
 
 const Support = {
@@ -2034,7 +2042,7 @@ const PassiveA = {
     AtkDefCatch4: 1703, // 攻撃守備の機先4
     AtkResCatch4: 1845, // 攻撃魔防の機先4
     SpdDefCatch4: 2101, // 速さ守備の機先4
-    SpdResCatch4: 99999, // 速さ魔防の機先4
+    SpdResCatch4: 2386, // 速さ魔防の機先4
     DefResCatch4: 1761, // 守備魔防の機先4
 
     // 万全
@@ -2128,6 +2136,7 @@ const PassiveB = {
 
     BoldFighter3: 601, // 攻撃隊形3
     VengefulFighter3: 602, // 迎撃隊形3
+    VengefulFighter4: 2384, // 迎撃隊形4
     WaryFighter3: 600, // 守備隊形3
     SpecialFighter3: 603,// 奥義隊形3
     SpecialFighter4: 2289,// 奥義隊形4
@@ -2358,6 +2367,7 @@ const PassiveB = {
     DivineRecreation: 1910, // それは興味深いね
     HodrsZeal: 2043, // ヘズルの聖騎士
     AssuredRebirth: 2066, // 我が復活は成った
+    SoaringWings: 2390, // 天かける翼
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
@@ -2461,7 +2471,8 @@ const PassiveC = {
     DistantGuard3: 685, // 遠距離警戒3
     JointDistGuard: 1823, // 遠距離相互警戒
 
-    SorakaranoSendo3: 735,
+    SorakaranoSendo3: 735, // 空からの先導3
+    Guidance4: 2391, // 空からの先導4
     HikonoSendo3: 736,
 
     ThreatenAtk1: 1413,
@@ -3358,6 +3369,7 @@ TeleportationSkillDict[PassiveB.HentaiHiko1] = 0;
 TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
 TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
 TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
+TeleportationSkillDict[PassiveC.Guidance4] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
 TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
 TeleportationSkillDict[Weapon.SilentPower] = 0;

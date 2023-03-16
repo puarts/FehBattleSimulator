@@ -2090,6 +2090,50 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.SoaringWings] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpdDefSpurs(-4);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = Math.min(dist, 4);
+                enemyUnit.addSpdDefSpurs(-amount);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneNastrond] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let specialCount = enemyUnit.special === Special.None ? 4 : enemyUnit.maxSpecialCount;
+                let amount = Math.max(12 - specialCount * 2, 4);
+                targetUnit.atk += amount;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FrelianBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                enemyUnit.addSpursWithoutRes(-amount);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.VengefulFighter4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25 && enemyUnit.battleContext.initiatesCombat) {
+                enemyUnit.atkSpur -= 4;
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FrelianLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 6;
+                enemyUnit.atkSpur -= 6;
+                let amount = Math.trunc(targetUnit.getEvalDefInPrecombat() * 0.2);
+                enemyUnit.atkSpur -= amount;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Merikuru] = (targetUnit) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -7800,6 +7844,7 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.SpringyAxePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.SpringyLancePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.UpFrontBladePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.UpFrontLancePlus] = func;
         }
         {
             let func = (targetUnit) => {
@@ -8410,6 +8455,11 @@ class DamageCalculatorWrapper {
                             break;
 
                         // ユニットスキル
+                        case PassiveC.Guidance4:
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                            break;
                         case Weapon.RaisenNoSyo:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 if (enemyUnit.battleContext.initiatesCombat) {
@@ -12961,6 +13011,13 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.Guidance4: {
+                    let moveType = targetUnit.moveType;
+                    if (moveType === MoveType.Infantry || moveType === MoveType.Armor) {
+                        targetUnit.addAtkSpdSpurs(3);
+                    }
+                }
+                    break;
                 case Weapon.MasyumaroNoTsuePlus:
                     targetUnit.addDefResSpurs(3);
                     break;
