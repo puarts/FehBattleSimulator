@@ -1559,6 +1559,11 @@ const Weapon = {
     BunnysEggPlus: 2377, // 白兎の卵+
     SisterlyWarAxe: 2379, // 想い宿す妹達の重斧
     HaresLancePlus: 2380, // 黒兎の槍+
+
+    // 新英雄＆魔器ターナ
+    // https://www.youtube.com/watch?v=_sClANnUl7g
+    // https://www.youtube.com/watch?v=UBg1RsjEu4A
+    FrelianLance: 2383, // フレリアの重槍
 };
 
 const Support = {

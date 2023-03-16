@@ -147,6 +147,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.FrelianLance:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    if (unit.moveType === MoveType.Flying) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.ShieldFlying);
+                    }
+                }
+                break;
             case Weapon.TenseiAngel:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.__isThereAllyIn2Spaces(skillOwner)) {
