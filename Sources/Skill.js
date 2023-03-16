@@ -1566,6 +1566,7 @@ const Weapon = {
     FrelianLance: 2383, // フレリアの重槍
     FrelianBlade: 2385, // フレリアの麗剣
     UpFrontLancePlus: 2387, // 正々堂々の槍+
+    ArcaneNastrond: 2389, // 魔器ナーストレンド
 };
 
 const Support = {
