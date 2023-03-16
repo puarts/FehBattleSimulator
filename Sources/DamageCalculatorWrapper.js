@@ -2090,6 +2090,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.SoaringWings] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpdDefSpurs(-4);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = Math.min(dist, 4);
+                enemyUnit.addSpdDefSpurs(-amount);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneNastrond] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);

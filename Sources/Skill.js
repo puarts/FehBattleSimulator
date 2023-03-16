@@ -2367,6 +2367,7 @@ const PassiveB = {
     DivineRecreation: 1910, // それは興味深いね
     HodrsZeal: 2043, // ヘズルの聖騎士
     AssuredRebirth: 2066, // 我が復活は成った
+    SoaringWings: 2390, // 天かける翼
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
