@@ -2142,9 +2142,7 @@ class BattleMap {
                     case Weapon.HinokaNoKounagitou:
                         if (ally.isWeaponSpecialRefined) {
                             if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Flying) {
-                                yield* ally.placedTile.getMovableNeighborTiles(
-                                    unit, 1, false, true
-                                );
+                                yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                             }
                         }
                         break;
@@ -2160,25 +2158,19 @@ class BattleMap {
                     case PassiveC.SorakaranoSendo3:
                         // 空からの先導
                         if (unit.moveType == MoveType.Armor || unit.moveType == MoveType.Infantry) {
-                            yield* ally.placedTile.getMovableNeighborTiles(
-                                unit, 1, false, true
-                            );
+                            yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                         }
                         break;
                     case PassiveC.Guidance4:
                         if (unit.moveType == MoveType.Armor || unit.moveType == MoveType.Infantry) {
-                            yield* ally.placedTile.getMovableNeighborTiles(
-                                unit, 2, false, true
-                            );
+                            yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
                         }
                         break;
                     case PassiveC.HikonoSendo3:
                         if (unit.moveType == MoveType.Flying) {
                             // 飛行の先導
                             if (ally.hasPassiveSkill(PassiveC.HikonoSendo3)) {
-                                yield* ally.placedTile.getMovableNeighborTiles(
-                                    unit, 1, false, true
-                                );
+                                yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                             }
                         }
                         break;
@@ -2189,9 +2181,7 @@ class BattleMap {
 
     * __enumerateEscapeRoute(unit) {
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-            yield* ally.placedTile.getMovableNeighborTiles(
-                unit, 1, false, true
-            );
+            yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
         }
     }
 
