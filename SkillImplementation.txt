@@ -674,8 +674,14 @@ Main.js
     );
 }
 
+救援の行路
 離脱の行路
 *__enumerateTeleportTiles(unit) {
+    // 救援
+    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+        yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
+    }
+    // 離脱
     yield* this.__enumerateEscapeRoute(unit);
 }
 
