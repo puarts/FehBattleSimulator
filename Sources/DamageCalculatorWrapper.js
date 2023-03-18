@@ -2520,11 +2520,15 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.reducesCooldownCount = true;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.ProtectionBowPlus] = (targetUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.addSpurs(5, 0, 5, 0);
-                targetUnit.battleContext.reducesCooldownCount = true;
-            }
+        {
+            let func = (targetUnit) => {
+                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addSpurs(5, 0, 5, 0);
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.ProtectionPikePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.ProtectionBowPlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.Liberation] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
