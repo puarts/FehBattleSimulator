@@ -662,8 +662,28 @@ Main.js
             yield tile;
         }
     }
+    // もしくは
+    // 周囲nマス以内の味方の、周囲mマス以内に移動可能
+    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, n, m);
+    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit); // 2, 2
+    // 曲技飛行
+    let allyCondFunc = ally =>
+        [MoveType.Armor, MoveType.Infantry, MoveType.Cavalry].includes(ally.moveType);
+    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+        unit, 2, 1, allyCondFunc
+    );
 }
 
+救援の行路
+離脱の行路
+*__enumerateTeleportTiles(unit) {
+    // 救援
+    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+        yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
+    }
+    // 離脱
+    yield* this.__enumerateEscapeRoute(unit);
+}
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
