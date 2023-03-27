@@ -728,7 +728,7 @@ class DamageCalculatorWrapper {
                     break;
                 case PassiveA.AsherasChosenPlus:
                     if (this.__isThereAllyExceptDragonAndBeastWithin1Space(defUnit) === false ||
-                        defUnit.battleContext.restHpPercentage >= 75) {
+                        atkUnit.battleContext.restHpPercentage >= 75) {
                         let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
                         if (resDiff > 0) {
                             let percentage = Math.min(resDiff * 4, 40);
@@ -11003,6 +11003,13 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.AsherasChosenPlus: {
+                    let diff = atkUnit.getEvalResInCombat(defUnit) - defUnit.getEvalResInCombat(atkUnit);
+                    if (diff > 0) {
+                        atkUnit.battleContext.additionalDamage += Math.min(Math.trunc(diff * 0.7), 7);
+                    }
+                }
+                    break;
                 case Weapon.Queensblade:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
