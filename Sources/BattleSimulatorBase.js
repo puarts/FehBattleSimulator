@@ -8643,6 +8643,7 @@ class BattleSimmulatorBase {
             case AssistType.DonorHeal:
                 {
                     let result = this.__getUserLossHpAndTargetHaelHpForDonorHeal(supporterUnit, targetUnit);
+                    if (!result.success) return false;
                     return result.targetHealHp > 0;
                 }
             case AssistType.Move:
@@ -8777,6 +8778,10 @@ class BattleSimmulatorBase {
     }
 
     __canApplyReciprocalAid(supporterUnit, targetUnit) {
+        if (targetUnit.restHpPercentage() === 100) {
+            return false;
+        }
+
         if (supporterUnit.hp == targetUnit.hp) {
             return false;
         }
