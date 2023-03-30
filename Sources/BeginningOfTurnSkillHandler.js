@@ -155,11 +155,13 @@ class BeginningOfTurnSkillHandler {
         switch (skillId) {
             case PassiveC.FettersOfDromi:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
-            case PassiveA.AtkSpdHexblade:
+                break;
+            case PassiveA.AtkSpdHexblade: {
                 let pred = unit => isWeaponTypeTome(unit.weaponType);
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2, pred)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
                 }
+            }
                 break;
             case Weapon.FrelianLance:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
