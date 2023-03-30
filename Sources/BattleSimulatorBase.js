@@ -3754,6 +3754,13 @@ class BattleSimmulatorBase {
             this.beginningOfTurnSkillHandler.applyAfterEnemySkillsSkillsForBeginningOfTurn(unit);
         }
 
+        // ターン開始時スキル発動後
+        // ex) 伝承ユーリスCスキル: ターン開始時スキル発動後、自分に【空転】が付与されている時、「自身の移動+1」を解除
+        for (let unit of targetUnits) {
+            this.writeDebugLogLine(unit.getNameWithGroup() + "の開始時スキル発動後のスキルを適用..");
+            this.beginningOfTurnSkillHandler.applySkillsAfterBeginningOfTurn(unit);
+        }
+
         // マップの更新(ターン開始時の移動マスの変化をマップに反映)
         this.data.map.updateTiles();
     }
@@ -6216,6 +6223,8 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.FettersOfDromi:
+                    return true;
                 case PassiveB.FirestormDance3:
                     if (unit.battleContext.isRefreshActivated) {
                         return true;

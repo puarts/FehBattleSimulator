@@ -2734,6 +2734,7 @@ const PassiveC = {
     AllTogether: 2261, // ずっとみんなと一緒
     Severance: 2271, // すべてが閉じた世界
     FutureFocused: 2282, // 共に未来を見つめて
+    FettersOfDromi: 2397, // ドローミの鎖環
 };
 
 const PassiveS = {

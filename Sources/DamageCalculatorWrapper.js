@@ -14375,6 +14375,9 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveC.FettersOfDromi:
+                        targetUnit.addAllSpur(-4);
+                        break;
                     case Weapon.UnboundBlade:
                     case Weapon.UnboundBladePlus:
                     case Weapon.UnboundLancePlus:

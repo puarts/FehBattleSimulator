@@ -2546,6 +2546,15 @@ class Unit extends BattleMapElement {
     clearNegativeStatusEffects() {
         this.statusEffects = this.getPositiveStatusEffects();
     }
+
+    clearPositiveStatusEffect(statusEffect) {
+        if (statusEffect === StatusEffectType.GrandStrategy &&
+            this.statusEffects.includes(StatusEffectType.GrandStrategy)) {
+            this.resetDebuffs();
+        }
+        this.statusEffects = this.statusEffects.filter(se => se !== statusEffect)
+    }
+
     clearPositiveStatusEffects() {
         if (this.statusEffects.includes(StatusEffectType.GrandStrategy)) {
             this.resetDebuffs();
@@ -5283,6 +5292,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case PassiveC.FettersOfDromi:
                 case Weapon.HolytideTyrfing:
                 case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
