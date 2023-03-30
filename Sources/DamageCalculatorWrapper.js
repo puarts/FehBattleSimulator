@@ -598,8 +598,10 @@ class DamageCalculatorWrapper {
     __selectReferencingResOrDef(atkUnit, defUnit) {
         if (this.isLogEnabled) this.writeDebugLog(`守備魔防参照の評価: invalidatesReferenceLowerMit=${defUnit.battleContext.invalidatesReferenceLowerMit}`);
 
-        let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
-            || (defUnit.attackRange === 2 && isWeaponTypeBreath(atkUnit.weaponType)));
+        let refersLowerMit =
+            atkUnit.battleContext.refersMinOfDefOrRes ||
+            (defUnit.attackRange === 2 && isWeaponTypeBreath(atkUnit.weaponType)) ||
+            atkUnit.hasStatusEffect(StatusEffectType.Hexblade);
         if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
             if (this.isLogEnabled) this.writeDebugLog("守備魔防の低い方でダメージ計算");
             let defInCombat = defUnit.getDefInCombat(atkUnit);
@@ -2090,6 +2092,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdHexblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                targetUnit.addAtkSpdSpurs(7);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AbyssalBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);

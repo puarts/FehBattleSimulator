@@ -147,6 +147,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveA.AtkSpdHexblade:
+                let pred = unit => isWeaponTypeTome(unit.weaponType);
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2, pred)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                }
+                break;
             case Weapon.FrelianLance:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     if (unit.moveType === MoveType.Flying) {
