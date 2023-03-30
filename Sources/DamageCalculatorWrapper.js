@@ -598,8 +598,10 @@ class DamageCalculatorWrapper {
     __selectReferencingResOrDef(atkUnit, defUnit) {
         if (this.isLogEnabled) this.writeDebugLog(`守備魔防参照の評価: invalidatesReferenceLowerMit=${defUnit.battleContext.invalidatesReferenceLowerMit}`);
 
-        let refersLowerMit = (atkUnit.battleContext.refersMinOfDefOrRes
-            || (defUnit.attackRange === 2 && isWeaponTypeBreath(atkUnit.weaponType)));
+        let refersLowerMit =
+            atkUnit.battleContext.refersMinOfDefOrRes ||
+            (defUnit.attackRange === 2 && isWeaponTypeBreath(atkUnit.weaponType)) ||
+            atkUnit.hasStatusEffect(StatusEffectType.Hexblade);
         if (refersLowerMit && !defUnit.battleContext.invalidatesReferenceLowerMit) {
             if (this.isLogEnabled) this.writeDebugLog("守備魔防の低い方でダメージ計算");
             let defInCombat = defUnit.getDefInCombat(atkUnit);
@@ -2090,6 +2092,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdHexblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                targetUnit.addAtkSpdSpurs(7);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AbyssalBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SoaringWings] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpdDefSpurs(-4);
@@ -11003,6 +11017,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AbyssalBlade:
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                    }
+                    break;
                 case PassiveA.AsherasChosenPlus: {
                     let diff = atkUnit.getEvalResInCombat(defUnit) - defUnit.getEvalResInCombat(atkUnit);
                     if (diff > 0) {
@@ -14355,6 +14375,9 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveC.FettersOfDromi:
+                        targetUnit.addAllSpur(-4);
+                        break;
                     case Weapon.UnboundBlade:
                     case Weapon.UnboundBladePlus:
                     case Weapon.UnboundLancePlus:

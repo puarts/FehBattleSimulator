@@ -63,6 +63,12 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    applySkillsAfterBeginningOfTurn(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            this.applySkillAfterBeginningOfTurn(skillId, unit);
+        }
+    }
+
     /**
      * @param  {Unit} unit
      */
@@ -147,6 +153,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.FettersOfDromi:
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                break;
+            case PassiveA.AtkSpdHexblade: {
+                let pred = unit => isWeaponTypeTome(unit.weaponType);
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2, pred)) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                }
+            }
+                break;
             case Weapon.FrelianLance:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     if (unit.moveType === MoveType.Flying) {
@@ -2517,6 +2533,17 @@ class BeginningOfTurnSkillHandler {
                             unit.isActionDone = true;
                         }
                     }
+                }
+                break;
+        }
+    }
+
+    applySkillAfterBeginningOfTurn(skillId, skillOwner) {
+        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
+        switch (skillId) {
+            case PassiveC.FettersOfDromi:
+                if (skillOwner.hasStatusEffect(StatusEffectType.Stall)) {
+                    skillOwner.clearPositiveStatusEffect(StatusEffectType.MobilityIncreased);
                 }
                 break;
         }

@@ -1568,6 +1568,11 @@ const Weapon = {
     UpFrontLancePlus: 2387, // 正々堂々の槍+
     ArcaneNastrond: 2389, // 魔器ナーストレンド
     ProtectionPikePlus: 2393, // 守護の槍+
+
+    // 伝承英雄 (薄闇を統べる者 ユーリス)
+    // https://www.youtube.com/watch?v=Y90l8lWXZpY
+    // https://www.youtube.com/watch?v=ps5QuZYIuL8
+    AbyssalBlade: 2395, // 薄闇の王の刃
 };
 
 const Support = {
@@ -2078,6 +2083,9 @@ const PassiveA = {
     // 離撃
     RemoteSparrow: 2317, // 鬼神飛燕の離撃
     RemoteMirror: 2342, // 鬼神明鏡の離撃
+
+    // 魔刃
+    AtkSpdHexblade: 2396, // 攻撃速さの魔刃
 };
 
 const PassiveB = {
@@ -2726,6 +2734,7 @@ const PassiveC = {
     AllTogether: 2261, // ずっとみんなと一緒
     Severance: 2271, // すべてが閉じた世界
     FutureFocused: 2282, // 共に未来を見つめて
+    FettersOfDromi: 2397, // ドローミの鎖環
 };
 
 const PassiveS = {

@@ -230,6 +230,7 @@ const StatusEffectType = {
     UnitCannotBeSlowedByTerrain: 44, // 自身が移動可能な地形を平地のように移動可能
     ReduceDamageFromAreaOfEffectSpecialsBy80Percent: 45, // 受けた範囲奥義のダメージを80%軽減
     NeutralizesPenalties: 46, // 弱化を無効
+    Hexblade: 47, // 魔刃
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -395,6 +396,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp";
         case StatusEffectType.NeutralizesPenalties:
             return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
+        case StatusEffectType.Hexblade:
+            return g_imageRootPath + "StatusEffect_Hexblade.webp";
         default: return "";
     }
 }
@@ -2543,6 +2546,15 @@ class Unit extends BattleMapElement {
     clearNegativeStatusEffects() {
         this.statusEffects = this.getPositiveStatusEffects();
     }
+
+    clearPositiveStatusEffect(statusEffect) {
+        if (statusEffect === StatusEffectType.GrandStrategy &&
+            this.statusEffects.includes(StatusEffectType.GrandStrategy)) {
+            this.resetDebuffs();
+        }
+        this.statusEffects = this.statusEffects.filter(se => se !== statusEffect)
+    }
+
     clearPositiveStatusEffects() {
         if (this.statusEffects.includes(StatusEffectType.GrandStrategy)) {
             this.resetDebuffs();
@@ -5280,6 +5292,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                case PassiveC.FettersOfDromi:
                 case Weapon.HolytideTyrfing:
                 case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
