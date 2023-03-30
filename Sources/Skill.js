@@ -1568,6 +1568,11 @@ const Weapon = {
     UpFrontLancePlus: 2387, // 正々堂々の槍+
     ArcaneNastrond: 2389, // 魔器ナーストレンド
     ProtectionPikePlus: 2393, // 守護の槍+
+
+    // 伝承英雄 (薄闇を統べる者 ユーリス)
+    // https://www.youtube.com/watch?v=Y90l8lWXZpY
+    // https://www.youtube.com/watch?v=ps5QuZYIuL8
+    AbyssalBlade: 2395, // 薄闇の王の刃
 };
 
 const Support = {
