@@ -12624,6 +12624,14 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.specialMultDamage = 2.5;
         };
 
+        this._applySpecialSkillEffectFuncDict[Special.ArmoredBeacon] = (targetUnit, enemyUnit) => {
+            // 重装の聖炎
+            {
+                let totalDef = targetUnit.getDefInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.4);
+            }
+        };
+
         {
             let func = (targetUnit, enemyUnit) => {
                 // 緋炎

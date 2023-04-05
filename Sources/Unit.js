@@ -544,6 +544,9 @@ class BattleContext {
         // 奥義による攻撃でダメージを与えた時、次の敵の攻撃ダメージ軽減
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
 
+        // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
+        this.damageReductionRatiosWhenCondSatisfied = [];
+
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
 
@@ -742,6 +745,7 @@ class BattleContext {
         this.additionalDamageOfNextAttack = 0;
         this.damageReductionRatiosBySpecialOfNextAttack = [];
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
+        this.damageReductionRatiosWhenCondSatisfied = [];
         this.nextAttackEffectAfterSpecialActivated = false;
 
         // 自身の発動カウント変動量-1を無効

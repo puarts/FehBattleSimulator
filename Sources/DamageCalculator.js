@@ -826,6 +826,7 @@ class DamageCalculator {
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
                 }
 
+                // 戦闘中1回の軽減効果
                 // 奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
                 if (defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
                     for (let ratio of defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated) {
@@ -833,6 +834,26 @@ class DamageCalculator {
                     }
                     // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
                     defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated = null;
+                }
+
+                if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
+                    for (let skillId of defUnit.enumerateSkills()) {
+                        switch (skillId) {
+                            case Special.ArmoredBeacon:
+                                if (defUnit.tmpSpecialCount === 0 ||
+                                    atkUnit.tmpSpecialCount === 0 ||
+                                    defUnit.battleContext.isSpecialActivated ||
+                                    atkUnit.battleContext.isSpecialActivated) {
+                                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                                }
+                                break;
+                        }
+                    }
+                    for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
+                        damageReductionRatio *= 1.0 - ratio;
+                    }
+                    // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
                 }
             }
 
