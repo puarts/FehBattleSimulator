@@ -1573,6 +1573,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Y90l8lWXZpY
     // https://www.youtube.com/watch?v=ps5QuZYIuL8
     AbyssalBlade: 2395, // 薄闇の王の刃
+
+    // 超英雄 (世界のどこにいても)
+    // https://www.youtube.com/watch?v=Hg7FdEfVJ2A&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=8W9LdUiFNrM&ab_channel=NintendoMobile
+    ValiantWarAxe: 2399, // 戦神の勇斧
 };
 
 const Support = {

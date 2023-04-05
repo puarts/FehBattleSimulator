@@ -2092,6 +2092,17 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ValiantWarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-6);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    let count = enemyUnit.maxSpecialCount === 0 ? 4 : enemyUnit.maxSpecialCount;
+                    let amount = Math.max(12 - count * 2, 4);
+                    enemyUnit.atkSpur -= amount;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdHexblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                 targetUnit.addAtkSpdSpurs(7);
@@ -10694,6 +10705,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.ValiantWarAxe:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return 0.3;
+                }
+                break;
             case Weapon.Queensblade:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
                     return 0.3;
