@@ -153,6 +153,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.TotalWarTome:
+                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyAllDebuff(-5);
+                        u.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                        u.reserveToAddStatusEffect(StatusEffectType.Stall);
+                    }
+                }
+                break;
             case Weapon.GustyWarBow:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
                     if (skillOwner.isSpecialCountMax) {

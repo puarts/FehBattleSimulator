@@ -1580,6 +1580,7 @@ const Weapon = {
     ValiantWarAxe: 2399, // 戦神の勇斧
     FieryWarSword: 2402, // 戦神の烈剣
     GustyWarBow: 2405, // 戦神の風弓
+    TotalWarTome: 2406, // 戦神の破界の戦記
 };
 
 const Support = {

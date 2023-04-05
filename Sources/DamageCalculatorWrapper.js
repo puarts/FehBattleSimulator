@@ -2092,6 +2092,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.TotalWarTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAllSpur(-5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.GustyWarBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
@@ -9057,6 +9063,9 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
             this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
+            this.__applySabotage(targetUnit);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
             enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
@@ -9810,6 +9819,27 @@ class DamageCalculatorWrapper {
             this.__writeDamageCalcDebugLog(message);
         }
         targetUnit.addSpurs(...spurs);
+    }
+
+    __applySabotage(targetUnit) {
+        let atkMax = Math.abs(targetUnit.atkDebuffTotal);
+        let spdMax = Math.abs(targetUnit.spdDebuffTotal);
+        let defMax = Math.abs(targetUnit.defDebuffTotal);
+        let resMax = Math.abs(targetUnit.resDebuffTotal);
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+            let atkDebuff = Math.abs(unit.atkDebuffTotal);
+            if (atkMax < atkDebuff) atkMax = atkDebuff;
+
+            let spdDebuff = Math.abs(unit.spdDebuffTotal);
+            if (spdMax < spdDebuff) spdMax = spdDebuff;
+
+            let defDebuff = Math.abs(unit.defDebuffTotal);
+            if (defMax < defDebuff) defMax = defDebuff;
+
+            let resDebuff = Math.abs(unit.resDebuffTotal);
+            if (resMax < resDebuff) resMax = resDebuff;
+        }
+        targetUnit.addSpurs(-atkMax, -spdMax, -defMax, -resMax);
     }
 
     __isThereAllyIn2Spaces(targetUnit) {
@@ -12425,6 +12455,16 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TotalWarTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                            if (unit.debuffTotal < 0) {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                                break;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.BowOfRepose:
                     if (targetUnit.battleContext.restHpPercentage <= 99) {
                         let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);

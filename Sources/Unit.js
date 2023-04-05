@@ -231,6 +231,7 @@ const StatusEffectType = {
     ReduceDamageFromAreaOfEffectSpecialsBy80Percent: 45, // 受けた範囲奥義のダメージを80%軽減
     NeutralizesPenalties: 46, // 弱化を無効
     Hexblade: 47, // 魔刃
+    Sabotage: 48, // 混乱
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -285,6 +286,7 @@ NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
 NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
 NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
 NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
+NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -398,6 +400,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
         case StatusEffectType.Hexblade:
             return g_imageRootPath + "StatusEffect_Hexblade.webp";
+        case StatusEffectType.Sabotage:
+            return g_imageRootPath + "StatusEffect_Sabotage.webp";
         default: return "";
     }
 }
