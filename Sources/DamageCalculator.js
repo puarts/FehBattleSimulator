@@ -1034,7 +1034,10 @@ class DamageCalculator {
                         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = true;
                     }
                     break;
+                case PassiveA.AtkSpdFinish3:
+                case PassiveA.AtkResFinish3:
                 case PassiveA.SpdResFinish3:
+                case PassiveA.DefResFinish3:
                     if (atkUnit.battleContext.passiveASkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
                         if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {

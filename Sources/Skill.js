@@ -2088,10 +2088,16 @@ const PassiveA = {
     SpdDefClash4: 2403, // 速さ守備の激突4
 
     // 秘奥
+    AtkSpdFinish3: 2409, // 攻撃速さの秘奥3
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
+
+    AtkResFinish3: 9999, // 攻撃魔防の秘奥3
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
+
     SpdResFinish3: 2318, // 速さ魔防の秘奥3
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
+
+    DefResFinish3: 9999, // 守備魔防の秘奥3
     DefResFinish4: 2306, // 守備魔防の秘奥4
 
     // 離撃
