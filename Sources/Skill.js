@@ -2722,6 +2722,7 @@ const PassiveC = {
     WoefulUpheaval: 2219, // 試練メガクェイク
     VisionOfArcadia: 933, // 理想郷となるように
     VisionOfArcadia2: 2243, // 理想郷となる…・承
+    InbornIdealism: 2404, // 理想への天質
     OstiasPulse: 753, // オスティアの鼓動
     OstiasPulse2: 1828, // 盟主の鼓動・承
     Jagan: 811, // 邪眼

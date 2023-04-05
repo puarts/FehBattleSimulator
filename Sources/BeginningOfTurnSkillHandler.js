@@ -1485,6 +1485,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
+            case PassiveC.InbornIdealism:
             case PassiveC.VisionOfArcadia2:
                 if (this.__isThereAnyAllyUnit(skillOwner, x => isWeaponTypeBreathOrBeast(x.weaponType))) {
                     let units = this.__findMaxStatusUnits(
@@ -1497,7 +1498,12 @@ class BeginningOfTurnSkillHandler {
                         unit.applySpdBuff(6);
                         unit.applyDefBuff(6);
                         unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                        if (skillId === PassiveC.VisionOfArcadia2) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                        }
+                        if (skillId === PassiveC.InbornIdealism) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                        }
                     }
                 }
                 break;
