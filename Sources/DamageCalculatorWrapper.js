@@ -3403,37 +3403,41 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash3] = (targetUnit, enemyUnit) => {
-            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-            if (dist > 0) {
-                targetUnit.addSpurs(5, 5, 0, 0);
-                let amount = Math.min(dist, 3);
-                targetUnit.addSpurs(amount, amount, 0, 0);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = (targetUnit, enemyUnit) => {
-            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-            if (dist > 0) {
-                targetUnit.addSpurs(6, 6, 0, 0);
-                let amount = Math.min(dist, 4);
-                targetUnit.addSpurs(amount, amount, 0, 0);
-                if (dist >= 2) {
-                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+        {
+            // 激突3, 4
+            let getFunc = (spurFunc, skillLevel) => {
+                return (targetUnit, enemyUnit) => {
+                    let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                    if (dist > 0) {
+                        let amount = 0;
+                        let distLimit = 0;
+                        switch (skillLevel) {
+                            case 4:
+                                amount = 6;
+                                distLimit = 4;
+                                break;
+                            case 3:
+                                amount = 5;
+                                distLimit = 3;
+                                break;
+                        }
+                        spurFunc.call(targetUnit, amount);
+                        spurFunc.call(targetUnit, Math.min(dist, distLimit));
+                        if (skillLevel === 4 && dist >= 2) {
+                            targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                            targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                        }
+                    }
                 }
             }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash4] = (targetUnit, enemyUnit) => {
-            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-            if (dist > 0) {
-                targetUnit.addSpurs(6, 0, 6, 0);
-                let amount = Math.min(dist, 4);
-                targetUnit.addSpurs(amount, amount, 0, 0);
-                if (dist >= 2) {
-                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
-                }
-            }
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash3] = getFunc(Unit.prototype.addAtkSpdSpurs, 3);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = getFunc(Unit.prototype.addAtkSpdSpurs, 4);
+
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash3] = getFunc(Unit.prototype.addAtkDefSpurs, 3);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash4] = getFunc(Unit.prototype.addAtkDefSpurs, 4);
+
+            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash3] = getFunc(Unit.prototype.addSpdDefSpurs, 3);
+            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash4] = getFunc(Unit.prototype.addSpdDefSpurs, 4);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.HolytideTyrfing] = (targetUnit, enemyUnit) => {
             let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);

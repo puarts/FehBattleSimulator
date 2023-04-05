@@ -2079,7 +2079,12 @@ const PassiveA = {
     // 激突
     AtkSpdClash3: 2308, // 攻撃速さの激突3
     AtkSpdClash4: 2170, // 攻撃速さの激突4
+
+    AtkDefClash3: 9999, // 攻撃守備の激突3
     AtkDefClash4: 2207, // 攻撃守備の激突4
+
+    SpdDefClash3: 9999, // 速さ守備の激突3
+    SpdDefClash4: 2403, // 速さ守備の激突4
 
     // 秘奥
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
