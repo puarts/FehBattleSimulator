@@ -1578,6 +1578,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Hg7FdEfVJ2A&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=8W9LdUiFNrM&ab_channel=NintendoMobile
     ValiantWarAxe: 2399, // 戦神の勇斧
+    FieryWarSword: 2402, // 戦神の烈剣
 };
 
 const Support = {
