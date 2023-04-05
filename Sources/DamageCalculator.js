@@ -1020,6 +1020,14 @@ class DamageCalculator {
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GustyWarBow:
+                    if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
+                            atkUnit.battleContext.additionalDamagePerAttack += 7;
+                        }
+                    }
+                    break;
                 case Weapon.SisterlyWarAxe:
                     if (atkUnit.battleContext.weaponSkillCondSatisfied && canActivateAttackerSpecial) {
                         defUnit.battleContext.preventedDefenderSpecialPerAttack = true;
