@@ -1076,7 +1076,7 @@ class DamageCalculator {
                 case Special.CircletOfBalance: {
                     let condA =
                         (unit.isSpecialCharged || atkUnit.isSpecialCharged) ||
-                        (unit.isSpecialActivated || atkUnit.isSpecialActivated);
+                        (unit.battleContext.isSpecialActivated || atkUnit.battleContext.isSpecialActivated);
                     let condB = unit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType);
                     // 1回発動したかどうかはコンテキストかユニットの両方を見る必要がある
                     // ユニットが保持する値はリアルタイムに保持されずにDamageTypeがActualDamageの時に戦闘後にユニットにコピーされる
