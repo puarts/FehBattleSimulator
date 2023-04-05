@@ -2013,6 +2013,7 @@ const PassiveA = {
     LawsOfSacae2: 1753, // サカの掟・承
     VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
+    OstiasHeart: 2401, // オスティアの心魂
     Duality: 2241, // 魂の秘儀
     SwiftSlice: 2298, // 連閃
     SelfImprover: 2329, // 自己研鑽
