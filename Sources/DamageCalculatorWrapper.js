@@ -2092,6 +2092,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.MysticWarStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAtkResSpurs(6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TotalWarTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addAllSpur(-5);

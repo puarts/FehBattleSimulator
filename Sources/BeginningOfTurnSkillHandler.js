@@ -153,6 +153,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.MysticWarStaff: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.applyBuffs(0, 0, 6, 6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                }
+            }
+                break;
             case Weapon.TotalWarTome:
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {

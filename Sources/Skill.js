@@ -1581,6 +1581,7 @@ const Weapon = {
     FieryWarSword: 2402, // 戦神の烈剣
     GustyWarBow: 2405, // 戦神の風弓
     TotalWarTome: 2406, // 戦神の破界の戦記
+    MysticWarStaff: 2398, // 戦神の天杖
 };
 
 const Support = {
