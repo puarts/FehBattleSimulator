@@ -9074,6 +9074,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SabotageAR3:
+                    if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
+                        enemyUnit.addAtkResSpurs(-3);
+                        let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
+                        enemyUnit.addAtkResSpurs(-maxDebuffs[0], -maxDebuffs[3]);
+                    }
+                    break;
                 case Weapon.Merikuru:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
@@ -9821,12 +9828,19 @@ class DamageCalculatorWrapper {
         targetUnit.addSpurs(...spurs);
     }
 
-    __applySabotage(targetUnit) {
-        let atkMax = Math.abs(targetUnit.atkDebuffTotal);
-        let spdMax = Math.abs(targetUnit.spdDebuffTotal);
-        let defMax = Math.abs(targetUnit.defDebuffTotal);
-        let resMax = Math.abs(targetUnit.resDebuffTotal);
-        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+    __applySabotage(targetUnit, spaces = 2, withTargetUnit = true) {
+        let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(targetUnit, spaces, withTargetUnit);
+        targetUnit.addSpurs(...maxDebuffs);
+    }
+
+    // 最大のデバフを返す
+    // デバフが最大とはマイナスの値が大きいことであることに注意
+    __maxDebuffsFromAlliesWithinSpecificSpaces(targetUnit, spaces = 2, withTargetUnit = true) {
+        let atkMax = 0;
+        let spdMax = 0;
+        let defMax = 0;
+        let resMax = 0;
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit)) {
             let atkDebuff = Math.abs(unit.atkDebuffTotal);
             if (atkMax < atkDebuff) atkMax = atkDebuff;
 
@@ -9839,7 +9853,7 @@ class DamageCalculatorWrapper {
             let resDebuff = Math.abs(unit.resDebuffTotal);
             if (resMax < resDebuff) resMax = resDebuff;
         }
-        targetUnit.addSpurs(-atkMax, -spdMax, -defMax, -resMax);
+        return [-atkMax, -spdMax, -defMax, -resMax];
     }
 
     __isThereAllyIn2Spaces(targetUnit) {

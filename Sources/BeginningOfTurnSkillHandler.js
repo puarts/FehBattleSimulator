@@ -1911,6 +1911,13 @@ class BeginningOfTurnSkillHandler {
             case PassiveB.SabotageRes3:
                 this.__applySabotageSkill(skillOwner, unit => { unit.reserveToApplyResDebuff(-7); });
                 break;
+            case PassiveB.SabotageAR3: {
+                let debuffFunc = unit => {
+                    unit.reserveToApplyDebuffs(-6, 0, 0, -6);
+                };
+                this.__applySabotageSkill(skillOwner, debuffFunc, 1);
+            }
+                break;
             case Weapon.WeirdingTome:
                 this.__applySabotageSkill(
                     skillOwner,
@@ -2906,10 +2913,12 @@ class BeginningOfTurnSkillHandler {
         }
     }
     __applySabotageSkill(skillOwnerUnit, debuffFunc, diff = 3) {
-        this.__applySabotageSkillImpl(
-            skillOwnerUnit,
-            unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat() - diff),
-            debuffFunc);
+        let condFunc = unit => {
+            let unitRes = this.__getStatusEvalUnit(unit).getEvalResInPrecombat();
+            let skillOwnerRes = this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat();
+            return unitRes <= skillOwnerRes - diff;
+        };
+        this.__applySabotageSkillImpl(skillOwnerUnit, condFunc, debuffFunc);
     }
 
     __applyDebuffToMaxStatusUnits(unitGroup, getStatusFunc, applyDebuffFunc) {

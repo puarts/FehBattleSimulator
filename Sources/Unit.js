@@ -2417,6 +2417,10 @@ class Unit extends BattleMapElement {
         this.atkSpur += atk;
         this.defSpur += def;
     }
+    addAtkResSpurs(atk, res = atk) {
+        this.atkSpur += atk;
+        this.resSpur += res;
+    }
     addSpdDefSpurs(spd, def = spd) {
         this.spdSpur += spd;
         this.defSpur += def;

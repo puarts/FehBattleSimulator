@@ -844,7 +844,9 @@ class DamageCalculator {
                                     atkUnit.tmpSpecialCount === 0 ||
                                     defUnit.battleContext.isSpecialActivated ||
                                     atkUnit.battleContext.isSpecialActivated) {
-                                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                                    if (isRangedWeaponType(atkUnit.weaponType)) {
+                                        defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                                    }
                                 }
                                 break;
                         }

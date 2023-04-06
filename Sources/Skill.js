@@ -2238,6 +2238,8 @@ const PassiveB = {
     SabotageDef3: 937, // 守備の混乱3
     SabotageRes3: 867, // 魔防の混乱3
 
+    SabotageAR3: 2407, // 攻撃魔防の混乱3
+
     OgiNoRasen3: 654, // 奥義の螺旋3
     SpecialSpiral4: 2275, // 奥義の螺旋4
 
