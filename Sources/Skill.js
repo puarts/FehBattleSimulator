@@ -1582,6 +1582,9 @@ const Weapon = {
     GustyWarBow: 2405, // 戦神の風弓
     TotalWarTome: 2406, // 戦神の破界の戦記
     MysticWarStaff: 2398, // 戦神の天杖
+
+    // 2023年4月 武器錬成
+    StaffOfLilies: 2410, // 白百合の杖
 };
 
 const Support = {

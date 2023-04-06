@@ -938,12 +938,17 @@ class PostCombatSkillHander {
                         unit.applyAllDebuff(-4);
                     }
                     break;
+                case Weapon.StaffOfLilies:
                 case Weapon.MerankoryPlus:
                 case Weapon.CandyStaff:
                 case Weapon.CandyStaffPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.setSpecialCountToMax();
                         unit.addStatusEffect(StatusEffectType.Guard);
+                        if (skillId === Weapon.StaffOfLilies) {
+                            unit.applyAtkDebuff(-6);
+                            unit.applySpdDebuff(-6);
+                        }
                     }
                     break;
                 case Weapon.Candlelight:

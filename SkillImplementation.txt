@@ -357,6 +357,11 @@ __applySkillEffectAfterCombatForUnit() {
 又は
 targetUnit.battleContext.healedHpAfterCombat += N;
 
+周囲Nマスの味方は戦闘後、7回復(暗闘の対象にならないスキル効果)
+__applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
+  targetUnit.battleContext.healedHpAfterCombat += 7;
+}
+
 奥義実装
 __getCount<N>Specials() {}
 NormalAttackSpecialDict か DefenseSpecialDict を選択

@@ -2092,6 +2092,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.StaffOfLilies] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HadoNoSenfu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -8748,6 +8758,18 @@ class DamageCalculatorWrapper {
         if (calcPotentialDamage) {
             return;
         }
+        // 周囲2マス以内
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+            for (let skillId of allyUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.StaffOfLilies:
+                        if (allyUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                        }
+                        break;
+                }
+            }
+        }
         // 周囲3マス以内
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
             for (let skillId of allyUnit.enumerateSkills()) {
@@ -13191,6 +13213,11 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.StaffOfLilies:
+                    if (allyUnit.isWeaponSpecialRefined) {
+                        targetUnit.addDefResSpurs(6);
+                    }
+                    break;
                 case PassiveC.Guidance4: {
                     let moveType = targetUnit.moveType;
                     if (moveType === MoveType.Infantry || moveType === MoveType.Armor) {
