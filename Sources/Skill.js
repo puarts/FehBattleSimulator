@@ -1573,6 +1573,20 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Y90l8lWXZpY
     // https://www.youtube.com/watch?v=ps5QuZYIuL8
     AbyssalBlade: 2395, // 薄闇の王の刃
+
+    // 超英雄 (世界のどこにいても)
+    // https://www.youtube.com/watch?v=Hg7FdEfVJ2A&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=8W9LdUiFNrM&ab_channel=NintendoMobile
+    ValiantWarAxe: 2399, // 戦神の勇斧
+    FieryWarSword: 2402, // 戦神の烈剣
+    GustyWarBow: 2405, // 戦神の風弓
+    TotalWarTome: 2406, // 戦神の破界の戦記
+    MysticWarStaff: 2398, // 戦神の天杖
+
+    // 2023年4月 武器錬成
+    StaffOfLilies: 2410, // 白百合の杖
+    WizenedBreath: 2411, // 老巧のブレス
+    MaskedLance: 2412, // 仮面の騎士の槍
 };
 
 const Support = {
@@ -1683,6 +1697,7 @@ const Special = {
     Glimmer: 462, // 凶星
     Deadeye: 1481, // 狙撃
     Astra: 461, // 流星
+    ArmoredBeacon: 2400, // 重装の聖炎
     Bonfire: 455, // 緋炎
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
@@ -2007,6 +2022,7 @@ const PassiveA = {
     LawsOfSacae2: 1753, // サカの掟・承
     VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
+    OstiasHeart: 2401, // オスティアの心魂
     Duality: 2241, // 魂の秘儀
     SwiftSlice: 2298, // 連閃
     SelfImprover: 2329, // 自己研鑽
@@ -2071,13 +2087,24 @@ const PassiveA = {
     // 激突
     AtkSpdClash3: 2308, // 攻撃速さの激突3
     AtkSpdClash4: 2170, // 攻撃速さの激突4
+
+    AtkDefClash3: 9999, // 攻撃守備の激突3
     AtkDefClash4: 2207, // 攻撃守備の激突4
 
+    SpdDefClash3: 9999, // 速さ守備の激突3
+    SpdDefClash4: 2403, // 速さ守備の激突4
+
     // 秘奥
+    AtkSpdFinish3: 2409, // 攻撃速さの秘奥3
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
+
+    AtkResFinish3: 9999, // 攻撃魔防の秘奥3
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
+
     SpdResFinish3: 2318, // 速さ魔防の秘奥3
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
+
+    DefResFinish3: 9999, // 守備魔防の秘奥3
     DefResFinish4: 2306, // 守備魔防の秘奥4
 
     // 離撃
@@ -2216,6 +2243,8 @@ const PassiveB = {
     SabotageSpd3: 1026, // 速さの混乱3
     SabotageDef3: 937, // 守備の混乱3
     SabotageRes3: 867, // 魔防の混乱3
+
+    SabotageAR3: 2407, // 攻撃魔防の混乱3
 
     OgiNoRasen3: 654, // 奥義の螺旋3
     SpecialSpiral4: 2275, // 奥義の螺旋4
@@ -2709,6 +2738,7 @@ const PassiveC = {
     WoefulUpheaval: 2219, // 試練メガクェイク
     VisionOfArcadia: 933, // 理想郷となるように
     VisionOfArcadia2: 2243, // 理想郷となる…・承
+    InbornIdealism: 2404, // 理想への天質
     OstiasPulse: 753, // オスティアの鼓動
     OstiasPulse2: 1828, // 盟主の鼓動・承
     Jagan: 811, // 邪眼
@@ -3029,6 +3059,7 @@ NormalAttackSpecialDict[Special.LunarFlash2] = 0;
 NormalAttackSpecialDict[Special.Glimmer] = 0;
 NormalAttackSpecialDict[Special.Deadeye] = 0;
 NormalAttackSpecialDict[Special.Astra] = 0;
+NormalAttackSpecialDict[Special.ArmoredBeacon] = 0;
 NormalAttackSpecialDict[Special.Bonfire] = 0;
 NormalAttackSpecialDict[Special.Ignis] = 0;
 NormalAttackSpecialDict[Special.Iceberg] = 0;

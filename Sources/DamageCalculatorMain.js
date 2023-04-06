@@ -874,6 +874,7 @@ class DamageCalcData {
             Special.BlueFrame, // ブルーフレイム(+10 or +25)
             Special.DraconicAura, // 竜穿
             // Special.Iceberg, // 氷蒼(+魔防50%)
+            Special.ArmoredBeacon, // 重装の聖炎(+守備40%)
             Special.Bonfire, // 緋炎(+守備50%)
             Special.Luna, // 月光(守備魔防-50%)
         ];

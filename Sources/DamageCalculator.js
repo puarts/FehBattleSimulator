@@ -331,6 +331,18 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HadoNoSenfu: {
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                                let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                                atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
+                            }
+                        }
+                    }
+                }
+                    break;
                 case PassiveB.PoeticJustice: {
                     let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
                     atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
@@ -826,6 +838,7 @@ class DamageCalculator {
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
                 }
 
+                // 戦闘中1回の軽減効果
                 // 奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
                 if (defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
                     for (let ratio of defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated) {
@@ -833,6 +846,28 @@ class DamageCalculator {
                     }
                     // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
                     defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated = null;
+                }
+
+                if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
+                    for (let skillId of defUnit.enumerateSkills()) {
+                        switch (skillId) {
+                            case Special.ArmoredBeacon:
+                                if (defUnit.tmpSpecialCount === 0 ||
+                                    atkUnit.tmpSpecialCount === 0 ||
+                                    defUnit.battleContext.isSpecialActivated ||
+                                    atkUnit.battleContext.isSpecialActivated) {
+                                    if (isRangedWeaponType(atkUnit.weaponType)) {
+                                        defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                    for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
+                        damageReductionRatio *= 1.0 - ratio;
+                    }
+                    // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
                 }
             }
 
@@ -999,13 +1034,24 @@ class DamageCalculator {
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.GustyWarBow:
+                    if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
+                            atkUnit.battleContext.additionalDamagePerAttack += 7;
+                        }
+                    }
+                    break;
                 case Weapon.SisterlyWarAxe:
                     if (atkUnit.battleContext.weaponSkillCondSatisfied && canActivateAttackerSpecial) {
                         defUnit.battleContext.preventedDefenderSpecialPerAttack = true;
                         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = true;
                     }
                     break;
+                case PassiveA.AtkSpdFinish3:
+                case PassiveA.AtkResFinish3:
                 case PassiveA.SpdResFinish3:
+                case PassiveA.DefResFinish3:
                     if (atkUnit.battleContext.passiveASkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
                         if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
@@ -1076,7 +1122,7 @@ class DamageCalculator {
                 case Special.CircletOfBalance: {
                     let condA =
                         (unit.isSpecialCharged || atkUnit.isSpecialCharged) ||
-                        (unit.isSpecialActivated || atkUnit.isSpecialActivated);
+                        (unit.battleContext.isSpecialActivated || atkUnit.battleContext.isSpecialActivated);
                     let condB = unit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType);
                     // 1回発動したかどうかはコンテキストかユニットの両方を見る必要がある
                     // ユニットが保持する値はリアルタイムに保持されずにDamageTypeがActualDamageの時に戦闘後にユニットにコピーされる

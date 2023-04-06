@@ -57,6 +57,7 @@ const Hero = {
     HarmonizedLinde: 919,
     DuoElise: 932,
     HarmonizedKarla: 944,
+    DuoMark: 955,
 };
 
 function isThiefIndex(heroIndex) {
@@ -231,6 +232,7 @@ const StatusEffectType = {
     ReduceDamageFromAreaOfEffectSpecialsBy80Percent: 45, // 受けた範囲奥義のダメージを80%軽減
     NeutralizesPenalties: 46, // 弱化を無効
     Hexblade: 47, // 魔刃
+    Sabotage: 48, // 混乱
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -285,6 +287,7 @@ NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
 NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
 NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
 NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
+NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -398,6 +401,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
         case StatusEffectType.Hexblade:
             return g_imageRootPath + "StatusEffect_Hexblade.webp";
+        case StatusEffectType.Sabotage:
+            return g_imageRootPath + "StatusEffect_Sabotage.webp";
         default: return "";
     }
 }
@@ -543,6 +548,9 @@ class BattleContext {
 
         // 奥義による攻撃でダメージを与えた時、次の敵の攻撃ダメージ軽減
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
+
+        // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
+        this.damageReductionRatiosWhenCondSatisfied = [];
 
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
@@ -742,6 +750,7 @@ class BattleContext {
         this.additionalDamageOfNextAttack = 0;
         this.damageReductionRatiosBySpecialOfNextAttack = [];
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
+        this.damageReductionRatiosWhenCondSatisfied = [];
         this.nextAttackEffectAfterSpecialActivated = false;
 
         // 自身の発動カウント変動量-1を無効
@@ -2409,6 +2418,10 @@ class Unit extends BattleMapElement {
         this.atkSpur += atk;
         this.defSpur += def;
     }
+    addAtkResSpurs(atk, res = atk) {
+        this.atkSpur += atk;
+        this.resSpur += res;
+    }
     addSpdDefSpurs(spd, def = spd) {
         this.spdSpur += spd;
         this.defSpur += def;
@@ -2417,14 +2430,19 @@ class Unit extends BattleMapElement {
         this.spdSpur += spd;
         this.resSpur += res;
     }
+    addDefResSpurs(def, res = def) {
+        this.defSpur += def;
+        this.resSpur += res;
+    }
+    addSpursWithoutSpd(atk, def = atk, res = atk) {
+        this.atkSpur += atk;
+        this.defSpur += def;
+        this.resSpur += res;
+    }
     addSpursWithoutRes(atk, spd = atk, def = atk) {
         this.atkSpur += atk;
         this.spdSpur += spd;
         this.defSpur += def;
-    }
-    addDefResSpurs(def, res = def) {
-        this.defSpur += def;
-        this.resSpur += res;
     }
     getSpurs() {
         return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];

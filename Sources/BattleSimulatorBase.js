@@ -1021,6 +1021,15 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoMark:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (this.__isInCross(unit, duoUnit, 3, 3)) {
+                        unit.addStatusEffect(StatusEffectType.Isolation);
+                        unit.addStatusEffect(StatusEffectType.Guard);
+                        unit.increaseSpecialCount(2);
+                    }
+                }
+                break;
             case Hero.HarmonizedKarla: {
                 let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
@@ -1386,6 +1395,14 @@ class BattleSimmulatorBase {
         duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn = true;
         ++duoUnit.duoOrHarmonizedSkillActivationCount;
         updateAllUi();
+    }
+
+    // 縦row列と横column列にいるかどうか
+    __isInCross(unitA, unitB, row, column) {
+        let rowDiff = (row - 1) / 2;
+        let columnDiff = (column - 1) / 2;
+        return Math.abs(unitA.posX - unitB.posX) <= columnDiff ||
+            Math.abs(unitA.posY - unitB.posY) <= rowDiff;
     }
 
     __findStructure(predicator) {
@@ -3231,6 +3248,16 @@ class BattleSimmulatorBase {
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HadoNoSenfu:
+                    if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                        atkUnit.isWeaponSpecialRefined &&
+                        atkUnit.battleContext.initiatesCombat &&
+                        !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1) &&
+                        atkUnit.isActionDone) {
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForWeapon = true;
+                    }
+                    break;
                 case Weapon.TwinCrestPower:
                     if (!atkUnit.isOneTimeActionActivatedForWeapon
                         && atkUnit.battleContext.restHpPercentage >= 25

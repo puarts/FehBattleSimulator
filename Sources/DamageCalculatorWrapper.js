@@ -707,6 +707,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MaskedLance:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (defUnit.battleContext.restHpPercentage >= 25) {
+                            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                        }
+                    }
+                    break;
                 case Weapon.MonarchBlade:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
                         let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
@@ -2092,6 +2100,131 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.MaskedLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                let res = targetUnit.getResInPrecombat();
+                let amount = Math.trunc(res * 0.2);
+                enemyUnit.addSpursWithoutSpd(-amount);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WizenedBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                if (!enemyUnit.battleContext.invalidatesOwnAtkDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.atkDebuffTotal), 0);
+                    enemyUnit.atkSpur -= amount;
+                }
+                if (!enemyUnit.battleContext.invalidatesOwnSpdDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.spdDebuffTotal), 0);
+                    enemyUnit.spdSpur -= amount;
+                }
+                if (!enemyUnit.battleContext.invalidatesOwnDefDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.defDebuffTotal), 0);
+                    enemyUnit.defSpur -= amount;
+                }
+                if (!enemyUnit.battleContext.invalidatesOwnResDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.resDebuffTotal), 0);
+                    enemyUnit.resSpur -= amount;
+                }
+                enemyUnit.addAllSpur(-6);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.StaffOfLilies] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HadoNoSenfu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25 ||
+                    this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.MysticWarStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAtkResSpurs(6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TotalWarTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAllSpur(-5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.GustyWarBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                targetUnit.addAllSpur(5);
+                if (isWeaponTypeBeast(enemyUnit.weaponType) ||
+                    (isRangedWeaponType(enemyUnit.weaponType) &&
+                        (enemyUnit.moveType === MoveType.Cavalry || enemyUnit.moveType === MoveType.Flying))) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
+                } else {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FieryWarSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.min(targetUnit.getPositiveStatusEffects().length * 3, 12);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.OstiasHeart] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addAtkDefSpurs(-8);
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ValiantWarAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-6);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    let count = enemyUnit.maxSpecialCount === 0 ? 4 : enemyUnit.maxSpecialCount;
+                    let amount = Math.max(12 - count * 2, 4);
+                    enemyUnit.atkSpur -= amount;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdHexblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                 targetUnit.addAtkSpdSpurs(7);
@@ -3376,37 +3509,41 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash3] = (targetUnit, enemyUnit) => {
-            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-            if (dist > 0) {
-                targetUnit.addSpurs(5, 5, 0, 0);
-                let amount = Math.min(dist, 3);
-                targetUnit.addSpurs(amount, amount, 0, 0);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = (targetUnit, enemyUnit) => {
-            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-            if (dist > 0) {
-                targetUnit.addSpurs(6, 6, 0, 0);
-                let amount = Math.min(dist, 4);
-                targetUnit.addSpurs(amount, amount, 0, 0);
-                if (dist >= 2) {
-                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+        {
+            // 激突3, 4
+            let getFunc = (spurFunc, skillLevel) => {
+                return (targetUnit, enemyUnit) => {
+                    let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                    if (dist > 0) {
+                        let amount = 0;
+                        let distLimit = 0;
+                        switch (skillLevel) {
+                            case 4:
+                                amount = 6;
+                                distLimit = 4;
+                                break;
+                            case 3:
+                                amount = 5;
+                                distLimit = 3;
+                                break;
+                        }
+                        spurFunc.call(targetUnit, amount);
+                        spurFunc.call(targetUnit, Math.min(dist, distLimit));
+                        if (skillLevel === 4 && dist >= 2) {
+                            targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                            targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                        }
+                    }
                 }
             }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash4] = (targetUnit, enemyUnit) => {
-            let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-            if (dist > 0) {
-                targetUnit.addSpurs(6, 0, 6, 0);
-                let amount = Math.min(dist, 4);
-                targetUnit.addSpurs(amount, amount, 0, 0);
-                if (dist >= 2) {
-                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
-                }
-            }
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash3] = getFunc(Unit.prototype.addAtkSpdSpurs, 3);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = getFunc(Unit.prototype.addAtkSpdSpurs, 4);
+
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash3] = getFunc(Unit.prototype.addAtkDefSpurs, 3);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash4] = getFunc(Unit.prototype.addAtkDefSpurs, 4);
+
+            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash3] = getFunc(Unit.prototype.addSpdDefSpurs, 3);
+            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash4] = getFunc(Unit.prototype.addSpdDefSpurs, 4);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.HolytideTyrfing] = (targetUnit, enemyUnit) => {
             let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
@@ -7443,9 +7580,15 @@ class DamageCalculatorWrapper {
             }
 
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.ImbuedKoma] = (targetUnit) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ImbuedKoma] = (targetUnit, enemyUnit) => {
             if (targetUnit.isSpecialCharged) {
                 targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Marute] = (targetUnit, enemyUnit) => {
@@ -8102,6 +8245,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ImbuedKoma:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        let def = DamageCalculatorWrapper.__getDef(targetUnit, enemyUnit, isPrecombat);
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.15);
+                    }
+                    break;
                 case PassiveB.SpecialSpiral4:
                     targetUnit.battleContext.additionalDamageOfSpecial += 5;
                     break;
@@ -8658,6 +8807,18 @@ class DamageCalculatorWrapper {
         if (calcPotentialDamage) {
             return;
         }
+        // 周囲2マス以内
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+            for (let skillId of allyUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.StaffOfLilies:
+                        if (allyUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                        }
+                        break;
+                }
+            }
+        }
         // 周囲3マス以内
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
             for (let skillId of allyUnit.enumerateSkills()) {
@@ -9013,6 +9174,9 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
             this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
+            this.__applySabotage(targetUnit);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
             enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
@@ -9021,6 +9185,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SabotageAR3:
+                    if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
+                        enemyUnit.addAtkResSpurs(-3);
+                        let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
+                        enemyUnit.addAtkResSpurs(-maxDebuffs[0], -maxDebuffs[3]);
+                    }
+                    break;
                 case Weapon.Merikuru:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
@@ -9768,6 +9939,34 @@ class DamageCalculatorWrapper {
         targetUnit.addSpurs(...spurs);
     }
 
+    __applySabotage(targetUnit, spaces = 2, withTargetUnit = true) {
+        let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(targetUnit, spaces, withTargetUnit);
+        targetUnit.addSpurs(...maxDebuffs);
+    }
+
+    // 最大のデバフを返す
+    // デバフが最大とはマイナスの値が大きいことであることに注意
+    __maxDebuffsFromAlliesWithinSpecificSpaces(targetUnit, spaces = 2, withTargetUnit = true) {
+        let atkMax = 0;
+        let spdMax = 0;
+        let defMax = 0;
+        let resMax = 0;
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit)) {
+            let atkDebuff = Math.abs(unit.atkDebuffTotal);
+            if (atkMax < atkDebuff) atkMax = atkDebuff;
+
+            let spdDebuff = Math.abs(unit.spdDebuffTotal);
+            if (spdMax < spdDebuff) spdMax = spdDebuff;
+
+            let defDebuff = Math.abs(unit.defDebuffTotal);
+            if (defMax < defDebuff) defMax = defDebuff;
+
+            let resDebuff = Math.abs(unit.resDebuffTotal);
+            if (resMax < resDebuff) resMax = resDebuff;
+        }
+        return [-atkMax, -spdMax, -defMax, -resMax];
+    }
+
     __isThereAllyIn2Spaces(targetUnit) {
         return this.__isThereAllyInSpecifiedSpaces(targetUnit, 2);
     }
@@ -9838,6 +10037,14 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.ImbuedKoma:
+                        if (targetUnit.isWeaponRefined) {
+                            if (targetUnit.isSpecialCharged) {
+                                let def = targetUnit.getDefInCombat(enemyUnit);
+                                targetUnit.battleContext.damageReductionValue += Math.trunc(def * 0.2);
+                            }
+                        }
+                        break;
                     case Weapon.KouketsuNoSensou:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -10694,6 +10901,18 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.MaskedLance:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                    }
+                }
+                break;
+            case Weapon.ValiantWarAxe:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return 0.3;
+                }
+                break;
             case Weapon.Queensblade:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
                     return 0.3;
@@ -12139,11 +12358,6 @@ class DamageCalculatorWrapper {
                             }
                         }
                         break;
-                    case Weapon.HadoNoSenfu:
-                        if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
-                            ++followupAttackPriority;
-                        }
-                        break;
                     case Weapon.Gyorru:
                         if (defUnit.hasNegativeStatusEffect()) {
                             ++followupAttackPriority;
@@ -12242,11 +12456,6 @@ class DamageCalculatorWrapper {
                             if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
                                 --followupAttackPriority;
                             }
-                        }
-                        break;
-                    case Weapon.ImbuedKoma:
-                        if (defUnit.isSpecialCharged) {
-                            --followupAttackPriority;
                         }
                         break;
                     case Weapon.FellBreath:
@@ -12376,6 +12585,16 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TotalWarTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                            if (unit.debuffTotal < 0) {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                                break;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.BowOfRepose:
                     if (targetUnit.battleContext.restHpPercentage <= 99) {
                         let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
@@ -12606,6 +12825,14 @@ class DamageCalculatorWrapper {
         this._applySpecialSkillEffectFuncDict[Special.Astra] = (targetUnit) => {
             // 流星
             targetUnit.battleContext.specialMultDamage = 2.5;
+        };
+
+        this._applySpecialSkillEffectFuncDict[Special.ArmoredBeacon] = (targetUnit, enemyUnit) => {
+            // 重装の聖炎
+            {
+                let totalDef = targetUnit.getDefInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.4);
+            }
         };
 
         {
@@ -13042,6 +13269,11 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.StaffOfLilies:
+                    if (allyUnit.isWeaponSpecialRefined) {
+                        targetUnit.addDefResSpurs(6);
+                    }
+                    break;
                 case PassiveC.Guidance4: {
                     let moveType = targetUnit.moveType;
                     if (moveType === MoveType.Infantry || moveType === MoveType.Armor) {

@@ -153,6 +153,31 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.MysticWarStaff: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.applyBuffs(0, 0, 6, 6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                }
+            }
+                break;
+            case Weapon.TotalWarTome:
+                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToApplyAllDebuff(-5);
+                        u.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                        u.reserveToAddStatusEffect(StatusEffectType.Stall);
+                    }
+                }
+                break;
+            case Weapon.GustyWarBow:
+                if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
+                    if (skillOwner.isSpecialCountMax) {
+                        skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case PassiveC.FettersOfDromi:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;
@@ -1485,6 +1510,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
+            case PassiveC.InbornIdealism:
             case PassiveC.VisionOfArcadia2:
                 if (this.__isThereAnyAllyUnit(skillOwner, x => isWeaponTypeBreathOrBeast(x.weaponType))) {
                     let units = this.__findMaxStatusUnits(
@@ -1497,7 +1523,12 @@ class BeginningOfTurnSkillHandler {
                         unit.applySpdBuff(6);
                         unit.applyDefBuff(6);
                         unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                        if (skillId === PassiveC.VisionOfArcadia2) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                        }
+                        if (skillId === PassiveC.InbornIdealism) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                        }
                     }
                 }
                 break;
@@ -1888,6 +1919,13 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveB.SabotageRes3:
                 this.__applySabotageSkill(skillOwner, unit => { unit.reserveToApplyResDebuff(-7); });
+                break;
+            case PassiveB.SabotageAR3: {
+                let debuffFunc = unit => {
+                    unit.reserveToApplyDebuffs(-6, 0, 0, -6);
+                };
+                this.__applySabotageSkill(skillOwner, debuffFunc, 1);
+            }
                 break;
             case Weapon.WeirdingTome:
                 this.__applySabotageSkill(
@@ -2884,10 +2922,12 @@ class BeginningOfTurnSkillHandler {
         }
     }
     __applySabotageSkill(skillOwnerUnit, debuffFunc, diff = 3) {
-        this.__applySabotageSkillImpl(
-            skillOwnerUnit,
-            unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= (this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat() - diff),
-            debuffFunc);
+        let condFunc = unit => {
+            let unitRes = this.__getStatusEvalUnit(unit).getEvalResInPrecombat();
+            let skillOwnerRes = this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat();
+            return unitRes <= skillOwnerRes - diff;
+        };
+        this.__applySabotageSkillImpl(skillOwnerUnit, condFunc, debuffFunc);
     }
 
     __applyDebuffToMaxStatusUnits(unitGroup, getStatusFunc, applyDebuffFunc) {

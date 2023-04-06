@@ -357,6 +357,11 @@ __applySkillEffectAfterCombatForUnit() {
 又は
 targetUnit.battleContext.healedHpAfterCombat += N;
 
+周囲Nマスの味方は戦闘後、7回復(暗闘の対象にならないスキル効果)
+__applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
+  targetUnit.battleContext.healedHpAfterCombat += 7;
+}
+
 奥義実装
 __getCount<N>Specials() {}
 NormalAttackSpecialDict か DefenseSpecialDict を選択
@@ -483,11 +488,16 @@ __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
     {
         let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, N, M);
         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        // 魔防参照
+        let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, N, M);
+        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
     }
 }
 戦闘中
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+    // 魔防参照
+    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
 }
 
 受けた範囲奥義のダメージをNだけ減少(巨影の範囲奥義除く)
