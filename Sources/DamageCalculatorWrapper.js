@@ -7499,9 +7499,15 @@ class DamageCalculatorWrapper {
             }
 
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.ImbuedKoma] = (targetUnit) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ImbuedKoma] = (targetUnit, enemyUnit) => {
             if (targetUnit.isSpecialCharged) {
                 targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Marute] = (targetUnit, enemyUnit) => {
@@ -8158,6 +8164,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ImbuedKoma:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        let def = DamageCalculatorWrapper.__getDef(targetUnit, enemyUnit, isPrecombat);
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.15);
+                    }
+                    break;
                 case PassiveB.SpecialSpiral4:
                     targetUnit.battleContext.additionalDamageOfSpecial += 5;
                     break;
@@ -9932,6 +9944,14 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.ImbuedKoma:
+                        if (targetUnit.isWeaponRefined) {
+                            if (targetUnit.isSpecialCharged) {
+                                let def = targetUnit.getDefInCombat(enemyUnit);
+                                targetUnit.battleContext.damageReductionValue += Math.trunc(def * 0.2);
+                            }
+                        }
+                        break;
                     case Weapon.KouketsuNoSensou:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -12341,11 +12361,6 @@ class DamageCalculatorWrapper {
                             if (atkUnit.isBuffed || atkUnit.isMobilityIncreased) {
                                 --followupAttackPriority;
                             }
-                        }
-                        break;
-                    case Weapon.ImbuedKoma:
-                        if (defUnit.isSpecialCharged) {
-                            --followupAttackPriority;
                         }
                         break;
                     case Weapon.FellBreath:
