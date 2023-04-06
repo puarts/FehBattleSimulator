@@ -707,6 +707,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.MaskedLance:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (defUnit.battleContext.restHpPercentage >= 25) {
+                            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                        }
+                    }
+                    break;
                 case Weapon.MonarchBlade:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
                         let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
@@ -2092,6 +2100,19 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.MaskedLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                let res = targetUnit.getResInPrecombat();
+                let amount = Math.trunc(res * 0.2);
+                enemyUnit.addSpursWithoutSpd(-amount);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WizenedBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(4);
@@ -10880,6 +10901,13 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.MaskedLance:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                    }
+                }
+                break;
             case Weapon.ValiantWarAxe:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
                     return 0.3;

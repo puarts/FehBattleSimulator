@@ -1586,6 +1586,7 @@ const Weapon = {
     // 2023年4月 武器錬成
     StaffOfLilies: 2410, // 白百合の杖
     WizenedBreath: 2411, // 老巧のブレス
+    MaskedLance: 2412, // 仮面の騎士の槍
 };
 
 const Support = {
