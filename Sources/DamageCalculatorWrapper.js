@@ -2092,6 +2092,34 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.WizenedBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                if (!enemyUnit.battleContext.invalidatesOwnAtkDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.atkDebuffTotal), 0);
+                    enemyUnit.atkSpur -= amount;
+                }
+                if (!enemyUnit.battleContext.invalidatesOwnSpdDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.spdDebuffTotal), 0);
+                    enemyUnit.spdSpur -= amount;
+                }
+                if (!enemyUnit.battleContext.invalidatesOwnDefDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.defDebuffTotal), 0);
+                    enemyUnit.defSpur -= amount;
+                }
+                if (!enemyUnit.battleContext.invalidatesOwnResDebuff) {
+                    let amount = Math.max(6 - Math.abs(enemyUnit.resDebuffTotal), 0);
+                    enemyUnit.resSpur -= amount;
+                }
+                enemyUnit.addAllSpur(-6);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.StaffOfLilies] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(4);
