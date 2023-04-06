@@ -3248,6 +3248,16 @@ class BattleSimmulatorBase {
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HadoNoSenfu:
+                    if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                        atkUnit.isWeaponSpecialRefined &&
+                        atkUnit.battleContext.initiatesCombat &&
+                        !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1) &&
+                        atkUnit.isActionDone) {
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForWeapon = true;
+                    }
+                    break;
                 case Weapon.TwinCrestPower:
                     if (!atkUnit.isOneTimeActionActivatedForWeapon
                         && atkUnit.battleContext.restHpPercentage >= 25

@@ -2092,6 +2092,28 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.HadoNoSenfu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25 ||
+                    this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MysticWarStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAtkResSpurs(6);
@@ -12256,11 +12278,6 @@ class DamageCalculatorWrapper {
                             if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
                                 ++followupAttackPriority;
                             }
-                        }
-                        break;
-                    case Weapon.HadoNoSenfu:
-                        if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
-                            ++followupAttackPriority;
                         }
                         break;
                     case Weapon.Gyorru:

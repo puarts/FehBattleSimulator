@@ -331,6 +331,18 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HadoNoSenfu: {
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        // <特殊錬成効果>
+                        if (atkUnit.isWeaponSpecialRefined) {
+                            if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                                let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                                atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
+                            }
+                        }
+                    }
+                }
+                    break;
                 case PassiveB.PoeticJustice: {
                     let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
                     atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
