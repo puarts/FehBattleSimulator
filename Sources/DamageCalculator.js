@@ -847,28 +847,6 @@ class DamageCalculator {
                     // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
                     defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated = null;
                 }
-
-                if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
-                    for (let skillId of defUnit.enumerateSkills()) {
-                        switch (skillId) {
-                            case Special.ArmoredBeacon:
-                                if (defUnit.tmpSpecialCount === 0 ||
-                                    atkUnit.tmpSpecialCount === 0 ||
-                                    defUnit.battleContext.isSpecialActivated ||
-                                    atkUnit.battleContext.isSpecialActivated) {
-                                    if (isRangedWeaponType(atkUnit.weaponType)) {
-                                        defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                    for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
-                        damageReductionRatio *= 1.0 - ratio;
-                    }
-                    // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
-                }
             }
 
             let invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack =
@@ -881,6 +859,29 @@ class DamageCalculator {
             if (invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial) {
                 if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
                 damageReductionRatio = 1.0;
+            }
+
+            // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
+            if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
+                for (let skillId of defUnit.enumerateSkills()) {
+                    switch (skillId) {
+                        case Special.ArmoredBeacon:
+                            if (defUnit.tmpSpecialCount === 0 ||
+                                atkUnit.tmpSpecialCount === 0 ||
+                                defUnit.battleContext.isSpecialActivated ||
+                                atkUnit.battleContext.isSpecialActivated) {
+                                if (isRangedWeaponType(atkUnit.weaponType)) {
+                                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                                }
+                            }
+                            break;
+                    }
+                }
+                for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
+                    damageReductionRatio *= 1.0 - ratio;
+                }
+                // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
+                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
             }
 
             // 奥義によるダメージ軽減
