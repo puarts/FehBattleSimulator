@@ -8814,7 +8814,7 @@ class BattleSimmulatorBase {
     }
 
     __canApplyReciprocalAid(supporterUnit, targetUnit) {
-        if (targetUnit.restHpPercentage() === 100) {
+        if (targetUnit.restHpPercentage === 100) {
             return false;
         }
 
