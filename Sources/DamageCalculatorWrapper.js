@@ -2105,6 +2105,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkResScowl4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAtkResSpurs(7);
+
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RevealingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(5);
@@ -10060,6 +10066,19 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case PassiveA.AtkResScowl4:
+                        if (enemyUnit.battleContext.initiatesCombat ||
+                            enemyUnit.battleContext.restHpPercentage >= 75) {
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                let diff =
+                                    targetUnit.getEvalResInCombat(enemyUnit) -
+                                    enemyUnit.getEvalResInCombat(targetUnit);
+                                if (diff >= 5) {
+                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
+                                }
+                            }
+                        }
+                        break;
                     case Weapon.RevealingBreath:
                         if (enemyUnit.battleContext.initiatesCombat ||
                             enemyUnit.battleContext.restHpPercentage >= 75) {
