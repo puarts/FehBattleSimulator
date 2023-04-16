@@ -2037,6 +2037,7 @@ const PassiveA = {
     Nightmare: 2334, // 漆黒の悪夢
     GiftOfMagic: 2337, // 人に魔道を授けし者
     PartOfThePlan: 2369, // これも策のうちだよ
+    KnightlyDevotion: 2416, // 忠義の槍
 
     // 防城戦
     AtkSpdBojosen3: 1473,

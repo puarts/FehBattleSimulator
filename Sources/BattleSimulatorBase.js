@@ -6287,6 +6287,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case PassiveA.KnightlyDevotion:
                 case PassiveB.SoaringWings:
                 case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:

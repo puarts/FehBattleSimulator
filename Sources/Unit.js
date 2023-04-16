@@ -5341,6 +5341,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
+
                 // 残り+1
                 case Weapon.ReginRave:
                     if (this.isWeaponSpecialRefined) {
@@ -5349,6 +5350,7 @@ class Unit extends BattleMapElement {
                         }
                     }
                     break;
+                case PassiveA.KnightlyDevotion:
                 case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:
                 case Weapon.FloridCanePlus:
