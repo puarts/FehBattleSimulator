@@ -153,6 +153,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.LoneWolf:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    if (skillOwner.isSpecialCountMax) {
+                        skillOwner.reduceSpecialCount(2);
+                    } else if (Number(skillOwner.specialCount) === Number(skillOwner.maxSpecialCount) - 1) {
+                        skillOwner.reduceSpecialCount(1);
+                    }
+                }
+                break;
             case Weapon.MysticWarStaff: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {

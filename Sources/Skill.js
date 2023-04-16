@@ -1587,6 +1587,11 @@ const Weapon = {
     StaffOfLilies: 2410, // 白百合の杖
     WizenedBreath: 2411, // 老巧のブレス
     MaskedLance: 2412, // 仮面の騎士の槍
+
+    // 新英雄＆魔器イングリット
+    // https://www.youtube.com/watch?v=g4FiqZ9FzMI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=eHdha8By27Y&ab_channel=NintendoMobile
+    LoneWolf: 2413, // 一匹狼の鋭剣
 };
 
 const Support = {
