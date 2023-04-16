@@ -322,7 +322,7 @@ const Weapon = {
     Blarblade: 260, // ブラーブレード
     BlarbladePlus: 261, // ブラーブレード+
     Gronnblade: 303, // グルンブレード
-    GronnbladePlus: 304, // グルンブレード+ 
+    GronnbladePlus: 304, // グルンブレード+
     Rauarblade: 229, // ラウアブレード
     RauarbladePlus: 230, // ラウアブレード+
     KeenGronnwolfPlus: 323, // グルンウルフ鍛+
@@ -682,7 +682,7 @@ const Weapon = {
     EishinNoAnki: 1140, // 影身の暗器
     ChichiNoSenjutsusyo: 1131, // 父の戦術書
     RazuwarudoNoMaiken: 1130, // ラズワルドの舞剣
-    YujoNoHanaNoTsuePlus: 1128,// 友情の花の杖 
+    YujoNoHanaNoTsuePlus: 1128,// 友情の花の杖
     AiNoSaiki: 1126, // 愛の祭器
     BaraNoYari: 1123, // 薔薇の槍
     GeneiFeather: 1110, // 幻影フェザー
@@ -1587,6 +1587,14 @@ const Weapon = {
     StaffOfLilies: 2410, // 白百合の杖
     WizenedBreath: 2411, // 老巧のブレス
     MaskedLance: 2412, // 仮面の騎士の槍
+
+    // 新英雄＆魔器イングリット
+    // https://www.youtube.com/watch?v=g4FiqZ9FzMI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=eHdha8By27Y&ab_channel=NintendoMobile
+    LoneWolf: 2413, // 一匹狼の鋭剣
+    RevealingBreath: 2420, // 福音のブレス
+    AlliedAxePlus: 2418, // 共闘の斧+
+    ArcaneLuin: 2415, // 魔器・魔槍ルーン
 };
 
 const Support = {
@@ -1651,7 +1659,7 @@ const Support = {
     Sacrifice: 432, // 癒しの手
     MaidensSolace: 1821, // 癒しの乙女
     Recover: 439, // リカバー
-    RecoverPlus: 440, // リカバー+ 
+    RecoverPlus: 440, // リカバー+
     RestorePlus: 449, // レスト+
     HarshCommand: 423, // 一喝
     HarshCommandPlus: 905, // 一喝+
@@ -2029,6 +2037,7 @@ const PassiveA = {
     Nightmare: 2334, // 漆黒の悪夢
     GiftOfMagic: 2337, // 人に魔道を授けし者
     PartOfThePlan: 2369, // これも策のうちだよ
+    KnightlyDevotion: 2416, // 忠義の槍
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -2113,6 +2122,9 @@ const PassiveA = {
 
     // 魔刃
     AtkSpdHexblade: 2396, // 攻撃速さの魔刃
+
+    // 竜眼
+    AtkResScowl4: 2421, // 攻撃魔防の竜眼4
 };
 
 const PassiveB = {
@@ -2387,6 +2399,7 @@ const PassiveB = {
 
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
+    GuardBearing4: 2417, // 警戒姿勢4
     DiveBomb3: 1430, // 空からの急襲3
 
     BlueLionRule: 1451, // 蒼き獅子王
@@ -2433,6 +2446,7 @@ const PassiveB = {
     SpdResTempo3: 2204, // 速さ魔坊の拍節3
 
     // 防壁
+    AtkSpdBulwark3: 2414, // 攻撃速さの防壁3
     AtkDefBulwark3: 2150, // 攻撃守備の防壁3
     SpdDefBulwark3: 2202, // 速さ守備の防壁3
     SpdResBulwark3: 2260, // 速さ魔防の防壁3
@@ -2877,9 +2891,9 @@ function getAssistRange(support) {
 /// 補助スキルが大応援かどうかを判定します。
 function isRallyUp(support) {
     switch (support) {
+        case Support.RallyUpSpd:
         case Support.RallyUpAtk:
         case Support.RallyUpAtkPlus:
-        case Support.RallyUpSpd:
         case Support.RallyUpSpdPlus:
         case Support.RallyUpDef:
         case Support.RallyUpDefPlus:

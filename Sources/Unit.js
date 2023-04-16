@@ -576,6 +576,9 @@ class BattleContext {
         // 固定ダメージ軽減
         this.damageReductionValue = 0;
 
+        // 追撃の固定ダメージ軽減
+        this.damageReductionValueOfFollowupAttack = 0;
+
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
 
@@ -712,6 +715,7 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttack = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
+        this.damageReductionValueOfFollowupAttack = 0;
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
         this.counterattackCount = 1;
@@ -2734,6 +2738,7 @@ class Unit extends BattleMapElement {
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
         let hasSkills =
+            this.passiveB === PassiveB.AtkSpdBulwark3 ||
             this.passiveB === PassiveB.AtkDefBulwark3 ||
             this.passiveB === PassiveB.SpdDefBulwark3 ||
             this.passiveB === PassiveB.SpdResBulwark3 ||
@@ -2745,6 +2750,7 @@ class Unit extends BattleMapElement {
     canActivateObstractToAdjacentTiles(moveUnit) {
         return (this.passiveB == PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
             || (this.passiveB == PassiveB.DetailedReport)
+            || (this.passiveB == PassiveB.AtkSpdBulwark3)
             || (this.passiveB == PassiveB.AtkDefBulwark3)
             || (this.passiveB == PassiveB.SpdDefBulwark3)
             || (this.passiveB == PassiveB.SpdResBulwark3)
@@ -2902,6 +2908,12 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = true;
 
         switch (this.passiveB) {
+            case PassiveB.GuardBearing4:
+                // 各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時
+                if (!this.battleContext.initiatesCombat) {
+                    this.isOneTimeActionActivatedForPassiveB = true;
+                }
+                break;
             case PassiveB.TrueDragonWall:
             case PassiveB.ArmoredWall:
             case PassiveB.GuardBearing3:
@@ -5335,6 +5347,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
+
                 // 残り+1
                 case Weapon.ReginRave:
                     if (this.isWeaponSpecialRefined) {
@@ -5343,6 +5356,7 @@ class Unit extends BattleMapElement {
                         }
                     }
                     break;
+                case PassiveA.KnightlyDevotion:
                 case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:
                 case Weapon.FloridCanePlus:

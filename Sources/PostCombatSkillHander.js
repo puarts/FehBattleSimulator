@@ -328,6 +328,15 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.LoneWolf:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.isSpecialCountMax) {
+                            targetUnit.reduceSpecialCount(2);
+                        } else if (Number(targetUnit.specialCount) === Number(targetUnit.maxSpecialCount) - 1) {
+                            targetUnit.reduceSpecialCount(1);
+                        }
+                    }
+                    break;
                 case Weapon.FlowerOfJoy:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -405,6 +414,7 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
+                case PassiveB.AtkSpdBulwark3:
                 case PassiveB.AtkDefBulwark3:
                 case PassiveB.SpdDefBulwark3:
                 case PassiveB.SpdResBulwark3:

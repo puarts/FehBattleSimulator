@@ -707,6 +707,18 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.GuardBearing4:
+                    if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.6);
+                    } else {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                    break;
+                case Weapon.LoneWolf:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                    break;
                 case Weapon.MaskedLance:
                     if (defUnit.isWeaponSpecialRefined) {
                         if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -2100,6 +2112,43 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.GuardBearing4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.KnightlyDevotion] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(8);
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneLuin] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkResScowl4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAtkResSpurs(7);
+
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.RevealingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.LoneWolf] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                if (this.__isSolo(targetUnit)) {
+                    enemyUnit.addSpursWithoutRes(-5);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MaskedLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(4);
@@ -3659,14 +3708,17 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(6, 6, 0, 0);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkSpdBulwark3] = (targetUnit, enemyUnit) => {
+            enemyUnit.addAtkSpdSpurs(-4);
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefBulwark3] = (targetUnit, enemyUnit) => {
-            enemyUnit.addSpurs(-4, 0, -4, 0);
+            enemyUnit.addAtkDefSpurs(-4);
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefBulwark3] = (targetUnit, enemyUnit) => {
-            enemyUnit.addSpurs(0, -4, -4, 0);
+            enemyUnit.addSpdDefSpurs(-4);
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdResBulwark3] = (targetUnit, enemyUnit) => {
-            enemyUnit.addSpurs(0, -4, 0, -4);
+            enemyUnit.addSpdResSpurs(-4);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IlluminatingHorn] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
@@ -10037,6 +10089,35 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.ArcaneLuin:
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                                enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                            }
+                        }
+                        break;
+                    case PassiveA.AtkResScowl4:
+                        if (enemyUnit.battleContext.initiatesCombat ||
+                            enemyUnit.battleContext.restHpPercentage >= 75) {
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                let diff =
+                                    targetUnit.getEvalResInCombat(enemyUnit) -
+                                    enemyUnit.getEvalResInCombat(targetUnit);
+                                if (diff >= 5) {
+                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
+                                }
+                            }
+                        }
+                        break;
+                    case Weapon.RevealingBreath:
+                        if (enemyUnit.battleContext.initiatesCombat ||
+                            enemyUnit.battleContext.restHpPercentage >= 75) {
+                            let amount = Math.trunc(targetUnit.getResInCombat(enemyUnit) * 0.3);
+                            targetUnit.battleContext.damageReductionValueOfFollowupAttack += amount;
+                        }
+                        break;
                     case Weapon.ImbuedKoma:
                         if (targetUnit.isWeaponRefined) {
                             if (targetUnit.isSpecialCharged) {
@@ -10901,6 +10982,17 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case PassiveB.GuardBearing4:
+                if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                    return 0.6;
+                } else {
+                    return 0.3;
+                }
+            case Weapon.LoneWolf:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return 0.3;
+                }
+                break;
             case Weapon.MaskedLance:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -11236,6 +11328,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArcaneLuin:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                    }
+                    break;
                 case Weapon.AbyssalBlade:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
@@ -13430,6 +13528,7 @@ class DamageCalculatorWrapper {
                 break;
             case Weapon.AlliedSwordPlus:
             case Weapon.AlliedLancePlus:
+            case Weapon.AlliedAxePlus:
             case Weapon.LoveCandelabraPlus:
                 targetUnit.atkSpur += 4;
                 targetUnit.defSpur += 4;
@@ -13967,6 +14066,7 @@ class DamageCalculatorWrapper {
                 switch (skillId) {
                     case Weapon.AlliedSwordPlus:
                     case Weapon.AlliedLancePlus:
+                    case Weapon.AlliedAxePlus:
                     case Weapon.LoveCandelabraPlus:
                         targetUnit.atkSpur += 4;
                         targetUnit.defSpur += 4;
