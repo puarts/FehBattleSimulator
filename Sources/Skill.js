@@ -1593,6 +1593,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=eHdha8By27Y&ab_channel=NintendoMobile
     LoneWolf: 2413, // 一匹狼の鋭剣
     RevealingBreath: 2420, // 福音のブレス
+    AlliedAxePlus: 2418, // 共闘の斧+
 };
 
 const Support = {

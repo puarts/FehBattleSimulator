@@ -13484,6 +13484,7 @@ class DamageCalculatorWrapper {
                 break;
             case Weapon.AlliedSwordPlus:
             case Weapon.AlliedLancePlus:
+            case Weapon.AlliedAxePlus:
             case Weapon.LoveCandelabraPlus:
                 targetUnit.atkSpur += 4;
                 targetUnit.defSpur += 4;
@@ -14021,6 +14022,7 @@ class DamageCalculatorWrapper {
                 switch (skillId) {
                     case Weapon.AlliedSwordPlus:
                     case Weapon.AlliedLancePlus:
+                    case Weapon.AlliedAxePlus:
                     case Weapon.LoveCandelabraPlus:
                         targetUnit.atkSpur += 4;
                         targetUnit.defSpur += 4;
