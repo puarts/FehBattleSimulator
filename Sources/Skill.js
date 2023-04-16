@@ -1594,6 +1594,7 @@ const Weapon = {
     LoneWolf: 2413, // 一匹狼の鋭剣
     RevealingBreath: 2420, // 福音のブレス
     AlliedAxePlus: 2418, // 共闘の斧+
+    ArcaneLuin: 2415, // 魔器・魔槍ルーン
 };
 
 const Support = {
