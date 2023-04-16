@@ -322,7 +322,7 @@ const Weapon = {
     Blarblade: 260, // ブラーブレード
     BlarbladePlus: 261, // ブラーブレード+
     Gronnblade: 303, // グルンブレード
-    GronnbladePlus: 304, // グルンブレード+ 
+    GronnbladePlus: 304, // グルンブレード+
     Rauarblade: 229, // ラウアブレード
     RauarbladePlus: 230, // ラウアブレード+
     KeenGronnwolfPlus: 323, // グルンウルフ鍛+
@@ -682,7 +682,7 @@ const Weapon = {
     EishinNoAnki: 1140, // 影身の暗器
     ChichiNoSenjutsusyo: 1131, // 父の戦術書
     RazuwarudoNoMaiken: 1130, // ラズワルドの舞剣
-    YujoNoHanaNoTsuePlus: 1128,// 友情の花の杖 
+    YujoNoHanaNoTsuePlus: 1128,// 友情の花の杖
     AiNoSaiki: 1126, // 愛の祭器
     BaraNoYari: 1123, // 薔薇の槍
     GeneiFeather: 1110, // 幻影フェザー
@@ -1651,7 +1651,7 @@ const Support = {
     Sacrifice: 432, // 癒しの手
     MaidensSolace: 1821, // 癒しの乙女
     Recover: 439, // リカバー
-    RecoverPlus: 440, // リカバー+ 
+    RecoverPlus: 440, // リカバー+
     RestorePlus: 449, // レスト+
     HarshCommand: 423, // 一喝
     HarshCommandPlus: 905, // 一喝+
@@ -2877,9 +2877,9 @@ function getAssistRange(support) {
 /// 補助スキルが大応援かどうかを判定します。
 function isRallyUp(support) {
     switch (support) {
+        case Support.RallyUpSpd:
         case Support.RallyUpAtk:
         case Support.RallyUpAtkPlus:
-        case Support.RallyUpSpd:
         case Support.RallyUpSpdPlus:
         case Support.RallyUpDef:
         case Support.RallyUpDefPlus:
