@@ -10988,7 +10988,6 @@ class DamageCalculatorWrapper {
                 } else {
                     return 0.3;
                 }
-                break;
             case Weapon.LoneWolf:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
                     return 0.3;
