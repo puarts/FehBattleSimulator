@@ -414,6 +414,7 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
+                case PassiveB.AtkSpdBulwark3:
                 case PassiveB.AtkDefBulwark3:
                 case PassiveB.SpdDefBulwark3:
                 case PassiveB.SpdResBulwark3:

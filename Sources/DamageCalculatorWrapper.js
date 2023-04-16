@@ -3672,14 +3672,17 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(6, 6, 0, 0);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.AtkSpdBulwark3] = (targetUnit, enemyUnit) => {
+            enemyUnit.addAtkSpdSpurs(-4);
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.AtkDefBulwark3] = (targetUnit, enemyUnit) => {
-            enemyUnit.addSpurs(-4, 0, -4, 0);
+            enemyUnit.addAtkDefSpurs(-4);
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdDefBulwark3] = (targetUnit, enemyUnit) => {
-            enemyUnit.addSpurs(0, -4, -4, 0);
+            enemyUnit.addSpdDefSpurs(-4);
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdResBulwark3] = (targetUnit, enemyUnit) => {
-            enemyUnit.addSpurs(0, -4, 0, -4);
+            enemyUnit.addSpdResSpurs(-4);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IlluminatingHorn] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
