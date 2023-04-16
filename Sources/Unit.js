@@ -2908,6 +2908,12 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = true;
 
         switch (this.passiveB) {
+            case PassiveB.GuardBearing4:
+                // 各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時
+                if (!this.battleContext.initiatesCombat) {
+                    this.isOneTimeActionActivatedForPassiveB = true;
+                }
+                break;
             case PassiveB.TrueDragonWall:
             case PassiveB.ArmoredWall:
             case PassiveB.GuardBearing3:

@@ -2399,6 +2399,7 @@ const PassiveB = {
 
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
+    GuardBearing4: 2417, // 警戒姿勢4
     DiveBomb3: 1430, // 空からの急襲3
 
     BlueLionRule: 1451, // 蒼き獅子王

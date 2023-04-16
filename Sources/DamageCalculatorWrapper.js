@@ -707,6 +707,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.GuardBearing4:
+                    if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.6);
+                    } else {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                    break;
                 case Weapon.LoneWolf:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
@@ -2105,6 +2112,9 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.GuardBearing4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.KnightlyDevotion] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(8);
@@ -10972,6 +10982,13 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case PassiveB.GuardBearing4:
+                if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                    return 0.6;
+                } else {
+                    return 0.3;
+                }
+                break;
             case Weapon.LoneWolf:
                 if (defUnit.battleContext.restHpPercentage >= 25) {
                     return 0.3;
