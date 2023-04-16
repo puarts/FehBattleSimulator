@@ -576,6 +576,9 @@ class BattleContext {
         // 固定ダメージ軽減
         this.damageReductionValue = 0;
 
+        // 追撃の固定ダメージ軽減
+        this.damageReductionValueOfFollowupAttack = 0;
+
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
 
@@ -712,6 +715,7 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttack = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
+        this.damageReductionValueOfFollowupAttack = 0;
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
         this.counterattackCount = 1;

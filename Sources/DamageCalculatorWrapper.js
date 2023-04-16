@@ -2105,6 +2105,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.RevealingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.LoneWolf] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -10053,6 +10060,13 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.RevealingBreath:
+                        if (enemyUnit.battleContext.initiatesCombat ||
+                            enemyUnit.battleContext.restHpPercentage >= 75) {
+                            let amount = Math.trunc(targetUnit.getResInCombat(enemyUnit) * 0.3);
+                            targetUnit.battleContext.damageReductionValueOfFollowupAttack += amount;
+                        }
+                        break;
                     case Weapon.ImbuedKoma:
                         if (targetUnit.isWeaponRefined) {
                             if (targetUnit.isSpecialCharged) {
