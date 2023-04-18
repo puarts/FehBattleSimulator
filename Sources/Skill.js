@@ -1595,6 +1595,7 @@ const Weapon = {
     RevealingBreath: 2420, // 福音のブレス
     AlliedAxePlus: 2418, // 共闘の斧+
     ArcaneLuin: 2415, // 魔器・魔槍ルーン
+    Asclepius: 2423, // アスクレピオス
 };
 
 const Support = {
