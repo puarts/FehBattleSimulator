@@ -153,6 +153,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.Asclepius:
+                this.__applySabotageSkill(skillOwner, unit => {
+                    unit.reserveToApplyDebuffs(-6, 0, 0, -6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }, 1);
+                break;
             case Weapon.LoneWolf:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     if (skillOwner.isSpecialCountMax) {
