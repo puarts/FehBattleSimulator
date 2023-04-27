@@ -2509,6 +2509,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
                 let amount = targetUnit.maxSpecialCount * 2;
                 targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
