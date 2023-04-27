@@ -160,7 +160,7 @@ class BeginningOfTurnSkillHandler {
                 }, 1);
                 break;
             case Weapon.LoneWolf:
-                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     if (skillOwner.isSpecialCountMax) {
                         skillOwner.reduceSpecialCount(2);
                     } else if (Number(skillOwner.specialCount) === Number(skillOwner.maxSpecialCount) - 1) {
@@ -226,7 +226,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.BowOfRepose:
-                if (skillOwner.battleContext.restHpPercentage === 100) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn === 100) {
                     let found = false;
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         found = true;
@@ -238,7 +238,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.MatersTactics:
-                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.GrandStrategy);
                     skillOwner.reserveToApplyAllDebuff(-4);
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
@@ -294,7 +294,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.BrilliantStarlight:
-                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         unit.applyBuffs(0, 0, 6, 6);
                         unit.reserveToAddStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent);
@@ -302,7 +302,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.Liberation:
-                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
                         if (skillOwner.heroIndex === unit.partnerHeroIndex ||
@@ -363,14 +363,14 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.CrowsCrystal:
-                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.TotalPenaltyDamage);
                 }
                 break;
             case Weapon.ChildsCompass:
-                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 }
@@ -474,7 +474,7 @@ class BeginningOfTurnSkillHandler {
             }
                 break;
             case Weapon.WindGenesis:
-                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     skillOwner.applyAtkBuff(6);
                     skillOwner.applySpdBuff(6);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
@@ -605,7 +605,7 @@ class BeginningOfTurnSkillHandler {
                         break;
                     }
                 }
-                if (found || skillOwner.battleContext.restHpPercentage === 100) {
+                if (found || skillOwner.restHpPercentageAtBeginningOfTurn === 100) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
                 }
             }
@@ -727,7 +727,8 @@ class BeginningOfTurnSkillHandler {
                 break;
             }
             case Weapon.ThundererTome:
-                if (this.globalBattleContext.currentTurn <= 3 || skillOwner.battleContext.restHpPercentage <= 99) {
+                if (this.globalBattleContext.currentTurn <= 3 ||
+                    skillOwner.restHpPercentageAtBeginningOfTurn <= 99) {
                     skillOwner.reduceSpecialCount(1);
                 }
                 break;

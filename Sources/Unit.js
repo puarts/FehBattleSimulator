@@ -3335,6 +3335,14 @@ class Unit extends BattleMapElement {
         }
         return 100 * this.restHp / this.maxHpWithSkills;
     }
+
+    /// ターン開始時スキルで使用する残りのHP割合です。
+    get restHpPercentageAtBeginningOfTurn() {
+        if (this.hp >= this.maxHpWithSkills) {
+            return 100;
+        }
+        return 100 * this.hp / this.maxHpWithSkills;
+    }
     get isRestHpFull() {
         return this.restHp >= this.maxHpWithSkills;
     }
