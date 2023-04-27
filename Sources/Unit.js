@@ -653,6 +653,9 @@ class BattleContext {
         // Aスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.passiveASkillCondSatisfied = false;
 
+        // Bスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.passiveBSkillCondSatisfied = false;
+
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
 
         // 範囲奥義を発動できない
@@ -806,6 +809,7 @@ class BattleContext {
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
         this.passiveASkillCondSatisfied = false;
+        this.passiveBSkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
         this.cannotTriggerPrecombatSpecial = false;
         this.invalidatesDefensiveTerrainEffect = false;

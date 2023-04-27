@@ -2112,6 +2112,15 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.FruitOfLife] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpdDefSpurs(-5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                    targetUnit.battleContext.passiveBSkillCondSatisfied = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Asclepius] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkResSpurs(6);
@@ -12693,6 +12702,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FruitOfLife:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.battleContext.passiveBSkillCondSatisfied) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.TotalWarTome:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {

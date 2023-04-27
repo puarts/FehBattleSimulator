@@ -328,6 +328,14 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FruitOfLife:
+                    if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                        targetUnit.battleContext.passiveBSkillCondSatisfied) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
+                    }
+                    break;
                 case Weapon.LoneWolf:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.isSpecialCountMax) {
