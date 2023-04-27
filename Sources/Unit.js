@@ -653,6 +653,9 @@ class BattleContext {
         // Aスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.passiveASkillCondSatisfied = false;
 
+        // Bスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.passiveBSkillCondSatisfied = false;
+
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
 
         // 範囲奥義を発動できない
@@ -806,6 +809,7 @@ class BattleContext {
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
         this.passiveASkillCondSatisfied = false;
+        this.passiveBSkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
         this.cannotTriggerPrecombatSpecial = false;
         this.invalidatesDefensiveTerrainEffect = false;
@@ -3334,6 +3338,14 @@ class Unit extends BattleMapElement {
             return 100;
         }
         return 100 * this.restHp / this.maxHpWithSkills;
+    }
+
+    /// ターン開始時スキルで使用する残りのHP割合です。
+    get restHpPercentageAtBeginningOfTurn() {
+        if (this.hp >= this.maxHpWithSkills) {
+            return 100;
+        }
+        return 100 * this.hp / this.maxHpWithSkills;
     }
     get isRestHpFull() {
         return this.restHp >= this.maxHpWithSkills;

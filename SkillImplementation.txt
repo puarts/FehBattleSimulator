@@ -181,6 +181,9 @@ __updateUnitSpur() {}
 targetUnit.battleContext.restHpPercentage >= N
 enemyUnit.battleContext.restHpPercentage >= N
 
+ターン開始時、自身のHPがN%以上なら
+skillOwner.restHpPercentageAtBeginningOfTurn >= N
+
 速さの差を比較するスキルの比較判定時、自身の速さ+Nとして判定[虚勢]
 const EvalSpdAddDict = {};
 EvalSpdAddDict[<skill id>] = N;
@@ -596,6 +599,7 @@ __calcFixedSpecialAddDamage() {
 __init__applySkillEffectForUnitFuncDict() {
     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(N / 100.0, enemyUnit);
 }
+DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
         atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;

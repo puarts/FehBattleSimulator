@@ -331,6 +331,15 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FruitOfLife:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                            atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                            fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                        }
+                    }
+                    break;
                 case Weapon.HadoNoSenfu: {
                     if (atkUnit.isWeaponSpecialRefined) {
                         // <特殊錬成効果>
@@ -1238,6 +1247,13 @@ class DamageCalculator {
 
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.FruitOfLife:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (!context.isFirstAttack(atkUnit)) break;
+                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                    }
+                    break;
                 case Weapon.Aurgelmir:
                     if (!context.isFirstAttack(atkUnit)) break;
                     if (defUnit.battleContext.weaponSkillCondSatisfied) {

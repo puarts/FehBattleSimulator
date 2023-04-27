@@ -1544,6 +1544,9 @@ const Weapon = {
     DefiersAxePlus: 2365, // Defiers Axe+
 
     // ネルトゥス（敵）
+    // 2023年4月 神階英雄（地の女神 ネルトゥス）
+    // https://www.youtube.com/watch?v=uL_HJHTfB88&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=A1q-_WVkTLw&ab_channel=NintendoMobile
     HornOfTheLand: 2364, // 地の女神の角
 
     // 2023年2月 伝承英雄 (聖王の半身 ルフレ)
@@ -2420,6 +2423,7 @@ const PassiveB = {
     HodrsZeal: 2043, // ヘズルの聖騎士
     AssuredRebirth: 2066, // 我が復活は成った
     SoaringWings: 2390, // 天かける翼
+    FruitOfLife: 2424, // 地に生まれ地に還る
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
@@ -2664,6 +2668,9 @@ const PassiveC = {
     RouseAtkDef4: 1943, // 攻撃守備の奮起4
     RouseAtkRes4: 2111, // 攻撃魔防の奮起4
     RouseSpdDef4: 1916, // 速さ守備の奮起4
+
+    // 奮進
+    AlarmAtkSpd: 2425, // 攻撃速さの奮進
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
