@@ -10795,22 +10795,22 @@ class DamageCalculatorWrapper {
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
                         break;
                     case PassiveB.SealAtk4:
-                        if (enemyUnit.atkDebuffTotal > 0) {
+                        if (enemyUnit.atkDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case PassiveB.SealSpd4:
-                        if (enemyUnit.spdDebuffTotal > 0) {
+                        if (enemyUnit.spdDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case PassiveB.SealDef4:
-                        if (enemyUnit.defDebuffTotal > 0) {
+                        if (enemyUnit.defDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case PassiveB.SealRes4:
-                        if (enemyUnit.resDebuffTotal > 0) {
+                        if (enemyUnit.resDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
