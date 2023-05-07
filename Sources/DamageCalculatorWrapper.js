@@ -2318,7 +2318,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
                 let specialCount = enemyUnit.special === Special.None ? 4 : enemyUnit.maxSpecialCount;
                 let amount = Math.max(12 - specialCount * 2, 4);
-                targetUnit.atk += amount;
+                targetUnit.atkSpur += amount;
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
