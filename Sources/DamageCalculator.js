@@ -928,7 +928,6 @@ class DamageCalculator {
             damageReductionRatio = 1.0 - damageReductionRatio;
             damageReductionValue += defUnit.battleContext.damageReductionValue;
             if (context.isFollowupAttack) {
-                console.log(`defUnit.battleContext.damageReductionValueOfFollowupAttack: ${defUnit.battleContext.damageReductionValueOfFollowupAttack}`);
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfFollowupAttack;
             }
 
