@@ -2112,6 +2112,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.CaptainsSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidateAllBuffs();
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.AlarmAtkSpd] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 targetUnit.addAtkSpdSpurs(3);
@@ -10109,6 +10116,14 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.CaptainsSword:
+                        if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                            enemyUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                                targetUnit.battleContext.isVantageActivatable = true;
+                            }
+                        }
+                        break;
                     case Weapon.ArcaneLuin:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             if (targetUnit.getEvalSpdInCombat(enemyUnit) >

@@ -1599,6 +1599,11 @@ const Weapon = {
     AlliedAxePlus: 2418, // 共闘の斧+
     ArcaneLuin: 2415, // 魔器・魔槍ルーン
     Asclepius: 2423, // アスクレピオス
+
+    // 新英雄＆魔器クロム
+    // https://www.youtube.com/watch?v=Mmhor9Vkpao&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=l0Y3sv4Fj3k&ab_channel=NintendoMobile
+    CaptainsSword: 2432, // 白銀の剣
 };
 
 const Support = {

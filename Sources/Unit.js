@@ -2742,6 +2742,7 @@ class Unit extends BattleMapElement {
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
         let hasSkills =
+            this.weapon === Weapon.CaptainsSword ||
             this.passiveB === PassiveB.AtkSpdBulwark3 ||
             this.passiveB === PassiveB.AtkDefBulwark3 ||
             this.passiveB === PassiveB.SpdDefBulwark3 ||
@@ -2752,13 +2753,14 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToAdjacentTiles(moveUnit) {
-        return (this.passiveB == PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
-            || (this.passiveB == PassiveB.DetailedReport)
-            || (this.passiveB == PassiveB.AtkSpdBulwark3)
-            || (this.passiveB == PassiveB.AtkDefBulwark3)
-            || (this.passiveB == PassiveB.SpdDefBulwark3)
-            || (this.passiveB == PassiveB.SpdResBulwark3)
-            || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
+        return (this.passiveB === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
+            || (this.weapon === Weapon.CaptainsSword)
+            || (this.passiveB === PassiveB.DetailedReport)
+            || (this.passiveB === PassiveB.AtkSpdBulwark3)
+            || (this.passiveB === PassiveB.AtkDefBulwark3)
+            || (this.passiveB === PassiveB.SpdDefBulwark3)
+            || (this.passiveB === PassiveB.SpdResBulwark3)
+            || (this.passiveS === PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
     }
 
     get isOnMap() {
