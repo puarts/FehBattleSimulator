@@ -585,6 +585,9 @@ targetUnit.battleContext.damageReductionValue += N;
 追撃の固定ダメージ軽減
 targetUnit.battleContext.damageReductionValueOfFollowupAttack += N;
 
+最初に受けた攻撃の固定ダメージ軽減
+targetUnit.battleContext.damageReductionValueOfFirstAttacks += N;
+
 奥義発動時、ダメージ+N
 __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
     targetUnit.battleContext.additionalDamageOfSpecial += N;

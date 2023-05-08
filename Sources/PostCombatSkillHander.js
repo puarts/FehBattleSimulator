@@ -362,9 +362,18 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
+                case Special.HolyPanic:
+                    if (targetUnit.battleContext.isSpecialActivated) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                            unit.applyDebuffs(-6, -6, 0, 0);
+                            unit.addStatusEffect(StatusEffectType.Panic);
+                        }
+                    }
+                    break;
                 case Special.LightsRestraint:
                     if (targetUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                            unit.increaseSpecialCount(1);
                             unit.addStatusEffect(StatusEffectType.Guard);
                         }
                     }
@@ -1126,6 +1135,13 @@ class PostCombatSkillHander {
     }
 
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
+        if (attackUnit.battleContext.isMiracleWithoutSpecialActivated ||
+            attackUnit.battleContext.isMiracleAndHealAcitivated) {
+            g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[attackUnit.groupId]++;
+        }
+        if (attackUnit.battleContext.isMiracleAndHealAcitivated) {
+            attackUnit.reserveHeal(99);
+        }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
                 case Special.LifeUnending:

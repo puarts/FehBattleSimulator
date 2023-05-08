@@ -447,7 +447,8 @@ class BattleContext {
         this.isDesperationActivated = false; // 攻め立てが実際に発動するか(これはisDesperationActivatableから設定されるので直接設定しない)
         this.isDefDesperationActivatable = false; // 受け攻め立ての発動条件を満たすか
         this.isDefDesperationActivated = false; // 最後の聖戦のように攻め立て受け側バージョン
-        this.damageReductionRatioOfFirstAttack = 0;
+        this.damageReductionRatioOfFirstAttack = 0; // 最初の1撃だけ
+        this.damageReductionRatioOfFirstAttacks = 0; // 連撃の場合は1,2回目の攻撃(3,4回目が対象外)
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
         this.reductionRatioOfDamageReductionRatioExceptSpecial = 0; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
@@ -579,6 +580,9 @@ class BattleContext {
         // 追撃の固定ダメージ軽減
         this.damageReductionValueOfFollowupAttack = 0;
 
+        // 最初に受けた攻撃の固定ダメージ軽減(2回攻撃は最初の連撃どちらも対象)
+        this.damageReductionValueOfFirstAttacks = 0;
+
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
 
@@ -658,6 +662,12 @@ class BattleContext {
 
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
 
+        // 祈り+HP99回復
+        this.canActivateMiracleAndHeal = false;
+
+        // 祈り+HP99回復が発動したかどうか
+        this.isMiracleAndHealAcitivated = false;
+
         // 範囲奥義を発動できない
         this.cannotTriggerPrecombatSpecial = false;
 
@@ -716,9 +726,11 @@ class BattleContext {
         this.isDefDesperationActivatable = false;
         this.isDefDesperationActivated = false;
         this.damageReductionRatioOfFirstAttack = 0;
+        this.damageReductionRatioOfFirstAttacks = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
         this.damageReductionValueOfFollowupAttack = 0;
+        this.damageReductionValueOfFirstAttacks = 0;
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
         this.counterattackCount = 1;
@@ -811,6 +823,8 @@ class BattleContext {
         this.passiveASkillCondSatisfied = false;
         this.passiveBSkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
+        this.canActivateMiracleAndHeal = false;
+        this.isMiracleAndHealAcitivated = false;
         this.cannotTriggerPrecombatSpecial = false;
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;
@@ -885,6 +899,11 @@ class BattleContext {
     // 最初の攻撃のダメージ軽減積
     multDamageReductionRatioOfFirstAttack(ratio, atkUnit) {
         this.damageReductionRatioOfFirstAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttack, ratio, atkUnit);
+    }
+
+    // 最初の攻撃のダメージ軽減積
+    multDamageReductionRatioOfFirstAttacks(ratio, atkUnit) {
+        this.damageReductionRatioOfFirstAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttacks, ratio, atkUnit);
     }
 
     // 連撃のダメージ軽減積
@@ -2742,6 +2761,7 @@ class Unit extends BattleMapElement {
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
         let hasSkills =
+            this.weapon === Weapon.CaptainsSword ||
             this.passiveB === PassiveB.AtkSpdBulwark3 ||
             this.passiveB === PassiveB.AtkDefBulwark3 ||
             this.passiveB === PassiveB.SpdDefBulwark3 ||
@@ -2752,13 +2772,14 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToAdjacentTiles(moveUnit) {
-        return (this.passiveB == PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
-            || (this.passiveB == PassiveB.DetailedReport)
-            || (this.passiveB == PassiveB.AtkSpdBulwark3)
-            || (this.passiveB == PassiveB.AtkDefBulwark3)
-            || (this.passiveB == PassiveB.SpdDefBulwark3)
-            || (this.passiveB == PassiveB.SpdResBulwark3)
-            || (this.passiveS == PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
+        return (this.passiveB === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
+            || (this.weapon === Weapon.CaptainsSword)
+            || (this.passiveB === PassiveB.DetailedReport)
+            || (this.passiveB === PassiveB.AtkSpdBulwark3)
+            || (this.passiveB === PassiveB.AtkDefBulwark3)
+            || (this.passiveB === PassiveB.SpdDefBulwark3)
+            || (this.passiveB === PassiveB.SpdResBulwark3)
+            || (this.passiveS === PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
     }
 
     get isOnMap() {

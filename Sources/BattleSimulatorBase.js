@@ -2615,6 +2615,8 @@ class BattleSimmulatorBase {
         this.commandQueuePerAction.undoAll();
         if (g_appData.currentTurn > 0) {
             g_appData.globalBattleContext.currentTurn = 0;
+            g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
+            g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
             loadSettings();
         }
         else {
@@ -7920,6 +7922,22 @@ class BattleSimmulatorBase {
                         u.applyResDebuff(-6);
                     }
                     break;
+                case PassiveB.SpdDefSnag4:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        for (let t of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(u, 2, true)) {
+                            t.applySpdDebuff(-7);
+                            t.applyDefDebuff(-7);
+                            t.addStatusEffect(StatusEffectType.Sabotage)
+                        }
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        for (let t of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(u, 2, true)) {
+                            t.applySpdDebuff(-7);
+                            t.applyDefDebuff(-7);
+                            t.addStatusEffect(StatusEffectType.Sabotage)
+                        }
+                    }
+                    break;
                 case PassiveB.SpdDefSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applySpdDebuff(-6);
@@ -8243,6 +8261,7 @@ class BattleSimmulatorBase {
             case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
             case Support.ToChangeFate:
             case Support.AFateChanged:
+            case Support.FateUnchanged:
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
@@ -8525,6 +8544,7 @@ class BattleSimmulatorBase {
                 && supporterUnit.support != Support.Nudge
                 && supporterUnit.special != Special.HolyPressure
                 && supporterUnit.special != Special.LightsRestraint
+                && supporterUnit.special != Special.HolyPanic
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }
@@ -8579,6 +8599,23 @@ class BattleSimmulatorBase {
                             this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
                         } else {
                             this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
+                        }
+                        break;
+                    case Support.FateUnchanged:
+                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForSupport = true;
+                        }
+                        for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
+                            for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
+                        }
+                        for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                            for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
                         }
                         break;
                     case Support.AFateChanged:
@@ -8700,6 +8737,7 @@ class BattleSimmulatorBase {
         }
 
         switch (unit.support) {
+            case Support.FateUnchanged:
             case Support.ToChangeFate:
             case Support.AFateChanged:
             case Support.ReturnPlus:

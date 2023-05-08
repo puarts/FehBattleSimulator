@@ -845,6 +845,8 @@ class DamageCalculator {
                 if (context.isFollowupAttack) {
                     // 追撃
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
+                } else {
+                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttacks;
                 }
 
                 // 戦闘中1回の軽減効果
@@ -928,8 +930,9 @@ class DamageCalculator {
             damageReductionRatio = 1.0 - damageReductionRatio;
             damageReductionValue += defUnit.battleContext.damageReductionValue;
             if (context.isFollowupAttack) {
-                console.log(`defUnit.battleContext.damageReductionValueOfFollowupAttack: ${defUnit.battleContext.damageReductionValueOfFollowupAttack}`);
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfFollowupAttack;
+            } else {
+                damageReductionValue += defUnit.battleContext.damageReductionValueOfFirstAttacks;
             }
 
             let currentDamage = 0;
@@ -994,9 +997,14 @@ class DamageCalculator {
                 }
             }
 
+            // TODO: 祈り周りが複雑になってきたのでリファクタリングする
+            // 祈り+99回復は除く祈り
             let canActivateMiracle = this.__canActivateMiracle(defUnit, atkUnit);
+            // 祈り+99回復
+            let canActivateMiracleAndHeal = this.__canActivateMiracleAndHeal(defUnit, atkUnit);
+            // 奥義による祈り
             let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
-            if (canActivateMiracle &&
+            if ((canActivateMiracle || canActivateMiracleAndHeal) &&
                 (defUnit.restHp - totalDamage > 1) &&
                 (defUnit.restHp - totalDamage - currentDamage <= 0)) {
                 if (this.isLogEnabled) this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
@@ -1018,6 +1026,13 @@ class DamageCalculator {
                     defUnit.battleContext.isMiracleWithoutSpecialActivated = true;
                     if (defUnit.special === Special.CircletOfBalance) {
                         defUnit.battleContext.isOncePerMapSpecialActivated = true;
+                    }
+                }
+                if (canActivateMiracleAndHeal) {
+                    defUnit.battleContext.isMiracleAndHealAcitivated = true;
+                    // 奥義以外の祈りとは重複しないのでfalseにする
+                    if (canActivateMiracle && !canActivateSpecialMiracle) {
+                        defUnit.battleContext.isMiracleAndHealAcitivated = false;
                     }
                 }
             }
@@ -1118,6 +1133,11 @@ class DamageCalculator {
         return healedHp;
     }
 
+    __canActivateMiracleAndHeal(unit, atkUnit) {
+        if (unit.battleContext.canActivateMiracleAndHeal) {
+            return true;
+        }
+    }
     __canActivateMiracle(unit, atkUnit) {
         let threshold = unit.battleContext.inCombatMiracleHpPercentageThreshold;
         if (threshold !== Number.MAX_SAFE_INTEGER) {

@@ -1599,6 +1599,14 @@ const Weapon = {
     AlliedAxePlus: 2418, // 共闘の斧+
     ArcaneLuin: 2415, // 魔器・魔槍ルーン
     Asclepius: 2423, // アスクレピオス
+
+    // 新英雄＆魔器クロム
+    // https://www.youtube.com/watch?v=Mmhor9Vkpao&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=l0Y3sv4Fj3k&ab_channel=NintendoMobile
+    CaptainsSword: 2432, // 白銀の剣
+    SacrificeStaff: 2436, // 暗黒竜の生贄の杖
+    SilentBreath: 2434, // 透魔竜のブレス
+    ArcaneDevourer: 2439, // 魔器・屍王の絶剣
 };
 
 const Support = {
@@ -1614,6 +1622,7 @@ const Support = {
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
     AFateChanged: 2176, // 運命は変わった!
+    FateUnchanged: 2438, // 運命ハ変ワラナイ...
 
     Sing: 411, // 歌う
     Dance: 412, // 踊る
@@ -1806,6 +1815,7 @@ const Special = {
     // 杖奥義
     HolyPressure: 2344, // 重圧の聖光
     LightsRestraint: 2362, // 抑制の聖光
+    HolyPanic: 2437, // 恐慌の聖光
 };
 
 const PassiveA = {
@@ -1819,6 +1829,7 @@ const PassiveA = {
     DistantCounter: 562, // 遠距離反撃
     DistantStorm: 2015, // 遠反・攻撃の渾身
     DistantPressure: 1795, // 遠反・速さの渾身
+    DistantASSolo: 2433, // 遠反・高速の孤軍
     CloseSalvo: 1981, // 近反・攻撃の渾身
     DeathBlow3: 528, // 鬼神の一撃3
     DeathBlow4: 529, // 鬼神の一撃4
@@ -2197,6 +2208,7 @@ const PassiveB = {
     WilyFighter3: 2003, //正面隊形・敵方3
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
+    SavvyFighter4: 2435, // 慧眼隊形4
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     MikiriHangeki3: 810, // 見切り・反撃不可効果3
@@ -2399,6 +2411,7 @@ const PassiveB = {
     AtkResSnag3: 2153, // 攻撃魔坊の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
+    SpdDefSnag4: 2440, // 速さ守備の干渉4
     DefResSnag3: 1867, // 守備魔防の干渉3
 
     HolyWarsEnd: 1376, // 最後の聖戦
@@ -3126,6 +3139,7 @@ NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 NormalAttackSpecialDict[Special.DevinePulse] = 0;
 NormalAttackSpecialDict[Special.HolyPressure] = 0;
 NormalAttackSpecialDict[Special.LightsRestraint] = 0; // 抑制の聖光
+NormalAttackSpecialDict[Special.HolyPanic] = 0; // 恐慌の聖光
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {

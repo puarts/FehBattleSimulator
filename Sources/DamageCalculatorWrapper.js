@@ -2112,6 +2112,36 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneDevourer] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SilentBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SacrificeStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.DistantASSolo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addAtkSpdSpurs(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.CaptainsSword] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidateAllBuffs();
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.AlarmAtkSpd] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 targetUnit.addAtkSpdSpurs(3);
@@ -2318,7 +2348,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
                 let specialCount = enemyUnit.special === Special.None ? 4 : enemyUnit.maxSpecialCount;
                 let amount = Math.max(12 - specialCount * 2, 4);
-                targetUnit.atk += amount;
+                targetUnit.atkSpur += amount;
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
@@ -4447,6 +4477,13 @@ class DamageCalculatorWrapper {
             }
             if (types.size >= 3) {
                 targetUnit.battleContext.healedHpByAttack += 5;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter4] = (targetUnit, enemyUnit) => {
+            if (enemyUnit.battleContext.initiatesCombat) {
+                enemyUnit.addAtkSpdSpurs(-4);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter3] = (targetUnit, enemyUnit) => {
@@ -8672,7 +8709,7 @@ class DamageCalculatorWrapper {
 
             // 2マス以内の味方からの効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit)) {
+                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
                     continue
                 }
                 for (let skillId of allyUnit.enumerateSkills()) {
@@ -8694,6 +8731,11 @@ class DamageCalculatorWrapper {
                             break;
 
                         // ユニットスキル
+                        case Weapon.SacrificeStaff:
+                            if (g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
+                                targetUnit.battleContext.canActivateMiracleAndHeal = true;
+                            }
+                            break;
                         case PassiveC.Guidance4:
                             if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
                                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -8856,7 +8898,7 @@ class DamageCalculatorWrapper {
             // その他の範囲
             // 7x7
             for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit)) {
+                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
                     continue
                 }
                 for (let skillId of allyUnit.enumerateSkills()) {
@@ -9257,6 +9299,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SilentBreath:
+                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
+                    }
+                    break;
                 case PassiveB.SabotageAR3:
                     if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
                         enemyUnit.addAtkResSpurs(-3);
@@ -10109,6 +10159,20 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.ArcaneDevourer:
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                        break;
+                    case Weapon.CaptainsSword:
+                        if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                            enemyUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
+                                targetUnit.battleContext.isVantageActivatable = true;
+                            }
+                        }
+                        break;
                     case Weapon.ArcaneLuin:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             if (targetUnit.getEvalSpdInCombat(enemyUnit) >
@@ -10795,22 +10859,22 @@ class DamageCalculatorWrapper {
                         DamageCalculatorWrapper.__applyHeavyBladeSkill(targetUnit, enemyUnit);
                         break;
                     case PassiveB.SealAtk4:
-                        if (enemyUnit.atkDebuffTotal > 0) {
+                        if (enemyUnit.atkDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case PassiveB.SealSpd4:
-                        if (enemyUnit.spdDebuffTotal > 0) {
+                        if (enemyUnit.spdDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case PassiveB.SealDef4:
-                        if (enemyUnit.defDebuffTotal > 0) {
+                        if (enemyUnit.defDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
                     case PassiveB.SealRes4:
-                        if (enemyUnit.resDebuffTotal > 0) {
+                        if (enemyUnit.resDebuffTotal < 0) {
                             targetUnit.battleContext.reducesCooldownCount = true;
                         }
                         break;
@@ -10847,6 +10911,13 @@ class DamageCalculatorWrapper {
                                 let amount = Math.trunc(Math.min(7, Math.max(0, diff * 0.70)));
                                 targetUnit.battleContext.additionalDamage += amount;
                                 targetUnit.battleContext.damageReductionValue += amount;
+                            }
+                        }
+                        break;
+                    case PassiveB.SavvyFighter4:
+                        if (enemyUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                             }
                         }
                         break;
@@ -11348,6 +11419,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SilentBreath:
+                    if (atkUnit.battleContext.initiatesCombat || defUnit.battleContext.restHpPercentage >= 75) {
+                        if (!isPrecombat) {
+                            let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                        }
+                    }
+                    break;
                 case Weapon.Asclepius:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         atkUnit.battleContext.additionalDamage += Math.abs(defUnit.debuffTotal);
@@ -12708,6 +12787,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SacrificeStaff:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case PassiveB.FruitOfLife:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.battleContext.passiveBSkillCondSatisfied) {
@@ -13013,13 +13097,18 @@ class DamageCalculatorWrapper {
             }
         };
 
-        this._applySpecialSkillEffectFuncDict[Special.LightsRestraint] = (targetUnit, enemyUnit) => {
+        {
+            let func = (targetUnit, enemyUnit) => {
+                {
+                    let totalRes = enemyUnit.getResInCombat(enemyUnit);
+                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
+                }
+            };
             // 抑制の聖光
-            {
-                let totalRes = enemyUnit.getResInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
-            }
-        };
+            this._applySpecialSkillEffectFuncDict[Special.LightsRestraint] = func;
+            // 恐慌の聖光
+            this._applySpecialSkillEffectFuncDict[Special.HolyPanic] = func;
+        }
 
         this._applySpecialSkillEffectFuncDict[Special.CircletOfBalance] = (targetUnit, enemyUnit) => {
             // 聖神と暗黒神の冠
@@ -13399,6 +13488,9 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SacrificeStaff:
+                    targetUnit.addAllSpur(4);
+                    break;
                 case Weapon.StaffOfLilies:
                     if (allyUnit.isWeaponSpecialRefined) {
                         targetUnit.addDefResSpurs(6);

@@ -866,6 +866,7 @@ class DamageCalcData {
             Special.TwinBlades, // 双刃(+魔防30%)
             Special.CircletOfBalance, // 聖神と暗黒神の冠(+魔坊40%)
             Special.LightsRestraint, // 抑制の聖光
+            Special.HolyPanic, // 恐慌の聖光
         ];
     }
     __getInheritableCount3Specials() {
