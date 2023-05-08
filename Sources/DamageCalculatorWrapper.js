@@ -8684,7 +8684,7 @@ class DamageCalculatorWrapper {
 
             // 2マス以内の味方からの効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit)) {
+                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
                     continue
                 }
                 for (let skillId of allyUnit.enumerateSkills()) {
@@ -8868,7 +8868,7 @@ class DamageCalculatorWrapper {
             // その他の範囲
             // 7x7
             for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit)) {
+                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
                     continue
                 }
                 for (let skillId of allyUnit.enumerateSkills()) {
