@@ -1606,6 +1606,7 @@ const Weapon = {
     CaptainsSword: 2432, // 白銀の剣
     SacrificeStaff: 2436, // 暗黒竜の生贄の杖
     SilentBreath: 2434, // 透魔竜のブレス
+    ArcaneDevourer: 2439, // 魔器・屍王の絶剣
 };
 
 const Support = {
