@@ -2206,6 +2206,7 @@ const PassiveB = {
     WilyFighter3: 2003, //正面隊形・敵方3
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
+    SavvyFighter4: 2435, // 慧眼隊形4
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     MikiriHangeki3: 810, // 見切り・反撃不可効果3

@@ -845,6 +845,8 @@ class DamageCalculator {
                 if (context.isFollowupAttack) {
                     // 追撃
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
+                } else {
+                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttacks;
                 }
 
                 // 戦闘中1回の軽減効果

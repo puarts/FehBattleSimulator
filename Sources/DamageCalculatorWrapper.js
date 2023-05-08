@@ -4472,6 +4472,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.healedHpByAttack += 5;
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter4] = (targetUnit, enemyUnit) => {
+            if (enemyUnit.battleContext.initiatesCombat) {
+                enemyUnit.addAtkSpdSpurs(-4);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SavvyFighter3] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
@@ -10891,6 +10898,13 @@ class DamageCalculatorWrapper {
                                 let amount = Math.trunc(Math.min(7, Math.max(0, diff * 0.70)));
                                 targetUnit.battleContext.additionalDamage += amount;
                                 targetUnit.battleContext.damageReductionValue += amount;
+                            }
+                        }
+                        break;
+                    case PassiveB.SavvyFighter4:
+                        if (enemyUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                             }
                         }
                         break;

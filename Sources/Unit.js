@@ -447,7 +447,8 @@ class BattleContext {
         this.isDesperationActivated = false; // 攻め立てが実際に発動するか(これはisDesperationActivatableから設定されるので直接設定しない)
         this.isDefDesperationActivatable = false; // 受け攻め立ての発動条件を満たすか
         this.isDefDesperationActivated = false; // 最後の聖戦のように攻め立て受け側バージョン
-        this.damageReductionRatioOfFirstAttack = 0;
+        this.damageReductionRatioOfFirstAttack = 0; // 最初の1撃だけ
+        this.damageReductionRatioOfFirstAttacks = 0; // 連撃の場合は1,2回目の攻撃(3,4回目が対象外)
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
         this.reductionRatioOfDamageReductionRatioExceptSpecial = 0; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
@@ -725,6 +726,7 @@ class BattleContext {
         this.isDefDesperationActivatable = false;
         this.isDefDesperationActivated = false;
         this.damageReductionRatioOfFirstAttack = 0;
+        this.damageReductionRatioOfFirstAttacks = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
         this.damageReductionValueOfFollowupAttack = 0;
@@ -897,6 +899,11 @@ class BattleContext {
     // 最初の攻撃のダメージ軽減積
     multDamageReductionRatioOfFirstAttack(ratio, atkUnit) {
         this.damageReductionRatioOfFirstAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttack, ratio, atkUnit);
+    }
+
+    // 最初の攻撃のダメージ軽減積
+    multDamageReductionRatioOfFirstAttacks(ratio, atkUnit) {
+        this.damageReductionRatioOfFirstAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttacks, ratio, atkUnit);
     }
 
     // 連撃のダメージ軽減積
