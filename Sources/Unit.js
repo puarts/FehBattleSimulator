@@ -579,6 +579,9 @@ class BattleContext {
         // 追撃の固定ダメージ軽減
         this.damageReductionValueOfFollowupAttack = 0;
 
+        // 最初に受けた攻撃の固定ダメージ軽減(2回攻撃は最初の連撃どちらも対象)
+        this.damageReductionValueOfFirstAttacks = 0;
+
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
 
@@ -725,6 +728,7 @@ class BattleContext {
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
         this.damageReductionValueOfFollowupAttack = 0;
+        this.damageReductionValueOfFirstAttacks = 0;
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
         this.counterattackCount = 1;

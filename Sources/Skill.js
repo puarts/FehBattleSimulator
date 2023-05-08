@@ -1605,6 +1605,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=l0Y3sv4Fj3k&ab_channel=NintendoMobile
     CaptainsSword: 2432, // 白銀の剣
     SacrificeStaff: 2436, // 暗黒竜の生贄の杖
+    SilentBreath: 2434, // 透魔竜のブレス
 };
 
 const Support = {

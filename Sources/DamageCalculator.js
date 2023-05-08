@@ -929,6 +929,8 @@ class DamageCalculator {
             damageReductionValue += defUnit.battleContext.damageReductionValue;
             if (context.isFollowupAttack) {
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfFollowupAttack;
+            } else {
+                damageReductionValue += defUnit.battleContext.damageReductionValueOfFirstAttacks;
             }
 
             let currentDamage = 0;
