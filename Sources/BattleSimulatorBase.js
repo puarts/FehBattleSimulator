@@ -8527,6 +8527,7 @@ class BattleSimmulatorBase {
                 && supporterUnit.support != Support.Nudge
                 && supporterUnit.special != Special.HolyPressure
                 && supporterUnit.special != Special.LightsRestraint
+                && supporterUnit.special != Special.HolyPanic
             ) {
                 supporterUnit.reduceSpecialCount(1);
             }

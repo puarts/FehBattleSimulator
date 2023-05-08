@@ -1812,6 +1812,7 @@ const Special = {
     // 杖奥義
     HolyPressure: 2344, // 重圧の聖光
     LightsRestraint: 2362, // 抑制の聖光
+    HolyPanic: 2437, // 恐慌の聖光
 };
 
 const PassiveA = {
@@ -3133,6 +3134,7 @@ NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 NormalAttackSpecialDict[Special.DevinePulse] = 0;
 NormalAttackSpecialDict[Special.HolyPressure] = 0;
 NormalAttackSpecialDict[Special.LightsRestraint] = 0; // 抑制の聖光
+NormalAttackSpecialDict[Special.HolyPanic] = 0; // 恐慌の聖光
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
