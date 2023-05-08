@@ -2112,6 +2112,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.SacrificeStaff] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.DistantASSolo] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.addAtkSpdSpurs(5);
@@ -8706,6 +8711,11 @@ class DamageCalculatorWrapper {
                             break;
 
                         // ユニットスキル
+                        case Weapon.SacrificeStaff:
+                            if (g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
+                                targetUnit.battleContext.canActivateMiracleAndHeal = true;
+                            }
+                            break;
                         case PassiveC.Guidance4:
                             if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
                                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -12728,6 +12738,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SacrificeStaff:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case PassiveB.FruitOfLife:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.battleContext.passiveBSkillCondSatisfied) {
@@ -13419,6 +13434,9 @@ class DamageCalculatorWrapper {
     __addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
         for (let skillId of allyUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SacrificeStaff:
+                    targetUnit.addAllSpur(4);
+                    break;
                 case Weapon.StaffOfLilies:
                     if (allyUnit.isWeaponSpecialRefined) {
                         targetUnit.addDefResSpurs(6);

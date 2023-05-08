@@ -658,6 +658,12 @@ class BattleContext {
 
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
 
+        // 祈り+HP99回復
+        this.canActivateMiracleAndHeal = false;
+
+        // 祈り+HP99回復が発動したかどうか
+        this.isMiracleAndHealAcitivated = false;
+
         // 範囲奥義を発動できない
         this.cannotTriggerPrecombatSpecial = false;
 
@@ -811,6 +817,8 @@ class BattleContext {
         this.passiveASkillCondSatisfied = false;
         this.passiveBSkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
+        this.canActivateMiracleAndHeal = false;
+        this.isMiracleAndHealAcitivated = false;
         this.cannotTriggerPrecombatSpecial = false;
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;

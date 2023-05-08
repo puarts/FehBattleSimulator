@@ -2615,6 +2615,8 @@ class BattleSimmulatorBase {
         this.commandQueuePerAction.undoAll();
         if (g_appData.currentTurn > 0) {
             g_appData.globalBattleContext.currentTurn = 0;
+            g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
+            g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
             loadSettings();
         }
         else {

@@ -1126,6 +1126,13 @@ class PostCombatSkillHander {
     }
 
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
+        if (attackUnit.battleContext.isMiracleWithoutSpecialActivated ||
+            attackUnit.battleContext.isMiracleAndHealAcitivated) {
+            g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[attackUnit.groupId]++;
+        }
+        if (attackUnit.battleContext.isMiracleAndHealAcitivated) {
+            attackUnit.reserveHeal(99);
+        }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
                 case Special.LifeUnending:

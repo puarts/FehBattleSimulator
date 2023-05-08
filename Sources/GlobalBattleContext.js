@@ -41,6 +41,11 @@ class GlobalBattleContext {
 
         // isLightSeasonとisAstraSeasonから判定できるので保存はしない一時変数
         this.isChaosSeason = false;
+
+        // 奥義以外の祈りが発動した回数
+        this.miracleWithoutSpecialActivationCount = {};
+        this.miracleWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
+        this.miracleWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
     }
 
     moveSummonerDuelsPointAreaOffset(groupType) {

@@ -1604,6 +1604,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Mmhor9Vkpao&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=l0Y3sv4Fj3k&ab_channel=NintendoMobile
     CaptainsSword: 2432, // 白銀の剣
+    SacrificeStaff: 2436, // 暗黒竜の生贄の杖
 };
 
 const Support = {
