@@ -2411,6 +2411,7 @@ const PassiveB = {
     AtkResSnag3: 2153, // 攻撃魔坊の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
+    SpdDefSnag4: 2440, // 速さ守備の干渉4
     DefResSnag3: 1867, // 守備魔防の干渉3
 
     HolyWarsEnd: 1376, // 最後の聖戦

@@ -7922,6 +7922,22 @@ class BattleSimmulatorBase {
                         u.applyResDebuff(-6);
                     }
                     break;
+                case PassiveB.SpdDefSnag4:
+                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                        for (let t of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(u, 2, true)) {
+                            t.applySpdDebuff(-7);
+                            t.applyDefDebuff(-7);
+                            t.addStatusEffect(StatusEffectType.Sabotage)
+                        }
+                    }
+                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                        for (let t of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(u, 2, true)) {
+                            t.applySpdDebuff(-7);
+                            t.applyDefDebuff(-7);
+                            t.addStatusEffect(StatusEffectType.Sabotage)
+                        }
+                    }
+                    break;
                 case PassiveB.SpdDefSnag3:
                     for (let u of this.__findNearestEnemies(unit, 4)) {
                         u.applySpdDebuff(-6);
