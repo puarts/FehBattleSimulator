@@ -365,6 +365,7 @@ class PostCombatSkillHander {
                 case Special.LightsRestraint:
                     if (targetUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                            unit.increaseSpecialCount(1);
                             unit.addStatusEffect(StatusEffectType.Guard);
                         }
                     }
