@@ -8245,6 +8245,7 @@ class BattleSimmulatorBase {
             case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
             case Support.ToChangeFate:
             case Support.AFateChanged:
+            case Support.FateUnchanged:
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
@@ -8584,6 +8585,23 @@ class BattleSimmulatorBase {
                             this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
                         }
                         break;
+                    case Support.FateUnchanged:
+                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForSupport = true;
+                        }
+                        for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
+                            for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
+                        }
+                        for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                            for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                                u.addStatusEffect(StatusEffectType.Exposure);
+                            }
+                        }
+                        break;
                     case Support.AFateChanged:
                         if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                             supporterUnit.addStatusEffect(StatusEffectType.Isolation);
@@ -8703,6 +8721,7 @@ class BattleSimmulatorBase {
         }
 
         switch (unit.support) {
+            case Support.FateUnchanged:
             case Support.ToChangeFate:
             case Support.AFateChanged:
             case Support.ReturnPlus:

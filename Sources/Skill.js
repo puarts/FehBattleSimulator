@@ -1622,6 +1622,7 @@ const Support = {
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
     AFateChanged: 2176, // 運命は変わった!
+    FateUnchanged: 2438, // 運命ハ変ワラナイ...
 
     Sing: 411, // 歌う
     Dance: 412, // 踊る
