@@ -1613,6 +1613,7 @@ const Weapon = {
     ValbarsLance: 2429, // バルボの勇槍
     RevengerLance: 2428, // 復讐の烈槍
     PupilsTome: 2430, // 見習い魔道士の書
+    FreebladesEdge: 2431, // 義勇軍の正剣
 };
 
 const Support = {

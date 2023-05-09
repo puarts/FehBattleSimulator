@@ -707,6 +707,10 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FreebladesEdge: {
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                }
+                    break;
                 case PassiveB.GuardBearing4:
                     if (!defUnit.isOneTimeActionActivatedForPassiveB) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.6);
@@ -2112,6 +2116,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.FreebladesEdge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PupilsTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
                 targetUnit.addAllSpur(4);
@@ -11215,6 +11229,8 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.FreebladesEdge:
+                return 0.3;
             case PassiveB.GuardBearing4:
                 if (!defUnit.isOneTimeActionActivatedForPassiveB) {
                     return 0.6;
