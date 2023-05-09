@@ -2112,6 +2112,22 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.PupilsTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || isRangedWeaponType(enemyUnit.weaponType)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                targetUnit.battleContext.invalidatesOwnResDebuff = true;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(4);
+                    let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                    enemyUnit.addAtkResSpurs(-amount);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RevengerLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(4);

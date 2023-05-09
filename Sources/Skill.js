@@ -1612,6 +1612,7 @@ const Weapon = {
     // 2023年5月 武器錬成
     ValbarsLance: 2429, // バルボの勇槍
     RevengerLance: 2428, // 復讐の烈槍
+    PupilsTome: 2430, // 見習い魔道士の書
 };
 
 const Support = {
