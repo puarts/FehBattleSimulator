@@ -6565,9 +6565,29 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Aymr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.defSpur -= 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    enemyUnit.addAtkDefSpurs(-6);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            } else {
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    enemyUnit.addAtkDefSpurs(-6);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.restHpPercentage >= 75 ||
+                        this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                        enemyUnit.addAtkDefSpurs(-5);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.AkaiRyukishiNoOno] = (targetUnit, enemyUnit) => {
@@ -12626,11 +12646,6 @@ class DamageCalculatorWrapper {
                             }
                         }
 
-                        break;
-                    case Weapon.Aymr:
-                        if (calcPotentialDamage || defUnit.battleContext.isSolo) {
-                            --followupAttackPriority;
-                        }
                         break;
                     case Weapon.HarukazeNoBreath:
                         if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)

@@ -331,6 +331,14 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Aymr:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                        }
+                    }
+                    break;
                 case PassiveB.FruitOfLife:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
