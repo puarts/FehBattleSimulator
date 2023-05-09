@@ -2361,6 +2361,7 @@ const PassiveB = {
     MysticBoost4: 2234, // 生命の護符4
 
     ShisyaNoChojiriwo: 1114, // 死者の帳尻を
+    DeadlyBalancePlus: 2426, // 死者の帳尻を・神
     YunesSasayaki: 976, // ユンヌの囁き
     SphiasSoul: 1076, // ソフィアの魂
     SoulOfZofia2: 2371, // ソフィアの魂・承

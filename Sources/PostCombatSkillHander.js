@@ -706,6 +706,7 @@ class PostCombatSkillHander {
                         targetUnit.specialCount -= 1;
                     }
                     break;
+                case PassiveB.DeadlyBalancePlus:
                 case PassiveB.OgiNoRasen3:
                 case PassiveB.SpecialSpiral4:
                 case Weapon.MakenMistoruthin:

@@ -8518,6 +8518,14 @@ class DamageCalculatorWrapper {
                         enemyUnit.resSpur -= 5;
                     }
                     break;
+                case PassiveB.DeadlyBalancePlus:
+                    if (targetUnit.battleContext.restHpPercentage >= 25 || targetUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.addSpursWithoutRes(-5);
+                        targetUnit.battleContext.reducesCooldownCount = true;
+                        targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                    break;
                 case PassiveB.ShisyaNoChojiriwo:
                     if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasNegativeStatusEffect()) {
                         enemyUnit.atkSpur -= 5;
