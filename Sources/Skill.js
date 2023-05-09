@@ -1607,6 +1607,7 @@ const Weapon = {
     SacrificeStaff: 2436, // 暗黒竜の生贄の杖
     SilentBreath: 2434, // 透魔竜のブレス
     ArcaneDevourer: 2439, // 魔器・屍王の絶剣
+    DeadFangAxe: 2441, // 命なき狂牙の斧
 };
 
 const Support = {
