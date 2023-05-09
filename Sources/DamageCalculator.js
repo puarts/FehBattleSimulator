@@ -1096,6 +1096,15 @@ class DamageCalculator {
                         }
                     }
                     break;
+                case Weapon.Sekuvaveku:
+                    if (atkUnit.isWeaponRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
+                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
+                            atkUnit.battleContext.additionalDamagePerAttack += 5;
+                            atkUnit.battleContext.healedHpByAttackPerAttack += 7;
+                        }
+                    }
+                    break;
                 case PassiveA.AtkSpdFinish4:
                 case PassiveA.AtkResFinish4:
                 case PassiveA.SpdResFinish4:

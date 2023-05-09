@@ -7590,8 +7590,28 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Sekuvaveku] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.addAllSpur(4);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 4)) {
+                    targetUnit.addAllSpur(6);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 4)) {
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.HikariToYamito] = (targetUnit, enemyUnit) => {
@@ -12618,11 +12638,6 @@ class DamageCalculatorWrapper {
                             if (defUnit.hasNegativeStatusEffect()) {
                                 ++followupAttackPriority;
                             }
-                        }
-                        break;
-                    case Weapon.Sekuvaveku:
-                        if (calcPotentialDamage || this.__isThereAllyInSpecifiedSpaces(atkUnit, 3)) {
-                            ++followupAttackPriority;
                         }
                         break;
                 }

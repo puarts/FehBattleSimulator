@@ -1002,7 +1002,15 @@ class PostCombatSkillHander {
                         unit.reserveHeal(7);
                     }
                     break;
-                case Weapon.Sekuvaveku:
+                case Weapon.Sekuvaveku: {
+                    let spaces = attackUnit.isWeaponSpecialRefined ? 4 : 3
+                    if (this.__isThereAllyInSpecifiedSpaces(attackUnit, spaces)) {
+                        for (let unit of this.__findNearestAllies(attackUnit)) {
+                            unit.reserveTakeDamage(20);
+                        }
+                    }
+                }
+                    break;
                 case Weapon.Thjalfi:
                     if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
                         for (let unit of this.__findNearestAllies(attackUnit)) {
