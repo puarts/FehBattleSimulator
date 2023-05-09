@@ -7360,9 +7360,29 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.AiNoSaiki] = (targetUnit, enemyUnit) => {
-            if (targetUnit.isBuffed || targetUnit.battleContext.restHpPercentage >= 70) {
-                targetUnit.atkSpur += Math.floor(enemyUnit.getDefInPrecombat() * 0.25);
-                enemyUnit.atkSpur -= Math.floor(enemyUnit.getResInPrecombat() * 0.25);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.isBuffed || targetUnit.battleContext.restHpPercentage >= 70) {
+                    targetUnit.atkSpur += Math.floor(enemyUnit.getDefInPrecombat() * 0.25);
+                    enemyUnit.atkSpur -= Math.floor(enemyUnit.getResInPrecombat() * 0.25);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit) ||
+                    targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.addAtkSpdSpurs(Math.floor(enemyUnit.getDefInPrecombat() * 0.25));
+                    targetUnit.addAtkDefSpurs(-Math.floor(enemyUnit.getResInPrecombat() * 0.25));
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidateAllBuffs();
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.RazuwarudoNoMaiken] = (targetUnit) => {
@@ -12852,6 +12872,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.AiNoSaiki:
+                    if (targetUnit.isWeaponSpecialRefined &&
+                        targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                    break;
                 case Weapon.SacrificeStaff:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         enemyUnit.battleContext.reducesCooldownCount = false;
