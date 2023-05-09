@@ -1608,6 +1608,9 @@ const Weapon = {
     SilentBreath: 2434, // 透魔竜のブレス
     ArcaneDevourer: 2439, // 魔器・屍王の絶剣
     DeadFangAxe: 2441, // 命なき狂牙の斧
+
+    // 2023年5月 武器錬成
+    ValbarsLance: 2429, // バルボの勇槍
 };
 
 const Support = {

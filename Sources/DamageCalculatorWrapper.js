@@ -2112,6 +2112,22 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ValbarsLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAtkDefSpurs(5);
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.6, enemyUnit);
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAtkDefSpurs(5);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.RagingStorm2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25 || this.__isSolo(targetUnit) || calcPotentialDamage) {
                 enemyUnit.addAtkDefSpurs(-5);
