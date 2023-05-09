@@ -2112,6 +2112,19 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.RevengerLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ValbarsLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAtkDefSpurs(5);
@@ -10264,6 +10277,14 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.RevengerLance:
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                                let def = targetUnit.getDefInCombat(enemyUnit);
+                                targetUnit.battleContext.damageReductionValue += Math.trunc(def * 0.15);
+                            }
+                        }
+                        break;
                     case Weapon.ArcaneDevourer:
                         if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
                             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
@@ -12888,6 +12909,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RevengerLance:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.AiNoSaiki:
                     if (targetUnit.isWeaponSpecialRefined &&
                         targetUnit.battleContext.weaponSkillCondSatisfied) {
