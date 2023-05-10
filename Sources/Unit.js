@@ -4970,6 +4970,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 特殊錬成時に奥義が発動しやすくなる
+                case Weapon.Sekuvaveku:
                 case Weapon.Ifingr:
                 case Weapon.ZekkaiNoSoukyu:
                 case Weapon.DarkSpikesT:

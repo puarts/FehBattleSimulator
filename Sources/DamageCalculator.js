@@ -331,6 +331,20 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FreebladesEdge:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        let def = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);
+                    }
+                    break;
+                case Weapon.Aymr:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                        }
+                    }
+                    break;
                 case PassiveB.FruitOfLife:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
@@ -1085,6 +1099,15 @@ class DamageCalculator {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
                         if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
                             atkUnit.battleContext.additionalDamagePerAttack += 5;
+                        }
+                    }
+                    break;
+                case Weapon.Sekuvaveku:
+                    if (atkUnit.isWeaponRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
+                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
+                            atkUnit.battleContext.additionalDamagePerAttack += 5;
+                            atkUnit.battleContext.healedHpByAttackPerAttack += 7;
                         }
                     }
                     break;

@@ -153,6 +153,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.Sekuvaveku:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (this.globalBattleContext.currentTurn === 1) {
+                        skillOwner.reduceSpecialCount(2);
+                    }
+                }
+                break;
             case PassiveC.AlarmAtkSpd:
                 if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
                     skillOwner.applyAtkSpdBuffs(6);

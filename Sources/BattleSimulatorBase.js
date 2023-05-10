@@ -3272,6 +3272,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case PassiveB.RagingStorm:
+                case PassiveB.RagingStorm2:
                     if (!atkUnit.isOneTimeActionActivatedForPassiveB
                         && !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)
                         && atkUnit.isActionDone
