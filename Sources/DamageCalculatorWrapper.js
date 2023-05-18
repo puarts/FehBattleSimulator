@@ -961,19 +961,14 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 }
+                case Weapon.TwinDivinestone:
                 case PassiveB.NewDivinity:
-                case PassiveB.DragonWall3:
-                {
-                    let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                    if (resDiff > 0) {
-                        let percentage = resDiff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
-
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        this.__applyResDodge(defUnit, atkUnit);
                     }
-                }
+                    break;
+                case PassiveB.DragonWall3:
+                    this.__applyResDodge(defUnit, atkUnit);
                     break;
                 case PassiveB.MoonTwinWing:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -1034,6 +1029,18 @@ class DamageCalculatorWrapper {
             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
         }
+    }
+
+    __applyResDodge(defUnit, atkUnit) {
+        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+        if (resDiff <= 0) {
+            return;
+        }
+        let percentage = resDiff * 4;
+        if (percentage > 40) {
+            percentage = 40;
+        }
+        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
     }
 
     __applyPrecombatDamageReduction(defUnit, atkUnit) {
@@ -2116,6 +2123,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.TwinDivinestone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BridalBladePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(4);
@@ -10337,6 +10352,13 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.TwinDivinestone:
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getResInCombat(targetUnit)) {
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                        }
+                        break;
                     case Weapon.RevengerLance:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -11470,7 +11492,21 @@ class DamageCalculatorWrapper {
                 }
                 break;
             }
+            case Weapon.TwinDivinestone:
             case PassiveB.NewDivinity:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = resDiff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                        return percentage / 100.0;
+                    }
+                }
+                break;
             case PassiveB.DragonWall3:
             case Weapon.NewFoxkitFang:
                 {

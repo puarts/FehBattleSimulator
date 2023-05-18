@@ -1621,6 +1621,7 @@ const Weapon = {
     HeartbrokerBow: 2442, // 射止める花嫁の花弓
     ChonsinSprig: 2443, // ソンシンの花嫁の槍
     BridalBladePlus: 2445, // 花嫁の剣+
+    TwinDivinestone: 2447, // 神竜王女二人の竜石
 };
 
 const Support = {
