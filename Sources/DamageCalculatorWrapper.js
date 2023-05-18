@@ -2131,10 +2131,14 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.BridalBladePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.addAllSpur(4);
-            }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.RingOfAffiancePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.BridalBladePlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.ChonsinSprig] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
@@ -9479,6 +9483,7 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RingOfAffiancePlus:
                 case Weapon.BridalBladePlus:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                         enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;

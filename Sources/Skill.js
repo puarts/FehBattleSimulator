@@ -1622,6 +1622,7 @@ const Weapon = {
     ChonsinSprig: 2443, // ソンシンの花嫁の槍
     BridalBladePlus: 2445, // 花嫁の剣+
     TwinDivinestone: 2447, // 神竜王女二人の竜石
+    RingOfAffiancePlus: 2449, // エンゲージリング+
 };
 
 const Support = {
