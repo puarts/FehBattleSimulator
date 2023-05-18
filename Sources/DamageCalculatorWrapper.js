@@ -15092,6 +15092,7 @@ class DamageCalculatorWrapper {
                         targetUnit.resSpur -= 4;
                         break;
                     case PassiveC.SpdDefRein3:
+                    case PassiveC.SDReinSnap:
                         targetUnit.spdSpur -= 4;
                         targetUnit.defSpur -= 4;
                         break;

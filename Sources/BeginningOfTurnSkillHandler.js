@@ -153,6 +153,22 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.SDReinSnap: {
+                if (isRefreshSupportSkill(skillOwner.support)) {
+                    break;
+                }
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    if (unit.moveType === MoveType.Armor ||
+                        (isMeleeWeaponType(unit.weaponType) && unit.weaponType === MoveType.Infantry)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                    }
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+            }
+                break;
             case Weapon.Sekuvaveku:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.globalBattleContext.currentTurn === 1) {

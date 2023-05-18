@@ -2722,6 +2722,8 @@ const PassiveC = {
     SpdResHold: 2029, // 速さ魔防の大牽制
     DefResRein3: 1787, // 守備魔防の牽制3
     DefResHold: 2294, // 守備魔防の大牽制
+    // 牽制・運び手
+    SDReinSnap: 2444, // 速守牽制・運び手
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
     EvenTempest3: 1681, // 迅雷風烈・偶数3
