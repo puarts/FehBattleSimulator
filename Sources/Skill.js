@@ -1619,6 +1619,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=MZSLNT86SW0&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=wBRkLZHuaSE&ab_channel=NintendoMobile
     HeartbrokerBow: 2442, // 射止める花嫁の花弓
+    ChonsinSprig: 2443, // ソンシンの花嫁の槍
 };
 
 const Support = {
