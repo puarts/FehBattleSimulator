@@ -915,6 +915,7 @@ class DamageCalculator {
             if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
                 for (let skillId of defUnit.enumerateSkills()) {
                     switch (skillId) {
+                        case Special.ArmoredFloe:
                         case Special.ArmoredBeacon:
                             if (defUnit.tmpSpecialCount === 0 ||
                                 atkUnit.tmpSpecialCount === 0 ||

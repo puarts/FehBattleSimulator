@@ -13276,6 +13276,13 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.specialMultDamage = 2.5;
         };
 
+        this._applySpecialSkillEffectFuncDict[Special.ArmoredFloe] = (targetUnit, enemyUnit) => {
+            // 重装の聖氷
+            {
+                let totalRes = targetUnit.getResInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
+            }
+        };
         this._applySpecialSkillEffectFuncDict[Special.ArmoredBeacon] = (targetUnit, enemyUnit) => {
             // 重装の聖炎
             {

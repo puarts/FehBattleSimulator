@@ -1734,6 +1734,7 @@ const Special = {
     Deadeye: 1481, // 狙撃
     Astra: 461, // 流星
     ArmoredBeacon: 2400, // 重装の聖炎
+    ArmoredFloe: 2448, // 重装の聖氷
     Bonfire: 455, // 緋炎
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
@@ -3114,6 +3115,7 @@ NormalAttackSpecialDict[Special.Glimmer] = 0;
 NormalAttackSpecialDict[Special.Deadeye] = 0;
 NormalAttackSpecialDict[Special.Astra] = 0;
 NormalAttackSpecialDict[Special.ArmoredBeacon] = 0;
+NormalAttackSpecialDict[Special.ArmoredFloe] = 0;
 NormalAttackSpecialDict[Special.Bonfire] = 0;
 NormalAttackSpecialDict[Special.Ignis] = 0;
 NormalAttackSpecialDict[Special.Iceberg] = 0;
