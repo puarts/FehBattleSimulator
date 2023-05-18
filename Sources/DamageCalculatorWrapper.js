@@ -961,19 +961,14 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 }
+                case Weapon.TwinDivinestone:
                 case PassiveB.NewDivinity:
-                case PassiveB.DragonWall3:
-                {
-                    let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                    if (resDiff > 0) {
-                        let percentage = resDiff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
-
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        this.__applyResDodge(defUnit, atkUnit);
                     }
-                }
+                    break;
+                case PassiveB.DragonWall3:
+                    this.__applyResDodge(defUnit, atkUnit);
                     break;
                 case PassiveB.MoonTwinWing:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -1034,6 +1029,18 @@ class DamageCalculatorWrapper {
             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
         }
+    }
+
+    __applyResDodge(defUnit, atkUnit) {
+        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+        if (resDiff <= 0) {
+            return;
+        }
+        let percentage = resDiff * 4;
+        if (percentage > 40) {
+            percentage = 40;
+        }
+        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
     }
 
     __applyPrecombatDamageReduction(defUnit, atkUnit) {
@@ -2116,6 +2123,41 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.TwinDivinestone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.RingOfAffiancePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.BridalBladePlus] = func;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ChonsinSprig] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let tmp = Math.max(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8, 0);
+                let amount = Math.min(tmp, 10);
+                enemyUnit.addSpdDefSpurs(-amount);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HeartbrokerBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.min(targetUnit.dragonflower, 5);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FreebladesEdge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(4);
@@ -6652,7 +6694,6 @@ class DamageCalculatorWrapper {
                     // <特殊錬成効果>
                     if (enemyUnit.battleContext.restHpPercentage >= 75 ||
                         this.__isSolo(targetUnit) || calcPotentialDamage) {
-                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
                         enemyUnit.addAtkDefSpurs(-5);
                         targetUnit.battleContext.increaseCooldownCountForBoth();
                     }
@@ -9442,6 +9483,15 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RingOfAffiancePlus:
+                case Weapon.BridalBladePlus:
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
+                    }
+                    break;
                 case Weapon.DeadFangAxe:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         this.__applyBuffAbsorption(targetUnit, enemyUnit);
@@ -10307,6 +10357,13 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.TwinDivinestone:
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getResInCombat(targetUnit)) {
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                        }
+                        break;
                     case Weapon.RevengerLance:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -11440,7 +11497,21 @@ class DamageCalculatorWrapper {
                 }
                 break;
             }
+            case Weapon.TwinDivinestone:
             case PassiveB.NewDivinity:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                    if (resDiff > 0) {
+                        let percentage = resDiff * 4;
+                        if (percentage > 40) {
+                            percentage = 40;
+                        }
+
+                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                        return percentage / 100.0;
+                    }
+                }
+                break;
             case PassiveB.DragonWall3:
             case Weapon.NewFoxkitFang:
                 {
@@ -13210,6 +13281,13 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.specialMultDamage = 2.5;
         };
 
+        this._applySpecialSkillEffectFuncDict[Special.ArmoredFloe] = (targetUnit, enemyUnit) => {
+            // 重装の聖氷
+            {
+                let totalRes = targetUnit.getResInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
+            }
+        };
         this._applySpecialSkillEffectFuncDict[Special.ArmoredBeacon] = (targetUnit, enemyUnit) => {
             // 重装の聖炎
             {
@@ -15075,6 +15153,7 @@ class DamageCalculatorWrapper {
                         targetUnit.resSpur -= 4;
                         break;
                     case PassiveC.SpdDefRein3:
+                    case PassiveC.SDReinSnap:
                         targetUnit.spdSpur -= 4;
                         targetUnit.defSpur -= 4;
                         break;

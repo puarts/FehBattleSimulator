@@ -442,7 +442,7 @@ if (targetUnit.isSpecialCountMax) {
 戦闘中、奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で奥義を発動済みの時(戦闘前奥義が含まれるのか注意すること)
 atkUnit.isSpecialCharged || atkUnit.isSpecialActivated
 
-自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意)
+自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFirstAttack += N;
 
 敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)

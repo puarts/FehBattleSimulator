@@ -1614,6 +1614,15 @@ const Weapon = {
     RevengerLance: 2428, // 復讐の烈槍
     PupilsTome: 2430, // 見習い魔道士の書
     FreebladesEdge: 2431, // 義勇軍の正剣
+
+    // 超英雄 (二人の花嫁の願い)
+    // https://www.youtube.com/watch?v=MZSLNT86SW0&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=wBRkLZHuaSE&ab_channel=NintendoMobile
+    HeartbrokerBow: 2442, // 射止める花嫁の花弓
+    ChonsinSprig: 2443, // ソンシンの花嫁の槍
+    BridalBladePlus: 2445, // 花嫁の剣+
+    TwinDivinestone: 2447, // 神竜王女二人の竜石
+    RingOfAffiancePlus: 2449, // エンゲージリング+
 };
 
 const Support = {
@@ -1726,6 +1735,7 @@ const Special = {
     Deadeye: 1481, // 狙撃
     Astra: 461, // 流星
     ArmoredBeacon: 2400, // 重装の聖炎
+    ArmoredFloe: 2448, // 重装の聖氷
     Bonfire: 455, // 緋炎
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
@@ -2088,7 +2098,7 @@ const PassiveA = {
     AtkDefCatch3: 1875, // 攻撃守備の機先3
     AtkResCatch3: 2222, // 攻撃魔防の機先3
     SpdDefCatch3: 2108, // 速さ守備の機先3
-    SpdResCatch3: 99999, // 速さ魔防の機先3
+    SpdResCatch3: 2392, // 速さ魔防の機先3
     DefResCatch3: 99999, // 守備魔防の機先3
     // 機先4
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
@@ -2716,6 +2726,8 @@ const PassiveC = {
     SpdResHold: 2029, // 速さ魔防の大牽制
     DefResRein3: 1787, // 守備魔防の牽制3
     DefResHold: 2294, // 守備魔防の大牽制
+    // 牽制・運び手
+    SDReinSnap: 2444, // 速守牽制・運び手
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
     EvenTempest3: 1681, // 迅雷風烈・偶数3
@@ -3104,6 +3116,7 @@ NormalAttackSpecialDict[Special.Glimmer] = 0;
 NormalAttackSpecialDict[Special.Deadeye] = 0;
 NormalAttackSpecialDict[Special.Astra] = 0;
 NormalAttackSpecialDict[Special.ArmoredBeacon] = 0;
+NormalAttackSpecialDict[Special.ArmoredFloe] = 0;
 NormalAttackSpecialDict[Special.Bonfire] = 0;
 NormalAttackSpecialDict[Special.Ignis] = 0;
 NormalAttackSpecialDict[Special.Iceberg] = 0;

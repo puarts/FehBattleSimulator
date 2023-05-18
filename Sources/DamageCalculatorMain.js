@@ -876,6 +876,7 @@ class DamageCalcData {
             Special.DraconicAura, // 竜穿
             // Special.Iceberg, // 氷蒼(+魔防50%)
             Special.ArmoredBeacon, // 重装の聖炎(+守備40%)
+            Special.ArmoredFloe, // 重装の聖氷(+魔防40%)
             Special.Bonfire, // 緋炎(+守備50%)
             Special.Luna, // 月光(守備魔防-50%)
         ];

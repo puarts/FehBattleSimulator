@@ -1021,6 +1021,11 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedTiki:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.NeutralizesPenalties);
+                break;
             case Hero.DuoMark:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
                     if (this.__isInCross(unit, duoUnit, 3, 3)) {
@@ -3880,6 +3885,7 @@ class BattleSimmulatorBase {
                 || unit.heroIndex == Hero.DuoHilda
                 || unit.heroIndex == Hero.DuoNina
                 || unit.heroIndex == Hero.DuoAskr
+                || unit.heroIndex == Hero.HarmonizedTiki
             ) {
                 if (this.data.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
