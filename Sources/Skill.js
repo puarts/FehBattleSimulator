@@ -2098,7 +2098,7 @@ const PassiveA = {
     AtkDefCatch3: 1875, // 攻撃守備の機先3
     AtkResCatch3: 2222, // 攻撃魔防の機先3
     SpdDefCatch3: 2108, // 速さ守備の機先3
-    SpdResCatch3: 99999, // 速さ魔防の機先3
+    SpdResCatch3: 2392, // 速さ魔防の機先3
     DefResCatch3: 99999, // 守備魔防の機先3
     // 機先4
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
