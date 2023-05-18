@@ -2116,6 +2116,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.HeartbrokerBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.min(targetUnit.dragonflower, 5);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FreebladesEdge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(4);
@@ -6652,7 +6660,6 @@ class DamageCalculatorWrapper {
                     // <特殊錬成効果>
                     if (enemyUnit.battleContext.restHpPercentage >= 75 ||
                         this.__isSolo(targetUnit) || calcPotentialDamage) {
-                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
                         enemyUnit.addAtkDefSpurs(-5);
                         targetUnit.battleContext.increaseCooldownCountForBoth();
                     }

@@ -1614,6 +1614,11 @@ const Weapon = {
     RevengerLance: 2428, // 復讐の烈槍
     PupilsTome: 2430, // 見習い魔道士の書
     FreebladesEdge: 2431, // 義勇軍の正剣
+
+    // 超英雄 (二人の花嫁の願い)
+    // https://www.youtube.com/watch?v=MZSLNT86SW0&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=wBRkLZHuaSE&ab_channel=NintendoMobile
+    HeartbrokerBow: 2442, // 射止める花嫁の花弓
 };
 
 const Support = {

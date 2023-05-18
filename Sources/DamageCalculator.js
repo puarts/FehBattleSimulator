@@ -331,6 +331,13 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HeartbrokerBow: {
+                    if (atkUnit.battleContext.initiatesCombat || this.isThereAnyAllyIn2Spaces(atkUnit)) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
+                    }
+                }
+                    break;
                 case Weapon.FreebladesEdge:
                     if (atkUnit.isWeaponSpecialRefined) {
                         let def = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
@@ -339,7 +346,7 @@ class DamageCalculator {
                     break;
                 case Weapon.Aymr:
                     if (atkUnit.isWeaponSpecialRefined) {
-                        if (atkUnit.battleContext.weaponSkillCondSatisfied) {
+                        if (defUnit.battleContext.restHpPercentage >= 75 || this.isSolo(atkUnit)) {
                             let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
                             atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
                         }
@@ -412,6 +419,24 @@ class DamageCalculator {
         fixedAddDamage += this.__getAtkMinusDefAdditionalDamage(
             atkUnit, defUnit, atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage, isPrecombat);
         return fixedAddDamage;
+    }
+
+    isSolo(atkUnit) {
+        for (let unit of g_app.enumerateUnitsInSpecifiedGroup(atkUnit.groupId)) {
+            if (unit !== atkUnit && unit.distance(atkUnit) <= 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    isThereAnyAllyIn2Spaces(atkUnit) {
+        for (let unit of g_app.enumerateUnitsInSpecifiedGroup(atkUnit.groupId)) {
+            if (unit !== atkUnit && unit.distance(atkUnit) <= 2) {
+                return true;
+            }
+        }
+        return false;
     }
 
     __getAtkMinusDefAdditionalDamage(atkUnit, defUnit, rate, isPrecombat) {
