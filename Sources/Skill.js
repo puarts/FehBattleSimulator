@@ -2827,6 +2827,7 @@ const PassiveC = {
     Severance: 2271, // すべてが閉じた世界
     FutureFocused: 2282, // 共に未来を見つめて
     FettersOfDromi: 2397, // ドローミの鎖環
+    RallyingCry: 2453, // 叱咤激励
 };
 
 const PassiveS = {

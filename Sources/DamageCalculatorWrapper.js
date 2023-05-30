@@ -14976,12 +14976,21 @@ class DamageCalculatorWrapper {
             // 縦3列と横3列
             if (Math.abs(targetUnit.posX - unit.posX) <= 1 ||
                 Math.abs(targetUnit.posY - unit.posY) <= 1) {
-                switch (unit.weapon) {
-                    case Weapon.Dreamflake:
-                        if (targetUnit.hasNegativeStatusEffect()) {
-                            targetUnit.atkSpur -= 5;
-                        }
-                        break;
+                for (let skillId of unit.enumerateSkills()) {
+                    switch (skillId) {
+                        case PassiveC.RallyingCry:
+                            if (targetUnit.moveType === MoveType.Infantry ||
+                                targetUnit.moveType === MoveType.Armor ||
+                                targetUnit.moveType === MoveType.Cavalry) {
+                                targetUnit.addSpursWithoutAtk(-5);
+                            }
+                            break;
+                        case Weapon.Dreamflake:
+                            if (targetUnit.hasNegativeStatusEffect()) {
+                                targetUnit.atkSpur -= 5;
+                            }
+                            break;
+                    }
                 }
             }
         }
