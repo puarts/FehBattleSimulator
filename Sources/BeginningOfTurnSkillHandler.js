@@ -153,6 +153,21 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.RallyingCry: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    if (unit.moveType === MoveType.Flying) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.Charge);
+                    }
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
+                }
+            }
+                break;
             case PassiveC.SDReinSnap: {
                 if (isRefreshSupportSkill(skillOwner.support)) {
                     break;

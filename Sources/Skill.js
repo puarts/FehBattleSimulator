@@ -1623,6 +1623,11 @@ const Weapon = {
     BridalBladePlus: 2445, // 花嫁の剣+
     TwinDivinestone: 2447, // 神竜王女二人の竜石
     RingOfAffiancePlus: 2449, // エンゲージリング+
+
+    // 伝承英雄 (風と雷の双翼 ヒノカ)
+    // https://www.youtube.com/watch?v=R05SZipb6IU
+    // https://www.youtube.com/watch?v=kp5Rh3FxEFQ
+    FujinRaijinYumi: 2451, // 風神雷神弓
 };
 
 const Support = {
@@ -2099,7 +2104,7 @@ const PassiveA = {
     AtkResCatch3: 2222, // 攻撃魔防の機先3
     SpdDefCatch3: 2108, // 速さ守備の機先3
     SpdResCatch3: 2392, // 速さ魔防の機先3
-    DefResCatch3: 99999, // 守備魔防の機先3
+    DefResCatch3: 2367, // 守備魔防の機先3
     // 機先4
     AtkSpdCatch4: 1647, // 攻撃速さの機先4
     AtkDefCatch4: 1703, // 攻撃守備の機先4
@@ -2180,6 +2185,7 @@ const PassiveB = {
     Guard4: 2338, // キャンセル4
     Kyuen2: 1121, // 救援の行路2
     Kyuen3: 594, // 救援の行路3
+    WingsOfMercy4: 2452, // 救援の行路4
     Ridatsu3: 595, // 離脱の行路3
     EscapeRoute4: 2374, // 離脱の行路4
     HentaiHiko1: 1443, // 編隊飛行1
@@ -2821,6 +2827,7 @@ const PassiveC = {
     Severance: 2271, // すべてが閉じた世界
     FutureFocused: 2282, // 共に未来を見つめて
     FettersOfDromi: 2397, // ドローミの鎖環
+    RallyingCry: 2453, // 叱咤激励
 };
 
 const PassiveS = {
@@ -3459,6 +3466,7 @@ TeleportationSkillDict[Weapon.IzunNoKajitsu] = 0;
 TeleportationSkillDict[PassiveB.TeniNoKona] = 0;
 TeleportationSkillDict[PassiveB.Kyuen2] = 0;
 TeleportationSkillDict[PassiveB.Kyuen3] = 0;
+TeleportationSkillDict[PassiveB.WingsOfMercy4] = 0;
 TeleportationSkillDict[PassiveB.Ridatsu3] = 0;
 TeleportationSkillDict[PassiveB.EscapeRoute4] = 0;
 TeleportationSkillDict[PassiveB.KyokugiHiKo1] = 0;

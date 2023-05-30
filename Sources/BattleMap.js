@@ -2045,6 +2045,20 @@ class BattleMap {
                         }
                     }
                     break;
+                case PassiveB.WingsOfMercy4:
+                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)) {
+                            if (ally.hpPercentage <= 99) {
+                                for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
+                                    yield tile;
+                                }
+                            }
+                        }
+                        if (ally.hpPercentage <= 60) {
+                            yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
+                        }
+                    }
+                    break;
                 case PassiveB.Kyuen2:
                 case PassiveB.Kyuen3:
                 case Weapon.FlowerLance:
