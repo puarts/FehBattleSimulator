@@ -1623,6 +1623,11 @@ const Weapon = {
     BridalBladePlus: 2445, // 花嫁の剣+
     TwinDivinestone: 2447, // 神竜王女二人の竜石
     RingOfAffiancePlus: 2449, // エンゲージリング+
+
+    // 伝承英雄 (風と雷の双翼 ヒノカ)
+    // https://www.youtube.com/watch?v=R05SZipb6IU
+    // https://www.youtube.com/watch?v=kp5Rh3FxEFQ
+    FujinRaijinYumi: 2451, // 風神雷神弓
 };
 
 const Support = {
