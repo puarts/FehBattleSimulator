@@ -5354,6 +5354,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case Weapon.FujinRaijinYumi:
                 case PassiveB.SoaringWings:
                 case PassiveB.FirestormDance3:
                 case PassiveB.EscapeRoute4:
