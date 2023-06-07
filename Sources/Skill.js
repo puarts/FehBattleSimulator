@@ -1628,6 +1628,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=R05SZipb6IU
     // https://www.youtube.com/watch?v=kp5Rh3FxEFQ
     FujinRaijinYumi: 2451, // 風神雷神弓
+
+    // 記念召喚 新英雄＆開花英雄＆ヘイズ
+    // https://www.youtube.com/watch?v=qh-XlJl3gKg&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=TPqELmttXlM&ab_channel=NintendoMobile
+    VassalSaintSteel: 2456, // 剣姫と剣聖の秘刀
 };
 
 const Support = {

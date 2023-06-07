@@ -153,6 +153,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.VassalSaintSteel:
+                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                    this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case PassiveC.RallyingCry: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {

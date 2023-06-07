@@ -328,6 +328,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VassalSaintSteel:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.isSpecialCountMax) {
+                            targetUnit.reduceSpecialCount(1);
+                        }
+                    }
+                    break;
                 case PassiveB.FruitOfLife:
                     if (targetUnit.battleContext.restHpPercentage >= 25 &&
                         targetUnit.battleContext.passiveBSkillCondSatisfied) {
