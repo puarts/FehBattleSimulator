@@ -10120,6 +10120,14 @@ class DamageCalculatorWrapper {
                         },
                         5, 0);
                     break;
+                case PassiveA.SpdResIdeal3:
+                    DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
+                        (unit, value) => {
+                            unit.spdSpur += value;
+                            unit.resSpur += value;
+                        },
+                        5, 0);
+                    break;
                 case PassiveA.DefResIdeal3:
                     DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
                         (unit, value) => {

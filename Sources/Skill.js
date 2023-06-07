@@ -2129,6 +2129,7 @@ const PassiveA = {
     AtkResIdeal4: 1723,
     SpdDefIdeal3: 2006, // 速さ守備の万全3
     SpdDefIdeal4: 1997, // 速さ守備の万全4
+    SpdResIdeal3: 2468, // 速さ魔防の万全3
     SpdResIdeal4: 2324, // 速さ魔防の万全4
     DefResIdeal3: 1984, // 守備魔防の万全3
     DefResIdeal4: 1791, // 守備魔防の万全4
