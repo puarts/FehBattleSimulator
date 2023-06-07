@@ -1636,6 +1636,7 @@ const Weapon = {
     IlianMercLance: 2458, // イリア傭兵騎士の槍
     DefiersBowPlus: 2460, // 守備逆用の弓+
     Heidr: 2462, // ヘイズ
+    WyvernHatchet: 2467, // ワイバーンの斧
 };
 
 const Support = {
