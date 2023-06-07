@@ -3409,11 +3409,15 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.defSpur += 5;
-                enemyUnit.defSpur -= 5;
-            }
+        {
+            let func = (targetUnit, enemyUnit) => {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.defSpur += 5;
+                    enemyUnit.defSpur -= 5;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = func
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersBowPlus] = func
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.MysticBoost4] = (targetUnit, enemyUnit) => {
             enemyUnit.atkSpur -= 5;
@@ -9636,6 +9640,8 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                     break;
                 case Weapon.DefiersLancePlus:
+                case Weapon.DefiersAxePlus:
+                case Weapon.DefiersBowPlus:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
                         targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
                         enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
@@ -9842,7 +9848,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.DefiersAxePlus:
                 case Weapon.SunflowerBowPlus:
                 case Weapon.VictorfishPlus:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
