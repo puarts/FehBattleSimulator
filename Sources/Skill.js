@@ -1635,6 +1635,7 @@ const Weapon = {
     VassalSaintSteel: 2456, // 剣姫と剣聖の秘刀
     IlianMercLance: 2458, // イリア傭兵騎士の槍
     DefiersBowPlus: 2460, // 守備逆用の弓+
+    Heidr: 2462, // ヘイズ
 };
 
 const Support = {

@@ -8306,8 +8306,20 @@ class BattleSimmulatorBase {
     }
 
     __applySkillsAfterRally(supporterUnit, targetUnit) {
+        // 使用した時
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Heidr:
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                        if (unit.posX === supporterUnit.posX ||
+                            unit.posX === targetUnit.posX ||
+                            unit.posY === supporterUnit.posY ||
+                            unit.posY === targetUnit.posY) {
+                            unit.applyAllDebuff(-4);
+                            unit.addStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                    break;
                 case Weapon.RetainersReport:
                     if (supporterUnit.isWeaponSpecialRefined) {
                         for (let u of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
@@ -8382,8 +8394,21 @@ class BattleSimmulatorBase {
                     break;
             }
         }
+
+        // 自分に使用された時
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Heidr:
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                        if (unit.posX === supporterUnit.posX ||
+                            unit.posX === targetUnit.posX ||
+                            unit.posY === supporterUnit.posY ||
+                            unit.posY === targetUnit.posY) {
+                            unit.applyAllDebuff(-4);
+                            unit.addStatusEffect(StatusEffectType.Guard);
+                        }
+                    }
+                    break;
                 case Weapon.AzureLance:
                     if (supporterUnit.isWeaponSpecialRefined) {
                         supporterUnit.applyAtkBuff(6);
