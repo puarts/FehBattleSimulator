@@ -2123,6 +2123,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.IlianMercLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAllSpur(5);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.PhysNullFollow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-4);
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
@@ -11676,6 +11681,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IlianMercLance:
+                    if (this.__countAlliesWithinSpecifiedSpaces(atkUnit, 1) <= 1) {
+                        let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                    }
+                    break;
                 case Weapon.FujinRaijinYumi:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);

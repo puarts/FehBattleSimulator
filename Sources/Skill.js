@@ -1633,6 +1633,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=qh-XlJl3gKg&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=TPqELmttXlM&ab_channel=NintendoMobile
     VassalSaintSteel: 2456, // 剣姫と剣聖の秘刀
+    IlianMercLance: 2458, // イリア傭兵騎士の槍
 };
 
 const Support = {

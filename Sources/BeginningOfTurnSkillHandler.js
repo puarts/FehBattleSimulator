@@ -153,6 +153,19 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.IlianMercLance:
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        if (skillOwner.partnerHeroIndex === unit.heroIndex ||
+                            unit.partnerHeroIndex === skillOwner.heroIndex) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                            unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                        }
+                    }
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                }
+                break;
             case Weapon.VassalSaintSteel:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                     this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
