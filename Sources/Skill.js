@@ -1653,6 +1653,7 @@ const Support = {
     AFateChanged: 2176, // 運命は変わった!
     FateUnchanged: 2438, // 運命ハ変ワラナイ...
 
+    // 再行動
     Sing: 411, // 歌う
     Dance: 412, // 踊る
     GrayWaves: 789, // ユラリユルレリ
@@ -1694,6 +1695,9 @@ const Support = {
     RallySpdDefPlus: 434,
     RallyAtkSpdPlus: 756,
     RallyDefResPlus: 1001,
+
+    // 専用応援
+    GoldSerpent: 2463, // 黄金の蛇
 
     Physic: 437, // リブロー
     PhysicPlus: 438, // リブロー+
@@ -2978,6 +2982,8 @@ function getAtkBuffAmount(support) {
         case Support.RallyAtkDefPlus:
         case Support.RallyAtkResPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -2994,6 +3000,8 @@ function getSpdBuffAmount(support) {
         case Support.RallySpdDefPlus:
         case Support.RallyAtkSpdPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -3010,6 +3018,8 @@ function getDefBuffAmount(support) {
         case Support.RallySpdDefPlus:
         case Support.RallyDefResPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -3026,6 +3036,8 @@ function getResBuffAmount(support) {
         case Support.RallyDefResPlus:
         case Support.RallyAtkResPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -3436,6 +3448,11 @@ function weaponTypeToString(weaponType) {
 /// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
 function canRallyForcibly(skill, unit) {
     switch (skill) {
+        case Support.GoldSerpent:
+            // TODO: 調査する
+            return true;
+        case Weapon.Heidr:
+            return true;
         case Weapon.RetainersReport:
             if (unit.isWeaponSpecialRefined) {
                 return true;

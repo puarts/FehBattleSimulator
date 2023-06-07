@@ -8309,6 +8309,8 @@ class BattleSimmulatorBase {
         // 使用した時
         for (let skillId of supporterUnit.enumerateSkills()) {
             switch (skillId) {
+                case Support.GoldSerpent:
+                    break;
                 case Weapon.Heidr:
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
                         if (unit.posX === supporterUnit.posX ||
@@ -8461,6 +8463,30 @@ class BattleSimmulatorBase {
             buffAmount = getResBuffAmount(supportId);
             if (unit.resBuff < buffAmount) { unit.resBuff = buffAmount; success = true; }
         }
+        if (supporterUnit.canRallyForcibly()) {
+            success = true;
+        }
+
+        if (success) {
+            this.__applySkillsAfterRally(supporterUnit, targetUnit);
+        }
+
+        return success;
+    }
+
+    __applyGoldSerpent(supporterUnit, targetUnit) {
+        let success = false;
+        let supportId = supporterUnit.support;
+        for (let unit of [supporterUnit, targetUnit]) {
+            let buffAmount = getAtkBuffAmount(supportId);
+            if (unit.atkBuff < buffAmount) { unit.atkBuff = buffAmount; success = true; }
+            buffAmount = getSpdBuffAmount(supportId);
+            if (unit.spdBuff < buffAmount) { unit.spdBuff = buffAmount; success = true; }
+            buffAmount = getDefBuffAmount(supportId);
+        }
+        if (supporterUnit.canRallyForcibly()) {
+            success = true;
+        }
 
         if (success) {
             this.__applySkillsAfterRally(supporterUnit, targetUnit);
@@ -8611,6 +8637,26 @@ class BattleSimmulatorBase {
             }
             for (let skillId of supporterUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Support.GoldSerpent: {
+                        let currentTurn = g_appData.globalBattleContext.currentTurn;
+                        if (currentTurn >= 2) {
+                            supporterUnit.addStatusEffect(StatusEffectType.Canto1);
+                            targetUnit.addStatusEffect(StatusEffectType.Canto1);
+                        }
+                        if (currentTurn >= 3) {
+                            supporterUnit.addStatusEffect(StatusEffectType.Treachery);
+                            targetUnit.addStatusEffect(StatusEffectType.Treachery);
+                        }
+                        if (currentTurn >= 4) {
+                            supporterUnit.addStatusEffect(StatusEffectType.DualStrike);
+                            targetUnit.addStatusEffect(StatusEffectType.DualStrike);
+                        }
+                        if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                        }
+                    }
+                        break;
                     case Weapon.JollyJadeLance:
                         if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
                             supporterUnit.applyAtkBuff(6);
@@ -8849,6 +8895,8 @@ class BattleSimmulatorBase {
                         return this.__executeHarshCommand(targetUnit);
                     case Support.HarshCommand:
                         return this.__executeHarshCommand(targetUnit);
+                    case Support.GoldSerpent:
+                        return this.__applyGoldSerpent(supporterUnit, targetUnit);
                     default:
                         if (this.__applyRally(supporterUnit, targetUnit)) { return true; } return false;
                 }
