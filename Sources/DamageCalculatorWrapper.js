@@ -2134,6 +2134,12 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveB.MagNullFollow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdResSpurs(-4);
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.PhysNullFollow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-4);
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;

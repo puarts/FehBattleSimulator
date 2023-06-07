@@ -2248,6 +2248,7 @@ const PassiveB = {
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     PhysNullFollow: 2457, // 理の見切り・追撃
+    MagNullFollow: 2464, // 魔の見切り・追撃
     MikiriHangeki3: 810, // 見切り・反撃不可効果3
 
     KyokoNoWakuran3: 896, // 惑乱3
