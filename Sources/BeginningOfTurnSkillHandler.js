@@ -216,6 +216,12 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
                 }
                 break;
+            case PassiveC.AlarmSpdDef:
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                    skillOwner.applySpdDefBuffs(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                }
+                break;
             case Weapon.Asclepius:
                 this.__applySabotageSkill(skillOwner, unit => {
                     unit.reserveToApplyDebuffs(-6, 0, 0, -6);

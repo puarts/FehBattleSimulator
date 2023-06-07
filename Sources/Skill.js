@@ -2716,6 +2716,7 @@ const PassiveC = {
 
     // 奮進
     AlarmAtkSpd: 2425, // 攻撃速さの奮進
+    AlarmSpdDef: 2459, // 速さ守備の奮進
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
