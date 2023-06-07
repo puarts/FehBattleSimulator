@@ -807,6 +807,12 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IncurablePlus:
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.reserveTakeDamage(7);
+                        unit.addStatusEffect(StatusEffectType.DeepWounds);
+                    }
+                    break;
                 case Weapon.DuskDawnStaff:
                     if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackTargetUnit, 2)) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {

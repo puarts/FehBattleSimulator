@@ -1637,6 +1637,7 @@ const Weapon = {
     DefiersBowPlus: 2460, // 守備逆用の弓+
     Heidr: 2462, // ヘイズ
     WyvernHatchet: 2467, // ワイバーンの斧
+    IncurablePlus: 2465, // インキュアブル+
 };
 
 const Support = {
