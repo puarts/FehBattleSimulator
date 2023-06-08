@@ -2123,6 +2123,51 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.IncurablePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.invalidatesHeal= true;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WyvernHatchet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addAtkDefSpurs(-6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Heidr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.IlianMercLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.MagNullFollow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdResSpurs(-4);
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.PhysNullFollow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.VassalSaintSteel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount;
+                if (enemyUnit.special === Special.None) {
+                    amount = 3;
+                } else {
+                    amount = Math.max(11 - enemyUnit.maxSpecialCount * 2, 3);
+                }
+                enemyUnit.addSpdDefSpurs(-amount);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.WingsOfMercy4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.addDefResSpurs(-3);
         }
@@ -2271,6 +2316,11 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveC.AlarmAtkSpd] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 targetUnit.addAtkSpdSpurs(3);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AlarmSpdDef] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addSpdDefSpurs(3);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.FruitOfLife] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -3380,11 +3430,15 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.defSpur += 5;
-                enemyUnit.defSpur -= 5;
-            }
+        {
+            let func = (targetUnit, enemyUnit) => {
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.defSpur += 5;
+                    enemyUnit.defSpur -= 5;
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = func
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersBowPlus] = func
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.MysticBoost4] = (targetUnit, enemyUnit) => {
             enemyUnit.atkSpur -= 5;
@@ -9492,6 +9546,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.WyvernHatchet:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.atkSpur -= Math.max(7 - Math.abs(enemyUnit.atkDebuffTotal), 0);
+                    }
+                    break;
                 case Weapon.RingOfAffiancePlus:
                 case Weapon.BridalBladePlus:
                     if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
@@ -9607,6 +9666,8 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                     break;
                 case Weapon.DefiersLancePlus:
+                case Weapon.DefiersAxePlus:
+                case Weapon.DefiersBowPlus:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
                         targetUnit.defSpur += enemyUnit.getDefBuffInCombat(targetUnit);
                         enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
@@ -9813,7 +9874,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.DefiersAxePlus:
                 case Weapon.SunflowerBowPlus:
                 case Weapon.VictorfishPlus:
                     if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -10083,6 +10143,14 @@ class DamageCalculatorWrapper {
                         (unit, value) => {
                             unit.spdSpur += value;
                             unit.defSpur += value;
+                        },
+                        5, 0);
+                    break;
+                case PassiveA.SpdResIdeal3:
+                    DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
+                        (unit, value) => {
+                            unit.spdSpur += value;
+                            unit.resSpur += value;
                         },
                         5, 0);
                     break;
@@ -11657,6 +11725,20 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.Heidr:
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        if (!isPrecombat) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                        }
+                    }
+                    break;
+                case Weapon.IlianMercLance:
+                    if (this.__countAlliesWithinSpecifiedSpaces(atkUnit, 1) <= 1) {
+                        let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                    }
+                    break;
                 case Weapon.FujinRaijinYumi:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
@@ -13035,6 +13117,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VassalSaintSteel:
+                    if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                        targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 5) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Weapon.RevengerLance:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {

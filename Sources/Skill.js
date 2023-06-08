@@ -1628,6 +1628,16 @@ const Weapon = {
     // https://www.youtube.com/watch?v=R05SZipb6IU
     // https://www.youtube.com/watch?v=kp5Rh3FxEFQ
     FujinRaijinYumi: 2451, // 風神雷神弓
+
+    // 記念召喚 新英雄＆開花英雄＆ヘイズ
+    // https://www.youtube.com/watch?v=qh-XlJl3gKg&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=TPqELmttXlM&ab_channel=NintendoMobile
+    VassalSaintSteel: 2456, // 剣姫と剣聖の秘刀
+    IlianMercLance: 2458, // イリア傭兵騎士の槍
+    DefiersBowPlus: 2460, // 守備逆用の弓+
+    Heidr: 2462, // ヘイズ
+    WyvernHatchet: 2467, // ワイバーンの斧
+    IncurablePlus: 2465, // インキュアブル+
 };
 
 const Support = {
@@ -1645,6 +1655,7 @@ const Support = {
     AFateChanged: 2176, // 運命は変わった!
     FateUnchanged: 2438, // 運命ハ変ワラナイ...
 
+    // 再行動
     Sing: 411, // 歌う
     Dance: 412, // 踊る
     GrayWaves: 789, // ユラリユルレリ
@@ -1686,6 +1697,9 @@ const Support = {
     RallySpdDefPlus: 434,
     RallyAtkSpdPlus: 756,
     RallyDefResPlus: 1001,
+
+    // 専用応援
+    GoldSerpent: 2463, // 黄金の蛇
 
     Physic: 437, // リブロー
     PhysicPlus: 438, // リブロー+
@@ -2122,6 +2136,7 @@ const PassiveA = {
     AtkResIdeal4: 1723,
     SpdDefIdeal3: 2006, // 速さ守備の万全3
     SpdDefIdeal4: 1997, // 速さ守備の万全4
+    SpdResIdeal3: 2468, // 速さ魔防の万全3
     SpdResIdeal4: 2324, // 速さ魔防の万全4
     DefResIdeal3: 1984, // 守備魔防の万全3
     DefResIdeal4: 1791, // 守備魔防の万全4
@@ -2234,6 +2249,8 @@ const PassiveB = {
     SavvyFighter4: 2435, // 慧眼隊形4
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
+    PhysNullFollow: 2457, // 理の見切り・追撃
+    MagNullFollow: 2464, // 魔の見切り・追撃
     MikiriHangeki3: 810, // 見切り・反撃不可効果3
 
     KyokoNoWakuran3: 896, // 惑乱3
@@ -2709,6 +2726,7 @@ const PassiveC = {
 
     // 奮進
     AlarmAtkSpd: 2425, // 攻撃速さの奮進
+    AlarmSpdDef: 2459, // 速さ守備の奮進
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
@@ -2967,6 +2985,8 @@ function getAtkBuffAmount(support) {
         case Support.RallyAtkDefPlus:
         case Support.RallyAtkResPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -2983,6 +3003,8 @@ function getSpdBuffAmount(support) {
         case Support.RallySpdDefPlus:
         case Support.RallyAtkSpdPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -2999,6 +3021,8 @@ function getDefBuffAmount(support) {
         case Support.RallySpdDefPlus:
         case Support.RallyDefResPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -3015,6 +3039,8 @@ function getResBuffAmount(support) {
         case Support.RallyDefResPlus:
         case Support.RallyAtkResPlus:
             return 6;
+        case Support.GoldSerpent:
+            return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
         default: return 0;
     }
 }
@@ -3425,6 +3451,11 @@ function weaponTypeToString(weaponType) {
 /// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
 function canRallyForcibly(skill, unit) {
     switch (skill) {
+        case Support.GoldSerpent:
+            // TODO: 調査する
+            return true;
+        case Weapon.Heidr:
+            return true;
         case Weapon.RetainersReport:
             if (unit.isWeaponSpecialRefined) {
                 return true;

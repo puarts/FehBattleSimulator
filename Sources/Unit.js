@@ -3095,6 +3095,11 @@ class Unit extends BattleMapElement {
         this.applySpdBuff(spd);
     }
 
+    applySpdDefBuffs(spd, def = spd) {
+        this.applySpdBuff(spd);
+        this.applyDefBuff(def);
+    }
+
     reserveToApplyAtkDebuff(amount) {
         if (this.reservedAtkDebuff > amount) {
             this.reservedAtkDebuff = amount;

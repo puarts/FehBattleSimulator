@@ -153,6 +153,25 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.IlianMercLance:
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        if (skillOwner.partnerHeroIndex === unit.heroIndex ||
+                            unit.partnerHeroIndex === skillOwner.heroIndex) {
+                            unit.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                            unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                        }
+                    }
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                }
+                break;
+            case Weapon.VassalSaintSteel:
+                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                    this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case PassiveC.RallyingCry: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
@@ -194,6 +213,12 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.AlarmAtkSpd:
                 if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
                     skillOwner.applyAtkSpdBuffs(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                }
+                break;
+            case PassiveC.AlarmSpdDef:
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                    skillOwner.applySpdDefBuffs(6);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
                 }
                 break;

@@ -328,6 +328,13 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VassalSaintSteel:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (targetUnit.isSpecialCountMax) {
+                            targetUnit.reduceSpecialCount(1);
+                        }
+                    }
+                    break;
                 case PassiveB.FruitOfLife:
                     if (targetUnit.battleContext.restHpPercentage >= 25 &&
                         targetUnit.battleContext.passiveBSkillCondSatisfied) {
@@ -800,6 +807,12 @@ class PostCombatSkillHander {
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IncurablePlus:
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.reserveTakeDamage(7);
+                        unit.addStatusEffect(StatusEffectType.DeepWounds);
+                    }
+                    break;
                 case Weapon.DuskDawnStaff:
                     if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackTargetUnit, 2)) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
