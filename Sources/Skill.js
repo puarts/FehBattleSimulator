@@ -1641,6 +1641,9 @@ const Weapon = {
 
     // 2023年6月 武器錬成
     VioldrakeBow: 2455, // 紫竜山の荒弓
+
+    // 敵クワシル
+    Kvasir: 2473, // クワシル
 };
 
 const Support = {
