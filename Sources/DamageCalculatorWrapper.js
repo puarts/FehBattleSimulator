@@ -8871,11 +8871,41 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Fimbulvetr:
-                    if (targetUnit.battleContext.restHpPercentage < 100 || targetUnit.hasNegativeStatusEffect()) {
-                        targetUnit.battleContext.invalidateAllOwnDebuffs();
-                        targetUnit.addAllSpur(4);
-                    }
+                    if (!targetUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (targetUnit.battleContext.restHpPercentage < 100 || targetUnit.hasNegativeStatusEffect()) {
+                            targetUnit.battleContext.invalidateAllOwnDebuffs();
+                            targetUnit.addAllSpur(4);
+                        }
+                    } else {
+                        // <錬成効果>
+                        if (targetUnit.battleContext.restHpPercentage < 100 ||
+                            targetUnit.hasNegativeStatusEffect() ||
+                            enemyUnit.battleContext.restHpPercentage >= 75) {
+                            targetUnit.battleContext.invalidateAllOwnDebuffs();
+                            targetUnit.addAllSpur(4);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            // <特殊錬成効果>
+                            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                                targetUnit.addAllSpur(4);
 
+                                let amount;
+                                if (enemyUnit.special !== Special.None) {
+                                    amount = Math.max(10 - enemyUnit.maxSpecialCount * 2, 2);
+                                } else {
+                                    amount = 2;
+                                }
+                                enemyUnit.addAtkResSpurs(-amount);
+                            }
+                            let pred = ally =>
+                                targetUnit.partnerHeroIndex === ally.heroIndex ||
+                                ally.partnerHeroIndex === targetUnit.heroIndex;
+                            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3, pred)) {
+                                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                        }
+                    }
                     break;
                 case Weapon.RuneAxe:
                     targetUnit.battleContext.healedHpByAttack += 7;
