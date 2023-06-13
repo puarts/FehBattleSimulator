@@ -2134,6 +2134,21 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.SyugosyaNoRekkyu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.initiatesCombat ||
+                    targetUnit.getSpdInPrecombat() >= enemyUnit.getSpdInPrecombat() - 7) {
+                    enemyUnit.addSpursWithoutRes(-5);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.VioldrakeBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.battleContext.refersMinOfDefOrRes = true;
@@ -10185,12 +10200,14 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.SyugosyaNoRekkyu:
-                    if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
-                        || targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)
-                    ) {
-                        enemyUnit.atkSpur -= 5;
-                        enemyUnit.spdSpur -= 5;
-                        enemyUnit.defSpur -= 5;
+                    if (!targetUnit.isWeaponRefined) {
+                        // <通常効果>
+                        if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat() ||
+                            targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            enemyUnit.atkSpur -= 5;
+                            enemyUnit.spdSpur -= 5;
+                            enemyUnit.defSpur -= 5;
+                        }
                     }
                     break;
                 case Weapon.SaizoNoBakuenshin:
@@ -11800,6 +11817,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SyugosyaNoRekkyu:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                        }
+                    }
+                    break;
                 case Weapon.VioldrakeBow:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
@@ -13198,6 +13223,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SyugosyaNoRekkyu:
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.VassalSaintSteel:
                     if (targetUnit.battleContext.restHpPercentage >= 25 &&
                         targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 5) {
