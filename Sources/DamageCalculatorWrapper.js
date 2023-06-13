@@ -7569,9 +7569,18 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.BaraNoYari] = (targetUnit, enemyUnit) => {
-            if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.defSpur -= 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getAtkInPrecombat() > enemyUnit.getAtkInPrecombat()) {
+                    enemyUnit.addAtkDefSpurs(-6);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            } else {
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addAtkDefSpurs(-5);
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.AiNoSaiki] = (targetUnit, enemyUnit) => {
@@ -9628,6 +9637,34 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.BaraNoYari:
+                    if (targetUnit.isWeaponRefined) {
+                        if (targetUnit.battleContext.restHpPercentage >= 25 ||
+                            targetUnit.getEvalAtkInCombat(enemyUnit) >= enemyUnit.getEvalAtkInCombat(targetUnit) + 1) {
+                            enemyUnit.addAtkDefSpurs(-6);
+                        }
+                    }
+                    if (targetUnit.isWeaponSpecialRefined) {
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                            let max = 0;
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                                let buffTotal;
+                                if (unit === targetUnit) {
+                                    buffTotal = unit.getBuffTotalInCombat(enemyUnit);
+                                } else {
+                                    buffTotal = unit.buffTotal;
+                                }
+                                if (buffTotal > max) {
+                                    max = buffTotal;
+                                }
+                            }
+                            let amount = Math.trunc(max * 0.5);
+                            targetUnit.atkSpur += amount;
+                            enemyUnit.atkSpur -= amount;
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                        }
+                    }
+                    break;
                 case Weapon.VioldrakeBow:
                     if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -10526,6 +10563,14 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.BaraNoYari:
+                        if (targetUnit.isWeaponRefined) {
+                            let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalAtkInCombat(targetUnit);
+                            if (targetUnit.battleContext.restHpPercentage >= 25 || diff > 1) {
+                                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                            }
+                        }
+                        break;
                     case Weapon.TwinDivinestone:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getResInCombat(targetUnit)) {
@@ -11455,6 +11500,12 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.BaraNoYari:
+                if (defUnit.isWeaponRefined) {
+                    let diff = defUnit.getEvalAtkInCombat(atkUnit) - atkUnit.getEvalAtkInCombat(defUnit);
+                    return Math.min(Math.max(diff * 0.02, 0), 0.4);
+                }
+                break;
             case Weapon.FreebladesEdge:
                 return 0.3;
             case PassiveB.GuardBearing4:
@@ -13104,11 +13155,6 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.ShinenNoBreath:
                         if (defUnit.getDefInCombat(atkUnit) >= atkUnit.getDefInCombat(defUnit) + 5) {
-                            --followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.BaraNoYari:
-                        if (defUnit.getAtkInPrecombat() > atkUnit.getAtkInPrecombat()) {
                             --followupAttackPriority;
                         }
                         break;
