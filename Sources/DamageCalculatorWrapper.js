@@ -874,12 +874,23 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
                     }
                     break;
-                case Weapon.EtherealBreath:
-                {
+                case Weapon.EtherealBreath: {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
                 }
-                    break;
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage >= 75) {
+                            let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                            if (resDiff > 0) {
+                                let percentage = resDiff * 4;
+                                if (percentage > 40) {
+                                    percentage = 40;
+                                }
 
+                                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.NewFoxkitFang:
                 {
                     let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
@@ -2123,6 +2134,21 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.EtherealBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    enemyUnit.addAtkResSpurs(-5);
+                    targetUnit.battleContext.healedHpByAttack += 7;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addAtkResSpurs(-5);
+                        enemyUnit.invalidatesOwnDefDebuff = true;
+                        enemyUnit.invalidatesOwnResDebuff = true;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.IncurablePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.invalidatesHeal= true;
         }
