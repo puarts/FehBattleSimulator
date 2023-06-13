@@ -2134,6 +2134,17 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.VioldrakeBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.battleContext.refersMinOfDefOrRes = true;
+                targetUnit.addAllSpur(4);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.EtherealBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -9602,6 +9613,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VioldrakeBow:
+                    if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                        enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    }
+                    break;
                 case Weapon.WyvernHatchet:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                         enemyUnit.atkSpur -= Math.max(7 - Math.abs(enemyUnit.atkDebuffTotal), 0);
@@ -11781,6 +11800,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VioldrakeBow:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                    }
+                    break;
                 case Weapon.Heidr:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         if (!isPrecombat) {
