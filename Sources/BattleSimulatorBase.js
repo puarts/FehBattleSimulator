@@ -8581,6 +8581,12 @@ class BattleSimmulatorBase {
                     case Special.DelugeBalmPlus:
                         this.__applyBalmSkill(supporterUnit, x => { x.applySpdBuff(6); x.applyResBuff(6); });
                         break;
+                    case Special.EarthwindBalm:
+                        this.__applyBalmSkill(supporterUnit, x => x.applySpdDefBuffs(4));
+                        break;
+                    case Special.EarthwindBalmPlus:
+                        this.__applyBalmSkill(supporterUnit, x => x.applySpdDefBuffs(6));
+                        break;
                     case Special.DaichiSeisuiNoSyukuhuku:
                         this.__applyBalmSkill(supporterUnit, x => { x.applyDefBuff(4); x.applyResBuff(4); });
                         break;
