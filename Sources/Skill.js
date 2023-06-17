@@ -1649,6 +1649,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=veLwnEvydHc&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=QP5iSUNyWh4&ab_channel=NintendoMobile
     SurfersSpire: 2474, // 深き海の底の双剣
+    SeafoamSplitter: 2476, // 蒼海割る裂帛の斧
 };
 
 const Support = {
