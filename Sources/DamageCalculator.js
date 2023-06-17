@@ -1309,6 +1309,13 @@ class DamageCalculator {
         }
 
         // 自分の次の攻撃の時にダメージ軽減加算をするための処理
+        if (defUnit.battleContext.reducedRatioForNextAttack > 0) {
+            if (context.isFirstAttack(atkUnit)) {
+                defUnit.battleContext.additionalDamageOfNextAttackByDamageRatio =
+                    Math.trunc(damage * defUnit.battleContext.reducedRatioForNextAttack);
+            }
+        }
+
         switch (defUnit.special) {
             case Special.IceMirror:
                 if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {

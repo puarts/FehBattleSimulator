@@ -1021,6 +1021,16 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoShamir:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (this.__isInCross(unit, duoUnit, 1, 1)) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                    if (this.__isInCross(unit, duoUnit, 5, 5)) {
+                        unit.addStatusEffect(StatusEffectType.Feud);
+                    }
+                }
+                break;
             case Hero.HarmonizedTiki:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.NeutralizesFoesBonusesDuringCombat);
