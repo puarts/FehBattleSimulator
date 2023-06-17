@@ -11967,6 +11967,7 @@ class DamageCalculatorWrapper {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.SurfersSpire:
+                case Weapon.SurfersSpade:
                     if (!isPrecombat) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
                         atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);

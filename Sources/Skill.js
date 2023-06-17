@@ -1652,6 +1652,7 @@ const Weapon = {
     SeafoamSplitter: 2476, // 蒼海割る裂帛の斧
     SeasideParasolPlus: 2479, // 海辺の日傘+
     PartnershipBow: 2481, // 生涯の相棒の鋭弓
+    SurfersSpade: 2483, // 深き海の底の双槍
 };
 
 const Support = {
