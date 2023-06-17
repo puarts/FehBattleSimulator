@@ -2316,6 +2316,7 @@ const PassiveB = {
     LullAtkSpd3: 994, // 攻撃速さの凪3
     LullAtkRes3: 1109, // 攻撃魔防の凪3
     LullSpdDef3: 952, // 速さ守備の凪3
+    LullSpdDef4: 2475, // 速さ守備の凪4
     LullSpdRes3: 1156,
 
     SabotageAtk3: 846, // 攻撃の混乱3
