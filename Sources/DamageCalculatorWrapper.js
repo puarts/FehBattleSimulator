@@ -2153,6 +2153,17 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.PartnershipBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                let amount = Math.min(count * 4, 16);
+                enemyUnit.addSpdDefSpurs(-amount);
+                if (count > 0) {
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SeasideParasolPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(5);
@@ -9702,6 +9713,10 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
             this.__applySabotage(targetUnit);
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Discord)) {
+            let amount = Math.min(this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2), 3) + 2;
+            targetUnit.addAllSpur(-amount);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
             enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
@@ -13348,6 +13363,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PartnershipBow:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                        if (count > 0) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.SyugosyaNoRekkyu:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {

@@ -153,6 +153,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.PartnershipBow:
+                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.reserveToAddStatusEffect(StatusEffectType.Panic);
+                        u.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    }
+                }
+                break;
             case Weapon.SeasideParasolPlus:
                 for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Guard);

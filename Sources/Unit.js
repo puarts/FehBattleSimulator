@@ -234,6 +234,7 @@ const StatusEffectType = {
     NeutralizesPenalties: 46, // 弱化を無効
     Hexblade: 47, // 魔刃
     Sabotage: 48, // 混乱
+    Discord: 49, // 不和
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -289,6 +290,7 @@ NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
 NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
 NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
 NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
+NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -404,6 +406,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Hexblade.webp";
         case StatusEffectType.Sabotage:
             return g_imageRootPath + "StatusEffect_Sabotage.webp";
+        case StatusEffectType.Discord:
+            return g_imageRootPath + "StatusEffect_Discord.webp";
         default: return "";
     }
 }
