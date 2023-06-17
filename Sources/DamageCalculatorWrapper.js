@@ -688,6 +688,25 @@ class DamageCalculatorWrapper {
 
         return false;
     }
+
+    __hasSaveSkills(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveC.WoefulUpheaval:
+                case PassiveC.WithEveryone2:
+                case PassiveC.AsFarSave3:
+                case PassiveC.AdFarSave3:
+                case PassiveC.ArFarSave3:
+                case PassiveC.DrFarSave3:
+                case PassiveC.AsNearSave3:
+                case PassiveC.ArNearSave3:
+                case PassiveC.AdNearSave3:
+                case PassiveC.DrNearSave3:
+                    return true;
+            }
+        }
+        return false;
+    }
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
@@ -2134,6 +2153,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.SeasideParasolPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                let amount = Math.min(count * 4, 16);
+                enemyUnit.resSpur -= amount;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SunlightBangle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 if (targetUnit.battleContext.initiatesCombat) {

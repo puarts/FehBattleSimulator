@@ -1650,6 +1650,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=QP5iSUNyWh4&ab_channel=NintendoMobile
     SurfersSpire: 2474, // 深き海の底の双剣
     SeafoamSplitter: 2476, // 蒼海割る裂帛の斧
+    SeasideParasolPlus: 2479, // 海辺の日傘+
 };
 
 const Support = {
@@ -3762,6 +3763,19 @@ const PassiveBValueDict = __createValueDict(PassiveB);
 const PassiveCValueDict = __createValueDict(PassiveC);
 const PassiveSValueDict = __createValueDict(PassiveS);
 const CaptainValueDict = __createValueDict(Captain);
+
+const SaveSkills = new Set([
+    PassiveC.WoefulUpheaval,
+    PassiveC.WithEveryone2,
+    PassiveC.AsFarSave3,
+    PassiveC.AdFarSave3,
+    PassiveC.ArFarSave3,
+    PassiveC.DrFarSave3,
+    PassiveC.AsNearSave3,
+    PassiveC.ArNearSave3,
+    PassiveC.AdNearSave3,
+    PassiveC.DrNearSave3,
+]);
 
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {
