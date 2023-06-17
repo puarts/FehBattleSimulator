@@ -2449,6 +2449,7 @@ const PassiveB = {
     // @TODO: 相性相殺1, 2は効果が異なるので時間がある時に実装する
     AisyoSosatsu3: 626, // 相性相殺
     Sashitigae3: 598, // 差し違え3
+    BrashAssault4: 2482, // 差し違え4
     ShingunSoshi3: 593, // 進軍阻止3
     DetailedReport: 1804, // 異常なしであります
     Surinuke3: 592, // すり抜け3

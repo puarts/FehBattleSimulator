@@ -521,6 +521,12 @@ class BattleContext {
         // 氷の聖鏡発動時などの軽減ダメージ保持用
         this.reducedDamageForNextAttack = 0;
 
+        // 差し違え4などの軽減前ダメージの参照割合の保持用(最大値適用)
+        this.reducedRatioForNextAttack = 0;
+
+        // 差し違え4などの軽減前ダメージの割合加算
+        this.additionalDamageOfNextAttackByDamageRatio = 0;
+
         // 次の自分の攻撃のダメージ加算
         this.additionalDamageOfNextAttack = 0;
 
@@ -771,6 +777,8 @@ class BattleContext {
         this.refersRes = false;
         this.refersResForSpecial = false;
         this.reducedDamageForNextAttack = 0;
+        this.reducedRatioForNextAttack = 0;
+        this.additionalDamageOfNextAttackByDamageRatio = 0;
         this.additionalDamageOfNextAttack = 0;
         this.damageReductionRatiosBySpecialOfNextAttack = [];
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
