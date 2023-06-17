@@ -2398,6 +2398,11 @@ class DamageCalculatorWrapper {
                 targetUnit.addAtkSpdSpurs(3);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AlarmAtkDef] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAtkDefSpurs(3);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.AlarmSpdDef] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 targetUnit.addSpdDefSpurs(3);

@@ -221,6 +221,12 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
                 }
                 break;
+            case PassiveC.AlarmAtkDef:
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                    skillOwner.applyAtkDefBuffs(6);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                }
+                break;
             case PassiveC.AlarmSpdDef:
                 if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
                     skillOwner.applySpdDefBuffs(6);

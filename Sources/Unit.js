@@ -3095,6 +3095,11 @@ class Unit extends BattleMapElement {
         this.applySpdBuff(spd);
     }
 
+    applyAtkDefBuffs(atk, def = atk) {
+        this.applyAtkBuff(atk);
+        this.applyDefBuff(def);
+    }
+
     applySpdDefBuffs(spd, def = spd) {
         this.applySpdBuff(spd);
         this.applyDefBuff(def);
