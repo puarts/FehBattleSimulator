@@ -2134,6 +2134,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.SunlightBangle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                if (targetUnit.battleContext.initiatesCombat) {
+                    enemyUnit.battleContext.isVantageActivatable = true;
+                }
+                enemyUnit.addAtkDefSpurs(-4);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = Math.min(dist, 4);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SeafoamSplitter] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addAtkDefSpurs(-6);
@@ -9366,6 +9378,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SunlightBangle:
+                    if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                    break;
                 case Weapon.HeraldingHorn: {
                     let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
                     if (count >= 1) {

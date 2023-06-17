@@ -2492,6 +2492,7 @@ const PassiveB = {
     AssuredRebirth: 2066, // 我が復活は成った
     SoaringWings: 2390, // 天かける翼
     FruitOfLife: 2424, // 地に生まれ地に還る
+    SunlightBangle: 2477, // 華日の腕輪
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
