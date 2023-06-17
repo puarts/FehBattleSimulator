@@ -5401,6 +5401,7 @@ class Unit extends BattleMapElement {
                         }
                     }
                     break;
+                case Weapon.SurfersSpire:
                 case PassiveA.KnightlyDevotion:
                 case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:
