@@ -59,6 +59,7 @@ const Hero = {
     HarmonizedKarla: 944,
     DuoMark: 955,
     HarmonizedTiki: 971,
+    DuoShamir: 984,
 };
 
 function isThiefIndex(heroIndex) {
@@ -234,6 +235,7 @@ const StatusEffectType = {
     NeutralizesPenalties: 46, // 弱化を無効
     Hexblade: 47, // 魔刃
     Sabotage: 48, // 混乱
+    Discord: 49, // 不和
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -289,6 +291,7 @@ NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
 NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
 NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
 NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
+NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -404,6 +407,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Hexblade.webp";
         case StatusEffectType.Sabotage:
             return g_imageRootPath + "StatusEffect_Sabotage.webp";
+        case StatusEffectType.Discord:
+            return g_imageRootPath + "StatusEffect_Discord.webp";
         default: return "";
     }
 }
@@ -516,6 +521,12 @@ class BattleContext {
 
         // 氷の聖鏡発動時などの軽減ダメージ保持用
         this.reducedDamageForNextAttack = 0;
+
+        // 差し違え4などの軽減前ダメージの参照割合の保持用(最大値適用)
+        this.reducedRatioForNextAttack = 0;
+
+        // 差し違え4などの軽減前ダメージの割合加算
+        this.additionalDamageOfNextAttackByDamageRatio = 0;
 
         // 次の自分の攻撃のダメージ加算
         this.additionalDamageOfNextAttack = 0;
@@ -767,6 +778,8 @@ class BattleContext {
         this.refersRes = false;
         this.refersResForSpecial = false;
         this.reducedDamageForNextAttack = 0;
+        this.reducedRatioForNextAttack = 0;
+        this.additionalDamageOfNextAttackByDamageRatio = 0;
         this.additionalDamageOfNextAttack = 0;
         this.damageReductionRatiosBySpecialOfNextAttack = [];
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
@@ -3095,6 +3108,11 @@ class Unit extends BattleMapElement {
         this.applySpdBuff(spd);
     }
 
+    applyAtkDefBuffs(atk, def = atk) {
+        this.applyAtkBuff(atk);
+        this.applyDefBuff(def);
+    }
+
     applySpdDefBuffs(spd, def = spd) {
         this.applySpdBuff(spd);
         this.applyDefBuff(def);
@@ -5402,6 +5420,8 @@ class Unit extends BattleMapElement {
                         }
                     }
                     break;
+                case Weapon.SurfersSpire:
+                case Weapon.SurfersSpade:
                 case PassiveA.KnightlyDevotion:
                 case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:

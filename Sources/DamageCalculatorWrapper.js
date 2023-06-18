@@ -688,6 +688,25 @@ class DamageCalculatorWrapper {
 
         return false;
     }
+
+    __hasSaveSkills(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveC.WoefulUpheaval:
+                case PassiveC.WithEveryone2:
+                case PassiveC.AsFarSave3:
+                case PassiveC.AdFarSave3:
+                case PassiveC.ArFarSave3:
+                case PassiveC.DrFarSave3:
+                case PassiveC.AsNearSave3:
+                case PassiveC.ArNearSave3:
+                case PassiveC.AdNearSave3:
+                case PassiveC.DrNearSave3:
+                    return true;
+            }
+        }
+        return false;
+    }
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
@@ -2134,6 +2153,54 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.BrashAssault4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if ((targetUnit.battleContext.restHpPercentage <= 99 && targetUnit.battleContext.initiatesCombat) ||
+                (enemyUnit.battleContext.restHpPercentage === 100 && targetUnit.battleContext.initiatesCombat)) {
+                enemyUnit.addDefResSpurs(-4);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.reducedRatioForNextAttack =
+                    Math.max(0.3, targetUnit.battleContext.reducedRatioForNextAttack);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.PartnershipBow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                let amount = Math.min(count * 4, 16);
+                enemyUnit.addSpdDefSpurs(-amount);
+                if (count > 0) {
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SeasideParasolPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                let amount = Math.min(count * 4, 16);
+                enemyUnit.resSpur -= amount;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.SunlightBangle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                if (targetUnit.battleContext.initiatesCombat) {
+                    enemyUnit.battleContext.isVantageActivatable = true;
+                }
+                enemyUnit.addAtkDefSpurs(-4);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = Math.min(dist, 4);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SeafoamSplitter] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-6);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.Kvasir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -2377,6 +2444,11 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveC.AlarmAtkSpd] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 targetUnit.addAtkSpdSpurs(3);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveC.AlarmAtkDef] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAtkDefSpurs(3);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveC.AlarmSpdDef] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -8262,6 +8334,13 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidatesSpdBuff = true;
             targetUnit.battleContext.invalidatesDefBuff = true;
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.LullSpdDef4] = (targetUnit, enemyUnit) => {
+            enemyUnit.addSpdDefSpurs(-4);
+            let amount = Math.min(enemyUnit.getPositiveStatusEffects().length, 4);
+            enemyUnit.addSpdDefSpurs(-amount);
+            targetUnit.battleContext.invalidatesSpdBuff = true;
+            targetUnit.battleContext.invalidatesDefBuff = true;
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.LullSpdRes3] = (targetUnit, enemyUnit) => {
             enemyUnit.spdSpur -= 3;
             enemyUnit.resSpur -= 3;
@@ -9352,6 +9431,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.SunlightBangle:
+                    if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                    break;
                 case Weapon.HeraldingHorn: {
                     let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
                     if (count >= 1) {
@@ -9637,6 +9722,10 @@ class DamageCalculatorWrapper {
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
             this.__applySabotage(targetUnit);
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Discord)) {
+            let amount = Math.min(this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2), 3) + 2;
+            targetUnit.addAllSpur(-amount);
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -11877,6 +11966,13 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SurfersSpire:
+                case Weapon.SurfersSpade:
+                    if (!isPrecombat) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                    }
+                    break;
                 case Weapon.SyugosyaNoRekkyu:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
@@ -13278,6 +13374,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PartnershipBow:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                        if (count > 0) {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    }
+                    break;
                 case Weapon.SyugosyaNoRekkyu:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {

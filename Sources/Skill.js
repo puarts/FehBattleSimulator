@@ -1644,6 +1644,15 @@ const Weapon = {
 
     // 敵クワシル
     Kvasir: 2473, // クワシル
+
+    // 超英雄 (ないものねだりの夏)
+    // https://www.youtube.com/watch?v=veLwnEvydHc&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=QP5iSUNyWh4&ab_channel=NintendoMobile
+    SurfersSpire: 2474, // 深き海の底の双剣
+    SeafoamSplitter: 2476, // 蒼海割る裂帛の斧
+    SeasideParasolPlus: 2479, // 海辺の日傘+
+    PartnershipBow: 2481, // 生涯の相棒の鋭弓
+    SurfersSpade: 2483, // 深き海の底の双槍
 };
 
 const Support = {
@@ -1836,6 +1845,8 @@ const Special = {
     WindfireBalmPlus: 505, // 業火疾風の祝福+
     WindfireBalm: 504, // 業火疾風の祝福
     DelugeBalmPlus: 1507, // 疾風静水の祝福+
+    EarthwindBalm: 2485, //  疾風大地の祝福
+    EarthwindBalmPlus: 2484, //  疾風大地の祝福+
     DaichiSeisuiNoSyukuhuku: 506, // 大地静水の祝福
     DaichiSeisuiNoSyukuhukuPlus: 507, // 大地静水の祝福+
     GokaDaichiNoSyukuhukuPlus: 797, // 業火大地の祝福+
@@ -2311,6 +2322,7 @@ const PassiveB = {
     LullAtkSpd3: 994, // 攻撃速さの凪3
     LullAtkRes3: 1109, // 攻撃魔防の凪3
     LullSpdDef3: 952, // 速さ守備の凪3
+    LullSpdDef4: 2475, // 速さ守備の凪4
     LullSpdRes3: 1156,
 
     SabotageAtk3: 846, // 攻撃の混乱3
@@ -2438,6 +2450,7 @@ const PassiveB = {
     // @TODO: 相性相殺1, 2は効果が異なるので時間がある時に実装する
     AisyoSosatsu3: 626, // 相性相殺
     Sashitigae3: 598, // 差し違え3
+    BrashAssault4: 2482, // 差し違え4
     ShingunSoshi3: 593, // 進軍阻止3
     DetailedReport: 1804, // 異常なしであります
     Surinuke3: 592, // すり抜け3
@@ -2485,6 +2498,7 @@ const PassiveB = {
     AssuredRebirth: 2066, // 我が復活は成った
     SoaringWings: 2390, // 天かける翼
     FruitOfLife: 2424, // 地に生まれ地に還る
+    SunlightBangle: 2477, // 華日の腕輪
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
@@ -2732,6 +2746,7 @@ const PassiveC = {
 
     // 奮進
     AlarmAtkSpd: 2425, // 攻撃速さの奮進
+    AlarmAtkDef: 2478, // 攻撃守備の奮進
     AlarmSpdDef: 2459, // 速さ守備の奮進
 
     SeiNoIbuki3: 668, // 生の息吹3
@@ -3753,6 +3768,19 @@ const PassiveBValueDict = __createValueDict(PassiveB);
 const PassiveCValueDict = __createValueDict(PassiveC);
 const PassiveSValueDict = __createValueDict(PassiveS);
 const CaptainValueDict = __createValueDict(Captain);
+
+const SaveSkills = new Set([
+    PassiveC.WoefulUpheaval,
+    PassiveC.WithEveryone2,
+    PassiveC.AsFarSave3,
+    PassiveC.AdFarSave3,
+    PassiveC.ArFarSave3,
+    PassiveC.DrFarSave3,
+    PassiveC.AsNearSave3,
+    PassiveC.ArNearSave3,
+    PassiveC.AdNearSave3,
+    PassiveC.DrNearSave3,
+]);
 
 /// スキル情報です。ユニットの初期化等に使用します。
 class SkillInfo {

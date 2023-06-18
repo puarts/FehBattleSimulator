@@ -1021,6 +1021,16 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoShamir:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (this.__isInCross(unit, duoUnit, 1, 1)) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                    if (this.__isInCross(unit, duoUnit, 5, 5)) {
+                        unit.addStatusEffect(StatusEffectType.Feud);
+                    }
+                }
+                break;
             case Hero.HarmonizedTiki:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.NeutralizesFoesBonusesDuringCombat);
@@ -6296,6 +6306,8 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.SurfersSpire:
+                case Weapon.SurfersSpade:
                 case Weapon.FujinRaijinYumi:
                 case PassiveA.KnightlyDevotion:
                 case PassiveB.SoaringWings:
@@ -8580,6 +8592,12 @@ class BattleSimmulatorBase {
                         break;
                     case Special.DelugeBalmPlus:
                         this.__applyBalmSkill(supporterUnit, x => { x.applySpdBuff(6); x.applyResBuff(6); });
+                        break;
+                    case Special.EarthwindBalm:
+                        this.__applyBalmSkill(supporterUnit, x => x.applySpdDefBuffs(4));
+                        break;
+                    case Special.EarthwindBalmPlus:
+                        this.__applyBalmSkill(supporterUnit, x => x.applySpdDefBuffs(6));
                         break;
                     case Special.DaichiSeisuiNoSyukuhuku:
                         this.__applyBalmSkill(supporterUnit, x => { x.applyDefBuff(4); x.applyResBuff(4); });
