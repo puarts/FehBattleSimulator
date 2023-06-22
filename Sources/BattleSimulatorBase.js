@@ -3651,8 +3651,8 @@ class BattleSimmulatorBase {
      * @param  {Number} res
      */
     __createDamageCalcSummaryHtml(unit, enemyUnit,
-                                  preCombatDamage, damage, attackCount,
-                                  atk, spd, def, res) {
+        preCombatDamage, damage, attackCount,
+        atk, spd, def, res) {
         // ダメージに関するサマリー
         let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damage, attackCount);
         // ステータスやバフに関するサマリー
@@ -6316,6 +6316,7 @@ class BattleSimmulatorBase {
                 // 無条件
                 case Weapon.SurfersSpire:
                 case Weapon.SurfersSpade:
+                case Weapon.FujinRaijinYumi:
                 case PassiveA.KnightlyDevotion:
                 case PassiveB.SoaringWings:
                 case PassiveB.FlowNTrace3:
@@ -8097,11 +8098,11 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case Support.GrayWaves:
-                {
-                    if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    {
+                        if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                            targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                        }
                     }
-                }
                     break;
                 case Support.GrayWaves2: {
                     if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
@@ -8128,19 +8129,19 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case Support.WhimsicalDream:
-                {
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-                        if (skillOwnerUnit === unit) continue;
-                        unit.applyAtkBuff(5);
-                    }
+                    {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                            if (skillOwnerUnit === unit) continue;
+                            unit.applyAtkBuff(5);
+                        }
 
-                    let targetEnemies = this.__findNearestEnemies(targetUnit, 4);
-                    for (let targetEnemy of targetEnemies) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
-                            unit.applyAtkDebuff(-5);
+                        let targetEnemies = this.__findNearestEnemies(targetUnit, 4);
+                        for (let targetEnemy of targetEnemies) {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
+                                unit.applyAtkDebuff(-5);
+                            }
                         }
                     }
-                }
                     break;
                 case Support.SweetDreams:
                     targetUnit.applyAllBuff(3);

@@ -400,7 +400,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.UnitCannotBeSlowedByTerrain:
             return g_imageRootPath + "StatusEffect_UnitCannotBeSlowedByTerrain.webp";
         case StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent:
-            return g_imageRootPath + "StatusEffect_ReduceDamageFromAreaOfEffectSpecialsBy80Percent.webp";
+            return g_imageRootPath + "StatusEffect_ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp";
         case StatusEffectType.NeutralizesPenalties:
             return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
         case StatusEffectType.Hexblade:
@@ -5377,6 +5377,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case Weapon.FujinRaijinYumi:
                 case PassiveB.SoaringWings:
                 case PassiveB.FirestormDance3:
                 case PassiveB.EscapeRoute4:
