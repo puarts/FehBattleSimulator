@@ -1392,6 +1392,14 @@ class BattleSimmulatorBase {
                 }
                 break;
             case Hero.DuoElise:
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit, 2, true)) {
+                    unit.addStatusEffect(StatusEffectType.TotalPenaltyDamage);
+                }
+                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
+                    unit.applyDefDebuff(-7);
+                    unit.applyResDebuff(-7);
+                }
+                break;
             case Hero.BridalMicaiah:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 3, 99)) {
                     unit.addStatusEffect(StatusEffectType.TotalPenaltyDamage);
