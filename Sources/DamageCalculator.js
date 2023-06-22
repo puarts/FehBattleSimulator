@@ -933,11 +933,13 @@ class DamageCalculator {
                             break;
                     }
                 }
-                for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
-                    damageReductionRatio *= 1.0 - ratio;
-                }
                 // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
-                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
+                if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.length > 0) {
+                    for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
+                        damageReductionRatio *= 1.0 - ratio;
+                    }
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
+                }
             }
 
             // 奥義によるダメージ軽減
