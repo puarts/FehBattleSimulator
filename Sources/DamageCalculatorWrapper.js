@@ -2158,6 +2158,10 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.NullCDisrupt4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addAtkSpdSpurs(-4);
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.RadiantAureola] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(5);
@@ -12805,6 +12809,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveB.MikiriHangeki3:
+                case PassiveB.NullCDisrupt4:
                     return false;
                 case PassiveB.MysticBoost4:
                     if (atkUnit.weaponType === WeaponType.Staff) {
