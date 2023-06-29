@@ -2873,6 +2873,7 @@ const PassiveC = {
     FutureFocused: 2282, // 共に未来を見つめて
     FettersOfDromi: 2397, // ドローミの鎖環
     RallyingCry: 2453, // 叱咤激励
+    BernsNewWay: 2488, // 新たなるベルンの道
 };
 
 const PassiveS = {

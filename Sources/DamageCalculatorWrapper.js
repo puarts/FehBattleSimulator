@@ -2158,6 +2158,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveC.BernsNewWay] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.healedHpAfterCombat = 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.NullCDisrupt4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addAtkSpdSpurs(-4);
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
@@ -9378,6 +9385,7 @@ class DamageCalculatorWrapper {
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
             for (let skillId of allyUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveC.BernsNewWay:
                     case Weapon.JoyousTome:
                         targetUnit.battleContext.healedHpAfterCombat += 7;
                         break;
