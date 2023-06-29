@@ -408,7 +408,7 @@ class DamageCalculatorWrapper {
         this.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
 
         // 守備、魔防のどちらを参照するか決定
-        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
+        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit, true);
         this.__selectReferencingResOrDef(atkUnit, defUnit);
     }
 
@@ -548,10 +548,15 @@ class DamageCalculatorWrapper {
         return result;
     }
 
-    __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit) {
+    __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit, isPrecombat = false) {
         let self = this;
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.RadiantAureola:
+                    if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                        if (!isPrecombat) return true;
+                    }
+                    break;
                 case PassiveA.CloseWard:
                     if (!isPhysicalWeaponType(enemyUnit.weaponType)) {
                         return true;
@@ -2153,6 +2158,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.RadiantAureola] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.BrashAssault4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if ((targetUnit.battleContext.restHpPercentage <= 99 && targetUnit.battleContext.initiatesCombat) ||
                 (enemyUnit.battleContext.restHpPercentage === 100 && targetUnit.battleContext.initiatesCombat)) {
@@ -10661,6 +10672,11 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.RadiantAureola:
+                        if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                            resMariaCalc();
+                        }
+                        break;
                     case Weapon.BaraNoYari:
                         if (targetUnit.isWeaponRefined) {
                             let diff = targetUnit.getEvalAtkInCombat(enemyUnit) - enemyUnit.getEvalAtkInCombat(targetUnit);

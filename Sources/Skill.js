@@ -1653,6 +1653,11 @@ const Weapon = {
     SeasideParasolPlus: 2479, // 海辺の日傘+
     PartnershipBow: 2481, // 生涯の相棒の鋭弓
     SurfersSpade: 2483, // 深き海の底の双槍
+
+    // 伝承英雄 (ベルンの王妹 ギネヴィア)
+    // https://www.youtube.com/watch?v=xk98rjlseYE&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Mk7tdr5CSpk&ab_channel=NintendoMobile
+    RadiantAureola: 2486, // 至光アーリアル
 };
 
 const Support = {
