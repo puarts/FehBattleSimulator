@@ -1653,6 +1653,11 @@ const Weapon = {
     SeasideParasolPlus: 2479, // 海辺の日傘+
     PartnershipBow: 2481, // 生涯の相棒の鋭弓
     SurfersSpade: 2483, // 深き海の底の双槍
+
+    // 伝承英雄 (ベルンの王妹 ギネヴィア)
+    // https://www.youtube.com/watch?v=xk98rjlseYE&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Mk7tdr5CSpk&ab_channel=NintendoMobile
+    RadiantAureola: 2486, // 至光アーリアル
 };
 
 const Support = {
@@ -2269,6 +2274,7 @@ const PassiveB = {
     PhysNullFollow: 2457, // 理の見切り・追撃
     MagNullFollow: 2464, // 魔の見切り・追撃
     MikiriHangeki3: 810, // 見切り・反撃不可効果3
+    NullCDisrupt4: 2487, // 見切り・反撃不可4
 
     KyokoNoWakuran3: 896, // 惑乱3
 
@@ -2867,6 +2873,7 @@ const PassiveC = {
     FutureFocused: 2282, // 共に未来を見つめて
     FettersOfDromi: 2397, // ドローミの鎖環
     RallyingCry: 2453, // 叱咤激励
+    BernsNewWay: 2488, // 新たなるベルンの道
 };
 
 const PassiveS = {

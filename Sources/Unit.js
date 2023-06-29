@@ -5663,9 +5663,10 @@ function isAfflictor(attackUnit, lossesInCombat) {
                 if (attackUnit.isWeaponRefined) {
                     return true;
                 }
-                return false;
+                break;
             case PassiveC.PanicSmoke3:
             case PassiveC.FatalSmoke3:
+            case PassiveC.DefResSmoke3:
                 return !lossesInCombat;
             case PassiveB.PoisonStrike3:
                 return !lossesInCombat;
