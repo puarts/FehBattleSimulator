@@ -457,7 +457,7 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttacks = 0; // 連撃の場合は1,2回目の攻撃(3,4回目が対象外)
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
-        this.reductionRatioOfDamageReductionRatioExceptSpecial = 0; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
+        this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
         this.attackCount = 1;
@@ -743,6 +743,7 @@ class BattleContext {
         this.damageReductionRatioOfFollowupAttack = 0;
         this.damageReductionValueOfFollowupAttack = 0;
         this.damageReductionValueOfFirstAttacks = 0;
+        this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
         this.counterattackCount = 1;
@@ -890,8 +891,11 @@ class BattleContext {
 
     // ダメージ軽減無効(シャールヴィなど)
     static calcDamageReductionRatio(damageReductionRatio, atkUnit) {
-        let reducedRatio = Math.trunc(damageReductionRatio * 100 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial) * 0.01;
-        return damageReductionRatio - reducedRatio;
+        let reducedRatio = damageReductionRatio;
+        for (let ratio of atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial) {
+            reducedRatio -= Math.trunc(reducedRatio * 100 * ratio) * 0.01;
+        }
+        return reducedRatio;
     }
 
     // ダメージ軽減積

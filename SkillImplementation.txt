@@ -541,7 +541,7 @@ __calcAttackTotalDamage(
 }
 
 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を半分無効(無効にする数値は端数切捨て。例えば敵の「ダメージを45%軽減」なら半分の「22%」分を無効にし、「ダメージを23%軽減」にする))[リヴスラ, ダメージ軽減半分無効]
-targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
 
 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;

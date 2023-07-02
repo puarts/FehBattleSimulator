@@ -2297,13 +2297,13 @@ class DamageCalculatorWrapper {
             enemyUnit.addSpdResSpurs(-4);
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.PhysNullFollow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-4);
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.VassalSaintSteel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -2842,7 +2842,7 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.spdSpur -= 5;
-                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.PartOfThePlan] = (targetUnit, enemyUnit) => {
@@ -2994,7 +2994,7 @@ class DamageCalculatorWrapper {
                     // <特殊錬成効果>
                     if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                         targetUnit.addAllSpur(4);
-                        targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                        targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                     }
                 }
             }
@@ -3229,7 +3229,7 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.CelestialGlobe] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
-                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.GuidesHourglass] = (targetUnit) => {
@@ -3852,7 +3852,7 @@ class DamageCalculatorWrapper {
                 targetUnit.atkSpur += 6;
                 enemyUnit.atkSpur -= 6;
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
-                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.VerdictOfSacae] = (targetUnit) => {
@@ -6297,7 +6297,7 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Thjalfi] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 targetUnit.addAllSpur(6);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
@@ -11197,7 +11197,7 @@ class DamageCalculatorWrapper {
                                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                             }
                             if (diff >= 10) {
-                                targetUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
+                                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                             }
                         }
                         break;

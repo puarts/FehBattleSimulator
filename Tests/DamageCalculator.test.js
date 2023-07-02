@@ -554,25 +554,47 @@ test('DamageCalculator_SpecialDamageReductionTest', () => test_executeTest(() =>
 }));
 
 /// ダメージ軽減テストです。
-test('DamageCalculator_DamageReductionTest', () => test_executeTest(() => {
-  let atkUnit = test_createDefaultUnit();
-  let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
-  atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial = 0.5;
-  atkUnit.atkWithSkills = 40;
-  defUnit.defWithSkills = 30;
-  defUnit.weapon = Weapon.None;
-  defUnit.passiveB = PassiveB.Spurn3;
-  defUnit.addStatusEffect(StatusEffectType.Dodge);
-  atkUnit.spdWithSkills = defUnit.spdWithSkills - 10;
+/// ダメージ軽減を半分無効にするスキルのテスト
+describe('Test to reduce the percentage of foe\'s non-Special "reduce damage by X%" skills', () => {
+  beforeEach(() => {
+    atkUnit = test_createDefaultUnit();
+    defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+    atkUnit.atkWithSkills = 40;
+    atkUnit.passiveB = PassiveB.MagNullFollow; // ダメージ軽減を半分無効
+    defUnit.defWithSkills = 30;
+    defUnit.weapon = Weapon.None;
+    defUnit.passiveB = PassiveB.Spurn3;
+    defUnit.addStatusEffect(StatusEffectType.Dodge);
+    atkUnit.spdWithSkills = defUnit.spdWithSkills - 20; // 確実に回避が出るようにする
+  });
 
-  let result = test_calcDamage(atkUnit, defUnit, false);
+  test('Test to reduce 50%', () => {
+    let result = test_calcDamage(atkUnit, defUnit, false);
 
-  // 回避が重複してるので40%軽減、そこに軽減値を50%軽減する効果が入ると最終的に36%軽減になるはず
-  let reductionRatio = 0.4 * atkUnit.battleContext.reductionRatioOfDamageReductionRatioExceptSpecial;
-  let actualReductionRatio = roundFloat(1 - (1 - reductionRatio) * (1 - reductionRatio));
-  expect(actualReductionRatio).toBe(0.36);
-  expect(defUnit.currentDamage).toBe(result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
-}));
+    // 回避が重複してるので40%軽減、そこに軽減値を50%軽減する効果が入ると最終的に36%軽減になるはず
+    let reductionRatio = 0.4 * 0.5;
+    let actualReductionRatio = roundFloat(1 - (1 - reductionRatio) * (1 - reductionRatio));
+    expect(actualReductionRatio).toBe(0.36);
+    expect(atkUnit.atkWithSkills).toBe(40);
+    expect(defUnit.defWithSkills).toBe(30);
+    expect(result.atkUnit_normalAttackDamage).toBe(10);
+    expect(defUnit.currentDamage).toBe(7);
+    expect(defUnit.currentDamage).toBe(result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
+  });
+
+  test('Test to reduce 50% x 2', () => {
+    atkUnit.passiveS = PassiveB.MagNullFollow; // ダメージ軽減を半分無効をもう一つ追加
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // 回避が重複してるので40%軽減、そこに軽減値を50%軽減する効果が2回入ると最終的に19%軽減になるはず
+    let reductionRatio = 0.4 * 0.5 * 0.5;
+    let actualReductionRatio = roundFloat(1 - (1 - reductionRatio) * (1 - reductionRatio));
+    expect(actualReductionRatio).toBe(0.19);
+    expect(result.atkUnit_normalAttackDamage).toBe(10);
+    expect(defUnit.currentDamage).toBe(9);
+    expect(defUnit.currentDamage).toBe(result.atkUnit_normalAttackDamage - Math.trunc(result.atkUnit_normalAttackDamage * actualReductionRatio));
+  });
+});
 
 /// 復讐のダメージ計算テストです。
 test('DamageCalculator_VengeanceTest', () => test_executeTest(() => {
