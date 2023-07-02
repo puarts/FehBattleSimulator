@@ -8288,6 +8288,7 @@ class BattleSimmulatorBase {
             case Support.Rescue:
             case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
             case Support.ToChangeFate:
+            case Support.ToChangeFate2:
             case Support.AFateChanged:
             case Support.FateUnchanged:
             case Support.ReturnPlus:
@@ -8747,6 +8748,16 @@ class BattleSimmulatorBase {
                             supporterUnit.isOneTimeActionActivatedForSupport = true;
                         }
                         break;
+                    case Support.ToChangeFate2:
+                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                            supporterUnit.applyAtkBuff(6);
+                            supporterUnit.applyDefBuff(6);
+                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                            supporterUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+                            supporterUnit.isActionDone = false;
+                            supporterUnit.isOneTimeActionActivatedForSupport = true;
+                        }
+                        break;
                     case Support.FutureVision:
                     case Support.FutureVision2:
                         if (!supporterUnit.isOneTimeActionActivatedForSupport) {
@@ -8844,6 +8855,7 @@ class BattleSimmulatorBase {
         switch (unit.support) {
             case Support.FateUnchanged:
             case Support.ToChangeFate:
+            case Support.ToChangeFate2:
             case Support.AFateChanged:
             case Support.ReturnPlus:
             case Support.Return:
