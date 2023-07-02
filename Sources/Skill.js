@@ -2852,6 +2852,7 @@ const PassiveC = {
     HitoNoKanouseiWo: 850, // 人の可能性を
     HumanVirtue2: 2124, // 人の可能性を!・承
     ImpenetrableDark: 1178, // 見通せぬ深き暗闇
+    ImpenetrableVoid: 2490, // 見通せぬ深き…・神
     MilaNoHaguruma: 1352, // ミラの歯車
     MilasTurnwheel2: 2372, // ミラの歯車・神
     InevitableDeath: 1420, // 死からは逃れられぬ

@@ -2158,6 +2158,10 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveC.ImpenetrableVoid] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addAllSpur(-5);
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.BernsNewWay] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAllSpur(5);
@@ -15811,6 +15815,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveC.ImpenetrableDark:
+                case PassiveC.ImpenetrableVoid:
                     targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
                     break;
                 case PassiveC.RedFeud3:
