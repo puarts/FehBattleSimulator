@@ -1672,6 +1672,7 @@ const Support = {
     FoulPlay: 1840, // トリック
     Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
+    ToChangeFate2: 2489, // 運命を変える!・承
     AFateChanged: 2176, // 運命は変わった!
     FateUnchanged: 2438, // 運命ハ変ワラナイ...
 
@@ -2852,6 +2853,7 @@ const PassiveC = {
     HitoNoKanouseiWo: 850, // 人の可能性を
     HumanVirtue2: 2124, // 人の可能性を!・承
     ImpenetrableDark: 1178, // 見通せぬ深き暗闇
+    ImpenetrableVoid: 2490, // 見通せぬ深き…・神
     MilaNoHaguruma: 1352, // ミラの歯車
     MilasTurnwheel2: 2372, // ミラの歯車・神
     InevitableDeath: 1420, // 死からは逃れられぬ
