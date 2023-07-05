@@ -640,6 +640,25 @@ describe('Test for additional damage calculation', () => {
     expect(result.damageHistory[1].damageDealt).toBe(5);
   });
 
+  test('HurricaneDagger', () => {
+    atkUnit.weapon = Weapon.HurricaneDagger; // 攻撃、速さ+10、速さが敵より高ければダメージ5加算
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 1;
+
+    defUnit.defWithSkills = 10;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    expect(result.preCombatDamage).toBe(5);
+
+    expect(result.atkUnit_normalAttackDamage).toBe(5);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(5);
+    expect(result.damageHistory[1].damageDealt).toBe(5);
+  });
+
   test('PoeticJustice', () => {
     atkUnit.weaponType = WeaponType.Staff;
     atkUnit.passiveB = PassiveB.PoeticJustice; // 敵の速さ-4、敵の攻撃の15%加算

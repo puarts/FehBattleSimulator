@@ -12046,6 +12046,16 @@ class DamageCalculatorWrapper {
                     atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
                 }
                     break;
+                case Weapon.HurricaneDagger:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
+                                DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+                                atkUnit.battleContext.additionalDamage += 5;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.SurfersSpire:
                 case Weapon.SurfersSpade:
                     if (!isPrecombat) {
