@@ -2,7 +2,8 @@
 
 <head>
     <title>[FEH] ダメージ計算機</title>
-    <link rel="stylesheet" href="https://puarts.com/css/main.css?20181201" type="text/css" />
+    <link rel="stylesheet" href="https://puarts.com/css/main.css" type="text/css" />
+    <link rel="stylesheet" href="css/loading.css">
 </head>
 
 <body>
@@ -31,8 +32,30 @@
             margin-inline-start: 0px;
             margin: 5;
         }
+
+        .skill {
+            width: 150px;
+        }
     </style>
-    <div id="damageCalc" style="text-align: left;">
+
+    <!-- ローディングアイコン -->
+    <div class="sk-fading-circle" id="loader">
+        <div class="sk-circle1 sk-circle"></div>
+        <div class="sk-circle2 sk-circle"></div>
+        <div class="sk-circle3 sk-circle"></div>
+        <div class="sk-circle4 sk-circle"></div>
+        <div class="sk-circle5 sk-circle"></div>
+        <div class="sk-circle6 sk-circle"></div>
+        <div class="sk-circle7 sk-circle"></div>
+        <div class="sk-circle8 sk-circle"></div>
+        <div class="sk-circle9 sk-circle"></div>
+        <div class="sk-circle10 sk-circle"></div>
+        <div class="sk-circle11 sk-circle"></div>
+        <div class="sk-circle12 sk-circle"></div>
+    </div>
+
+
+    <div id="damageCalc" style="text-align: left;display: none;">
         <dl>
             <dt style="border-bottom-style: none;">モード:</dt>
             <dd>
@@ -70,7 +93,7 @@
                     <dt>武器種</dt>
                     <dd>
                         <select2 :options="WeaponTypeOptions" v-model="atkUnit.weaponType" class="skill"
-                            @input="updateDamageResult" style="width: 150;">
+                            @input="updateDamageResult">
                         </select2>
                     </dd>
 
@@ -107,7 +130,7 @@
                     <dt><label for="special">奥義</label></dt>
                     <dd>
                         <select2 :options="specialOptions" v-model="atkUnit.special" class="skill"
-                            @input="updateDamageResult" style="width: 150;">
+                            @input="updateDamageResult">
                         </select2>
                     </dd>
                 </dl>
@@ -119,7 +142,7 @@
                     <dt>武器種</dt>
                     <dd>
                         <select2 :options="WeaponTypeOptions" v-model="defUnit.weaponType" class="skill"
-                            @input="updateDamageResult" style="width: 150;">
+                            @input="updateDamageResult">
                         </select2>
                     </dd>
 
@@ -244,8 +267,7 @@
                     </dd>
                     <dt>奥義:</dt>
                     <dd>
-                        <select2 :options="specialOptions" v-model="roundRobinParam.special" class="skill"
-                            style="width: 150;">
+                        <select2 :options="specialOptions" v-model="roundRobinParam.special" class="skill">
                         </select2>
                         <select v-model="roundRobinParam.special_skillSwappingMode">
                             <option v-for="option in SkillSwappingModeOptions" v-bind:value="option.value">
@@ -255,8 +277,7 @@
                     </dd>
                     <dt>A:</dt>
                     <dd>
-                        <select2 :options="passiveAOptions" v-model="roundRobinParam.passiveA" class="skill"
-                            style="width: 150;">
+                        <select2 :options="passiveAOptions" v-model="roundRobinParam.passiveA" class="skill">
                         </select2>
                         <select v-model="roundRobinParam.passiveA_skillSwappingMode">
                             <option v-for="option in SkillSwappingModeOptions" v-bind:value="option.value">
@@ -267,8 +288,7 @@
                     </dd>
                     <dt>B:</dt>
                     <dd>
-                        <select2 :options="passiveBOptions" v-model="roundRobinParam.passiveB" class="skill"
-                            style="width: 150;">
+                        <select2 :options="passiveBOptions" v-model="roundRobinParam.passiveB" class="skill">
                         </select2>
                         <select v-model="roundRobinParam.passiveB_skillSwappingMode">
                             <option v-for="option in SkillSwappingModeOptions" v-bind:value="option.value">
@@ -278,8 +298,7 @@
                     </dd>
                     <dt>C:</dt>
                     <dd>
-                        <select2 :options="passiveCOptions" v-model="roundRobinParam.passiveC" class="skill"
-                            style="width: 150;">
+                        <select2 :options="passiveCOptions" v-model="roundRobinParam.passiveC" class="skill">
                         </select2>
                         <select v-model="roundRobinParam.passiveC_skillSwappingMode">
                             <option v-for="option in SkillSwappingModeOptions" v-bind:value="option.value">
@@ -289,8 +308,7 @@
                     </dd>
                     <dt>S:</dt>
                     <dd>
-                        <select2 :options="passiveSOptions" v-model="roundRobinParam.passiveS" class="skill"
-                            style="width: 150;">
+                        <select2 :options="passiveSOptions" v-model="roundRobinParam.passiveS" class="skill">
                         </select2>
                         <select v-model="roundRobinParam.passiveS_skillSwappingMode">
                             <option v-for="option in SkillSwappingModeOptions" v-bind:value="option.value">
@@ -422,6 +440,11 @@
                 initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos);
                 addKeyRepeatEvents();
+
+                const loader = document.getElementById("loader");
+                loader.style.display = "none";
+                const app = document.getElementById("damageCalc");
+                app.style.display = "";
             });
         });
     </script>
