@@ -338,13 +338,6 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-
-                case Weapon.FreebladesEdge:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        let def = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
-                        atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);
-                    }
-                    break;
                 case Weapon.Aymr:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (defUnit.battleContext.restHpPercentage >= 75 || this.isSolo(atkUnit)) {

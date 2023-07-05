@@ -542,21 +542,27 @@ test('DamageCalculator_FollowupAttackTest', () => test_executeTest(() => {
 
 /// 加算ダメージテスト
 describe('Test for additional damage calculation', () => {
+  /** @type {Unit} */
+  let atkUnit;
+  /** @type {Unit} */
+  let defUnit;
   beforeEach(() => {
-  });
-
-  test('HeartbrokerBowTest', () => test_executeTest(() => {
-    let atkUnit = test_createDefaultUnit();
-    atkUnit.weapon = Weapon.HeartbrokerBow; // 全ステ+5、速さの15%加算
+    atkUnit = test_createDefaultUnit();
     atkUnit.atkWithSkills = 0;
-    atkUnit.spdWithSkills = 45;
+    atkUnit.spdWithSkills = 0;
     atkUnit.special = Special.BlazingFlame;
     atkUnit.specialCount = 0;
 
-    let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+    defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
     defUnit.weapon = Weapon.None;
-    defUnit.defWithSkills = 5;
     defUnit.spdWithSkills = 0;
+  });
+
+  test('HeartbrokerBow', () => {
+    atkUnit.weapon = Weapon.HeartbrokerBow; // 全ステ+5、速さの15%加算
+    atkUnit.spdWithSkills = 45;
+
+    defUnit.defWithSkills = 5;
 
     let result = test_calcDamage(atkUnit, defUnit, false);
 
@@ -568,7 +574,26 @@ describe('Test for additional damage calculation', () => {
     expect(result.atkUnit_totalAttackCount).toBe(2);
     expect(result.damageHistory[0].damageDealt).toBe(7);
     expect(result.damageHistory[1].damageDealt).toBe(7);
-  }));
+  });
+
+  test('FreebladesEdge', () => {
+    atkUnit.weapon = Weapon.FreebladesEdge; // 全ステ+8、守備の15%加算、絶対追撃
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.defWithSkills = 42;
+
+    defUnit.defWithSkills = 8;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(42 * 0.15) = 6 になるはず
+    expect(result.preCombatDamage).toBe(6);
+
+    // trunc((42 + 8) * 0.15) = 7 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(7);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(7);
+    expect(result.damageHistory[1].damageDealt).toBe(7);
+  });
 });
 
 
