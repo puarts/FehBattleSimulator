@@ -338,14 +338,6 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case Weapon.Aymr:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        if (defUnit.battleContext.restHpPercentage >= 75 || this.isSolo(atkUnit)) {
-                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
-                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
-                        }
-                    }
-                    break;
                 case PassiveB.FruitOfLife:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
@@ -413,24 +405,6 @@ class DamageCalculator {
         fixedAddDamage += this.__getAtkMinusDefAdditionalDamage(
             atkUnit, defUnit, atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage, isPrecombat);
         return fixedAddDamage;
-    }
-
-    isSolo(atkUnit) {
-        for (let unit of g_app.enumerateUnitsInSpecifiedGroup(atkUnit.groupId)) {
-            if (unit !== atkUnit && unit.distance(atkUnit) <= 1) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    isThereAnyAllyIn2Spaces(atkUnit) {
-        for (let unit of g_app.enumerateUnitsInSpecifiedGroup(atkUnit.groupId)) {
-            if (unit !== atkUnit && unit.distance(atkUnit) <= 2) {
-                return true;
-            }
-        }
-        return false;
     }
 
     __getAtkMinusDefAdditionalDamage(atkUnit, defUnit, rate, isPrecombat) {

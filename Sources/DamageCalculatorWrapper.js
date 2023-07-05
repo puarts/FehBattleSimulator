@@ -12016,6 +12016,14 @@ class DamageCalculatorWrapper {
                         atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);
                     }
                     break;
+                case Weapon.Aymr:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (defUnit.battleContext.restHpPercentage >= 75 || this.__isSolo(atkUnit)) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                        }
+                    }
+                    break;
                 case Weapon.SurfersSpire:
                 case Weapon.SurfersSpade:
                     if (!isPrecombat) {

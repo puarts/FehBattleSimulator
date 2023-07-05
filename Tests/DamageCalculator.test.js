@@ -555,6 +555,8 @@ describe('Test for additional damage calculation', () => {
 
     defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
     defUnit.weapon = Weapon.None;
+    defUnit.maxHpWithSkills = 99;
+    defUnit.healFull();
     defUnit.spdWithSkills = 0;
   });
 
@@ -593,6 +595,28 @@ describe('Test for additional damage calculation', () => {
     expect(result.atkUnit_totalAttackCount).toBe(2);
     expect(result.damageHistory[0].damageDealt).toBe(7);
     expect(result.damageHistory[1].damageDealt).toBe(7);
+  });
+
+
+  test('Aymr', () => {
+    atkUnit.weapon = Weapon.Aymr; // 敵の攻撃、守備-11、攻撃の15%加算
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.atkWithSkills = 50;
+    atkUnit.spdWithSkills = 5;
+
+    defUnit.defWithSkills = 50;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(50 * 0.15) = 7 になるはず
+    expect(result.preCombatDamage).toBe(7);
+
+    // 11 + trunc(50 * 0.15) = 18 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(18);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(18);
+    expect(result.damageHistory[1].damageDealt).toBe(18);
   });
 });
 
