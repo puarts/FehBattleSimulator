@@ -597,7 +597,6 @@ describe('Test for additional damage calculation', () => {
     expect(result.damageHistory[1].damageDealt).toBe(7);
   });
 
-
   test('Aymr', () => {
     atkUnit.weapon = Weapon.Aymr; // 敵の攻撃、守備-11、攻撃の15%加算
     atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
@@ -617,6 +616,28 @@ describe('Test for additional damage calculation', () => {
     expect(result.atkUnit_totalAttackCount).toBe(2);
     expect(result.damageHistory[0].damageDealt).toBe(18);
     expect(result.damageHistory[1].damageDealt).toBe(18);
+  });
+
+
+  test('HadoNoSenfu', () => {
+    atkUnit.weapon = Weapon.HadoNoSenfu; // 全ステ+8、攻撃の10%加算、絶対追撃
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.atkWithSkills = 42;
+    atkUnit.spdWithSkills = 0;
+
+    defUnit.defWithSkills = 50;
+    defUnit.spdWithSkills = 8;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(42 * 0.10) = 4 になるはず
+    expect(result.preCombatDamage).toBe(4);
+
+    // trunc(50 * 0.10) = 5 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(5);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(5);
+    expect(result.damageHistory[1].damageDealt).toBe(5);
   });
 });
 

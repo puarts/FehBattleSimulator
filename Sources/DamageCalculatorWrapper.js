@@ -11991,7 +11991,11 @@ class DamageCalculatorWrapper {
             }
         }
     }
-
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Boolean} isPrecombat
+     */
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
             atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
@@ -12021,6 +12025,15 @@ class DamageCalculatorWrapper {
                         if (defUnit.battleContext.restHpPercentage >= 75 || this.__isSolo(atkUnit)) {
                             let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
                             atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                        }
+                    }
+                    break;
+                case Weapon.HadoNoSenfu:
+                    // <特殊錬成効果>
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.initiatesCombat || this.__isSolo(atkUnit)) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
                         }
                     }
                     break;
