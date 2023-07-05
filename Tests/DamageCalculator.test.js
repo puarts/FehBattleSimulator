@@ -639,6 +639,44 @@ describe('Test for additional damage calculation', () => {
     expect(result.damageHistory[0].damageDealt).toBe(5);
     expect(result.damageHistory[1].damageDealt).toBe(5);
   });
+
+  test('PoeticJustice', () => {
+    atkUnit.weaponType = WeaponType.Staff;
+    atkUnit.passiveB = PassiveB.PoeticJustice; // 敵の速さ-4、敵の攻撃の15%加算
+    atkUnit.passiveBInfo = new SkillInfo();
+    atkUnit.passiveBInfo.wrathfulStaff = true;
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 5;
+
+    defUnit.atkWithSkills = 50;
+    defUnit.spdWithSkills = 0;
+    defUnit.resWithSkills = 0;
+
+    {
+      const result = test_calcDamage(atkUnit, defUnit, false);
+
+      expect(atkUnit.battleContext.wrathfulStaff).toBe(true);
+
+      // trunc(50 * 0.15) = 7 になるはず
+      expect(result.atkUnit_normalAttackDamage).toBe(7);
+      expect(result.atkUnit_totalAttackCount).toBe(2);
+      expect(result.damageHistory[0].damageDealt).toBe(7);
+      expect(result.damageHistory[1].damageDealt).toBe(7);
+    }
+
+    // 「杖は他の武器同様のダメージ計算になる」が無効化された場合は、加算後に杖のダメージ計算が適用
+    {
+      defUnit.passiveB = PassiveB.SeimeiNoGofu3;
+
+      const result = test_calcDamage(atkUnit, defUnit, false);
+
+      expect(atkUnit.battleContext.wrathfulStaff).toBe(false);
+      expect(result.atkUnit_normalAttackDamage).toBe(3);
+      expect(result.atkUnit_totalAttackCount).toBe(2);
+      expect(result.damageHistory[0].damageDealt).toBe(3);
+      expect(result.damageHistory[1].damageDealt).toBe(3);
+    }
+  });
 });
 
 

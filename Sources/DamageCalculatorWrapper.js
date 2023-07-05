@@ -9623,7 +9623,10 @@ class DamageCalculatorWrapper {
     __countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         return this._unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator);
     }
-
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
     __setWrathfulStaff(atkUnit, defUnit) {
         if (defUnit.canInvalidateWrathfulStaff()) {
             return;
@@ -12036,6 +12039,12 @@ class DamageCalculatorWrapper {
                             atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
                         }
                     }
+                    break;
+                case PassiveB.PoeticJustice: {
+                    // 杖に範囲奥義がないので、範囲奥義にもダメージが加算されるのかは不明。とりあえず加味しておく
+                    let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                }
                     break;
                 case Weapon.SurfersSpire:
                 case Weapon.SurfersSpade:

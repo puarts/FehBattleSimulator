@@ -347,11 +347,6 @@ class DamageCalculator {
                         }
                     }
                     break;
-                case PassiveB.PoeticJustice: {
-                    let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
-                    atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
-                }
-                    break;
                 case Weapon.ArcaneGrima:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);
@@ -592,21 +587,28 @@ class DamageCalculator {
         finalAtk = finalAtk + addAdjustAtk;
 
         let finalMit = floorNumberWithFloatError(totalMit + totalMit * mitAdvRatio);
-        let damage = truncNumberWithFloatError((finalAtk - finalMit) * damageReduceRatio);
+        let damage = truncNumberWithFloatError((finalAtk - finalMit));
         if (damage < 0) {
             damage = 0;
         }
         damage += fixedAddDamage;
 
+        // 杖の半減は加算ダメージ後に計算
+        damage = truncNumberWithFloatError(damage * damageReduceRatio);
+
         let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
         let specialSufferRatio = (specialSuffer / 100.0);
         let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * specialSufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
-        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage;
+        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * specialMultDamage) + specialAddDamage;
         if (specialDamage < 0) {
             specialDamage = 0;
         }
         specialDamage += fixedAddDamage;
         specialDamage += fixedSpecialAddDamage;
+
+        // 杖の半減は加算ダメージ後に計算
+        specialDamage = truncNumberWithFloatError(specialDamage * damageReduceRatio);
+
         let totalDamage = this.__calcAttackTotalDamage(
             context,
             atkUnit,
