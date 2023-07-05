@@ -431,7 +431,10 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
   let heroDatabase = g_testHeroDatabase;
 
   // アルフォンスのデフォルト状態の戦闘結果がGUI上と同じ計算結果になる事を確認
+
+  /** @type {Unit} */
   let atkUnit = null;
+  /** @type {Unit} */
   let defUnit = null;
   {
     atkUnit = heroDatabase.createUnit("アルフォンス");
@@ -458,10 +461,14 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     defUnit.weaponRefinement = WeaponRefinementType.Special;
     for (let atkUnitInfo of heroDatabase.enumerateHeroInfos()) {
       heroDatabase.initUnit(atkUnit, atkUnitInfo.name);
-
       let defUnitInfo = atkUnitInfo;
       heroDatabase.initUnit(defUnit, defUnitInfo.name);
+
       calclator.calcDamage(atkUnit, defUnit, false);
+
+      atkUnit.hp = atkUnit.maxHpWithSkills;
+      defUnit.hp = defUnit.maxHpWithSkills;
+      calclator.calcDamage(defUnit, atkUnit, false);
     }
 
     log += calclator.getProfileLog();
@@ -532,6 +539,38 @@ test('DamageCalculator_FollowupAttackTest', () => test_executeTest(() => {
     expect(result.defUnit_totalAttackCount).toBe(0);
   }
 }));
+
+/// 加算ダメージテスト
+describe('Test for additional damage calculation', () => {
+  beforeEach(() => {
+  });
+
+  test('HeartbrokerBowTest', () => test_executeTest(() => {
+    let atkUnit = test_createDefaultUnit();
+    atkUnit.weapon = Weapon.HeartbrokerBow; // 全ステ+5、速さの15%加算
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 45;
+    atkUnit.special = Special.BlazingFlame;
+    atkUnit.specialCount = 0;
+
+    let defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+    defUnit.weapon = Weapon.None;
+    defUnit.defWithSkills = 5;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(45 * 0.15) = 6 になるはず
+    expect(result.preCombatDamage).toBe(6);
+
+    // trunc((45 + 5) * 0.15) = 7 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(7);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(7);
+    expect(result.damageHistory[1].damageDealt).toBe(7);
+  }));
+});
+
 
 /// 奥義によるダメージ軽減テストです。
 test('DamageCalculator_SpecialDamageReductionTest', () => test_executeTest(() => {

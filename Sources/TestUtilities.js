@@ -42,7 +42,10 @@ class test_HeroDatabase extends HeroDatabase {
         this.initUnit(unit, heroName);
         return unit;
     }
-
+    /**
+     * @param  {Unit} unit
+     * @param  {string} heroName
+     */
     initUnit(unit, heroName) {
         let heroInfo = this.findInfo(heroName);
         unit.initByHeroInfo(heroInfo);

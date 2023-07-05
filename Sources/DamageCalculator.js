@@ -32,6 +32,7 @@ class DamageCalcContext {
     constructor() {
         this.isCounterattack = false;
         this.isFollowupAttack = false;
+        /** @type {DamageLog[]} */
         this.damageHistory = []; // 攻撃ダメージの履歴
     }
 
@@ -61,6 +62,7 @@ class OneAttackResult {
 /// ダメージ計算結果を表すクラスです。
 class DamageCalcResult {
     constructor() {
+        /** @type {DamageLog[]} */
         this.damageHistory = [];
         this.atkUnit_totalAttackCount = 0;
         this.defUnit_totalAttackCount = 0;
@@ -336,13 +338,7 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case Weapon.HeartbrokerBow: {
-                    if (atkUnit.battleContext.initiatesCombat || this.isThereAnyAllyIn2Spaces(atkUnit)) {
-                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
-                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
-                    }
-                }
-                    break;
+
                 case Weapon.FreebladesEdge:
                     if (atkUnit.isWeaponSpecialRefined) {
                         let def = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
