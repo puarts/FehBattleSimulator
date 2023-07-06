@@ -1665,6 +1665,7 @@ const Weapon = {
     DivineDraught: 2493, // 喉潤す水神の杯
     IceBoundBrand: 2495, // 氷海の剣
     SeashellBowlPlus: 2498, // 硝子の小鉢+
+    SparklingSun: 2500, // 真夏の生命の輝き
 };
 
 const Support = {

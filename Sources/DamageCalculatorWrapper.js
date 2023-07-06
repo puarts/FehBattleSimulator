@@ -2163,6 +2163,15 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.SparklingSun] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addAtkResSpurs(-6);
+                let amount = Math.min(Math.trunc(targetUnit.restHp * 0.30), 12);
+                enemyUnit.addAtkResSpurs(-amount);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SeashellBowlPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(5);
@@ -11699,6 +11708,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.SparklingSun:
+                if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                    return 0.75;
+                }
+                break;
             case Weapon.BaraNoYari:
                 if (defUnit.isWeaponRefined) {
                     let diff = defUnit.getEvalAtkInCombat(atkUnit) - atkUnit.getEvalAtkInCombat(defUnit);
@@ -14110,6 +14124,13 @@ class DamageCalculatorWrapper {
     __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SparklingSun:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        if (enemyUnit.battleContext.canFollowupAttack) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
+                        }
+                    }
+                    break;
                 case Weapon.MagetsuNoSaiki:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.isOddTurn || enemyUnit.battleContext.restHpPercentage < 100) {
