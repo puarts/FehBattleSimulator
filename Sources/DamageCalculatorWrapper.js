@@ -2162,6 +2162,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Special.FrostbiteMirror] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.specialCount === 0) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.IceBoundBrand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(5);
@@ -13470,6 +13475,13 @@ class DamageCalculatorWrapper {
             case Special.IceMirror2:
                 if (attackRange === 2) {
                     defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+                }
+                break;
+            case Special.FrostbiteMirror:
+                if (attackRange === 1) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.1;
+                } else if (attackRange === 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
                 }
                 break;
             case Special.Seitate:

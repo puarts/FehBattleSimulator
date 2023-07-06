@@ -1848,6 +1848,7 @@ const Special = {
     Seikabuto: 476, // 聖兜
     IceMirror: 480, // 氷の聖鏡
     IceMirror2: 1629, // 氷の聖鏡・承
+    FrostbiteMirror: 2496, // 絶氷の聖鏡
     GodlikeReflexes: 2190, // 神速回避
 
     ShippuNoSyukuhuku: 499, // 疾風の祝福
@@ -3168,6 +3169,7 @@ DefenseSpecialDict[Special.Seii] = 0;  // 聖衣
 DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
 DefenseSpecialDict[Special.IceMirror] = 0;
 DefenseSpecialDict[Special.IceMirror2] = 0;
+DefenseSpecialDict[Special.FrostbiteMirror] = 0;
 DefenseSpecialDict[Special.NegatingFang] = 0;
 DefenseSpecialDict[Special.GodlikeReflexes] = 0;
 

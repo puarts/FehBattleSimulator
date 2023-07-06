@@ -501,6 +501,14 @@ class DamageCalculator {
                     atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
                 }
                 break;
+            case Special.FrostbiteMirror:
+                // 通常ダメージに加算
+                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                }
+                break;
             case Special.NegatingFang:
                 if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                     fixedAddDamage += floorNumberWithFloatError(atkUnit.getAtkInCombat(defUnit) * 0.3);
@@ -1276,6 +1284,12 @@ class DamageCalculator {
             case Special.IceMirror:
                 if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
                     if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
+                    defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                }
+                break;
+            case Special.FrostbiteMirror:
+                if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
                     defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
                     defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                 }
