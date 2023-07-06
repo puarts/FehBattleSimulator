@@ -558,7 +558,7 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 戦闘中、最初に与える攻撃のダメージに...
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
-ダメージ+N(固定ダメージ)
+ダメージ+N(固定ダメージ) （同名のメソッドがあるので注意すること）
 DamageCalculatorWrapper.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // Nダメージ
