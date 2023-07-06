@@ -299,7 +299,8 @@ class DamageCalculatorWrapper {
 
             if (!calcPotentialDamage &&
                 atkUnit.canActivatePrecombatSpecial() &&
-                !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
+                !atkUnit.battleContext.cannotTriggerPrecombatSpecial
+            ) {
                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit);
                 // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();
@@ -327,14 +328,16 @@ class DamageCalculatorWrapper {
                                 saverUnit.battleContext.restHp = saverUnit.restHp;
                             }
                         }
-                        // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
-                        atkUnit.battleContext.clearPrecombatState();
                     }
                     // NOTE: 護られるユニットの防御床情報を護り手に入れる
                     saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
                     actualDefUnit = saverUnit;
                 }
+
+                // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
+                atkUnit.battleContext.clearPrecombatState();
             }
+
 
             result = self.calcCombatResult(atkUnit, actualDefUnit, damageType, gameMode);
             result.preCombatDamage = preCombatDamage;
@@ -425,6 +428,7 @@ class DamageCalculatorWrapper {
      * @param  {Unit} defUnit
      * @param  {DamageType} damageType
      * @param  {Number} gameMode
+     * @returns {DamageCalcResult}
      */
     calcCombatResult(atkUnit, defUnit, damageType, gameMode) {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
@@ -880,13 +884,13 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Areadbhar:
-                {
-                    let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                    if (diff > 0 && defUnit.battleContext.restHpPercentage >= 25) {
-                        let percentage = Math.min(diff * 4, 40);
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                    {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0 && defUnit.battleContext.restHpPercentage >= 25) {
+                            let percentage = Math.min(diff * 4, 40);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
                     }
-                }
                     break;
                 case Weapon.GiltGoblet:
                     if (atkUnit.battleContext.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
@@ -916,17 +920,17 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.NewFoxkitFang:
-                {
-                    let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
-                    if (resDiff > 0) {
-                        let percentage = resDiff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
+                    {
+                        let resDiff = defUnit.getEvalResInPrecombat() - atkUnit.getEvalResInPrecombat();
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
 
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
                     }
-                }
                     break;
                 case Weapon.BrightmareHorn:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -943,17 +947,17 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.NightmareHorn:
                 case Weapon.NewBrazenCatFang:
-                {
-                    let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                    if (diff > 0) {
-                        let percentage = diff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
+                    {
+                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
 
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
                     }
-                }
                     break;
                 case PassiveB.Chivalry: {
                     let percentage = atkUnit.battleContext.restHpPercentage * 0.5;
@@ -1017,30 +1021,30 @@ class DamageCalculatorWrapper {
                 case PassiveB.Spurn3:
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.KaihiTatakikomi3:
-                {
-                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
-                }
+                    {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
                     break;
                 case PassiveB.CloseCall4:
                 case PassiveB.Repel4:
-                {
-                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
-                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
-                }
+                    {
+                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
                     break;
                 case PassiveB.BlueLionRule:
-                {
-                    let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
-                    if (diff > 0) {
-                        let percentage = diff * 4;
-                        if (percentage > 40) {
-                            percentage = 40;
-                        }
+                    {
+                        let diff = defUnit.getEvalDefInPrecombat() - atkUnit.getEvalDefInPrecombat();
+                        if (diff > 0) {
+                            let percentage = diff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
 
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
+                        }
                     }
-                }
                     break;
                 case PassiveC.AllTogether: {
                     let count = 0;
@@ -2278,7 +2282,7 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IncurablePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.invalidatesHeal= true;
+            targetUnit.battleContext.invalidatesHeal = true;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.WyvernHatchet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -3535,6 +3539,7 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+
         this._applySkillEffectForUnitFuncDict[Weapon.SnideBow] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(5, 5, 0, 0);
@@ -4294,7 +4299,7 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[Weapon.JunaruSenekoNoTsumekiba] = (targetUnit) => {
             if (targetUnit.isWeaponRefined) {
-                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, e)) {
+                if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                     targetUnit.addAllSpur(4);
                 }
                 if (targetUnit.isWeaponSpecialRefined) {
@@ -8900,7 +8905,7 @@ class DamageCalculatorWrapper {
                 case Weapon.Gyorru:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25 || enemyUnit.
-                        hasNegativeStatusEffect()) {
+                            hasNegativeStatusEffect()) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                         }
@@ -8930,15 +8935,15 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.EternalBreath:
-                {
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                            enemyUnit.atkSpur -= 4;
-                            enemyUnit.refSpur -= 4;
-                            targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                    {
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                enemyUnit.atkSpur -= 4;
+                                enemyUnit.refSpur -= 4;
+                                targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                            }
                         }
                     }
-                }
                     break;
                 case Weapon.JoyfulVows:
                     if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
@@ -8970,19 +8975,19 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.SetsunasYumi:
-                {
-                    if (enemyUnit.isRangedWeaponType()) {
-                        targetUnit.addAllSpur(4);
-                    }
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                            targetUnit.atkSpur += 5;
-                            targetUnit.spdSpur += 5;
-                            targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                            targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                    {
+                        if (enemyUnit.isRangedWeaponType()) {
+                            targetUnit.addAllSpur(4);
+                        }
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                            }
                         }
                     }
-                }
                     break;
                 case Weapon.LevinDagger:
                     if (enemyUnit.hasNegativeStatusEffect()
@@ -9618,7 +9623,10 @@ class DamageCalculatorWrapper {
     __countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         return this._unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator);
     }
-
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     */
     __setWrathfulStaff(atkUnit, defUnit) {
         if (defUnit.canInvalidateWrathfulStaff()) {
             return;
@@ -10216,32 +10224,32 @@ class DamageCalculatorWrapper {
                     break;
 
                 case Weapon.SneeringAxe:
-                {
-                    let atkBuff = enemyUnit.getAtkBuffInCombat(targetUnit);
-                    if (atkBuff > 0) {
-                        enemyUnit.atkSpur -= atkBuff * 2;
-                    }
-                    let spdBuff = enemyUnit.getSpdBuffInCombat(targetUnit);
-                    if (spdBuff > 0) {
-                        enemyUnit.spdSpur -= spdBuff * 2;
-                    }
-                    let defBuff = enemyUnit.getDefBuffInCombat(targetUnit);
-                    if (defBuff > 0) {
-                        enemyUnit.defSpur -= defBuff * 2;
-                    }
-                    let resBuff = enemyUnit.getResBuffInCombat(targetUnit);
-                    if (resBuff > 0) {
-                        enemyUnit.resSpur -= resBuff * 2;
-                    }
+                    {
+                        let atkBuff = enemyUnit.getAtkBuffInCombat(targetUnit);
+                        if (atkBuff > 0) {
+                            enemyUnit.atkSpur -= atkBuff * 2;
+                        }
+                        let spdBuff = enemyUnit.getSpdBuffInCombat(targetUnit);
+                        if (spdBuff > 0) {
+                            enemyUnit.spdSpur -= spdBuff * 2;
+                        }
+                        let defBuff = enemyUnit.getDefBuffInCombat(targetUnit);
+                        if (defBuff > 0) {
+                            enemyUnit.defSpur -= defBuff * 2;
+                        }
+                        let resBuff = enemyUnit.getResBuffInCombat(targetUnit);
+                        if (resBuff > 0) {
+                            enemyUnit.resSpur -= resBuff * 2;
+                        }
 
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                            targetUnit.atkSpur += 5;
-                            targetUnit.spdSpur += 5;
-                            targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                                targetUnit.atkSpur += 5;
+                                targetUnit.spdSpur += 5;
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
                         }
                     }
-                }
                     break;
                 case Weapon.BouryakuNoSenkyu:
                     if (!targetUnit.isWeaponRefined) {
@@ -10301,20 +10309,20 @@ class DamageCalculatorWrapper {
                 case Weapon.RaisenNoSyo:
                 case Weapon.OrdinNoKokusyo:
                 case Weapon.TharjasHex:
-                {
-                    let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
-                    if (buff > 0) {
-                        targetUnit.atkSpur += buff;
+                    {
+                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
+                        if (buff > 0) {
+                            targetUnit.atkSpur += buff;
+                        }
                     }
-                }
                     break;
                 case Weapon.TwinStarAxe:
-                {
-                    let buff = Math.trunc(targetUnit.getBuffTotalInCombat(enemyUnit) / 2);
-                    if (buff > 0) {
-                        targetUnit.atkSpur += buff;
+                    {
+                        let buff = Math.trunc(targetUnit.getBuffTotalInCombat(enemyUnit) / 2);
+                        if (buff > 0) {
+                            targetUnit.atkSpur += buff;
+                        }
                     }
-                }
                     break;
                 case Weapon.AkatsukiNoHikari:
                     if (!targetUnit.isWeaponRefined) {
@@ -10573,7 +10581,7 @@ class DamageCalculatorWrapper {
     }
 
     __applyBuffAbsorption(targetUnit, enemyUnit,
-                          atk=1, spd=1, def=1, res=1) {
+        atk = 1, spd = 1, def = 1, res = 1) {
         let enemyBuffs = enemyUnit.getBuffsInCombat(targetUnit);
         let enables = [atk, spd, def, res];
         enemyBuffs = enemyBuffs.map((v, i) => v * enables[i]);
@@ -10581,7 +10589,7 @@ class DamageCalculatorWrapper {
         enemyUnit.addSpurs(...enemyBuffs.map(v => -v));
     }
 
-    __applyDebuffReverse(targetUnit, skillName="弱化反転効果") {
+    __applyDebuffReverse(targetUnit, skillName = "弱化反転効果") {
         let spurs = targetUnit.debuffTotals.map(i => Math.abs(i) * 2);
         if (this.isLogEnabled) {
             let message = `${skillName}により攻+${spurs[0]}, 速+${spurs[1]}, 守+${spurs[2]}, 魔+${spurs[3]}`;
@@ -11987,8 +11995,13 @@ class DamageCalculatorWrapper {
         }
     }
 
-    // 1回ごとの攻撃で呼ばれる
-    // 攻撃ごとに変化がない場合はDamageCalculatorWrapper.jsにある方で実装すること
+    /**
+     1回ごとの攻撃で呼ばれる。
+     攻撃ごとに変化がない場合はDamageCalculatorWrapper.jsにある方で実装すること。
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Boolean} isPrecombat
+     */
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
             atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
@@ -12000,6 +12013,52 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HeartbrokerBow: {
+                    if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
+                    }
+                }
+                    break;
+                case Weapon.FreebladesEdge:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        let def = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);
+                    }
+                    break;
+                case Weapon.Aymr:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (defUnit.battleContext.restHpPercentage >= 75 || this.__isSolo(atkUnit)) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                        }
+                    }
+                    break;
+                case Weapon.HadoNoSenfu:
+                    // <特殊錬成効果>
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.initiatesCombat || this.__isSolo(atkUnit)) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
+                        }
+                    }
+                    break;
+                case PassiveB.PoeticJustice: {
+                    // 杖に範囲奥義がないので、範囲奥義にもダメージが加算されるのかは不明。とりあえず加味しておく
+                    let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                }
+                    break;
+                case Weapon.HurricaneDagger:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
+                                DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
+                                atkUnit.battleContext.additionalDamage += 5;
+                            }
+                        }
+                    }
+                    break;
                 case Weapon.SurfersSpire:
                 case Weapon.SurfersSpade:
                     if (!isPrecombat) {
@@ -14019,12 +14078,12 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Urvan:
-                {
-                    targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    {
+                        targetUnit.battleContext.multDamageReductionRatioOfConsecutiveAttacks(0.8, enemyUnit);
+                        if (targetUnit.isWeaponSpecialRefined) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                        }
                     }
-                }
                     break;
                 case PassiveB.BlackEagleRule:
                     if (!targetUnit.battleContext.initiatesCombat && targetUnit.battleContext.restHpPercentage >= 25) {
@@ -15018,67 +15077,67 @@ class DamageCalculatorWrapper {
 
                     // ユニットスキル
                     case PassiveA.AtkSpdBojosen3:
-                    {
-                        let spurAmount = this.__calcBojosenSpurAmount();
-                        targetUnit.atkSpur += spurAmount;
-                        targetUnit.spdSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcBojosenSpurAmount();
+                            targetUnit.atkSpur += spurAmount;
+                            targetUnit.spdSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.AtkResBojosen3:
-                    {
-                        let spurAmount = this.__calcBojosenSpurAmount();
-                        targetUnit.atkSpur += spurAmount;
-                        targetUnit.resSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcBojosenSpurAmount();
+                            targetUnit.atkSpur += spurAmount;
+                            targetUnit.resSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.SpdDefBojosen3:
-                    {
-                        let spurAmount = this.__calcBojosenSpurAmount();
-                        targetUnit.spdSpur += spurAmount;
-                        targetUnit.defSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcBojosenSpurAmount();
+                            targetUnit.spdSpur += spurAmount;
+                            targetUnit.defSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.DefResBojosen3:
-                    {
-                        let spurAmount = this.__calcBojosenSpurAmount();
-                        targetUnit.resSpur += spurAmount;
-                        targetUnit.defSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcBojosenSpurAmount();
+                            targetUnit.resSpur += spurAmount;
+                            targetUnit.defSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.SpdResBojosen3:
-                    {
-                        let spurAmount = this.__calcBojosenSpurAmount();
-                        targetUnit.spdSpur += spurAmount;
-                        targetUnit.resSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcBojosenSpurAmount();
+                            targetUnit.spdSpur += spurAmount;
+                            targetUnit.resSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.AtkDefBojosen3:
-                    {
-                        let spurAmount = this.__calcBojosenSpurAmount();
-                        targetUnit.atkSpur += spurAmount;
-                        targetUnit.defSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcBojosenSpurAmount();
+                            targetUnit.atkSpur += spurAmount;
+                            targetUnit.defSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.AtkDefKojosen3:
-                    {
-                        let spurAmount = this.__calcKojosenSpurAmount();
-                        targetUnit.atkSpur += spurAmount;
-                        targetUnit.defSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcKojosenSpurAmount();
+                            targetUnit.atkSpur += spurAmount;
+                            targetUnit.defSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.AtkSpdKojosen3:
-                    {
-                        let spurAmount = this.__calcKojosenSpurAmount();
-                        targetUnit.atkSpur += spurAmount;
-                        targetUnit.spdSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcKojosenSpurAmount();
+                            targetUnit.atkSpur += spurAmount;
+                            targetUnit.spdSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.SpdResKojosen3:
-                    {
-                        let spurAmount = this.__calcKojosenSpurAmount();
-                        targetUnit.spdSpur += spurAmount;
-                        targetUnit.resSpur += spurAmount;
-                    }
+                        {
+                            let spurAmount = this.__calcKojosenSpurAmount();
+                            targetUnit.spdSpur += spurAmount;
+                            targetUnit.resSpur += spurAmount;
+                        }
                         break;
                     case PassiveA.AtkSpdBojosen4: {
                         let spurAmount = this.__calcBojosen4SpurAmount();

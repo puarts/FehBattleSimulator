@@ -431,7 +431,10 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
   let heroDatabase = g_testHeroDatabase;
 
   // アルフォンスのデフォルト状態の戦闘結果がGUI上と同じ計算結果になる事を確認
+
+  /** @type {Unit} */
   let atkUnit = null;
+  /** @type {Unit} */
   let defUnit = null;
   {
     atkUnit = heroDatabase.createUnit("アルフォンス");
@@ -458,10 +461,14 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     defUnit.weaponRefinement = WeaponRefinementType.Special;
     for (let atkUnitInfo of heroDatabase.enumerateHeroInfos()) {
       heroDatabase.initUnit(atkUnit, atkUnitInfo.name);
-
       let defUnitInfo = atkUnitInfo;
       heroDatabase.initUnit(defUnit, defUnitInfo.name);
+
       calclator.calcDamage(atkUnit, defUnit, false);
+
+      atkUnit.hp = atkUnit.maxHpWithSkills;
+      defUnit.hp = defUnit.maxHpWithSkills;
+      calclator.calcDamage(defUnit, atkUnit, false);
     }
 
     log += calclator.getProfileLog();
@@ -532,6 +539,165 @@ test('DamageCalculator_FollowupAttackTest', () => test_executeTest(() => {
     expect(result.defUnit_totalAttackCount).toBe(0);
   }
 }));
+
+/// 加算ダメージテスト
+describe('Test for additional damage calculation', () => {
+  /** @type {Unit} */
+  let atkUnit;
+  /** @type {Unit} */
+  let defUnit;
+  beforeEach(() => {
+    atkUnit = test_createDefaultUnit();
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 0;
+    atkUnit.special = Special.BlazingFlame;
+    atkUnit.specialCount = 0;
+
+    defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
+    defUnit.weapon = Weapon.None;
+    defUnit.maxHpWithSkills = 99;
+    defUnit.healFull();
+    defUnit.spdWithSkills = 0;
+  });
+
+  test('HeartbrokerBow', () => {
+    atkUnit.weapon = Weapon.HeartbrokerBow; // 全ステ+5、速さの15%加算
+    atkUnit.spdWithSkills = 45;
+
+    defUnit.defWithSkills = 5;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(45 * 0.15) = 6 になるはず
+    expect(result.preCombatDamage).toBe(6);
+
+    // trunc((45 + 5) * 0.15) = 7 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(7);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(7);
+    expect(result.damageHistory[1].damageDealt).toBe(7);
+  });
+
+  test('FreebladesEdge', () => {
+    atkUnit.weapon = Weapon.FreebladesEdge; // 全ステ+8、守備の15%加算、絶対追撃
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.defWithSkills = 42;
+
+    defUnit.defWithSkills = 8;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(42 * 0.15) = 6 になるはず
+    expect(result.preCombatDamage).toBe(6);
+
+    // trunc((42 + 8) * 0.15) = 7 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(7);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(7);
+    expect(result.damageHistory[1].damageDealt).toBe(7);
+  });
+
+  test('Aymr', () => {
+    atkUnit.weapon = Weapon.Aymr; // 敵の攻撃、守備-11、攻撃の15%加算
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.atkWithSkills = 50;
+    atkUnit.spdWithSkills = 5;
+
+    defUnit.defWithSkills = 50;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(50 * 0.15) = 7 になるはず
+    expect(result.preCombatDamage).toBe(7);
+
+    // 11 + trunc(50 * 0.15) = 18 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(18);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(18);
+    expect(result.damageHistory[1].damageDealt).toBe(18);
+  });
+
+
+  test('HadoNoSenfu', () => {
+    atkUnit.weapon = Weapon.HadoNoSenfu; // 全ステ+8、攻撃の10%加算、絶対追撃
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.atkWithSkills = 42;
+    atkUnit.spdWithSkills = 0;
+
+    defUnit.defWithSkills = 50;
+    defUnit.spdWithSkills = 8;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    // trunc(42 * 0.10) = 4 になるはず
+    expect(result.preCombatDamage).toBe(4);
+
+    // trunc(50 * 0.10) = 5 になるはず
+    expect(result.atkUnit_normalAttackDamage).toBe(5);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(5);
+    expect(result.damageHistory[1].damageDealt).toBe(5);
+  });
+
+  test('HurricaneDagger', () => {
+    atkUnit.weapon = Weapon.HurricaneDagger; // 攻撃、速さ+10、速さが敵より高ければダメージ5加算
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 1;
+
+    defUnit.defWithSkills = 10;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, false);
+
+    expect(result.preCombatDamage).toBe(5);
+
+    expect(result.atkUnit_normalAttackDamage).toBe(5);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(5);
+    expect(result.damageHistory[1].damageDealt).toBe(5);
+  });
+
+  test('PoeticJustice', () => {
+    atkUnit.weaponType = WeaponType.Staff;
+    atkUnit.passiveB = PassiveB.PoeticJustice; // 敵の速さ-4、敵の攻撃の15%加算
+    atkUnit.passiveBInfo = new SkillInfo();
+    atkUnit.passiveBInfo.wrathfulStaff = true;
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 5;
+
+    defUnit.atkWithSkills = 50;
+    defUnit.spdWithSkills = 0;
+    defUnit.resWithSkills = 0;
+
+    {
+      const result = test_calcDamage(atkUnit, defUnit, false);
+
+      expect(atkUnit.battleContext.wrathfulStaff).toBe(true);
+
+      // trunc(50 * 0.15) = 7 になるはず
+      expect(result.atkUnit_normalAttackDamage).toBe(7);
+      expect(result.atkUnit_totalAttackCount).toBe(2);
+      expect(result.damageHistory[0].damageDealt).toBe(7);
+      expect(result.damageHistory[1].damageDealt).toBe(7);
+    }
+
+    // 「杖は他の武器同様のダメージ計算になる」が無効化された場合は、加算後に杖のダメージ計算が適用
+    {
+      defUnit.passiveB = PassiveB.SeimeiNoGofu3;
+
+      const result = test_calcDamage(atkUnit, defUnit, false);
+
+      expect(atkUnit.battleContext.wrathfulStaff).toBe(false);
+      expect(result.atkUnit_normalAttackDamage).toBe(3);
+      expect(result.atkUnit_totalAttackCount).toBe(2);
+      expect(result.damageHistory[0].damageDealt).toBe(3);
+      expect(result.damageHistory[1].damageDealt).toBe(3);
+    }
+  });
+});
+
 
 /// 奥義によるダメージ軽減テストです。
 test('DamageCalculator_SpecialDamageReductionTest', () => test_executeTest(() => {

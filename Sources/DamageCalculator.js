@@ -32,6 +32,7 @@ class DamageCalcContext {
     constructor() {
         this.isCounterattack = false;
         this.isFollowupAttack = false;
+        /** @type {DamageLog[]} */
         this.damageHistory = []; // 攻撃ダメージの履歴
     }
 
@@ -61,6 +62,7 @@ class OneAttackResult {
 /// ダメージ計算結果を表すクラスです。
 class DamageCalcResult {
     constructor() {
+        /** @type {DamageLog[]} */
         this.damageHistory = [];
         this.atkUnit_totalAttackCount = 0;
         this.defUnit_totalAttackCount = 0;
@@ -336,27 +338,6 @@ class DamageCalculator {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case Weapon.HeartbrokerBow: {
-                    if (atkUnit.battleContext.initiatesCombat || this.isThereAnyAllyIn2Spaces(atkUnit)) {
-                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
-                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
-                    }
-                }
-                    break;
-                case Weapon.FreebladesEdge:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        let def = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
-                        atkUnit.battleContext.additionalDamage += Math.trunc(def * 0.15);
-                    }
-                    break;
-                case Weapon.Aymr:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        if (defUnit.battleContext.restHpPercentage >= 75 || this.isSolo(atkUnit)) {
-                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
-                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
-                        }
-                    }
-                    break;
                 case PassiveB.FruitOfLife:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
@@ -366,37 +347,10 @@ class DamageCalculator {
                         }
                     }
                     break;
-                case Weapon.HadoNoSenfu: {
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        // <特殊錬成効果>
-                        if (atkUnit.isWeaponSpecialRefined) {
-                            if (atkUnit.battleContext.weaponSkillCondSatisfied) {
-                                let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
-                                atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.1);
-                            }
-                        }
-                    }
-                }
-                    break;
-                case PassiveB.PoeticJustice: {
-                    let atk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
-                    atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
-                }
-                    break;
                 case Weapon.ArcaneGrima:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);
                         atkUnit.atkSpur += Math.trunc(atk * 0.15);
-                    }
-                    break;
-                case Weapon.HurricaneDagger:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        if (atkUnit.battleContext.restHpPercentage >= 25) {
-                            if (DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) >
-                                DamageCalculatorWrapper.__getSpd(defUnit, atkUnit, isPrecombat)) {
-                                atkUnit.battleContext.additionalDamage += 5;
-                            }
-                        }
                     }
                     break;
                 case Weapon.Misteruthin:
@@ -424,24 +378,6 @@ class DamageCalculator {
         fixedAddDamage += this.__getAtkMinusDefAdditionalDamage(
             atkUnit, defUnit, atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage, isPrecombat);
         return fixedAddDamage;
-    }
-
-    isSolo(atkUnit) {
-        for (let unit of g_app.enumerateUnitsInSpecifiedGroup(atkUnit.groupId)) {
-            if (unit !== atkUnit && unit.distance(atkUnit) <= 1) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    isThereAnyAllyIn2Spaces(atkUnit) {
-        for (let unit of g_app.enumerateUnitsInSpecifiedGroup(atkUnit.groupId)) {
-            if (unit !== atkUnit && unit.distance(atkUnit) <= 2) {
-                return true;
-            }
-        }
-        return false;
     }
 
     __getAtkMinusDefAdditionalDamage(atkUnit, defUnit, rate, isPrecombat) {
@@ -641,21 +577,28 @@ class DamageCalculator {
         finalAtk = finalAtk + addAdjustAtk;
 
         let finalMit = floorNumberWithFloatError(totalMit + totalMit * mitAdvRatio);
-        let damage = truncNumberWithFloatError((finalAtk - finalMit) * damageReduceRatio);
+        let damage = truncNumberWithFloatError((finalAtk - finalMit));
         if (damage < 0) {
             damage = 0;
         }
         damage += fixedAddDamage;
 
+        // 杖の半減は加算ダメージ後に計算
+        damage = truncNumberWithFloatError(damage * damageReduceRatio);
+
         let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
         let specialSufferRatio = (specialSuffer / 100.0);
         let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * specialSufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
-        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * damageReduceRatio * specialMultDamage) + specialAddDamage;
+        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * specialMultDamage) + specialAddDamage;
         if (specialDamage < 0) {
             specialDamage = 0;
         }
         specialDamage += fixedAddDamage;
         specialDamage += fixedSpecialAddDamage;
+
+        // 杖の半減は加算ダメージ後に計算
+        specialDamage = truncNumberWithFloatError(specialDamage * damageReduceRatio);
+
         let totalDamage = this.__calcAttackTotalDamage(
             context,
             atkUnit,

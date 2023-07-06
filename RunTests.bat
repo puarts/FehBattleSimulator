@@ -1,5 +1,12 @@
 @echo off
 
+setlocal enabledelayedexpansion
+
+set JEST_OPTION=
+if not "%1"=="" (
+    set JEST_OPTION=-t "%1"
+)
+
 set TMP_TEST_JS=%~dp0Outputs\All.test.js
 echo %TMP_TEST_JS%
 
@@ -16,5 +23,4 @@ REM set TEST_PATH=%TEST_PATH:\=/%
 set CONFIG=%~dp0jest.config.js
 set CONFIG=%CONFIG:\=/%
 
-call npx jest "%TMP_TEST_JS%" -c %CONFIG% --silent=false --verbose false
-
+call npx jest "%TMP_TEST_JS%" -c %CONFIG% --silent=false --verbose false %JEST_OPTION%
