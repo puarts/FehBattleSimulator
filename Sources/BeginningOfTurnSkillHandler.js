@@ -153,6 +153,26 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.DesertTigerAxe:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(1);
+                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
+                        if (skillOwner.hp + 1 >= unit.hp) {
+                            unit.reduceSpecialCount(1);
+                        }
+                    }
+                }
+                skillOwner.applyAtkSpdBuffs(6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NeutralizesPenalties);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
+                    if (skillOwner.hp + 1 >= unit.hp) {
+                        unit.applyAtkSpdBuffs(6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesPenalties);
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                    }
+                }
+                break;
             case Weapon.PartnershipBow:
                 for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {

@@ -2163,6 +2163,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.DesertTigerAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.VoidTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.battleContext.restHpPercentage >= 50) {
@@ -9888,6 +9900,21 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DesertTigerAxe:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let atk = targetUnit.getAtkBuffInCombat(enemyUnit);
+                        let spd = targetUnit.getAtkBuffInCombat(enemyUnit);
+                        let def = targetUnit.getAtkBuffInCombat(enemyUnit);
+                        let res = targetUnit.getAtkBuffInCombat(enemyUnit);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                            if (atk < unit.getAtkBuff()) atk = unit.getAtkBuff();
+                            if (spd < unit.getSpdBuff()) spd = unit.getSpdBuff();
+                            if (def < unit.getDefBuff()) def = unit.getDefBuff();
+                            if (res < unit.getResBuff()) res = unit.getResBuff();
+                        }
+                        targetUnit.addSpurs(atk, spd, def, res);
+                    }
+                    break;
                 case Weapon.BaraNoYari:
                     if (targetUnit.isWeaponRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25 ||
@@ -13630,6 +13657,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DesertTigerAxe:
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Weapon.PartnershipBow:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;

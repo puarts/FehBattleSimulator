@@ -1667,6 +1667,9 @@ const Weapon = {
     SeashellBowlPlus: 2498, // 硝子の小鉢+
     SparklingSun: 2500, // 真夏の生命の輝き
     WoodenTacklePlus: 2502, // 木の漁具+
+
+    // 2023年7月 武器錬成
+    DesertTigerAxe: 2491, // 砂漠の虎の戦斧
 };
 
 const Support = {

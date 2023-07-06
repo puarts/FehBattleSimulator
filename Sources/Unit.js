@@ -1792,6 +1792,18 @@ class Unit extends BattleMapElement {
         this._resBuff = Number(value);
     }
 
+    getAtkBuff() {
+        return this.isPanicEnabled ? 0 : this.atkBuff;
+    }
+    getSpdBuff() {
+        return this.isPanicEnabled ? 0 : this.spdBuff;
+    }
+    getDefBuff() {
+        return this.isPanicEnabled ? 0 : this.defBuff;
+    }
+    getResBuff() {
+        return this.isPanicEnabled ? 0 : this.resBuff;
+    }
 
     get atkDebuff() {
         return Number(this._atkDebuff);
