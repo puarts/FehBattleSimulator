@@ -60,6 +60,7 @@ const Hero = {
     DuoMark: 955,
     HarmonizedTiki: 971,
     DuoShamir: 984,
+    DuoYmir: 990,
 };
 
 function isThiefIndex(heroIndex) {
