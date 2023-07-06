@@ -7079,10 +7079,21 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Randgrior] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage === 100) {
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.defSpur -= 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    enemyUnit.addAtkDefSpurs(-6);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    enemyUnit.addAtkDefSpurs(-6);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Rigarublade] = (targetUnit, enemyUnit) => {
@@ -7326,6 +7337,16 @@ class DamageCalculatorWrapper {
                 // <錬成効果>
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                        let amount = targetUnit.getPositiveStatusEffects().length +
+                            targetUnit.getNegativeStatusEffects().length;
+                        targetUnit.addAllSpur(amount);
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
                 }
             }
         };
