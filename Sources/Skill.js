@@ -2108,6 +2108,7 @@ const PassiveA = {
     SeimeiNoShippu3: 571,
     SeimeiNoDaichi3: 572,
     SeimeiNoSeisui3: 573,
+    FirefloodBoost3: 2501, // 生命の業火静水3
 
     SacaNoOkite: 586, // サカの掟
     LawsOfSacae2: 1753, // サカの掟・承

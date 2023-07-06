@@ -2163,6 +2163,15 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 50) {
+                targetUnit.addAtkResSpurs(7);
+                let func = unit => unit.battleContext.restHpPercentage >= 50;
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, func)) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.SparklingSun] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 enemyUnit.addAtkResSpurs(-6);
