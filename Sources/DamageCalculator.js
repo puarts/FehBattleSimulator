@@ -914,7 +914,15 @@ class DamageCalculator {
                         defUnit.passiveB === PassiveB.HardyFighter3) {
                         damageReductionValue += 5;
                     } else if (defUnit.weapon === Weapon.MoonlightStone) {
-                        damageReductionValue += 8;
+                        if (atkUnit.battleContext.initiatesCombat ||
+                            atkUnit.battleContext.restHpPercentage >= 75) {
+                            damageReductionValue += 8;
+                        }
+                    } else if (defUnit.weapon === Weapon.IceBoundBrand) {
+                        if (atkUnit.battleContext.initiatesCombat ||
+                            atkUnit.battleContext.restHpPercentage >= 75) {
+                            damageReductionValue += 5;
+                        }
                     }
                     this.__restoreMaxSpecialCount(defUnit);
                 }

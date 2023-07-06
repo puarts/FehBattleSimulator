@@ -2162,6 +2162,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.IceBoundBrand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                // TODO: 表示上限の99を超えた時にどうなるか確認する
+                let spd = targetUnit.getSpdInPrecombat();
+                let amount = Math.trunc(spd * 0.2);
+                enemyUnit.addAtkSpdSpurs(-amount);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DivineDraught] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -9213,6 +9223,7 @@ class DamageCalculatorWrapper {
                                 }
                             }
                         }
+                            break;
                         case PassiveC.Guidance4: {
                             let moveType = targetUnit.moveType;
                             if (moveType === MoveType.Infantry ||
@@ -12917,6 +12928,11 @@ class DamageCalculatorWrapper {
         // defUnitが見切り・反撃効果を持っている場合(falseを返す場合)
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IceBoundBrand:
+                    if (isRangedWeaponType(atkUnit.weaponType)) {
+                        return false;
+                    }
+                    break;
                 case Weapon.Queensblade:
                     return false;
                 case Weapon.BrilliantStarlight:
@@ -14269,6 +14285,7 @@ class DamageCalculatorWrapper {
                         targetUnit.addAtkSpdSpurs(3);
                     }
                 }
+                    break;
                 case PassiveC.Guidance4: {
                     let moveType = targetUnit.moveType;
                     if (moveType === MoveType.Infantry || moveType === MoveType.Armor) {
