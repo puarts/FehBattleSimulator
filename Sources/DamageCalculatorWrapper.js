@@ -2163,6 +2163,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.VoidTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.addAllSpur(4);
+                    if (enemyUnit.special !== Special.None && !enemyUnit.isSpecialCountMax) {
+                        targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WoodenTacklePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkDefSpurs(5);
@@ -11725,6 +11735,15 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.VoidTome:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.getDefInPrecombat() >= 35 ||
+                        atkUnit.getResInPrecombat() >= 35 ||
+                        atkUnit.hasNegativeStatusEffect()) {
+                        return Math.min(Math.max(atkUnit.getDefInPrecombat(), atkUnit.getResInPrecombat()), 50) / 100.0;
+                    }
+                }
+                break;
             case Weapon.SparklingSun:
                 if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
                     return 0.75;
@@ -12105,6 +12124,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.VoidTome:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        let enemyAtk = defUnit.getAtkInPrecombat();
+                        if (enemyAtk >= 50 && !isPrecombat) {
+                            atkUnit.battleContext.additionalDamage += Math.trunc(enemyAtk * 0.15);
+                        }
+                    }
+                    break;
                 case Weapon.DivineDraught: {
                     let num = atkUnit.battleContext.condValueMap.get("num_cond") || 0;
                     if (num === 3 && !isPrecombat) {
