@@ -328,6 +328,9 @@ class DamageCalculator {
         }
     }
 
+
+    // 1回ごとの攻撃で呼ばれる。
+    // 攻撃ごとに変化がない場合はDamageCalculatorWrapper.jsにある方で実装すること。
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         let fixedAddDamage = 0;
 

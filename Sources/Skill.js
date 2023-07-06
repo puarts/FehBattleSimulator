@@ -1658,6 +1658,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=xk98rjlseYE&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Mk7tdr5CSpk&ab_channel=NintendoMobile
     RadiantAureola: 2486, // 至光アーリアル
+
+    // 超英雄 (初めての夏に)
+    // https://www.youtube.com/watch?v=dTeAfZeONPQ&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Xg9hT88Org8&ab_channel=NintendoMobile
+    DivineDraught: 2493, // 喉潤す水神の杯
 };
 
 const Support = {

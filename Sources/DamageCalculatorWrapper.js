@@ -2162,6 +2162,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.DivineDraught] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let condA = targetUnit.battleContext.initiatesCombat;
+                let condB = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, unit => targetUnit.isPartner(unit));
+                let condC = enemyUnit.hasNegativeStatusEffect();
+                let num = [condA, condB, condC].filter(c => c).length;
+                targetUnit.battleContext.condValueMap.set("num_cond", num);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.ImpenetrableVoid] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addAllSpur(-5);
             targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
@@ -9463,6 +9473,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineDraught: {
+                    let num = targetUnit.battleContext.condValueMap.get("num_cond") || 0;
+                    if (num >= 2) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                }
+                    break;
                 case PassiveB.SunlightBangle:
                     if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                         targetUnit.battleContext.attackCount = 2;
@@ -11996,8 +12014,7 @@ class DamageCalculatorWrapper {
     }
 
     /**
-     1回ごとの攻撃で呼ばれる。
-     攻撃ごとに変化がない場合はDamageCalculatorWrapper.jsにある方で実装すること。
+     * 通常の固定ダメージはここで実装する
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Boolean} isPrecombat
@@ -12013,6 +12030,16 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineDraught: {
+                    let num = atkUnit.battleContext.condValueMap.get("num_cond") || 0;
+                    if (num === 3 && !isPrecombat) {
+                        let atkAtk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                        let defAtk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                        let atk = Math.max(atkAtk, defAtk);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                    }
+                }
+                    break;
                 case Weapon.HeartbrokerBow: {
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);

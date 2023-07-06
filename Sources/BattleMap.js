@@ -1980,6 +1980,11 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineDraught:
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                        unit, 3, 2, ally => ally.isPartner(unit)
+                    );
+                    break;
                 case PassiveB.SoaringWings:
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
                     break;

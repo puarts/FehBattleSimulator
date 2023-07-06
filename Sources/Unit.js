@@ -699,6 +699,10 @@ class BattleContext {
         this.disablesSkillsFromBlueEnemiesInCombat = false;
         this.disablesSkillsFromGreenEnemiesInCombat = false;
         this.disablesSkillsFromColorlessEnemiesInCombat = false;
+
+        // 条件判定のための値を使い回すための値
+        // 1攻撃の中で使い回す想定で1ターン1回の行動が行われたかなどの保存するべきフラグには使用しない
+        this.condValueMap = new Map();
     }
 
     invalidateFollowupAttackSkills() {
@@ -849,6 +853,7 @@ class BattleContext {
         this.disablesSkillsFromBlueEnemiesInCombat = false;
         this.disablesSkillsFromGreenEnemiesInCombat = false;
         this.disablesSkillsFromColorlessEnemiesInCombat = false;
+        this.condValueMap.clear();
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -1571,6 +1576,10 @@ class Unit extends BattleMapElement {
 
     distance(otherUnit) {
         return Math.abs(this.posX - otherUnit.posX) + Math.abs(this.posY - otherUnit.posY);
+    }
+
+    isPartner(ally) {
+        return this.partnerHeroIndex === ally.heroIndex || ally.partnerHeroIndex === this.heroIndex;
     }
 
     canActivateCanto() {
