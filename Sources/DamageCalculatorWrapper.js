@@ -2163,6 +2163,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.SeashellBowlPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                let amount = Math.min(Math.trunc(targetUnit.restHp * 0.25), 10);
+                enemyUnit.addAtkSpdSpurs(-amount);
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Special.FrostbiteMirror] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.specialCount === 0) {
                 targetUnit.battleContext.canCounterattackToAllDistance = true;

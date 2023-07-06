@@ -1664,6 +1664,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Xg9hT88Org8&ab_channel=NintendoMobile
     DivineDraught: 2493, // 喉潤す水神の杯
     IceBoundBrand: 2495, // 氷海の剣
+    SeashellBowlPlus: 2498, // 硝子の小鉢+
 };
 
 const Support = {
