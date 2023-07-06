@@ -1026,6 +1026,7 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
+                case PassiveB.Spurn4:
                 case PassiveB.CloseCall4:
                 case PassiveB.Repel4:
                     {
@@ -2895,6 +2896,7 @@ class DamageCalculatorWrapper {
             let func = (targetUnit, enemyUnit) => {
                 enemyUnit.addSpurs(0, -4, -4, 0);
             };
+            this._applySkillEffectForUnitFuncDict[PassiveB.Spurn4] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.CloseCall4] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.Repel4] = func;
         }
@@ -8828,6 +8830,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveB.Spurn3:
+                case PassiveB.Spurn4:
                     if (targetUnit.restHpPercentage <= 75) {
                         targetUnit.battleContext.additionalDamageOfSpecial += 5;
                     }
@@ -11985,6 +11988,7 @@ class DamageCalculatorWrapper {
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
+            case PassiveB.Spurn4:
             case PassiveB.Repel4:
             case PassiveB.CloseCall4:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
