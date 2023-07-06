@@ -1021,6 +1021,12 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoYmir:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
+                    unit.clearNegativeStatusEffects();
+                    unit.heal(20);
+                }
+                break;
             case Hero.DuoShamir:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
                     if (this.__isInCross(unit, duoUnit, 1, 1)) {
@@ -1392,7 +1398,7 @@ class BattleSimmulatorBase {
                 }
                 break;
             case Hero.DuoElise:
-                for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit, 2, true)) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
                     unit.addStatusEffect(StatusEffectType.TotalPenaltyDamage);
                 }
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Enemy, 3, 99)) {
@@ -3892,6 +3898,7 @@ class BattleSimmulatorBase {
                 || unit.heroIndex == Hero.DuoSigurd
                 || unit.heroIndex == Hero.DuoEirika
                 || unit.heroIndex == Hero.DuoSothis
+                || unit.heroIndex == Hero.DuoYmir
             ) {
                 if (this.isOddTurn) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;

@@ -328,6 +328,9 @@ class DamageCalculator {
         }
     }
 
+
+    // 1回ごとの攻撃で呼ばれる。
+    // 攻撃ごとに変化がない場合はDamageCalculatorWrapper.jsにある方で実装すること。
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         let fixedAddDamage = 0;
 
@@ -496,6 +499,14 @@ class DamageCalculator {
                 if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                     fixedAddDamage += floorNumberWithFloatError(atkUnit.getResInCombat(defUnit) * 0.4);
                     atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+                }
+                break;
+            case Special.FrostbiteMirror:
+                // 通常ダメージに加算
+                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
                 }
                 break;
             case Special.NegatingFang:
@@ -911,7 +922,15 @@ class DamageCalculator {
                         defUnit.passiveB === PassiveB.HardyFighter3) {
                         damageReductionValue += 5;
                     } else if (defUnit.weapon === Weapon.MoonlightStone) {
-                        damageReductionValue += 8;
+                        if (atkUnit.battleContext.initiatesCombat ||
+                            atkUnit.battleContext.restHpPercentage >= 75) {
+                            damageReductionValue += 8;
+                        }
+                    } else if (defUnit.weapon === Weapon.IceBoundBrand) {
+                        if (atkUnit.battleContext.initiatesCombat ||
+                            atkUnit.battleContext.restHpPercentage >= 75) {
+                            damageReductionValue += 5;
+                        }
                     }
                     this.__restoreMaxSpecialCount(defUnit);
                 }
@@ -1265,6 +1284,12 @@ class DamageCalculator {
             case Special.IceMirror:
                 if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
                     if (atkUnit.getActualAttackRange(defUnit) !== 2) break;
+                    defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                }
+                break;
+            case Special.FrostbiteMirror:
+                if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
                     defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
                     defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                 }

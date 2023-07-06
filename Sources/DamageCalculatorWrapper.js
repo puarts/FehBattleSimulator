@@ -1026,6 +1026,7 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
+                case PassiveB.Spurn4:
                 case PassiveB.CloseCall4:
                 case PassiveB.Repel4:
                     {
@@ -2162,6 +2163,65 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.WoodenTacklePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkDefSpurs(5);
+                let amount = Math.min(Math.trunc(targetUnit.restHp * 0.25), 10);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 50) {
+                targetUnit.addAtkResSpurs(7);
+                let func = unit => unit.battleContext.restHpPercentage >= 50;
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, func)) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SparklingSun] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                enemyUnit.addAtkResSpurs(-6);
+                let amount = Math.min(Math.trunc(targetUnit.restHp * 0.30), 12);
+                enemyUnit.addAtkResSpurs(-amount);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.SeashellBowlPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                let amount = Math.min(Math.trunc(targetUnit.restHp * 0.25), 10);
+                enemyUnit.addAtkSpdSpurs(-amount);
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Special.FrostbiteMirror] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.specialCount === 0) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.IceBoundBrand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                // TODO: 表示上限の99を超えた時にどうなるか確認する
+                let spd = targetUnit.getSpdInPrecombat();
+                let amount = Math.trunc(spd * 0.2);
+                enemyUnit.addAtkSpdSpurs(-amount);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DivineDraught] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let condA = targetUnit.battleContext.initiatesCombat;
+                let condB = this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, unit => targetUnit.isPartner(unit));
+                let condC = enemyUnit.hasNegativeStatusEffect();
+                let num = [condA, condB, condC].filter(c => c).length;
+                targetUnit.battleContext.condValueMap.set("num_cond", num);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.ImpenetrableVoid] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addAllSpur(-5);
             targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
@@ -2870,6 +2930,7 @@ class DamageCalculatorWrapper {
             let func = (targetUnit, enemyUnit) => {
                 enemyUnit.addSpurs(0, -4, -4, 0);
             };
+            this._applySkillEffectForUnitFuncDict[PassiveB.Spurn4] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.CloseCall4] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.Repel4] = func;
         }
@@ -8803,6 +8864,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case PassiveB.Spurn3:
+                case PassiveB.Spurn4:
                     if (targetUnit.restHpPercentage <= 75) {
                         targetUnit.battleContext.additionalDamageOfSpecial += 5;
                     }
@@ -9193,10 +9255,27 @@ class DamageCalculatorWrapper {
                                 targetUnit.battleContext.canActivateMiracleAndHeal = true;
                             }
                             break;
-                        case PassiveC.Guidance4:
-                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        case PassiveC.SoaringGuidance: {
+                            let moveType = targetUnit.moveType;
+                            if (moveType === MoveType.Infantry ||
+                                moveType === MoveType.Flying) {
+                                if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                                    enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                                }
                             }
+                        }
+                            break;
+                        case PassiveC.Guidance4: {
+                            let moveType = targetUnit.moveType;
+                            if (moveType === MoveType.Infantry ||
+                                moveType === MoveType.Armor) {
+                                if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                                    enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                                }
+                            }
+                        }
                             break;
                         case Weapon.RaisenNoSyo:
                             if (allyUnit.isWeaponSpecialRefined) {
@@ -9463,6 +9542,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineDraught: {
+                    let num = targetUnit.battleContext.condValueMap.get("num_cond") || 0;
+                    if (num >= 2) {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                }
+                    break;
                 case PassiveB.SunlightBangle:
                     if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                         targetUnit.battleContext.attackCount = 2;
@@ -11638,6 +11725,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.SparklingSun:
+                if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                    return 0.75;
+                }
+                break;
             case Weapon.BaraNoYari:
                 if (defUnit.isWeaponRefined) {
                     let diff = defUnit.getEvalAtkInCombat(atkUnit) - atkUnit.getEvalAtkInCombat(defUnit);
@@ -11935,6 +12027,7 @@ class DamageCalculatorWrapper {
             case PassiveB.KaihiIchigekiridatsu3:
             case PassiveB.KaihiTatakikomi3:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
+            case PassiveB.Spurn4:
             case PassiveB.Repel4:
             case PassiveB.CloseCall4:
                 return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
@@ -11994,7 +12087,9 @@ class DamageCalculatorWrapper {
             }
         }
     }
+
     /**
+     * 通常の固定ダメージはここで実装する
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Boolean} isPrecombat
@@ -12010,6 +12105,16 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineDraught: {
+                    let num = atkUnit.battleContext.condValueMap.get("num_cond") || 0;
+                    if (num === 3 && !isPrecombat) {
+                        let atkAtk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                        let defAtk = DamageCalculatorWrapper.__getAtk(defUnit, atkUnit, isPrecombat);
+                        let atk = Math.max(atkAtk, defAtk);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                    }
+                }
+                    break;
                 case Weapon.HeartbrokerBow: {
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
@@ -12871,6 +12976,11 @@ class DamageCalculatorWrapper {
         // defUnitが見切り・反撃効果を持っている場合(falseを返す場合)
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.IceBoundBrand:
+                    if (isRangedWeaponType(atkUnit.weaponType)) {
+                        return false;
+                    }
+                    break;
                 case Weapon.Queensblade:
                     return false;
                 case Weapon.BrilliantStarlight:
@@ -13408,6 +13518,13 @@ class DamageCalculatorWrapper {
             case Special.IceMirror2:
                 if (attackRange === 2) {
                     defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+                }
+                break;
+            case Special.FrostbiteMirror:
+                if (attackRange === 1) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.1;
+                } else if (attackRange === 2) {
+                    defUnit.battleContext.damageReductionRatioBySpecial = 0.3;
                 }
                 break;
             case Special.Seitate:
@@ -14024,6 +14141,13 @@ class DamageCalculatorWrapper {
     __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SparklingSun:
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        if (enemyUnit.battleContext.canFollowupAttack) {
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
+                        }
+                    }
+                    break;
                 case Weapon.MagetsuNoSaiki:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.isOddTurn || enemyUnit.battleContext.restHpPercentage < 100) {
@@ -14216,6 +14340,13 @@ class DamageCalculatorWrapper {
                     if (allyUnit.isWeaponSpecialRefined) {
                         targetUnit.addDefResSpurs(6);
                     }
+                    break;
+                case PassiveC.SoaringGuidance: {
+                    let moveType = targetUnit.moveType;
+                    if (moveType === MoveType.Infantry || moveType === MoveType.Flying) {
+                        targetUnit.addAtkSpdSpurs(3);
+                    }
+                }
                     break;
                 case PassiveC.Guidance4: {
                     let moveType = targetUnit.moveType;

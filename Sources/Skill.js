@@ -1658,6 +1658,15 @@ const Weapon = {
     // https://www.youtube.com/watch?v=xk98rjlseYE&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Mk7tdr5CSpk&ab_channel=NintendoMobile
     RadiantAureola: 2486, // 至光アーリアル
+
+    // 超英雄 (初めての夏に)
+    // https://www.youtube.com/watch?v=dTeAfZeONPQ&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Xg9hT88Org8&ab_channel=NintendoMobile
+    DivineDraught: 2493, // 喉潤す水神の杯
+    IceBoundBrand: 2495, // 氷海の剣
+    SeashellBowlPlus: 2498, // 硝子の小鉢+
+    SparklingSun: 2500, // 真夏の生命の輝き
+    WoodenTacklePlus: 2502, // 木の漁具+
 };
 
 const Support = {
@@ -1842,6 +1851,7 @@ const Special = {
     Seikabuto: 476, // 聖兜
     IceMirror: 480, // 氷の聖鏡
     IceMirror2: 1629, // 氷の聖鏡・承
+    FrostbiteMirror: 2496, // 絶氷の聖鏡
     GodlikeReflexes: 2190, // 神速回避
 
     ShippuNoSyukuhuku: 499, // 疾風の祝福
@@ -2099,6 +2109,7 @@ const PassiveA = {
     SeimeiNoShippu3: 571,
     SeimeiNoDaichi3: 572,
     SeimeiNoSeisui3: 573,
+    FirefloodBoost3: 2501, // 生命の業火静水3
 
     SacaNoOkite: 586, // サカの掟
     LawsOfSacae2: 1753, // サカの掟・承
@@ -2405,6 +2416,7 @@ const PassiveB = {
     Velocity3: 2206, // 回避・拍節3
     Frenzy3: 1768, // 回避・攻め立て3
     Spurn3: 1391, // 回避・怒り3
+    Spurn4: 2497, // 回避・怒り4
     KaihiIchigekiridatsu3: 1053, // 回避・一撃離脱3
     CloseCall4: 2328, // 回避・一撃離脱4
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
@@ -2613,6 +2625,7 @@ const PassiveC = {
     SorakaranoSendo3: 735, // 空からの先導3
     Guidance4: 2391, // 空からの先導4
     HikonoSendo3: 736,
+    SoaringGuidance: 2494, // 飛走の先導
 
     ThreatenAtk1: 1413,
     ThreatenAtk2: 1414,
@@ -3161,6 +3174,7 @@ DefenseSpecialDict[Special.Seii] = 0;  // 聖衣
 DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
 DefenseSpecialDict[Special.IceMirror] = 0;
 DefenseSpecialDict[Special.IceMirror2] = 0;
+DefenseSpecialDict[Special.FrostbiteMirror] = 0;
 DefenseSpecialDict[Special.NegatingFang] = 0;
 DefenseSpecialDict[Special.GodlikeReflexes] = 0;
 
@@ -3538,6 +3552,7 @@ TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
 TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
 TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
 TeleportationSkillDict[PassiveC.Guidance4] = 0;
+TeleportationSkillDict[PassiveC.SoaringGuidance] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
 TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
 TeleportationSkillDict[Weapon.SilentPower] = 0;
@@ -3593,6 +3608,7 @@ const EvalSpdAddDict = {};
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
+EvalSpdAddDict[PassiveB.Spurn4] = 7;
 EvalSpdAddDict[PassiveB.CloseCall4] = 7;
 EvalSpdAddDict[PassiveB.Repel4] = 7;
 EvalSpdAddDict[Weapon.SharpWarSword] = 10;

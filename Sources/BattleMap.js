@@ -1980,6 +1980,11 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DivineDraught:
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                        unit, 3, 2, ally => ally.isPartner(unit)
+                    );
+                    break;
                 case PassiveB.SoaringWings:
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
                     break;
@@ -2177,6 +2182,11 @@ class BattleMap {
                         break;
                     case PassiveC.Guidance4:
                         if (unit.moveType == MoveType.Armor || unit.moveType == MoveType.Infantry) {
+                            yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
+                        }
+                        break;
+                    case PassiveC.SoaringGuidance:
+                        if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Flying) {
                             yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
                         }
                         break;
