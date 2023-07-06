@@ -1666,6 +1666,7 @@ const Weapon = {
     IceBoundBrand: 2495, // 氷海の剣
     SeashellBowlPlus: 2498, // 硝子の小鉢+
     SparklingSun: 2500, // 真夏の生命の輝き
+    WoodenTacklePlus: 2502, // 木の漁具+
 };
 
 const Support = {

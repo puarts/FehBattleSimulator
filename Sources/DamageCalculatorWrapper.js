@@ -2163,6 +2163,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.WoodenTacklePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkDefSpurs(5);
+                let amount = Math.min(Math.trunc(targetUnit.restHp * 0.25), 10);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 50) {
                 targetUnit.addAtkResSpurs(7);
