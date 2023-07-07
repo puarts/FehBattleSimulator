@@ -1115,6 +1115,9 @@ class PostCombatSkillHander {
                         this.writeLogLine(unit.getNameWithGroup() + "は" + attackUnit.weaponInfo.name + "により10ダメージ、反撃不可の状態異常付与");
                         unit.reserveTakeDamage(10);
                         unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                        if (attackUnit.isWeaponSpecialRefined) {
+                            unit.addStatusEffect(StatusEffectType.Discord);
+                        }
                     }
                     break;
                 case Weapon.PanicPlus:
