@@ -2056,8 +2056,16 @@ class DamageCalculatorWrapper {
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
                 case BeastCommonSkillType.Cavalry:
-                    defUnit.atkSpur -= 4;
-                    defUnit.defSpur -= 4;
+                    defUnit.addAtkDefSpurs(-4);
+                    break;
+                case BeastCommonSkillType.Cavalry2:
+                    defUnit.addAtkDefSpurs(-3);
+                    let d = Unit.calcAttackerMoveDistance(atkUnit, defUnit);
+                    let amount = Math.min(d, 3);
+                    defUnit.addAtkDefSpurs(-amount);
+                    if (d >= 2) {
+                        atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
+                    }
                     break;
             }
         }
@@ -2171,6 +2179,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DokuNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 targetUnit.addAllSpur(4);
@@ -9959,6 +9974,15 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArcaneNihility:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit);
+                        enemyUnit.atkSpur -= enemyUnit.getAtkBuffInCombat(targetUnit);
+                        enemyUnit.spdSpur -= enemyUnit.getSpdBuffInCombat(targetUnit);
+                        enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
+                        enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
+                    }
+                    break;
                 case Weapon.DesertTigerAxe:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let atk = targetUnit.getAtkBuffInCombat(enemyUnit);
@@ -12248,6 +12272,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArcaneNihility:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
+                    }
+                    break;
                 case Weapon.KishisyogunNoHousou:
                     if (atkUnit.battleContext.weaponSkillCondSatisfied && !isPrecombat) {
                         let spd = atkUnit.getSpdInCombat(defUnit);
