@@ -7737,9 +7737,28 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.KishisyogunNoHousou] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage < 100) {
-                targetUnit.addAllSpur(4);
-                targetUnit.battleContext.reducesCooldownCount = true;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.restHpPercentage < 100) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.PieriNoSyousou] = (targetUnit) => {
@@ -12229,6 +12248,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.KishisyogunNoHousou:
+                    if (atkUnit.battleContext.weaponSkillCondSatisfied && !isPrecombat) {
+                        let spd = atkUnit.getSpdInCombat(defUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.15);
+                    }
+                    break;
                 case Weapon.VoidTome:
                     if (atkUnit.isWeaponSpecialRefined) {
                         let enemyAtk = defUnit.getAtkInPrecombat();
@@ -13693,6 +13718,11 @@ class DamageCalculatorWrapper {
     __applyInvalidationSkillEffect(targetUnit, enemyUnit, calcPotentialDamage) {
         // 獣の共通武器スキル
         switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
+            case Weapon.KishisyogunNoHousou:
+                if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case BeastCommonSkillType.Infantry2:
                 if (targetUnit.isTransformed) {
                     targetUnit.battleContext.invalidateCooldownCountSkills();
