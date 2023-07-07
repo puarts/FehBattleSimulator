@@ -2058,7 +2058,7 @@ class DamageCalculatorWrapper {
                 case BeastCommonSkillType.Cavalry:
                     defUnit.addAtkDefSpurs(-4);
                     break;
-                case BeastCommonSkillType.Cavalry2:
+                case BeastCommonSkillType.Cavalry2: {
                     defUnit.addAtkDefSpurs(-3);
                     let d = Unit.calcAttackerMoveDistance(atkUnit, defUnit);
                     let amount = Math.min(d, 3);
@@ -2067,6 +2067,7 @@ class DamageCalculatorWrapper {
                         atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
                     }
                     break;
+                }
             }
         }
 
