@@ -735,6 +735,14 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HarukazeNoBreath:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.initiatesCombat ||
+                            atkUnit.battleContext.restHpPercentage >= 75) {
+                            this.__applyResDodge(defUnit, atkUnit);
+                        }
+                    }
+                    break;
                 case Weapon.FreebladesEdge: {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
                 }
@@ -8243,11 +8251,32 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.HarukazeNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if ((!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
-                || targetUnit.isBuffed
-            ) {
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
-                enemyUnit.atkSpur -= 6;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if ((!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) ||
+                    targetUnit.isBuffed) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    enemyUnit.atkSpur -= 6;
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            } else {
+                // <錬成効果>
+                if ((!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) ||
+                    targetUnit.hasPositiveStatusEffect()) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    enemyUnit.atkSpur -= 6;
+                    enemyUnit.addSpursWithoutAtk(-4);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addSpursWithoutAtk(-4);
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += 5;
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.LarceisEdge] = (targetUnit, enemyUnit) => {
@@ -11794,6 +11823,23 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.HarukazeNoBreath:
+                if (defUnit.isWeaponSpecialRefined) {
+                    if (atkUnit.battleContext.initiatesCombat ||
+                        atkUnit.battleContext.restHpPercentage >= 75) {
+                        let resDiff = defUnit.getEvalResInCombat(atkUnit) - atkUnit.getEvalResInCombat(defUnit);
+                        if (resDiff > 0) {
+                            let percentage = resDiff * 4;
+                            if (percentage > 40) {
+                                percentage = 40;
+                            }
+
+                            if (this.isLogEnabled) this.__writeDamageCalcDebugLog("ダメージ" + percentage + "%軽減");
+                            return percentage / 100.0;
+                        }
+                    }
+                }
+                break;
             case Weapon.VoidTome:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (atkUnit.getDefInPrecombat() >= 35 ||
@@ -13493,13 +13539,6 @@ class DamageCalculatorWrapper {
                             }
                         }
 
-                        break;
-                    case Weapon.HarukazeNoBreath:
-                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)
-                            || defUnit.isBuffed
-                        ) {
-                            --followupAttackPriority;
-                        }
                         break;
                     case Weapon.TenraiArumazu:
                         if (!defUnit.isWeaponRefined) {
