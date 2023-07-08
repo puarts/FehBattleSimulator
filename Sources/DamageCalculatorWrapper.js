@@ -11566,6 +11566,7 @@ class DamageCalculatorWrapper {
                                 if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                                     targetUnit.atkSpur += 5;
                                     targetUnit.spdSpur += 5;
+                                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
                                 }
                             }
                         }

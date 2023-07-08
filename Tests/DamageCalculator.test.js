@@ -552,6 +552,8 @@ describe('Test for additional damage calculation', () => {
     atkUnit.spdWithSkills = 0;
     atkUnit.special = Special.BlazingFlame;
     atkUnit.specialCount = 0;
+    atkUnit.maxHpWithSkills = 99;
+    atkUnit.healFull();
 
     defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
     defUnit.weapon = Weapon.None;
@@ -657,6 +659,32 @@ describe('Test for additional damage calculation', () => {
     expect(result.atkUnit_totalAttackCount).toBe(2);
     expect(result.damageHistory[0].damageDealt).toBe(5);
     expect(result.damageHistory[1].damageDealt).toBe(5);
+  });
+
+  test('Misteruthin', () => {
+    atkAllyUnit = test_createDefaultUnit();
+    atkAllyUnit.placedTile.posX = 0;
+    atkAllyUnit.placedTile.posY = 2;
+
+    atkUnit.weapon = Weapon.Misteruthin; // 攻撃、速さ+10、奥義発動時、ダメージ+自分のHP減少量(最大30)
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 0;
+    atkUnit.specialCount = 0;
+    atkUnit.maxSpecialCount = 2;
+    atkUnit.special = Special.Glimmer;
+    atkUnit.takeDamage(40);
+
+    defUnit.defWithSkills = 10;
+    defUnit.spdWithSkills = 5;
+
+    let result = test_calcDamageWithUnits(atkUnit, defUnit, [atkAllyUnit], false);
+
+    expect(result.preCombatDamage).toBe(0);
+    expect(result.atkUnit_normalAttackDamage).toBe(0);
+    expect(result.atkUnit_totalAttackCount).toBe(2);
+    expect(result.damageHistory[0].damageDealt).toBe(30);
+    expect(result.damageHistory[1].damageDealt).toBe(0);
   });
 
   test('PoeticJustice', () => {
