@@ -1667,6 +1667,12 @@ const Weapon = {
     SeashellBowlPlus: 2498, // 硝子の小鉢+
     SparklingSun: 2500, // 真夏の生命の輝き
     WoodenTacklePlus: 2502, // 木の漁具+
+
+    // 2023年7月 武器錬成
+    DesertTigerAxe: 2491, // 砂漠の虎の戦斧
+
+    // アイト（敵）
+    ArcaneNihility: 2504, // 魔器・虚無の角
 };
 
 const Support = {
@@ -3642,6 +3648,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.ArcaneNihility] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.Ravager] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.KeenRabbitFang] = 0;
@@ -3697,6 +3704,7 @@ const BeastCommonSkillType = {
     Armor: 3,
     Cavalry: 4,
     Flying: 5,
+    Cavalry2: 6, // TODO: 次世代騎馬なのか魔器だけなのか確認する
 }
 
 const BeastCommonSkillMap =
@@ -3721,6 +3729,9 @@ const BeastCommonSkillMap =
             [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
             [Weapon.BridesFang, BeastCommonSkillType.Infantry],
             [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
+
+            // 次世代騎馬
+            [Weapon.ArcaneNihility, BeastCommonSkillType.Cavalry2],
 
             // 騎馬
             [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],

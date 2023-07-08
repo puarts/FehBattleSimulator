@@ -594,6 +594,8 @@ class BattleContext {
         this.damageReductionValueOfFollowupAttack = 0;
 
         // 最初に受けた攻撃の固定ダメージ軽減(2回攻撃は最初の連撃どちらも対象)
+        // 最初に受けた攻撃と2回攻撃のダメージ-N(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃)
+        // Nの符号に注意。Nは自然数（ダメージ-5ならN=5）
         this.damageReductionValueOfFirstAttacks = 0;
 
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
@@ -1792,6 +1794,18 @@ class Unit extends BattleMapElement {
         this._resBuff = Number(value);
     }
 
+    getAtkBuff() {
+        return this.isPanicEnabled ? 0 : this.atkBuff;
+    }
+    getSpdBuff() {
+        return this.isPanicEnabled ? 0 : this.spdBuff;
+    }
+    getDefBuff() {
+        return this.isPanicEnabled ? 0 : this.defBuff;
+    }
+    getResBuff() {
+        return this.isPanicEnabled ? 0 : this.resBuff;
+    }
 
     get atkDebuff() {
         return Number(this._atkDebuff);
