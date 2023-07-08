@@ -73,6 +73,7 @@ const IvType = {
     Flaw: 2, // 不得意
 }
 
+const BookVersions = {};
 
 const BlessingType =
 {
@@ -326,6 +327,7 @@ class HeroInfo {
         this.passiveCs = passiveCs;
         this.isResplendent = resplendent;
         this.origin = origin;
+        this.origins = origin?.split("|").filter(x => x != '') ?? [];
         this.howToGet = howToGet;
         this.releaseDate = releaseDate;
         this.releaseDateAsNumber = Number(releaseDate.replace(/-/g, ""));
@@ -340,6 +342,9 @@ class HeroInfo {
         this.passiveSOptionsForHallOfForms = [];
 
         this.__updateLv1Statuses();
+
+        this.bookVersion = this.__getBookVersion();
+        BookVersions[this.bookVersion] = null;
     }
 
     /**
@@ -652,6 +657,23 @@ class HeroInfo {
                 }
             }
         }
+    }
+
+    __getBookVersion() {
+        if (this.epithet == "" || this.name.includes('敵')) {
+            return -1;
+        }
+
+        let release_date = this.releaseDateAsNumber;
+        if (release_date < 20171128) return 1;
+        if (release_date < 20181211) return 2;
+        if (release_date < 20191205) return 3;
+        if (release_date < 20201208) return 4;
+        if (release_date < 20211206) return 5;
+        if (release_date < 20221201) return 6;
+        if (release_date < 20231201) return 7;
+        if (release_date < 20241201) return 8;
+        return -1;
     }
 
     __updateLv1Statuses() {
