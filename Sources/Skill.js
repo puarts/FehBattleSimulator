@@ -1670,6 +1670,7 @@ const Weapon = {
 
     // 2023年7月 武器錬成
     DesertTigerAxe: 2491, // 砂漠の虎の戦斧
+    FathersSonAxe: 2492, // ガルシアの子の斧
 
     // アイト（敵）
     ArcaneNihility: 2504, // 魔器・虚無の角
@@ -3888,7 +3889,7 @@ class SkillInfo {
         this.spd = spd;
         this.def = def;
         this.res = res;
-        this.effectives = effectives;
+        this.effectives = effectives ?? [];
         this.invalidatedEffectives = invalidatedEffectives;
         this.cooldownCount = cooldownCount;
         this.attackCount = atkCount;

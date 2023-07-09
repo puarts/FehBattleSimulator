@@ -2180,6 +2180,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+
+        this._applySkillEffectForUnitFuncDict[Weapon.FathersSonAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、敵の攻撃、守備-5、
+                // 自分が与えるダメージ + 戦闘開始時の自分のHPの15 % (戦闘前奥義も含む)、戦闘後、自分は、7回復
+                if (targetUnit.battleContext.weaponSkillCondSatisfied || targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    enemyUnit.addAtkDefSpurs(-5, -5);
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                }
+            }
+        }
+
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -12274,6 +12286,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FathersSonAxe:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.weaponSkillCondSatisfied || atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.hp * 0.15);
+                            atkUnit.battleContext.weaponSkillCondSatisfied = true;
+                        }
+                    }
+                    break;
                 case Weapon.ArcaneNihility:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);

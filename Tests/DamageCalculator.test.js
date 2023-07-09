@@ -661,6 +661,33 @@ describe('Test for additional damage calculation', () => {
     expect(result.damageHistory[1].damageDealt).toBe(5);
   });
 
+  test('FathersSonAxe', () => {
+    // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、敵の攻撃、守備-5、自分が与えるダメージ+戦闘開始時の自分のHPの15%(戦闘前奥義も含む)、戦闘後、自分は、7回復
+    atkUnit.weapon = Weapon.FathersSonAxe;
+    atkUnit.weaponRefinement = WeaponRefinementType.Special_Hp3;
+    const weaponInfo = new SkillInfo();
+    weaponInfo.attackCount = 2;
+    atkUnit.weaponInfo = weaponInfo;
+
+    atkUnit.atkWithSkills = 0;
+    atkUnit.spdWithSkills = 5;
+    atkUnit.specialCount = 0;
+
+    defUnit.defWithSkills = 5;
+    defUnit.spdWithSkills = 0;
+
+    let result = test_calcDamage(atkUnit, defUnit, true);
+
+    // trunc(99 * 0.15) = 14
+    expect(result.preCombatDamage).toBe(14);
+    expect(result.atkUnit_normalAttackDamage).toBe(14);
+    expect(result.atkUnit_totalAttackCount).toBe(4);
+    expect(result.damageHistory[0].damageDealt).toBe(14);
+    expect(result.damageHistory[1].damageDealt).toBe(14);
+    expect(result.damageHistory[2].damageDealt).toBe(14);
+    expect(result.damageHistory[3].damageDealt).toBe(14);
+  });
+
   test('Misteruthin', () => {
     atkAllyUnit = test_createDefaultUnit();
     atkAllyUnit.placedTile.posX = 0;

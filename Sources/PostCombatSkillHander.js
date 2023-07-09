@@ -306,7 +306,10 @@ class PostCombatSkillHander {
         }
     }
 
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     */
     __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
         targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
         for (let skillId of enemyUnit.enumerateSkills()) {
@@ -328,6 +331,11 @@ class PostCombatSkillHander {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FathersSonAxe:
+                    if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        targetUnit.reserveHeal(7);
+                    }
+                    break;
                 case Weapon.VassalSaintSteel:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.isSpecialCountMax) {
