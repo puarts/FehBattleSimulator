@@ -4398,7 +4398,13 @@ class BattleSimmulatorBase {
 
         updateAllUi();
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {HeroInfo} heroInfo
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} equipsAllDistCounterIfImpossible=false
+     * @param  {Number} reducedSpecialCount=0
+     */
     __durabilityTest_initUnit(
         targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0
     ) {
@@ -4434,7 +4440,7 @@ class BattleSimmulatorBase {
             if (equipsAllDistCounterIfImpossible) {
                 // 全距離反撃できない場合に遠距離反撃、近距離反撃を装備する
                 if (targetUnit.attackRange != enemyUnit.attackRange
-                    && !this.__canCounterAttackToAllDistance(targetUnit)
+                    && !targetUnit.canCounterAttackToAllDistance()
                 ) {
                     if (targetUnit.isMeleeWeaponType()) {
                         targetUnit.passiveA = PassiveA.DistantCounter;
@@ -4507,6 +4513,10 @@ class BattleSimmulatorBase {
                 this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount);
                 this.damageCalc.updateUnitSpur(targetUnit, this.vm.durabilityTestCalcPotentialDamage);
                 this.damageCalc.updateUnitSpur(enemyUnit, this.vm.durabilityTestCalcPotentialDamage);
+
+                if (this.vm.durabilityTestChargesSpecialCount) {
+                    enemyUnit.specialCount = 0;
+                }
 
                 // テスト対象のHPと奥義発動カウントをリセット
                 targetUnit.specialCount = originalSpecialCount;

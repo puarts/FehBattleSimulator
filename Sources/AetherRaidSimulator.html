@@ -2620,5 +2620,10 @@
                 app.style.display = "";
             });
         });
+
+        window.onerror = function ErrorHandler(errorMsg, url, lineNumber) {
+            alert(`Error occured: ${errorMsg}\n${url}\n${lineNumber}`);
+            return false;
+        }
     </script>
 </body>
