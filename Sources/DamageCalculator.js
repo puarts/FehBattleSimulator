@@ -927,8 +927,10 @@ class DamageCalculator {
                     isDefenderSpecialActivated = true;
                 }
 
+                // 攻撃を受ける際に発動する奥義発動可能時に奥義を発動する処理
                 if (isDefenderSpecialActivated) {
                     defUnit.battleContext.isSpecialActivated = true;
+                    // ダメージ軽減
                     if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
                         defUnit.passiveB === PassiveB.HardyFighter3) {
                         damageReductionValue += 5;
@@ -943,6 +945,11 @@ class DamageCalculator {
                             damageReductionValue += 5;
                         }
                     }
+                    // 次の攻撃のダメージ加算
+                    if (defUnit.passiveB === PassiveB.Spurn4) {
+                        atkUnit.battleContext.additionalDamageOfNextAttack += 5;
+                    }
+                    // 奥義カウントを最大まで戻す
                     this.__restoreMaxSpecialCount(defUnit);
                 }
             }
