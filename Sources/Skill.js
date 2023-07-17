@@ -2578,6 +2578,7 @@ const PassiveB = {
     BeastAgility3: 2270, // 絶対化身・敏捷3
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
+    BeastSense4: 2515, // 絶対化身・察知4
 };
 
 const PassiveC = {
@@ -3632,6 +3633,7 @@ EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
 EvalSpdAddDict[PassiveB.Spurn4] = 7;
 EvalSpdAddDict[PassiveB.CloseCall4] = 7;
 EvalSpdAddDict[PassiveB.Repel4] = 7;
+EvalSpdAddDict[PassiveB.BeastSense4] = 7;
 EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。

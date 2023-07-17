@@ -1023,6 +1023,7 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
+                case PassiveB.BeastSense4:
                 case PassiveB.Bushido2:
                 case PassiveB.Velocity3:
                 case PassiveB.Frenzy3:
@@ -2187,6 +2188,9 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.BeastSense4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.PowerOfNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 targetUnit.addAllSpur(9);
@@ -12264,6 +12268,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveB.BeastSense4:
             case PassiveB.Bushido2:
             case PassiveB.Velocity3:
             case PassiveB.Frenzy3:
