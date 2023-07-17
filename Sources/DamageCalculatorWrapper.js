@@ -1023,6 +1023,7 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
+                case PassiveB.BeastSense4:
                 case PassiveB.Bushido2:
                 case PassiveB.Velocity3:
                 case PassiveB.Frenzy3:
@@ -1148,6 +1149,13 @@ class DamageCalculatorWrapper {
             // atkUnitのスキル効果
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.ArcaneDarkbow:
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            if (atkUnit.battleContext.initiatesCombat) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
                     case Weapon.KeenCoyoteBow:
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
                             atkUnit.battleContext.isDesperationActivatable = true;
@@ -2180,7 +2188,60 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-
+        this._applySkillEffectForUnitFuncDict[PassiveB.BeastSense4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.PowerOfNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAllSpur(9);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                let ratio = Math.min(0.1 + targetUnit.maxSpecialCount * 0.2, 1.0);
+                targetUnit.battleContext.maxHpRatioToHealBySpecial += ratio;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.GetBehindMe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addSpdDefSpurs(-5);
+                let amount = Math.trunc(enemyUnit.getDefInPrecombat() * 0.3);
+                enemyUnit.addSpdDefSpurs(amount);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.FlashSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkSpdSpurs(7);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneDarkbow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TomeOfLaxuries] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FairFightBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+                enemyUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+                // TODO: "自分と敵は"の条件がどこまでかかるのか確認する
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack = 20;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.healedHpAfterAttackSpecialInCombat = 10;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FathersSonAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、敵の攻撃、守備-5、
@@ -2191,7 +2252,6 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -4047,6 +4107,12 @@ class DamageCalculatorWrapper {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.battleContext.passiveASkillCondSatisfied = true;
                 targetUnit.addSpurs(7, 7, 0, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefFinish4] = (targetUnit) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                targetUnit.addSpurs(7, 0, 7, 0);
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit) => {
@@ -10908,8 +10974,8 @@ class DamageCalculatorWrapper {
         }
 
         // マリア算（アスク、ディミトリ算）
-        function mariaCalc() {
-            applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit));
+        function mariaCalc(ratio = 0.20) {
+            applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit), ratio);
         }
         // クロエ算（魔防マリア算）
         function resMariaCalc() {
@@ -10937,6 +11003,11 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.FairFightBlade:
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            mariaCalc(0.25);
+                        }
+                        break;
                     case Weapon.RadiantAureola:
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                             resMariaCalc();
@@ -11802,6 +11873,13 @@ class DamageCalculatorWrapper {
                     case PassiveA.FlashingBlade4:
                         DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                         break;
+                    case PassiveA.FlashSparrow:
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >=
+                                enemyUnit.getEvalSpdInCombat(targetUnit) - 5) {
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
+                        }
                 }
             }
         }
@@ -12201,6 +12279,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
+            case PassiveB.BeastSense4:
             case PassiveB.Bushido2:
             case PassiveB.Velocity3:
             case PassiveB.Frenzy3:
@@ -12286,6 +12365,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TomeOfLaxuries:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(res * 0.15);
+                    }
+                    break;
                 case Weapon.FathersSonAxe:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.weaponSkillCondSatisfied || atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
@@ -13789,6 +13874,18 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.GetBehindMe:
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
+                case Weapon.FairFightBlade:
+                    if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                        enemyUnit.battleContext.initiatesCombat) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Weapon.DesertTigerAxe:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         enemyUnit.battleContext.reducesCooldownCount = false;

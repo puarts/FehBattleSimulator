@@ -1000,6 +1000,7 @@ class DamageCalculator {
 
                     let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
                     healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * atkUnit.battleContext.maxHpRatioToHealBySpecial);
+                    healedHp += atkUnit.battleContext.healedHpAfterAttackSpecialInCombat;
 
                     if (atkUnit.passiveB === PassiveB.TaiyoNoUdewa) {
                         healedHp += floorNumberWithFloatError(actualDamage * 0.3);
@@ -1104,7 +1105,9 @@ class DamageCalculator {
                         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = true;
                     }
                     break;
+                // 秘奥3共通効果(固定ダメージ)
                 case PassiveA.AtkSpdFinish3:
+                case PassiveA.AtkDefFinish3:
                 case PassiveA.AtkResFinish3:
                 case PassiveA.SpdResFinish3:
                 case PassiveA.DefResFinish3:
@@ -1124,7 +1127,9 @@ class DamageCalculator {
                         }
                     }
                     break;
+                // 秘奥4共通効果(固定ダメージ、固定回復)
                 case PassiveA.AtkSpdFinish4:
+                case PassiveA.AtkDefFinish4:
                 case PassiveA.AtkResFinish4:
                 case PassiveA.SpdResFinish4:
                 case PassiveA.DefResFinish4:

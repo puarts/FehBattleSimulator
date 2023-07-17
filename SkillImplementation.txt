@@ -389,6 +389,9 @@ __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit)
 戦闘中、奥義による攻撃でダメージを与えた時、自分の最大HPの30%回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
 
+奥義による攻撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
+targetUnit.healedHpAfterAttackSpecialInCombat = N;
+
 戦闘中と戦闘後、敵はHPを回復できない
 targetUnit.battleContext.invalidatesHeal= true;
 

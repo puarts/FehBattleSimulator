@@ -112,9 +112,13 @@ class DamageCalculationUtility {
 
     /// 速さ比較で追撃可能かどうかを調べます。
     static examinesCanFollowupAttack(atkUnit, defUnit) {
-        var totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
-        var totalSpdDef = defUnit.getSpdInCombat(atkUnit);
-        return totalSpdAtk >= totalSpdDef + 5;
+        let totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
+        let totalSpdDef = defUnit.getSpdInCombat(atkUnit);
+        // TODO: 追撃条件に必要な速さの差についてきちんと検証する
+        let d = 5 +
+            atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack +
+            defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack;
+        return totalSpdAtk >= totalSpdDef + d;
     }
 
     /// 戦闘前奥義の回避効果によるダメージ軽減率を取得します。

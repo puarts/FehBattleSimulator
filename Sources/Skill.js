@@ -1674,6 +1674,13 @@ const Weapon = {
 
     // アイト（敵）
     ArcaneNihility: 2504, // 魔器・虚無の角
+
+    // 新英雄召喚 魔器アイト＆魔器スタルーク
+    // https://www.youtube.com/watch?v=VEGE8-ae1yk&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Mc64VWzbDpw&ab_channel=NintendoMobile
+    FairFightBlade: 2512, // 真っ向勝負の剛剣
+    TomeOfLaxuries: 2508, // 豪奢な富書
+    ArcaneDarkbow: 2509, // 魔器・優しさの影弓
 };
 
 const Support = {
@@ -2130,6 +2137,7 @@ const PassiveA = {
     GiftOfMagic: 2337, // 人に魔道を授けし者
     PartOfThePlan: 2369, // これも策のうちだよ
     KnightlyDevotion: 2416, // 忠義の槍
+    PowerOfNihility: 2514, // 虚無の力
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -2200,6 +2208,9 @@ const PassiveA = {
     AtkSpdFinish3: 2409, // 攻撃速さの秘奥3
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
 
+    AtkDefFinish3: 2516, // 攻撃守備の秘奥3
+    AtkDefFinish4: 2513, // 攻撃守備の秘奥4
+
     AtkResFinish3: 9999, // 攻撃魔防の秘奥3
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 
@@ -2218,6 +2229,9 @@ const PassiveA = {
 
     // 竜眼
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
+
+    // 柔撃
+    FlashSparrow: 2510, // 鬼神飛燕の柔撃
 };
 
 const PassiveB = {
@@ -2525,6 +2539,7 @@ const PassiveB = {
     SoaringWings: 2390, // 天かける翼
     FruitOfLife: 2424, // 地に生まれ地に還る
     SunlightBangle: 2477, // 華日の腕輪
+    GetBehindMe : 2511, // 僕が守ります!
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
@@ -2564,6 +2579,7 @@ const PassiveB = {
     BeastAgility3: 2270, // 絶対化身・敏捷3
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
+    BeastSense4: 2515, // 絶対化身・察知4
 };
 
 const PassiveC = {
@@ -3618,6 +3634,7 @@ EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
 EvalSpdAddDict[PassiveB.Spurn4] = 7;
 EvalSpdAddDict[PassiveB.CloseCall4] = 7;
 EvalSpdAddDict[PassiveB.Repel4] = 7;
+EvalSpdAddDict[PassiveB.BeastSense4] = 7;
 EvalSpdAddDict[Weapon.SharpWarSword] = 10;
 
 /// 速さ比較時の速さ加算値を取得します。

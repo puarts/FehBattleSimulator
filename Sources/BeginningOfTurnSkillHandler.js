@@ -119,6 +119,7 @@ class BeginningOfTurnSkillHandler {
                     case PassiveB.BeastAgility3:
                     case PassiveB.BeastNTrace3:
                     case PassiveB.BeastFollowUp3:
+                    case PassiveB.BeastSense4:
                         hasTransformSkills = true;
                         break;
                 }
@@ -153,6 +154,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.TomeOfLaxuries:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reduceSpecialCount(2);
+                }
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                }
+                break;
             case Weapon.DesertTigerAxe:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(1);
@@ -2718,6 +2727,20 @@ class BeginningOfTurnSkillHandler {
     applySkillAfterBeginningOfTurn(skillId, skillOwner) {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
         switch (skillId) {
+            case Weapon.TomeOfLaxuries:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    let positiveEffects = skillOwner.getPositiveStatusEffects().filter(
+                        effect =>
+                            effect !== StatusEffectType.MobilityIncreased &&
+                            effect !== StatusEffectType.Pathfinder
+                    );
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        ally.addStatusEffects(positiveEffects);
+                        // TODO: パニック時の挙動について確認する
+                        ally.applyBuffs(skillOwner.atkBuff, skillOwner.spdBuff, skillOwner.defBuff, skillOwner.resBuff);
+                    }
+                }
+                break;
             case PassiveC.FettersOfDromi:
                 if (skillOwner.hasStatusEffect(StatusEffectType.Stall)) {
                     skillOwner.clearPositiveStatusEffect(StatusEffectType.MobilityIncreased);
