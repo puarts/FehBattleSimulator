@@ -2187,6 +2187,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.GetBehindMe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addSpdDefSpurs(-5);
+                let amount = Math.trunc(enemyUnit.getDefInPrecombat() * 0.3);
+                enemyUnit.addSpdDefSpurs(amount);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.FlashSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.addAtkSpdSpurs(7);
@@ -13834,6 +13842,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.GetBehindMe:
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Weapon.FairFightBlade:
                     if (targetUnit.battleContext.restHpPercentage >= 25 &&
                         enemyUnit.battleContext.initiatesCombat) {
