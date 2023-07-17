@@ -1678,6 +1678,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=VEGE8-ae1yk&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Mc64VWzbDpw&ab_channel=NintendoMobile
     FairFightBlade: 2512, // 真っ向勝負の剛剣
+    TomeOfLaxuries: 2508, // 豪奢な富書
 };
 
 const Support = {
