@@ -2204,6 +2204,9 @@ const PassiveA = {
     AtkSpdFinish3: 2409, // 攻撃速さの秘奥3
     AtkSpdFinish4: 2212, // 攻撃速さの秘奥4
 
+    AtkDefFinish3: 2516, // 攻撃守備の秘奥3
+    AtkDefFinish4: 2513, // 攻撃守備の秘奥4
+
     AtkResFinish3: 9999, // 攻撃魔防の秘奥3
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 

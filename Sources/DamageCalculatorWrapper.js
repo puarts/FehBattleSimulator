@@ -4055,6 +4055,12 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(7, 7, 0, 0);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefFinish4] = (targetUnit) => {
+            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                targetUnit.addSpurs(7, 0, 7, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.battleContext.passiveASkillCondSatisfied = true;
