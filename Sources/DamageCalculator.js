@@ -331,6 +331,11 @@ class DamageCalculator {
 
     // 1回ごとの攻撃で呼ばれる。
     // 攻撃ごとに変化がない場合はDamageCalculatorWrapper.jsにある方で実装すること。
+    /**
+     * @param  {Unit} atkUnit
+     * @param  {Unit} defUnit
+     * @param  {Boolean} isPrecombat
+     */
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         let fixedAddDamage = 0;
 
@@ -354,11 +359,6 @@ class DamageCalculator {
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);
                         atkUnit.atkSpur += Math.trunc(atk * 0.15);
-                    }
-                    break;
-                case Weapon.Misteruthin:
-                    if (atkUnit.isWeaponSpecialRefined) {
-                        atkUnit.battleContext.additionalDamageOfSpecial += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
                     }
                     break;
                 case Weapon.Aurgelmir:
@@ -482,7 +482,18 @@ class DamageCalculator {
         if (context.isFirstAttack(atkUnit)) {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
         }
+
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
+
+        // 戦闘中に変動し得る奥義の追加ダメージ
+        switch (atkUnit.weapon) {
+            case Weapon.Misteruthin:
+                if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
+                    fixedSpecialAddDamage += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
+                }
+                break;
+        }
+
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         let invalidatesDamageReductionExceptSpecial = atkUnit.battleContext.invalidatesDamageReductionExceptSpecial;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);

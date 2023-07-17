@@ -2242,6 +2242,16 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.healedHpAfterAttackSpecialInCombat = 10;
             }
         }
+        this._applySkillEffectForUnitFuncDict[Weapon.FathersSonAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、敵の攻撃、守備-5、
+                // 自分が与えるダメージ + 戦闘開始時の自分のHPの15 % (戦闘前奥義も含む)、戦闘後、自分は、7回復
+                if (targetUnit.battleContext.weaponSkillCondSatisfied || targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    enemyUnit.addAtkDefSpurs(-5, -5);
+                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -11639,6 +11649,7 @@ class DamageCalculatorWrapper {
                                 if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                                     targetUnit.atkSpur += 5;
                                     targetUnit.spdSpur += 5;
+                                    targetUnit.battleContext.weaponSkillCondSatisfied = true;
                                 }
                             }
                         }
@@ -12358,6 +12369,14 @@ class DamageCalculatorWrapper {
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
                         atkUnit.battleContext.additionalDamage += Math.trunc(res * 0.15);
+                    }
+                    break;
+                case Weapon.FathersSonAxe:
+                    if (atkUnit.isWeaponSpecialRefined) {
+                        if (atkUnit.battleContext.weaponSkillCondSatisfied || atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.hp * 0.15);
+                            atkUnit.battleContext.weaponSkillCondSatisfied = true;
+                        }
                     }
                     break;
                 case Weapon.ArcaneNihility:

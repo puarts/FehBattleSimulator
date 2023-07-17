@@ -151,6 +151,13 @@ class test_DamageCalculator {
     }
 }
 
+function test_calcDamageWithUnits(atkUnit, defUnit, additionalUnits, isLogEnabled = false) {
+    let calclator = new test_DamageCalculator();
+    calclator.unitManager.units = [atkUnit, defUnit, ...additionalUnits];
+    calclator.isLogEnabled = isLogEnabled;
+    return calclator.calcDamage(atkUnit, defUnit);
+}
+
 function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
     let calclator = new test_DamageCalculator();
     calclator.isLogEnabled = isLogEnabled;

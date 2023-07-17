@@ -246,8 +246,29 @@
         </div>
         <div v-show="mode===DamageCalculatorMode.RoundRobin">
             <fieldset>
-                <legend>設定</legend>
-
+                <legend>攻撃ユニットのバージョン(部)</legend>
+                <div style="display: inline-block;margin:5px" v-for="item in targetBookVersions">
+                    <input v-bind:id="'targetVer_' + item.id" type="checkbox" v-model="item.value"><label
+                        v-bind:for="'targetVer_' + item.id"> {{item.id}}</label>
+                </div>
+                <div style="clear:both">
+                    <input type="button" @click="for(item of targetBookVersions) item.value = true;" value="全てオン">
+                    <input type="button" @click="for(item of targetBookVersions) item.value = false;" value="全てオフ">
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>被攻撃ユニットのバージョン(部)</legend>
+                <div style="display: inline-block;margin:5px" v-for="item in enemyBookVersions">
+                    <input v-bind:id="'enemyVer_' + item.id" type="checkbox" v-model="item.value"><label
+                        v-bind:for="'enemyVer_' + item.id"> {{item.id}}</label>
+                </div>
+                <div style="clear:both">
+                    <input type="button" @click="for(item of enemyBookVersions) item.value = true;" value="全てオン">
+                    <input type="button" @click="for(item of enemyBookVersions) item.value = false;" value="全てオフ">
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>戦闘設定</legend>
                 <dl>
                     <dt>総当たりモード:</dt>
                     <dd>
@@ -257,6 +278,19 @@
                             </option>
                         </select>
                     </dd>
+                    <dt>戦闘回数</dt>
+                    <dd>
+                        <select v-model="roundRobinCombatCount">
+                            <option v-for="num in 10" v-bind:value="num">
+                                {{num}}
+                            </option>
+                        </select>
+                    </dd>
+                </dl>
+            </fieldset>
+            <fieldset>
+                <legend>ユニットの設定</legend>
+                <dl>
                     <dt>限界突破:</dt>
                     <dd>
                         <input type="number" v-model="roundRobinParam.merge">

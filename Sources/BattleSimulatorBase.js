@@ -2487,11 +2487,12 @@ class BattleSimmulatorBase {
         const startTime = Date.now();
 
         let dummyHeroIndices = [targetUnit.heroIndex];
-        startProgressiveProcess(g_appData.heroInfos.length,
+        const enemyHeroInfos = Array.from(g_appData.heroInfos.data.filter(x => x.bookVersion > 0));
+        const unitCount = enemyHeroInfos.length;
+        startProgressiveProcess(unitCount,
             // startProgressiveProcess(dummyHeroIndices.length,
             function (iter) {
-                let heroInfo = g_appData.heroInfos.getHeroInfo(iter);
-                // let heroInfo = g_appData.heroInfos.getHeroInfo(dummyHeroIndices[iter]);
+                let heroInfo = enemyHeroInfos[iter];
                 self.__durabilityTest_initUnit(targetUnit, heroInfo, enemyUnit, false, reducedTargetSpecialCount);
                 self.__writeUnitStatusToDebugLog(targetUnit);
 
@@ -2505,8 +2506,8 @@ class BattleSimmulatorBase {
                 });
 
                 let lastIndex = results.length - 1;
-                let winRate = results[lastIndex].result.winCount / g_appData.heroInfos.length;
-                let aliveRate = (results[lastIndex].result.winCount + results[lastIndex].result.drawCount) / g_appData.heroInfos.length;
+                let winRate = results[lastIndex].result.winCount / unitCount;
+                let aliveRate = (results[lastIndex].result.winCount + results[lastIndex].result.drawCount) / unitCount;
                 self.writeSimpleLogLine(`${iter} / ${iterMax}: 勝率 ${winRate}, 生存率 ${aliveRate}`);
             },
             function () {
@@ -4398,7 +4399,13 @@ class BattleSimmulatorBase {
 
         updateAllUi();
     }
-
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {HeroInfo} heroInfo
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} equipsAllDistCounterIfImpossible=false
+     * @param  {Number} reducedSpecialCount=0
+     */
     __durabilityTest_initUnit(
         targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0
     ) {
@@ -4434,7 +4441,7 @@ class BattleSimmulatorBase {
             if (equipsAllDistCounterIfImpossible) {
                 // 全距離反撃できない場合に遠距離反撃、近距離反撃を装備する
                 if (targetUnit.attackRange != enemyUnit.attackRange
-                    && !this.__canCounterAttackToAllDistance(targetUnit)
+                    && !targetUnit.canCounterAttackToAllDistance()
                 ) {
                     if (targetUnit.isMeleeWeaponType()) {
                         targetUnit.passiveA = PassiveA.DistantCounter;
@@ -4499,14 +4506,20 @@ class BattleSimmulatorBase {
         let elapsedMillisecToApplySkillsForBeginningOfTurn = 0;
         let elapsedMillisecForCombat = 0;
         let elapsedMillisecForInitUnit = 0;
-        for (let i = 0; i < g_appData.heroInfos.length; ++i) {
-            let heroInfo = g_appData.heroInfos.getHeroInfo(i);
+        const heroInfos = Array.from(g_appData.heroInfos.data.filter(x => x.bookVersion > 0));
+        const length = heroInfos.length;
+        for (let i = 0; i < length; ++i) {
+            let heroInfo = heroInfos[i];
 
             // 敵の初期化
             using(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {
                 this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount);
                 this.damageCalc.updateUnitSpur(targetUnit, this.vm.durabilityTestCalcPotentialDamage);
                 this.damageCalc.updateUnitSpur(enemyUnit, this.vm.durabilityTestCalcPotentialDamage);
+
+                if (this.vm.durabilityTestChargesSpecialCount) {
+                    enemyUnit.specialCount = 0;
+                }
 
                 // テスト対象のHPと奥義発動カウントをリセット
                 targetUnit.specialCount = originalSpecialCount;

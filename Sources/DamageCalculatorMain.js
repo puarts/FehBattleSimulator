@@ -106,9 +106,11 @@ function createDefaultUnit(name, groupId = UnitGroupType.Ally) {
 }
 
 class RoundRobinBattleResult {
-    constructor(winCount, drawCount) {
+    constructor(winCount, drawCount, unit) {
         this.winCount = winCount;
         this.drawCount = drawCount;
+        /** @type {Unit} */
+        this.unit = unit;
     }
 }
 
@@ -255,6 +257,13 @@ class RoundRobinParam {
     }
 }
 
+class BoolOption {
+    constructor(id, defaultValue) {
+        this.id = id;
+        this.value = defaultValue;
+    }
+}
+
 class DamageCalcData {
     constructor(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
         passiveSInfos) {
@@ -282,12 +291,14 @@ class DamageCalcData {
             heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
             passiveSInfos);
 
-        this.mode = DamageCalculatorMode.Simple;
+        this.mode = DamageCalculatorMode.RoundRobin;
         this.roundRobinParam = new RoundRobinParam();
         this.roundRobinCombatMode = RoundRobinCombatMode.Offense;
+        this.roundRobinCombatCount = 1;
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
         this.attackerTriangleAdvantage = TriangleAdvantage.None;
         this.triangleAdeptType = TriangleAdeptType.None;
+
 
         /** @type {Unit} */
         this.atkUnit = createDefaultUnit("攻撃者");
@@ -301,6 +312,13 @@ class DamageCalcData {
         this.additionalDamage = 0;
         this.multDamage = 1;
         this.log = "";
+
+        this.targetBookVersions = [];
+        this.enemyBookVersions = [];
+        for (const key in BookVersions) {
+            this.targetBookVersions.push(new BoolOption(key, true));
+            this.enemyBookVersions.push(new BoolOption(key, true));
+        }
 
         this.specialOptions = [];
         this.specialOptions.push({ id: -1, text: "なし" });
@@ -589,9 +607,12 @@ class DamageCalcData {
      * @param  {Tile} tile
      * @returns {Unit[]}
      */
-    __createAllHeroUnits(groupId, tile) {
+    __createAllHeroUnits(groupId, tile, bookVersions) {
         let units = [];
-        for (let heroInfo of this.heroDatabase.enumerateHeroInfos()) {
+        for (const heroInfo of this.heroDatabase.enumerateHeroInfos()) {
+            if (!bookVersions.some(x => x == heroInfo.bookVersion)) {
+                continue;
+            }
             let name = heroInfo.name;
             let unit = new Unit("", name, groupId);
             tile.setUnit(unit);
@@ -643,9 +664,13 @@ class DamageCalcData {
      * @param  {Tile} tile
      * @returns {Unit[]}
      */
-    __createAllHeroUnitsForDefense(groupId, tile) {
+    __createAllHeroUnitsForDefense(groupId, tile, bookVersions) {
         let units = [];
         for (let heroInfo of this.heroDatabase.enumerateHeroInfos()) {
+            if (!bookVersions.some(x => x == heroInfo.bookVersion)) {
+                continue;
+            }
+
             let name = heroInfo.name;
             let unit = new Unit("", name, groupId);
             tile.setUnit(unit);
@@ -673,20 +698,23 @@ class DamageCalcData {
     }
 
     calcRoundRobin() {
-        let atkUnits = this.__createAllHeroUnits(UnitGroupType.Ally, this.map.getTile(0, 2));
-        let defUnits = this.__createAllHeroUnitsForDefense(UnitGroupType.Enemy, this.map.getTile(0, 0));
+        let atkUnits = this.__createAllHeroUnits(UnitGroupType.Ally, this.map.getTile(0, 2), this.targetBookVersions.filter(x => x.value).map(x => x.id));
+        let defUnits = this.__createAllHeroUnitsForDefense(UnitGroupType.Enemy, this.map.getTile(0, 0), this.enemyBookVersions.filter(x => x.value).map(x => x.id));
 
         let atkAllyUnit = new Unit("", "atkAlly", UnitGroupType.Ally);
+        atkAllyUnit.heroInfo = this.heroDatabase._heroInfos[0];
         this.map.getTile(2, 2).setUnit(atkAllyUnit);
         let defAllyUnit = new Unit("", "defAlly", UnitGroupType.Enemy);
+        defAllyUnit.heroInfo = this.heroDatabase._heroInfos[0];
         this.map.getTile(2, 0).setUnit(defAllyUnit);
         this.unitManager.units = [atkAllyUnit, defAllyUnit];
 
-        let heroDatabase = this.heroDatabase;
         let calculator = this.damageCalc;
         let self = this;
+
+        /** @type {RoundRobinBattleResult[]} */
         let results = [];
-        let length = heroDatabase.length;
+        let length = atkUnits.length;
         // length = 1;
         let startTime = Date.now();
         let logEnabled = self.logger.isLogEnabled;
@@ -716,13 +744,15 @@ class DamageCalcData {
                     let drawCount = 0;
 
                     for (let defUnit of defUnits) {
-                        atkUnit.initBattleContext();
-                        defUnit.initBattleContext();
+                        atkUnit.initBattleContext(true);
                         calculator.clearLog();
                         calculator.updateUnitSpur(atkUnit);
                         calculator.updateUnitSpur(defUnit);
 
-                        let result = calculator.calcDamage(atkUnit, defUnit);
+                        for (let i = 0; i < self.roundRobinCombatCount; ++i) {
+                            defUnit.initBattleContext(false);
+                            let result = calculator.calcDamage(atkUnit, defUnit);
+                        }
                         if (defUnit.restHp === 0) {
                             ++winCount;
                         }
@@ -730,29 +760,33 @@ class DamageCalcData {
                             ++drawCount;
                         }
                     }
-                    let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount);
-                    results.push({ unit: atkUnit, result: roundRobinResult });
+                    let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount, atkUnit);
+                    results.push(roundRobinResult);
                     self.logger.isLogEnabled = true;
                 },
                 function (iter, iterMax) {
                     let lastIndex = results.length - 1;
                     let unit = results[lastIndex].unit;
-                    let result = results[lastIndex].result;
-                    let winRate = Math.round(10000 * result.winCount / heroDatabase.length) / 100;
-                    let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / heroDatabase.length) / 100;
+                    let result = results[lastIndex];
+                    let winRate = Math.round(10000 * result.winCount / length) / 100;
+                    let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / length) / 100;
                     self.logger.writeLog(`${iter} / ${iterMax}: ${unit.name} 勝率 ${result.winCount}/${defUnits.length}(${winRate}%), 生存率 ${result.winCount + result.drawCount}/${defUnits.length}(${aliveRate}%)`);
                     self.log = self.logger.log;
                 },
                 function () {
                     results.sort((a, b) => {
-                        return b.result.winCount - a.result.winCount;
+                        return b.winCount - a.winCount;
                     });
+                    let resultHtml = "<table><tr><th>名前</th><th>率</th><th>移動マス数</th><th>射程</th></tr>";
                     for (let i = 0; i < results.length; ++i) {
-                        let result = results[i].result;
+                        let result = results[i];
                         let unit = results[i].unit;
                         let winRate = result.winCount / defUnits.length;
-                        self.logger.writeLog(`${unit.moveCount}_${unit.attackRange}&#009;${unit.heroInfo.name}&#009;${winRate}`);
+                        resultHtml += `<tr><td><a href="${unit.detailPageUrl}">${unit.heroInfo.name}</a></td><td>${winRate}</td><td>${unit.moveCount}</td><td>${unit.attackRange}</td></tr>`;
+                        // self.logger.writeLog(`Move${unit.moveCount}_Range${unit.attackRange}&#009;${unit.heroInfo.name}&#009;${winRate}`);
                     }
+                    resultHtml += "</table>";
+                    self.logger.writeLog(resultHtml);
                     const endTime = Date.now();
                     let diffSec = (endTime - startTime) * 0.001;
                     self.logger.writeLog(`テスト完了(${diffSec} sec)--------------------`);
@@ -767,14 +801,28 @@ class DamageCalcData {
                     let defUnit = defUnits[iter];
                     // atkUnit = atkUnits.filter(x => x.heroInfo.name === "エルフィ")[0];
                     // console.log(atkUnit);
+                    self.logger.isLogEnabled = logEnabled;
                     self.logger.isLogEnabled = false;
-
+                    self.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(defUnit);
+                    self.beginningOfTurnSkillHandler.applyReservedState(defUnit);
+                    self.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(defUnit);
+                    defUnit.applyReservedHp(true);
+                    defUnit.applyAtkBuff(6);
+                    defUnit.applySpdBuff(6);
+                    defUnit.applyDefBuff(6);
+                    defUnit.applyResBuff(6);
                     let winCount = 0;
                     let drawCount = 0;
                     for (let atkUnit of atkUnits) {
-                        calculator.updateUnitSpur(defUnit);
+                        defUnit.initBattleContext(false);
+                        calculator.clearLog();
                         calculator.updateUnitSpur(atkUnit);
-                        let result = calculator.calcDamage(atkUnit, defUnit);
+                        calculator.updateUnitSpur(defUnit);
+
+                        for (let i = 0; i < self.roundRobinCombatCount; ++i) {
+                            atkUnit.initBattleContext(true);
+                            let result = calculator.calcDamage(atkUnit, defUnit);
+                        }
                         if (atkUnit.restHp === 0) {
                             ++winCount;
                         }
@@ -782,36 +830,38 @@ class DamageCalcData {
                             ++drawCount;
                         }
                     }
-                    let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount);
-                    results.push({ unit: defUnit, result: roundRobinResult });
+                    let roundRobinResult = new RoundRobinBattleResult(winCount, drawCount, defUnit);
+                    results.push(roundRobinResult);
                     self.logger.isLogEnabled = true;
                 },
                 function (iter, iterMax) {
                     let lastIndex = results.length - 1;
                     let unit = results[lastIndex].unit;
-                    let result = results[lastIndex].result;
-                    let winRate = Math.round(10000 * result.winCount / heroDatabase.length) / 100;
-                    let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / heroDatabase.length) / 100;
+                    let result = results[lastIndex];
+                    let winRate = Math.round(10000 * result.winCount / length) / 100;
+                    let aliveRate = Math.round(10000 * (result.winCount + result.drawCount) / length) / 100;
                     self.logger.writeLog(`${iter} / ${iterMax}: ${unit.name} 勝率 ${result.winCount}/${defUnits.length}(${winRate}%), 生存率 ${result.winCount + result.drawCount}/${defUnits.length}(${aliveRate}%)`);
                     self.log = self.logger.log;
                 },
                 function () {
                     results.sort((a, b) => {
-                        return b.result.winCount - a.result.winCount;
+                        return (b.winCount + b.drawCount) - (a.winCount + a.drawCount);
                     });
+                    let resultHtml = "<table><tr><th>名前</th><th>率</th><th>移動マス数</th><th>射程</th></tr>";
                     for (let i = 0; i < results.length; ++i) {
-                        let result = results[i].result;
+                        let result = results[i];
                         let unit = results[i].unit;
                         let winRate = result.winCount / defUnits.length;
-                        console.log(`${unit.heroInfo.name}: ${winRate}`);
-                        self.logger.writeLog(`${unit.heroInfo.name}\t${winRate}`);
+                        const aliveRage = (result.winCount + result.drawCount) / defUnits.length;
+                        resultHtml += `<tr><td><a href="${unit.detailPageUrl}">${unit.heroInfo.name}</a></td><td>${aliveRage}</td><td>${unit.moveCount}</td><td>${unit.attackRange}</td></tr>`;
                     }
+
+                    self.logger.writeLog(resultHtml);
+
                     const endTime = Date.now();
                     let diffSec = (endTime - startTime) * 0.001;
                     self.logger.writeLog(`テスト完了(${diffSec} sec)--------------------`);
                     self.log = self.logger.log;
-
-
                 });
 
         }

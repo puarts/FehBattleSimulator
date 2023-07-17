@@ -663,7 +663,10 @@ class BeginningOfTurnSkillHandler {
                 let targetUnits = [];
                 units: for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     targetUnits.push(unit);
-                    for (let origin of unit.heroInfo.origin.split('|')) {
+                    if (unit.heroInfo == null) {
+                        throw new Error(`heroInfo is null. name="${unit.name}"`);
+                    }
+                    for (let origin of unit.heroInfo.origins) {
                         origin = origin.replace("暗黒竜と光の剣", "紋章の謎");
                         if (ownerOrigin.includes(origin)) {
                             // 同じ出典なので次の英雄を探す
