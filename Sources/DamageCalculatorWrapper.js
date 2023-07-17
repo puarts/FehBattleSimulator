@@ -2187,6 +2187,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.PowerOfNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAllSpur(9);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                let ratio = Math.min(0.1 + targetUnit.maxSpecialCount * 0.2, 1.0);
+                targetUnit.battleContext.maxHpRatioToHealBySpecial += ratio;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.GetBehindMe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat ||
                 this.__isThereAllyIn2Spaces(targetUnit)) {

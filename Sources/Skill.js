@@ -2136,6 +2136,7 @@ const PassiveA = {
     GiftOfMagic: 2337, // 人に魔道を授けし者
     PartOfThePlan: 2369, // これも策のうちだよ
     KnightlyDevotion: 2416, // 忠義の槍
+    PowerOfNihility: 2514, // 虚無の力
 
     // 防城戦
     AtkSpdBojosen3: 1473,
@@ -2537,8 +2538,7 @@ const PassiveB = {
     SoaringWings: 2390, // 天かける翼
     FruitOfLife: 2424, // 地に生まれ地に還る
     SunlightBangle: 2477, // 華日の腕輪
-    GetBehindMe
-: 2511, // 僕が守ります!
+    GetBehindMe : 2511, // 僕が守ります!
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
