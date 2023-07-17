@@ -2064,16 +2064,16 @@ class DamageCalculatorWrapper {
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
                 case BeastCommonSkillType.Cavalry:
-                    defUnit.addAtkDefSpurs(-4);
+                    if (!atkUnit.isWeaponRefined) {
+                        // <通常効果>
+                        defUnit.addAtkDefSpurs(-4);
+                    } else {
+                        // <錬成効果>
+                        this.applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit);
+                    }
                     break;
                 case BeastCommonSkillType.Cavalry2: {
-                    defUnit.addAtkDefSpurs(-3);
-                    let d = Unit.calcAttackerMoveDistance(atkUnit, defUnit);
-                    let amount = Math.min(d, 3);
-                    defUnit.addAtkDefSpurs(-amount);
-                    if (d >= 2) {
-                        atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
-                    }
+                    this.applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit);
                     break;
                 }
             }
@@ -2093,6 +2093,16 @@ class DamageCalculatorWrapper {
             if (skillFunc) {
                 skillFunc(defUnit, atkUnit, calcPotentialDamage);
             }
+        }
+    }
+
+    applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit) {
+        defUnit.addAtkDefSpurs(-3);
+        let d = Unit.calcAttackerMoveDistance(atkUnit, defUnit);
+        let amount = Math.min(d, 3);
+        defUnit.addAtkDefSpurs(-amount);
+        if (d >= 2) {
+            atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
         }
     }
 
