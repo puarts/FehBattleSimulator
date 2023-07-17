@@ -2227,6 +2227,9 @@ const PassiveA = {
 
     // 竜眼
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
+
+    // 柔撃
+    FlashSparrow: 2510, // 鬼神飛燕の柔撃
 };
 
 const PassiveB = {

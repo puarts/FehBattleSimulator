@@ -2187,6 +2187,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.FlashSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkSpdSpurs(7);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneDarkbow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(6);
@@ -11837,6 +11842,13 @@ class DamageCalculatorWrapper {
                     case PassiveA.FlashingBlade4:
                         DamageCalculatorWrapper.__applyFlashingBladeSkill(targetUnit, enemyUnit);
                         break;
+                    case PassiveA.FlashSparrow:
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >=
+                                enemyUnit.getEvalSpdInCombat(targetUnit) - 5) {
+                                targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                            }
+                        }
                 }
             }
         }
