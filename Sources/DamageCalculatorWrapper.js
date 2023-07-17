@@ -1148,6 +1148,13 @@ class DamageCalculatorWrapper {
             // atkUnitのスキル効果
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.ArcaneDarkbow:
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            if (atkUnit.battleContext.initiatesCombat) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
                     case Weapon.KeenCoyoteBow:
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
                             atkUnit.battleContext.isDesperationActivatable = true;
@@ -2180,6 +2187,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ArcaneDarkbow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfLaxuries] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
