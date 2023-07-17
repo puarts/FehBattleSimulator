@@ -641,6 +641,9 @@ class BattleContext {
         // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
         this.maxHpRatioToHealBySpecial = 0;
 
+        // 奥義による攻撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
+        this.healedHpAfterAttackSpecialInCombat = 0;
+
         // 与えたダメージの〇%自分を回復
         this.damageRatioToHeal = 0;
 
@@ -706,6 +709,9 @@ class BattleContext {
         // 条件判定のための値を使い回すための値
         // 1攻撃の中で使い回す想定で1ターン1回の行動が行われたかなどの保存するべきフラグには使用しない
         this.condValueMap = new Map();
+
+        // 追撃の速さ条件
+        this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
     }
 
     invalidateFollowupAttackSkills() {
@@ -832,6 +838,7 @@ class BattleContext {
         this.specialAddDamage = 0;
         this.specialDamageRatioToHeal = 0;
         this.maxHpRatioToHealBySpecial = 0;
+        this.healedHpAfterAttackSpecialInCombat = 0;
         this.damageRatioToHeal = 0;
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
@@ -857,6 +864,7 @@ class BattleContext {
         this.disablesSkillsFromGreenEnemiesInCombat = false;
         this.disablesSkillsFromColorlessEnemiesInCombat = false;
         this.condValueMap.clear();
+        this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。

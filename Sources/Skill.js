@@ -1673,6 +1673,11 @@ const Weapon = {
 
     // アイト（敵）
     ArcaneNihility: 2504, // 魔器・虚無の角
+
+    // 新英雄召喚 魔器アイト＆魔器スタルーク
+    // https://www.youtube.com/watch?v=VEGE8-ae1yk&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Mc64VWzbDpw&ab_channel=NintendoMobile
+    FairFightBlade: 2512, // 真っ向勝負の剛剣
 };
 
 const Support = {

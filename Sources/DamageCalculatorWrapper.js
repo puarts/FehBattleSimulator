@@ -2180,6 +2180,24 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.FairFightBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+                enemyUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+                // TODO: "自分と敵は"の条件がどこまでかかるのか確認する
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack = 20;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.healedHpAfterAttackSpecialInCombat = 10;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneNihility] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -10896,8 +10914,8 @@ class DamageCalculatorWrapper {
         }
 
         // マリア算（アスク、ディミトリ算）
-        function mariaCalc() {
-            applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit));
+        function mariaCalc(ratio = 0.20) {
+            applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit), ratio);
         }
         // クロエ算（魔防マリア算）
         function resMariaCalc() {
@@ -10925,6 +10943,11 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     // ユニットスキル
+                    case Weapon.FairFightBlade:
+                        if (targetUnit.battleContext.restHpPercentage >= 25) {
+                            mariaCalc(0.25);
+                        }
+                        break;
                     case Weapon.RadiantAureola:
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                             resMariaCalc();
@@ -13768,6 +13791,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.FairFightBlade:
+                    if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                        enemyUnit.battleContext.initiatesCombat) {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                    break;
                 case Weapon.DesertTigerAxe:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         enemyUnit.battleContext.reducesCooldownCount = false;

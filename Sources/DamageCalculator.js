@@ -989,6 +989,7 @@ class DamageCalculator {
 
                     let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
                     healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * atkUnit.battleContext.maxHpRatioToHealBySpecial);
+                    healedHp += atkUnit.battleContext.healedHpAfterAttackSpecialInCombat;
 
                     if (atkUnit.passiveB === PassiveB.TaiyoNoUdewa) {
                         healedHp += floorNumberWithFloatError(actualDamage * 0.3);
