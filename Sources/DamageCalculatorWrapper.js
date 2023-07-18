@@ -2498,11 +2498,15 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.Heidr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-            }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.Heidr] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.GoldenCurse] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IlianMercLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
@@ -12505,6 +12509,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Heidr:
+                case Weapon.GoldenCurse:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         if (!isPrecombat) {
                             let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);

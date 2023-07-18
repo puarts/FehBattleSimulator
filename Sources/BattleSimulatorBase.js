@@ -8354,6 +8354,7 @@ class BattleSimmulatorBase {
                 case Support.GoldSerpent:
                     break;
                 case Weapon.Heidr:
+                case Weapon.GoldenCurse:
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
                         if (unit.posX === supporterUnit.posX ||
                             unit.posX === targetUnit.posX ||
@@ -8443,6 +8444,7 @@ class BattleSimmulatorBase {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Heidr:
+                case Weapon.GoldenCurse:
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
                         if (unit.posX === supporterUnit.posX ||
                             unit.posX === targetUnit.posX ||

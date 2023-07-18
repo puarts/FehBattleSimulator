@@ -1683,6 +1683,9 @@ const Weapon = {
     ArcaneDarkbow: 2509, // 魔器・優しさの影弓
     DefiersSwordPlus: 2517, // 守備逆用の剣+
     PackleaderTome: 2520, // 四狗頭領の魔書
+
+    // ヘイズ（敵）
+    GoldenCurse: 2519, // 黄金の蛇の呪い
 };
 
 const Support = {
@@ -3524,6 +3527,7 @@ function canRallyForcibly(skill, unit) {
             // TODO: 調査する
             return true;
         case Weapon.Heidr:
+        case Weapon.GoldenCurse:
             return true;
         case Weapon.RetainersReport:
             if (unit.isWeaponSpecialRefined) {
