@@ -3802,6 +3802,7 @@ class DamageCalculatorWrapper {
                     enemyUnit.defSpur -= 5;
                 }
             };
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersSwordPlus] = func
             this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = func
             this._applySkillEffectForUnitFuncDict[Weapon.DefiersBowPlus] = func
         }
@@ -10243,6 +10244,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                     targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                     break;
+                case Weapon.DefiersSwordPlus:
                 case Weapon.DefiersLancePlus:
                 case Weapon.DefiersAxePlus:
                 case Weapon.DefiersBowPlus:

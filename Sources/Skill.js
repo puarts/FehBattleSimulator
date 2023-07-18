@@ -1681,6 +1681,7 @@ const Weapon = {
     FairFightBlade: 2512, // 真っ向勝負の剛剣
     TomeOfLaxuries: 2508, // 豪奢な富書
     ArcaneDarkbow: 2509, // 魔器・優しさの影弓
+    DefiersSwordPlus: 2517, // 守備逆用の剣+
 };
 
 const Support = {
