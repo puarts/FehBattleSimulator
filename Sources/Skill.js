@@ -1682,6 +1682,7 @@ const Weapon = {
     TomeOfLaxuries: 2508, // 豪奢な富書
     ArcaneDarkbow: 2509, // 魔器・優しさの影弓
     DefiersSwordPlus: 2517, // 守備逆用の剣+
+    PackleaderTome: 2520, // 四狗頭領の魔書
 };
 
 const Support = {

@@ -2199,6 +2199,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.PackleaderTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpursWithoutDef(-5);
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.BeastSense4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-4);
         }
@@ -10065,6 +10073,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PackleaderTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    }
+                    break;
                 case Weapon.ArcaneNihility:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         this.__applyBuffAbsorption(targetUnit, enemyUnit);

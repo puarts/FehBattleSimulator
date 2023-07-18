@@ -154,6 +154,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.PackleaderTome:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                        for (let enemy of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                            enemy.reserveToApplyDebuffs(0, -6, 0, -6);
+                            enemy.reserveToAddStatusEffect(StatusEffectType.Panic);
+                        }
+                    }
+                }
+                break;
             case Weapon.TomeOfLaxuries:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reduceSpecialCount(2);
