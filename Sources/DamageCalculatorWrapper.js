@@ -2067,6 +2067,7 @@ class DamageCalculatorWrapper {
                     if (!atkUnit.isWeaponRefined) {
                         // <通常効果>
                         defUnit.addAtkDefSpurs(-4);
+                        defUnit.battleContext.followupAttackPriorityDecrement--;
                     } else {
                         // <錬成効果>
                         this.applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit);
@@ -13240,14 +13241,6 @@ class DamageCalculatorWrapper {
                         }
                         break;
                 }
-            }
-        }
-
-        if (atkUnit.isTransformed) {
-            switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
-                case BeastCommonSkillType.Cavalry:
-                    --followupAttackPriority;
-                    break;
             }
         }
 
