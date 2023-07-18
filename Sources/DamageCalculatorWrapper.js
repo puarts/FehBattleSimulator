@@ -2064,16 +2064,17 @@ class DamageCalculatorWrapper {
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
                 case BeastCommonSkillType.Cavalry:
-                    defUnit.addAtkDefSpurs(-4);
+                    if (!atkUnit.isWeaponRefined) {
+                        // <通常効果>
+                        defUnit.addAtkDefSpurs(-4);
+                        defUnit.battleContext.followupAttackPriorityDecrement--;
+                    } else {
+                        // <錬成効果>
+                        this.applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit);
+                    }
                     break;
                 case BeastCommonSkillType.Cavalry2: {
-                    defUnit.addAtkDefSpurs(-3);
-                    let d = Unit.calcAttackerMoveDistance(atkUnit, defUnit);
-                    let amount = Math.min(d, 3);
-                    defUnit.addAtkDefSpurs(-amount);
-                    if (d >= 2) {
-                        atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
-                    }
+                    this.applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit);
                     break;
                 }
             }
@@ -2093,6 +2094,16 @@ class DamageCalculatorWrapper {
             if (skillFunc) {
                 skillFunc(defUnit, atkUnit, calcPotentialDamage);
             }
+        }
+    }
+
+    applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit) {
+        defUnit.addAtkDefSpurs(-3);
+        let d = Unit.calcAttackerMoveDistance(atkUnit, defUnit);
+        let amount = Math.min(d, 3);
+        defUnit.addAtkDefSpurs(-amount);
+        if (d >= 2) {
+            atkUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, defUnit);
         }
     }
 
@@ -2188,6 +2199,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.PackleaderTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpursWithoutDef(-5);
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.BeastSense4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-4);
         }
@@ -2479,11 +2498,15 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.Heidr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-            }
+        {
+            let func = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+            };
+            this._applySkillEffectForUnitFuncDict[Weapon.Heidr] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.GoldenCurse] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IlianMercLance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
@@ -3791,6 +3814,7 @@ class DamageCalculatorWrapper {
                     enemyUnit.defSpur -= 5;
                 }
             };
+            this._applySkillEffectForUnitFuncDict[Weapon.DefiersSwordPlus] = func
             this._applySkillEffectForUnitFuncDict[Weapon.DefiersLancePlus] = func
             this._applySkillEffectForUnitFuncDict[Weapon.DefiersBowPlus] = func
         }
@@ -10053,6 +10077,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PackleaderTome:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                        enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+                    }
+                    break;
                 case Weapon.ArcaneNihility:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         this.__applyBuffAbsorption(targetUnit, enemyUnit);
@@ -10232,6 +10263,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                     targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
                     break;
+                case Weapon.DefiersSwordPlus:
                 case Weapon.DefiersLancePlus:
                 case Weapon.DefiersAxePlus:
                 case Weapon.DefiersBowPlus:
@@ -12477,6 +12509,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.Heidr:
+                case Weapon.GoldenCurse:
                     if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
                         if (!isPrecombat) {
                             let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
@@ -13230,14 +13263,6 @@ class DamageCalculatorWrapper {
                         }
                         break;
                 }
-            }
-        }
-
-        if (atkUnit.isTransformed) {
-            switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
-                case BeastCommonSkillType.Cavalry:
-                    --followupAttackPriority;
-                    break;
             }
         }
 
