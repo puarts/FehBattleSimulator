@@ -2734,8 +2734,9 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    // ターン開始時スキル発動後に発動するスキル
+    // エリミーヌのターン開始時スキル不可効果(FalseStart)を受けない
     applySkillAfterBeginningOfTurn(skillId, skillOwner) {
-        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
         switch (skillId) {
             case Weapon.TomeOfLaxuries:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
