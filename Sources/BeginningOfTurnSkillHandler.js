@@ -2747,8 +2747,13 @@ class BeginningOfTurnSkillHandler {
                     );
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         ally.addStatusEffects(positiveEffects);
-                        // TODO: パニック時の挙動について確認する
-                        ally.applyBuffs(skillOwner.atkBuff, skillOwner.spdBuff, skillOwner.defBuff, skillOwner.resBuff);
+                        // 自身がパニック時は味方に強化は付与されない
+                        ally.applyBuffs(
+                            skillOwner.getAtkBuff(),
+                            skillOwner.getSpdBuff(),
+                            skillOwner.getDefBuff(),
+                            skillOwner.getResBuff()
+                        );
                     }
                 }
                 break;
