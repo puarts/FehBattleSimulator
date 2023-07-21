@@ -4454,7 +4454,7 @@ class BattleSimmulatorBase {
             }
         }
 
-        g_appData.__updateStatusBySkillsAndMerges(targetUnit, false);
+        g_appData.__updateStatusBySkillsAndMerges(targetUnit, true);
         targetUnit.resetMaxSpecialCount();
         // targetUnit.specialCount = targetUnit.maxSpecialCount - reducedEnemySpecialCount;
         // targetUnit.specialCount = originalSpecialCount;
@@ -4506,7 +4506,7 @@ class BattleSimmulatorBase {
         let elapsedMillisecToApplySkillsForBeginningOfTurn = 0;
         let elapsedMillisecForCombat = 0;
         let elapsedMillisecForInitUnit = 0;
-        const heroInfos = Array.from(g_appData.heroInfos.data.filter(x => x.bookVersion > 0));
+        const heroInfos = Array.from(this.data.heroInfos.data.filter(x => x.bookVersion > 0));
         const length = heroInfos.length;
         for (let i = 0; i < length; ++i) {
             let heroInfo = heroInfos[i];
@@ -4581,7 +4581,7 @@ class BattleSimmulatorBase {
                 ++drawCount;
                 drawEnemies.push(heroInfo);
                 if (this.vm.durabilityTestIsLogEnabled && this.vm.durabilityTestLogDamageCalcDetailIfLose) {
-                    this.writeLogLine(log + this.damageCalc.log);
+                    // this.writeLogLine(log + this.damageCalc.log);
                 }
             }
 
