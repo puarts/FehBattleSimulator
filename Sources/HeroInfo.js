@@ -439,7 +439,7 @@ class HeroInfo {
         return `<img id='${this.id}' src='${this.iconUrl}' width='${size}px' />`;
     }
     getIconImgTagWithAnchor(size) {
-        return `<a href='${this.detailPageUrl}' target='_blank'><img id='${this.id}' src='${this.iconUrl}' width='${size}px' /></a>`;
+        return `<a href='${this.detailPageUrl}' title='${this.name}' target='_blank'><img id='${this.id}' src='${this.iconUrl}' width='${size}px' alt='${this.name} ' /></a>`;
     }
     /**
      * @returns {string}

@@ -4360,14 +4360,18 @@ class BattleSimmulatorBase {
         let drawCount = result.drawCount;
         let loseCount = result.loseCount;
         let totalCount = winCount + loseCount + drawCount;
+
+        /** @type {HeroInfo[]} */
         let loseEnemies = result.loseEnemies;
+        /** @type {HeroInfo[]} */
         let drawEnemies = result.drawEnemies;
+        /** @type {HeroInfo[]} */
         let winEnemies = result.winEnemies;
 
         this.clearDurabilityTestLog();
-        this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${Math.trunc(winCount / totalCount * 1000) * 0.1}%)`);
-        this.writeDurabilityTestLogLine(`引き分け ${drawCount}/${totalCount}(${Math.trunc(drawCount / totalCount * 1000) * 0.1}%)`);
-        this.writeDurabilityTestLogLine(`敗北 ${loseCount}/${totalCount}(${Math.trunc(loseCount / totalCount * 1000) * 0.1}%)`);
+        this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${(winCount / totalCount * 100).toFixed(2)}%)`);
+        this.writeDurabilityTestLogLine(`引き分け ${drawCount}/${totalCount}(${(drawCount / totalCount * 100).toFixed(2)}%)`);
+        this.writeDurabilityTestLogLine(`敗北 ${loseCount}/${totalCount}(${(loseCount / totalCount * 100).toFixed(2)}%)`);
         this.writeDurabilityTestLogLine(`勝率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 0)}%`);
         this.writeDurabilityTestLogLine(`生存率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 2)}%`);
         this.writeDurabilityTestLogLine(`戦闘結果スコア: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 1)} / 100`);
@@ -4378,24 +4382,18 @@ class BattleSimmulatorBase {
         drawEnemies.sort((a, b) => getWeaponTypeOrder(a.weaponTypeValue) - getWeaponTypeOrder(b.weaponTypeValue));
         winEnemies.sort((a, b) => getWeaponTypeOrder(a.weaponTypeValue) - getWeaponTypeOrder(b.weaponTypeValue));
 
-        this.writeDurabilityTestLogLine("<details>");
-        this.writeDurabilityTestLogLine("<summary>敗北した相手</summary>");
-        for (let iconTag of loseEnemies) {
-            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
-        }
-        this.writeDurabilityTestLogLine("</details>");
-        this.writeDurabilityTestLogLine("<details>");
-        this.writeDurabilityTestLogLine("<summary>引き分けの相手</summary>");
-        for (let iconTag of drawEnemies) {
-            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
-        }
-        this.writeDurabilityTestLogLine("</details>");
-        this.writeDurabilityTestLogLine("<details>");
-        this.writeDurabilityTestLogLine("<summary>勝利した相手</summary>");
-        for (let iconTag of winEnemies) {
-            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
-        }
-        this.writeDurabilityTestLogLine("</details>");
+        this.writeDurabilityTestLog("<details>");
+        this.writeDurabilityTestLog("<summary>敗北した相手</summary>");
+        this.writeDurabilityTestLog(loseEnemies.map(x => x.getIconImgTagWithAnchor(iconSize)).join(""));
+        this.writeDurabilityTestLog("</details>");
+        this.writeDurabilityTestLog("<details>");
+        this.writeDurabilityTestLog("<summary>引き分けの相手</summary>");
+        this.writeDurabilityTestLog(drawEnemies.map(x => x.getIconImgTagWithAnchor(iconSize)).join(""));
+        this.writeDurabilityTestLog("</details>");
+        this.writeDurabilityTestLog("<details>");
+        this.writeDurabilityTestLog("<summary>勝利した相手</summary>");
+        this.writeDurabilityTestLog(winEnemies.map(x => x.getIconImgTagWithAnchor(iconSize)).join(""));
+        this.writeDurabilityTestLog("</details>");
 
         updateAllUi();
     }
