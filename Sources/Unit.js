@@ -1370,12 +1370,6 @@ class Unit extends BattleMapElement {
         this.deffensiveTile = false; // 防御床
         this.setMoveCountFromMoveType();
 
-        this.hpGrowthValue = 0;
-        this.atkGrowthValue = 0;
-        this.spdGrowthValue = 0;
-        this.defGrowthValue = 0;
-        this.resGrowthValue = 0;
-
         this.hpGrowthRate = 0.0;
         this.atkGrowthRate = 0.0;
         this.spdGrowthRate = 0.0;
@@ -1649,17 +1643,7 @@ class Unit extends BattleMapElement {
         return calcGrowthValue(growthRate, this.rarity, this.level);
     }
 
-    getGrowthRate(growthAmount, statusName) {
-        try {
-            return getGrowthRateOfStar5(growthAmount);
-        }
-        catch (e) {
-            console.error(`${this.name} ${statusName}: ` + e.message, e.name);
 
-            // ステータスが判明してないキャラの実装時にテストしやすいよう適当な値を返しておく
-            return 0.8;
-        }
-    }
 
     clearReservedSkills() {
         this.reservedWeapon = NotReserved;
@@ -4227,26 +4211,11 @@ class Unit extends BattleMapElement {
     }
 
     updatePureGrowthRate() {
-        this.hpGrowthValue = this.heroInfo.hp - this.heroInfo.hpLv1;
-        this.atkGrowthValue = this.heroInfo.atk - this.heroInfo.atkLv1;
-        this.spdGrowthValue = this.heroInfo.spd - this.heroInfo.spdLv1;
-        this.defGrowthValue = this.heroInfo.def - this.heroInfo.defLv1;
-        this.resGrowthValue = this.heroInfo.res - this.heroInfo.resLv1;
-
-        if (this.atkGrowthValue == 0) {
-            // ステータス未入力
-            this.hpGrowthValue = 35;
-            this.atkGrowthValue = 35;
-            this.spdGrowthValue = 35;
-            this.defGrowthValue = 35;
-            this.resGrowthValue = 35;
-        }
-
-        this.hpGrowthRate = this.getGrowthRate(this.hpGrowthValue, "hp");
-        this.atkGrowthRate = this.getGrowthRate(this.atkGrowthValue, "atk");
-        this.spdGrowthRate = this.getGrowthRate(this.spdGrowthValue, "spd");
-        this.defGrowthRate = this.getGrowthRate(this.defGrowthValue, "def");
-        this.resGrowthRate = this.getGrowthRate(this.resGrowthValue, "res");
+        this.hpGrowthRate = this.heroInfo.hpGrowthRate;
+        this.atkGrowthRate = this.heroInfo.atkGrowthRate;
+        this.spdGrowthRate = this.heroInfo.spdGrowthRate;
+        this.defGrowthRate = this.heroInfo.defGrowthRate;
+        this.resGrowthRate = this.heroInfo.resGrowthRate;
 
         switch (this.ivHighStat) {
             case StatusType.None: break;

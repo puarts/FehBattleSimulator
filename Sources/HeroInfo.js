@@ -345,6 +345,27 @@ class HeroInfo {
 
         this.bookVersion = this.__getBookVersion();
         BookVersions[this.bookVersion] = null;
+
+        this.hpGrowthValue = this.hp - this.hpLv1;
+        this.atkGrowthValue = this.atk - this.atkLv1;
+        this.spdGrowthValue = this.spd - this.spdLv1;
+        this.defGrowthValue = this.def - this.defLv1;
+        this.resGrowthValue = this.res - this.resLv1;
+
+        if (this.atkGrowthValue == 0) {
+            // ステータス未入力
+            this.hpGrowthValue = 35;
+            this.atkGrowthValue = 35;
+            this.spdGrowthValue = 35;
+            this.defGrowthValue = 35;
+            this.resGrowthValue = 35;
+        }
+
+        this.hpGrowthRate = this.getPureGrowthRate(this.hpGrowthValue, "hp");
+        this.atkGrowthRate = this.getPureGrowthRate(this.atkGrowthValue, "atk");
+        this.spdGrowthRate = this.getPureGrowthRate(this.spdGrowthValue, "spd");
+        this.defGrowthRate = this.getPureGrowthRate(this.defGrowthValue, "def");
+        this.resGrowthRate = this.getPureGrowthRate(this.resGrowthValue, "res");
     }
 
     /**
@@ -436,22 +457,6 @@ class HeroInfo {
         return this._moveType;
     }
 
-    get hpGrowthValue() {
-        return this.hp - this.hpLv1;
-    }
-    get atkGrowthValue() {
-        return this.atk - this.atkLv1;
-    }
-    get spdGrowthValue() {
-        return this.spd - this.spdLv1;
-    }
-    get defGrowthValue() {
-        return this.def - this.defLv1;
-    }
-    get resGrowthValue() {
-        return this.res - this.resLv1;
-    }
-
     get maxDragonflower() {
         let releaseDate = this.releaseDateAsNumber;
         let i = 1;
@@ -484,6 +489,18 @@ class HeroInfo {
             case MoveType.Cavalry:
             default:
                 return 5 * i;
+        }
+    }
+
+    getPureGrowthRate(growthAmountOfStar5, statusName) {
+        try {
+            return getGrowthRateOfStar5(growthAmountOfStar5);
+        }
+        catch (e) {
+            console.error(`${this.name} ${statusName}: ` + e.message, e.name);
+
+            // ステータスが判明してないキャラの実装時にテストしやすいよう適当な値を返しておく
+            return 0.8;
         }
     }
 
