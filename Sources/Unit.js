@@ -3433,6 +3433,10 @@ class Unit extends BattleMapElement {
         return !this.canNullPanic() && this.hasPanic;
     }
 
+    setDragonflower(value) {
+        this.dragonflower = Math.min(value, this.maxDragonflower);
+    }
+
     maximizeMergeAndDragonflower() {
         this.merge = 10;
         this.dragonflower = this.maxDragonflower;

@@ -4405,7 +4405,7 @@ class BattleSimmulatorBase {
      * @param  {Number} reducedSpecialCount=0
      */
     __durabilityTest_initUnit(
-        targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0
+        targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0, overrideDragonflower = -1
     ) {
         // let reducedEnemySpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
         let originalSpecialCount = targetUnit.specialCount;
@@ -4419,6 +4419,9 @@ class BattleSimmulatorBase {
             targetUnit.initByHeroInfo(heroInfo);
             targetUnit.grantedBlessing = grantedBlessing;
             targetUnit.initializeSkillsToDefault();
+            if (overrideDragonflower >= 0) {
+                targetUnit.setDragonflower(overrideDragonflower);
+            }
 
             targetUnit.setMoveCountFromMoveType();
             targetUnit.isResplendent = targetUnit.heroInfo.isResplendent;
@@ -4490,10 +4493,11 @@ class BattleSimmulatorBase {
         let drawCount = 0;
         let loseCount = 0;
         let grantedBlessing = enemyUnit.grantedBlessing;
-        let originalHp = targetUnit.hp;
-        let originalSpecialCount = targetUnit.specialCount;
-        let originalEnemyHp = enemyUnit.hp;
-        let originalEnemySpecialCount = enemyUnit.specialCount;
+        const originalHp = targetUnit.hp;
+        const originalSpecialCount = targetUnit.specialCount;
+        const originalEnemyHp = enemyUnit.hp;
+        const originalEnemySpecialCount = enemyUnit.specialCount;
+        const originalEnemyDragonflower = enemyUnit.dragonflower;
         let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
         let targetUnitStatusEffects = targetUnit.statusEffects;
         let enemyUnitStatusEffects = enemyUnit.statusEffects;
@@ -4511,7 +4515,8 @@ class BattleSimmulatorBase {
 
             // 敵の初期化
             using(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {
-                this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount);
+                this.__durabilityTest_initUnit(
+                    enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount, originalEnemyDragonflower);
                 this.damageCalc.updateUnitSpur(targetUnit, this.vm.durabilityTestCalcPotentialDamage);
                 this.damageCalc.updateUnitSpur(enemyUnit, this.vm.durabilityTestCalcPotentialDamage);
 
