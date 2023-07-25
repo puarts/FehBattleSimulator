@@ -2223,7 +2223,7 @@ class DamageCalculatorWrapper {
                 this.__isThereAllyIn2Spaces(targetUnit)) {
                 enemyUnit.addSpdDefSpurs(-5);
                 let amount = Math.trunc(enemyUnit.getDefInPrecombat() * 0.3);
-                enemyUnit.addSpdDefSpurs(amount);
+                enemyUnit.defSpur -= amount;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.FlashSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
