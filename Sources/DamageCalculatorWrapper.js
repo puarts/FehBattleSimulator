@@ -12042,7 +12042,8 @@ class DamageCalculatorWrapper {
             case Weapon.FreebladesEdge:
                 return 0.3;
             case PassiveB.GuardBearing4:
-                if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                if (atkUnit.battleContext.initiatesCombat &&
+                    !defUnit.isOneTimeActionActivatedForPassiveB) {
                     return 0.6;
                 } else {
                     return 0.3;
