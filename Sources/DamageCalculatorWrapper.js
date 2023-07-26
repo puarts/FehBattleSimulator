@@ -7242,6 +7242,18 @@ class DamageCalculatorWrapper {
                 }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                        let count =
+                            targetUnit.getPositiveStatusEffects().length +
+                            targetUnit.getNegativeStatusEffects().length;
+                        targetUnit.addAllSpur(count * 2);
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
                 }
             }
         };
