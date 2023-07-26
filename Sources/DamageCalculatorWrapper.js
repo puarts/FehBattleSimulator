@@ -2550,8 +2550,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.TwinDivinestone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
-                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
-                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
         }
@@ -11069,6 +11067,13 @@ class DamageCalculatorWrapper {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getResInCombat(targetUnit)) {
                                 targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            }
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                if (targetUnit.getEvalResInCombat(enemyUnit) >=
+                                    enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                                }
                             }
                         }
                         break;
