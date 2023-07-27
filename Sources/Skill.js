@@ -1686,6 +1686,11 @@ const Weapon = {
 
     // ヘイズ（敵）
     GoldenCurse: 2519, // 黄金の蛇の呪い
+
+    // 2023年7月 神階英雄（夢の王 フロージ）
+    // https://www.youtube.com/watch?v=VbuNZKwkt34&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Q5U9RTTT6FY&ab_channel=NintendoMobile
+    DreamHorn: 100000, // 夢の王の角
 };
 
 const Support = {
@@ -3675,6 +3680,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.DreamHorn] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.ArcaneNihility] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.Ravager] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
@@ -3759,6 +3765,7 @@ const BeastCommonSkillMap =
 
             // 次世代騎馬
             [Weapon.ArcaneNihility, BeastCommonSkillType.Cavalry2],
+            [Weapon.DreamHorn, BeastCommonSkillType.Cavalry2],
 
             // 騎馬
             [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],

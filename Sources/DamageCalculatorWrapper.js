@@ -735,6 +735,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DreamHorn:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                    break;
                 case Weapon.HarukazeNoBreath:
                     if (defUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.initiatesCombat ||
@@ -2199,6 +2204,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.DreamHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PackleaderTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpursWithoutDef(-5);
@@ -10087,6 +10098,18 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DreamHorn:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let maxBuff = targetUnit.getBuffTotalInCombat(enemyUnit);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                            if (maxBuff < unit.buffTotal) {
+                                maxBuff = unit.buffTotal;
+                            }
+                        }
+                        let amount = Math.trunc(maxBuff * 0.5);
+                        enemyUnit.addAtkDefSpurs(-amount);
+                    }
+                    break;
                 case Weapon.PackleaderTome:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -12007,6 +12030,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.DreamHorn:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return 0.3;
+                }
+                break;
             case Weapon.HarukazeNoBreath:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.initiatesCombat ||
