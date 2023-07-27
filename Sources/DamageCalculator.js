@@ -946,8 +946,12 @@ class DamageCalculator {
                         }
                     }
                     // 次の攻撃のダメージ加算
-                    if (defUnit.passiveB === PassiveB.Spurn4) {
-                        atkUnit.battleContext.additionalDamageOfNextAttack += 5;
+                    for (let skillId of defUnit.enumerateSkills()) {
+                        switch (skillId) {
+                            case PassiveB.Spurn4:
+                                defUnit.battleContext.additionalDamageOfNextAttack += 5;
+                                break;
+                        }
                     }
                     // 奥義カウントを最大まで戻す
                     this.__restoreMaxSpecialCount(defUnit);

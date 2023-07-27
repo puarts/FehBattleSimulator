@@ -1686,6 +1686,11 @@ const Weapon = {
 
     // ヘイズ（敵）
     GoldenCurse: 2519, // 黄金の蛇の呪い
+
+    // 2023年7月 神階英雄（夢の王 フロージ）
+    // https://www.youtube.com/watch?v=VbuNZKwkt34&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Q5U9RTTT6FY&ab_channel=NintendoMobile
+    DreamHorn: 2521, // 夢の王の角
 };
 
 const Support = {
@@ -2363,6 +2368,7 @@ const PassiveB = {
     GreenTomebreaker3: 625,
 
     LullAtkDef3: 950, // 攻撃守備の凪3
+    LullAtkDef4: 2522, // 攻撃守備の凪4
     LullAtkSpd3: 994, // 攻撃速さの凪3
     LullAtkRes3: 1109, // 攻撃魔防の凪3
     LullSpdDef3: 952, // 速さ守備の凪3
@@ -2522,6 +2528,9 @@ const PassiveB = {
 
     HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
+    // [警戒姿勢4のメモ]
+    // 範囲奥義を巻き添えで受けた場合は「各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時」とはみなされない
+    // （巻き添え範囲攻撃を60%軽減して尚且つ60%軽減の権利が消えない）
     GuardBearing4: 2417, // 警戒姿勢4
     DiveBomb3: 1430, // 空からの急襲3
 
@@ -2917,6 +2926,7 @@ const PassiveC = {
     FettersOfDromi: 2397, // ドローミの鎖環
     RallyingCry: 2453, // 叱咤激励
     BernsNewWay: 2488, // 新たなるベルンの道
+    DreamDeliverer: 2523, // 人に安らかな夢を
 };
 
 const PassiveS = {
@@ -3672,6 +3682,7 @@ function getEvalResAdd(passiveS) {
 }
 
 const WeaponTypesAddAtk2AfterTransform = {};
+WeaponTypesAddAtk2AfterTransform[Weapon.DreamHorn] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.ArcaneNihility] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.Ravager] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
@@ -3756,6 +3767,7 @@ const BeastCommonSkillMap =
 
             // 次世代騎馬
             [Weapon.ArcaneNihility, BeastCommonSkillType.Cavalry2],
+            [Weapon.DreamHorn, BeastCommonSkillType.Cavalry2],
 
             // 騎馬
             [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],

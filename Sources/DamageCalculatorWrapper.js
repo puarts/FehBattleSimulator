@@ -735,6 +735,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DreamHorn:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                    }
+                    break;
                 case Weapon.HarukazeNoBreath:
                     if (defUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.initiatesCombat ||
@@ -2199,6 +2204,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveC.DreamDeliverer] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addDefResSpurs(4);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DreamHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PackleaderTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpursWithoutDef(-5);
@@ -2223,7 +2240,7 @@ class DamageCalculatorWrapper {
                 this.__isThereAllyIn2Spaces(targetUnit)) {
                 enemyUnit.addSpdDefSpurs(-5);
                 let amount = Math.trunc(enemyUnit.getDefInPrecombat() * 0.3);
-                enemyUnit.addSpdDefSpurs(amount);
+                enemyUnit.defSpur -= amount;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.FlashSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -2550,8 +2567,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.TwinDivinestone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
-                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
-                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
         }
@@ -7242,6 +7257,18 @@ class DamageCalculatorWrapper {
                 }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                        let count =
+                            targetUnit.getPositiveStatusEffects().length +
+                            targetUnit.getNegativeStatusEffects().length;
+                        targetUnit.addAllSpur(count * 2);
+                        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                            targetUnit.battleContext.followupAttackPriorityIncrement++;
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        }
+                    }
                 }
             }
         };
@@ -8644,6 +8671,13 @@ class DamageCalculatorWrapper {
             enemyUnit.spdSpur -= 3;
             enemyUnit.defSpur -= 3;
             targetUnit.battleContext.invalidatesSpdBuff = true;
+            targetUnit.battleContext.invalidatesDefBuff = true;
+        };
+        this._applySkillEffectForUnitFuncDict[PassiveB.LullAtkDef4] = (targetUnit, enemyUnit) => {
+            enemyUnit.addAtkDefSpurs(-4);
+            let amount = Math.min(enemyUnit.getPositiveStatusEffects().length, 4);
+            enemyUnit.addAtkDefSpurs(-amount);
+            targetUnit.battleContext.invalidatesAtkBuff = true;
             targetUnit.battleContext.invalidatesDefBuff = true;
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.LullSpdDef4] = (targetUnit, enemyUnit) => {
@@ -10077,6 +10111,18 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DreamHorn:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let maxBuff = targetUnit.getBuffTotalInCombat(enemyUnit);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                            if (maxBuff < unit.buffTotal) {
+                                maxBuff = unit.buffTotal;
+                            }
+                        }
+                        let amount = Math.trunc(maxBuff * 0.5);
+                        enemyUnit.addAtkDefSpurs(-amount);
+                    }
+                    break;
                 case Weapon.PackleaderTome:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -11058,6 +11104,13 @@ class DamageCalculatorWrapper {
                             if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getResInCombat(targetUnit)) {
                                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                             }
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                if (targetUnit.getEvalResInCombat(enemyUnit) >=
+                                    enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                                }
+                            }
                         }
                         break;
                     case Weapon.RevengerLance:
@@ -11990,6 +12043,11 @@ class DamageCalculatorWrapper {
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
+            case Weapon.DreamHorn:
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    return 0.3;
+                }
+                break;
             case Weapon.HarukazeNoBreath:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (atkUnit.battleContext.initiatesCombat ||
@@ -12030,7 +12088,8 @@ class DamageCalculatorWrapper {
             case Weapon.FreebladesEdge:
                 return 0.3;
             case PassiveB.GuardBearing4:
-                if (!defUnit.isOneTimeActionActivatedForPassiveB) {
+                if (atkUnit.battleContext.initiatesCombat &&
+                    !defUnit.isOneTimeActionActivatedForPassiveB) {
                     return 0.6;
                 } else {
                     return 0.3;
