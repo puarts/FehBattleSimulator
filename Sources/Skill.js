@@ -2368,6 +2368,7 @@ const PassiveB = {
     GreenTomebreaker3: 625,
 
     LullAtkDef3: 950, // 攻撃守備の凪3
+    LullAtkDef4: 100004, // 攻撃守備の凪4
     LullAtkSpd3: 994, // 攻撃速さの凪3
     LullAtkRes3: 1109, // 攻撃魔防の凪3
     LullSpdDef3: 952, // 速さ守備の凪3

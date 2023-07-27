@@ -8673,6 +8673,13 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidatesSpdBuff = true;
             targetUnit.battleContext.invalidatesDefBuff = true;
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.LullAtkDef4] = (targetUnit, enemyUnit) => {
+            enemyUnit.addAtkDefSpurs(-4);
+            let amount = Math.min(enemyUnit.getPositiveStatusEffects().length, 4);
+            enemyUnit.addAtkDefSpurs(-amount);
+            targetUnit.battleContext.invalidatesAtkBuff = true;
+            targetUnit.battleContext.invalidatesDefBuff = true;
+        };
         this._applySkillEffectForUnitFuncDict[PassiveB.LullSpdDef4] = (targetUnit, enemyUnit) => {
             enemyUnit.addSpdDefSpurs(-4);
             let amount = Math.min(enemyUnit.getPositiveStatusEffects().length, 4);
