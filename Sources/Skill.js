@@ -1690,7 +1690,7 @@ const Weapon = {
     // 2023年7月 神階英雄（夢の王 フロージ）
     // https://www.youtube.com/watch?v=VbuNZKwkt34&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Q5U9RTTT6FY&ab_channel=NintendoMobile
-    DreamHorn: 100000, // 夢の王の角
+    DreamHorn: 2521, // 夢の王の角
 };
 
 const Support = {
@@ -2368,7 +2368,7 @@ const PassiveB = {
     GreenTomebreaker3: 625,
 
     LullAtkDef3: 950, // 攻撃守備の凪3
-    LullAtkDef4: 100004, // 攻撃守備の凪4
+    LullAtkDef4: 2522, // 攻撃守備の凪4
     LullAtkSpd3: 994, // 攻撃速さの凪3
     LullAtkRes3: 1109, // 攻撃魔防の凪3
     LullSpdDef3: 952, // 速さ守備の凪3
@@ -2926,7 +2926,7 @@ const PassiveC = {
     FettersOfDromi: 2397, // ドローミの鎖環
     RallyingCry: 2453, // 叱咤激励
     BernsNewWay: 2488, // 新たなるベルンの道
-    DreamDeliverer: 100005, // 人に安らかな夢を
+    DreamDeliverer: 2523, // 人に安らかな夢を
 };
 
 const PassiveS = {
