@@ -712,6 +712,9 @@ class BattleContext {
 
         // 追撃の速さ条件
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
+
+        // ターン開始時付与不利な状態異常を無効化
+        this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
     }
 
     invalidateFollowupAttackSkills() {
@@ -865,6 +868,7 @@ class BattleContext {
         this.disablesSkillsFromColorlessEnemiesInCombat = false;
         this.condValueMap.clear();
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
+        this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。

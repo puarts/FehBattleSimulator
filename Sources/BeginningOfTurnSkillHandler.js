@@ -103,8 +103,16 @@ class BeginningOfTurnSkillHandler {
      * @param  {Unit} unit
      */
     applyReservedState(unit) {
-        unit.applyReservedDebuffs();
-        unit.applyReservedStatusEffects();
+        // ターン開始時の不利な状態無効
+        if (!unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
+            unit.applyReservedDebuffs();
+            unit.applyReservedStatusEffects();
+        } else {
+            // applyReservedDebuffsは呼び出さない
+            // 有利な異常状態だけ残しapplyReservedStatusEffectsを呼び出す
+            unit.reservedStatusEffects = unit.reservedStatusEffects.filter(e => isPositiveStatusEffect(e));
+            unit.applyReservedStatusEffects();
+        }
     }
 
     /**
@@ -154,6 +162,15 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.DreamDeliverer:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn = true;
+                        unit.applyBuffs(0, 0, 6, 6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
+                    }
+                }
+                break;
             case Weapon.PackleaderTome:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
@@ -2671,6 +2688,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.DreamDeliverer:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn = true;
+                    }
+                }
+                break;
             case Weapon.DuskbloomBow:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                     if (skillOwner.posX === unit.posX ||
