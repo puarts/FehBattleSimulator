@@ -8812,6 +8812,12 @@ class BattleSimmulatorBase {
         return false;
     }
 
+    /**
+     * 一喝、一喝+でのデバフ解除を行う
+     * @param targetUnit
+     * @returns {boolean} 実際にデバフを解除した場合にtrueを返す
+     * @private
+     */
     __executeHarshCommand(targetUnit) {
         if (targetUnit.isDebuffed) {
             if (targetUnit.atkDebuff < 0 && -targetUnit.atkDebuff > targetUnit.atkBuff) {
@@ -8954,9 +8960,11 @@ class BattleSimmulatorBase {
                     case Support.RallyUpRes:
                     case Support.RallyUpResPlus:
                         return this.__applyRallyUp(supporterUnit, targetUnit);
-                    case Support.HarshCommandPlus:
+                    case Support.HarshCommandPlus: {
+                        let hasNegativeStatusEffect = targetUnit.hasNegativeStatusEffect();
                         targetUnit.clearNegativeStatusEffects();
-                        return this.__executeHarshCommand(targetUnit);
+                        return this.__executeHarshCommand(targetUnit) || hasNegativeStatusEffect;
+                    }
                     case Support.HarshCommand:
                         return this.__executeHarshCommand(targetUnit);
                     case Support.GoldSerpent:
