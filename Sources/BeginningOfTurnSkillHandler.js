@@ -128,6 +128,7 @@ class BeginningOfTurnSkillHandler {
                     case PassiveB.BeastNTrace3:
                     case PassiveB.BeastFollowUp3:
                     case PassiveB.BeastSense4:
+                    case PassiveB.BindingNecklacePlus:
                         hasTransformSkills = true;
                         break;
                 }

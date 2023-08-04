@@ -2537,6 +2537,7 @@ const PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨
     BindingNecklace: 1540, // 束縛の首飾り
+    BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
     SunTwinWing: 1680, // 双姫の陽翼
     MoonTwinWing: 1732, // 双姫の月翼
@@ -3645,6 +3646,7 @@ function isTriangleAdeptSkill(skillId) {
     return skillId in TriangleAdeptDict;
 }
 const EvalSpdAddDict = {};
+EvalSpdAddDict[PassiveB.BindingNecklacePlus] = 7;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;

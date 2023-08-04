@@ -2204,6 +2204,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.BindingNecklacePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAllSpur(3);
+                enemyUnit.addAllSpur(-3);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.HolyWarsEnd2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addAtkDefSpurs(-5);
@@ -10938,6 +10945,12 @@ class DamageCalculatorWrapper {
                         this.__applyBuffAbsorption(targetUnit, enemyUnit);
                     }
                     break;
+                case PassiveB.BindingNecklacePlus:
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit);
+                    }
+                    break;
                 case PassiveC.HumanVirtue2: {
                     let maxBuffs = new Array(4).fill(0);
                     let buffTotals = [];
@@ -13953,6 +13966,12 @@ class DamageCalculatorWrapper {
     __applyInvalidationSkillEffect(targetUnit, enemyUnit, calcPotentialDamage) {
         // 獣の共通武器スキル
         switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
+            case PassiveB.BindingNecklacePlus:
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case Weapon.KishisyogunNoHousou:
                 if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                     enemyUnit.battleContext.reducesCooldownCount = false;
