@@ -2526,7 +2526,6 @@ const PassiveB = {
     SpdDefSnag4: 2440, // 速さ守備の干渉4
     DefResSnag3: 1867, // 守備魔防の干渉3
 
-    HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
     // [警戒姿勢4のメモ]
     // 範囲奥義を巻き添えで受けた場合は「各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時」とはみなされない
@@ -2554,6 +2553,8 @@ const PassiveB = {
     FruitOfLife: 2424, // 地に生まれ地に還る
     SunlightBangle: 2477, // 華日の腕輪
     GetBehindMe : 2511, // 僕が守ります!
+    HolyWarsEnd: 1376, // 最後の聖戦
+    HolyWarsEnd2: 2537, // 最後の聖戦・承
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3

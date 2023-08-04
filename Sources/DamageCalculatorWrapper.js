@@ -2204,6 +2204,13 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.HolyWarsEnd2] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.DreamDeliverer] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addDefResSpurs(4);
@@ -9796,6 +9803,13 @@ class DamageCalculatorWrapper {
 
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.HolyWarsEnd2:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        if (enemyUnit.battleContext.initiatesCombat) {
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    }
+                    break;
                 case Weapon.DivineDraught: {
                     let num = targetUnit.battleContext.condValueMap.get("num_cond") || 0;
                     if (num >= 2) {
