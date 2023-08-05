@@ -9150,7 +9150,7 @@ class DamageCalculatorWrapper {
                 case Weapon.DrybladeLance:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                        let spd = isPrecombat ? targetUnit.getEvalSpdInPrecombat() : targetUnit.getEvalSpdInCombat();
+                        let spd = DamageCalculatorWrapper.__getSpd(targetUnit, enemyUnit, isPrecombat);
                         targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
                     }
                     break;
