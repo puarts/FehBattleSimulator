@@ -498,6 +498,9 @@ class DamageCalculatorWrapper {
 
         self.__calcFixedAddDamage(atkUnit, defUnit, false);
         self.__calcFixedAddDamage(defUnit, atkUnit, false);
+
+        self.__calcFixedSpecialAddDamage(atkUnit, defUnit);
+        self.__calcFixedSpecialAddDamage(defUnit, atkUnit);
         // });
 
         // self.profile.profile("__applySkillEffect 3", () => {
@@ -2197,8 +2200,6 @@ class DamageCalculatorWrapper {
                 skillFunc(targetUnit, enemyUnit, calcPotentialDamage);
             }
         }
-
-        this.__calcFixedSpecialAddDamage(targetUnit, enemyUnit);
     }
 
     __init__applySkillEffectForUnitFuncDict() {
