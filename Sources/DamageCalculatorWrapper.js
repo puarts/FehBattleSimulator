@@ -3498,6 +3498,12 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.RemoteSturdy] = (targetUnit, enemyUnit) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addSpurs(7, 0, 10, 0);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.RemoteMirror] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.addSpurs(7, 0, 0, 10);

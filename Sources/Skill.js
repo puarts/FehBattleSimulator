@@ -2241,6 +2241,7 @@ const PassiveA = {
 
     // 離撃
     RemoteSparrow: 2317, // 鬼神飛燕の離撃
+    RemoteSturdy: 2528, // 鬼神金剛の離撃
     RemoteMirror: 2342, // 鬼神明鏡の離撃
 
     // 魔刃
