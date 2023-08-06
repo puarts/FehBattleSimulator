@@ -1691,6 +1691,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=VbuNZKwkt34&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Q5U9RTTT6FY&ab_channel=NintendoMobile
     DreamHorn: 2521, // 夢の王の角
+
+    // 超英雄 (お茶会へご招待)
+    // https://www.youtube.com/watch?v=STeq6O2nj0g&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=FUlmCAzgLZk&ab_channel=NintendoMobile
+    BakedTreats: 2531, //美味しい焼き菓子
 };
 
 const Support = {

@@ -5417,11 +5417,13 @@ class Unit extends BattleMapElement {
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                // 再移動(1)
                 case Weapon.Queenslance:
                     if (this.hasPositiveStatusEffect()) {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case Weapon.BakedTreats:
                 case Weapon.FujinRaijinYumi:
                 case PassiveB.SoaringWings:
                 case PassiveB.FirestormDance3:
@@ -5431,6 +5433,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                // 再移動(2)
                 case PassiveC.FettersOfDromi:
                 case Weapon.HolytideTyrfing:
                 case Weapon.WingLeftedSpear:
@@ -5447,17 +5450,17 @@ class Unit extends BattleMapElement {
                 case Weapon.BlazingPolearms:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
                     break;
+                // 再移動(3)
                 case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
+                // 残り+1
                 case Weapon.OkamijoouNoKiba:
                     if (this.isTransformed) {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
-
-                // 残り+1
                 case Weapon.ReginRave:
                     if (this.isWeaponSpecialRefined) {
                         if (this.hasPositiveStatusEffect()) {
