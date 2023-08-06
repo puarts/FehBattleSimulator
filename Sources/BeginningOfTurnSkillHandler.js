@@ -163,6 +163,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Special.SupremeAstra:
+                if (skillOwner.isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case Special.ChivalricAura:
                 if (skillOwner.isSpecialCountMax) {
                     skillOwner.reduceSpecialCount(1);

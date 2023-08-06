@@ -34,6 +34,7 @@ class DamageCalcContext {
         this.isFollowupAttack = false;
         /** @type {DamageLog[]} */
         this.damageHistory = []; // 攻撃ダメージの履歴
+        this.damageType = DamageType.ActualDamage;
     }
 
     isFirstAttack(atkUnit) {
@@ -147,6 +148,7 @@ class DamageCalculator {
     calcCombatResult(atkUnit, defUnit, damageType) {
         // 初期化
         let context = new DamageCalcContext();
+        context.damageType = damageType;
         let result = new DamageCalcResult();
         result.defUnit = defUnit;
         result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);
@@ -994,6 +996,19 @@ class DamageCalculator {
                 if (this.isLogEnabled) this.writeLog("奥義によるダメージ" + currentDamage);
                 this.writeSimpleLog(" " + atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>奥義ダメージ" + currentDamage);
                 this.__restoreMaxSpecialCount(atkUnit);
+                // 奥義発動後の奥義カウント変動
+                for (let skillId of atkUnit.enumerateSkills()) {
+                    switch (skillId) {
+                        case Special.SupremeAstra:
+                            if (!atkUnit.isOneTimeActionActivatedForSpecial) {
+                                if (context.damageType === DamageType.ActualDamage) {
+                                    atkUnit.isOneTimeActionActivatedForSpecial = true;
+                                }
+                                this.__reduceSpecialCount(atkUnit, 1);
+                            }
+                                break;
+                    }
+                }
 
                 // 奥義発動時の回復
                 {

@@ -1834,6 +1834,7 @@ const Special = {
     RegnalAstra: 465, // 剣姫の流星
     ImperialAstra: 1094, // 剣皇の流星
     VitalAstra: 2039, // 心流星
+    SupremeAstra: 2525, // 無双の流星
     OpenTheFuture: 1091, // 開世
     Fukusyu: 453, // 復讐
     Kessyu: 454, // 血讐
@@ -3266,6 +3267,7 @@ NormalAttackSpecialDict[Special.Yuyo] = 0;
 NormalAttackSpecialDict[Special.RegnalAstra] = 0; // 剣姫の流星
 NormalAttackSpecialDict[Special.ImperialAstra] = 0; // 剣皇の流星
 NormalAttackSpecialDict[Special.VitalAstra] = 0; // 心流星
+NormalAttackSpecialDict[Special.SupremeAstra] = 0; // 無双の流星
 NormalAttackSpecialDict[Special.OpenTheFuture] = 0; // 開世
 NormalAttackSpecialDict[Special.Fukusyu] = 0; // 復讐
 NormalAttackSpecialDict[Special.Kessyu] = 0; // 血讐

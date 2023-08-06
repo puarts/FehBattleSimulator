@@ -14610,6 +14610,7 @@ class DamageCalculatorWrapper {
             };
             this._applySpecialSkillEffectFuncDict[Special.RegnalAstra] = func;
             this._applySpecialSkillEffectFuncDict[Special.ImperialAstra] = func;
+            this._applySpecialSkillEffectFuncDict[Special.SupremeAstra] = func;
         }
 
         this._applySpecialSkillEffectFuncDict[Special.OpenTheFuture] = (targetUnit, enemyUnit) => {
