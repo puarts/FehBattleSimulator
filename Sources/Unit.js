@@ -5497,6 +5497,12 @@ class Unit extends BattleMapElement {
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount);
                     break;
+                // マス間の距離+1、最大4
+                case Weapon.TeatimesEdge: {
+                    let dist = Unit.calcMoveDistance(this)
+                    moveCountForCanto = Math.max(moveCountForCanto, Math.min(dist + 1, 4));
+                }
+                    break;
             }
         }
         return moveCountForCanto;

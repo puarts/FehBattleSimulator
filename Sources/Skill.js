@@ -1698,6 +1698,7 @@ const Weapon = {
     BakedTreats: 2531, //美味しい焼き菓子
     KnightlyManner: 2526, // 聖騎士の嗜み
     TeatimeSetPlus: 2529, // 紅茶+
+    TeatimesEdge: 2524, // 淑女のお茶会の鋭剣
 };
 
 const Support = {

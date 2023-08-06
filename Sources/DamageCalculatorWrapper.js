@@ -2211,6 +2211,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.TeatimesEdge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(6);
+                let amount = Math.max(Math.min(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8, 10), 0);
+                targetUnit.addAtkSpdSpurs(amount);
+
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TeatimeSetPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAtkSpdSpurs(5);
@@ -12529,6 +12537,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TeatimesEdge:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (!isPrecombat) {
+                            let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                        }
+                    }
+                    break;
                 case Weapon.KnightlyManner:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         if (!isPrecombat) {
@@ -14046,6 +14062,11 @@ class DamageCalculatorWrapper {
     __applyInvalidationSkillEffect(targetUnit, enemyUnit, calcPotentialDamage) {
         // 獣の共通武器スキル
         switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
+            case Weapon.TeatimesEdge:
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+                break;
             case PassiveB.BindingNecklacePlus:
                 if (enemyUnit.battleContext.initiatesCombat ||
                     this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
