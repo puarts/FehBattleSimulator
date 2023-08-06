@@ -1193,6 +1193,7 @@ class PostCombatSkillHander {
                     }
                     break;
                 case Special.HolyKnightAura:
+                case Special.ChivalricAura:
                     if (attackUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
                             unit.applyAtkBuff(6);

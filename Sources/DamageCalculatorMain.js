@@ -912,6 +912,7 @@ class DamageCalcData {
             // Special.RighteousWind, // 聖風(+速さ30%)
             Special.RegnalAstra, // 剣姫の流星(+速さ40%)
             Special.VitalAstra, // 心流星(+速さ30%)
+            Special.SupremeAstra, // 無双の流星(+速さ40%)
             // Special.ImperialAstra, // 剣皇の流星(+速さ40%)
             Special.TwinBlades, // 双刃(+魔防30%)
             Special.CircletOfBalance, // 聖神と暗黒神の冠(+魔坊40%)

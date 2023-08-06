@@ -1691,6 +1691,15 @@ const Weapon = {
     // https://www.youtube.com/watch?v=VbuNZKwkt34&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Q5U9RTTT6FY&ab_channel=NintendoMobile
     DreamHorn: 2521, // 夢の王の角
+
+    // 超英雄 (お茶会へご招待)
+    // https://www.youtube.com/watch?v=STeq6O2nj0g&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=FUlmCAzgLZk&ab_channel=NintendoMobile
+    BakedTreats: 2531, //美味しい焼き菓子
+    KnightlyManner: 2526, // 聖騎士の嗜み
+    TeatimeSetPlus: 2529, // 紅茶+
+    TeatimesEdge: 2524, // 淑女のお茶会の鋭剣
+    TeacakeTowerPlus: 2533, // お茶菓子+
 };
 
 const Support = {
@@ -1826,6 +1835,7 @@ const Special = {
     RegnalAstra: 465, // 剣姫の流星
     ImperialAstra: 1094, // 剣皇の流星
     VitalAstra: 2039, // 心流星
+    SupremeAstra: 2525, // 無双の流星
     OpenTheFuture: 1091, // 開世
     Fukusyu: 453, // 復讐
     Kessyu: 454, // 血讐
@@ -1899,6 +1909,7 @@ const Special = {
     NegatingFang: 1469, // 反竜穿
 
     HolyKnightAura: 1702, // グランベルの聖騎士
+    ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
     DevinePulse: 2167, // 天刻の拍動
@@ -2135,6 +2146,8 @@ const PassiveA = {
     SeimeiNoSeisui3: 573,
     FirefloodBoost3: 2501, // 生命の業火静水3
 
+    // 専用A
+    Mastermind: 2536, // 天才
     SacaNoOkite: 586, // サカの掟
     LawsOfSacae2: 1753, // サカの掟・承
     VerdictOfSacae: 2191, // 大いなるサカの掟
@@ -2232,6 +2245,7 @@ const PassiveA = {
 
     // 離撃
     RemoteSparrow: 2317, // 鬼神飛燕の離撃
+    RemoteSturdy: 2528, // 鬼神金剛の離撃
     RemoteMirror: 2342, // 鬼神明鏡の離撃
 
     // 魔刃
@@ -2259,6 +2273,7 @@ const PassiveB = {
     DragonsWrath4: 2193, // 竜の魔鱗4
     Vantage3: 596, // 待ち伏せ3
     Desperation3: 597, // 攻め立て3
+    Desperation4: 2532, // 攻め立て4
     Cancel1: 1286,//キャンセル1
     Cancel2: 1287,//キャンセル2
     Cancel3: 631,//キャンセル3
@@ -2526,7 +2541,6 @@ const PassiveB = {
     SpdDefSnag4: 2440, // 速さ守備の干渉4
     DefResSnag3: 1867, // 守備魔防の干渉3
 
-    HolyWarsEnd: 1376, // 最後の聖戦
     GuardBearing3: 1378, // 警戒姿勢3
     // [警戒姿勢4のメモ]
     // 範囲奥義を巻き添えで受けた場合は「各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時」とはみなされない
@@ -2538,6 +2552,7 @@ const PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨
     BindingNecklace: 1540, // 束縛の首飾り
+    BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
     SunTwinWing: 1680, // 双姫の陽翼
     MoonTwinWing: 1732, // 双姫の月翼
@@ -2554,6 +2569,8 @@ const PassiveB = {
     FruitOfLife: 2424, // 地に生まれ地に還る
     SunlightBangle: 2477, // 華日の腕輪
     GetBehindMe : 2511, // 僕が守ります!
+    HolyWarsEnd: 1376, // 最後の聖戦
+    HolyWarsEnd2: 2537, // 最後の聖戦・承
 
     // 近影、遠影
     AtkSpdNearTrace3: 2263, // 攻撃速さの近影3
@@ -2574,6 +2591,7 @@ const PassiveB = {
     FlowForce3: 2088, // 怒涛・不屈3
     FlowFeather3: 2139, // 怒涛・天馬行空3
     FlowNTrace3: 2322, // 怒涛・近影3
+    FlowDesperation: 2535, // 怒涛・攻め立て
 
     // 拍節
     AtkResTempo3: 2184, // 攻撃魔防の拍節3
@@ -3238,6 +3256,7 @@ NormalAttackSpecialDict[Special.Iceberg] = 0;
 NormalAttackSpecialDict[Special.Glacies] = 0;
 NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
 NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
+NormalAttackSpecialDict[Special.ChivalricAura] = 0; // グランベルの騎士道
 NormalAttackSpecialDict[Special.DraconicAura] = 0;
 NormalAttackSpecialDict[Special.DragonFang] = 0;
 NormalAttackSpecialDict[Special.Enclosure] = 0; // 閉界
@@ -3250,6 +3269,7 @@ NormalAttackSpecialDict[Special.Yuyo] = 0;
 NormalAttackSpecialDict[Special.RegnalAstra] = 0; // 剣姫の流星
 NormalAttackSpecialDict[Special.ImperialAstra] = 0; // 剣皇の流星
 NormalAttackSpecialDict[Special.VitalAstra] = 0; // 心流星
+NormalAttackSpecialDict[Special.SupremeAstra] = 0; // 無双の流星
 NormalAttackSpecialDict[Special.OpenTheFuture] = 0; // 開世
 NormalAttackSpecialDict[Special.Fukusyu] = 0; // 復讐
 NormalAttackSpecialDict[Special.Kessyu] = 0; // 血讐
@@ -3644,6 +3664,7 @@ function isTriangleAdeptSkill(skillId) {
     return skillId in TriangleAdeptDict;
 }
 const EvalSpdAddDict = {};
+EvalSpdAddDict[PassiveB.BindingNecklacePlus] = 7;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;

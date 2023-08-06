@@ -61,6 +61,7 @@ const Hero = {
     HarmonizedTiki: 971,
     DuoShamir: 984,
     DuoYmir: 990,
+    HarmonizedAyra: 1005,
 };
 
 function isThiefIndex(heroIndex) {
@@ -5390,11 +5391,14 @@ class Unit extends BattleMapElement {
         for (let skillId of this.enumerateSkills()) {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
+                // 再移動(1)
                 case Weapon.Queenslance:
                     if (this.hasPositiveStatusEffect()) {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case Weapon.TeatimeSetPlus:
+                case Weapon.BakedTreats:
                 case Weapon.FujinRaijinYumi:
                 case PassiveB.SoaringWings:
                 case PassiveB.FirestormDance3:
@@ -5404,6 +5408,7 @@ class Unit extends BattleMapElement {
                 case PassiveB.MoonlitBangleF:
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
+                // 再移動(2)
                 case PassiveC.FettersOfDromi:
                 case Weapon.HolytideTyrfing:
                 case Weapon.WingLeftedSpear:
@@ -5420,17 +5425,17 @@ class Unit extends BattleMapElement {
                 case Weapon.BlazingPolearms:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
                     break;
+                // 再移動(3)
                 case Weapon.AutoLofnheior:
                 case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
+                // 残り+1
                 case Weapon.OkamijoouNoKiba:
                     if (this.isTransformed) {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     }
                     break;
-
-                // 残り+1
                 case Weapon.ReginRave:
                     if (this.isWeaponSpecialRefined) {
                         if (this.hasPositiveStatusEffect()) {
@@ -5466,6 +5471,12 @@ class Unit extends BattleMapElement {
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount);
                     break;
+                // マス間の距離+1、最大4
+                case Weapon.TeatimesEdge: {
+                    let dist = Unit.calcMoveDistance(this)
+                    moveCountForCanto = Math.max(moveCountForCanto, Math.min(dist + 1, 4));
+                }
+                    break;
             }
         }
         return moveCountForCanto;
@@ -5474,6 +5485,15 @@ class Unit extends BattleMapElement {
     // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
     static calcAttackerMoveDistance(unit1, unit2) {
         let unit = unit1.battleContext.initiatesCombat ? unit1 : unit2;
+        if (unit.fromPosX === -1 || unit.fromPosY === -1) {
+            return 0;
+        }
+        let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
+        return dist;
+    }
+
+    // 移動した距離を返す(移動前と移動後のマスの距離)
+    static calcMoveDistance(unit) {
         if (unit.fromPosX === -1 || unit.fromPosY === -1) {
             return 0;
         }

@@ -128,6 +128,7 @@ class BeginningOfTurnSkillHandler {
                     case PassiveB.BeastNTrace3:
                     case PassiveB.BeastFollowUp3:
                     case PassiveB.BeastSense4:
+                    case PassiveB.BindingNecklacePlus:
                         hasTransformSkills = true;
                         break;
                 }
@@ -162,6 +163,27 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Special.SupremeAstra:
+                if (skillOwner.isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
+            case Special.ChivalricAura:
+                if (skillOwner.isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
+            case PassiveA.Mastermind:
+                skillOwner.reserveTakeDamage(1);
+                break;
+            case Weapon.BakedTreats:
+                for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        ally.reserveToApplyDebuffs(0, 0, -6, -6);
+                        ally.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                    }
+                }
+                break;
             case PassiveC.DreamDeliverer:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {

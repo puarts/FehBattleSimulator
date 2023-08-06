@@ -195,11 +195,11 @@ __applySkillEffectForUnitAfterCombatStatusFixed() {
 }
 
 2回攻撃
-__setAttackCount(atkUnit, enemyUnit) {
+__setAttackCount(targetUnit, enemyUnit) {
     // 攻撃時
-    atkUnit.battleContext.attackCount = 2;
+    targetUnit.battleContext.attackCount = 2;
     // 攻撃を受けた時
-    atkUnit.battleContext.counterattackCount = 2;
+    targetUnit.battleContext.counterattackCount = 2;
 }
 
 追撃可能なら自分の攻撃の直後に追撃を行う(攻め立て)
@@ -722,6 +722,9 @@ function hasPathfinderEffect(skillId) {}
 
 攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離[激突]
 let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+
+移動前と移動後のマスの距離
+let dist = Unit.calcMoveDistance(targetUnit);
 
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
