@@ -2266,6 +2266,7 @@ const PassiveB = {
     DragonsWrath4: 2193, // 竜の魔鱗4
     Vantage3: 596, // 待ち伏せ3
     Desperation3: 597, // 攻め立て3
+    Desperation4: 2532, // 攻め立て4
     Cancel1: 1286,//キャンセル1
     Cancel2: 1287,//キャンセル2
     Cancel3: 631,//キャンセル3

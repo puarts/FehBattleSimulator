@@ -1285,6 +1285,12 @@ class DamageCalculatorWrapper {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
                         break;
+                    case PassiveB.Desperation4: // 攻め立て4
+                        if (atkUnit.battleContext.restHpPercentage <= 99 ||
+                            Unit.calcMoveDistance(atkUnit) >= 2) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                        break;
                     case PassiveB.SoulOfZofia2:
                         atkUnit.battleContext.isDesperationActivatable = true;
                         break;
@@ -2205,6 +2211,9 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.Desperation4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.Mastermind] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAtkSpdSpurs(9);

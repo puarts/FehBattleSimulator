@@ -5510,6 +5510,15 @@ class Unit extends BattleMapElement {
         let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
         return dist;
     }
+
+    // 移動した距離を返す(移動前と移動後のマスの距離)
+    static calcMoveDistance(unit) {
+        if (unit.fromPosX === -1 || unit.fromPosY === -1) {
+            return 0;
+        }
+        let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
+        return dist;
+    }
 }
 
 

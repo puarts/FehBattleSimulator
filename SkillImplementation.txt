@@ -723,6 +723,9 @@ function hasPathfinderEffect(skillId) {}
 攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離[激突]
 let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
 
+移動前と移動後のマスの距離
+let dist = Unit.calcMoveDistance(targetUnit);
+
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
 
