@@ -14449,6 +14449,13 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.25);
             }
         };
+        this._applySpecialSkillEffectFuncDict[Special.ChivalricAura] = (targetUnit, enemyUnit) => {
+            // グランベルの騎士道
+            {
+                let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalAtk * 0.25);
+            }
+        };
 
         {
             let func = (targetUnit, enemyUnit) => {

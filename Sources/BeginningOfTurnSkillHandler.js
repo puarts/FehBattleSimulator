@@ -163,6 +163,11 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Special.ChivalricAura:
+                if (skillOwner.isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case PassiveA.Mastermind:
                 skillOwner.reserveTakeDamage(1);
                 break;

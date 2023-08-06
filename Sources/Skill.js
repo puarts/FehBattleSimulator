@@ -1905,6 +1905,7 @@ const Special = {
     NegatingFang: 1469, // 反竜穿
 
     HolyKnightAura: 1702, // グランベルの聖騎士
+    ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
     DevinePulse: 2167, // 天刻の拍動
@@ -3249,6 +3250,7 @@ NormalAttackSpecialDict[Special.Iceberg] = 0;
 NormalAttackSpecialDict[Special.Glacies] = 0;
 NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
 NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
+NormalAttackSpecialDict[Special.ChivalricAura] = 0; // グランベルの騎士道
 NormalAttackSpecialDict[Special.DraconicAura] = 0;
 NormalAttackSpecialDict[Special.DragonFang] = 0;
 NormalAttackSpecialDict[Special.Enclosure] = 0; // 閉界
