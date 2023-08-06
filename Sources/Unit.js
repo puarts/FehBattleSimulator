@@ -5423,6 +5423,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:
                 case Weapon.FujinRaijinYumi:
                 case PassiveB.SoaringWings:

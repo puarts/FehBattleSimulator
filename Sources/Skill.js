@@ -1697,6 +1697,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=FUlmCAzgLZk&ab_channel=NintendoMobile
     BakedTreats: 2531, //美味しい焼き菓子
     KnightlyManner: 2526, // 聖騎士の嗜み
+    TeatimeSetPlus: 2529, // 紅茶+
 };
 
 const Support = {

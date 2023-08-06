@@ -6334,6 +6334,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:
                 case Weapon.SurfersSpire:
                 case Weapon.SurfersSpade:
