@@ -2211,6 +2211,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.KnightlyManner] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.Desperation4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.spdSpur -= 4;
         }
@@ -12505,6 +12511,14 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.KnightlyManner:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (!isPrecombat) {
+                            let atk = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                        }
+                    }
+                    break;
                 case PassiveA.Mastermind:
                     if (atkUnit.battleContext.initiatesCombat ||
                         this.__isThereAllyIn2Spaces(atkUnit)) {
@@ -13467,6 +13481,12 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.KnightlyManner:
+                    if (!isWeaponTypeBow(defUnit.weaponType) &&
+                        !isWeaponTypeDagger(defUnit.weaponType)) {
+                        return true;
+                    }
+                    break;
                 case Weapon.FujinRaijinYumi:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         if (DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit) === TriangleAdvantage.Advantageous ||
