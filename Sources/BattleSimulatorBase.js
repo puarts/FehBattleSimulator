@@ -992,6 +992,15 @@ class BattleSimmulatorBase {
         }
     }
 
+    __applySkillEffectToSameOriginUnits(duoUnit, func) {
+        let targetOrigins = duoUnit.heroInfo.origin.split('|');
+        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+            if (this.__areSameOrigin(unit, targetOrigins)) {
+                func(unit);
+            }
+        }
+    }
+
     __refreshHighestHpUnitsInSameOrigin(duoUnit) {
         let targetOrigins = duoUnit.heroInfo.origin.split('|');
         let highestHpUnits = [];
@@ -1021,6 +1030,12 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedAyra:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.MobilityIncreased);
+                this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.applyBuffs(6, 6, 0, 0));
+                this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.clearNegativeStatusEffects());
+                break;
             case Hero.DuoYmir:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
                     unit.clearNegativeStatusEffects();

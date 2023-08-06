@@ -61,6 +61,7 @@ const Hero = {
     HarmonizedTiki: 971,
     DuoShamir: 984,
     DuoYmir: 990,
+    HarmonizedAyra: 1005,
 };
 
 function isThiefIndex(heroIndex) {
