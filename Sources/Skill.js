@@ -1699,6 +1699,7 @@ const Weapon = {
     KnightlyManner: 2526, // 聖騎士の嗜み
     TeatimeSetPlus: 2529, // 紅茶+
     TeatimesEdge: 2524, // 淑女のお茶会の鋭剣
+    TeacakeTowerPlus: 2533, // お茶菓子+
 };
 
 const Support = {

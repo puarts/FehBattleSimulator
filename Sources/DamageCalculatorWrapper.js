@@ -2217,6 +2217,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.TeacakeTowerPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TeatimesEdge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(6);
@@ -10191,6 +10196,15 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.TeacakeTowerPlus:
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit), 0) * 2;
+                        enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
+                    }
+                    break;
                 case Weapon.DreamHorn:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let maxBuff = targetUnit.getBuffTotalInCombat(enemyUnit);
