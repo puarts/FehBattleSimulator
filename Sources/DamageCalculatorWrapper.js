@@ -1291,6 +1291,12 @@ class DamageCalculatorWrapper {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
                         break;
+                    case PassiveB.FlowDesperation:
+                        if (atkUnit.battleContext.restHpPercentage <= 75 ||
+                            Unit.calcMoveDistance(atkUnit) >= 2) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                        break;
                     case PassiveB.SoulOfZofia2:
                         atkUnit.battleContext.isDesperationActivatable = true;
                         break;
@@ -6017,6 +6023,12 @@ class DamageCalculatorWrapper {
                 enemyUnit.addAllSpur(-5);
             }
         };
+        this._applySkillEffectForUnitFuncDict[PassiveB.FlowDesperation] = (targetUnit, enemyUnit) => {
+            enemyUnit.addSpdDefSpurs(-4);
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.FlowNTrace3] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
