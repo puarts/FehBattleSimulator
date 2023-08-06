@@ -2140,6 +2140,8 @@ const PassiveA = {
     SeimeiNoSeisui3: 573,
     FirefloodBoost3: 2501, // 生命の業火静水3
 
+    // 専用A
+    Mastermind: 2536, // 天才
     SacaNoOkite: 586, // サカの掟
     LawsOfSacae2: 1753, // サカの掟・承
     VerdictOfSacae: 2191, // 大いなるサカの掟

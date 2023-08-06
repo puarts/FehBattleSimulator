@@ -2205,6 +2205,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.Mastermind] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkSpdSpurs(9);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.BakedTreats] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAtkSpdSpurs(6);
@@ -12491,6 +12496,26 @@ class DamageCalculatorWrapper {
 
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.Mastermind:
+                    if (atkUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(atkUnit)) {
+                        let buffTotal = atkUnit.getBuffTotalInCombat(defUnit);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2)) {
+                            if (buffTotal < unit.buffTotal) {
+                                buffTotal = unit.buffTotal;
+                            }
+                        }
+                        let debuffTotal = Math.abs(defUnit.getDebuffTotalInCombat());
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                            let total = Math.abs(unit.getDebuffTotalInCombat());
+                            if (debuffTotal < total) {
+                                buffTotal = total;
+                            }
+                        }
+                        let amount = Math.trunc(buffTotal * 0.8) + Math.trunc(debuffTotal * 0.8);
+                        atkUnit.battleContext.additionalDamage += amount;
+                    }
+                    break;
                 case Weapon.TomeOfLaxuries:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);

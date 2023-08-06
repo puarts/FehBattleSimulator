@@ -163,6 +163,9 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveA.Mastermind:
+                skillOwner.reserveTakeDamage(1);
+                break;
             case Weapon.BakedTreats:
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
