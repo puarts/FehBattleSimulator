@@ -1075,12 +1075,15 @@ class DamageCalculator {
                         defUnit.battleContext.isOncePerMapSpecialActivated = true;
                     }
                 }
+                // 闇マリアの効果
                 if (canActivateMiracleAndHeal) {
                     defUnit.battleContext.isMiracleAndHealAcitivated = true;
                     // 奥義以外の祈りとは重複しないのでfalseにする
                     if (canActivateMiracle && !canActivateSpecialMiracle) {
                         defUnit.battleContext.isMiracleAndHealAcitivated = false;
                     }
+                    // 祈りが発動したので同じ戦闘で再度祈りが発動しないようにする
+                    defUnit.battleContext.canActivateMiracleAndHeal = false;
                 }
             }
             else {
