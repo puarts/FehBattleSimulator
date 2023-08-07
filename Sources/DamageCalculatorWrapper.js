@@ -11565,7 +11565,7 @@ class DamageCalculatorWrapper {
                         if (dist > 0) {
                             let def = enemyUnit.getDefInCombat(targetUnit);
                             let d = Math.min(dist, 4);
-                            targetUnit.battleContext.additionalDamage += d * Math.trunc(def * 0.1);
+                            targetUnit.battleContext.additionalDamage += Math.trunc(d * def * 0.1);
                         }
                     }
                         break;
