@@ -5061,6 +5061,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 特殊錬成時に奥義が発動しやすくなる
+                case Weapon.NightmareHorn:
                 case Weapon.Sekuvaveku:
                 case Weapon.Ifingr:
                 case Weapon.ZekkaiNoSoukyu:
@@ -5474,6 +5475,11 @@ class Unit extends BattleMapElement {
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
                 // 残り+1
+                case Weapon.NightmareHorn:
+                    if (this.isWeaponRefined) {
+                        moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
+                    }
+                    break;
                 case Weapon.OkamijoouNoKiba:
                     if (this.isTransformed) {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
