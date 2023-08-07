@@ -6351,6 +6351,12 @@ class BattleSimmulatorBase {
                         return true;
                     }
                     break;
+                // 特殊錬成で無条件
+                case Weapon.NightmareHorn:
+                    if (unit.isWeaponSpecialRefined) {
+                        return true;
+                    }
+                    break;
                 // 無条件
                 case Weapon.TeatimesEdge:
                 case Weapon.TeatimeSetPlus:

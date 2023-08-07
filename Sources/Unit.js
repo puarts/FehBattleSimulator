@@ -609,6 +609,9 @@ class BattleContext {
         // 敵は反撃不可
         this.invalidatesCounterattack = false;
 
+        // 反撃不可を無効
+        this.nullCounterDisrupt = false;
+
         // 自分の攻撃でダメージを与えた時のHP回復量
         this.healedHpByAttack = 0;
 
@@ -716,6 +719,15 @@ class BattleContext {
 
         // ターン開始時付与不利な状態異常を無効化
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
+
+
+        // フック関数
+        // 固定ダメージ
+        this.calcFixedAddDamageFuncs = [];
+        // 戦闘中ダメージ軽減
+        this.getDamageReductionRatioFuncs = [];
+        // 祈り
+        this.canActivateMiracleFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -827,6 +839,7 @@ class BattleContext {
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
         this.invalidatesCounterattack = false;
+        this.nullCounterDisrupt = false;
         this.healedHpByAttack = 0;
         this.healedHpByAttackPerAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
@@ -870,6 +883,9 @@ class BattleContext {
         this.condValueMap.clear();
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
+        this.calcFixedAddDamageFuncs = [];
+        this.getDamageReductionRatioFuncs = [];
+        this.canActivateMiracleFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -5018,6 +5034,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 特殊錬成時に奥義が発動しやすくなる
+                case Weapon.NightmareHorn:
                 case Weapon.Sekuvaveku:
                 case Weapon.Ifingr:
                 case Weapon.ZekkaiNoSoukyu:
@@ -5431,6 +5448,11 @@ class Unit extends BattleMapElement {
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
                 // 残り+1
+                case Weapon.NightmareHorn:
+                    if (this.isWeaponRefined) {
+                        moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
+                    }
+                    break;
                 case Weapon.OkamijoouNoKiba:
                     if (this.isTransformed) {
                         moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
