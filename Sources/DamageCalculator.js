@@ -1208,6 +1208,11 @@ class DamageCalculator {
                 return true;
             }
         }
+        for (let func of unit.battleContext.canActivateMiracleFuncs) {
+            if (func(unit, atkUnit)) {
+                return true;
+            }
+        }
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.YmirEverliving:

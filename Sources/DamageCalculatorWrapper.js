@@ -5765,12 +5765,53 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.VirtuousTyrfing] = (targetUnit, enemyUnit) => {
-            if (!targetUnit.battleContext.initiatesCombat
-                || targetUnit.battleContext.restHpPercentage <= 99
-            ) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.defSpur -= 6;
-                targetUnit.battleContext.healedHpByAttack += 7;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    targetUnit.battleContext.restHpPercentage <= 99) {
+                    enemyUnit.addAtkDefSpurs(-6);
+                    targetUnit.battleContext.healedHpByAttack += 7;
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75 ||
+                    targetUnit.battleContext.restHpPercentage <= 99) {
+                    enemyUnit.addAtkDefSpurs(-6);
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) {
+                            return;
+                        }
+                        let atk = atkUnit.getAtkInCombat(defUnit);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
+                    });
+                    targetUnit.battleContext.nullCounterDisrupt = true;
+                    targetUnit.battleContext.healedHpByAttack += 8;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        enemyUnit.addAtkDefSpurs(-5);
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            if (isWeaponTypeTome(atkUnit.weaponType) ||
+                                atkUnit.weaponType === WeaponType.Staff) {
+                                return 0.8;
+                            } else {
+                                return 0.4;
+                            }
+                        });
+                        if (enemyUnit.battleContext.initiatesCombat &&
+                            this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                            targetUnit.battleContext.canActivateMiracleFuncs.push((defUnit, atkUnit) => {
+                                if (defUnit.battleContext.isMiracleWithoutSpecialActivated) {
+                                    return false;
+                                }
+                                return defUnit.battleContext.restHpPercentage > 50;
+                            });
+                        }
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Taiyo] = (targetUnit, enemyUnit) => {
@@ -12511,6 +12552,13 @@ class DamageCalculatorWrapper {
     }
 
     __applyDamageReductionRatio(atkUnit, defUnit) {
+        for (let func of defUnit.battleContext.getDamageReductionRatioFuncs) {
+            let ratio = func(atkUnit, defUnit);
+            if (ratio > 0) {
+                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+            }
+        }
+
         for (let skillId of defUnit.enumerateSkills()) {
             let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
             if (ratio > 0) {
@@ -12553,6 +12601,10 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} isPrecombat
      */
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
+        for (let func of atkUnit.battleContext.calcFixedAddDamageFuncs) {
+            func(atkUnit, defUnit, isPrecombat);
+        }
+
         if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
             atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
         }
@@ -13493,8 +13545,12 @@ class DamageCalculatorWrapper {
             && !this.__canDisableCounterAttack(atkUnit, defUnit);
     }
 
+    // 反撃不可ならばtrueを反撃不可を無効にするならfalseを返す
     __canDisableCounterAttack(atkUnit, defUnit) {
         // defUnitが見切り・反撃効果を持っている場合(falseを返す場合)
+        if (defUnit.battleContext.nullCounterDisrupt) {
+            return false;
+        }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.IceBoundBrand:

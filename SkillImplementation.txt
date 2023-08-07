@@ -247,6 +247,8 @@ unit.battleContext.canCounterattackToAllDistance = true;
 __canDisableCounterAttack(atkUnit, defUnit) {
     return false;
 }
+もしくは
+targetUnit.battleContext.nullCounterDisrupt = true;
 
 敵が反撃可能なら
 this.canCounterAttack(atkUnit, defUnit)
@@ -500,6 +502,10 @@ __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
     }
 }
 戦闘中
+targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+});
+もしくは
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
     // 魔防参照
@@ -562,6 +568,11 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
 ダメージ+N(固定ダメージ) （同名のメソッドがあるので注意すること）
+targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+    // Nダメージ
+    atkUnit.battleContext.additionalDamage += N;
+});
+もしくは
 DamageCalculatorWrapper.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     // Nダメージ
