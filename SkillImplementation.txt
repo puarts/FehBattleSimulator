@@ -781,3 +781,9 @@ perTurnStatusToString() {}
 5. getMapBackgroundImage
 6. getBreakableObjCountOfCurrentMapType(壊れる壁の数)を修正
 7. __resetBattleMapPlacementForAetherRaidで特殊なタイルを設定(x: 左から0~, y: 上から0~)
+画像は海外wikiから取得する。例えばK0017は以下のURLで取得できる。
+https://feheroes.fandom.com/wiki/Category:Aether_Raids_map_files?file=Map_K0017.webp
+
+[注意]
+https://feheroes.fandom.com/wiki/Category:Aether_Raids_map_files
+だと何故か新しいマップは一覧に出てこない。
