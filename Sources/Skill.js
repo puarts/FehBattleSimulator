@@ -1703,6 +1703,7 @@ const Weapon = {
 
     // 2023年8月 武器錬成
     WesternAxe: 2540, // 西方の勇者の斧
+    ThraciaKinglance: 2539, // トラキアの王槍
 };
 
 const Support = {

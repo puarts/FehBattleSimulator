@@ -2217,6 +2217,22 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ThraciaKinglance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(4);
+                let def = targetUnit.getDefInPrecombat();
+                enemyUnit.atkSpur -= Math.trunc(def * 0.15);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WesternAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAllSpur(4);
