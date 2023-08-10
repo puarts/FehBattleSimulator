@@ -407,6 +407,12 @@ targetUnit.battleContext.nullInvalidatesHealRatio = 0.6
 targetUnit.battleContext.reducesCooldownCount = true;
 
 自身の奥義発動カウント変動量-を無効
+targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        enemyUnit.battleContext.reducesCooldownCount = false;
+    }
+);
+もしくは
 __applyInvalidationSkillEffect() {
     enemyUnit.battleContext.reducesCooldownCount = false;
 }

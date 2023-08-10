@@ -5771,9 +5771,41 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MaritaNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || targetUnit.battleContext.isSolo) {
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (calcPotentialDamage || targetUnit.battleContext.isSolo) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) {
+                                return;
+                            }
+                            let spd = atkUnit.getSpdInCombat(defUnit);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                        });
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.VirtuousTyrfing] = (targetUnit, enemyUnit) => {
@@ -14154,6 +14186,9 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __applyInvalidationSkillEffect(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let func of targetUnit.battleContext.applyInvalidationSkillEffectFuncs) {
+            func(targetUnit, enemyUnit, calcPotentialDamage);
+        }
         // 獣の共通武器スキル
         switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
             case Weapon.TeatimesEdge:
@@ -15757,9 +15792,6 @@ class DamageCalculatorWrapper {
                     if (!targetUnit.isWeaponRefined) {
                         targetUnit.addAllSpur(4);
                     }
-                    break;
-                case Weapon.MaritaNoKen:
-                    targetUnit.addAllSpur(4);
                     break;
                 case Weapon.ShirejiaNoKaze:
                 case Weapon.VengefulLance:

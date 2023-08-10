@@ -728,6 +728,8 @@ class BattleContext {
         this.getDamageReductionRatioFuncs = [];
         // 祈り
         this.canActivateMiracleFuncs = [];
+        // 無効スキル
+        this.applyInvalidationSkillEffectFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -886,6 +888,7 @@ class BattleContext {
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];
+        this.applyInvalidationSkillEffectFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
