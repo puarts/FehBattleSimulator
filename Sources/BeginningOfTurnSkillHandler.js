@@ -163,6 +163,14 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ShirejiaNoKaze:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    if (skillOwner.battleContext.restHpPercentage >= 25) {
+                        skillOwner.applyBuffs(6, 6, 0, 0);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
+                    }
+                }
+                break;
             case Special.SupremeAstra:
                 if (skillOwner.isSpecialCountMax) {
                     skillOwner.reduceSpecialCount(1);

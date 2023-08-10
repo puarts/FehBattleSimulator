@@ -2217,6 +2217,29 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ShirejiaNoKaze] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAtkSpdSpurs(6);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                    targetUnit.addAtkSpdSpurs(6);
+                    let spd = targetUnit.getSpdInPrecombat();
+                    let amount = Math.trunc(spd * 0.2);
+                    enemyUnit.addSpdResSpurs(-amount);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAtkSpdSpurs(5);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.NightmareHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (enemyUnit.battleContext.restHpPercentage >= 50) {
@@ -15793,7 +15816,6 @@ class DamageCalculatorWrapper {
                         targetUnit.addAllSpur(4);
                     }
                     break;
-                case Weapon.ShirejiaNoKaze:
                 case Weapon.VengefulLance:
                     targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
                     break;
