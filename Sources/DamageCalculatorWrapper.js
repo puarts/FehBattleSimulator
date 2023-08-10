@@ -2217,6 +2217,82 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ThraciaKinglance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(4);
+                let def = targetUnit.getDefInPrecombat();
+                enemyUnit.atkSpur -= Math.trunc(def * 0.15);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WesternAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(4);
+                // 最初に受けた攻撃のダメージを軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(30 / 100.0, enemyUnit);
+                // ダメージ軽減分を保存
+                targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                        if (!context.isFirstAttack(atkUnit)) return;
+                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                    }
+                );
+                // 攻撃ごとの固定ダメージに軽減した分を加算
+                targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                        let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                        return addDamage;
+                    }
+                    return 0;
+                });
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
+                        }
+                    );
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ShirejiaNoKaze] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                    targetUnit.addAtkSpdSpurs(6);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                    targetUnit.addAtkSpdSpurs(6);
+                    let spd = targetUnit.getSpdInPrecombat();
+                    let amount = Math.trunc(spd * 0.2);
+                    enemyUnit.addSpdResSpurs(-amount);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAtkSpdSpurs(5);
+                    }
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.NightmareHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 if (enemyUnit.battleContext.restHpPercentage >= 50) {
@@ -5771,9 +5847,41 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MaritaNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || targetUnit.battleContext.isSolo) {
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (calcPotentialDamage || targetUnit.battleContext.isSolo) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) {
+                                return;
+                            }
+                            let spd = atkUnit.getSpdInCombat(defUnit);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.1);
+                        });
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.VirtuousTyrfing] = (targetUnit, enemyUnit) => {
@@ -7354,8 +7462,32 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.VezuruNoYoran] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                    targetUnit.defSpur += 5;
+                    targetUnit.resSpur += 5;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__isThereAllyIn2Spaces(targetUnit, 2) && !calcPotentialDamage) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        if (enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.battleContext.invalidatesCounterattack = true;
+                        }
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SuyakuNoKen] = (targetUnit, enemyUnit) => {
@@ -10231,6 +10363,9 @@ class DamageCalculatorWrapper {
     }
 
     __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let func of targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs) {
+            func(targetUnit, enemyUnit, calcPotentialDamage);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
             this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
         }
@@ -14154,6 +14289,9 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __applyInvalidationSkillEffect(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let func of targetUnit.battleContext.applyInvalidationSkillEffectFuncs) {
+            func(targetUnit, enemyUnit, calcPotentialDamage);
+        }
         // 獣の共通武器スキル
         switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
             case Weapon.TeatimesEdge:
@@ -15707,12 +15845,6 @@ class DamageCalculatorWrapper {
                             targetUnit.defSpur += 3;
                         }
                         break;
-                    case Weapon.VezuruNoYoran:
-                        targetUnit.atkSpur += 5;
-                        targetUnit.spdSpur += 5;
-                        targetUnit.defSpur += 5;
-                        targetUnit.resSpur += 5;
-                        break;
                     case Weapon.OgonNoFolkPlus:
                     case Weapon.NinjinhuNoSosyokuPlus:
                         targetUnit.atkSpur += 5;
@@ -15758,10 +15890,6 @@ class DamageCalculatorWrapper {
                         targetUnit.addAllSpur(4);
                     }
                     break;
-                case Weapon.MaritaNoKen:
-                    targetUnit.addAllSpur(4);
-                    break;
-                case Weapon.ShirejiaNoKaze:
                 case Weapon.VengefulLance:
                     targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
                     break;

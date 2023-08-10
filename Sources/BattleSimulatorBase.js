@@ -6352,6 +6352,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 特殊錬成で無条件
+                case Weapon.VezuruNoYoran:
                 case Weapon.NightmareHorn:
                     if (unit.isWeaponSpecialRefined) {
                         return true;

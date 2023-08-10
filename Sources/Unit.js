@@ -728,6 +728,14 @@ class BattleContext {
         this.getDamageReductionRatioFuncs = [];
         // 祈り
         this.canActivateMiracleFuncs = [];
+        // 無効スキル
+        this.applyInvalidationSkillEffectFuncs = [];
+        // 攻撃ごとのダメージ加算
+        this.calcFixedAddDamagePerAttackFuncs = [];
+        // 軽減分のダメージを次の攻撃に加算
+        this.addReducedDamageForNextAttackFuncs = [];
+        // ステータス決定後の戦闘中バフ
+        this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -886,6 +894,10 @@ class BattleContext {
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];
+        this.applyInvalidationSkillEffectFuncs = [];
+        this.calcFixedAddDamagePerAttackFuncs = [];
+        this.addReducedDamageForNextAttackFuncs = [];
+        this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -5409,6 +5421,11 @@ class Unit extends BattleMapElement {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 // 再移動(1)
+                case Weapon.VezuruNoYoran:
+                    if (this.isWeaponSpecialRefined) {
+                        moveCountForCanto = Math.max(moveCountForCanto, 1);
+                    }
+                    break;
                 case Weapon.Queenslance:
                     if (this.hasPositiveStatusEffect()) {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);

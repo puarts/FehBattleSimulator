@@ -238,6 +238,7 @@ targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
+もしくは
 targetUnit.battleContext.invalidatesCounterattack = true;
 
 全距離反撃
@@ -285,6 +286,14 @@ targetUnit.battleContext.invalidateAllOwnDebuffs();
 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
 
 自分が弱化を受けていれば、能力値が弱化の値の2倍だけ上昇(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7+14+4で、戦闘中、攻撃+11となる)[弱化反転]
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this.__applyDebuffReverse(targetUnit, "スキルorステータス名");
+        // 武器スキルの場合
+        // this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
+    }
+);
+もしくは
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     this.__applyDebuffReverse(targetUnit, "スキルorステータス名");
 }
@@ -407,6 +416,12 @@ targetUnit.battleContext.nullInvalidatesHealRatio = 0.6
 targetUnit.battleContext.reducesCooldownCount = true;
 
 自身の奥義発動カウント変動量-を無効
+targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        enemyUnit.battleContext.reducesCooldownCount = false;
+    }
+);
+もしくは
 __applyInvalidationSkillEffect() {
     enemyUnit.battleContext.reducesCooldownCount = false;
 }
@@ -617,20 +632,26 @@ __calcFixedSpecialAddDamage() {
 
 最初の受けた攻撃のダメージをN%軽減し、軽減した値を、自身の次の攻撃のダメージに加算(他のスキルによる軽減値も含む)(その戦闘中のみ)
 __init__applySkillEffectForUnitFuncDict() {
+    // 最初に受けた攻撃のダメージを軽減
     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(N / 100.0, enemyUnit);
-}
-DamageCalculator.js
-__calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
-    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
-        fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-        atkUnit.battleContext.reducedDamageForNextAttack = 0;
-    }
-}
-__calcUnitAttackDamage() {
-    if (!context.isFirstAttack(atkUnit)) break;
-    defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
-    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+    // ダメージ軽減分を保存
+    targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+            if (!context.isFirstAttack(atkUnit)) return;
+            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+        }
+    );
+    // 攻撃ごとの固定ダメージに軽減した分を加算
+    targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+        if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+            atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+            let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+            atkUnit.battleContext.reducedDamageForNextAttack = 0;
+            return addDamage;
+        }
+        return 0;
+    });
 }
 
 最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
