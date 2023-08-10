@@ -1700,6 +1700,9 @@ const Weapon = {
     TeatimeSetPlus: 2529, // 紅茶+
     TeatimesEdge: 2524, // 淑女のお茶会の鋭剣
     TeacakeTowerPlus: 2533, // お茶菓子+
+
+    // 2023年8月 武器錬成
+    WesternAxe: 2540, // 西方の勇者の斧
 };
 
 const Support = {

@@ -346,6 +346,9 @@ class DamageCalculator {
             atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio = 0;
         }
 
+        for (let func of atkUnit.battleContext.calcFixedAddDamagePerAttackFuncs) {
+            fixedAddDamage += func(atkUnit, defUnit, isPrecombat);
+        }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.FruitOfLife:
@@ -1330,6 +1333,9 @@ class DamageCalculator {
             }
         }
 
+        for (let func of defUnit.battleContext.addReducedDamageForNextAttackFuncs) {
+            func(defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context);
+        }
         switch (defUnit.special) {
             case Special.IceMirror:
                 if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {

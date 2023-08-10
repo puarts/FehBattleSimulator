@@ -730,6 +730,12 @@ class BattleContext {
         this.canActivateMiracleFuncs = [];
         // 無効スキル
         this.applyInvalidationSkillEffectFuncs = [];
+        // 攻撃ごとのダメージ加算
+        this.calcFixedAddDamagePerAttackFuncs = [];
+        // 軽減分のダメージを次の攻撃に加算
+        this.addReducedDamageForNextAttackFuncs = [];
+        // ステータス決定後の戦闘中バフ
+        this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -889,6 +895,9 @@ class BattleContext {
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];
         this.applyInvalidationSkillEffectFuncs = [];
+        this.calcFixedAddDamagePerAttackFuncs = [];
+        this.addReducedDamageForNextAttackFuncs = [];
+        this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
