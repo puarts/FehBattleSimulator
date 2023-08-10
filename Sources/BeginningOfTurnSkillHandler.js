@@ -163,6 +163,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.VezuruNoYoran:
+                if (skillOwner.isWeaponSpecialRefined) {
+                    for (let enemy of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemy, 2, true)) {
+                            unit.reserveToApplyDebuffs(0, 0, -6, -6);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                        }
+                    }
+                }
+                break;
             case Weapon.ShirejiaNoKaze:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (skillOwner.battleContext.restHpPercentage >= 25) {

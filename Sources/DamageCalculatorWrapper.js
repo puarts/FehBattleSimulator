@@ -7462,8 +7462,32 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.VezuruNoYoran] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.atkSpur += 5;
+                    targetUnit.spdSpur += 5;
+                    targetUnit.defSpur += 5;
+                    targetUnit.resSpur += 5;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__isThereAllyIn2Spaces(targetUnit, 2) && !calcPotentialDamage) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        if (enemyUnit.hasNegativeStatusEffect()) {
+                            targetUnit.battleContext.invalidatesCounterattack = true;
+                        }
+                    }
+                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.SuyakuNoKen] = (targetUnit, enemyUnit) => {
@@ -15820,12 +15844,6 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur += 3;
                             targetUnit.defSpur += 3;
                         }
-                        break;
-                    case Weapon.VezuruNoYoran:
-                        targetUnit.atkSpur += 5;
-                        targetUnit.spdSpur += 5;
-                        targetUnit.defSpur += 5;
-                        targetUnit.resSpur += 5;
                         break;
                     case Weapon.OgonNoFolkPlus:
                     case Weapon.NinjinhuNoSosyokuPlus:

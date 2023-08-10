@@ -5448,6 +5448,11 @@ class Unit extends BattleMapElement {
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 // 再移動(1)
+                case Weapon.VezuruNoYoran:
+                    if (this.isWeaponSpecialRefined) {
+                        moveCountForCanto = Math.max(moveCountForCanto, 1);
+                    }
+                    break;
                 case Weapon.Queenslance:
                     if (this.hasPositiveStatusEffect()) {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
