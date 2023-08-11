@@ -4513,6 +4513,8 @@ class BattleSimmulatorBase {
         const originalEnemyHp = enemyUnit.hp;
         const originalEnemySpecialCount = enemyUnit.specialCount;
         const originalEnemyDragonflower = enemyUnit.dragonflower;
+        /** @type {SkillInfo} */
+        const originalEnemySacredSealInfo = enemyUnit.passiveSInfo;
         let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
         let targetUnitStatusEffects = targetUnit.statusEffects;
         let enemyUnitStatusEffects = enemyUnit.statusEffects;
@@ -4530,6 +4532,13 @@ class BattleSimmulatorBase {
 
             // 敵の初期化
             using(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {
+                if (originalEnemySacredSealInfo != null && enemyUnit.canEquip(originalEnemySacredSealInfo)) {
+                    enemyUnit.passiveS = originalEnemySacredSealInfo.id;
+                }
+                else {
+                    enemyUnit.passiveS = PassiveS.None;
+                }
+
                 this.__durabilityTest_initUnit(
                     enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount, originalEnemyDragonflower);
                 this.damageCalc.updateUnitSpur(targetUnit, this.vm.durabilityTestCalcPotentialDamage);
@@ -4538,6 +4547,7 @@ class BattleSimmulatorBase {
                 if (this.vm.durabilityTestChargesSpecialCount) {
                     enemyUnit.specialCount = 0;
                 }
+
 
                 // テスト対象のHPと奥義発動カウントをリセット
                 targetUnit.specialCount = originalSpecialCount;
@@ -4616,6 +4626,10 @@ class BattleSimmulatorBase {
         targetUnit.hp = originalHp;
         enemyUnit.specialCount = originalEnemySpecialCount;
         enemyUnit.hp = originalEnemyHp;
+        if (originalEnemySacredSealInfo != null) {
+            enemyUnit.passiveS = originalEnemySacredSealInfo.id;
+            enemyUnit.passiveSInfo = originalEnemySacredSealInfo;
+        }
 
         let result = new Object();
         result.winCount = winCount;
