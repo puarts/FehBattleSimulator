@@ -264,10 +264,14 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 }
 
 攻撃、速さ、守備、魔防が強化が<units>の最も高い値だけ増加(能力値ごとに計算)[味方強化増幅]
-__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
-    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
-    targetUnit.addSpurs(...amounts);
-}
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        // 周囲3マス以内の場合
+        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+        targetUnit.addSpurs(...amounts);
+    }
+);
 
 敵の強化の+を無効(強化無効)
 targetUnit.battleContext.invalidateAllBuffs();
@@ -350,6 +354,12 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     enemyUnit.defSpur -= enemyUnit.getDefBuffInCombat(targetUnit);
     enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
 }
+
+ステータス決定後のスキル効果
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+    }
+);
 
 敵が[有利/不利]な状態異常を受けている時
 __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
@@ -520,6 +530,8 @@ __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
 戦闘中
 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+    // 魔防参照
+    // return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
     // 固定割合(30%)
     // return 0.3;
 });
@@ -766,6 +778,11 @@ let dist = Unit.calcMoveDistance(targetUnit);
 
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
+
+護り手
+__canActivateSaveSkill(atkUnit, unit) {
+    return true;
+}
 
 【XXX】の状態を付与(ステータス追加)
 Unit.js

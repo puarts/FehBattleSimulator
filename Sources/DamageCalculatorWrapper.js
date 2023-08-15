@@ -670,9 +670,22 @@ class DamageCalculatorWrapper {
         return saverUnit;
     }
 
+
     __canActivateSaveSkill(atkUnit, unit) {
         if (this.__canDisableSaveSkill(atkUnit, unit)) {
             return false;
+        }
+
+        if (unit.hasStatusEffect(StatusEffectType.AssignDecoy)) {
+            if (this.__hasSaveSkills(unit)) {
+                return false;
+            }
+            if (isRangedWeaponType(unit.weaponType) && isRangedWeaponType(atkUnit.weaponType)) {
+                return true;
+            }
+            if (isMeleeWeaponType(unit.weaponType) && isMeleeWeaponType(atkUnit.weaponType)) {
+                return true;
+            }
         }
 
         for (let skillId of unit.enumerateSkills()) {
@@ -748,6 +761,12 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.ArchSageTome:
+                    if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                        let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
                 case Weapon.DreamHorn:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
@@ -2238,6 +2257,22 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.ArchSageTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 周囲3マス以内の場合
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                });
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.CounterRoar4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addAtkSpdSpurs(-4);
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
@@ -11372,6 +11407,9 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+        for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
+            func(targetUnit, enemyUnit, calcPotentialDamage);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
         }

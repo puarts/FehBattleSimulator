@@ -238,6 +238,7 @@ const StatusEffectType = {
     Hexblade: 47, // 魔刃
     Sabotage: 48, // 混乱
     Discord: 49, // 不和
+    AssignDecoy: 50, // 囮指名
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -411,6 +412,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Sabotage.webp";
         case StatusEffectType.Discord:
             return g_imageRootPath + "StatusEffect_Discord.webp";
+        case StatusEffectType.AssignDecoy:
+            return g_imageRootPath + "StatusEffect_AssignDecoy.webp";
         default: return "";
     }
 }
@@ -739,6 +742,8 @@ class BattleContext {
         this.addReducedDamageForNextAttackFuncs = [];
         // ステータス決定後の戦闘中バフ
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
+        // ステータス決定後のスキル効果
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -902,6 +907,7 @@ class BattleContext {
         this.calcFixedAddDamagePerAttackFuncs = [];
         this.addReducedDamageForNextAttackFuncs = [];
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -1379,6 +1385,10 @@ class Unit extends BattleMapElement {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
         this.reservedStatusEffects = [];
+        this.reservedAtkBuff = 0;
+        this.reservedSpdBuff = 0;
+        this.reservedDefBuff = 0;
+        this.reservedResBuff = 0;
         this.reservedAtkDebuff = 0;
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
@@ -3203,6 +3213,13 @@ class Unit extends BattleMapElement {
         this.applyResBuff(res);
     }
 
+    reserveToApplyBuffs(atk, spd, def, res) {
+        this.reservedAtkBuff = Math.max(this.reservedAtkBuff, atk);
+        this.reservedSpdBuff = Math.max(this.reservedSpdBuff, spd);
+        this.reservedDefBuff = Math.max(this.reservedDefBuff, def);
+        this.reservedResBuff = Math.max(this.reservedResBuff, res);
+    }
+
     applyAtkSpdBuffs(atk, spd = atk) {
         this.applyAtkBuff(atk);
         this.applySpdBuff(spd);
@@ -3332,6 +3349,15 @@ class Unit extends BattleMapElement {
         this.reservedSpdDebuff = this.spdDebuff;
         this.reservedDefDebuff = this.defDebuff;
         this.reservedResDebuff = this.resDebuff;
+    }
+
+    applyReservedBuffs() {
+        this.applyBuffs(this.reservedAtkBuff, this.reservedSpdBuff, this.reservedDefBuff, this.reservedResBuff);
+
+        this.reservedAtkBuff = 0;
+        this.reservedSpdBuff = 0;
+        this.reservedDefBuff = 0;
+        this.reservedResBuff = 0;
     }
 
     applyReservedDebuffs() {

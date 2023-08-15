@@ -1709,6 +1709,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=FLYYn_QvBq4&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=FLYYn_QvBq4&ab_channel=NintendoMobile
     Vallastone: 2544, // 透魔の竜石
+    ArchSageTome: 2547, // 大賢者の書
 };
 
 const Support = {
@@ -2915,6 +2916,7 @@ const PassiveC = {
     SurtrsMenace: 767, // 炎王の威嚇
     SurtrsPortent: 1792, // 炎王の脅嚇
     WithEveryone: 754, // みんなと一緒に
+
     WithEveryone2: 1879, // みんなと一緒に・承
     SolitaryDream: 898, // ひとりぼっちのゆめ
     DivineFang: 915, // 神竜王の牙

@@ -105,6 +105,7 @@ class BeginningOfTurnSkillHandler {
     applyReservedState(unit) {
         // ターン開始時の不利な状態無効
         if (!unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
+            unit.applyReservedBuffs();
             unit.applyReservedDebuffs();
             unit.applyReservedStatusEffects();
         } else {
@@ -163,6 +164,39 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.ArchSageTome: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
+                    if (skillOwner.isPartner(unit)) {
+                        found = true;
+                    }
+                }
+                if (found) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        if (skillOwner.isPartner(unit)) {
+                            unit.reserveToApplyBuffs(6, 6, 6, 6);
+                            unit.reserveToAddStatusEffect(StatusEffectType.AssignDecoy);
+                        }
+                    }
+                } else {
+                    let units = [];
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                        if (units.length === 0) {
+                            units = [unit];
+                        } else {
+                            if (units[0].getDefInPrecombat() < unit.getDefInPrecombat()) {
+                                units = [unit];
+                            } else if (units[0].getDefInPrecombat() === unit.getDefInPrecombat()) {
+                                units.push(unit);
+                            }
+                        }
+                    }
+                    for (let unit of units) {
+                        unit.reserveToApplyBuffs(6, 6, 6, 6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.AssignDecoy);
+                    }
+                }
+            }
             case Weapon.VezuruNoYoran:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let enemy of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
@@ -1734,9 +1768,7 @@ class BeginningOfTurnSkillHandler {
                         skillOwner);
                     units.push(skillOwner);
                     for (let unit of units) {
-                        unit.applyAtkBuff(6);
-                        unit.applySpdBuff(6);
-                        unit.applyDefBuff(6);
+                        unit.reserveToApplyBuffs(6, 6, 6, 0);
                         unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                         if (skillId === PassiveC.VisionOfArcadia2) {
                             unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
@@ -1754,8 +1786,7 @@ class BeginningOfTurnSkillHandler {
                         x => this.__getStatusEvalUnit(x).getAtkInPrecombat(),
                         skillOwner)
                     ) {
-                        unit.applyAtkBuff(6);
-                        unit.applyDefBuff(6);
+                        unit.reserveToApplyBuffs(6, 0, 6, 0);
                     }
                 }
                 break;
