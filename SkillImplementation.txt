@@ -505,6 +505,7 @@ targetUnit.battleContext.refersMinOfDefOrRes = true;
 敵の「敵の守備か魔防の低い方でダメージ計算」を無効化
 __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit) {}
 
+ダメカ
 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×N%軽減(最大M)[回避]
 戦闘前
 __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
@@ -519,6 +520,8 @@ __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
 戦闘中
 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+    // 固定割合(30%)
+    // return 0.3;
 });
 もしくは
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {

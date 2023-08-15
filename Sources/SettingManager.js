@@ -177,7 +177,7 @@ class SettingManager {
         loadsEnemies = true,
         loadsOffenceStructures = true,
         loadsDefenseStructures = true,
-        exportsMapSettings = false
+        exportsMapSettings = true
     ) {
         let currentTurn = this._appData.currentTurn;
         let turnSetting = new TurnSetting(currentTurn);
@@ -249,7 +249,7 @@ class SettingManager {
         loadsEnemies = true,
         loadsOffenceStructures = true,
         loadsDefenseStructures = true,
-        exportsMapSettings = false
+        exportsMapSettings = true
     ) {
         let turnSetting = this.convertToPerTurnSetting(
             loadsAllies, loadsEnemies, loadsOffenceStructures, loadsDefenseStructures, exportsMapSettings);

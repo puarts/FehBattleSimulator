@@ -1704,6 +1704,11 @@ const Weapon = {
     // 2023年8月 武器錬成
     WesternAxe: 2540, // 西方の勇者の斧
     ThraciaKinglance: 2539, // トラキアの王槍
+
+    // 新英雄召喚（巡る運命の輪）
+    // https://www.youtube.com/watch?v=FLYYn_QvBq4&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=FLYYn_QvBq4&ab_channel=NintendoMobile
+    Vallastone: 2544, // 透魔の竜石
 };
 
 const Support = {

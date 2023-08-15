@@ -42,6 +42,11 @@ for (let key in TileType) {
 const CanNotReachTile = 1000000;
 const ObstructTile = 10000; // 進軍阻止されているタイルのウェイト
 
+const DivineVeinType = {
+    None: 0,
+    Stone: 1,
+};
+
 /**
  * ユニットをタイルに配置します。
  * @param  {Unit} unit
@@ -97,6 +102,9 @@ class Tile extends BattleMapElement {
         this.borderWidth = "1px";
         this.overrideText = "";
 
+        this.divineVein = DivineVeinType.None;
+        this.divineVeinGroup = null;
+
         /** @type {Tile} */
         this.snapshot = null;
     }
@@ -118,7 +126,9 @@ class Tile extends BattleMapElement {
     }
 
     perTurnStatusToString() {
-        return "";
+        return this.divineVein + ValueDelimiter +
+            this.divineVeinGroup + ValueDelimiter
+            ;
     }
 
     turnWideStatusToString() {
@@ -126,6 +136,10 @@ class Tile extends BattleMapElement {
     }
 
     fromPerTurnStatusString(value) {
+        let splited = value.split(ValueDelimiter);
+        let i = 0;
+        if (Number.isInteger(Number(splited[i]))) { this.divineVein = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.divineVeinGroup = Number(splited[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {

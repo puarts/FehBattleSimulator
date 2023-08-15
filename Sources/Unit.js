@@ -1472,6 +1472,9 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
 
+        // バックアップ
+        this.tilesMapForDivineVein = new Map();
+
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
         this.isOncePerMapSpecialActivated = false;
 
@@ -3057,7 +3060,10 @@ class Unit extends BattleMapElement {
     }
 
     // 行動終了状態にする
-    endAction() {
+    endAction(applyEndActionSkills = true) {
+        if (applyEndActionSkills) {
+            this.applyEndActionSkills();
+        }
         this.deactivateCanto();
         if (this.isActionDone) {
             return;
@@ -3071,6 +3077,22 @@ class Unit extends BattleMapElement {
             this.resetDebuffs();
         }
         this.clearNegativeStatusEffects();
+    }
+
+    applyEndActionSkills() {
+        for (let skillId of this.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Vallastone:
+                    this.tilesMapForDivineVein.clear();
+                    for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
+                        // 上書き前のタイル情報を保存
+                        this.tilesMapForDivineVein.set(tile, [tile.divineVein, tile.divineVeinGroup]);
+                        tile.divineVein = DivineVeinType.Stone;
+                        tile.divineVeinGroup = this.groupId;
+                    }
+                    break;
+            }
+        }
     }
 
     applyAllBuff(amount) {

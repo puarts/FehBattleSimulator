@@ -2723,8 +2723,22 @@ class BattleMap {
 
         if (this._showEnemyAttackRange && this._showAllyAttackRange && tile.dangerLevel > 0 && tile.allyDangerLevel > 0) {
             const alpha = "90";
-            cell.borderColor = "#f0f";
+            // cell.borderColor = "#f0f";
             cell.bgColor = "#eee0ee" + alpha;
+        }
+
+        // 天脈
+        // 味方の天脈、敵の天脈で処理を分ける
+        if (tile.divineVein !== DivineVeinType.None) {
+            const alpha = "40";
+            cell.borderStyle = "solid";
+            if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
+                // cell.borderColor = "#00ffff";
+                cell.bgColor = "#00ffff" + alpha;
+            } else {
+                // cell.borderColor = "#ff00ff";
+                cell.bgColor = "#ff00ff" + alpha;
+            }
         }
     }
 
