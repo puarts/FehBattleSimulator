@@ -2238,6 +2238,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.CounterRoar4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addAtkSpdSpurs(-4);
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+            targetUnit.battleContext.reducedRatioForNextAttack = Math.max(0.3, targetUnit.battleContext.reducedRatioForNextAttack);
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.RealmsUnited] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 enemyUnit.addAllSpur(-7);

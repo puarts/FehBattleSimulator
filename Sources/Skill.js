@@ -2622,6 +2622,9 @@ const PassiveB = {
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
     BeastSense4: 2515, // 絶対化身・察知4
+
+    // 咆哮
+    CounterRoar4: 2546, // 反撃の咆哮4
 };
 
 const PassiveC = {

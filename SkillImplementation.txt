@@ -364,12 +364,12 @@ targetUnit.reserveHeal(N);
 targetUnit.battleContext.healedHpByAttack += N
 
 戦闘後、HP N回復/Nダメージ
+targetUnit.battleContext.healedHpAfterCombat += N;
+または
 __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
   targetUnit.reserveTakeDamage(N);
 }
-又は
-targetUnit.battleContext.healedHpAfterCombat += N;
 
 周囲Nマスの味方は戦闘後、7回復(暗闘の対象にならないスキル効果)
 __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
