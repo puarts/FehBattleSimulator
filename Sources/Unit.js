@@ -599,6 +599,9 @@ class BattleContext {
         // Nの符号に注意。Nは自然数（ダメージ-5ならN=5）
         this.damageReductionValueOfFirstAttacks = 0;
 
+        // 敵の奥義による攻撃のダメージ-N(範囲奥義を除く)
+        this.damageReductionValueOfSpecialAttack = 0;
+
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
 
@@ -780,6 +783,7 @@ class BattleContext {
         this.damageReductionRatioOfFollowupAttack = 0;
         this.damageReductionValueOfFollowupAttack = 0;
         this.damageReductionValueOfFirstAttacks = 0;
+        this.damageReductionValueOfSpecialAttack = 0;
         this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;

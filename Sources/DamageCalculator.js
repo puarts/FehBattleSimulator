@@ -995,6 +995,7 @@ class DamageCalculator {
                     }
                 }
                 // 奥義発動
+                damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog("奥義によるダメージ" + currentDamage);
                 this.writeSimpleLog(" " + atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>奥義ダメージ" + currentDamage);

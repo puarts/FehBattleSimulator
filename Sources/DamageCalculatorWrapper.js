@@ -733,6 +733,16 @@ class DamageCalculatorWrapper {
     }
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+        // 天脈
+        let tile = defUnit.placedTile;
+        switch (tile.divineVein) {
+            case DivineVeinType.Stone:
+                if (tile.divineVeinGroup === defUnit.groupId) {
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
+                }
+                break;
+        }
+
         if (defUnit.hasStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent)) {
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
         }
@@ -2205,6 +2215,17 @@ class DamageCalculatorWrapper {
 
         // 今のところ奥義にしかこの効果が存在しないので、重複しない。もし今後重複する場合は重複時の計算方法を調査して実装する
         targetUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(targetUnit.special);
+
+        // 天脈効果
+        let tile = targetUnit.placedTile;
+        switch (tile.divineVein) {
+            case DivineVeinType.Stone:
+                if (tile.divineVeinGroup === targetUnit.groupId) {
+                    targetUnit.addDefResSpurs(6);
+                    targetUnit.battleContext.damageReductionValueOfSpecialAttack += 10;
+                }
+                break;
+        }
 
         for (let skillId of targetUnit.enumerateSkills()) {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
