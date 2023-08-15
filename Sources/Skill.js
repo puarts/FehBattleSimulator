@@ -1866,6 +1866,7 @@ const Special = {
     BlueFrame: 473, // ブルーフレイム
     SeidrShell: 1542, // 魔弾
     BrutalShell: 1853, // 凶弾
+    Flare: 2548, // 陽光
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -3255,6 +3256,7 @@ function isDefenseSpecial(special) {
 }
 
 const NormalAttackSpecialDict = {};
+NormalAttackSpecialDict[Special.Flare] = 0;
 NormalAttackSpecialDict[Special.Moonbow] = 0;
 NormalAttackSpecialDict[Special.Luna] = 0;
 NormalAttackSpecialDict[Special.Aether] = 0;

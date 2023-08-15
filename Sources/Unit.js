@@ -651,6 +651,9 @@ class BattleContext {
         // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
         this.maxHpRatioToHealBySpecial = 0;
 
+        // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
+        this.maxHpRatioToHealBySpecialPerAttack = 0;
+
         // 奥義による攻撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
         this.healedHpAfterAttackSpecialInCombat = 0;
 
@@ -872,6 +875,7 @@ class BattleContext {
         this.specialAddDamage = 0;
         this.specialDamageRatioToHeal = 0;
         this.maxHpRatioToHealBySpecial = 0;
+        this.maxHpRatioToHealBySpecialPerAttack = 0;
         this.healedHpAfterAttackSpecialInCombat = 0;
         this.damageRatioToHeal = 0;
         this.selfDamageDealtRateToAddSpecialDamage = 0;
