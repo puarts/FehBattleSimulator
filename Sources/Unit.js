@@ -749,6 +749,8 @@ class BattleContext {
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
         // 2回攻撃
         this.setAttackCountFuncs = [];
+        // 戦闘後
+        this.applySkillEffectAfterCombatForUnitFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -915,6 +917,7 @@ class BattleContext {
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
         this.setAttackCountFuncs = [];
+        this.applySkillEffectAfterCombatForUnitFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。

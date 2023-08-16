@@ -45,6 +45,7 @@ const ObstructTile = 10000; // 進軍阻止されているタイルのウェイ�
 const DivineVeinType = {
     None: 0,
     Stone: 1,
+    Flame: 2,
 };
 
 /**
@@ -369,6 +370,13 @@ class Tile extends BattleMapElement {
         if (this.__isForestType() && unit.moveType == MoveType.Infantry && unit.moveCount == 1) {
             // 歩行に1マス移動制限がかかっている場合は森地形のウェイトは通常地形と同じ
             return 1;
+        }
+
+        // 天脈・炎の場合は敵の2距離はコスト+1
+        if (isRangedWeaponType(unit.weaponType) &&
+            this.divineVein === DivineVeinType.Flame &&
+            this.divineVeinGroup !== unit.groupId) {
+            return 2;
         }
 
         return this._moveWeights[unit.moveType];

@@ -434,6 +434,11 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
+        // 戦闘後効果
+        // ex) 戦闘開始後、敵に7ダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)など
+        this.__applySKillEffectForUnitAtBeginningOfCombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySKillEffectForUnitAtBeginningOfCombat(defUnit, atkUnit, calcPotentialDamage);
+
         // self.profile.profile("__applySkillEffect", () => {
         this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
         this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
@@ -2114,6 +2119,37 @@ class DamageCalculatorWrapper {
         };
     }
 
+    __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage) {
+        // 天脈
+        let tile = targetUnit.placedTile;
+        if (tile.divineVein === DivineVeinType.Flame &&
+            tile.divineVeinGroup !== targetUnit.groupId) {
+            let logMessage = `天脈・炎により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
+            this.__writeDamageCalcDebugLog(logMessage);
+            this._damageCalc.writeSimpleLog(logMessage);
+            enemyUnit.restHp -= 7;
+            if (enemyUnit.restHp <= 0) {
+                enemyUnit.restHp = 1;
+            }
+        }
+        // スキル
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.FlaredSparrow:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
+                        this.__writeDamageCalcDebugLog(logMessage);
+                        this._damageCalc.writeSimpleLog(logMessage);
+                        enemyUnit.restHp -= 7;
+                        if (enemyUnit.restHp <= 0) {
+                            enemyUnit.restHp = 1;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
@@ -2262,6 +2298,23 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        let placedTile = enemyUnit.placedTile;
+                        for (let tile of this.map.enumerateTiles()) {
+                            if (tile.posY === placedTile.posY &&
+                                Math.abs(tile.posX - placedTile.posX) <= 2) {
+                                tile.divineVein = DivineVeinType.Flame;
+                                tile.divineVeinGroup = targetUnit.groupId;
+                            }
+                        }
+                    }
+                );
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.TheCyclesTurn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat ||
                 targetUnit.hasPositiveStatusEffect(enemyUnit)) {

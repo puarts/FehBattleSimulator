@@ -3792,6 +3792,7 @@ class BattleSimmulatorBase {
         this.__initReservedHpForAllUnitsOnMap();
 
         this.executeStructuresByUnitGroupType(targetUnits[0].groupId, false);
+        this.applyTileEffect();
 
         // ターン開始時スキル(通常)
         for (let unit of targetUnits) {
@@ -7503,6 +7504,27 @@ class BattleSimmulatorBase {
         if (appliesDamage) {
             this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
             this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
+        }
+    }
+
+    applyTileEffect() {
+        // 天脈
+        // TODO: とりあえずこのタイミングで実装するが後で正しいか確認する
+        for (let tile of this.map.enumerateTiles()) {
+            console.log(`tile.divineVein: ${tile.divineVein}`);
+            console.log(`tile.divineVeinGroup: ${tile.divineVeinGroup}`);
+            switch (tile.divineVein) {
+                case DivineVeinType.Flame: {
+                    let unit = tile.placedUnit;
+                    if (unit === null) {
+                        break;
+                    }
+                    if (unit.groupId !== tile.divineVeinGroup) {
+                        unit.reserveTakeDamage(7);
+                    }
+                }
+                    break;
+            }
         }
     }
 

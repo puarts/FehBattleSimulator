@@ -2270,6 +2270,9 @@ const PassiveA = {
 
     // 柔撃
     FlashSparrow: 2510, // 鬼神飛燕の柔撃
+
+    // 炎撃
+    FlaredSparrow: 2551, // 鬼神飛燕の炎撃
 };
 
 const PassiveB = {

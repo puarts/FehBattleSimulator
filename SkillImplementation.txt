@@ -390,6 +390,14 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveTakeDamage(N);
 }
 
+戦闘開始後、敵に7ダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+__applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage) {
+    enemyUnit.restHp -= 7;
+    if (enemyUnit.restHp <= 0) {
+        enemyUnit.restHp = 1;
+    }
+}
+
 周囲Nマスの味方は戦闘後、7回復(暗闘の対象にならないスキル効果)
 __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
   targetUnit.battleContext.healedHpAfterCombat += 7;
