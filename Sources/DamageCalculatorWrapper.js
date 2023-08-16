@@ -659,12 +659,13 @@ class DamageCalculatorWrapper {
                             }
                         }
                         break;
-                    case Special.SeidrShell:
+                    case Special.SeidrShell: {
                         if (this.isLogEnabled) this.writeDebugLog("魔弾により守備魔防の低い方でダメージ計算");
 
                         let defInCombat = defUnit.getDefInCombat(atkUnit);
                         let resInCombat = defUnit.getResInCombat(atkUnit);
                         atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                    }
                         break;
                 }
             }
