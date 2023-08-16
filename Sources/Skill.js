@@ -1711,6 +1711,7 @@ const Weapon = {
     Vallastone: 2544, // 透魔の竜石
     ArchSageTome: 2547, // 大賢者の書
     TheCyclesTurn: 2550, // 円環の力
+    DeliverersBrand: 2553, // 聖王の軍師の剣
 };
 
 const Support = {
@@ -2565,6 +2566,8 @@ const PassiveB = {
     GuardBearing4: 2417, // 警戒姿勢4
     DiveBomb3: 1430, // 空からの急襲3
 
+    // 専用B
+    GoldUnwinding: 2552, // 時を戻す黄金の魔女
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨

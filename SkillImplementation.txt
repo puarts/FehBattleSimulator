@@ -459,6 +459,13 @@ __applyInvalidationSkillEffect() {
 }
 
 敵の奥義発動カウント変動量+を無効
+targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+    }
+);
+もしくは
 __applyInvalidationSkillEffect() {
     enemyUnit.battleContext.increaseCooldownCountForAttack = false;
     enemyUnit.battleContext.increaseCooldownCountForDefense = false;
@@ -533,6 +540,10 @@ if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
 targetUnit.battleContext.refersMinOfDefOrRes = true;
+
+敵の守備か魔防の低い方でダメージ計算(魔弾など奥義発動時限定などはここで実装する)
+__selectReferencingResOrDef(atkUnit, defUnit) {
+}
 
 敵の「敵の守備か魔防の低い方でダメージ計算」を無効化
 __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit) {}

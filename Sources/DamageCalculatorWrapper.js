@@ -642,16 +642,32 @@ class DamageCalculatorWrapper {
         }
 
         atkUnit.battleContext.refersResForSpecial = atkUnit.battleContext.refersRes;
-        switch (atkUnit.special) {
-            case Special.SeidrShell:
-                if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
-                    if (this.isLogEnabled) this.writeDebugLog("魔弾により守備魔防の低い方でダメージ計算");
+        if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
+            for (let skillId of atkUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.DeliverersBrand:
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            if (atkUnit.special === Special.Bonfire ||
+                                atkUnit.special === Special.Ignis ||
+                                atkUnit.special === Special.Hotarubi) {
+                                if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.weaponInfo.name}により守備魔防の低い方でダメージ計算`);
 
-                    let defInCombat = defUnit.getDefInCombat(atkUnit);
-                    let resInCombat = defUnit.getResInCombat(atkUnit);
-                    atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                                let defInCombat = defUnit.getDefInCombat(atkUnit);
+                                let resInCombat = defUnit.getResInCombat(atkUnit);
+                                atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                                break;
+                            }
+                        }
+                        break;
+                    case Special.SeidrShell:
+                        if (this.isLogEnabled) this.writeDebugLog("魔弾により守備魔防の低い方でダメージ計算");
+
+                        let defInCombat = defUnit.getDefInCombat(atkUnit);
+                        let resInCombat = defUnit.getResInCombat(atkUnit);
+                        atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                        break;
                 }
-                break;
+            }
         }
     }
 
@@ -2298,6 +2314,23 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.DeliverersBrand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                if (targetUnit.maxSpecialCount >= 3 ||
+                    isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.GoldUnwinding] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdResSpurs(-5);
             if (targetUnit.battleContext.restHpPercentage >= 50 &&
