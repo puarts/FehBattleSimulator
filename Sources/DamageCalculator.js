@@ -464,7 +464,12 @@ class DamageCalculator {
             let totalCount =
                 atkUnit.tmpSpecialCount
                 - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
+                - atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack
                 + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
+            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: ${totalCount} = ${atkUnit.tmpSpecialCount} - 
+            ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
+            ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
+            ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
             atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
         }
 
@@ -1119,6 +1124,7 @@ class DamageCalculator {
         unit.battleContext.preventedDefenderSpecialPerAttack = false;
         unit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
         unit.battleContext.maxHpRatioToHealBySpecialPerAttack = 0;
+        unit.battleContext.specialCountReductionBeforeFirstAttackPerAttack = 0;
     }
 
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
