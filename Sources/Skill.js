@@ -1710,6 +1710,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=FLYYn_QvBq4&ab_channel=NintendoMobile
     Vallastone: 2544, // 透魔の竜石
     ArchSageTome: 2547, // 大賢者の書
+    TheCyclesTurn: 2550, // 円環の力
 };
 
 const Support = {

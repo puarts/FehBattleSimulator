@@ -197,6 +197,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
             }
+                break;
             case Weapon.VezuruNoYoran:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let enemy of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {
