@@ -2652,6 +2652,27 @@ class BattleMap {
                     // 危険度の表示
                     additionalInnerText += "<span style='color:#f80;font-size:12px;" + shadowCss + ";'><b>" + tile.allyDangerLevel + "</b></span>";
                 }
+                if (tile.divineVein !== DivineVeinType.None) {
+                    let divineString = "";
+                    switch (tile.divineVein) {
+                        case DivineVeinType.Stone:
+                            divineString = "護";
+                            break;
+                        case DivineVeinType.Flame:
+                            divineString = "炎";
+                            break;
+                    }
+                    let divineColor = "";
+                    switch (tile.divineVeinGroup) {
+                        case UnitGroupType.Ally:
+                            divineColor = "#00bbff";
+                            break;
+                        case UnitGroupType.Enemy:
+                            divineColor = "#ff8800";
+                            break;
+                    }
+                    additionalInnerText += `<span style='color:${divineColor};font-size:12px;${shadowCss};'><b>${divineString}</b></span>`;
+                }
 
                 if (tile.closestDistanceToEnemy > 0) {
                     // 敵への最短距離の表示
