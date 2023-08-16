@@ -164,6 +164,17 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.TipTheScales: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.reserveToAddStatusEffect(StatusEffectType.RallySpectrum);
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.RallySpectrum);
+                }
+            }
+                break;
             case Weapon.ArchSageTome: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {

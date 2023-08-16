@@ -1985,6 +1985,12 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.TipTheScales:
+                    let allyCondFunc = ally => ally.hasStatusEffect(StatusEffectType.RallySpectrum);
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                        unit, 5, 1, allyCondFunc
+                    );
+                    break;
                 case Weapon.DivineDraught:
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
                         unit, 3, 2, ally => ally.isPartner(unit)

@@ -239,6 +239,7 @@ const StatusEffectType = {
     Sabotage: 48, // 混乱
     Discord: 49, // 不和
     AssignDecoy: 50, // 囮指名
+    RallySpectrum: 51, // 七色の叫び
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。

@@ -2319,6 +2319,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveC.TipTheScales] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.addAllSpur(3);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.Gambit4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-4);
             targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {

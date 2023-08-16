@@ -2920,7 +2920,8 @@ const PassiveC = {
     // 一斉突撃
     AssaultTroop3: 2117, // 一斉突撃3
 
-    // 専用
+    // 専用C
+    TipTheScales: 2555, // 戦局を変える!
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神
     ChaosNamed: 868, // 我が名は混沌
@@ -3616,6 +3617,7 @@ function isPrecombatSpecial(special) {
 
 // 二分探索したいだけで値はどうでもいいので0を入れておきます
 const TeleportationSkillDict = {};
+TeleportationSkillDict[PassiveC.TipTheScales] = 0;
 TeleportationSkillDict[Weapon.LanceOfHeroics] = 0;
 TeleportationSkillDict[Weapon.FlowerLance] = 0;
 TeleportationSkillDict[Weapon.FujinYumi] = 0;
