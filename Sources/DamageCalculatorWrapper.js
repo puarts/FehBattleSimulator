@@ -2298,6 +2298,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.GoldUnwinding] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdResSpurs(-5);
+            if (targetUnit.battleContext.restHpPercentage >= 50 &&
+                targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
+            }
+            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                (targetUnit, enemyUnit) => {
+                    targetUnit.addStatusEffect(StatusEffectType.Gravity);
+                }
+            );
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.addAtkSpdSpurs(6);

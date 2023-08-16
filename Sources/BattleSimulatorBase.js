@@ -3295,6 +3295,15 @@ class BattleSimmulatorBase {
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.GoldUnwinding:
+                    if (atkUnit.battleContext.initiatesCombat &&
+                        !atkUnit.isOneTimeActionActivatedForPassiveB &&
+                        atkUnit.isActionDone) {
+                        this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
+                    }
+                    break;
                 case Weapon.HadoNoSenfu:
                     if (!atkUnit.isOneTimeActionActivatedForWeapon &&
                         atkUnit.isWeaponSpecialRefined &&
