@@ -747,6 +747,8 @@ class BattleContext {
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
         // ステータス決定後のスキル効果
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
+        // 2回攻撃
+        this.setAttackCountFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -912,6 +914,7 @@ class BattleContext {
         this.addReducedDamageForNextAttackFuncs = [];
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
+        this.setAttackCountFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。

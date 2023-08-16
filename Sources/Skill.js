@@ -2158,6 +2158,7 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
 
     // 専用A
+    RareTalent: 2549, // 類稀なる魔道の才
     RealmsUnited: 2545, // 白夜と暗夜と共に
     Mastermind: 2536, // 天才
     SacaNoOkite: 586, // サカの掟

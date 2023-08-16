@@ -195,6 +195,15 @@ __applySkillEffectForUnitAfterCombatStatusFixed() {
 }
 
 2回攻撃
+targetUnit.battleContext.setAttackCountFuncs.push(
+    (targetUnit, enemyUnit) => {
+        // 攻撃時
+        targetUnit.battleContext.attackCount = 2;
+        // 攻撃を受けた時
+        targetUnit.battleContext.counterattackCount = 2;
+    }
+);
+もしくは
 __setAttackCount(targetUnit, enemyUnit) {
     // 攻撃時
     targetUnit.battleContext.attackCount = 2;

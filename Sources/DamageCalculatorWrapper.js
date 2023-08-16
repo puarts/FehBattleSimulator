@@ -559,6 +559,11 @@ class DamageCalculatorWrapper {
         let self = this;
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.RareTalent:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        return true;
+                    }
+                    break;
                 case Weapon.RadiantAureola:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                         if (!isPrecombat) return true;
@@ -2257,6 +2262,36 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.RareTalent] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(7);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let d = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        if (d >= 1) {
+                            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                    enemyUnit.battleContext.reducesCooldownCount = false;
+                                }
+                            );
+                        }
+                        if (d >= 10) {
+                            if (targetUnit.battleContext.initiatesCombat ||
+                                isRangedWeaponType(enemyUnit.weaponType)) {
+                                targetUnit.battleContext.setAttackCountFuncs.push(
+                                    (targetUnit, enemyUnit) => {
+                                        // 攻撃時
+                                        targetUnit.battleContext.attackCount = 2;
+                                        // 攻撃を受けた時
+                                        targetUnit.battleContext.counterattackCount = 2;
+                                    }
+                                );
+                            }
+                        }
+                    }
+                );
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArchSageTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAllSpur(5);
@@ -10099,6 +10134,9 @@ class DamageCalculatorWrapper {
     }
 
     __setAttackCount(targetUnit, enemyUnit) {
+        for (let func of targetUnit.battleContext.setAttackCountFuncs) {
+            func(targetUnit, enemyUnit);
+        }
         let atkWeaponInfo = targetUnit.weaponInfo;
         if (atkWeaponInfo != null) {
             targetUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
