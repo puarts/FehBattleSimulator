@@ -2635,6 +2635,9 @@ const PassiveB = {
 
     // 咆哮
     CounterRoar4: 2546, // 反撃の咆哮4
+
+    // 奥の手
+    Gambit4: 2554, // 奥の手4
 };
 
 const PassiveC = {

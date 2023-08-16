@@ -787,6 +787,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.Gambit4: {
+                    let ratio = Math.min(defUnit.maxSpecialCount * 0.1, 0.5);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+                    break;
                 case Weapon.ArchSageTome:
                     if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
                         let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
@@ -2314,6 +2319,20 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.Gambit4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                if (isPrecombat) return;
+                if (isNormalAttackSpecial(atkUnit.special) ||
+                    isDefenseSpecial(atkUnit.special)) {
+                    let amount = Math.max(Math.min((atkUnit.maxSpecialCount - 2) * 5, 15), 0);
+                    atkUnit.battleContext.additionalDamage += amount;
+                }
+            });
+            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                return Math.min(defUnit.maxSpecialCount * 0.1, 0.5);
+            });
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DeliverersBrand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
