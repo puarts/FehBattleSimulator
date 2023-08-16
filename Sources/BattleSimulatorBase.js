@@ -7519,8 +7519,6 @@ class BattleSimmulatorBase {
         // 天脈
         // TODO: とりあえずこのタイミングで実装するが後で正しいか確認する
         for (let tile of this.map.enumerateTiles()) {
-            console.log(`tile.divineVein: ${tile.divineVein}`);
-            console.log(`tile.divineVeinGroup: ${tile.divineVeinGroup}`);
             switch (tile.divineVein) {
                 case DivineVeinType.Flame: {
                     let unit = tile.placedUnit;
