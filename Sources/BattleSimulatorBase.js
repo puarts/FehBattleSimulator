@@ -3296,8 +3296,7 @@ class BattleSimmulatorBase {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.GoldUnwinding:
-                    if (atkUnit.battleContext.initiatesCombat &&
-                        !atkUnit.isOneTimeActionActivatedForPassiveB &&
+                    if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
                         atkUnit.isActionDone) {
                         this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
                         atkUnit.isActionDone = false;
