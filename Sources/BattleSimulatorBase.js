@@ -2663,6 +2663,11 @@ class BattleSimmulatorBase {
             g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
             g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
             loadSettings();
+            // タイルの天脈をリセットする
+            for (let tile of g_appData.map.enumerateTiles()) {
+                tile.divineVein = DivineVeinType.None;
+                tile.divineVeinGroup = null;
+            }
         }
         else {
             updateAllUi();
@@ -4184,6 +4189,11 @@ class BattleSimmulatorBase {
                 self.vm.isEnemyActionTriggered = false;
                 for (let unit of g_appData.units) {
                     unit.resetAllState();
+                }
+                // タイルの天脈をリセットする
+                for (let tile of g_appData.map.enumerateTiles()) {
+                    tile.divineVein = DivineVeinType.None;
+                    tile.divineVeinGroup = null;
                 }
                 g_appData.resonantBattleItems = [];
             }
