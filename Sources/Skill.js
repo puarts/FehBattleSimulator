@@ -1704,6 +1704,14 @@ const Weapon = {
     // 2023年8月 武器錬成
     WesternAxe: 2540, // 西方の勇者の斧
     ThraciaKinglance: 2539, // トラキアの王槍
+
+    // 新英雄召喚（巡る運命の輪）
+    // https://www.youtube.com/watch?v=FLYYn_QvBq4&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=FLYYn_QvBq4&ab_channel=NintendoMobile
+    Vallastone: 2544, // 透魔の竜石
+    ArchSageTome: 2547, // 大賢者の書
+    TheCyclesTurn: 2550, // 円環の力
+    DeliverersBrand: 2553, // 聖王の軍師の剣
 };
 
 const Support = {
@@ -1860,6 +1868,7 @@ const Special = {
     BlueFrame: 473, // ブルーフレイム
     SeidrShell: 1542, // 魔弾
     BrutalShell: 1853, // 凶弾
+    Flare: 2548, // 陽光
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -2151,6 +2160,8 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
 
     // 専用A
+    RareTalent: 2549, // 類稀なる魔道の才
+    RealmsUnited: 2545, // 白夜と暗夜と共に
     Mastermind: 2536, // 天才
     SacaNoOkite: 586, // サカの掟
     LawsOfSacae2: 1753, // サカの掟・承
@@ -2260,6 +2271,9 @@ const PassiveA = {
 
     // 柔撃
     FlashSparrow: 2510, // 鬼神飛燕の柔撃
+
+    // 炎撃
+    FlaredSparrow: 2551, // 鬼神飛燕の炎撃
 };
 
 const PassiveB = {
@@ -2552,6 +2566,8 @@ const PassiveB = {
     GuardBearing4: 2417, // 警戒姿勢4
     DiveBomb3: 1430, // 空からの急襲3
 
+    // 専用B
+    GoldUnwinding: 2552, // 時を戻す黄金の魔女
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨
@@ -2616,6 +2632,12 @@ const PassiveB = {
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
     BeastSense4: 2515, // 絶対化身・察知4
+
+    // 咆哮
+    CounterRoar4: 2546, // 反撃の咆哮4
+
+    // 奥の手
+    Gambit4: 2554, // 奥の手4
 };
 
 const PassiveC = {
@@ -2898,7 +2920,8 @@ const PassiveC = {
     // 一斉突撃
     AssaultTroop3: 2117, // 一斉突撃3
 
-    // 専用
+    // 専用C
+    TipTheScales: 2555, // 戦局を変える!
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神
     ChaosNamed: 868, // 我が名は混沌
@@ -2906,6 +2929,7 @@ const PassiveC = {
     SurtrsMenace: 767, // 炎王の威嚇
     SurtrsPortent: 1792, // 炎王の脅嚇
     WithEveryone: 754, // みんなと一緒に
+
     WithEveryone2: 1879, // みんなと一緒に・承
     SolitaryDream: 898, // ひとりぼっちのゆめ
     DivineFang: 915, // 神竜王の牙
@@ -3244,6 +3268,7 @@ function isDefenseSpecial(special) {
 }
 
 const NormalAttackSpecialDict = {};
+NormalAttackSpecialDict[Special.Flare] = 0;
 NormalAttackSpecialDict[Special.Moonbow] = 0;
 NormalAttackSpecialDict[Special.Luna] = 0;
 NormalAttackSpecialDict[Special.Aether] = 0;
@@ -3592,6 +3617,7 @@ function isPrecombatSpecial(special) {
 
 // 二分探索したいだけで値はどうでもいいので0を入れておきます
 const TeleportationSkillDict = {};
+TeleportationSkillDict[PassiveC.TipTheScales] = 0;
 TeleportationSkillDict[Weapon.LanceOfHeroics] = 0;
 TeleportationSkillDict[Weapon.FlowerLance] = 0;
 TeleportationSkillDict[Weapon.FujinYumi] = 0;

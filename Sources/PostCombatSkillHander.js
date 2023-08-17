@@ -311,6 +311,9 @@ class PostCombatSkillHander {
      * @param  {Unit} enemyUnit
      */
     __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
+        for (let func of targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs) {
+            func(targetUnit, enemyUnit);
+        }
         targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
         for (let skillId of enemyUnit.enumerateSkills()) {
             switch (skillId) {

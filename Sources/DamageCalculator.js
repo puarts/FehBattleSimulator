@@ -464,7 +464,12 @@ class DamageCalculator {
             let totalCount =
                 atkUnit.tmpSpecialCount
                 - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
+                - atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack
                 + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
+            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: ${totalCount} = ${atkUnit.tmpSpecialCount} - 
+            ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
+            ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
+            ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
             atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
         }
 
@@ -491,13 +496,16 @@ class DamageCalculator {
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
 
         // 戦闘中に変動し得る奥義の追加ダメージ
-        switch (atkUnit.weapon) {
-            case Weapon.Misteruthin:
-                if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
-                    fixedSpecialAddDamage += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
-                }
-                break;
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Misteruthin:
+                    if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
+                        fixedSpecialAddDamage += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
+                    }
+                    break;
+            }
         }
+
 
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         let invalidatesDamageReductionExceptSpecial = atkUnit.battleContext.invalidatesDamageReductionExceptSpecial;
@@ -995,6 +1003,7 @@ class DamageCalculator {
                     }
                 }
                 // 奥義発動
+                damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog("奥義によるダメージ" + currentDamage);
                 this.writeSimpleLog(" " + atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>奥義ダメージ" + currentDamage);
@@ -1021,7 +1030,10 @@ class DamageCalculator {
                     }
 
                     let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
-                    healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * atkUnit.battleContext.maxHpRatioToHealBySpecial);
+                    let maxHpRatioToHealBySpecial =
+                        atkUnit.battleContext.maxHpRatioToHealBySpecial +
+                        atkUnit.battleContext.maxHpRatioToHealBySpecialPerAttack;
+                    healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * maxHpRatioToHealBySpecial);
                     healedHp += atkUnit.battleContext.healedHpAfterAttackSpecialInCombat;
 
                     if (atkUnit.passiveB === PassiveB.TaiyoNoUdewa) {
@@ -1111,11 +1123,23 @@ class DamageCalculator {
         unit.battleContext.healedHpByAttackPerAttack = 0;
         unit.battleContext.preventedDefenderSpecialPerAttack = false;
         unit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
+        unit.battleContext.maxHpRatioToHealBySpecialPerAttack = 0;
+        unit.battleContext.specialCountReductionBeforeFirstAttackPerAttack = 0;
     }
 
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case Special.Flare:
+                    if (atkUnit.battleContext.restHpPercentage >= 70) {
+                        let res = defUnit.getResInCombat(atkUnit);
+                        atkUnit.battleContext.specialAddDamage = Math.trunc(res * 0.6);
+                    } else {
+                        let res = defUnit.getResInCombat(atkUnit);
+                        atkUnit.battleContext.specialAddDamage = Math.trunc(res * 0.4);
+                        atkUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
+                    }
+                    break;
                 case Weapon.GustyWarBow:
                     if (atkUnit.battleContext.weaponSkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;

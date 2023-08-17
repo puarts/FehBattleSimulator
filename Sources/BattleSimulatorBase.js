@@ -3295,6 +3295,14 @@ class BattleSimmulatorBase {
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.GoldUnwinding:
+                    if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
+                        atkUnit.isActionDone) {
+                        this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
+                    }
+                    break;
                 case Weapon.HadoNoSenfu:
                     if (!atkUnit.isOneTimeActionActivatedForWeapon &&
                         atkUnit.isWeaponSpecialRefined &&
@@ -3792,6 +3800,7 @@ class BattleSimmulatorBase {
         this.__initReservedHpForAllUnitsOnMap();
 
         this.executeStructuresByUnitGroupType(targetUnits[0].groupId, false);
+        this.applyTileEffect();
 
         // ターン開始時スキル(通常)
         for (let unit of targetUnits) {
@@ -3843,7 +3852,7 @@ class BattleSimmulatorBase {
     /**
      * @param  {Unit[]} targetUnits
      */
-    __simulateBeginningOfTurn(targetUnits, enemyUnits) {
+    __simulateBeginningOfTurn(targetUnits, enemyUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
 
         if (targetUnits.length == 0) {
@@ -3854,11 +3863,14 @@ class BattleSimmulatorBase {
 
         this.__initializeUnitsPerTurn(targetUnits);
         this.__initializeAllUnitsOnMapPerTurn(this.enumerateAllyUnitsOnMap());
+        this.__initializeTilesPerTurn(this.map._tiles, group);
 
         if (this.data.gameMode != GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
-                unit.endAction();
-                unit.deactivateCanto();
+                // 天脈が発動してしまうのでコメントアウト
+                // TODO: 正しい挙動か確認する
+                // unit.endAction();
+                // unit.deactivateCanto();
             }
         }
 
@@ -3903,7 +3915,7 @@ class BattleSimmulatorBase {
      */
     __initializeUnitsPerTurn(targetUnits) {
         for (let unit of targetUnits) {
-            unit.endAction();
+            unit.endAction(false);
             unit.deactivateCanto();
             unit.beginAction();
             // console.log(unit.getNameWithGroup() + ": moveCount=" + unit.moveCount);
@@ -3942,6 +3954,21 @@ class BattleSimmulatorBase {
     __initializeAllUnitsOnMapPerTurn(units) {
         for (let unit of units) {
             unit.isCombatDone = false;
+        }
+    }
+
+    __initializeTilesPerTurn(tiles, group) {
+        if (group === null) {
+            return;
+        }
+        for (let y = 0; y < this.map.height; ++y) {
+            for (let x = 0; x < this.map.width; ++x) {
+                let index = y * this.map.width + x;
+                let tile = tiles[index];
+                if (tile.divineVeinGroup === group) {
+                    tile.divineVein = DivineVeinType.None;
+                }
+            }
         }
     }
 
@@ -4104,7 +4131,7 @@ class BattleSimmulatorBase {
         this.__enqueueCommand("敵ターン開始", function () {
             self.vm.globalBattleContext.currentPhaseType = UnitGroupType.Enemy;
             self.audioManager.playSoundEffect(SoundEffectId.EnemyPhase);
-            self.__simulateBeginningOfTurn(self.__getOnMapEnemyUnitList(), self.__getOnMapAllyUnitList());
+            self.__simulateBeginningOfTurn(self.__getOnMapEnemyUnitList(), self.__getOnMapAllyUnitList(), UnitGroupType.Enemy);
 
             // 安全柵の実行(他の施設と実行タイミングが異なるので、別途処理している)
             let safetyFence = self.__findSafetyFence();
@@ -4152,7 +4179,7 @@ class BattleSimmulatorBase {
                 g_appData.resonantBattleItems = [];
             }
             self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
-            self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList(), self.__getOnMapEnemyUnitList());
+            self.__simulateBeginningOfTurn(self.__getOnMapAllyUnitList(), self.__getOnMapEnemyUnitList(), UnitGroupType.Ally);
         });
     }
 
@@ -6095,6 +6122,10 @@ class BattleSimmulatorBase {
         return UnitCookiePrefix + unit.id + NameValueDelimiter + unit.perTurnStatusToString();
     }
 
+    __convertTilePerTurnStatusToSerial(tile) {
+        return TileCookiePrefix + tile.id + NameValueDelimiter + tile.perTurnStatusToString();
+    }
+
     __convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal() {
         let result = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
         result += this.__convertPerTurnStatusToSerialForGlobal();
@@ -6114,6 +6145,9 @@ class BattleSimmulatorBase {
             if (st instanceof TrapBase) {
                 result += this.__convertStructurePerTurnStatusToSerial(st) + ElemDelimiter;
             }
+        }
+        for (let tile of this.map.enumerateTiles()) {
+            result += this.__convertTilePerTurnStatusToSerial(tile) + ElemDelimiter;
         }
         return result;
     }
@@ -6306,6 +6340,11 @@ class BattleSimmulatorBase {
                 }
             }
             unit.activateCantoIfPossible(count, cantoControlledIfCantoActivated);
+            for (let [tile, [divineVein, divineVeinGroup]] of unit.tilesMapForDivineVein) {
+                tile.divineVein = divineVein;
+                tile.divineVeinGroup = divineVeinGroup;
+            }
+            unit.tilesMapForDivineVein.clear();
         }
     }
 
@@ -7490,6 +7529,25 @@ class BattleSimmulatorBase {
         if (appliesDamage) {
             this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
             this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
+        }
+    }
+
+    applyTileEffect() {
+        // 天脈
+        // TODO: とりあえずこのタイミングで実装するが後で正しいか確認する
+        for (let tile of this.map.enumerateTiles()) {
+            switch (tile.divineVein) {
+                case DivineVeinType.Flame: {
+                    let unit = tile.placedUnit;
+                    if (unit === null) {
+                        break;
+                    }
+                    if (unit.groupId !== tile.divineVeinGroup) {
+                        unit.reserveTakeDamage(7);
+                    }
+                }
+                    break;
+            }
         }
     }
 
@@ -9736,7 +9794,7 @@ function importPerTurnSetting(perTurnSettingAsString, updatesChaseTarget = true)
     let turnSetting = new TurnSetting(currentTurn);
     let dict = {};
     dict[turnSetting.serialId] = perTurnSettingAsString;
-    loadSettingsFromDict(dict, true, true, true, true, false, false, updatesChaseTarget);
+    loadSettingsFromDict(dict, true, true, true, true, true, false, updatesChaseTarget);
 }
 
 function importSettingsFromString(

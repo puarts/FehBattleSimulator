@@ -1985,6 +1985,13 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.TipTheScales: {
+                    let allyCondFunc = ally => ally.hasStatusEffect(StatusEffectType.RallySpectrum);
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                        unit, 5, 1, allyCondFunc
+                    );
+                }
+                    break;
                 case Weapon.DivineDraught:
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
                         unit, 3, 2, ally => ally.isPartner(unit)
@@ -2645,6 +2652,27 @@ class BattleMap {
                     // 危険度の表示
                     additionalInnerText += "<span style='color:#f80;font-size:12px;" + shadowCss + ";'><b>" + tile.allyDangerLevel + "</b></span>";
                 }
+                if (tile.divineVein !== DivineVeinType.None) {
+                    let divineString = "";
+                    switch (tile.divineVein) {
+                        case DivineVeinType.Stone:
+                            divineString = "護";
+                            break;
+                        case DivineVeinType.Flame:
+                            divineString = "炎";
+                            break;
+                    }
+                    let divineColor = "";
+                    switch (tile.divineVeinGroup) {
+                        case UnitGroupType.Ally:
+                            divineColor = "#00bbff";
+                            break;
+                        case UnitGroupType.Enemy:
+                            divineColor = "#ff8800";
+                            break;
+                    }
+                    additionalInnerText += `<span style='color:${divineColor};font-size:12px;${shadowCss};'><b>${divineString}</b></span>`;
+                }
 
                 if (tile.closestDistanceToEnemy > 0) {
                     // 敵への最短距離の表示
@@ -2723,8 +2751,22 @@ class BattleMap {
 
         if (this._showEnemyAttackRange && this._showAllyAttackRange && tile.dangerLevel > 0 && tile.allyDangerLevel > 0) {
             const alpha = "90";
-            cell.borderColor = "#f0f";
+            // cell.borderColor = "#f0f";
             cell.bgColor = "#eee0ee" + alpha;
+        }
+
+        // 天脈
+        // 味方の天脈、敵の天脈で処理を分ける
+        if (tile.divineVein !== DivineVeinType.None) {
+            const alpha = "40";
+            cell.borderStyle = "solid";
+            if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
+                // cell.borderColor = "#00ffff";
+                cell.bgColor = "#00ffff" + alpha;
+            } else {
+                // cell.borderColor = "#ff00ff";
+                cell.bgColor = "#ff00ff" + alpha;
+            }
         }
     }
 

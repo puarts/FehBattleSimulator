@@ -162,7 +162,7 @@ class AppData extends UnitManager {
         this.exportsAllySettings = true;
         this.exportsDefenceSettings = true;
         this.exportsOffenceSettings = true;
-        this.exportsMapSettings = false;
+        this.exportsMapSettings = true;
 
         // 画像解析設定
         this.ocrProgress = "";
@@ -1353,7 +1353,7 @@ class AppData extends UnitManager {
         loadsEnemies = true,
         loadsOffenceStructures = true,
         loadsDefenseStructures = true,
-        exportsMapSettings = false,
+        exportsMapSettings = true,
     ) {
         let dict = this.settings.convertCurrentSettingsToDict(loadsAllies, loadsEnemies, loadsOffenceStructures, loadsDefenseStructures, exportsMapSettings);
         let result = "";

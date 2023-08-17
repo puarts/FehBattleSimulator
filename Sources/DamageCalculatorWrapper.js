@@ -434,6 +434,11 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
 
+        // 戦闘後効果
+        // ex) 戦闘開始後、敵に7ダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)など
+        this.__applySKillEffectForUnitAtBeginningOfCombat(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySKillEffectForUnitAtBeginningOfCombat(defUnit, atkUnit, calcPotentialDamage);
+
         // self.profile.profile("__applySkillEffect", () => {
         this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
         this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
@@ -559,6 +564,11 @@ class DamageCalculatorWrapper {
         let self = this;
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveA.RareTalent:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        return true;
+                    }
+                    break;
                 case Weapon.RadiantAureola:
                     if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                         if (!isPrecombat) return true;
@@ -632,16 +642,33 @@ class DamageCalculatorWrapper {
         }
 
         atkUnit.battleContext.refersResForSpecial = atkUnit.battleContext.refersRes;
-        switch (atkUnit.special) {
-            case Special.SeidrShell:
-                if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
-                    if (this.isLogEnabled) this.writeDebugLog("魔弾により守備魔防の低い方でダメージ計算");
+        if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
+            for (let skillId of atkUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Weapon.DeliverersBrand:
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            if (atkUnit.special === Special.Bonfire ||
+                                atkUnit.special === Special.Ignis ||
+                                atkUnit.special === Special.Hotarubi) {
+                                if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.weaponInfo.name}により守備魔防の低い方でダメージ計算`);
 
-                    let defInCombat = defUnit.getDefInCombat(atkUnit);
-                    let resInCombat = defUnit.getResInCombat(atkUnit);
-                    atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                                let defInCombat = defUnit.getDefInCombat(atkUnit);
+                                let resInCombat = defUnit.getResInCombat(atkUnit);
+                                atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                                break;
+                            }
+                        }
+                        break;
+                    case Special.SeidrShell: {
+                        if (this.isLogEnabled) this.writeDebugLog("魔弾により守備魔防の低い方でダメージ計算");
+
+                        let defInCombat = defUnit.getDefInCombat(atkUnit);
+                        let resInCombat = defUnit.getResInCombat(atkUnit);
+                        atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
+                    }
+                        break;
                 }
-                break;
+            }
         }
     }
 
@@ -670,9 +697,22 @@ class DamageCalculatorWrapper {
         return saverUnit;
     }
 
+
     __canActivateSaveSkill(atkUnit, unit) {
         if (this.__canDisableSaveSkill(atkUnit, unit)) {
             return false;
+        }
+
+        if (unit.hasStatusEffect(StatusEffectType.AssignDecoy)) {
+            if (this.__hasSaveSkills(unit)) {
+                return false;
+            }
+            if (isRangedWeaponType(unit.weaponType) && isRangedWeaponType(atkUnit.weaponType)) {
+                return true;
+            }
+            if (isMeleeWeaponType(unit.weaponType) && isMeleeWeaponType(atkUnit.weaponType)) {
+                return true;
+            }
         }
 
         for (let skillId of unit.enumerateSkills()) {
@@ -733,11 +773,32 @@ class DamageCalculatorWrapper {
     }
 
     __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
+        // 天脈
+        let tile = defUnit.placedTile;
+        switch (tile.divineVein) {
+            case DivineVeinType.Stone:
+                if (tile.divineVeinGroup === defUnit.groupId) {
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
+                }
+                break;
+        }
+
         if (defUnit.hasStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent)) {
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.Gambit4: {
+                    let ratio = Math.min(defUnit.maxSpecialCount * 0.1, 0.5);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+                    break;
+                case Weapon.ArchSageTome:
+                    if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                        let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                    }
+                    break;
                 case Weapon.DreamHorn:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
@@ -2080,6 +2141,37 @@ class DamageCalculatorWrapper {
         };
     }
 
+    __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage) {
+        // 天脈
+        let tile = targetUnit.placedTile;
+        if (tile.divineVein === DivineVeinType.Flame &&
+            tile.divineVeinGroup !== targetUnit.groupId) {
+            let logMessage = `天脈・炎により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
+            this.__writeDamageCalcDebugLog(logMessage);
+            this._damageCalc.writeSimpleLog(logMessage);
+            enemyUnit.restHp -= 7;
+            if (enemyUnit.restHp <= 0) {
+                enemyUnit.restHp = 1;
+            }
+        }
+        // スキル
+        for (let skillId of targetUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.FlaredSparrow:
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
+                        this.__writeDamageCalcDebugLog(logMessage);
+                        this._damageCalc.writeSimpleLog(logMessage);
+                        enemyUnit.restHp -= 7;
+                        if (enemyUnit.restHp <= 0) {
+                            enemyUnit.restHp = 1;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
@@ -2165,6 +2257,9 @@ class DamageCalculatorWrapper {
      * @param  {GameMode} gameMode
      */
     ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
+            targetUnit.addAllSpur(5);
+        }
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
         ) {
@@ -2206,6 +2301,17 @@ class DamageCalculatorWrapper {
         // 今のところ奥義にしかこの効果が存在しないので、重複しない。もし今後重複する場合は重複時の計算方法を調査して実装する
         targetUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(targetUnit.special);
 
+        // 天脈効果
+        let tile = targetUnit.placedTile;
+        switch (tile.divineVein) {
+            case DivineVeinType.Stone:
+                if (tile.divineVeinGroup === targetUnit.groupId) {
+                    targetUnit.addDefResSpurs(6);
+                    targetUnit.battleContext.damageReductionValueOfSpecialAttack += 10;
+                }
+                break;
+        }
+
         for (let skillId of targetUnit.enumerateSkills()) {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
             if (skillFunc) {
@@ -2217,6 +2323,199 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveC.TipTheScales] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.addAllSpur(3);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.Gambit4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                if (isPrecombat) return;
+                if (isNormalAttackSpecial(atkUnit.special) ||
+                    isDefenseSpecial(atkUnit.special)) {
+                    let amount = Math.max(Math.min((atkUnit.maxSpecialCount - 2) * 5, 15), 0);
+                    atkUnit.battleContext.additionalDamage += amount;
+                }
+            });
+            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                return Math.min(defUnit.maxSpecialCount * 0.1, 0.5);
+            });
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.DeliverersBrand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                if (targetUnit.maxSpecialCount >= 3 ||
+                    isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.GoldUnwinding] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdResSpurs(-5);
+            if (targetUnit.battleContext.restHpPercentage >= 50 &&
+                targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
+            }
+            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                (targetUnit, enemyUnit) => {
+                    targetUnit.addStatusEffect(StatusEffectType.Gravity);
+                }
+            );
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        let placedTile = enemyUnit.placedTile;
+                        // キャラの位置関係によって天脈対象のタイルが異なる
+                        if (targetUnit.posX === enemyUnit.posX) {
+                            // x軸が等しい時
+                            for (let tile of this.map.enumerateTiles()) {
+                                if (tile.posY === placedTile.posY &&
+                                    Math.abs(tile.posX - placedTile.posX) <= 2) {
+                                    tile.divineVein = DivineVeinType.Flame;
+                                    tile.divineVeinGroup = targetUnit.groupId;
+                                }
+                            }
+                        } else if (targetUnit.posY === enemyUnit.posY) {
+                            // y軸が等しい時
+                            for (let tile of this.map.enumerateTiles()) {
+                                if (tile.posX === placedTile.posX &&
+                                    Math.abs(tile.posY - placedTile.posY) <= 2) {
+                                    tile.divineVein = DivineVeinType.Flame;
+                                    tile.divineVeinGroup = targetUnit.groupId;
+                                }
+                            }
+                        } else if (
+                            targetUnit.posX > enemyUnit.posX && targetUnit.posY > enemyUnit.posY ||
+                            targetUnit.posX < enemyUnit.posX && targetUnit.posY < enemyUnit.posY
+                        ) {
+                            // 第1, 3象限
+                            for (let tile of this.map.enumerateTiles()) {
+                                if (
+                                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
+                                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY - 1) ||
+                                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY - 2) ||
+                                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY + 1) ||
+                                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY + 2)
+                                ) {
+                                    tile.divineVein = DivineVeinType.Flame;
+                                    tile.divineVeinGroup = targetUnit.groupId;
+                                }
+                            }
+                        } else if (
+                            targetUnit.posX > enemyUnit.posX && targetUnit.posY < enemyUnit.posY ||
+                            targetUnit.posX < enemyUnit.posX && targetUnit.posY > enemyUnit.posY
+                        ) {
+                            // 第2, 4象限
+                            for (let tile of this.map.enumerateTiles()) {
+                                if (
+                                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
+                                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY + 1) ||
+                                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY + 2) ||
+                                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY - 1) ||
+                                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY - 2)
+                                ) {
+                                    tile.divineVein = DivineVeinType.Flame;
+                                    tile.divineVeinGroup = targetUnit.groupId;
+                                }
+                            }
+                        }
+                    }
+                );
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.TheCyclesTurn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat ||
+                targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.min(this.globalBattleContext.currentTurn * 2, 10);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                });
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.RareTalent] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(7);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let d = targetUnit.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(targetUnit);
+                        if (d >= 1) {
+                            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                    enemyUnit.battleContext.reducesCooldownCount = false;
+                                }
+                            );
+                        }
+                        if (d >= 10) {
+                            if (targetUnit.battleContext.initiatesCombat ||
+                                isRangedWeaponType(enemyUnit.weaponType)) {
+                                targetUnit.battleContext.setAttackCountFuncs.push(
+                                    (targetUnit, enemyUnit) => {
+                                        // 攻撃時
+                                        targetUnit.battleContext.attackCount = 2;
+                                        // 攻撃を受けた時
+                                        targetUnit.battleContext.counterattackCount = 2;
+                                    }
+                                );
+                            }
+                        }
+                    }
+                );
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.ArchSageTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 周囲3マス以内の場合
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                });
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.CounterRoar4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addAtkSpdSpurs(-4);
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+            targetUnit.battleContext.reducedRatioForNextAttack = Math.max(0.3, targetUnit.battleContext.reducedRatioForNextAttack);
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.RealmsUnited] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addAllSpur(-7);
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.Vallastone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAllSpur(-5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ThraciaKinglance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat ||
                 enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -10021,6 +10320,9 @@ class DamageCalculatorWrapper {
     }
 
     __setAttackCount(targetUnit, enemyUnit) {
+        for (let func of targetUnit.battleContext.setAttackCountFuncs) {
+            func(targetUnit, enemyUnit);
+        }
         let atkWeaponInfo = targetUnit.weaponInfo;
         if (atkWeaponInfo != null) {
             targetUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
@@ -11329,6 +11631,21 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
+            if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    let n = 2;
+                    if (targetUnit.battleContext.attackCount === 2 ||
+                        targetUnit.maxSpecialCount < targetUnit.specialInfo.specialCount) {
+                        n = 1;
+                    }
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack += n;
+                }
+            }
+        }
+        for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
+            func(targetUnit, enemyUnit, calcPotentialDamage);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
         }

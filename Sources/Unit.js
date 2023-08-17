@@ -238,6 +238,8 @@ const StatusEffectType = {
     Hexblade: 47, // 魔刃
     Sabotage: 48, // 混乱
     Discord: 49, // 不和
+    AssignDecoy: 50, // 囮指名
+    RallySpectrum: 51, // 七色の叫び
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -411,6 +413,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Sabotage.webp";
         case StatusEffectType.Discord:
             return g_imageRootPath + "StatusEffect_Discord.webp";
+        case StatusEffectType.AssignDecoy:
+            return g_imageRootPath + "StatusEffect_AssignDecoy.webp";
         default: return "";
     }
 }
@@ -573,6 +577,9 @@ class BattleContext {
         // 最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttack = 0;
 
+        // 攻撃ごとに変化する可能性がある最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
+        this.specialCountReductionBeforeFirstAttackPerAttack = 0;
+
         // 最初の攻撃前の奥義発動カウント増加値
         this.specialCountIncreaseBeforeFirstAttack = 0;
 
@@ -598,6 +605,9 @@ class BattleContext {
         // 最初に受けた攻撃と2回攻撃のダメージ-N(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃)
         // Nの符号に注意。Nは自然数（ダメージ-5ならN=5）
         this.damageReductionValueOfFirstAttacks = 0;
+
+        // 敵の奥義による攻撃のダメージ-N(範囲奥義を除く)
+        this.damageReductionValueOfSpecialAttack = 0;
 
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
@@ -644,6 +654,9 @@ class BattleContext {
 
         // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
         this.maxHpRatioToHealBySpecial = 0;
+
+        // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
+        this.maxHpRatioToHealBySpecialPerAttack = 0;
 
         // 奥義による攻撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
         this.healedHpAfterAttackSpecialInCombat = 0;
@@ -736,6 +749,12 @@ class BattleContext {
         this.addReducedDamageForNextAttackFuncs = [];
         // ステータス決定後の戦闘中バフ
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
+        // ステータス決定後のスキル効果
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
+        // 2回攻撃
+        this.setAttackCountFuncs = [];
+        // 戦闘後
+        this.applySkillEffectAfterCombatForUnitFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -780,6 +799,7 @@ class BattleContext {
         this.damageReductionRatioOfFollowupAttack = 0;
         this.damageReductionValueOfFollowupAttack = 0;
         this.damageReductionValueOfFirstAttacks = 0;
+        this.damageReductionValueOfSpecialAttack = 0;
         this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
         this.attackCount = 1;
@@ -840,6 +860,7 @@ class BattleContext {
         this.isSaviorActivated = false;
 
         this.specialCountReductionBeforeFirstAttack = 0;
+        this.specialCountReductionBeforeFirstAttackPerAttack = 0;
         this.specialCountIncreaseBeforeFirstAttack = 0;
         this.additionalDamageOfFirstAttack = 0;
 
@@ -863,6 +884,7 @@ class BattleContext {
         this.specialAddDamage = 0;
         this.specialDamageRatioToHeal = 0;
         this.maxHpRatioToHealBySpecial = 0;
+        this.maxHpRatioToHealBySpecialPerAttack = 0;
         this.healedHpAfterAttackSpecialInCombat = 0;
         this.damageRatioToHeal = 0;
         this.selfDamageDealtRateToAddSpecialDamage = 0;
@@ -898,6 +920,9 @@ class BattleContext {
         this.calcFixedAddDamagePerAttackFuncs = [];
         this.addReducedDamageForNextAttackFuncs = [];
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
+        this.setAttackCountFuncs = [];
+        this.applySkillEffectAfterCombatForUnitFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -1375,6 +1400,10 @@ class Unit extends BattleMapElement {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
         this.reservedStatusEffects = [];
+        this.reservedAtkBuff = 0;
+        this.reservedSpdBuff = 0;
+        this.reservedDefBuff = 0;
+        this.reservedResBuff = 0;
         this.reservedAtkDebuff = 0;
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
@@ -1465,6 +1494,9 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
+
+        // バックアップ
+        this.tilesMapForDivineVein = new Map();
 
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
         this.isOncePerMapSpecialActivated = false;
@@ -3041,7 +3073,10 @@ class Unit extends BattleMapElement {
     }
 
     // 行動終了状態にする
-    endAction() {
+    endAction(applyEndActionSkills = true) {
+        if (applyEndActionSkills) {
+            this.applyEndActionSkills();
+        }
         this.deactivateCanto();
         if (this.isActionDone) {
             return;
@@ -3055,6 +3090,22 @@ class Unit extends BattleMapElement {
             this.resetDebuffs();
         }
         this.clearNegativeStatusEffects();
+    }
+
+    applyEndActionSkills() {
+        for (let skillId of this.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.Vallastone:
+                    this.tilesMapForDivineVein.clear();
+                    for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
+                        // 上書き前のタイル情報を保存
+                        this.tilesMapForDivineVein.set(tile, [tile.divineVein, tile.divineVeinGroup]);
+                        tile.divineVein = DivineVeinType.Stone;
+                        tile.divineVeinGroup = this.groupId;
+                    }
+                    break;
+            }
+        }
     }
 
     applyAllBuff(amount) {
@@ -3159,6 +3210,13 @@ class Unit extends BattleMapElement {
         this.applySpdBuff(spd);
         this.applyDefBuff(def);
         this.applyResBuff(res);
+    }
+
+    reserveToApplyBuffs(atk, spd, def, res) {
+        this.reservedAtkBuff = Math.max(this.reservedAtkBuff, atk);
+        this.reservedSpdBuff = Math.max(this.reservedSpdBuff, spd);
+        this.reservedDefBuff = Math.max(this.reservedDefBuff, def);
+        this.reservedResBuff = Math.max(this.reservedResBuff, res);
     }
 
     applyAtkSpdBuffs(atk, spd = atk) {
@@ -3290,6 +3348,15 @@ class Unit extends BattleMapElement {
         this.reservedSpdDebuff = this.spdDebuff;
         this.reservedDefDebuff = this.defDebuff;
         this.reservedResDebuff = this.resDebuff;
+    }
+
+    applyReservedBuffs() {
+        this.applyBuffs(this.reservedAtkBuff, this.reservedSpdBuff, this.reservedDefBuff, this.reservedResBuff);
+
+        this.reservedAtkBuff = 0;
+        this.reservedSpdBuff = 0;
+        this.reservedDefBuff = 0;
+        this.reservedResBuff = 0;
     }
 
     applyReservedDebuffs() {

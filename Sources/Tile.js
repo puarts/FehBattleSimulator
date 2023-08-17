@@ -42,6 +42,12 @@ for (let key in TileType) {
 const CanNotReachTile = 1000000;
 const ObstructTile = 10000; // 進軍阻止されているタイルのウェイト
 
+const DivineVeinType = {
+    None: 0,
+    Stone: 1,
+    Flame: 2,
+};
+
 /**
  * ユニットをタイルに配置します。
  * @param  {Unit} unit
@@ -97,6 +103,9 @@ class Tile extends BattleMapElement {
         this.borderWidth = "1px";
         this.overrideText = "";
 
+        this.divineVein = DivineVeinType.None;
+        this.divineVeinGroup = null;
+
         /** @type {Tile} */
         this.snapshot = null;
     }
@@ -118,7 +127,9 @@ class Tile extends BattleMapElement {
     }
 
     perTurnStatusToString() {
-        return "";
+        return this.divineVein + ValueDelimiter +
+            this.divineVeinGroup + ValueDelimiter
+            ;
     }
 
     turnWideStatusToString() {
@@ -126,6 +137,10 @@ class Tile extends BattleMapElement {
     }
 
     fromPerTurnStatusString(value) {
+        let splited = value.split(ValueDelimiter);
+        let i = 0;
+        if (Number.isInteger(Number(splited[i]))) { this.divineVein = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.divineVeinGroup = Number(splited[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {
@@ -355,6 +370,13 @@ class Tile extends BattleMapElement {
         if (this.__isForestType() && unit.moveType == MoveType.Infantry && unit.moveCount == 1) {
             // 歩行に1マス移動制限がかかっている場合は森地形のウェイトは通常地形と同じ
             return 1;
+        }
+
+        // 天脈・炎の場合は敵の2距離はコスト+1
+        if (isRangedWeaponType(unit.weaponType) &&
+            this.divineVein === DivineVeinType.Flame &&
+            this.divineVeinGroup !== unit.groupId) {
+            return 2;
         }
 
         return this._moveWeights[unit.moveType];
