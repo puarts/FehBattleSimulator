@@ -2761,11 +2761,9 @@ class BattleMap {
             const alpha = "40";
             cell.borderStyle = "solid";
             if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
-                // cell.borderColor = "#00ffff";
-                cell.bgColor = "#00ffff" + alpha;
+                cell.bgColor = "#00bbff" + alpha;
             } else {
-                // cell.borderColor = "#ff00ff";
-                cell.bgColor = "#ff00ff" + alpha;
+                cell.bgColor = "#ff8800" + alpha;
             }
         }
     }
