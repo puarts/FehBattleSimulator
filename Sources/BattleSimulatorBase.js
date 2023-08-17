@@ -3402,7 +3402,10 @@ class BattleSimmulatorBase {
         }
 
         // 再移動の評価
-        this.__activateCantoIfPossible(atkUnit);
+        let cantoActivated = this.__activateCantoIfPossible(atkUnit);
+        if (!cantoActivated) {
+            atkUnit.applyEndActionSkills();
+        }
 
         // 罠は再行動奥義や再移動の後に評価する必要がある(停止罠で迅雷や再移動は無効化される)
         executeTrapIfPossible(atkUnit);
@@ -3867,10 +3870,16 @@ class BattleSimmulatorBase {
 
         if (this.data.gameMode != GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
-                // 天脈が発動してしまうのでコメントアウト
                 // TODO: 正しい挙動か確認する
-                // unit.endAction();
-                // unit.deactivateCanto();
+                // ターン >= 2としないと戦闘開始を押した瞬間に敵の天脈が発動してしまう
+                if (group === UnitGroupType.Ally && g_appData.currentTurn >= 2) {
+                    unit.endAction();
+                    unit.deactivateCanto();
+                    // 拡張枠のユニットは天脈を発動しない
+                    if (unit !== g_appData.getEnemyExpansionUnitOnMap()) {
+                        unit.applyEndActionSkills();
+                    }
+                }
             }
         }
 
@@ -3915,7 +3924,7 @@ class BattleSimmulatorBase {
      */
     __initializeUnitsPerTurn(targetUnits) {
         for (let unit of targetUnits) {
-            unit.endAction(false);
+            unit.endAction();
             unit.deactivateCanto();
             unit.beginAction();
             // console.log(unit.getNameWithGroup() + ": moveCount=" + unit.moveCount);
@@ -6174,6 +6183,7 @@ class BattleSimmulatorBase {
 
             self.endUnitActionAndGainPhaseIfPossible(unit);
             unit.deactivateCanto();
+            unit.applyEndActionSkills();
         }, serial);
     }
 
@@ -6278,6 +6288,8 @@ class BattleSimmulatorBase {
             function () {
                 if (unit.isActionDone) {
                     // 移動時にトラップ発動した場合は行動終了している
+                    // その場合でも天脈は発動する
+                    unit.applyEndActionSkills();
                     return;
                 }
 
@@ -6323,12 +6335,9 @@ class BattleSimmulatorBase {
                 }
             }
             unit.activateCantoIfPossible(count, cantoControlledIfCantoActivated);
-            for (let [tile, [divineVein, divineVeinGroup]] of unit.tilesMapForDivineVein) {
-                tile.divineVein = divineVein;
-                tile.divineVeinGroup = divineVeinGroup;
-            }
-            unit.tilesMapForDivineVein.clear();
+            return true;
         }
+        return false;
     }
 
     __canActivateCanto(unit) {
@@ -6505,6 +6514,7 @@ class BattleSimmulatorBase {
                 if (!unit.isActionDone && endAction) {
                     self.endUnitActionAndGainPhaseIfPossible(unit);
                     unit.deactivateCanto();
+                    unit.applyEndActionSkills();
                 }
                 self.__updateDistanceFromClosestEnemy(unit);
             },
@@ -8884,7 +8894,10 @@ class BattleSimmulatorBase {
             }
 
             // 再移動の評価
-            this.__activateCantoIfPossible(supporterUnit);
+            let activated = this.__activateCantoIfPossible(supporterUnit);
+            if (!activated) {
+                supporterUnit.applyEndActionSkills();
+            }
 
             this.__goToNextPhaseIfPossible(supporterUnit.groupId);
         }
@@ -9129,7 +9142,10 @@ class BattleSimmulatorBase {
         unit.endAction();
 
         // 再移動の評価
-        this.__activateCantoIfPossible(unit);
+        let activated = this.__activateCantoIfPossible(unit);
+        if (!activated) {
+            unit.applyEndActionSkills();
+        }
 
         this.__goToNextPhaseIfPossible(unit.groupId);
     }
