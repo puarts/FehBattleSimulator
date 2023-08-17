@@ -3881,7 +3881,8 @@ class BattleSimmulatorBase {
                     unit.endAction();
                     unit.deactivateCanto();
                     // 拡張枠のユニットは天脈を発動しない
-                    if (unit !== g_appData.getEnemyExpansionUnitOnMap()) {
+                    if (unit !== g_appData.getEnemyExpansionUnitOnMap() &&
+                        !g_appData.isEnemyActionTriggered) {
                         unit.applyEndActionSkills();
                     }
                 }
