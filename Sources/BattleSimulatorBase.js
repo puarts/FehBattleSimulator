@@ -3653,6 +3653,7 @@ class BattleSimmulatorBase {
                 atkUnit,
                 result.defUnit,
                 result.preCombatDamageWithOverkill,
+                result.atkUnitDamageAfterBeginningOfCombat,
                 result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
                 result.atkUnit_atk,
                 result.atkUnit_spd,
@@ -3662,6 +3663,7 @@ class BattleSimmulatorBase {
                 result.defUnit,
                 atkUnit,
                 -1,
+                result.defUnitDamageAfterBeginningOfCombat,
                 result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
                 result.defUnit_atk,
                 result.defUnit_spd,
@@ -3689,17 +3691,17 @@ class BattleSimmulatorBase {
      * @param  {Number} res
      */
     __createDamageCalcSummaryHtml(unit, enemyUnit,
-        preCombatDamage, damage, attackCount,
+        preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount,
         atk, spd, def, res) {
         // ダメージに関するサマリー
-        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damage, attackCount);
+        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount);
         // ステータスやバフに関するサマリー
         html += this.__createStatusSummaryHtml(unit, atk, spd, def, res);
 
         return html;
     }
 
-    __createDamageSummaryHtml(unit, preCombatDamage, damage, attackCount) {
+    __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount) {
         // HPリザルト
         let restHpHtml = unit.restHp == 0 ?
             `<span style='color:#ffaaaa'>${unit.restHp}</span>` :
@@ -3711,6 +3713,7 @@ class BattleSimmulatorBase {
         let damageHtml = "ー";
         if (attackCount > 0) {
             let precombatHtml = preCombatDamage > 0 ? `${preCombatDamage}+` : "";
+            let afterBeginningOfCombatbatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
             // 特効は緑表示にする
             let combatHtml = unit.battleContext.isEffectiveToOpponent ?
                 `<span style='color:#00FF00'>${damage}</span>` :
@@ -3718,7 +3721,7 @@ class BattleSimmulatorBase {
             if (attackCount > 1) {
                 combatHtml += `×${attackCount}`;
             }
-            damageHtml = `${precombatHtml}${combatHtml}`;
+            damageHtml = `${precombatHtml}${afterBeginningOfCombatbatHtml}${combatHtml}`;
         }
         html += `奥${specialHtml}  攻撃: ${damageHtml}<br/>`;
         return html;

@@ -89,6 +89,9 @@ class DamageCalcResult {
         this.preCombatDamage = 0;
         this.preCombatDamageWithOverkill = 0;
 
+        this.atkUnitDamageAfterBeginningOfCombat = 0;
+        this.defUnitDamageAfterBeginningOfCombat = 0;
+
         // 護り手ユニットかそうでないかを後で区別できるよう結果に戦ったユニットを記録しておく
         this.defUnit = null;
     }
@@ -169,6 +172,10 @@ class DamageCalculator {
         // 戦闘開始後効果 (ex) 戦闘後ダメージなど
         this.__activateEffectAfterBeginningOfCombat(atkUnit, defUnit);
         this.__activateEffectAfterBeginningOfCombat(defUnit, atkUnit);
+        // atkUnitが受けるダメージはdefUnitが与えるダメージとして表示する
+        result.atkUnitDamageAfterBeginningOfCombat = defUnit.battleContext.damageAfterBeginningOfCombat;
+        result.defUnitDamageAfterBeginningOfCombat = atkUnit.battleContext.damageAfterBeginningOfCombat;
+
         for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
             func();
             if (damageType == DamageType.ActualDamage
