@@ -460,18 +460,13 @@ class HeroInfo {
     get maxDragonflower() {
         let releaseDate = this.releaseDateAsNumber;
         let i = 1;
-        if (releaseDate > 20220816) {
-            return 5 * i;
-        }
+        for (let year = 2023; year >= 2020; --year) {
+            let date = year * 10000 + 812; // 8/12に総選挙がリリースされたことはないので12固定にしておく
+            if (releaseDate > date) {
+                return 5 * i;
+            }
 
-        ++i;
-        if (releaseDate > 20210816) {
-            return 5 * i;
-        }
-
-        ++i;
-        if (releaseDate > 20200817) {
-            return 5 * i;
+            ++i;
         }
 
         ++i;
