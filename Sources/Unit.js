@@ -2106,6 +2106,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.fromPosY
             + ValueDelimiter + boolToInt(this.isCombatDone)
             + ValueDelimiter + this.restSupportSkillAvailableTurn
+            + ValueDelimiter + this.restPassiveBSkillAvailableTurn
             ;
     }
 
@@ -2216,6 +2217,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restSupportSkillAvailableTurn = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.restPassiveBSkillAvailableTurn = Number(splited[i]); ++i; }
     }
 
 
