@@ -733,6 +733,9 @@ class BattleContext {
         // ターン開始時付与不利な状態異常を無効化
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
 
+        // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+        this.damageAfterBeginningOfCombat = 0;
+
 
         // フック関数
         // 固定ダメージ
@@ -913,6 +916,7 @@ class BattleContext {
         this.condValueMap.clear();
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
+        this.damageAfterBeginningOfCombat = 0;
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];
@@ -1575,6 +1579,7 @@ class Unit extends BattleMapElement {
         this.restMoveCount = 0; // 再移動(残り)で参照する残り移動量
 
         this.restSupportSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+        this.restPassiveBSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
@@ -2085,6 +2090,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.fromPosY
             + ValueDelimiter + boolToInt(this.isCombatDone)
             + ValueDelimiter + this.restSupportSkillAvailableTurn
+            + ValueDelimiter + this.restPassiveBSkillAvailableTurn
             ;
     }
 
@@ -2195,6 +2201,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restSupportSkillAvailableTurn = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.restPassiveBSkillAvailableTurn = Number(splited[i]); ++i; }
     }
 
 
@@ -5492,6 +5499,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case Weapon.TheCyclesTurn:
                 case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:
                 case Weapon.FujinRaijinYumi:

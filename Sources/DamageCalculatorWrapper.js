@@ -2146,26 +2146,20 @@ class DamageCalculatorWrapper {
         let tile = targetUnit.placedTile;
         if (tile.divineVein === DivineVeinType.Flame &&
             tile.divineVeinGroup !== targetUnit.groupId) {
-            let logMessage = `天脈・炎により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
+            targetUnit.battleContext.damageAfterBeginningOfCombat += 7;
+            let logMessage = `天脈・炎により${targetUnit.getNameWithGroup()}に${7}ダメージ`;
             this.__writeDamageCalcDebugLog(logMessage);
             this._damageCalc.writeSimpleLog(logMessage);
-            enemyUnit.restHp -= 7;
-            if (enemyUnit.restHp <= 0) {
-                enemyUnit.restHp = 1;
-            }
         }
         // スキル
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveA.FlaredSparrow:
                     if (targetUnit.battleContext.initiatesCombat) {
+                        enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
                         let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
                         this.__writeDamageCalcDebugLog(logMessage);
                         this._damageCalc.writeSimpleLog(logMessage);
-                        enemyUnit.restHp -= 7;
-                        if (enemyUnit.restHp <= 0) {
-                            enemyUnit.restHp = 1;
-                        }
                     }
                     break;
             }
@@ -2365,11 +2359,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
             }
-            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
-                (targetUnit, enemyUnit) => {
-                    targetUnit.addStatusEffect(StatusEffectType.Gravity);
-                }
-            );
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {

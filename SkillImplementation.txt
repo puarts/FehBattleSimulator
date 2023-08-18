@@ -633,6 +633,9 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 戦闘中、最初に与える攻撃のダメージに...
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
+戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+targetUnit.battleContext.damageAfterBeginningOfCombat = N;
+
 ダメージ+N(固定ダメージ) （同名のメソッドがあるので注意すること）
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     // Nダメージ
