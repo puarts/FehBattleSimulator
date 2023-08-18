@@ -469,7 +469,6 @@ class HeroInfo {
             ++i;
         }
 
-        ++i;
         switch (this._moveType) {
             case MoveType.Infantry:
                 if (releaseDate < 20190220) {
