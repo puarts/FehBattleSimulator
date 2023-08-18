@@ -166,6 +166,9 @@ class DamageCalculator {
         // 戦闘中ダメージ計算
         if (this.isLogEnabled) this.writeDebugLog("戦闘中ダメージ計算..");
 
+        // 戦闘開始後効果 (ex) 戦闘後ダメージなど
+        this.__activateEffectAfterBeginningOfCombat(atkUnit, defUnit);
+        this.__activateEffectAfterBeginningOfCombat(defUnit, atkUnit);
         for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
             func();
             if (damageType == DamageType.ActualDamage
@@ -185,6 +188,18 @@ class DamageCalculator {
         result.defUnit_specialCount = defUnit.tmpSpecialCount;
         result.damageHistory = context.damageHistory;
         return result;
+    }
+
+    __activateEffectAfterBeginningOfCombat(targetUnit, enemyUnit) {
+        if (targetUnit.battleContext.damageAfterBeginningOfCombat > 0) {
+            targetUnit.restHp -= targetUnit.battleContext.damageAfterBeginningOfCombat;
+            let logMessage = `${targetUnit.getNameWithGroup()}に合計${targetUnit.battleContext.damageAfterBeginningOfCombat}の戦闘開始後ダメージ`;
+            this.writeDebugLog(logMessage);
+            this.writeSimpleLog(logMessage);
+            if (targetUnit.restHp <= 0) {
+                targetUnit.restHp = 1;
+            }
+        }
     }
 
     /**

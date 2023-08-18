@@ -733,6 +733,9 @@ class BattleContext {
         // ターン開始時付与不利な状態異常を無効化
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
 
+        // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+        this.damageAfterBeginningOfCombat = 0;
+
 
         // フック関数
         // 固定ダメージ
@@ -913,6 +916,7 @@ class BattleContext {
         this.condValueMap.clear();
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
+        this.damageAfterBeginningOfCombat = 0;
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];
