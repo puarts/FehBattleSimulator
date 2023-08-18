@@ -2146,12 +2146,12 @@ class DamageCalculatorWrapper {
         let tile = targetUnit.placedTile;
         if (tile.divineVein === DivineVeinType.Flame &&
             tile.divineVeinGroup !== targetUnit.groupId) {
-            let logMessage = `天脈・炎により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
+            let logMessage = `天脈・炎により${targetUnit.getNameWithGroup()}に${7}ダメージ`;
             this.__writeDamageCalcDebugLog(logMessage);
             this._damageCalc.writeSimpleLog(logMessage);
-            enemyUnit.restHp -= 7;
-            if (enemyUnit.restHp <= 0) {
-                enemyUnit.restHp = 1;
+            targetUnit.restHp -= 7;
+            if (targetUnit.restHp <= 0) {
+                targetUnit.restHp = 1;
             }
         }
         // スキル
