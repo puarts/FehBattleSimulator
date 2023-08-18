@@ -1585,6 +1585,7 @@ class Unit extends BattleMapElement {
         this.restMoveCount = 0; // 再移動(残り)で参照する残り移動量
 
         this.restSupportSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+        this.restPassiveBSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
         this.nameWithGroup = "";
         this.__updateNameWithGroup();

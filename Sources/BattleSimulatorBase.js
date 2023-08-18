@@ -3301,10 +3301,21 @@ class BattleSimmulatorBase {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveB.GoldUnwinding:
+                    let logMessage = `${atkUnit.nameWithGroup}のBスキル効果発動可能まで残り${atkUnit.restPassiveBSkillAvailableTurn}ターン`;
+                    this.writeLogLine(logMessage);
+                    this.writeSimpleLogLine(logMessage);
+                    if (atkUnit.restPassiveBSkillAvailableTurn !== 0) {
+                        this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+                    }
                     if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
-                        atkUnit.isActionDone) {
-                        this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
+                        atkUnit.isActionDone &&
+                        atkUnit.restPassiveBSkillAvailableTurn === 0) {
+                        logMessage = atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動";
+                        this.writeLogLine(logMessage);
+                        this.writeSimpleLogLine(logMessage);
+                        atkUnit.restPassiveBSkillAvailableTurn = 2;
                         atkUnit.isActionDone = false;
+                        atkUnit.addStatusEffect(StatusEffectType.Gravity);
                         atkUnit.isOneTimeActionActivatedForPassiveB = true;
                     }
                     break;
@@ -3965,6 +3976,9 @@ class BattleSimmulatorBase {
             // "「その後」以降の効果は、その効果が発動後3ターンの間発動しない"処理
             if (unit.restSupportSkillAvailableTurn >= 1) {
                 unit.restSupportSkillAvailableTurn--;
+            }
+            if (unit.restPassiveBSkillAvailableTurn >= 1) {
+                unit.restPassiveBSkillAvailableTurn--;
             }
         }
     }

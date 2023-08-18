@@ -2359,11 +2359,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
             }
-            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
-                (targetUnit, enemyUnit) => {
-                    targetUnit.addStatusEffect(StatusEffectType.Gravity);
-                }
-            );
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
