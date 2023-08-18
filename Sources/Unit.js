@@ -3073,10 +3073,7 @@ class Unit extends BattleMapElement {
     }
 
     // 行動終了状態にする
-    endAction(applyEndActionSkills = true) {
-        if (applyEndActionSkills) {
-            this.applyEndActionSkills();
-        }
+    endAction() {
         this.deactivateCanto();
         if (this.isActionDone) {
             return;
@@ -3096,10 +3093,7 @@ class Unit extends BattleMapElement {
         for (let skillId of this.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Vallastone:
-                    this.tilesMapForDivineVein.clear();
                     for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
-                        // 上書き前のタイル情報を保存
-                        this.tilesMapForDivineVein.set(tile, [tile.divineVein, tile.divineVeinGroup]);
                         tile.divineVein = DivineVeinType.Stone;
                         tile.divineVeinGroup = this.groupId;
                     }
