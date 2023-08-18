@@ -3300,7 +3300,7 @@ class BattleSimmulatorBase {
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case PassiveB.GoldUnwinding:
+                case PassiveB.GoldUnwinding: {
                     let logMessage = `${atkUnit.nameWithGroup}のBスキル効果発動可能まで残り${atkUnit.restPassiveBSkillAvailableTurn}ターン`;
                     this.writeLogLine(logMessage);
                     this.writeSimpleLogLine(logMessage);
@@ -3318,6 +3318,7 @@ class BattleSimmulatorBase {
                         atkUnit.addStatusEffect(StatusEffectType.Gravity);
                         atkUnit.isOneTimeActionActivatedForPassiveB = true;
                     }
+                }
                     break;
                 case Weapon.HadoNoSenfu:
                     if (!atkUnit.isOneTimeActionActivatedForWeapon &&
