@@ -2167,6 +2167,27 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffect(atkUnit, defUnit, calcPotentialDamage) {
+        this.__applyTransformedSkillEffects(atkUnit, defUnit);
+        this.__applyTransformedSkillEffects(defUnit, atkUnit);
+
+        this.__applyChangingAttackPrioritySkillEffects(atkUnit, defUnit);
+
+        for (let skillId of atkUnit.enumerateSkills()) {
+            let skillFunc = this._applySkillEffectForAtkUnitFuncDict[skillId];
+            if (skillFunc) {
+                skillFunc(atkUnit, defUnit, calcPotentialDamage);
+            }
+        }
+
+        for (let skillId of defUnit.enumerateSkills()) {
+            let skillFunc = this._applySkillEffectForDefUnitFuncDict[skillId];
+            if (skillFunc) {
+                skillFunc(defUnit, atkUnit, calcPotentialDamage);
+            }
+        }
+    }
+
+    __applyTransformedSkillEffects(atkUnit, defUnit) {
         if (atkUnit.isTransformed) {
             switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
                 case BeastCommonSkillType.Cavalry:
@@ -2183,22 +2204,6 @@ class DamageCalculatorWrapper {
                     this.applyBeastCavalryRefinedSkillEffect(atkUnit, defUnit);
                     break;
                 }
-            }
-        }
-
-        this.__applyChangingAttackPrioritySkillEffects(atkUnit, defUnit);
-
-        for (let skillId of atkUnit.enumerateSkills()) {
-            let skillFunc = this._applySkillEffectForAtkUnitFuncDict[skillId];
-            if (skillFunc) {
-                skillFunc(atkUnit, defUnit, calcPotentialDamage);
-            }
-        }
-
-        for (let skillId of defUnit.enumerateSkills()) {
-            let skillFunc = this._applySkillEffectForDefUnitFuncDict[skillId];
-            if (skillFunc) {
-                skillFunc(defUnit, atkUnit, calcPotentialDamage);
             }
         }
     }
