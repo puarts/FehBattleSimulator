@@ -1524,7 +1524,7 @@ const Weapon = {
     // 超英雄（特別な贈り物）
     // https://www.youtube.com/watch?v=Zzc_MVUJIMw&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=x7Myllpq6qk&ab_channel=NintendoMobile
-    DawnsweetBox: 100000, // 白夜王子の菓子箱
+    DawnsweetBox: 2350, // 白夜王子の菓子箱
     DuskbloomBow: 2341, // 暗夜の王子の花弓
     PetalfallBladePlus: 2339, // 桜と薔薇の刀+
     DuskDawnStaff: 2343, // 白夜暗夜の姫の花杖
@@ -1712,6 +1712,11 @@ const Weapon = {
     ArchSageTome: 2547, // 大賢者の書
     TheCyclesTurn: 2550, // 円環の力
     DeliverersBrand: 2553, // 聖王の軍師の剣
+
+    // 伝承英雄 (救世の神竜 リュール)
+    // https://www.youtube.com/watch?v=Y04kS1hErps&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=gJ1DwlkTbes&ab_channel=NintendoMobile
+    DragonsFist: 2557, // 神竜の体術
 };
 
 const Support = {
@@ -1921,6 +1926,8 @@ const Special = {
 
     NegatingFang: 1469, // 反竜穿
 
+    // 専用奥義
+    DragonBlast: 2558, // 神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
     ChivalricAura: 2527, // グランベルの騎士道
 
@@ -2818,6 +2825,9 @@ const PassiveC = {
     SpdDefOath3: 1233,
     SpdResOath3: 1602,
 
+    // 信条
+    AtkSpdPledge: 2559, // 攻撃速さの信条
+
     // 開放
     AtkOpening3: 779,
     SpdOpening3: 815, // 速さの開放3
@@ -3268,6 +3278,7 @@ function isDefenseSpecial(special) {
 }
 
 const NormalAttackSpecialDict = {};
+NormalAttackSpecialDict[Special.DragonBlast] = 0;
 NormalAttackSpecialDict[Special.Flare] = 0;
 NormalAttackSpecialDict[Special.Moonbow] = 0;
 NormalAttackSpecialDict[Special.Luna] = 0;

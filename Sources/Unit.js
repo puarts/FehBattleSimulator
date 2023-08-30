@@ -689,6 +689,9 @@ class BattleContext {
         // 武器スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.weaponSkillCondSatisfied = false;
 
+        // 奥義スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.specialSkillCondSatisfied = false;
+
         // Aスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.passiveASkillCondSatisfied = false;
 
@@ -899,6 +902,7 @@ class BattleContext {
         this.isMiracleWithoutSpecialActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
+        this.specialSkillCondSatisfied = false;
         this.passiveASkillCondSatisfied = false;
         this.passiveBSkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
@@ -2603,6 +2607,26 @@ class Unit extends BattleMapElement {
     get isDuoHero() {
         let isDuo = Object.values(Hero).includes(this.heroIndex);
         return this.heroInfo != null && isDuo;
+    }
+
+    getOrigins() {
+        let info = this.heroInfo;
+        if (info === null) return [];
+        return info.origin.split('|');
+    }
+
+    static getOriginSet(units) {
+        let originSet = new Set();
+        for (let unit of units) {
+            for (let origin of unit.getOrigins()) {
+                if (origin.indexOf("紋章の謎") >= 0) {
+                    originSet.add("紋章の謎");
+                } else {
+                    originSet.add(origin);
+                }
+            }
+        }
+        return originSet;
     }
 
     get hasWeapon() {
