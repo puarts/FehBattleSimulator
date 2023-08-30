@@ -1716,7 +1716,7 @@ const Weapon = {
     // 伝承英雄 (救世の神竜 リュール)
     // https://www.youtube.com/watch?v=Y04kS1hErps&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=gJ1DwlkTbes&ab_channel=NintendoMobile
-    DragonsFist: 100000, // 神竜の体術
+    DragonsFist: 2557, // 神竜の体術
 };
 
 const Support = {
