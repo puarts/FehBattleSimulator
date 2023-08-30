@@ -1712,6 +1712,11 @@ const Weapon = {
     ArchSageTome: 2547, // 大賢者の書
     TheCyclesTurn: 2550, // 円環の力
     DeliverersBrand: 2553, // 聖王の軍師の剣
+
+    // 伝承英雄 (救世の神竜 リュール)
+    // https://www.youtube.com/watch?v=Y04kS1hErps&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=gJ1DwlkTbes&ab_channel=NintendoMobile
+    DragonsFist: 100000, // 神竜の体術
 };
 
 const Support = {

@@ -836,6 +836,12 @@ function isNegativeStatusEffect(type) {}
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
 
+出典の配列を返す
+unit.getOrigins();
+
+ユーザーリストから出典の集合を得る
+Unit.getOriginSet(units);
+
 比翼・双界英雄
 Unit.js
 const Hero = {

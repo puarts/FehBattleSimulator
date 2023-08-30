@@ -788,6 +788,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.DragonsFist:
+                    if (defUnit.battleContext.restHpPercentage >= 25) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
+                    }
+                    break;
                 case Weapon.SparklingSun:
                     if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.75);
@@ -2327,6 +2332,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.DragonsFist] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                let originSet = Unit.getOriginSet(units);
+                let amount = Math.min(originSet.size * 3 + 4, 10);
+                enemyUnit.addAllSpur(-amount);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.TipTheScales] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                 targetUnit.addAllSpur(3);
@@ -3798,19 +3813,8 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.Liberation] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
-                let originSet = new Set();
-                for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-                    let info = unit.heroInfo;
-                    if (info === null) continue;
-                    let origins = info.origin.split('|');
-                    for (let origin of origins) {
-                        if (origin.indexOf("紋章の謎") >= 0) {
-                            originSet.add("紋章の謎");
-                        } else {
-                            originSet.add(origin);
-                        }
-                    }
-                }
+                let units = self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                let originSet = Unit.getOriginSet(units);
                 let amount = Math.min(originSet.size * 4 + 4, 12);
                 enemyUnit.addSpurs(0, -amount, -amount, 0);
             }

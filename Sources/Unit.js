@@ -2621,6 +2621,26 @@ class Unit extends BattleMapElement {
         return this.heroInfo != null && isDuo;
     }
 
+    getOrigins() {
+        let info = this.heroInfo;
+        if (info === null) return [];
+        return info.origin.split('|');
+    }
+
+    static getOriginSet(units) {
+        let originSet = new Set();
+        for (let unit of units) {
+            for (let origin of unit.getOrigins()) {
+                if (origin.indexOf("紋章の謎") >= 0) {
+                    originSet.add("紋章の謎");
+                } else {
+                    originSet.add(origin);
+                }
+            }
+        }
+        return originSet;
+    }
+
     get hasWeapon() {
         return this.weapon != Weapon.None;
     }
