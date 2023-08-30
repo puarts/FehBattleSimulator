@@ -488,7 +488,7 @@ class DamageCalculator {
                 - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
                 - atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack
                 + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
-            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: ${totalCount} = ${atkUnit.tmpSpecialCount} - 
+            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
             ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
             ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
             ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
@@ -761,7 +761,7 @@ class DamageCalculator {
             this.writeDebugLog("戦闘前ダメージ計算..");
             this.writeLog(`範囲奥義によるダメージ${totalDamageWithOverkill}(HP: → ${defUnit.restHp})`);
             this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup());
-            this.writeSimpleLog(`範囲奥義によるダメージ${totalDamageWithOverkill}(HP: → ${defUnit.restHp})`);
+            this.writeSimpleLog(`範囲奥義によるダメージ<span style="color: #ff0000">${totalDamageWithOverkill}</span>(HP: → ${defUnit.restHp})`);
             this.writeLog(defUnit.name + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
         }
         return [totalDamage, totalDamageWithOverkill];
@@ -1037,8 +1037,8 @@ class DamageCalculator {
                 // 奥義発動
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
-                if (this.isLogEnabled) this.writeLog("奥義によるダメージ" + currentDamage);
-                this.writeSimpleLog(" " + atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>奥義ダメージ" + currentDamage);
+                if (this.isLogEnabled) this.writeLog(`奥義によるダメージ${currentDamage}`);
+                this.writeSimpleLog(`${atkUnit.getNameWithGroup()}→${defUnit.getNameWithGroup()}<br/>奥義ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 this.__restoreMaxSpecialCount(atkUnit);
                 // 奥義発動後の奥義カウント変動
                 for (let skillId of atkUnit.enumerateSkills()) {
@@ -1078,8 +1078,8 @@ class DamageCalculator {
             else {
                 // 通常攻撃
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, normalDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
-                if (this.isLogEnabled) this.writeLog("通常攻撃によるダメージ" + currentDamage);
-                this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup() + "<br/>通常攻撃ダメージ" + currentDamage);
+                if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ${currentDamage}`);
+                this.writeSimpleLog(`${atkUnit.getNameWithGroup()}→${defUnit.getNameWithGroup()}<br/>通常攻撃ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
             }
 
