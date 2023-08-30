@@ -1524,7 +1524,7 @@ const Weapon = {
     // 超英雄（特別な贈り物）
     // https://www.youtube.com/watch?v=Zzc_MVUJIMw&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=x7Myllpq6qk&ab_channel=NintendoMobile
-    DawnsweetBox: 100000, // 白夜王子の菓子箱
+    DawnsweetBox: 2350, // 白夜王子の菓子箱
     DuskbloomBow: 2341, // 暗夜の王子の花弓
     PetalfallBladePlus: 2339, // 桜と薔薇の刀+
     DuskDawnStaff: 2343, // 白夜暗夜の姫の花杖
