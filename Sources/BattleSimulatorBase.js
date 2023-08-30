@@ -3891,10 +3891,10 @@ class BattleSimmulatorBase {
         if (this.data.gameMode != GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
                 // TODO: 正しい挙動か確認する
+                unit.endAction();
+                unit.deactivateCanto();
                 // ターン >= 2としないと戦闘開始を押した瞬間に敵の天脈が発動してしまう
                 if (group === UnitGroupType.Ally && g_appData.currentTurn >= 2) {
-                    unit.endAction();
-                    unit.deactivateCanto();
                     // 拡張枠のユニットは天脈を発動しない
                     if (unit !== g_appData.getEnemyExpansionUnitOnMap() &&
                         !g_appData.isEnemyActionTriggered) {
