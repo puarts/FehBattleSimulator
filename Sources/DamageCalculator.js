@@ -200,7 +200,7 @@ class DamageCalculator {
     __activateEffectAfterBeginningOfCombat(targetUnit, enemyUnit) {
         if (targetUnit.battleContext.damageAfterBeginningOfCombat > 0) {
             targetUnit.restHp -= targetUnit.battleContext.damageAfterBeginningOfCombat;
-            let logMessage = `${targetUnit.getNameWithGroup()}に合計${targetUnit.battleContext.damageAfterBeginningOfCombat}の戦闘開始後ダメージ`;
+            let logMessage = `${targetUnit.getNameWithGroup()}に合計<span style="color: #ff0000">${targetUnit.battleContext.damageAfterBeginningOfCombat}</span>の戦闘開始後ダメージ`;
             this.writeDebugLog(logMessage);
             this.writeSimpleLog(logMessage);
             if (targetUnit.restHp <= 0) {

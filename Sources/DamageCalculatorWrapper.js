@@ -2167,7 +2167,7 @@ class DamageCalculatorWrapper {
                 case PassiveA.FlaredSparrow:
                     if (targetUnit.battleContext.initiatesCombat) {
                         enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
-                        let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に${7}ダメージ`;
+                        let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に<span style="color: #ff0000">${7}</span>ダメージ`;
                         this.__writeDamageCalcDebugLog(logMessage);
                         this._damageCalc.writeSimpleLog(logMessage);
                     }
