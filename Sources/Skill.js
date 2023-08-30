@@ -2825,6 +2825,9 @@ const PassiveC = {
     SpdDefOath3: 1233,
     SpdResOath3: 1602,
 
+    // 信条
+    AtkSpdPledge: 2559, // 攻撃速さの信条
+
     // 開放
     AtkOpening3: 779,
     SpdOpening3: 815, // 速さの開放3

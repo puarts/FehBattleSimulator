@@ -2332,6 +2332,11 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveC.AtkSpdPledge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkSpdSpurs(3);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                 if (unit.isPartner(targetUnit)) {
