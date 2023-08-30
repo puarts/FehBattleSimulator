@@ -788,6 +788,11 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.SparklingSun:
+                    if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.75);
+                    }
+                    break;
                 case PassiveB.Gambit4: {
                     let ratio = Math.min(defUnit.maxSpecialCount * 0.1, 0.5);
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
@@ -12678,11 +12683,6 @@ class DamageCalculatorWrapper {
                         atkUnit.hasNegativeStatusEffect()) {
                         return Math.min(Math.max(atkUnit.getDefInPrecombat(), atkUnit.getResInPrecombat()), 50) / 100.0;
                     }
-                }
-                break;
-            case Weapon.SparklingSun:
-                if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
-                    return 0.75;
                 }
                 break;
             case Weapon.BaraNoYari:
