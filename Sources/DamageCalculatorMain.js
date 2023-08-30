@@ -922,6 +922,7 @@ class DamageCalcData {
     }
     __getInheritableCount3Specials() {
         return [
+            Special.DragonBlast, // 神竜破
             Special.Flare, // 陽光
             Special.Deadeye, // 狙撃(2倍)
             Special.BlueFrame, // ブルーフレイム(+10 or +25)

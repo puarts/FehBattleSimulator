@@ -920,6 +920,16 @@ class DamageCalculator {
             if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
                 for (let skillId of defUnit.enumerateSkills()) {
                     switch (skillId) {
+                        case Special.DragonBlast:
+                            if (defUnit.tmpSpecialCount === 0 ||
+                                atkUnit.tmpSpecialCount === 0 ||
+                                defUnit.battleContext.isSpecialActivated ||
+                                atkUnit.battleContext.isSpecialActivated) {
+                                if (defUnit.battleContext.specialSkillCondSatisfied) {
+                                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                                }
+                            }
+                            break;
                         case Special.ArmoredFloe:
                         case Special.ArmoredBeacon:
                             if (defUnit.tmpSpecialCount === 0 ||

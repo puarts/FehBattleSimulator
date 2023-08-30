@@ -464,11 +464,6 @@ class DamageCalculatorWrapper {
         self.__applySkillEffectFromAlliesExcludedFromFeud(atkUnit, defUnit, calcPotentialDamage);
         self.__applySkillEffectFromAlliesExcludedFromFeud(defUnit, atkUnit, calcPotentialDamage);
 
-        // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
-        // 1回の攻撃の攻撃回数を設定
-        self.__setAttackCount(atkUnit, defUnit);
-        self.__setAttackCount(defUnit, atkUnit);
-
         // 神罰の杖
         self.__setWrathfulStaff(atkUnit, defUnit);
         self.__setWrathfulStaff(defUnit, atkUnit);
@@ -491,6 +486,11 @@ class DamageCalculatorWrapper {
             self.__applySkillEffectForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
             self.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
         }
+
+        // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
+        // 1回の攻撃の攻撃回数を設定
+        self.__setAttackCount(atkUnit, defUnit);
+        self.__setAttackCount(defUnit, atkUnit);
 
         // ダメージ軽減率の計算(ダメージ軽減効果を軽減する効果の後に実行する必要がある)
         {
@@ -2332,6 +2332,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                if (unit.isPartner(targetUnit)) {
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                }
+            }
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3, unit => unit.isPartner(targetUnit))) {
+                targetUnit.battleContext.specialSkillCondSatisfied = true;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.DragonsFist] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -10276,6 +10286,18 @@ class DamageCalculatorWrapper {
         if (calcPotentialDamage) {
             return;
         }
+        // マップ全域
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            for (let skillId of allyUnit.enumerateSkills()) {
+                switch (skillId) {
+                    case Special.DragonBlast:
+                        if (allyUnit.isPartner(targetUnit)) {
+                            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                        }
+                        break;
+                }
+            }
+        }
         // 周囲2マス以内
         for (let allyUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
             for (let skillId of allyUnit.enumerateSkills()) {
@@ -10323,9 +10345,7 @@ class DamageCalculatorWrapper {
     }
 
     __setAttackCount(targetUnit, enemyUnit) {
-        for (let func of targetUnit.battleContext.setAttackCountFuncs) {
-            func(targetUnit, enemyUnit);
-        }
+        // 攻撃回数初期化
         let atkWeaponInfo = targetUnit.weaponInfo;
         if (atkWeaponInfo != null) {
             targetUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
@@ -10334,6 +10354,10 @@ class DamageCalculatorWrapper {
         else {
             targetUnit.battleContext.attackCount = 0;
             targetUnit.battleContext.counterattackCount = 0;
+        }
+
+        for (let func of targetUnit.battleContext.setAttackCountFuncs) {
+            func(targetUnit, enemyUnit);
         }
 
         // Triangle Attack
@@ -14946,6 +14970,13 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.specialMultDamage = 2.5;
         };
 
+        this._applySpecialSkillEffectFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit) => {
+            // 神竜破
+            {
+                let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(totalSpd * 0.5);
+            }
+        };
         this._applySpecialSkillEffectFuncDict[Special.ArmoredFloe] = (targetUnit, enemyUnit) => {
             // 重装の聖氷
             {

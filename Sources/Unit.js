@@ -689,6 +689,9 @@ class BattleContext {
         // 武器スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.weaponSkillCondSatisfied = false;
 
+        // 奥義スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
+        this.specialSkillCondSatisfied = false;
+
         // Aスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.passiveASkillCondSatisfied = false;
 
@@ -899,6 +902,7 @@ class BattleContext {
         this.isMiracleWithoutSpecialActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
+        this.specialSkillCondSatisfied = false;
         this.passiveASkillCondSatisfied = false;
         this.passiveBSkillCondSatisfied = false;
         this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;

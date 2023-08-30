@@ -1926,6 +1926,8 @@ const Special = {
 
     NegatingFang: 1469, // 反竜穿
 
+    // 専用奥義
+    DragonBlast: 2558, // 神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
     ChivalricAura: 2527, // グランベルの騎士道
 
@@ -3273,6 +3275,7 @@ function isDefenseSpecial(special) {
 }
 
 const NormalAttackSpecialDict = {};
+NormalAttackSpecialDict[Special.DragonBlast] = 0;
 NormalAttackSpecialDict[Special.Flare] = 0;
 NormalAttackSpecialDict[Special.Moonbow] = 0;
 NormalAttackSpecialDict[Special.Luna] = 0;
