@@ -1743,6 +1743,7 @@ const Support = {
     GentleDream: 1061, // やさしいゆめ
     GentleDreamPlus: 2349, // やさしいゆめ・神
     WhimsicalDream: 1362, // しろいゆめ
+    WhimsicalDreamPlus: 2560, // しろいゆめ・神
     SweetDreams: 1489, // あまいゆめ
     FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
