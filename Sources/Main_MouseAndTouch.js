@@ -243,6 +243,7 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
             }
 
             if (g_appData.showMovableRangeWhenMovingUnit) {
+                let currentTile = g_dragoverTileHistory.lastValue;
                 const alpha = "a0";
                 for (let tile of unit.attackableTiles) {
                     let color = "#feccc5";
@@ -252,14 +253,19 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                 for (let tile of unit.movableTiles) {
                     let color = "#cbd6ee";
                     color = "#88aaff" + alpha;
+                    if (tile === currentTile) {
+                        color = "#8888ff" + alpha;
+                    }
                     updateCellBgColor(tile.posX, tile.posY, color);
                 }
-            }
-            for (let tile of g_dragoverTileHistory.data) {
-                const alpha = "a0";
-                let color = "#cbd600";
-                color = "#88ccff" + alpha;
-                updateCellBgColor(tile.posX, tile.posY, color);
+                for (let tile of unit.teleportOnlyTiles) {
+                    let color = "#cbd6ee";
+                    color = "#aaccff" + alpha;
+                    if (tile === currentTile) {
+                        color = "#8888ff" + alpha;
+                    }
+                    updateCellBgColor(tile.posX, tile.posY, color);
+                }
             }
         }
     } catch (e) {

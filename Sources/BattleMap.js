@@ -2437,7 +2437,9 @@ class BattleMap {
         unit.movableTiles = [];
         unit.attackableTiles = [];
         unit.assistableTiles = [];
+        unit.teleportOnlyTiles = [];
 
+        let tilesWithoutTeleport = new Set(this.enumerateMovableTiles(unit, false, true, true));
         // ユニットの移動可能範囲、攻撃可能範囲を更新
         for (let tile of this.enumerateMovableTiles(unit, false)) {
             if (unit.movableTiles.includes(tile)) {
@@ -2445,6 +2447,9 @@ class BattleMap {
             }
 
             unit.movableTiles.push(tile);
+            if (!tilesWithoutTeleport.has(tile)) {
+                unit.teleportOnlyTiles.push(tile);
+            }
             if (unit.hasWeapon) {
                 for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
                     if (!unit.attackableTiles.includes(attackableTile)) {
@@ -2740,6 +2745,7 @@ class BattleMap {
         else {
             cell.bgColor = tileTypeToColor(tile.type);
         }
+
         if (this.showAllyAttackRange) {
             const alpha = "40";
             if (tile.isAttackableForAlly) {
