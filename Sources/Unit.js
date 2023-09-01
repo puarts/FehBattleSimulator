@@ -3790,7 +3790,7 @@ class Unit extends BattleMapElement {
     applyAtkUnity() {
         let targetUnit = this;
         targetUnit.atkSpur += 5;
-        let debuff = targetUnit.getAtkDebuffInCombat();
+        let debuff = targetUnit.atkDebuffTotal;
         if (debuff < 0) {
             targetUnit.atkSpur += -debuff * 2;
         }
@@ -3798,7 +3798,7 @@ class Unit extends BattleMapElement {
     applySpdUnity() {
         let targetUnit = this;
         targetUnit.spdSpur += 5;
-        let debuff = targetUnit.getSpdDebuffInCombat();
+        let debuff = targetUnit.spdDebuffTotal;
         if (debuff < 0) {
             targetUnit.spdSpur += -debuff * 2;
         }
@@ -3806,7 +3806,7 @@ class Unit extends BattleMapElement {
     applyDefUnity() {
         let targetUnit = this;
         targetUnit.defSpur += 5;
-        let debuff = targetUnit.getDefDebuffInCombat();
+        let debuff = targetUnit.defDebuffTotal;
         if (debuff < 0) {
             targetUnit.defSpur += -debuff * 2;
         }
@@ -3814,7 +3814,7 @@ class Unit extends BattleMapElement {
     applyResUnity() {
         let targetUnit = this;
         targetUnit.resSpur += 5;
-        let debuff = targetUnit.getResDebuffInCombat();
+        let debuff = targetUnit.resDebuffTotal;
         if (debuff < 0) {
             targetUnit.resSpur += -debuff * 2;
         }
