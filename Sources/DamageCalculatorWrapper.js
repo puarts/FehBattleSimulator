@@ -2469,6 +2469,7 @@ class DamageCalculatorWrapper {
                 targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                 targetUnit.addAllSpur(5);
                 let amount = Math.min(this.globalBattleContext.currentTurn * 2, 10);
+                targetUnit.addAtkSpdSpurs(amount);
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
                     atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
