@@ -2332,6 +2332,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveC.InevitableDeathPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                }
+            );
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.AtkSpdPledge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAtkSpdSpurs(3);
@@ -16889,10 +16899,10 @@ class DamageCalculatorWrapper {
                         targetUnit.resSpur -= 4;
                         break;
                     case PassiveC.InevitableDeath:
-                        targetUnit.atkSpur -= 4;
-                        targetUnit.spdSpur -= 4;
-                        targetUnit.defSpur -= 4;
-                        targetUnit.resSpur -= 4;
+                        targetUnit.addAllSpur(-4);
+                        break;
+                    case PassiveC.InevitableDeathPlus:
+                        targetUnit.addAllSpur(-5);
                         break;
                 }
             }

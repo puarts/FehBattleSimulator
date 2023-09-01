@@ -2964,6 +2964,7 @@ const PassiveC = {
     MilaNoHaguruma: 1352, // ミラの歯車
     MilasTurnwheel2: 2372, // ミラの歯車・神
     InevitableDeath: 1420, // 死からは逃れられぬ
+    InevitableDeathPlus: 2561, // 死からは逃れられぬ・神
     WingsOfLight: 1622, // 光輝く翼
     OrdersRestraint: 1724, // 束縛、秩序、安定
     DomainOfIce: 1774, // 絶氷結界

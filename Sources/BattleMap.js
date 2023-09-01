@@ -1985,6 +1985,29 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveC.InevitableDeathPlus: {
+                    for (let enemyUnit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 4)) {
+                        // 一番近いマスを求める
+                        let nearestTiles = [];
+                        let minDistance = Number.MAX_SAFE_INTEGER;
+                        for (let tile of this.enumerateTilesWithinSpecifiedDistance(enemyUnit.placedTile, 1)) {
+                            let distance = unit.placedTile.calculateDistance(tile);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                nearestTiles = [tile];
+                            } else if (distance === minDistance) {
+                                nearestTiles.push(tile);
+                            }
+                        }
+                        // そのマスが移動可能ならばワープ先に追加する
+                        for (let tile of nearestTiles) {
+                            if (tile.isUnitPlacableForUnit(unit)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                }
+                    break;
                 case PassiveC.TipTheScales: {
                     let allyCondFunc = ally => ally.hasStatusEffect(StatusEffectType.RallySpectrum);
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
@@ -2775,6 +2798,16 @@ class BattleMap {
      */
     * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit)) {
+            let dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);
+            if (dist <= spaces) {
+                yield unit;
+            }
+        }
+    }
+
+    * enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
+        let groupId = targetUnit.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+        for (let unit of this.enumerateUnitsInSpecifiedGroup(groupId)) {
             let dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);
             if (dist <= spaces) {
                 yield unit;
