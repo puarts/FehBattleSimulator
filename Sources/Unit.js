@@ -1552,6 +1552,7 @@ class Unit extends BattleMapElement {
         this.movableTiles = [];
         this.attackableTiles = [];
         this.assistableTiles = [];
+        this.teleportOnlyTiles = [];
 
         // シリアライズする時に一時的に使用
         this.ownerType = 0;

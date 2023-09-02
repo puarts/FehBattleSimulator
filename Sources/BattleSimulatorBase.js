@@ -8289,16 +8289,32 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case Support.WhimsicalDream:
+                {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                        if (skillOwnerUnit === unit) continue;
+                        unit.applyAtkBuff(5);
+                    }
+
+                    let targetEnemies = this.__findNearestEnemies(targetUnit, 4);
+                    for (let targetEnemy of targetEnemies) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
+                            unit.applyAtkDebuff(-5);
+                        }
+                    }
+                }
+                    break;
+                case Support.WhimsicalDreamPlus:
                     {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
                             if (skillOwnerUnit === unit) continue;
-                            unit.applyAtkBuff(5);
+                            unit.applyAtkBuff(6);
+                            unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                         }
 
-                        let targetEnemies = this.__findNearestEnemies(targetUnit, 4);
+                        let targetEnemies = this.__findNearestEnemies(targetUnit, 5);
                         for (let targetEnemy of targetEnemies) {
                             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
-                                unit.applyAtkDebuff(-5);
+                                unit.applyAtkDebuff(-6);
                             }
                         }
                     }
