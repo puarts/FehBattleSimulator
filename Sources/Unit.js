@@ -3122,6 +3122,11 @@ class Unit extends BattleMapElement {
     }
 
     applyEndActionSkills() {
+        // ユニットが死んだ場合は発動しないはず
+        // TODO: 今後死後に発動する効果を持つスキルが実装されたら修正する
+        if (this.isDead) {
+            return;
+        }
         for (let skillId of this.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Vallastone:
