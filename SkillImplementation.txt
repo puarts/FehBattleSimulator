@@ -510,6 +510,9 @@ atkUnit.isSpecialCharged || atkUnit.isSpecialActivated
 自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFirstAttack += N;
 
+自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
+targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += N;
+
 敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)
 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 

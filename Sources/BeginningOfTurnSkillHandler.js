@@ -164,6 +164,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.PlayfulPinwheel:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+                break;
             case PassiveC.AtkSpdPledge:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToApplyBuffs(6, 6, 0, 0);

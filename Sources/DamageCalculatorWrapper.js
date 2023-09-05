@@ -2332,6 +2332,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.PlayfulPinwheel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                let amount = positiveCount + enemyUnit.getNegativeStatusEffects().length;
+                targetUnit.addAtkSpdSpurs(amount * 2);
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.min(positiveCount, targetUnit.battleContext.specialCount);
+                targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += Math.max(positiveCount - targetUnit.battleContext.specialCount, 0);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AptitudeArrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(Math.min(Math.trunc(targetUnit.level), 10));

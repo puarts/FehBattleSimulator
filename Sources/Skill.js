@@ -1718,6 +1718,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Y04kS1hErps&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=gJ1DwlkTbes&ab_channel=NintendoMobile
     DragonsFist: 2557, // 神竜の体術
+
+    // 超英雄（女王に捧ぐ風）
+    // https://www.youtube.com/watch?v=c1fIdobu--o&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=SRWlgPxknbA&ab_channel=NintendoMobile
+    PlayfulPinwheel: 2564, // 風車
 };
 
 const Support = {

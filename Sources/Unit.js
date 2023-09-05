@@ -451,6 +451,7 @@ class BattleContext {
         this.maxHpWithSkills = 0;
         this.hpBeforeCombat = 0;
         this.restHp = 0;
+        this.specialCount = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
         this.isVantageActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
@@ -576,6 +577,9 @@ class BattleContext {
 
         // 最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttack = 0;
+
+        // 最初の追撃前の奥義発動カウント減少値(減少値を正の値で保持する)
+        this.specialCountReductionBeforeFollowupAttack = 0;
 
         // 攻撃ごとに変化する可能性がある最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttackPerAttack = 0;
@@ -791,6 +795,7 @@ class BattleContext {
         this.maxHpWithSkills = 0;
         this.hpBeforeCombat = 0;
         this.restHp = 0;
+        this.specialCount = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
         this.isVantageActivatable = false;
@@ -866,6 +871,7 @@ class BattleContext {
         this.isSaviorActivated = false;
 
         this.specialCountReductionBeforeFirstAttack = 0;
+        this.specialCountReductionBeforeFollowupAttack = 0;
         this.specialCountReductionBeforeFirstAttackPerAttack = 0;
         this.specialCountIncreaseBeforeFirstAttack = 0;
         this.additionalDamageOfFirstAttack = 0;
@@ -5573,6 +5579,7 @@ class Unit extends BattleMapElement {
         this.battleContext.hpBeforeCombat = this.hp;
         this.battleContext.restHp = this.hp;
         this.battleContext.initiatesCombat = initiatesCombat;
+        this.battleContext.specialCount = this.specialCount;
     }
 
     canActivatePrecombatSpecial() {
