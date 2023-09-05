@@ -2337,6 +2337,14 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.WhitewindBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                let amount = positiveCount + enemyUnit.getNegativeStatusEffects().length;
+                targetUnit.addAtkSpdSpurs(amount * 2);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.TwinSkyWing] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpdDefSpurs(-5);

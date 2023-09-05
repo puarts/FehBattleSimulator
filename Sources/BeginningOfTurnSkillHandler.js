@@ -181,6 +181,7 @@ class BeginningOfTurnSkillHandler {
                 }
             }
                 break;
+            case Weapon.WhitewindBowPlus:
             case Weapon.PlayfulPinwheel:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);

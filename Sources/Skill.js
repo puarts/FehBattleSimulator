@@ -1724,6 +1724,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=SRWlgPxknbA&ab_channel=NintendoMobile
     PlayfulPinwheel: 2564, // 風車
     FujinUchiwa: 2567, // 風神の団扇
+    WhitewindBowPlus: 2569, // 白き風の弓+
 };
 
 const Support = {
