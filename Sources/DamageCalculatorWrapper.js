@@ -3049,7 +3049,7 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.WingsOfMercy4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.addDefResSpurs(-3);
+            enemyUnit.addDefResSpurs(-3);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.FujinRaijinYumi] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
