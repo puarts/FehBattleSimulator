@@ -2515,6 +2515,7 @@ const PassiveB = {
     KyokaMukoEnkyori3: 647, // 強化無効・遠距離3
 
     Wanakaijo3: 858, // 罠解除3
+    DisarmTrap4: 2572, // 罠解除4
 
     RunaBracelet: 667, // 月の腕輪
     LunarBrace2: 1947, // 月の腕輪・承
