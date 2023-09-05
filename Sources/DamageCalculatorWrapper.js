@@ -11978,7 +11978,7 @@ class DamageCalculatorWrapper {
                                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                                 let debuffTotal = enemyUnit.debuffTotal;
                                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
-                                    debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                                    debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
                                 }
                                 let ratio = -1 * debuffTotal * 2.0 / 100.0;
                                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
@@ -13400,7 +13400,7 @@ class DamageCalculatorWrapper {
                         if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit) && !isPrecombat) {
                             let debuffTotal = defUnit.debuffTotal;
                             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
-                                debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                                debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
                             }
                             atkUnit.battleContext.additionalDamage += Math.abs(debuffTotal);
                         }

@@ -2401,6 +2401,61 @@ class Unit extends BattleMapElement {
             this.resDebuffTotal,
         ];
     }
+    getAtkDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnAtkDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.atkDebuff - this.atkBuff;
+        }
+        return this.atkDebuff;
+    }
+    getSpdDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnSpdDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.spdDebuff - this.spdBuff;
+        }
+        return this.spdDebuff;
+    }
+    getDefDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnDefDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.defDebuff - this.defBuff;
+        }
+        return this.defDebuff;
+    }
+    getResDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnResDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.resDebuff - this.resBuff;
+        }
+        return this.resDebuff;
+    }
+
+    getDebuffTotal(isPrecombat = false) {
+        return this.getAtkDebuffTotal(isPrecombat) +
+            this.getSpdDebuffTotal(isPrecombat) +
+            this.getDefDebuffTotal(isPrecombat) +
+            this.getResDebuffTotal(isPrecombat);
+    }
+    getDebuffTotals(isPrecombat = false) {
+        return [
+            this.getAtkDebuffTotal(isPrecombat),
+            this.getSpdDebuffTotal(isPrecombat),
+            this.getDefDebuffTotal(isPrecombat),
+            this.getResDebuffTotal(isPrecombat),
+        ];
+    }
 
     isMeleeWeaponType() {
         return isMeleeWeaponType(this.weaponType);
