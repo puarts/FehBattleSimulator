@@ -1726,6 +1726,7 @@ const Weapon = {
     FujinUchiwa: 2567, // 風神の団扇
     WhitewindBowPlus: 2569, // 白き風の弓+
     BrightwindFans: 2571, // 風舞う白夜の呪扇
+    WindTribeClubPlus: 2573, // 風の部族の金棒+
 };
 
 const Support = {

@@ -2377,6 +2377,14 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+        this._applySkillEffectForUnitFuncDict[Weapon.WindTribeClubPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkDefSpurs(5);
+                let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                let amount = positiveCount + enemyUnit.getNegativeStatusEffects().length;
+                targetUnit.addAtkDefSpurs(amount * 2);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WhitewindBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(5);
