@@ -1030,6 +1030,11 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoKagero:
+                duoUnit.reduceSpecialCount(1);
+                duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                duoUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                break;
             case Hero.HarmonizedAyra:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.MobilityIncreased);
@@ -3969,6 +3974,7 @@ class BattleSimmulatorBase {
                 || unit.heroIndex == Hero.DuoNina
                 || unit.heroIndex == Hero.DuoAskr
                 || unit.heroIndex == Hero.HarmonizedTiki
+                || unit.heroIndex == Hero.DuoKagero
             ) {
                 if (this.data.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;

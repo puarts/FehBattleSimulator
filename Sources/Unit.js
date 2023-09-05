@@ -62,6 +62,7 @@ const Hero = {
     DuoShamir: 984,
     DuoYmir: 990,
     HarmonizedAyra: 1005,
+    DuoKagero: 1016,
 };
 
 function isThiefIndex(heroIndex) {
