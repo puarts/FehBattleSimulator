@@ -2585,6 +2585,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    TwinSkyWing: 2568, // 双姫の天翼
     DeepStar: 2566, // 真落星
     GoldUnwinding: 2552, // 時を戻す黄金の魔女
     BlueLionRule: 1451, // 蒼き獅子王
@@ -3677,6 +3678,7 @@ function isTeleportationSkill(skillId) {
 /// 天駆の道の効果を持つスキルかどうか
 function hasPathfinderEffect(skillId) {
     switch (skillId) {
+        case PassiveB.TwinSkyWing:
         case Weapon.JotnarBow:
         case Weapon.Hrimfaxi:
         case Weapon.Skinfaxi:
