@@ -1030,6 +1030,11 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoKagero:
+                duoUnit.reduceSpecialCount(1);
+                duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                duoUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                break;
             case Hero.HarmonizedAyra:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.MobilityIncreased);
@@ -3969,6 +3974,7 @@ class BattleSimmulatorBase {
                 || unit.heroIndex == Hero.DuoNina
                 || unit.heroIndex == Hero.DuoAskr
                 || unit.heroIndex == Hero.HarmonizedTiki
+                || unit.heroIndex == Hero.DuoKagero
             ) {
                 if (this.data.currentTurn % 3 == 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
@@ -6450,6 +6456,8 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.BrightwindFans:
+                case PassiveB.DeepStar:
                 case Weapon.TheCyclesTurn:
                 case Weapon.TeatimesEdge:
                 case Weapon.TeatimeSetPlus:
@@ -9465,10 +9473,12 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
             switch (obj.constructor) {
                 case HeavyTrap:
                 case BoltTrap:
-                    trapCondSatisfied = unit.passiveB != PassiveB.Wanakaijo3;
+                    trapCondSatisfied =
+                        unit.passiveB != PassiveB.Wanakaijo3 ||
+                        unit.passiveB != PassiveB.DisarmTrap4;
                     break;
                 case HexTrap:
-                    trapCondSatisfied = unit.hp <= obj.level * 5 + 35;
+                    trapCondSatisfied = unit.hp <= obj.level * 5 + 35 - (unit.passiveB === PassiveB.DisarmTrap4 ? 10 : 0);
                     break;
             }
             if (trapCondSatisfied) {

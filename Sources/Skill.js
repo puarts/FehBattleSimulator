@@ -1712,11 +1712,21 @@ const Weapon = {
     ArchSageTome: 2547, // 大賢者の書
     TheCyclesTurn: 2550, // 円環の力
     DeliverersBrand: 2553, // 聖王の軍師の剣
+    AptitudeArrow: 2556, // 良成長の弓
 
     // 伝承英雄 (救世の神竜 リュール)
     // https://www.youtube.com/watch?v=Y04kS1hErps&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=gJ1DwlkTbes&ab_channel=NintendoMobile
     DragonsFist: 2557, // 神竜の体術
+
+    // 超英雄（女王に捧ぐ風）
+    // https://www.youtube.com/watch?v=c1fIdobu--o&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=SRWlgPxknbA&ab_channel=NintendoMobile
+    PlayfulPinwheel: 2564, // 風車
+    FujinUchiwa: 2567, // 風神の団扇
+    WhitewindBowPlus: 2569, // 白き風の弓+
+    BrightwindFans: 2571, // 風舞う白夜の呪扇
+    WindTribeClubPlus: 2573, // 風の部族の金棒+
 };
 
 const Support = {
@@ -2282,6 +2292,9 @@ const PassiveA = {
 
     // 炎撃
     FlaredSparrow: 2551, // 鬼神飛燕の炎撃
+
+    // 備え
+    AtkSpdPrime4: 2565, // 攻撃速さの備え4
 };
 
 const PassiveB = {
@@ -2503,6 +2516,7 @@ const PassiveB = {
     KyokaMukoEnkyori3: 647, // 強化無効・遠距離3
 
     Wanakaijo3: 858, // 罠解除3
+    DisarmTrap4: 2572, // 罠解除4
 
     RunaBracelet: 667, // 月の腕輪
     LunarBrace2: 1947, // 月の腕輪・承
@@ -2575,6 +2589,8 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    TwinSkyWing: 2568, // 双姫の天翼
+    DeepStar: 2566, // 真落星
     GoldUnwinding: 2552, // 時を戻す黄金の魔女
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王
@@ -3666,6 +3682,7 @@ function isTeleportationSkill(skillId) {
 /// 天駆の道の効果を持つスキルかどうか
 function hasPathfinderEffect(skillId) {
     switch (skillId) {
+        case PassiveB.TwinSkyWing:
         case Weapon.JotnarBow:
         case Weapon.Hrimfaxi:
         case Weapon.Skinfaxi:

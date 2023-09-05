@@ -62,6 +62,7 @@ const Hero = {
     DuoShamir: 984,
     DuoYmir: 990,
     HarmonizedAyra: 1005,
+    DuoKagero: 1016,
 };
 
 function isThiefIndex(heroIndex) {
@@ -240,6 +241,7 @@ const StatusEffectType = {
     Discord: 49, // 不和
     AssignDecoy: 50, // 囮指名
     RallySpectrum: 51, // 七色の叫び
+    DeepStar: 52, // 真落星
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -415,6 +417,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Discord.webp";
         case StatusEffectType.AssignDecoy:
             return g_imageRootPath + "StatusEffect_AssignDecoy.webp";
+        case StatusEffectType.DeepStar:
+            return g_imageRootPath + "StatusEffect_DeepStar.png";
         default: return "";
     }
 }
@@ -451,6 +455,7 @@ class BattleContext {
         this.maxHpWithSkills = 0;
         this.hpBeforeCombat = 0;
         this.restHp = 0;
+        this.specialCount = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
         this.isVantageActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
@@ -576,6 +581,9 @@ class BattleContext {
 
         // 最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttack = 0;
+
+        // 最初の追撃前の奥義発動カウント減少値(減少値を正の値で保持する)
+        this.specialCountReductionBeforeFollowupAttack = 0;
 
         // 攻撃ごとに変化する可能性がある最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttackPerAttack = 0;
@@ -761,6 +769,8 @@ class BattleContext {
         this.setAttackCountFuncs = [];
         // 戦闘後
         this.applySkillEffectAfterCombatForUnitFuncs = [];
+        // ステータスに関連するスキル効果
+        this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -791,6 +801,7 @@ class BattleContext {
         this.maxHpWithSkills = 0;
         this.hpBeforeCombat = 0;
         this.restHp = 0;
+        this.specialCount = 0;
         this.canFollowupAttack = false;
         this.canCounterattack = false;
         this.isVantageActivatable = false;
@@ -866,6 +877,7 @@ class BattleContext {
         this.isSaviorActivated = false;
 
         this.specialCountReductionBeforeFirstAttack = 0;
+        this.specialCountReductionBeforeFollowupAttack = 0;
         this.specialCountReductionBeforeFirstAttackPerAttack = 0;
         this.specialCountIncreaseBeforeFirstAttack = 0;
         this.additionalDamageOfFirstAttack = 0;
@@ -931,6 +943,7 @@ class BattleContext {
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
         this.setAttackCountFuncs = [];
         this.applySkillEffectAfterCombatForUnitFuncs = [];
+        this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -1502,6 +1515,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
+        this.isOneTimeActionActivatedForDeepStar = false;
 
         // バックアップ
         this.tilesMapForDivineVein = new Map();
@@ -2087,6 +2101,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.moveCountForCanto
             + ValueDelimiter + boolToInt(this.isCantoActivatedInCurrentTurn)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
+            + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForDeepStar)
             + ValueDelimiter + this.restMoveCount
             + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
             + ValueDelimiter + boolToInt(this.isAttackDone)
@@ -2198,6 +2213,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.moveCountForCanto = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isOneTimeActionActivatedForDeepStar = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isAttackDone = intToBool(Number(splited[i])); ++i; }
@@ -2383,6 +2399,61 @@ class Unit extends BattleMapElement {
             this.spdDebuffTotal,
             this.defDebuffTotal,
             this.resDebuffTotal,
+        ];
+    }
+    getAtkDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnAtkDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.atkDebuff - this.atkBuff;
+        }
+        return this.atkDebuff;
+    }
+    getSpdDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnSpdDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.spdDebuff - this.spdBuff;
+        }
+        return this.spdDebuff;
+    }
+    getDefDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnDefDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.defDebuff - this.defBuff;
+        }
+        return this.defDebuff;
+    }
+    getResDebuffTotal(isPrecombat = false) {
+        if (this.battleContext.invalidatesOwnResDebuff && !isPrecombat) {
+            return 0;
+        }
+
+        if (this.isPanicEnabled) {
+            return this.resDebuff - this.resBuff;
+        }
+        return this.resDebuff;
+    }
+
+    getDebuffTotal(isPrecombat = false) {
+        return this.getAtkDebuffTotal(isPrecombat) +
+            this.getSpdDebuffTotal(isPrecombat) +
+            this.getDefDebuffTotal(isPrecombat) +
+            this.getResDebuffTotal(isPrecombat);
+    }
+    getDebuffTotals(isPrecombat = false) {
+        return [
+            this.getAtkDebuffTotal(isPrecombat),
+            this.getSpdDebuffTotal(isPrecombat),
+            this.getDefDebuffTotal(isPrecombat),
+            this.getResDebuffTotal(isPrecombat),
         ];
     }
 
@@ -3063,6 +3134,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
+        this.isOneTimeActionActivatedForDeepStar = false;
         this.isCantoActivatedInCurrentTurn = false;
     }
 
@@ -3072,6 +3144,9 @@ class Unit extends BattleMapElement {
 
         this.isOneTimeActionActivatedForShieldEffect = true;
         this.isOneTimeActionActivatedForFallenStar = true;
+        if (!this.battleContext.initiatesCombat) {
+            this.isOneTimeActionActivatedForDeepStar = true;
+        }
 
         switch (this.passiveB) {
             case PassiveB.GuardBearing4:
@@ -5491,6 +5566,7 @@ class Unit extends BattleMapElement {
         this.battleContext.hpBeforeCombat = this.hp;
         this.battleContext.restHp = this.hp;
         this.battleContext.initiatesCombat = initiatesCombat;
+        this.battleContext.specialCount = this.specialCount;
     }
 
     canActivatePrecombatSpecial() {
@@ -5529,6 +5605,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case PassiveB.DeepStar:
                 case Weapon.TheCyclesTurn:
                 case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:
@@ -5608,6 +5685,12 @@ class Unit extends BattleMapElement {
                 case PassiveB.SpdDefFarTrace3:
                 case PassiveB.SpdResFarTrace3:
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount);
+                    break;
+                // マス間の距離、最大3
+                case Weapon.BrightwindFans: {
+                    let dist = Unit.calcMoveDistance(this)
+                    moveCountForCanto = Math.max(moveCountForCanto, Math.min(dist, 3));
+                }
                     break;
                 // マス間の距離+1、最大4
                 case Weapon.TeatimesEdge: {

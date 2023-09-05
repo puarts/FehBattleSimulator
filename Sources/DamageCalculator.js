@@ -494,6 +494,14 @@ class DamageCalculator {
             ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
             atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
         }
+        if (context.isFollowupAttack) {
+            let totalCount =
+                atkUnit.tmpSpecialCount
+                - atkUnit.battleContext.specialCountReductionBeforeFollowupAttack;
+            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
+            ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack}`);
+            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
+        }
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 

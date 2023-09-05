@@ -2274,6 +2274,11 @@ class DamageCalculatorWrapper {
         ) {
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.8, enemyUnit);
         }
+        if (enemyUnit.battleContext.initiatesCombat &&
+            !targetUnit.isOneTimeActionActivatedForDeepStar &&
+            targetUnit.hasStatusEffect(StatusEffectType.DeepStar)) {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.8, enemyUnit);
+        }
 
         if (targetUnit.hasStatusEffect(StatusEffectType.ResonantShield)) {
             targetUnit.defSpur += 4;
@@ -2332,6 +2337,136 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.DisarmTrap4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-4);
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.BrightwindFans] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = targetUnit.getSpdInPrecombat();
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                if (targetUnit.battleContext.initiatesCombat) {
+                    // 最初に受けた攻撃のダメージを軽減
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
+                    // ダメージ軽減分を保存
+                    targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+                        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                            if (!context.isFirstAttack(atkUnit)) return;
+                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                        }
+                    );
+                    // 攻撃ごとの固定ダメージに軽減した分を加算
+                    targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                            atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                            let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                            return addDamage;
+                        }
+                        return 0;
+                    });
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WindTribeClubPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkDefSpurs(5);
+                let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                let amount = positiveCount + enemyUnit.getNegativeStatusEffects().length;
+                targetUnit.addAtkDefSpurs(amount * 2);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.WhitewindBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                let amount = positiveCount + enemyUnit.getNegativeStatusEffects().length;
+                targetUnit.addAtkSpdSpurs(amount * 2);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.TwinSkyWing] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpdDefSpurs(-5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.FujinUchiwa] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    targetUnit.atkSpur += Math.max(targetUnit.getAtkBuffInCombat(enemyUnit), enemyUnit.getAtkBuffInCombat(targetUnit));
+                    targetUnit.spdSpur += Math.max(targetUnit.getSpdBuffInCombat(enemyUnit), enemyUnit.getSpdBuffInCombat(targetUnit));
+                    targetUnit.defSpur += Math.max(targetUnit.getDefBuffInCombat(enemyUnit), enemyUnit.getDefBuffInCombat(targetUnit));
+                    targetUnit.resSpur += Math.max(targetUnit.getResBuffInCombat(enemyUnit), enemyUnit.getResBuffInCombat(targetUnit));
+
+                    enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit, 0));
+                    enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit, 0));
+                    enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit, 0));
+                    enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit, 0));
+                }
+            );
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            targetUnit.battleContext.increaseCooldownCountForBoth();
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.DeepStar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-5);
+            let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                (targetUnit, enemyUnit) => {
+                    targetUnit.addStatusEffect(StatusEffectType.DeepStar);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                }
+            );
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPrime4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                        let amount = Math.min(positiveCount * 2 + 3, 9);
+                        targetUnit.addAtkSpdSpurs(amount);
+                        if (positiveCount >= 4) {
+                            targetUnit.battleContext.canCounterattackToAllDistance = true;
+                        }
+                    }
+                }
+            );
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.PlayfulPinwheel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                let amount = positiveCount + enemyUnit.getNegativeStatusEffects().length;
+                targetUnit.addAtkSpdSpurs(amount * 2);
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.min(positiveCount, targetUnit.battleContext.specialCount);
+                targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += Math.max(positiveCount - targetUnit.battleContext.specialCount, 0);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AptitudeArrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(Math.min(Math.trunc(targetUnit.level), 10));
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                });
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.InevitableDeathPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                 (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -3049,7 +3184,7 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.WingsOfMercy4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.addDefResSpurs(-3);
+            enemyUnit.addDefResSpurs(-3);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.FujinRaijinYumi] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -9775,6 +9910,9 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, _calcPotentialDamage) {
+        for (let func of targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs) {
+            func(targetUnit, enemyUnit, _calcPotentialDamage);
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             // 機先
             this.catchFuncs[skillId]?.(targetUnit, enemyUnit);
@@ -11978,7 +12116,7 @@ class DamageCalculatorWrapper {
                                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                                 let debuffTotal = enemyUnit.debuffTotal;
                                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
-                                    debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                                    debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
                                 }
                                 let ratio = -1 * debuffTotal * 2.0 / 100.0;
                                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
@@ -13400,7 +13538,7 @@ class DamageCalculatorWrapper {
                         if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit) && !isPrecombat) {
                             let debuffTotal = defUnit.debuffTotal;
                             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
-                                debuffTotal = Math.min(debuffTotal, unit.debuffTotal);
+                                debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
                             }
                             atkUnit.battleContext.additionalDamage += Math.abs(debuffTotal);
                         }

@@ -164,6 +164,31 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveB.TwinSkyWing: {
+                let partner = null;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
+                    if (unit.isPartner(skillOwner)) {
+                        // 2人以上いた場合は効果を発揮しない
+                        if (partner !== null) {
+                            partner = null;
+                            break;
+                        }
+                        partner = unit;
+                    }
+                }
+                if (partner !== null) {
+                    partner.reserveToAddStatusEffect(StatusEffectType.Pathfinder);
+                }
+            }
+                break;
+            case Weapon.WindTribeClubPlus:
+            case Weapon.WhitewindBowPlus:
+            case Weapon.PlayfulPinwheel:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+                break;
             case PassiveC.AtkSpdPledge:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToApplyBuffs(6, 6, 0, 0);

@@ -327,6 +327,16 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
 }
 
+敵の攻撃、速さ、守備、魔防が、敵が受けている強化の値だけ減少(能力値ごとに計算)[強化打ち消し]
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit, 0));
+        enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit, 0));
+        enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit, 0));
+        enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit, 0));
+    }
+);
+
 敵が受けている強化の合計値を攻撃に加算[敵ブレード]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);
@@ -377,6 +387,11 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
 );
 
 敵が[有利/不利]な状態異常を受けている時
+targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+    }
+);
+もしくは
 __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
    if (enemyUnit.hasPositiveStatusEffect(targetUnit)) {}
    if (enemyUnit.hasNegativeStatusEffect()) {}
@@ -387,6 +402,12 @@ targetUnit.reserveHeal(N);
 
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack += N
+
+戦闘後
+targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+    (targetUnit, enemyUnit) => {
+    }
+);
 
 戦闘後、HP N回復/Nダメージ
 targetUnit.battleContext.healedHpAfterCombat += N;
@@ -509,6 +530,9 @@ atkUnit.isSpecialCharged || atkUnit.isSpecialActivated
 
 自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFirstAttack += N;
+
+自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
+targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += N;
 
 敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)
 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
