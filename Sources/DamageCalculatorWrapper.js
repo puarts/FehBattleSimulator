@@ -2332,6 +2332,16 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.AptitudeArrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(Math.min(Math.trunc(targetUnit.level), 10));
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
+                });
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveC.InevitableDeathPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                 (targetUnit, enemyUnit, calcPotentialDamage) => {
