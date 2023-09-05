@@ -2288,6 +2288,9 @@ const PassiveA = {
 
     // 炎撃
     FlaredSparrow: 2551, // 鬼神飛燕の炎撃
+
+    // 備え
+    AtkSpdPrime4: 2565, // 攻撃速さの備え4
 };
 
 const PassiveB = {

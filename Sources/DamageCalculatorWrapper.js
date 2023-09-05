@@ -2332,6 +2332,20 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPrime4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                        let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                        let amount = Math.min(positiveCount * 2 + 3, 9);
+                        targetUnit.addAtkSpdSpurs(amount);
+                        if (positiveCount >= 4) {
+                            targetUnit.battleContext.canCounterattackToAllDistance = true;
+                        }
+                    }
+                }
+            );
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.PlayfulPinwheel] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -9795,6 +9809,9 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, _calcPotentialDamage) {
+        for (let func of targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs) {
+            func(targetUnit, enemyUnit, _calcPotentialDamage);
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             // 機先
             this.catchFuncs[skillId]?.(targetUnit, enemyUnit);

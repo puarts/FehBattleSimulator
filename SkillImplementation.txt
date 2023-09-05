@@ -377,6 +377,11 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
 );
 
 敵が[有利/不利]な状態異常を受けている時
+targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+    }
+);
+もしくは
 __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotentialDamage) {
    if (enemyUnit.hasPositiveStatusEffect(targetUnit)) {}
    if (enemyUnit.hasNegativeStatusEffect()) {}

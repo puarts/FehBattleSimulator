@@ -765,6 +765,8 @@ class BattleContext {
         this.setAttackCountFuncs = [];
         // 戦闘後
         this.applySkillEffectAfterCombatForUnitFuncs = [];
+        // ステータスに関連するスキル効果
+        this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -937,6 +939,7 @@ class BattleContext {
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
         this.setAttackCountFuncs = [];
         this.applySkillEffectAfterCombatForUnitFuncs = [];
+        this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
