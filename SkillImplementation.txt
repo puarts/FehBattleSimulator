@@ -393,6 +393,12 @@ targetUnit.reserveHeal(N);
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack += N
 
+戦闘後
+targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+    (targetUnit, enemyUnit) => {
+    }
+);
+
 戦闘後、HP N回復/Nダメージ
 targetUnit.battleContext.healedHpAfterCombat += N;
 または

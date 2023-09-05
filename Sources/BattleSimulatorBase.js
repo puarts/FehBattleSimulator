@@ -6433,6 +6433,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case PassiveB.DeepStar:
                 case Weapon.TheCyclesTurn:
                 case Weapon.TeatimesEdge:
                 case Weapon.TeatimeSetPlus:

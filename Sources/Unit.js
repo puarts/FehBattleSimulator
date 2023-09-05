@@ -240,6 +240,7 @@ const StatusEffectType = {
     Discord: 49, // 不和
     AssignDecoy: 50, // 囮指名
     RallySpectrum: 51, // 七色の叫び
+    DeepStar: 52, // 真落星
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -415,6 +416,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Discord.webp";
         case StatusEffectType.AssignDecoy:
             return g_imageRootPath + "StatusEffect_AssignDecoy.webp";
+        case StatusEffectType.DeepStar:
+            return g_imageRootPath + "StatusEffect_DeepStar.png";
         default: return "";
     }
 }
@@ -1517,6 +1520,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
+        this.isOneTimeActionActivatedForDeepStar = false;
 
         // バックアップ
         this.tilesMapForDivineVein = new Map();
@@ -2112,6 +2116,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.moveCountForCanto
             + ValueDelimiter + boolToInt(this.isCantoActivatedInCurrentTurn)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
+            + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForDeepStar)
             + ValueDelimiter + this.restMoveCount
             + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
             + ValueDelimiter + boolToInt(this.isAttackDone)
@@ -2223,6 +2228,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.moveCountForCanto = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isOneTimeActionActivatedForDeepStar = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isAttackDone = intToBool(Number(splited[i])); ++i; }
@@ -3143,6 +3149,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForPassiveB = false;
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
+        this.isOneTimeActionActivatedForDeepStar = false;
         this.isCantoActivatedInCurrentTurn = false;
     }
 
@@ -3152,6 +3159,9 @@ class Unit extends BattleMapElement {
 
         this.isOneTimeActionActivatedForShieldEffect = true;
         this.isOneTimeActionActivatedForFallenStar = true;
+        if (!this.battleContext.initiatesCombat) {
+            this.isOneTimeActionActivatedForDeepStar = true;
+        }
 
         switch (this.passiveB) {
             case PassiveB.GuardBearing4:
@@ -5621,6 +5631,7 @@ class Unit extends BattleMapElement {
                         moveCountForCanto = Math.max(moveCountForCanto, 1);
                     }
                     break;
+                case PassiveB.DeepStar:
                 case Weapon.TheCyclesTurn:
                 case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:

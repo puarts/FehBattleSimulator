@@ -2584,6 +2584,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    DeepStar: 2566, // 真落星
     GoldUnwinding: 2552, // 時を戻す黄金の魔女
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王

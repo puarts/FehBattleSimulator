@@ -2274,6 +2274,11 @@ class DamageCalculatorWrapper {
         ) {
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.8, enemyUnit);
         }
+        if (enemyUnit.battleContext.initiatesCombat &&
+            !targetUnit.isOneTimeActionActivatedForDeepStar &&
+            targetUnit.hasStatusEffect(StatusEffectType.DeepStar)) {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.8, enemyUnit);
+        }
 
         if (targetUnit.hasStatusEffect(StatusEffectType.ResonantShield)) {
             targetUnit.defSpur += 4;
@@ -2332,6 +2337,19 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.DeepStar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.addSpdDefSpurs(-5);
+            let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                (targetUnit, enemyUnit) => {
+                    targetUnit.addStatusEffect(StatusEffectType.DeepStar);
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                }
+            );
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPrime4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs.push(
                 (targetUnit, enemyUnit, calcPotentialDamage) => {
