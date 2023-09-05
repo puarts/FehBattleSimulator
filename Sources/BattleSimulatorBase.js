@@ -6433,6 +6433,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case Weapon.BrightwindFans:
                 case PassiveB.DeepStar:
                 case Weapon.TheCyclesTurn:
                 case Weapon.TeatimesEdge:

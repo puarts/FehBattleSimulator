@@ -2337,6 +2337,40 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.BrightwindFans] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = targetUnit.getSpdInPrecombat();
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                if (targetUnit.battleContext.initiatesCombat) {
+                    // 最初に受けた攻撃のダメージを軽減
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
+                    // ダメージ軽減分を保存
+                    targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+                        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                            if (!context.isFirstAttack(atkUnit)) return;
+                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                        }
+                    );
+                    // 攻撃ごとの固定ダメージに軽減した分を加算
+                    targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                            atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                            let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                            return addDamage;
+                        }
+                        return 0;
+                    });
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.WhitewindBowPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(5);

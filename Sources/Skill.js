@@ -1725,6 +1725,7 @@ const Weapon = {
     PlayfulPinwheel: 2564, // 風車
     FujinUchiwa: 2567, // 風神の団扇
     WhitewindBowPlus: 2569, // 白き風の弓+
+    BrightwindFans: 2571, // 風舞う白夜の呪扇
 };
 
 const Support = {
