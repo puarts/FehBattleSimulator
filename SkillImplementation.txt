@@ -327,6 +327,16 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
 }
 
+敵の攻撃、速さ、守備、魔防が、敵が受けている強化の値だけ減少(能力値ごとに計算)[強化打ち消し]
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit, 0));
+        enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit, 0));
+        enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit, 0));
+        enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit, 0));
+    }
+);
+
 敵が受けている強化の合計値を攻撃に加算[敵ブレード]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     targetUnit.atkSpur += Math.max(enemyUnit.getBuffTotalInCombat(targetUnit), 0);

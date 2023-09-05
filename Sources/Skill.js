@@ -1723,6 +1723,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=c1fIdobu--o&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=SRWlgPxknbA&ab_channel=NintendoMobile
     PlayfulPinwheel: 2564, // 風車
+    FujinUchiwa: 2567, // 風神の団扇
 };
 
 const Support = {

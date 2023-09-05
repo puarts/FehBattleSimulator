@@ -2337,6 +2337,26 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.FujinUchiwa] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    targetUnit.atkSpur += Math.max(targetUnit.getAtkBuffInCombat(enemyUnit), enemyUnit.getAtkBuffInCombat(targetUnit));
+                    targetUnit.spdSpur += Math.max(targetUnit.getSpdBuffInCombat(enemyUnit), enemyUnit.getSpdBuffInCombat(targetUnit));
+                    targetUnit.defSpur += Math.max(targetUnit.getDefBuffInCombat(enemyUnit), enemyUnit.getDefBuffInCombat(targetUnit));
+                    targetUnit.resSpur += Math.max(targetUnit.getResBuffInCombat(enemyUnit), enemyUnit.getResBuffInCombat(targetUnit));
+
+                    enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit, 0));
+                    enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit, 0));
+                    enemyUnit.defSpur -= Math.max(enemyUnit.getDefBuffInCombat(targetUnit, 0));
+                    enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit, 0));
+                }
+            );
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            targetUnit.battleContext.increaseCooldownCountForBoth();
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.DeepStar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-5);
             let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
