@@ -751,6 +751,11 @@ __canActivateMiracle() {
 }
 
 戦闘中に攻撃していれば
+targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+    (attackUnit, attackTargetUnit) => {
+    }
+);
+もしくは
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
 
 戦闘を行なっている時[戦闘を行っていない時]
