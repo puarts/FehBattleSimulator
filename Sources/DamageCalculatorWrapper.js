@@ -633,7 +633,7 @@ class DamageCalculatorWrapper {
         else if (atkUnit.weapon === Weapon.FlameLance) {
             atkUnit.battleContext.refersRes = atkUnit.battleContext.restHpPercentage >= 50;
         }
-        else if (atkUnit.weapon === Weapon.HelsReaper) {
+        else if (atkUnit.weapon === Weapon.HelsReaper) { // 魔防参照
             atkUnit.battleContext.refersRes = !isWeaponTypeTome(defUnit.weaponType) && defUnit.weaponType !== WeaponType.Staff;
         }
         else {
@@ -2337,6 +2337,38 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.HelsReaper] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponRefined) {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            if (targetUnit.battleContext.restHpPercentage >= 25 || enemyUnit.hasNegativeStatusEffect()) {
+                                targetUnit.addAllSpur(4);
+                            }
+                        }
+                    );
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (atkUnit.battleContext.restHpPercentage >= 25 || defUnit.hasNegativeStatusEffect()) {
+                            let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                        }
+                    });
+                    targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            if (targetUnit.battleContext.restHpPercentage >= 25 || enemyUnit.hasNegativeStatusEffect()) {
+                                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                            }
+                        }
+                    );
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.FlowerOfEase] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 // <錬成効果>
