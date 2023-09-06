@@ -6540,12 +6540,28 @@ class DamageCalculatorWrapper {
                     count = self.__countAllyUnitsInClossWithOffset(targetUnit, 1);
                 }
                 if (count >= 1) {
-                    let debuffAmount = Math.min(count * 2, 6);
+                    let debuffAmount =
+                        targetUnit.isWeaponRefined ? Math.min(count * 3, 9) : Math.min(count * 2, 6);
                     enemyUnit.atkSpur -= debuffAmount;
                     enemyUnit.resSpur -= debuffAmount;
                 }
+                if (count >= 2 && targetUnit.isWeaponRefined) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
                 if (count >= 3) {
                     --enemyUnit.battleContext.followupAttackPriorityDecrement;
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    enemyUnit.addAtkResSpurs(-6);
+                    targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            let status = targetUnit.getDefInCombat(enemyUnit);
+                            targetUnit.battleContext.damageReductionValue += Math.trunc(status * 0.2);
+                        }
+                    );
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
                 }
             }
         };
@@ -10444,6 +10460,11 @@ class DamageCalculatorWrapper {
         for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
             for (let skillId of allyUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.ChargingHorn: // 味方に7回復効果
+                        if (allyUnit.isWeaponSpecialRefined && allyUnit.isInClossWithOffset(targetUnit, 1)) {
+                            targetUnit.battleContext.healedHpAfterCombat += 7;
+                        }
+                        break;
                     case Special.DragonBlast:
                         if (allyUnit.isPartner(targetUnit)) {
                             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
@@ -17196,9 +17217,11 @@ class DamageCalculatorWrapper {
             if (this.__isInClossWithOffset(unit, targetUnit, 1)) {
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
-                        case Weapon.ChargingHorn:
-                            targetUnit.atkSpur += 5;
-                            targetUnit.spdSpur += 5;
+                        case Weapon.ChargingHorn: // 味方にバフ
+                            targetUnit.addAtkSpdSpurs(5);
+                            if (targetUnit.isWeaponSpecialRefined) {
+                                targetUnit.addDefResSpurs(5);
+                            }
                             break;
                     }
                 }
