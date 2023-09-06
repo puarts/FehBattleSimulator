@@ -5259,6 +5259,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 錬成時に奥義が発動しやすくなる
+                case Weapon.PhantasmTome:
                 case Weapon.SyunsenAiraNoKen:
                     if (this.isWeaponRefined) {
                         specialCountMax -= 1;

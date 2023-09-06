@@ -6472,13 +6472,40 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.PhantasmTome] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 50) {
-                enemyUnit.spdSpur -= 6;
-                enemyUnit.resSpur -= 6;
-                targetUnit.battleContext.invalidatesSpdBuff = true;
-                targetUnit.battleContext.invalidatesResBuff = true;
-                if (targetUnit.battleContext.initiatesCombat) {
-                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.restHpPercentage >= 50) {
+                    enemyUnit.spdSpur -= 6;
+                    enemyUnit.resSpur -= 6;
+                    targetUnit.battleContext.invalidatesSpdBuff = true;
+                    targetUnit.battleContext.invalidatesResBuff = true;
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 50) {
+                    enemyUnit.addSpdResSpurs(-6);
+                    targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                    let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(5);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                        });
+                        targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                    }
                 }
             }
         };

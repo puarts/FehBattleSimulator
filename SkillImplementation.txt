@@ -670,6 +670,10 @@ targetUnit.battleContext.damageAfterBeginningOfCombat = N;
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     // Nダメージ
     atkUnit.battleContext.additionalDamage += N;
+    // ステータスの20%(奥義含む。含まない場合はisPrecombatで条件わけする)
+    // if (isPrecombat) return;
+    let status = DamageCalculatorWrapper.__get<XXX>(atkUnit, defUnit, isPrecombat);
+    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
 });
 もしくは
 DamageCalculatorWrapper.js
