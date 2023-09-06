@@ -6455,9 +6455,19 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.BindingReginleif] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                let ratio = targetUnit.isWeaponRefined ? 0.4 : 0.3;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
                 if (targetUnit.battleContext.initiatesCombat) {
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(5);
+                    enemyUnit.addSpdDefSpurs(-5);
+                    enemyUnit.addSpdDefSpurs(-Math.min(enemyUnit.getPositiveStatusEffects().length, 4));
+                    targetUnit.battleContext.invalidateBuffs(true, true, true, false);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                 }
             }
         };
