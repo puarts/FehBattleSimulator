@@ -1521,6 +1521,9 @@ class DamageCalculatorWrapper {
             {
                 let count = self.__countAlliesActionDone(atkUnit);
                 let amount = Math.min(7, count * 2 + 3);
+                if (atkUnit.isWeaponRefined) {
+                    amount = Math.min(10, count * 3 + 4);
+                }
                 atkUnit.atkSpur += amount;
                 atkUnit.spdSpur += amount;
             }
@@ -1858,6 +1861,10 @@ class DamageCalculatorWrapper {
             {
                 let count = self.__countEnemiesActionDone(defUnit);
                 let amount = Math.max(3, 7 - count * 2);
+                if (defUnit.isWeaponRefined) {
+                    amount = Math.max(4, 10 - count * 3);
+                    defUnit.battleContext.healedHpAfterCombat += 7;
+                }
                 defUnit.defSpur += amount;
                 defUnit.resSpur += amount;
             }
@@ -2337,6 +2344,15 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.GeneiFalcion] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.HelsReaper] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponRefined) {
                 // <錬成効果>
