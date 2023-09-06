@@ -6529,16 +6529,37 @@ class DamageCalculatorWrapper {
                 if (buffTotal >= 10) {
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                     targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    if (targetUnit.isWeaponRefined) {
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                    }
                 }
                 if (buffTotal >= 25) {
                     targetUnit.atkSpur += 5;
-                    targetUnit.battleContext.healedHpByAttack += 5;
+                    let healedHp = targetUnit.isWeaponRefined ? 7 : 5;
+                    targetUnit.battleContext.healedHpByAttack += healedHp;
                 }
                 if (buffTotal >= 60) {
                     targetUnit.battleContext.isVantageActivatable = true;
 
                 }
             }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                            let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true);
+                            targetUnit.addSpurs(...amounts);
+                        }
+                    );
+                }
+            }
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ChargingHorn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage) {
@@ -11749,8 +11770,13 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __getHighestBuffs(targetUnit, enemyUnit, units) {
+    // 最も高い強化値を返す。
+    // 対象キャラ全員にパニックがかかっている場合でもマイナスは返さない（0を返す）。
+    __getHighestBuffs(targetUnit, enemyUnit, units, withTargetUnit = false) {
         let buffs = [];
+        if (withTargetUnit) {
+            buffs.push(targetUnit.getBuffsInCombat(enemyUnit));
+        }
         for (let unit of units) {
             buffs.push(unit.buffs);
         }
