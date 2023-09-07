@@ -1727,6 +1727,9 @@ const Weapon = {
     WhitewindBowPlus: 2569, // 白き風の弓+
     BrightwindFans: 2571, // 風舞う白夜の呪扇
     WindTribeClubPlus: 2573, // 風の部族の金棒+
+
+    // 魔器プルメリア
+    ArcaneEuphoria: 2575, // 魔器・恍惚の花
 };
 
 const Support = {
