@@ -1327,7 +1327,7 @@ class DamageCalculator {
                 case Weapon.Thirufingu:
                     if (unit.battleContext.restHpPercentage >= 50) return true;
                     break;
-                case Weapon.HelsReaper:
+                case Weapon.HelsReaper: // 祈り判定
                     if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
                         return true;
                     }

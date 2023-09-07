@@ -771,6 +771,8 @@ class BattleContext {
         this.applySkillEffectAfterCombatForUnitFuncs = [];
         // ステータスに関連するスキル効果
         this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
+        // 攻撃していれば戦闘後に発生するスキル効果
+        this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -944,6 +946,7 @@ class BattleContext {
         this.setAttackCountFuncs = [];
         this.applySkillEffectAfterCombatForUnitFuncs = [];
         this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
+        this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -5232,6 +5235,7 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 // 錬成時に奥義が発動しやすくなる
+                case Weapon.PhantasmTome:
                 case Weapon.SyunsenAiraNoKen:
                     if (this.isWeaponRefined) {
                         specialCountMax -= 1;

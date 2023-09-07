@@ -816,6 +816,9 @@ class PostCombatSkillHander {
 
 
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
+        for (let func of attackUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs) {
+            func(attackUnit, attackTargetUnit);
+        }
         for (let skillId of attackUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Kvasir:
