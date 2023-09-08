@@ -2718,7 +2718,7 @@ class BattleMap {
                     additionalInnerText += tile.overrideText;
                 }
 
-                cell.innerText += "<div style='position:absolute;top:0;left:0;'>" + additionalInnerText + "</div>";
+                cell.innerText += "<div style='position:absolute;top:0;left:0;pointer-events: none;'>" + additionalInnerText + "</div>";
 
                 let thisCellWidth = Number(cellWidth);
                 let thisCellHeight = Number(cellHeight);
