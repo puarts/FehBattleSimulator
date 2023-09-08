@@ -2504,17 +2504,21 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.increaseCooldownCountForBoth();
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.DeepStar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            enemyUnit.addSpdDefSpurs(-5);
-            let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
-            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
-            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
-                (targetUnit, enemyUnit) => {
-                    targetUnit.addStatusEffect(StatusEffectType.DeepStar);
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                        unit.addStatusEffect(StatusEffectType.Gravity);
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addSpdDefSpurs(-5);
+                let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+            }
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        targetUnit.addStatusEffect(StatusEffectType.DeepStar);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
                     }
-                }
-            );
+                );
+            }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPrime4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs.push(
