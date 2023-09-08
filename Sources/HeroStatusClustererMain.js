@@ -486,7 +486,7 @@ class HeroStatusClustererData extends HeroDatabase {
         startProgressiveProcess(
             iterateCount,
             (iter) => {
-                using(new ScopedStopwatch(time => console.log("クラスターの結合1回: " + time + " ms")), () => {
+                using_(new ScopedStopwatch(time => console.log("クラスターの結合1回: " + time + " ms")), () => {
                     self.__mergeMinimuDistanceClusterPair(
                         self.clusters.length - saveMinClusterPairCount < targetClusterCount ? 1 : saveMinClusterPairCount);
                 });
@@ -518,7 +518,7 @@ class HeroStatusClustererData extends HeroDatabase {
         let isCacheEnabled = true;
         let self = this;
         let log = "";
-        using(new ScopedStopwatch(time => log += "分散の計算: " + time + " ms"), () => {
+        using_(new ScopedStopwatch(time => log += "分散の計算: " + time + " ms"), () => {
             for (let i = 0; i < clusterCount; ++i) {
                 for (let j = i + 1; j < clusterCount; ++j) {
                     let cluster1 = self.clusters[i];
@@ -544,7 +544,7 @@ class HeroStatusClustererData extends HeroDatabase {
             }
         });
 
-        using(new ScopedStopwatch(time => log += ", クラスターの結合とキャッシュ削除: " + time + " ms"), () => {
+        using_(new ScopedStopwatch(time => log += ", クラスターの結合とキャッシュ削除: " + time + " ms"), () => {
             this.__removeColidedClusterPairs(minDistanceClusterPairs);
 
             for (let info of minDistanceClusterPairs) {

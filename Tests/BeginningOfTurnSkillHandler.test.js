@@ -22,7 +22,7 @@ test('BeginningOfTurnSkillHandler_Simple', () => test_executeTest(() => {
     handler.unitManager.units = [unit, unit, enemyUnit, enemyAllyUnit];
 
     // 全ての英雄のターン開始時スキルを実行して例外が出ない事を確認する
-    using(new ScopedStopwatch(x => log += `${g_testHeroDatabase.length}回のターン開始時スキル評価の時間: ${x} ms\n`), () => {
+    using_(new ScopedStopwatch(x => log += `${g_testHeroDatabase.length}回のターン開始時スキル評価の時間: ${x} ms\n`), () => {
         unit.weaponRefinement = WeaponRefinementType.Special;
         for (let atkUnitInfo of g_testHeroDatabase.enumerateHeroInfos()) {
             g_testHeroDatabase.initUnit(unit, atkUnitInfo.name);

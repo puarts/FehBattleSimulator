@@ -493,7 +493,7 @@ function startProgressiveProcess(
 }
 
 /// 一定区間で破棄するインスタンスの区間を指定します。
-function using(disposable, func) {
+function using_(disposable, func) {
     const result = func();
     disposable.dispose();
     return result;

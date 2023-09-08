@@ -274,7 +274,7 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
         let result;
-        using(new ScopedTileChanger(atkUnit, tileToAttack, () => {
+        using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
             self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
             self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
         }), () => {

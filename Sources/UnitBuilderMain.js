@@ -128,7 +128,7 @@ function updateStatus(unit) {
 }
 
 function initUnitBuilder() {
-    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("初期化: " + time + " ms")), () => {
+    using_(new ScopedStopwatch(time => g_app.writeDebugLogLine("初期化: " + time + " ms")), () => {
         g_appData.setGameMode(GameMode.Arena);
         g_appData.isPairUpBoostsEnabled = true;
         let unit = g_appData.allyUnits[0];
