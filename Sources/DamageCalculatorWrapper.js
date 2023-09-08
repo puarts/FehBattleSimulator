@@ -17375,7 +17375,7 @@ class DamageCalculatorWrapper {
                     switch (skillId) {
                         case Weapon.ChargingHorn: // 味方にバフ
                             targetUnit.addAtkSpdSpurs(5);
-                            if (targetUnit.isWeaponSpecialRefined) {
+                            if (unit.isWeaponSpecialRefined) {
                                 targetUnit.addDefResSpurs(5);
                             }
                             break;
