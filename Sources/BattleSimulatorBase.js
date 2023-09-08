@@ -4446,14 +4446,18 @@ class BattleSimmulatorBase {
         let drawCount = result.drawCount;
         let loseCount = result.loseCount;
         let totalCount = winCount + loseCount + drawCount;
+
+        /** @type {HeroInfo[]} */
         let loseEnemies = result.loseEnemies;
+        /** @type {HeroInfo[]} */
         let drawEnemies = result.drawEnemies;
+        /** @type {HeroInfo[]} */
         let winEnemies = result.winEnemies;
 
         this.clearDurabilityTestLog();
-        this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${Math.trunc(winCount / totalCount * 1000) * 0.1}%)`);
-        this.writeDurabilityTestLogLine(`引き分け ${drawCount}/${totalCount}(${Math.trunc(drawCount / totalCount * 1000) * 0.1}%)`);
-        this.writeDurabilityTestLogLine(`敗北 ${loseCount}/${totalCount}(${Math.trunc(loseCount / totalCount * 1000) * 0.1}%)`);
+        this.writeDurabilityTestLogLine(`勝利 ${winCount}/${totalCount}(${(winCount / totalCount * 100).toFixed(2)}%)`);
+        this.writeDurabilityTestLogLine(`引き分け ${drawCount}/${totalCount}(${(drawCount / totalCount * 100).toFixed(2)}%)`);
+        this.writeDurabilityTestLogLine(`敗北 ${loseCount}/${totalCount}(${(loseCount / totalCount * 100).toFixed(2)}%)`);
         this.writeDurabilityTestLogLine(`勝率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 0)}%`);
         this.writeDurabilityTestLogLine(`生存率: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 2)}%`);
         this.writeDurabilityTestLogLine(`戦闘結果スコア: ${this.__calcDurabilityScoreAsString(winCount, drawCount, loseCount, 1)} / 100`);
@@ -4464,24 +4468,18 @@ class BattleSimmulatorBase {
         drawEnemies.sort((a, b) => getWeaponTypeOrder(a.weaponTypeValue) - getWeaponTypeOrder(b.weaponTypeValue));
         winEnemies.sort((a, b) => getWeaponTypeOrder(a.weaponTypeValue) - getWeaponTypeOrder(b.weaponTypeValue));
 
-        this.writeDurabilityTestLogLine("<details>");
-        this.writeDurabilityTestLogLine("<summary>敗北した相手</summary>");
-        for (let iconTag of loseEnemies) {
-            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
-        }
-        this.writeDurabilityTestLogLine("</details>");
-        this.writeDurabilityTestLogLine("<details>");
-        this.writeDurabilityTestLogLine("<summary>引き分けの相手</summary>");
-        for (let iconTag of drawEnemies) {
-            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
-        }
-        this.writeDurabilityTestLogLine("</details>");
-        this.writeDurabilityTestLogLine("<details>");
-        this.writeDurabilityTestLogLine("<summary>勝利した相手</summary>");
-        for (let iconTag of winEnemies) {
-            this.writeDurabilityTestLog(iconTag.getIconImgTagWithAnchor(iconSize));
-        }
-        this.writeDurabilityTestLogLine("</details>");
+        this.writeDurabilityTestLog("<details>");
+        this.writeDurabilityTestLog("<summary>敗北した相手</summary>");
+        this.writeDurabilityTestLog(loseEnemies.map(x => x.getIconImgTagWithAnchor(iconSize)).join(""));
+        this.writeDurabilityTestLog("</details>");
+        this.writeDurabilityTestLog("<details>");
+        this.writeDurabilityTestLog("<summary>引き分けの相手</summary>");
+        this.writeDurabilityTestLog(drawEnemies.map(x => x.getIconImgTagWithAnchor(iconSize)).join(""));
+        this.writeDurabilityTestLog("</details>");
+        this.writeDurabilityTestLog("<details>");
+        this.writeDurabilityTestLog("<summary>勝利した相手</summary>");
+        this.writeDurabilityTestLog(winEnemies.map(x => x.getIconImgTagWithAnchor(iconSize)).join(""));
+        this.writeDurabilityTestLog("</details>");
 
         updateAllUi();
     }
@@ -4493,7 +4491,7 @@ class BattleSimmulatorBase {
      * @param  {Number} reducedSpecialCount=0
      */
     __durabilityTest_initUnit(
-        targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0
+        targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0, overrideDragonflower = -1
     ) {
         // let reducedEnemySpecialCount = targetUnit.maxSpecialCount - targetUnit.specialCount;
         let originalSpecialCount = targetUnit.specialCount;
@@ -4507,6 +4505,9 @@ class BattleSimmulatorBase {
             targetUnit.initByHeroInfo(heroInfo);
             targetUnit.grantedBlessing = grantedBlessing;
             targetUnit.initializeSkillsToDefault();
+            if (overrideDragonflower >= 0) {
+                targetUnit.setDragonflower(overrideDragonflower);
+            }
 
             targetUnit.setMoveCountFromMoveType();
             targetUnit.isResplendent = targetUnit.heroInfo.isResplendent;
@@ -4540,7 +4541,7 @@ class BattleSimmulatorBase {
             }
         }
 
-        g_appData.__updateStatusBySkillsAndMerges(targetUnit, false);
+        g_appData.__updateStatusBySkillsAndMerges(targetUnit, true);
         targetUnit.resetMaxSpecialCount();
         // targetUnit.specialCount = targetUnit.maxSpecialCount - reducedEnemySpecialCount;
         // targetUnit.specialCount = originalSpecialCount;
@@ -4578,10 +4579,13 @@ class BattleSimmulatorBase {
         let drawCount = 0;
         let loseCount = 0;
         let grantedBlessing = enemyUnit.grantedBlessing;
-        let originalHp = targetUnit.hp;
-        let originalSpecialCount = targetUnit.specialCount;
-        let originalEnemyHp = enemyUnit.hp;
-        let originalEnemySpecialCount = enemyUnit.specialCount;
+        const originalHp = targetUnit.hp;
+        const originalSpecialCount = targetUnit.specialCount;
+        const originalEnemyHp = enemyUnit.hp;
+        const originalEnemySpecialCount = enemyUnit.specialCount;
+        const originalEnemyDragonflower = enemyUnit.dragonflower;
+        /** @type {SkillInfo} */
+        const originalEnemySacredSealInfo = enemyUnit.passiveSInfo;
         let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
         let targetUnitStatusEffects = targetUnit.statusEffects;
         let enemyUnitStatusEffects = enemyUnit.statusEffects;
@@ -4592,20 +4596,29 @@ class BattleSimmulatorBase {
         let elapsedMillisecToApplySkillsForBeginningOfTurn = 0;
         let elapsedMillisecForCombat = 0;
         let elapsedMillisecForInitUnit = 0;
-        const heroInfos = Array.from(g_appData.heroInfos.data.filter(x => x.bookVersion > 0));
+        const heroInfos = Array.from(this.data.heroInfos.data.filter(x => x.bookVersion > 0));
         const length = heroInfos.length;
         for (let i = 0; i < length; ++i) {
             let heroInfo = heroInfos[i];
 
             // 敵の初期化
             using_(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {
-                this.__durabilityTest_initUnit(enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount);
+                if (originalEnemySacredSealInfo != null && enemyUnit.canEquip(originalEnemySacredSealInfo)) {
+                    enemyUnit.passiveS = originalEnemySacredSealInfo.id;
+                }
+                else {
+                    enemyUnit.passiveS = PassiveS.None;
+                }
+
+                this.__durabilityTest_initUnit(
+                    enemyUnit, heroInfo, targetUnit, g_appData.durabilityTestEquipAllDistCounter, reducedEnemySpecialCount, originalEnemyDragonflower);
                 this.damageCalc.updateUnitSpur(targetUnit, this.vm.durabilityTestCalcPotentialDamage);
                 this.damageCalc.updateUnitSpur(enemyUnit, this.vm.durabilityTestCalcPotentialDamage);
 
                 if (this.vm.durabilityTestChargesSpecialCount) {
                     enemyUnit.specialCount = 0;
                 }
+
 
                 // テスト対象のHPと奥義発動カウントをリセット
                 targetUnit.specialCount = originalSpecialCount;
@@ -4667,7 +4680,7 @@ class BattleSimmulatorBase {
                 ++drawCount;
                 drawEnemies.push(heroInfo);
                 if (this.vm.durabilityTestIsLogEnabled && this.vm.durabilityTestLogDamageCalcDetailIfLose) {
-                    this.writeLogLine(log + this.damageCalc.log);
+                    // this.writeLogLine(log + this.damageCalc.log);
                 }
             }
 
@@ -4684,6 +4697,10 @@ class BattleSimmulatorBase {
         targetUnit.hp = originalHp;
         enemyUnit.specialCount = originalEnemySpecialCount;
         enemyUnit.hp = originalEnemyHp;
+        if (originalEnemySacredSealInfo != null) {
+            enemyUnit.passiveS = originalEnemySacredSealInfo.id;
+            enemyUnit.passiveSInfo = originalEnemySacredSealInfo;
+        }
 
         let result = new Object();
         result.winCount = winCount;

@@ -464,6 +464,7 @@ class AppData extends UnitManager {
         this.commandQueuePerAction = new CommandQueue(100);
         this.commandQueue = new CommandQueue(100);
 
+        /** @type {HeroDatabase} */
         this.heroInfos = null;
         this.skillDatabase = new SkillDatabase();
 
