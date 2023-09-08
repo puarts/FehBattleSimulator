@@ -110,8 +110,15 @@ class BeginningOfTurnSkillHandler {
             unit.applyReservedStatusEffects();
         } else {
             // applyReservedDebuffsは呼び出さない
+            unit.resetReservedBuffs();
+            unit.resetReservedDebuffs();
             // 有利な異常状態だけ残しapplyReservedStatusEffectsを呼び出す
             unit.reservedStatusEffects = unit.reservedStatusEffects.filter(e => isPositiveStatusEffect(e));
+            // 前ターンにかかったデバフは解除できないので予約リストに入れる
+            // （前ターンにかかっていたバフは全てターン開始時にunit.reservedStatusEffectsに入れる実装になっている）
+            for (let e of unit.statusEffects.filter(e => isNegativeStatusEffect(e))) {
+                unit.reservedStatusEffects.push(e);
+            }
             unit.applyReservedStatusEffects();
         }
     }

@@ -987,6 +987,13 @@ class BattleContext {
         this.invalidatesOwnResDebuff = true;
     }
 
+    invalidateDebuffs(atk, spd, def, res) {
+        this.invalidatesOwnAtkDebuff = atk;
+        this.invalidatesOwnSpdDebuff = spd;
+        this.invalidatesOwnDefDebuff = def;
+        this.invalidatesOwnResDebuff = res;
+    }
+
     // ダメージ軽減無効(シャールヴィなど)
     static calcDamageReductionRatio(damageReductionRatio, atkUnit) {
         let reducedRatio = damageReductionRatio;
@@ -3484,12 +3491,26 @@ class Unit extends BattleMapElement {
         this.reservedResBuff = 0;
     }
 
+    resetReservedBuffs() {
+        this.reservedAtkBuff = 0;
+        this.reservedSpdBuff = 0;
+        this.reservedDefBuff = 0;
+        this.reservedResBuff = 0;
+    }
+
     applyReservedDebuffs() {
         this.atkDebuff = this.reservedAtkDebuff;
         this.spdDebuff = this.reservedSpdDebuff;
         this.defDebuff = this.reservedDefDebuff;
         this.resDebuff = this.reservedResDebuff;
 
+        this.reservedAtkDebuff = 0;
+        this.reservedSpdDebuff = 0;
+        this.reservedDefDebuff = 0;
+        this.reservedResDebuff = 0;
+    }
+
+    resetReservedDebuffs() {
         this.reservedAtkDebuff = 0;
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
