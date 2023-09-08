@@ -2948,7 +2948,7 @@ class BattleSimmulatorBase {
      * @param  {Boolean} registersSkillOptions
      */
     registerHeroOptions(heroInfos, registersSkillOptions = true) {
-        using(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => g_app.writeDebugLogLine("英雄データベースの初期化: " + time + " ms")), () => {
             g_appData.initHeroInfos(heroInfos, registersSkillOptions);
         });
     }
@@ -3058,7 +3058,7 @@ class BattleSimmulatorBase {
         weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills = []
     ) {
         let self = this;
-        using(new ScopedStopwatch(time => self.writeDebugLogLine("スキル情報の登録: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => self.writeDebugLogLine("スキル情報の登録: " + time + " ms")), () => {
             this.data.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills);
 
             self.passiveSkillCharWhiteList = "";
@@ -4602,7 +4602,7 @@ class BattleSimmulatorBase {
             let heroInfo = heroInfos[i];
 
             // 敵の初期化
-            using(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {
+            using_(new ScopedStopwatch(time => elapsedMillisecForInitUnit += time), () => {
                 if (originalEnemySacredSealInfo != null && enemyUnit.canEquip(originalEnemySacredSealInfo)) {
                     enemyUnit.passiveS = originalEnemySacredSealInfo.id;
                 }
@@ -4631,7 +4631,7 @@ class BattleSimmulatorBase {
             });
 
             if (this.vm.durabilityTestAppliesSkillsForBeginningOfTurn) {
-                using(new ScopedStopwatch(time => elapsedMillisecToApplySkillsForBeginningOfTurn += time), () => {
+                using_(new ScopedStopwatch(time => elapsedMillisecToApplySkillsForBeginningOfTurn += time), () => {
                     this.__forceToApplySkillsForBeginningOfTurn(targetUnit);
                     this.__forceToApplySkillsForBeginningOfTurn(enemyUnit);
 
@@ -4648,7 +4648,7 @@ class BattleSimmulatorBase {
             let log = `${attackerUnit.getNameWithGroup()}の状態変化: ${attackerUnit.statusEffectsToDisplayString()}<br/>`;
             log += `${deffenceUnit.getNameWithGroup()}の状態変化: ${deffenceUnit.statusEffectsToDisplayString()}<br/>`;
 
-            using(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
+            using_(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
                 for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
                     let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null,
                         this.vm.durabilityTestCalcPotentialDamage ? DamageType.PotentialDamage : DamageType.CombatDamage);
@@ -5236,7 +5236,7 @@ class BattleSimmulatorBase {
     }
 
     __prepareActionContextForAssist(allyUnits, enemyUnits, triggersAction = true) {
-        using(new ScopedStopwatch(time => this.writeDebugLogLine("行動計算コンテキストの初期化: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => this.writeDebugLogLine("行動計算コンテキストの初期化: " + time + " ms")), () => {
             for (let unit of allyUnits) {
                 unit.actionContext.clear();
             }
@@ -5777,7 +5777,7 @@ class BattleSimmulatorBase {
         }
 
         let self = this;
-        using(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
             for (let evalUnit of targetUnits) {
                 if (evaluatesTileFunc != null
                     && !evaluatesTileFunc(evalUnit.chaseTargetTile)
@@ -5836,7 +5836,7 @@ class BattleSimmulatorBase {
             let chaseTarget = null;
             if (evalUnit.hasWeapon) {
                 for (let allyUnit of enemyUnits) {
-                    using(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ` + time + " ms")), () => {
+                    using_(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ` + time + " ms")), () => {
                         let turnRange = g_appData.map.calculateTurnRange(evalUnit, allyUnit);
                         if (turnRange < 0) {
                             // 攻撃不可

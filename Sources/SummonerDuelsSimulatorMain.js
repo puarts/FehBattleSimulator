@@ -96,7 +96,7 @@ let g_app = new SummonerDuelsSimulator();
 function initAetherRaidBoard(
     heroInfos
 ) {
-    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("マップの初期化: " + time + " ms")), () => {
+    using_(new ScopedStopwatch(time => g_app.writeDebugLogLine("マップの初期化: " + time + " ms")), () => {
         g_appData.setGameMode(GameMode.SummonerDuels);
         resetPlacement();
 
@@ -105,7 +105,7 @@ function initAetherRaidBoard(
         // g_app.resetUnits(defaultHeroIndex);
     });
 
-    using(new ScopedStopwatch(time => g_app.writeDebugLogLine("保存状態の復元: " + time + " ms")), () => {
+    using_(new ScopedStopwatch(time => g_app.writeDebugLogLine("保存状態の復元: " + time + " ms")), () => {
         // g_app.resetUnitsForTesting();
         g_appData.isPairUpBoostsEnabled = true;
         loadSettings();

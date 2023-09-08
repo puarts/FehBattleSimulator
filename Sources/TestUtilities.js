@@ -166,7 +166,7 @@ function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
 
 function test_executeTest(testFunc, isTestTimeLogEnabled = false) {
     let log = "";
-    using(new ScopedStopwatch(x => {
+    using_(new ScopedStopwatch(x => {
         if (isTestTimeLogEnabled) {
             console.log(`${expect.getState().currentTestName}の実行時間: ${x} ms`);
         }

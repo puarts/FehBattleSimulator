@@ -274,7 +274,7 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
         let result;
-        using(new ScopedTileChanger(atkUnit, tileToAttack, () => {
+        using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
             self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
             self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
         }), () => {
@@ -2504,17 +2504,21 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.increaseCooldownCountForBoth();
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.DeepStar] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            enemyUnit.addSpdDefSpurs(-5);
-            let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
-            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
-            targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
-                (targetUnit, enemyUnit) => {
-                    targetUnit.addStatusEffect(StatusEffectType.DeepStar);
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                        unit.addStatusEffect(StatusEffectType.Gravity);
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addSpdDefSpurs(-5);
+                let ratio = targetUnit.battleContext.initiatesCombat ? 0.8 : 0.3;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+            }
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        targetUnit.addStatusEffect(StatusEffectType.DeepStar);
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                            unit.addStatusEffect(StatusEffectType.Gravity);
+                        }
                     }
-                }
-            );
+                );
+            }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdPrime4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.applySkillEffectRelatedToEnemyStatusEffectsFuncs.push(
@@ -4895,7 +4899,7 @@ class DamageCalculatorWrapper {
         }
         {
             // 激突3, 4
-            let getFunc = (spurFunc, skillLevel) => {
+            let getFunc = (spurFunc, skillLevel, debuffFlags) => {
                 return (targetUnit, enemyUnit) => {
                     let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
                     if (dist > 0) {
@@ -4914,20 +4918,25 @@ class DamageCalculatorWrapper {
                         spurFunc.call(targetUnit, amount);
                         spurFunc.call(targetUnit, Math.min(dist, distLimit));
                         if (skillLevel === 4 && dist >= 2) {
-                            targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                            targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                            targetUnit.battleContext.invalidateDebuffs(...debuffFlags);
                         }
                     }
                 }
             }
-            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash3] = getFunc(Unit.prototype.addAtkSpdSpurs, 3);
-            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] = getFunc(Unit.prototype.addAtkSpdSpurs, 4);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash3] =
+                getFunc(Unit.prototype.addAtkSpdSpurs, 3, [true, true, false, false]);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdClash4] =
+                getFunc(Unit.prototype.addAtkSpdSpurs, 4, [true, true, false, false]);
 
-            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash3] = getFunc(Unit.prototype.addAtkDefSpurs, 3);
-            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash4] = getFunc(Unit.prototype.addAtkDefSpurs, 4);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash3] =
+                getFunc(Unit.prototype.addAtkDefSpurs, 3, [true, false, true, false]);
+            this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefClash4] =
+                getFunc(Unit.prototype.addAtkDefSpurs, 4, [true, false, true, false]);
 
-            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash3] = getFunc(Unit.prototype.addSpdDefSpurs, 3);
-            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash4] = getFunc(Unit.prototype.addSpdDefSpurs, 4);
+            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash3] =
+                getFunc(Unit.prototype.addSpdDefSpurs, 3, [false, true, true, false]);
+            this._applySkillEffectForUnitFuncDict[PassiveA.SpdDefClash4] =
+                getFunc(Unit.prototype.addSpdDefSpurs, 4, [false, true, true, false]);
         }
         this._applySkillEffectForUnitFuncDict[Weapon.HolytideTyrfing] = (targetUnit, enemyUnit) => {
             let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
@@ -17366,7 +17375,7 @@ class DamageCalculatorWrapper {
                     switch (skillId) {
                         case Weapon.ChargingHorn: // 味方にバフ
                             targetUnit.addAtkSpdSpurs(5);
-                            if (targetUnit.isWeaponSpecialRefined) {
+                            if (unit.isWeaponSpecialRefined) {
                                 targetUnit.addDefResSpurs(5);
                             }
                             break;

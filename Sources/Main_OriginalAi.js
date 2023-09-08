@@ -11,7 +11,7 @@ class OriginalAi {
             if (unit.isActionDone) {
                 continue;
             }
-            using(new ScopedStopwatch(time => app.writeErrorLine(`■${unit.getNameWithGroup()}の評価: ` + time + " ms")), () => {
+            using_(new ScopedStopwatch(time => app.writeErrorLine(`■${unit.getNameWithGroup()}の評価: ` + time + " ms")), () => {
                 let commandCandidates = self.__createAllExecutableCommandsForUnit(unit);
                 for (let commands of commandCandidates) {
                     if (commands.length == 0) {
@@ -25,11 +25,11 @@ class OriginalAi {
                     // let serializedTurn = exportPerTurnSettingAsString();
                     for (let i = 0; i < commands.length; ++i) {
                         let command = commands[i];
-                        using(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
+                        using_(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
                             command.execute();
                         });
                     }
-                    using(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
+                    using_(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
                         g_appData.map.updateMovableAndAttackableTilesForAllUnits();
                     });
 
@@ -39,7 +39,7 @@ class OriginalAi {
                     // 状態を復元
                     for (let i = commands.length - 1; i >= 0; --i) {
                         let command = commands[i];
-                        using(new ScopedStopwatch(time => app.writeErrorLine(`undo ${command.label}: ` + time + " ms")), () => {
+                        using_(new ScopedStopwatch(time => app.writeErrorLine(`undo ${command.label}: ` + time + " ms")), () => {
                             command.undo();
                         });
                     }
@@ -56,7 +56,7 @@ class OriginalAi {
         let app = g_app;
         let self = this;
         let acitonPatternCount = 1;
-        using(new ScopedStopwatch(time => app.writeDebugLogLine("コマンド実行: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => app.writeDebugLogLine("コマンド実行: " + time + " ms")), () => {
             // self.disableAllLogs = true;
             app.vm.isCommandUndoable = true;
             let commandQueue = new CommandQueue(100);
@@ -66,12 +66,12 @@ class OriginalAi {
 
             // for (let node of currentNode.branches) {
             //     for (let command of node.item) {
-            //         using(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
+            //         using_(new ScopedStopwatch(time => app.writeErrorLine(`${command.label}: ` + time + " ms")), () => {
             //             command.execute();
             //         });
             //         commandQueue.enqueue(command);
             //     }
-            //     using(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
+            //     using_(new ScopedStopwatch(time => { app.writeErrorLine(`タイル更新: ` + time + " ms"); }), () => {
             //         g_appData.map.updateMovableAndAttackableTilesForAllUnits();
             //     });
             //     self.__createBranchesFromCurrentState(node);
@@ -89,9 +89,9 @@ class OriginalAi {
     __createAllExecutableCommandsForUnit(targetUnit) {
         let self = g_app;
         let candidates = [];
-        using(new ScopedStopwatch(time => self.writeWarningLine(`コマンド作成トータル: ` + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => self.writeWarningLine(`コマンド作成トータル: ` + time + " ms")), () => {
             // 攻撃
-            using(new ScopedStopwatch(time => self.writeWarningLine(`攻撃コマンド列挙: ` + time + " ms")), () => {
+            using_(new ScopedStopwatch(time => self.writeWarningLine(`攻撃コマンド列挙: ` + time + " ms")), () => {
                 for (let unitAndTile of targetUnit.enumerateActuallyAttackableUnitAndTiles()) {
                     let unit = unitAndTile[0];
                     let tile = unitAndTile[1];
@@ -101,7 +101,7 @@ class OriginalAi {
             });
 
             // 施設破壊
-            using(new ScopedStopwatch(time => self.writeWarningLine(`施設破壊コマンド列挙: ` + time + " ms")), () => {
+            using_(new ScopedStopwatch(time => self.writeWarningLine(`施設破壊コマンド列挙: ` + time + " ms")), () => {
                 for (let structureAndTile of targetUnit.enumerateActuallyBreakableStructureAndTiles()) {
                     let structure = structureAndTile[0];
                     let tile = structureAndTile[1];
@@ -111,7 +111,7 @@ class OriginalAi {
             });
 
             // 補助
-            using(new ScopedStopwatch(time => self.writeWarningLine(`補助コマンド列挙: ` + time + " ms")), () => {
+            using_(new ScopedStopwatch(time => self.writeWarningLine(`補助コマンド列挙: ` + time + " ms")), () => {
                 for (let unitAndTile of targetUnit.enumerateActuallyAssistableUnitAndTiles()) {
                     let unit = unitAndTile[0];
                     let tile = unitAndTile[1];
@@ -123,7 +123,7 @@ class OriginalAi {
             });
 
             // 移動
-            using(new ScopedStopwatch(time => self.writeWarningLine(`移動コマンド列挙: ` + time + " ms")), () => {
+            using_(new ScopedStopwatch(time => self.writeWarningLine(`移動コマンド列挙: ` + time + " ms")), () => {
                 for (let tile of targetUnit.enumerateMovableTiles(false)) {
                     let command = self.__createMoveCommand(targetUnit, tile, true);
                     candidates.push([command]);
@@ -131,7 +131,7 @@ class OriginalAi {
             });
 
             // 比翼スキル使用
-            using(new ScopedStopwatch(time => self.writeWarningLine(`比翼スキルコマンド列挙: ` + time + " ms")), () => {
+            using_(new ScopedStopwatch(time => self.writeWarningLine(`比翼スキルコマンド列挙: ` + time + " ms")), () => {
                 if (self.canActivateDuoSkillOrHarmonizedSkill(targetUnit)) {
                     let command = self.__createDuoSkillCommand(targetUnit);
                     candidates.push([command]);

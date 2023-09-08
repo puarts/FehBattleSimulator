@@ -447,7 +447,7 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
   let defAllyUnit = new Unit("", "defAlly", UnitGroupType.Enemy);
 
   // 全ての英雄で戦闘を行って例外が出ない事を確認する
-  using(new ScopedStopwatch(x => log += `${heroDatabase.length}回の戦闘の時間: ${x} ms\n`), () => {
+  using_(new ScopedStopwatch(x => log += `${heroDatabase.length}回の戦闘の時間: ${x} ms\n`), () => {
     let calclator = new test_DamageCalculator();
     calclator.map.getTile(0, 2).setUnit(atkUnit);
     calclator.map.getTile(0, 0).setUnit(defUnit);
