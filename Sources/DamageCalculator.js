@@ -1284,7 +1284,8 @@ class DamageCalculator {
             switch (skillId) {
                 case Weapon.YmirEverliving:
                     if (unit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType) &&
-                        unit.battleContext.restHpPercentage >= 25) {
+                        unit.battleContext.restHpPercentage >= 25 &&
+                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
                         return true;
                     }
                     break;
@@ -1320,15 +1321,21 @@ class DamageCalculator {
                 case Weapon.BowOfTwelve:
                     if (unit.battleContext.initiatesCombat ||
                         (unit.battleContext.restHpPercentage >= 75 &&
-                            (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff))) {
+                            (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff)) &&
+                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
                         return true;
                     }
                     break;
                 case Weapon.Thirufingu:
-                    if (unit.battleContext.restHpPercentage >= 50) return true;
+                    if (unit.battleContext.restHpPercentage >= 50 &&
+                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
+                        return true;
+                    }
                     break;
                 case Weapon.HelsReaper: // 祈り判定
-                    if (!isWeaponTypeTome(atkUnit.weaponType) && atkUnit.weaponType != WeaponType.Staff) {
+                    if (!isWeaponTypeTome(atkUnit.weaponType) &&
+                        atkUnit.weaponType !== WeaponType.Staff &&
+                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
                         return true;
                     }
                     break;
