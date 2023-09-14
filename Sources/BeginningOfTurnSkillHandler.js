@@ -171,6 +171,22 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.DefResPloy3:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
+                        unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
+                        unit.reserveToApplyDebuffs(0, 0, -7, -7);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                    }
+                }
+                break;
+            case Weapon.HeiredForseti:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case PassiveB.TwinSkyWing: {
                 let partner = null;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
@@ -476,7 +492,8 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.FettersOfDromi:
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;
-            case PassiveA.AtkSpdHexblade: {
+            case PassiveA.AtkSpdHexblade:
+            case PassiveA.SpdResHexblade: {
                 let pred = unit => isWeaponTypeTome(unit.weaponType);
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2, pred)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
@@ -2179,6 +2196,20 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reduceSpecialCount(reduceCount);
                 }
                 break;
+            case PassiveC.InfantryPulse4: {
+                let skillOwnerHp = skillOwner.maxHpWithSkills;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
+                    let snapshot = this.__getStatusEvalUnit(unit);
+                    if (unit.moveType === MoveType.Infantry &&
+                        unit.maxHpWithSkills < skillOwnerHp &&
+                        snapshot.isSpecialCountMax ||
+                        unit === skillOwner) {
+                        this.writeDebugLog(`${skillOwner.getNameWithGroup()}の${skillOwner.passiveCInfo.name}により${unit.getNameWithGroup()}の奥義発動カウント-1`);
+                        unit.reduceSpecialCount(1);
+                    }
+                }
+            }
+                break;
             case PassiveC.HokoNoKodo3:
                 if (this.globalBattleContext.currentTurn == 1) {
                     // なぜか skillOwner の snapshot が for の中でだけ null になる
@@ -2809,6 +2840,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.DefResPloy3:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
+                        unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
+                        unit.reserveToApplyDebuffs(0, 0, -7, -7);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                    }
+                }
+                break;
             case PassiveC.DreamDeliverer:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {

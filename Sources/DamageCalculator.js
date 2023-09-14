@@ -1371,7 +1371,11 @@ class DamageCalculator {
             unit.restHp = unit.maxHpWithSkills;
         }
         if (this.isLogEnabled) {
-            this.writeDebugLog(`${unit.getNameWithGroup()}は${healedHp}回復: HP=${unit.restHp}/${unit.maxHpWithSkills}`);
+            let message = `${unit.getNameWithGroup()}は<span style="color: #008800;">${healedHp}回復</span>: HP=${unit.restHp}/${unit.maxHpWithSkills}`;
+            this.writeDebugLog(message);
+            if (healedHp > 0) {
+                this.writeSimpleLog(message);
+            }
         }
     }
 

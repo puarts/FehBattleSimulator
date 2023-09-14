@@ -1730,6 +1730,14 @@ const Weapon = {
 
     // 魔器プルメリア
     ArcaneEuphoria: 2575, // 魔器・恍惚の花
+
+    // 新英雄＆開花セティ＆魔器プルメリア
+    // https://www.youtube.com/watch?v=FrqdbV4h6co&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=8apK_XQcK1Q&ab_channel=NintendoMobile
+    HeiredForseti: 2577, // 継承フォルセティ
+    HeiredYewfelle: 2581, // 継承イチイバル
+    ProtectionEdgePlus: 2583, // 守護の剣+
+    MiasmaDaggerPlus: 2578, // 毒煙の暗器+
 };
 
 const Support = {
@@ -1758,6 +1766,7 @@ const Support = {
     WhimsicalDream: 1362, // しろいゆめ
     WhimsicalDreamPlus: 2560, // しろいゆめ・神
     SweetDreams: 1489, // あまいゆめ
+    CloyingDreams: 2585, // あまいみつのゆめ
     FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
     CallToFlame: 2079, // オイデ、ヒノコタチ
@@ -2286,6 +2295,7 @@ const PassiveA = {
 
     // 魔刃
     AtkSpdHexblade: 2396, // 攻撃速さの魔刃
+    SpdResHexblade: 2582, // 速さ魔防の魔刃
 
     // 竜眼
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
@@ -2810,6 +2820,7 @@ const PassiveC = {
     JointHoneRes: 1477,
 
     HokoNoKodo3: 731, // 歩行の鼓動3
+    InfantryPulse4: 2580, // 歩行の鼓動4
 
     AtkSmoke1: 1403,
     AtkSmoke2: 1404,
@@ -2827,10 +2838,14 @@ const PassiveC = {
     ResSmoke3: 730, // 魔防の紫煙3
     DefResSmoke3: 2164, // 守備魔防の紫煙3
 
+    // 謀策
     AtkPloy3: 722, // 攻撃の謀策3
     SpdPloy3: 723, // 速さの謀策3
     DefPloy3: 724, // 守備の謀策3
     ResPloy3: 725, // 魔防の謀策3
+
+    // 2種謀策
+    DefResPloy3: 2586, // 守備魔防の謀策3
 
     HajimariNoKodo3: 957,
     TimesPulse4: 2314, // 始まりの鼓動4
@@ -3376,6 +3391,7 @@ function isRefreshSupportSkill(skillId) {
         case Support.GentleDreamPlus:
         case Support.WhimsicalDream:
         case Support.SweetDreams:
+        case Support.CloyingDreams:
         case Support.FrightfulDream:
         case Support.Play:
             return true;

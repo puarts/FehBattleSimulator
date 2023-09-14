@@ -2344,6 +2344,45 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.MiasmaDaggerPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                    (attackUnit, attackTargetUnit) => {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.takeDamage(7);
+                        }
+                    }
+                );
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HeiredYewfelle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let enemyAtk = enemyUnit.getAtkInPrecombat();
+                targetUnit.addAtkSpdSpurs(Math.max(Math.min(Math.trunc(enemyAtk * 0.25 - 8), 10), 0));
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HeiredForseti] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) {
+                        // targetUnit.battleContext.additionalDamageOfSpecial += 100;
+                        targetUnit.battleContext.additionalDamage += 99;
+                    }
+                    // targetUnit.battleContext.additionalDamageOfSpecial += 100;
+                });
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneEuphoria] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -3610,6 +3649,11 @@ class DamageCalculatorWrapper {
                 targetUnit.addAtkSpdSpurs(7);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.SpdResHexblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                targetUnit.addSpdResSpurs(7);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AbyssalBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -4056,6 +4100,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.reducesCooldownCount = true;
                 }
             };
+            this._applySkillEffectForUnitFuncDict[Weapon.ProtectionEdgePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.ProtectionPikePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.ProtectionBowPlus] = func;
         }
@@ -9981,6 +10026,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HeiredForseti:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let spd = DamageCalculatorWrapper.__getSpd(targetUnit, enemyUnit, isPrecombat);
+                        let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                    }
+                    break;
                 case Weapon.ImbuedKoma:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let def = DamageCalculatorWrapper.__getDef(targetUnit, enemyUnit, isPrecombat);
@@ -11022,7 +11074,9 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
-            this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
+            if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
+                this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
+            }
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
             this.__applySabotage(targetUnit);
@@ -12005,7 +12059,9 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
-            DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+            if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
+                DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+            }
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.NullFollowUp)) {
             if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
@@ -13423,7 +13479,9 @@ class DamageCalculatorWrapper {
         }
 
         if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
-            atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
+            if (!atkUnit.hasStatusEffect(StatusEffectType.Ploy)) {
+                atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
+            }
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Exposure)) {
