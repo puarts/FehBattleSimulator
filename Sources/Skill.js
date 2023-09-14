@@ -2292,6 +2292,7 @@ const PassiveA = {
 
     // 魔刃
     AtkSpdHexblade: 2396, // 攻撃速さの魔刃
+    SpdResHexblade: 2582, // 速さ魔防の魔刃
 
     // 竜眼
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4

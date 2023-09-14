@@ -3637,6 +3637,11 @@ class DamageCalculatorWrapper {
                 targetUnit.addAtkSpdSpurs(7);
             }
         }
+        this._applySkillEffectForUnitFuncDict[PassiveA.SpdResHexblade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                targetUnit.addSpdResSpurs(7);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AbyssalBlade] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
