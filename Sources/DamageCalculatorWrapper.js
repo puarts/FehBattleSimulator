@@ -4088,6 +4088,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.reducesCooldownCount = true;
                 }
             };
+            this._applySkillEffectForUnitFuncDict[Weapon.ProtectionEdgePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.ProtectionPikePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.ProtectionBowPlus] = func;
         }
