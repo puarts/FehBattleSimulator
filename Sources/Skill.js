@@ -2837,10 +2837,14 @@ const PassiveC = {
     ResSmoke3: 730, // 魔防の紫煙3
     DefResSmoke3: 2164, // 守備魔防の紫煙3
 
+    // 謀策
     AtkPloy3: 722, // 攻撃の謀策3
     SpdPloy3: 723, // 速さの謀策3
     DefPloy3: 724, // 守備の謀策3
     ResPloy3: 725, // 魔防の謀策3
+
+    // 2種謀策
+    DefResPloy3: 2586, // 守備魔防の謀策3
 
     HajimariNoKodo3: 957,
     TimesPulse4: 2314, // 始まりの鼓動4

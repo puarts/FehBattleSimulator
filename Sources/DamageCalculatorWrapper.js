@@ -11062,7 +11062,9 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
-            this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
+            if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
+                this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
+            }
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
             this.__applySabotage(targetUnit);
@@ -12045,7 +12047,9 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
-            DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+            if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
+                DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+            }
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.NullFollowUp)) {
             if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
@@ -13463,7 +13467,9 @@ class DamageCalculatorWrapper {
         }
 
         if (atkUnit.hasStatusEffect(StatusEffectType.Treachery)) {
-            atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
+            if (!atkUnit.hasStatusEffect(StatusEffectType.Ploy)) {
+                atkUnit.battleContext.additionalDamage += atkUnit.getBuffTotalInCombat(defUnit);
+            }
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Exposure)) {

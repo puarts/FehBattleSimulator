@@ -242,6 +242,7 @@ const StatusEffectType = {
     AssignDecoy: 50, // 囮指名
     RallySpectrum: 51, // 七色の叫び
     DeepStar: 52, // 真落星
+    Ploy: 53, // 謀策
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -298,6 +299,7 @@ NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
 NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
 NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
 NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
+NegativeStatusEffectTable[StatusEffectType.Ploy] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -419,6 +421,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_AssignDecoy.webp";
         case StatusEffectType.DeepStar:
             return g_imageRootPath + "StatusEffect_DeepStar.png";
+        case StatusEffectType.Ploy:
+            return g_imageRootPath + "StatusEffect_Ploy.png";
         default: return "";
     }
 }
