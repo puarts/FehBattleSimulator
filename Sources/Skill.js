@@ -1765,6 +1765,7 @@ const Support = {
     WhimsicalDream: 1362, // しろいゆめ
     WhimsicalDreamPlus: 2560, // しろいゆめ・神
     SweetDreams: 1489, // あまいゆめ
+    CloyingDreams: 2585, // あまいみつのゆめ
     FrightfulDream: 1537, // こわいゆめ
     Play: 1135, // 奏でる
     CallToFlame: 2079, // オイデ、ヒノコタチ
@@ -3385,6 +3386,7 @@ function isRefreshSupportSkill(skillId) {
         case Support.GentleDreamPlus:
         case Support.WhimsicalDream:
         case Support.SweetDreams:
+        case Support.CloyingDreams:
         case Support.FrightfulDream:
         case Support.Play:
             return true;

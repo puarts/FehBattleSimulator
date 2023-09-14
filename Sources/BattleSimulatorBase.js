@@ -8333,6 +8333,14 @@ class BattleSimmulatorBase {
                         unit.applyAllDebuff(-4);
                     }
                     break;
+                case Support.CloyingDreams:
+                    targetUnit.applyAllBuff(5);
+                    targetUnit.addStatusEffect(StatusEffectType.Charge);
+                    targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                    for (let unit of this.__findNearestEnemies(targetUnit, 5)) {
+                        unit.applyAllDebuff(-5);
+                    }
+                    break;
                 case Support.FrightfulDream:
                     this.__applyRuse(skillOwnerUnit, targetUnit, unit => unit.applyAllDebuff(-3));
                     break;
