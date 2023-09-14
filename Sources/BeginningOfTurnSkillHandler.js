@@ -2197,11 +2197,11 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case PassiveC.InfantryPulse4: {
-                let skillOwnerHp = this.__getStatusEvalUnit(skillOwner).hp;
+                let skillOwnerHp = skillOwner.maxHpWithSkills;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
                     let snapshot = this.__getStatusEvalUnit(unit);
                     if (unit.moveType === MoveType.Infantry &&
-                        snapshot.hp < skillOwnerHp &&
+                        unit.maxHpWithSkills < skillOwnerHp &&
                         snapshot.isSpecialCountMax ||
                         unit === skillOwner) {
                         this.writeDebugLog(`${skillOwner.getNameWithGroup()}の${skillOwner.passiveCInfo.name}により${unit.getNameWithGroup()}の奥義発動カウント-1`);
