@@ -2815,6 +2815,7 @@ const PassiveC = {
     JointHoneRes: 1477,
 
     HokoNoKodo3: 731, // 歩行の鼓動3
+    InfantryPulse4: 2580, // 歩行の鼓動4
 
     AtkSmoke1: 1403,
     AtkSmoke2: 1404,

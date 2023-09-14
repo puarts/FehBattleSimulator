@@ -2185,6 +2185,20 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reduceSpecialCount(reduceCount);
                 }
                 break;
+            case PassiveC.InfantryPulse4: {
+                let skillOwnerHp = this.__getStatusEvalUnit(skillOwner).hp;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
+                    let snapshot = this.__getStatusEvalUnit(unit);
+                    if (unit.moveType === MoveType.Infantry &&
+                        snapshot.hp < skillOwnerHp &&
+                        snapshot.isSpecialCountMax ||
+                        unit === skillOwner) {
+                        this.writeDebugLog(`${skillOwner.getNameWithGroup()}の${skillOwner.passiveCInfo.name}により${unit.getNameWithGroup()}の奥義発動カウント-1`);
+                        unit.reduceSpecialCount(1);
+                    }
+                }
+            }
+                break;
             case PassiveC.HokoNoKodo3:
                 if (this.globalBattleContext.currentTurn == 1) {
                     // なぜか skillOwner の snapshot が for の中でだけ null になる
