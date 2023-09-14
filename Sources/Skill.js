@@ -1735,6 +1735,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=FrqdbV4h6co&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=8apK_XQcK1Q&ab_channel=NintendoMobile
     HeiredForseti: 2577, // 継承フォルセティ
+    HeiredYewfelle: 2581, // 継承イチイバル
 };
 
 const Support = {
