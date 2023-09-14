@@ -1730,6 +1730,11 @@ const Weapon = {
 
     // 魔器プルメリア
     ArcaneEuphoria: 2575, // 魔器・恍惚の花
+
+    // 新英雄＆開花セティ＆魔器プルメリア
+    // https://www.youtube.com/watch?v=FrqdbV4h6co&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=8apK_XQcK1Q&ab_channel=NintendoMobile
+    HeiredForseti: 2577, // 継承フォルセティ
 };
 
 const Support = {

@@ -2344,6 +2344,19 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.HeiredForseti] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) {
+                        // targetUnit.battleContext.additionalDamageOfSpecial += 100;
+                        targetUnit.battleContext.additionalDamage += 99;
+                    }
+                    // targetUnit.battleContext.additionalDamageOfSpecial += 100;
+                });
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneEuphoria] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
@@ -9981,6 +9994,13 @@ class DamageCalculatorWrapper {
         }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.HeiredForseti:
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        let spd = DamageCalculatorWrapper.__getSpd(targetUnit, enemyUnit, isPrecombat);
+                        let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                    }
+                    break;
                 case Weapon.ImbuedKoma:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let def = DamageCalculatorWrapper.__getDef(targetUnit, enemyUnit, isPrecombat);

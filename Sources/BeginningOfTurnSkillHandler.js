@@ -171,6 +171,12 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.HeiredForseti:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                    skillOwner.reduceSpecialCount(1);
+                }
+                break;
             case PassiveB.TwinSkyWing: {
                 let partner = null;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {

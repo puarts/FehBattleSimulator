@@ -667,6 +667,7 @@ targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 targetUnit.battleContext.damageAfterBeginningOfCombat = N;
 
 ダメージ+N(固定ダメージ) （同名のメソッドがあるので注意すること）
+// 戦闘開始後に呼ばれるので戦闘前奥義は__calcFixedAddDamageに直接実装すること
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     // Nダメージ
     atkUnit.battleContext.additionalDamage += N;
