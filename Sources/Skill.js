@@ -1737,6 +1737,7 @@ const Weapon = {
     HeiredForseti: 2577, // 継承フォルセティ
     HeiredYewfelle: 2581, // 継承イチイバル
     ProtectionEdgePlus: 2583, // 守護の剣+
+    MiasmaDaggerPlus: 2578, // 毒煙の暗器+
 };
 
 const Support = {
