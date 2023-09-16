@@ -690,7 +690,7 @@ class Tile extends BattleMapElement {
                     if (tile1Space.isEnemyUnitAvailable(unit)
                         && tile1Space.placedUnit.canActivateObstractToAdjacentTiles(unit)
                     ) {
-                        if (weight === CanNotReachTile) {
+                        if (weight === CanNotReachTile || this.obj instanceof Wall) {
                             return CanNotReachTile;
                         }
                         return ObstructTile;
@@ -701,7 +701,7 @@ class Tile extends BattleMapElement {
                         if (tile2Spaces.isEnemyUnitAvailable(unit)
                             && tile2Spaces.placedUnit.canActivateObstractToTilesIn2Spaces(unit)
                         ) {
-                            if (weight === CanNotReachTile) {
+                            if (weight === CanNotReachTile || this.obj instanceof Wall) {
                                 return CanNotReachTile;
                             }
                             return ObstructTile;
