@@ -1738,6 +1738,7 @@ const Weapon = {
     HeiredYewfelle: 2581, // 継承イチイバル
     ProtectionEdgePlus: 2583, // 守護の剣+
     MiasmaDaggerPlus: 2578, // 毒煙の暗器+
+    HeiredGungnir: 2587, // 継承グングニル
 };
 
 const Support = {
