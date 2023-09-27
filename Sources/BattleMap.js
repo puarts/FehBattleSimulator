@@ -2189,9 +2189,11 @@ class BattleMap {
             }
         }
 
+        // 周囲2マス以内の味方は、自身の周囲Nマス以内に移動可能
         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
             for (let skillId of ally.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveC.HeartOfCrimea:
                     case Weapon.NewHeightBow:
                     case PassiveC.OpeningRetainer:
                         yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);

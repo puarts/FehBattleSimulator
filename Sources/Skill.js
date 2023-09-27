@@ -2975,6 +2975,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    HeartOfCrimea: 2590, // クリミアの心
     TipTheScales: 2555, // 戦局を変える!
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神

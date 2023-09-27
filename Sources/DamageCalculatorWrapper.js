@@ -17108,6 +17108,25 @@ class DamageCalculatorWrapper {
             }
         }
 
+        // 周囲4マス
+        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 4)) {
+            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+                continue;
+            }
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
+                continue;
+            }
+            for (let skillId of unit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveC.HeartOfCrimea:
+                        targetUnit.addAllSpur(-4);
+                        break;
+                }
+            }
+        }
+
+        // 周囲3マス
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
             if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
                 continue;
@@ -17213,6 +17232,7 @@ class DamageCalculatorWrapper {
             }
         }
 
+        // 周囲2マス
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
             if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
                 continue;
