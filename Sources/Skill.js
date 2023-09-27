@@ -2928,9 +2928,9 @@ const PassiveC = {
     OddRecovery1: 1580, // 快癒・奇数1
     OddRecovery2: 1579, // 快癒・奇数2
     OddRecovery3: 1570, // 快癒・奇数3
-    EvenRecovery1: 1739, // 快癒・奇数1
-    EvenRecovery2: 1740, // 快癒・奇数2
-    EvenRecovery3: 1741, // 快癒・奇数3
+    EvenRecovery1: 1741, // 快癒・偶数1
+    EvenRecovery2: 1740, // 快癒・偶数2
+    EvenRecovery3: 1739, // 快癒・偶数3
 
     // 護り手
     AsFarSave3: 2351, // 刃の護り手・遠間3
