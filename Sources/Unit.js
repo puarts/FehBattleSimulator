@@ -5648,6 +5648,7 @@ class Unit extends BattleMapElement {
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
                 // 再移動(2)
+                case Weapon.AbsoluteAmiti:
                 case PassiveC.FettersOfDromi:
                 case Weapon.HolytideTyrfing:
                 case Weapon.WingLeftedSpear:

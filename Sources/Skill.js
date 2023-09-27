@@ -1739,6 +1739,11 @@ const Weapon = {
     ProtectionEdgePlus: 2583, // 守護の剣+
     MiasmaDaggerPlus: 2578, // 毒煙の暗器+
     HeiredGungnir: 2587, // 継承グングニル
+
+    // 伝承英雄 (心の女王 エリンシア)
+    // https://www.youtube.com/watch?v=QS0QcFqH-SQ&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=gmHp_aw5P4E&ab_channel=NintendoMobile
+    AbsoluteAmiti: 2588, // 清真アミーテ
 };
 
 const Support = {
