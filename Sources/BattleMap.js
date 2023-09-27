@@ -1985,6 +1985,9 @@ class BattleMap {
 
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case PassiveB.AerialManeuvers:
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit); // 2, 2
+                    break;
                 case PassiveC.InevitableDeathPlus: {
                     for (let enemyUnit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 4)) {
                         // 一番近いマスを求める

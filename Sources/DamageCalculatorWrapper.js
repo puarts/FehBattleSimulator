@@ -1228,6 +1228,14 @@ class DamageCalculatorWrapper {
             // atkUnitのスキル効果
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveB.AerialManeuvers:
+                        if (atkUnit.battleContext.restHpPercentage >= 50 &&
+                            defUnit.battleContext.restHpPercentage >= 50) {
+                            if (atkUnit.battleContext.initiatesCombat) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
                     case Weapon.ArcaneDarkbow:
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
                             if (atkUnit.battleContext.initiatesCombat) {
@@ -2344,6 +2352,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.AerialManeuvers] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 50 &&
+                enemyUnit.battleContext.restHpPercentage >= 50) {
+                enemyUnit.addSpdDefSpurs(-4);
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.AbsoluteAmiti] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addAllSpur(5);

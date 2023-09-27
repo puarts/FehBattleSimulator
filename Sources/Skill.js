@@ -2681,6 +2681,9 @@ const PassiveB = {
 
     // 奥の手
     Gambit4: 2554, // 奥の手4
+
+    // 猛襲
+    AerialManeuvers: 2589, // 空からの猛襲
 };
 
 const PassiveC = {
