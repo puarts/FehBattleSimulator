@@ -171,6 +171,27 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case PassiveC.HeartOfCrimea: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    found = true;
+                    unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+                if (found) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+            }
+                break;
+            case Weapon.HeiredGungnir:
+                if (skillOwner.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        if (unit === skillOwner || unit.moveType === MoveType.Flying) {
+                            unit.reserveToApplyBuffs(6, 0, 6, 0);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Charge);
+                        }
+                    }
+                }
+                break;
             case PassiveC.DefResPloy3:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                     if (skillOwner.isInClossWithOffset(unit, 1, 1) &&

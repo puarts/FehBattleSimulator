@@ -1228,6 +1228,14 @@ class DamageCalculatorWrapper {
             // atkUnitのスキル効果
             for (let skillId of atkUnit.enumerateSkills()) {
                 switch (skillId) {
+                    case PassiveB.AerialManeuvers:
+                        if (atkUnit.battleContext.restHpPercentage >= 50 &&
+                            defUnit.battleContext.restHpPercentage >= 50) {
+                            if (atkUnit.battleContext.initiatesCombat) {
+                                atkUnit.battleContext.isDesperationActivatable = true;
+                            }
+                        }
+                        break;
                     case Weapon.ArcaneDarkbow:
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
                             if (atkUnit.battleContext.initiatesCombat) {
@@ -2344,6 +2352,36 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveB.AerialManeuvers] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 50 &&
+                enemyUnit.battleContext.restHpPercentage >= 50) {
+                enemyUnit.addSpdDefSpurs(-4);
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.AbsoluteAmiti] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                let amount = enemyUnit.special === Special.None ? 3 : 11 - enemyUnit.maxSpecialCount * 2;
+                targetUnit.addAtkSpdSpurs(Math.max(amount, 3));
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.HeiredGungnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    // ステータスの20%(奥義含む。含まない場合はisPrecombatで条件わけする)
+                    // if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getDef(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                });
+            }
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.MiasmaDaggerPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(5);
@@ -17070,6 +17108,25 @@ class DamageCalculatorWrapper {
             }
         }
 
+        // 周囲4マス
+        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 4)) {
+            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+                continue;
+            }
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
+                continue;
+            }
+            for (let skillId of unit.enumerateSkills()) {
+                switch (skillId) {
+                    case PassiveC.HeartOfCrimea:
+                        targetUnit.addAllSpur(-4);
+                        break;
+                }
+            }
+        }
+
+        // 周囲3マス
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
             if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
                 continue;
@@ -17175,6 +17232,7 @@ class DamageCalculatorWrapper {
             }
         }
 
+        // 周囲2マス
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
             if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
                 continue;

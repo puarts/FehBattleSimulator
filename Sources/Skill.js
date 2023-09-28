@@ -1738,6 +1738,12 @@ const Weapon = {
     HeiredYewfelle: 2581, // 継承イチイバル
     ProtectionEdgePlus: 2583, // 守護の剣+
     MiasmaDaggerPlus: 2578, // 毒煙の暗器+
+    HeiredGungnir: 2587, // 継承グングニル
+
+    // 伝承英雄 (心の女王 エリンシア)
+    // https://www.youtube.com/watch?v=QS0QcFqH-SQ&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=gmHp_aw5P4E&ab_channel=NintendoMobile
+    AbsoluteAmiti: 2588, // 清真アミーテ
 };
 
 const Support = {
@@ -2675,6 +2681,9 @@ const PassiveB = {
 
     // 奥の手
     Gambit4: 2554, // 奥の手4
+
+    // 猛襲
+    AerialManeuvers: 2589, // 空からの猛襲
 };
 
 const PassiveC = {
@@ -2927,9 +2936,9 @@ const PassiveC = {
     OddRecovery1: 1580, // 快癒・奇数1
     OddRecovery2: 1579, // 快癒・奇数2
     OddRecovery3: 1570, // 快癒・奇数3
-    EvenRecovery1: 1739, // 快癒・奇数1
-    EvenRecovery2: 1740, // 快癒・奇数2
-    EvenRecovery3: 1741, // 快癒・奇数3
+    EvenRecovery1: 1741, // 快癒・偶数1
+    EvenRecovery2: 1740, // 快癒・偶数2
+    EvenRecovery3: 1739, // 快癒・偶数3
 
     // 護り手
     AsFarSave3: 2351, // 刃の護り手・遠間3
@@ -2966,6 +2975,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    HeartOfCrimea: 2590, // クリミアの心
     TipTheScales: 2555, // 戦局を変える!
     SeimeiNoKagayaki: 773, // 生命の輝き
     SparklingBoostPlus: 1985, // 生命の輝き・神
