@@ -2356,7 +2356,7 @@ class DamageCalculatorWrapper {
             enemyUnit.spdSpur -= 4;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.KittyCatParasol] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat && this.__isThereAllyIn2Spaces(targetUnit)) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAtkResSpurs(6);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
