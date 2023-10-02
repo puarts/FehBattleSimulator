@@ -5728,6 +5728,7 @@ class Unit extends BattleMapElement {
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     break;
                 // 残り
+                case PassiveB.DazzleFarTrace:
                 case Weapon.FrozenDelight:
                 case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:

@@ -6456,6 +6456,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case PassiveB.DazzleFarTrace:
                 case Weapon.AbsoluteAmiti:
                 case Weapon.BrightwindFans:
                 case PassiveB.DeepStar:

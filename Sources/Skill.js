@@ -2358,6 +2358,7 @@ const PassiveB = {
     PoeticJustice: 2345, // 神罰・因果応報
     DazzlingStaff3: 633, // 幻惑の杖3
     DazzlingShift: 2363, // 幻惑・転移
+    DazzleFarTrace: 2594, // 幻惑・遠影
     ChillAtk1: 1339,
     ChillAtk2: 1340,
     ChillAtk3: 614, // 攻撃の封印3
