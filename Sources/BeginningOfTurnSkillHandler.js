@@ -172,6 +172,16 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.PaydayPouch: {
+                let count = this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2);
+                if (count >= 1) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+                if (count >= 2) {
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                }
+            }
+                break;
             case Weapon.PumpkinStemPlus:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {

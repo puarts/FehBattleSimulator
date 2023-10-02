@@ -6412,6 +6412,11 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PaydayPouch: // 再移動条件
+                    if (unit.getPositiveStatusEffects().length >= 3) {
+                        return true;
+                    }
+                    break;
                 case PassiveC.FettersOfDromi:
                     return true;
                 case PassiveB.FirestormDance3:

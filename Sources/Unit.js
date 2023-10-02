@@ -5668,6 +5668,11 @@ class Unit extends BattleMapElement {
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
                 // 再移動(2)
+                case Weapon.PaydayPouch: // 再移動2
+                    if (this.getPositiveStatusEffects().length >= 3) {
+                        moveCountForCanto = Math.max(moveCountForCanto, 2);
+                    }
+                    break;
                 case Weapon.AbsoluteAmiti:
                 case PassiveC.FettersOfDromi:
                 case Weapon.HolytideTyrfing:

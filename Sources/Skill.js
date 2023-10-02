@@ -1751,6 +1751,7 @@ const Weapon = {
     InspiritedSpear: 2591, // 舞い踊る満月の宝槍
     KittyCatParasol: 2593, // 妖猫の日傘
     PumpkinStemPlus: 2595, // カボチャステッキ+
+    PaydayPouch: 2597, // 一攫千金の巨大袋
 };
 
 const Support = {
