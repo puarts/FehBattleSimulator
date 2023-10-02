@@ -172,6 +172,13 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.PumpkinStemPlus:
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveToApplyBuffs(6, 0, 0, 6);
+                    }
+                }
+                break;
             case Weapon.InspiritedSpear: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
