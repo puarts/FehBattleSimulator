@@ -1030,6 +1030,12 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedAnna:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
+                this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.heal(99));
+                duoUnit.reduceSpecialCount(5);
+                break;
             case Hero.DuoKagero:
                 duoUnit.reduceSpecialCount(1);
                 duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
