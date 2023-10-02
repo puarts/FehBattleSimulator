@@ -121,6 +121,7 @@ class BeginningOfTurnSkillHandler {
             }
             unit.applyReservedStatusEffects();
         }
+        unit.applyReservedSpecialCount();
     }
 
     /**
@@ -171,6 +172,21 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.InspiritedSpear: {
+                let found = false;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.isInClossWithOffset(unit, 1)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                        unit.reserveToApplyBuffs(0, 6, 6, 0);
+                    }
+                }
+            }
+                break;
             case PassiveC.HeartOfCrimea: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
@@ -205,7 +221,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.HeiredForseti:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveB.TwinSkyWing: {
@@ -304,12 +320,12 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Special.SupremeAstra:
                 if (skillOwner.isSpecialCountMax) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case Special.ChivalricAura:
                 if (skillOwner.isSpecialCountMax) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveA.Mastermind:
@@ -344,7 +360,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.TomeOfLaxuries:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 }
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
@@ -352,10 +368,10 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.DesertTigerAxe:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
                         if (skillOwner.hp + 1 >= unit.hp) {
-                            unit.reduceSpecialCount(1);
+                            unit.reserveToReduceSpecialCount(1);
                         }
                     }
                 }
@@ -411,7 +427,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.VassalSaintSteel:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                     this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveC.RallyingCry: {
@@ -448,7 +464,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.Sekuvaveku:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.globalBattleContext.currentTurn === 1) {
-                        skillOwner.reduceSpecialCount(2);
+                        skillOwner.reserveToReduceSpecialCount(2);
                     }
                 }
                 break;
@@ -479,9 +495,9 @@ class BeginningOfTurnSkillHandler {
             case Weapon.LoneWolf:
                 if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
                     if (skillOwner.isSpecialCountMax) {
-                        skillOwner.reduceSpecialCount(2);
+                        skillOwner.reserveToReduceSpecialCount(2);
                     } else if (Number(skillOwner.specialCount) === Number(skillOwner.maxSpecialCount) - 1) {
-                        skillOwner.reduceSpecialCount(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -506,7 +522,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.GustyWarBow:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
                     if (skillOwner.isSpecialCountMax) {
-                        skillOwner.reduceSpecialCount(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -534,13 +550,13 @@ class BeginningOfTurnSkillHandler {
                         skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
                     }
                     if (skillOwner.isSpecialCountMax) {
-                        skillOwner.reduceSpecialCount(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
             case Weapon.SisterlyWarAxe:
                 if (this.isOddTurn) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 }
                 break;
             case Weapon.BowOfRepose:
@@ -695,7 +711,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Special.NjorunsZeal2:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case Weapon.InseverableSpear:
@@ -735,7 +751,7 @@ class BeginningOfTurnSkillHandler {
             }
                 break;
             case Weapon.ArcaneEclipse:
-                if (this.globalBattleContext.currentTurn === 1) { skillOwner.reduceSpecialCount(1); }
+                if (this.globalBattleContext.currentTurn === 1) { skillOwner.reserveToReduceSpecialCount(1); }
                 break;
             case PassiveC.Severance: {
                 let found = false;
@@ -811,7 +827,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.BreathOfFlame:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case Weapon.BreakerLance: {
@@ -841,7 +857,7 @@ class BeginningOfTurnSkillHandler {
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                     if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-                        skillOwner.reduceSpecialCount(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -871,7 +887,7 @@ class BeginningOfTurnSkillHandler {
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
                         unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
                         if (this.__getStatusEvalUnit(unit).isSpecialCountMax) {
-                            unit.reduceSpecialCount(1);
+                            unit.reserveToReduceSpecialCount(1);
                         }
                     }
                     )
@@ -885,7 +901,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.DivineWhimsy: {
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 let units = [];
                 let minSpd = Number.MAX_SAFE_INTEGER;
@@ -997,7 +1013,7 @@ class BeginningOfTurnSkillHandler {
             case Captain.AdroitCaptain:
                 if (2 <= this.globalBattleContext.currentTurn && this.globalBattleContext.currentTurn <= 5) {
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
-                        unit.reduceSpecialCount(1);
+                        unit.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -1050,7 +1066,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.ThundererTome:
                 if (this.globalBattleContext.currentTurn <= 3 ||
                     skillOwner.restHpPercentageAtBeginningOfTurn <= 99) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case Weapon.FeruniruNoYouran:
@@ -1077,7 +1093,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.AscendingBlade:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case Weapon.DiplomacyStaff: {
@@ -1089,7 +1105,7 @@ class BeginningOfTurnSkillHandler {
                         unit.applyResBuff(6);
                         unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
                         if (removedCount >= 1) {
-                            unit.reduceSpecialCount(2);
+                            unit.reserveToReduceSpecialCount(2);
                             unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
                         }
                     }
@@ -1105,7 +1121,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.MagicRabbits:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 }
                 break;
             case Weapon.BrightShellEgg:
@@ -1142,7 +1158,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.DrybladeLance:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 }
                 break;
             case Weapon.ArgentAura:
@@ -1156,13 +1172,13 @@ class BeginningOfTurnSkillHandler {
             case Weapon.AncientCodex:
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.globalBattleContext.currentTurn <= 3) {
-                        skillOwner.reduceSpecialCount(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
             case Weapon.QuickDaggerPlus:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 }
                 break;
             case Weapon.RapidCrierBow:
@@ -1173,7 +1189,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.NidavellirLots:
                 if (this.globalBattleContext.currentTurn === 4) {
-                    skillOwner.reduceSpecialCount(3);
+                    skillOwner.reserveToReduceSpecialCount(3);
                 }
                 break;
             case PassiveC.GoddessBearer:
@@ -1205,7 +1221,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Special.LifeUnending:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(5);
+                    skillOwner.reserveToReduceSpecialCount(5);
                 }
                 break;
             case Weapon.Roputous:
@@ -1406,7 +1422,7 @@ class BeginningOfTurnSkillHandler {
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                         this.writeDebugLog(skillOwner.getNameWithGroup() + "はシャムシールを発動");
-                        skillOwner.reduceSpecialCount(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -1419,7 +1435,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.TomeOfReglay:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                     if (unit.isTome) {
-                        unit.reduceSpecialCount(1);
+                        unit.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -1437,7 +1453,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Special.RadiantAether2:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 }
                 break;
             case Weapon.FellCandelabra:
@@ -1499,7 +1515,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.TrueLoveRoses:
             case Weapon.StudiedForblaze:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveC.OddRecovery1:
@@ -1553,7 +1569,7 @@ class BeginningOfTurnSkillHandler {
             case Special.BrutalShell:
             case Special.SeidrShell:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(3);
+                    skillOwner.reserveToReduceSpecialCount(3);
                 }
                 break;
             case PassiveC.OddTempest3:
@@ -1679,9 +1695,9 @@ class BeginningOfTurnSkillHandler {
             }
             case Weapon.JinroMusumeNoTsumekiba:
                 if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                     for (let unit of this.__getPartnersInSpecifiedRange(skillOwner, 100)) {
-                        unit.reduceSpecialCount(2);
+                        unit.reserveToReduceSpecialCount(2);
                     }
                 }
                 if (skillOwner.isWeaponSpecialRefined) {
@@ -1705,7 +1721,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.GroomsWings:
                 if (this.globalBattleContext.currentTurn == 1) {
                     for (let unit of this.__getPartnersInSpecifiedRange(skillOwner, 100)) {
-                        unit.reduceSpecialCount(1);
+                        unit.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -1737,7 +1753,7 @@ class BeginningOfTurnSkillHandler {
                 if (skillOwner.isWeaponSpecialRefined) {
                     if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 75) {
                         if (isNormalAttackSpecial(skillOwner.special)) {
-                            skillOwner.reduceSpecialCount(1);
+                            skillOwner.reserveToReduceSpecialCount(1);
                         }
                     }
                 }
@@ -1746,7 +1762,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.KyoufuArmars:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 75) {
                     if (isNormalAttackSpecial(skillOwner.special)) {
-                        skillOwner.reduceSpecialCount(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
@@ -1777,14 +1793,14 @@ class BeginningOfTurnSkillHandler {
             case Weapon.MagoNoTePlus:
                 if (this.globalBattleContext.currentTurn == 1) {
                     for (let unit of this.__findMaxStatusUnits(skillOwner.groupId, x => this.__getStatusEvalUnit(x).getAtkInPrecombat(), skillOwner)) {
-                        unit.reduceSpecialCount(1);
+                        unit.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
             case Weapon.NorenPlus:
             case Weapon.KinchakubukuroPlus:
                 if (this.globalBattleContext.currentTurn == 1) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 }
                 break;
             case Weapon.MoonlightStone:
@@ -1792,13 +1808,13 @@ class BeginningOfTurnSkillHandler {
             case PassiveB.TateNoKodo3:
                 if (this.globalBattleContext.currentTurn == 1) {
                     if (isDefenseSpecial(skillOwner.special)) {
-                        skillOwner.reduceSpecialCount(2);
+                        skillOwner.reserveToReduceSpecialCount(2);
                     }
                 }
                 break;
             case PassiveB.Ikari3:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 75) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveB.ToketsuNoHuin:
@@ -1895,13 +1911,13 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.TimesPulse4:
                 if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
                     this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動(skillId: ${skillId})を発動`);
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveC.OstiasPulse2:
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
                     if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
-                        unit.reduceSpecialCount(1);
+                        unit.reserveToReduceSpecialCount(1);
                         unit.applyDefBuff(6);
                         unit.applyResBuff(6);
                     }
@@ -1911,7 +1927,7 @@ class BeginningOfTurnSkillHandler {
                 if (this.globalBattleContext.currentTurn == 1) {
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, false)) {
                         if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
-                            unit.reduceSpecialCount(1);
+                            unit.reserveToReduceSpecialCount(1);
                         }
                     }
                 }
@@ -2203,7 +2219,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.AkaNoKen:
             case Weapon.DarkExcalibur:
                 if (skillOwner.weaponRefinement == WeaponRefinementType.Special) {
-                    if (this.globalBattleContext.currentTurn == 1) { skillOwner.reduceSpecialCount(2); }
+                    if (this.globalBattleContext.currentTurn == 1) { skillOwner.reserveToReduceSpecialCount(2); }
                 }
                 break;
             case Weapon.Missiletainn:
@@ -2214,7 +2230,7 @@ class BeginningOfTurnSkillHandler {
                             ++reduceCount;
                         }
                     }
-                    skillOwner.reduceSpecialCount(reduceCount);
+                    skillOwner.reserveToReduceSpecialCount(reduceCount);
                 }
                 break;
             case PassiveC.InfantryPulse4: {
@@ -2226,7 +2242,7 @@ class BeginningOfTurnSkillHandler {
                         snapshot.isSpecialCountMax ||
                         unit === skillOwner) {
                         this.writeDebugLog(`${skillOwner.getNameWithGroup()}の${skillOwner.passiveCInfo.name}により${unit.getNameWithGroup()}の奥義発動カウント-1`);
-                        unit.reduceSpecialCount(1);
+                        unit.reserveToReduceSpecialCount(1);
                     }
                 }
             }
@@ -2240,20 +2256,20 @@ class BeginningOfTurnSkillHandler {
                             && this.__getStatusEvalUnit(unit).hp < skillOwnerHp
                         ) {
                             this.writeDebugLog(skillOwner.getNameWithGroup() + "の歩行の鼓動3により" + unit.getNameWithGroup() + "の奥義発動カウント-1");
-                            unit.reduceSpecialCount(1);
+                            unit.reserveToReduceSpecialCount(1);
                         }
                     }
                 }
                 break;
             case PassiveB.SDrink:
                 if (this.globalBattleContext.currentTurn == 1) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveS.OgiNoKodou:
                 if (this.globalBattleContext.currentTurn == 1) {
                     this.writeDebugLog(skillOwner.getNameWithGroup() + "の奥義の鼓動により奥義発動カウント-1");
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveB.SabotageAtk3:
@@ -2861,6 +2877,18 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         switch (skillId) {
+            case Weapon.InspiritedSpear:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.isInClossWithOffset(unit, 1)) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                        if (isNormalAttackSpecial(skillOwner.special) &&
+                            this.__getStatusEvalUnit(skillOwner).specialCount <= 1 &&
+                            unit.getEvalDefInPrecombat() < skillOwner.getEvalDefInPrecombat()) {
+                            unit.reserveToIncreaseSpecialCount(1);
+                        }
+                    }
+                }
+                break;
             case PassiveC.DefResPloy3:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                     if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
@@ -3295,7 +3323,7 @@ class BeginningOfTurnSkillHandler {
             }
         }
         for (let unit of targets) {
-            unit.increaseSpecialCount(2);
+            unit.reserveToIncreaseSpecialCount(2);
         }
     }
 

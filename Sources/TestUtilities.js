@@ -92,6 +92,9 @@ class test_BeginningOfTurnSkillHandler {
     applySkillsForBeginningOfTurn(unit) {
         this._beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
         this._beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(unit);
+        this._beginningOfTurnSkillHandler.applyReservedState(unit);
+        this._beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
+        this._beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap();
     }
 }
 

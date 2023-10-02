@@ -1744,6 +1744,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=QS0QcFqH-SQ&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=gmHp_aw5P4E&ab_channel=NintendoMobile
     AbsoluteAmiti: 2588, // 清真アミーテ
+
+    // 超英雄 (商売人の収穫祭)
+    // https://www.youtube.com/watch?v=yPZzU0s0-pI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=zWSnqfS-fpY&ab_channel=NintendoMobile
+    InspiritedSpear: 2591, // 舞い踊る満月の宝槍
 };
 
 const Support = {

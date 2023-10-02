@@ -710,6 +710,11 @@ targetUnit.battleContext.damageReductionValueOfFollowupAttack += N;
 targetUnit.battleContext.damageReductionValueOfFirstAttacks += N;
 
 奥義発動時、ダメージ+N
+// 呼び出し順序によりこの方法は範囲奥義を除く場合にしか使用できない
+targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+    targetUnit.battleContext.additionalDamageOfSpecial += N;
+});
+もしくは
 __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
     targetUnit.battleContext.additionalDamageOfSpecial += N;
 }

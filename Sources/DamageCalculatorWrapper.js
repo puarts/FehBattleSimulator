@@ -2352,6 +2352,18 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.InspiritedSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getEvalDefInPrecombat() * 0.15);
+                enemyUnit.addSpursWithoutRes(-amount);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    let amount = targetUnit.getDefInCombat(enemyUnit) * 0.4;
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(amount);
+                });
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.AerialManeuvers] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 50 &&
                 enemyUnit.battleContext.restHpPercentage >= 50) {

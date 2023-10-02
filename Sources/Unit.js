@@ -1443,6 +1443,7 @@ class Unit extends BattleMapElement {
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
+        this.reservedSpecialCount = 0;
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = WeaponType.None;
@@ -3384,6 +3385,25 @@ class Unit extends BattleMapElement {
             return true;
         }
         return false;
+    }
+
+    reserveToIncreaseSpecialCount(amount) {
+        this.reservedSpecialCount += amount;
+    }
+
+    reserveToReduceSpecialCount(amount) {
+        this.reservedSpecialCount -= amount;
+    }
+
+    applyReservedSpecialCount() {
+        this.specialCount += this.reservedSpecialCount;
+        if (this.specialCount >= this.maxSpecialCount) {
+            this.specialCount = this.maxSpecialCount;
+        }
+        if (this.specialCount < 0) {
+            this.specialCount = 0;
+        }
+        this.reservedSpecialCount = 0;
     }
 
     applyAtkDebuff(amount) {
