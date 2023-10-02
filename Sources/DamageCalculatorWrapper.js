@@ -2712,11 +2712,6 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (unit.isPartner(targetUnit)) {
-                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                }
-            }
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3, unit => unit.isPartner(targetUnit))) {
                 targetUnit.battleContext.specialSkillCondSatisfied = true;
             }
@@ -10519,6 +10514,11 @@ class DamageCalculatorWrapper {
                 }
                 for (let skillId of allyUnit.enumerateSkills()) {
                     switch (skillId) {
+                        case Special.DragonBlast:
+                            if (targetUnit.isPartner(allyUnit)) {
+                                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                            }
+                            break;
                         case Captain.Erosion:
                             if (enemyUnit.battleContext.isSaviorActivated) {
                                 enemyUnit.defSpur -= 4;
