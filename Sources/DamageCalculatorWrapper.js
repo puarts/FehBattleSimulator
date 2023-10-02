@@ -2352,6 +2352,12 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.KittyCatParasol] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat && this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkResSpurs(6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveA.BonusDoubler4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let hasPositiveStatusEffect = targetUnit.hasPositiveStatusEffect(enemyUnit);
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
@@ -10524,6 +10530,11 @@ class DamageCalculatorWrapper {
                             break;
 
                         // ユニットスキル
+                        case Weapon.KittyCatParasol:
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                            targetUnit.battleContext.invalidateAllBuffs();
+                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            break;
                         case Weapon.SacrificeStaff:
                             if (g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
                                 targetUnit.battleContext.canActivateMiracleAndHeal = true;

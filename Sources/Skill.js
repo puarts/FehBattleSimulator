@@ -1749,6 +1749,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=yPZzU0s0-pI&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=zWSnqfS-fpY&ab_channel=NintendoMobile
     InspiritedSpear: 2591, // 舞い踊る満月の宝槍
+    KittyCatParasol: 2593, // 妖猫の日傘
 };
 
 const Support = {
