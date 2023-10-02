@@ -462,6 +462,7 @@ class BeginningOfTurnSkillHandler {
                 }
             }
                 break;
+            case PassiveC.ASReinSnap:
             case PassiveC.SDReinSnap: {
                 if (isRefreshSupportSkill(skillOwner.support)) {
                     break;
@@ -470,6 +471,7 @@ class BeginningOfTurnSkillHandler {
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     if (unit.moveType === MoveType.Armor ||
                         (isMeleeWeaponType(unit.weaponType) && unit.weaponType === MoveType.Infantry)) {
+                        found = true;
                         unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                     }
                 }
