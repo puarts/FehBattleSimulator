@@ -2179,6 +2179,7 @@ const PassiveA = {
     SwiftImpact: 1617, // 飛燕明鏡の瞬撃
 
     Kyokazohuku3: 849, // 強化増幅3
+    BonusDoubler4: 2592, // 強化増幅4
 
     YaibaNoSession3: 1111, // 刃のセッション
     TateNoSession3: 1107, // 盾のセッション

@@ -2352,6 +2352,28 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[PassiveA.BonusDoubler4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let hasPositiveStatusEffect = targetUnit.hasPositiveStatusEffect(enemyUnit);
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                if (hasPositiveStatusEffect) {
+                    break;
+                }
+                if (unit.hasPositiveStatusEffect()) {
+                    hasPositiveStatusEffect = true;
+                    break;
+                }
+            }
+            if (hasPositiveStatusEffect) {
+                targetUnit.addAllSpur(4);
+            }
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true);
+                    targetUnit.addSpurs(...amounts);
+                }
+            );
+        }
         this._applySkillEffectForUnitFuncDict[Weapon.InspiritedSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
