@@ -281,7 +281,7 @@ targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         // 周囲3マス以内の場合
         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
         targetUnit.addSpurs(...amounts);
     }
 );

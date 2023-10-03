@@ -1752,6 +1752,7 @@ const Weapon = {
     KittyCatParasol: 2593, // 妖猫の日傘
     PumpkinStemPlus: 2595, // カボチャステッキ+
     PaydayPouch: 2597, // 一攫千金の巨大袋
+    FarmersToolPlus: 2600, // 農具+
 
     // 2023年10月 武器錬成
     HyperionLance: 2602, // 傭兵竜騎士の槍
@@ -4174,6 +4175,38 @@ const setOnetimeActionActivatedFuncMap = new Map()
 //         }
 //     );
 // }
+
+// 農具+
+{
+    let skillId = Weapon.FarmersToolPlus;
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                found = true;
+                unit.reserveToApplyBuffs(6, 0, 6, 0);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(6, 0, 6, 0);
+            }
+        })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 周囲3マス以内の場合
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true);
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+            }
+        }
+    );
+}
 
 // 山猫の暗器
 {
