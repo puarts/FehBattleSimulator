@@ -10557,7 +10557,7 @@ class DamageCalculatorWrapper {
                         case Weapon.KittyCatParasol:
                             targetUnit.battleContext.increaseCooldownCountForBoth();
                             targetUnit.battleContext.invalidateAllBuffs();
-                            targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
                             break;
                         case Weapon.SacrificeStaff:
                             if (g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
