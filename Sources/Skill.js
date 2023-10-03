@@ -1755,6 +1755,7 @@ const Weapon = {
 
     // 2023年10月 武器錬成
     HyperionLance: 2602, // 傭兵竜騎士の槍
+    WildcatDagger: 2603, // 山猫の暗器
 };
 
 const Support = {
@@ -4173,6 +4174,35 @@ const setOnetimeActionActivatedFuncMap = new Map()
 //         }
 //     );
 // }
+
+// 山猫の暗器
+{
+    let skillId = Weapon.WildcatDagger;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        this.__applyBuffAbsorption(targetUnit, enemyUnit);
+                    }
+                );
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+                    });
+                }
+            }
+        }
+    );
+}
 
 // 傭兵竜騎士の槍
 {

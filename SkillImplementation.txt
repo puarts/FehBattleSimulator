@@ -292,10 +292,18 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 targetUnit.battleContext.invalidateBuffs(true, true, true, true);
 
 敵が強化を受けていれば、戦闘中、自身の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ上昇し、敵の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ減少(能力値ごとに計算)[強化吸収]
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this.__applyBuffAbsorption(targetUnit, enemyUnit);
+        // 攻撃、速さ、魔防だけ吸収
+        // this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 0, 1);
+    }
+);
+もしくは
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     this.__applyBuffAbsorption(targetUnit, enemyUnit);
     // 攻撃、速さ、魔防だけ吸収
-    this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 0, 1);
+    // this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 0, 1);
 }
 
 自身の弱化を無効(弱化無効)
