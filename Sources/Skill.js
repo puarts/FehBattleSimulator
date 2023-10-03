@@ -1752,6 +1752,9 @@ const Weapon = {
     KittyCatParasol: 2593, // 妖猫の日傘
     PumpkinStemPlus: 2595, // カボチャステッキ+
     PaydayPouch: 2597, // 一攫千金の巨大袋
+
+    // 2023年10月 武器錬成
+    HyperionLance: 2602, // 傭兵竜騎士の槍
 };
 
 const Support = {
@@ -4160,6 +4163,7 @@ const calcMoveCountForCantoFuncMap = new Map();
 const evalSpdAddFuncMap = new Map();
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
 const applySkillForBeginningOfTurnFuncMap = new Map();
+const setOnetimeActionActivatedFuncMap = new Map()
 
 // 各スキルの実装
 // {
@@ -4169,6 +4173,55 @@ const applySkillForBeginningOfTurnFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 傭兵竜騎士の槍
+{
+    let skillId = Weapon.HyperionLance;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(4);
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.1);
+                enemyUnit.addSpursWithoutRes(-amount);
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    let ratio = 0.2;
+                    if (!defUnit.isOneTimeActionActivatedForWeapon ||
+                        !defUnit.isOneTimeActionActivatedForWeapon2) {
+                        ratio = 0.4;
+                    }
+                    return ratio;
+                });
+            }
+        }
+    );
+    setOnetimeActionActivatedFuncMap.set(skillId,
+        function () {
+            if (this.isWeaponSpecialRefined) {
+                if (this.battleContext.initiatesCombat) {
+                    this.isOneTimeActionActivatedForWeapon = true;
+                } else {
+                    this.isOneTimeActionActivatedForWeapon2 = true;
+                }
+            }
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let ratio = 0.2;
+            if (!defUnit.isOneTimeActionActivatedForWeapon ||
+                !defUnit.isOneTimeActionActivatedForWeapon2) {
+                ratio = 0.4;
+            }
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+}
 
 // ラクチェの流剣
 {
