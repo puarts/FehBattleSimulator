@@ -787,6 +787,15 @@ class DamageCalculatorWrapper {
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
         }
         for (let skillId of defUnit.enumerateSkills()) {
+            let funcMap = applyPrecombatDamageReductionRatioFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, defUnit, atkUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.DragonsFist:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -9797,7 +9806,6 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[PassiveB.MikiriTsuigeki3] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.SphiasSoul] = func;
-            this._applySkillEffectForUnitFuncDict[Weapon.HakutoshinNoNinjin] = func;
         }
         {
             let func = (targetUnit) => {

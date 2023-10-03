@@ -3780,6 +3780,15 @@ function getEvalSpdAdd(unit) {
     for (let skillId of unit.enumerateSkills()) {
         let value = EvalSpdAddDict[skillId];
         amount += value ? value : 0;
+        let funcMap = evalSpdAddFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                amount += func.call(this, unit);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (skillId) {
             case Weapon.NewBrazenCatFang:
                 if (unit.isWeaponSpecialRefined) {
@@ -4145,21 +4154,70 @@ class SkillInfo {
 }
 
 // TODO: ここから下の内容を別ファイルに分ける
-// 関数マップテンプレ
-// let funcMap = xxxMap;
-// if (funcMap.has(skillId)) {
-//     let func = funcMap.get(skillId);
-//     if (typeof func === "function") {
-//         let result = func.call(this, args);
-//     } else {
-//         console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-//     }
-// }
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
 const calcMoveCountForCantoFuncMap = new Map();
+const evalSpdAddFuncMap = new Map();
+const applyPrecombatDamageReductionRatioFuncMap = new Map();
 
 // 各スキルの実装
+// {
+//     let skillId = Weapon.W;
+//     applySkillEffectForUnitFuncMap.set(skillId,
+//         function (targetUnit, enemyUnit, calcPotentialDamage) {
+//         }
+//     );
+// }
+// 白兎神の人参
+{
+    let skillId = Weapon.HakutoshinNoNinjin;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            } else {
+                // <錬成効果>
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                        });
+                    }
+                }
+            }
+        }
+    );
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return unit.isWeaponSpecialRefined ? 7 : 0;
+    })
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isWeaponSpecialRefined) {
+                if (atkUnit.battleContext.initiatesCombat ||
+                    atkUnit.battleContext.restHpPercentage >= 75) {
+                    let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+            }
+        }
+    );
+}
 // 幻影フェザー
 {
     let skillId = Weapon.GeneiFeather;
