@@ -4159,6 +4159,7 @@ const canActivateCantoFuncMap = new Map();
 const calcMoveCountForCantoFuncMap = new Map();
 const evalSpdAddFuncMap = new Map();
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
+const applySkillForBeginningOfTurnFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4168,6 +4169,63 @@ const applyPrecombatDamageReductionRatioFuncMap = new Map();
 //         }
 //     );
 // }
+
+// ラクチェの流剣
+{
+    let skillId = Weapon.LarceisEdge;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat() ||
+                    enemyUnit.battleContext.isRestHpFull) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidateAllBuffs();
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat() ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidateAllBuffs();
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                        });
+                        targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                            (targetUnit, enemyUnit) => {
+                                if (targetUnit.isSpecialCountMax) {
+                                    targetUnit.reduceSpecialCount(1);
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+        }
+    );
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.isWeaponSpecialRefined) {
+                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                    this.writeDebugLog(`${skillOwner.getNameWithGroup()}は始まりの鼓動効果(skillId: ${skillId})を発動`);
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+            }
+        }
+    );
+}
+
 // 白兎神の人参
 {
     let skillId = Weapon.HakutoshinNoNinjin;

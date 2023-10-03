@@ -9489,14 +9489,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.LarceisEdge] = (targetUnit, enemyUnit) => {
-            if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
-                || enemyUnit.battleContext.isRestHpFull
-            ) {
-                targetUnit.addAllSpur(4);
-                targetUnit.battleContext.invalidateAllBuffs();
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Mulagir] = (targetUnit, enemyUnit) => {
             if (!targetUnit.isWeaponRefined) {
                 if (isWeaponTypeTome(enemyUnit.weaponType)
