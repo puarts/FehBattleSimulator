@@ -809,6 +809,16 @@ getMoveWeight() {
 }
 
 再移動(N)
+canActivateCantoFuncMap.set(skillId, function (unit) {
+    // 無条件再移動
+    return true;
+});
+calcMoveCountForCantoFuncMap.set(skillId, function () {
+    // thisはUnit
+    // 再移動N
+    return N;
+})
+もしくは
 __canActivateCanto(unit) {}
 unit.calcMoveCountForCanto() {} // ワープの場合は必要なし
 

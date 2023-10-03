@@ -4143,3 +4143,66 @@ class SkillInfo {
         }
     }
 }
+
+// TODO: ここから下の内容を別ファイルに分ける
+// 関数マップテンプレ
+// let funcMap = xxxMap;
+// if (funcMap.has(skillId)) {
+//     let func = funcMap.get(skillId);
+//     if (typeof func === "function") {
+//         let result = func.call(this, args);
+//     } else {
+//         console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+//     }
+// }
+const applySkillEffectForUnitFuncMap = new Map();
+const canActivateCantoFuncMap = new Map();
+const calcMoveCountForCantoFuncMap = new Map();
+
+// 各スキルの実装
+// 幻影フェザー
+{
+    let skillId = Weapon.GeneiFeather;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat &&
+                    this.__isThereAnyAllyUnit(targetUnit, x => x.isActionDone)) {
+                    targetUnit.addAtkSpdSpurs(6);
+                    targetUnit.battleContext.isDesperationActivatable = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(6);
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (this.__isThereAnyAllyUnit(targetUnit, x => x.isActionDone)) {
+                        targetUnit.battleContext.isDesperationActivatable = true;
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAtkSpdSpurs(5);
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            if (this.__isThereAnyAllyUnit(targetUnit, x => x.isActionDone)) {
+                                targetUnit.addAtkSpdSpurs(5);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    );
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return unit.isWeaponSpecialRefined;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.isWeaponSpecialRefined ? 2 : 0;
+    })
+}

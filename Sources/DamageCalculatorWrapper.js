@@ -1468,13 +1468,6 @@ class DamageCalculatorWrapper {
                 atkUnit.atkSpur += 6;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.GeneiFeather] = (atkUnit) => {
-            if (self.__isThereAnyAllyUnit(atkUnit, x => x.isActionDone)) {
-                atkUnit.atkSpur += 6;
-                atkUnit.spdSpur += 6;
-                atkUnit.battleContext.isDesperationActivatable = true;
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.EishinNoAnki] = (atkUnit) => {
             atkUnit.atkSpur += 5;
             atkUnit.spdSpur += 5;
@@ -2345,6 +2338,15 @@ class DamageCalculatorWrapper {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
             if (skillFunc) {
                 skillFunc(targetUnit, enemyUnit, calcPotentialDamage);
+            }
+            let funcMap = applySkillEffectForUnitFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit, calcPotentialDamage);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
             }
         }
     }

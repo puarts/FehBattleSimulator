@@ -5642,6 +5642,15 @@ class Unit extends BattleMapElement {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         for (let skillId of this.enumerateSkills()) {
+            let funcMap = calcMoveCountForCantoFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    moveCountForCanto = Math.max(moveCountForCanto, func.call(this, moveCountForCanto));
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 // 再移動(1)
