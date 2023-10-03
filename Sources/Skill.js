@@ -1744,6 +1744,14 @@ const Weapon = {
     // https://www.youtube.com/watch?v=QS0QcFqH-SQ&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=gmHp_aw5P4E&ab_channel=NintendoMobile
     AbsoluteAmiti: 2588, // 清真アミーテ
+
+    // 超英雄 (商売人の収穫祭)
+    // https://www.youtube.com/watch?v=yPZzU0s0-pI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=zWSnqfS-fpY&ab_channel=NintendoMobile
+    InspiritedSpear: 2591, // 舞い踊る満月の宝槍
+    KittyCatParasol: 2593, // 妖猫の日傘
+    PumpkinStemPlus: 2595, // カボチャステッキ+
+    PaydayPouch: 2597, // 一攫千金の巨大袋
 };
 
 const Support = {
@@ -2174,6 +2182,7 @@ const PassiveA = {
     SwiftImpact: 1617, // 飛燕明鏡の瞬撃
 
     Kyokazohuku3: 849, // 強化増幅3
+    BonusDoubler4: 2592, // 強化増幅4
 
     YaibaNoSession3: 1111, // 刃のセッション
     TateNoSession3: 1107, // 盾のセッション
@@ -2285,7 +2294,7 @@ const PassiveA = {
     AtkDefFinish3: 2516, // 攻撃守備の秘奥3
     AtkDefFinish4: 2513, // 攻撃守備の秘奥4
 
-    AtkResFinish3: 9999, // 攻撃魔防の秘奥3
+    AtkResFinish3: 2599, // 攻撃魔防の秘奥3
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 
     SpdResFinish3: 2318, // 速さ魔防の秘奥3
@@ -2351,6 +2360,7 @@ const PassiveB = {
     PoeticJustice: 2345, // 神罰・因果応報
     DazzlingStaff3: 633, // 幻惑の杖3
     DazzlingShift: 2363, // 幻惑・転移
+    DazzleFarTrace: 2594, // 幻惑・遠影
     ChillAtk1: 1339,
     ChillAtk2: 1340,
     ChillAtk3: 614, // 攻撃の封印3
@@ -2927,6 +2937,7 @@ const PassiveC = {
     DefResRein3: 1787, // 守備魔防の牽制3
     DefResHold: 2294, // 守備魔防の大牽制
     // 牽制・運び手
+    ASReinSnap: 2598, // 攻速牽制・運び手
     SDReinSnap: 2444, // 速守牽制・運び手
 
     OddTempest3: 1515, // 迅雷風烈・奇数3

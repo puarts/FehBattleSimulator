@@ -63,6 +63,7 @@ const Hero = {
     DuoYmir: 990,
     HarmonizedAyra: 1005,
     DuoKagero: 1016,
+    HarmonizedAnna: 1029,
 };
 
 function isThiefIndex(heroIndex) {
@@ -1443,6 +1444,7 @@ class Unit extends BattleMapElement {
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
+        this.reservedSpecialCount = 0;
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = WeaponType.None;
@@ -3384,6 +3386,25 @@ class Unit extends BattleMapElement {
             return true;
         }
         return false;
+    }
+
+    reserveToIncreaseSpecialCount(amount) {
+        this.reservedSpecialCount += amount;
+    }
+
+    reserveToReduceSpecialCount(amount) {
+        this.reservedSpecialCount -= amount;
+    }
+
+    applyReservedSpecialCount() {
+        this.specialCount += this.reservedSpecialCount;
+        if (this.specialCount >= this.maxSpecialCount) {
+            this.specialCount = this.maxSpecialCount;
+        }
+        if (this.specialCount < 0) {
+            this.specialCount = 0;
+        }
+        this.reservedSpecialCount = 0;
     }
 
     applyAtkDebuff(amount) {
@@ -5648,6 +5669,11 @@ class Unit extends BattleMapElement {
                     moveCountForCanto = Math.max(moveCountForCanto, 1);
                     break;
                 // 再移動(2)
+                case Weapon.PaydayPouch: // 再移動2
+                    if (this.getPositiveStatusEffects().length >= 3) {
+                        moveCountForCanto = Math.max(moveCountForCanto, 2);
+                    }
+                    break;
                 case Weapon.AbsoluteAmiti:
                 case PassiveC.FettersOfDromi:
                 case Weapon.HolytideTyrfing:
@@ -5708,6 +5734,7 @@ class Unit extends BattleMapElement {
                     moveCountForCanto = Math.max(moveCountForCanto, this.restMoveCount + 1);
                     break;
                 // 残り
+                case PassiveB.DazzleFarTrace:
                 case Weapon.FrozenDelight:
                 case PassiveB.AtkSpdFarTrace3:
                 case PassiveB.AtkDefFarTrace3:

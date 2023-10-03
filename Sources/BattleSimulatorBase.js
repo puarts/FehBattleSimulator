@@ -1030,6 +1030,12 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedAnna:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);
+                this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.heal(99));
+                duoUnit.reduceSpecialCount(5);
+                break;
             case Hero.DuoKagero:
                 duoUnit.reduceSpecialCount(1);
                 duoUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
@@ -6412,6 +6418,11 @@ class BattleSimmulatorBase {
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
+                case Weapon.PaydayPouch: // 再移動条件
+                    if (unit.getPositiveStatusEffects().length >= 3) {
+                        return true;
+                    }
+                    break;
                 case PassiveC.FettersOfDromi:
                     return true;
                 case PassiveB.FirestormDance3:
@@ -6456,6 +6467,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 // 無条件
+                case PassiveB.DazzleFarTrace:
                 case Weapon.AbsoluteAmiti:
                 case Weapon.BrightwindFans:
                 case PassiveB.DeepStar:

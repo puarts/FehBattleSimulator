@@ -2352,6 +2352,70 @@ class DamageCalculatorWrapper {
     __init__applySkillEffectForUnitFuncDict() {
         let self = this;
         // this._applySkillEffectForUnitFuncDict[Weapon.W] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.PaydayPouch] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.min(Math.max(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8, 0), 10);
+                if (targetUnit.getPositiveStatusEffects().length >= 3) {
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                }
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.PumpkinStemPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveB.DazzleFarTrace] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            enemyUnit.spdSpur -= 4;
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.KittyCatParasol] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkResSpurs(6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+        this._applySkillEffectForUnitFuncDict[PassiveA.BonusDoubler4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            let hasPositiveStatusEffect = targetUnit.hasPositiveStatusEffect(enemyUnit);
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                if (hasPositiveStatusEffect) {
+                    break;
+                }
+                if (unit.hasPositiveStatusEffect()) {
+                    hasPositiveStatusEffect = true;
+                    break;
+                }
+            }
+            if (hasPositiveStatusEffect) {
+                targetUnit.addAllSpur(4);
+            }
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true);
+                    targetUnit.addSpurs(...amounts);
+                }
+            );
+        }
+        this._applySkillEffectForUnitFuncDict[Weapon.InspiritedSpear] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getEvalDefInPrecombat() * 0.15);
+                enemyUnit.addSpursWithoutRes(-amount);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    let amount = targetUnit.getDefInCombat(enemyUnit) * 0.4;
+                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(amount);
+                });
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
         this._applySkillEffectForUnitFuncDict[PassiveB.AerialManeuvers] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.restHpPercentage >= 50 &&
                 enemyUnit.battleContext.restHpPercentage >= 50) {
@@ -2648,11 +2712,6 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (unit.isPartner(targetUnit)) {
-                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                }
-            }
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3, unit => unit.isPartner(targetUnit))) {
                 targetUnit.battleContext.specialSkillCondSatisfied = true;
             }
@@ -10455,6 +10514,11 @@ class DamageCalculatorWrapper {
                 }
                 for (let skillId of allyUnit.enumerateSkills()) {
                     switch (skillId) {
+                        case Special.DragonBlast:
+                            if (targetUnit.isPartner(allyUnit)) {
+                                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                            }
+                            break;
                         case Captain.Erosion:
                             if (enemyUnit.battleContext.isSaviorActivated) {
                                 enemyUnit.defSpur -= 4;
@@ -10490,6 +10554,11 @@ class DamageCalculatorWrapper {
                             break;
 
                         // ユニットスキル
+                        case Weapon.KittyCatParasol:
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                            targetUnit.battleContext.invalidateAllBuffs();
+                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            break;
                         case Weapon.SacrificeStaff:
                             if (g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
                                 targetUnit.battleContext.canActivateMiracleAndHeal = true;
@@ -17306,6 +17375,7 @@ class DamageCalculatorWrapper {
                         targetUnit.defSpur -= 5;
                         break;
                     case PassiveC.AtkSpdRein3:
+                    case PassiveC.ASReinSnap:
                         targetUnit.atkSpur -= 4;
                         targetUnit.spdSpur -= 4;
                         break;
