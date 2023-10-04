@@ -185,6 +185,10 @@ enemyUnit.battleContext.restHpPercentage >= N
 skillOwner.restHpPercentageAtBeginningOfTurn >= N
 
 速さの差を比較するスキルの比較判定時、自身の速さ+Nとして判定[虚勢]
+evalSpdAddFuncMap.set(skillId, function (unit) {
+    return 7;
+})
+もしくは
 const EvalSpdAddDict = {};
 EvalSpdAddDict[<skill id>] = N;
 
@@ -277,7 +281,7 @@ targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         // 周囲3マス以内の場合
         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
+        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
         targetUnit.addSpurs(...amounts);
     }
 );
@@ -288,10 +292,18 @@ targetUnit.battleContext.invalidatesAtkBuff = true;
 targetUnit.battleContext.invalidateBuffs(true, true, true, true);
 
 敵が強化を受けていれば、戦闘中、自身の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ上昇し、敵の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ減少(能力値ごとに計算)[強化吸収]
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this.__applyBuffAbsorption(targetUnit, enemyUnit);
+        // 攻撃、速さ、魔防だけ吸収
+        // this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 0, 1);
+    }
+);
+もしくは
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     this.__applyBuffAbsorption(targetUnit, enemyUnit);
     // 攻撃、速さ、魔防だけ吸収
-    this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 0, 1);
+    // this.__applyBuffAbsorption(targetUnit, enemyUnit, 1, 1, 0, 1);
 }
 
 自身の弱化を無効(弱化無効)
@@ -581,6 +593,14 @@ __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit) {}
 ダメカ
 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×N%軽減(最大M)[回避]
 戦闘前
+applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+    function (defUnit, atkUnit) {
+        // 速度回避
+        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+    }
+);
+もしくは
 __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
     {
         let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, N, M);
@@ -809,6 +829,16 @@ getMoveWeight() {
 }
 
 再移動(N)
+canActivateCantoFuncMap.set(skillId, function (unit) {
+    // 無条件再移動
+    return true;
+});
+calcMoveCountForCantoFuncMap.set(skillId, function () {
+    // thisはUnit
+    // 再移動N
+    return N;
+})
+もしくは
 __canActivateCanto(unit) {}
 unit.calcMoveCountForCanto() {} // ワープの場合は必要なし
 
@@ -918,3 +948,14 @@ https://feheroes.fandom.com/wiki/Category:Aether_Raids_map_files?file=Map_K0017.
 [注意]
 https://feheroes.fandom.com/wiki/Category:Aether_Raids_map_files
 だと何故か新しいマップは一覧に出てこない。
+
+関数マップテンプレ
+let funcMap = xxxMap;
+if (funcMap.has(skillId)) {
+    let func = funcMap.get(skillId);
+    if (typeof func === "function") {
+        let result = func.call(this, args);
+    } else {
+        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+    }
+}

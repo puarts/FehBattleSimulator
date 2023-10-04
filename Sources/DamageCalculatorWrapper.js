@@ -787,6 +787,15 @@ class DamageCalculatorWrapper {
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
         }
         for (let skillId of defUnit.enumerateSkills()) {
+            let funcMap = applyPrecombatDamageReductionRatioFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, defUnit, atkUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.DragonsFist:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -1466,13 +1475,6 @@ class DamageCalculatorWrapper {
             atkUnit.spdSpur += 4;
             if (atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0) {
                 atkUnit.atkSpur += 6;
-            }
-        };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.GeneiFeather] = (atkUnit) => {
-            if (self.__isThereAnyAllyUnit(atkUnit, x => x.isActionDone)) {
-                atkUnit.atkSpur += 6;
-                atkUnit.spdSpur += 6;
-                atkUnit.battleContext.isDesperationActivatable = true;
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.EishinNoAnki] = (atkUnit) => {
@@ -2345,6 +2347,15 @@ class DamageCalculatorWrapper {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
             if (skillFunc) {
                 skillFunc(targetUnit, enemyUnit, calcPotentialDamage);
+            }
+            let funcMap = applySkillEffectForUnitFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit, calcPotentialDamage);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
             }
         }
     }
@@ -9478,14 +9489,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.LarceisEdge] = (targetUnit, enemyUnit) => {
-            if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
-                || enemyUnit.battleContext.isRestHpFull
-            ) {
-                targetUnit.addAllSpur(4);
-                targetUnit.battleContext.invalidateAllBuffs();
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Mulagir] = (targetUnit, enemyUnit) => {
             if (!targetUnit.isWeaponRefined) {
                 if (isWeaponTypeTome(enemyUnit.weaponType)
@@ -9795,7 +9798,6 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[PassiveB.MikiriTsuigeki3] = func;
             this._applySkillEffectForUnitFuncDict[PassiveB.SphiasSoul] = func;
-            this._applySkillEffectForUnitFuncDict[Weapon.HakutoshinNoNinjin] = func;
         }
         {
             let func = (targetUnit) => {

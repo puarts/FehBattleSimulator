@@ -1526,6 +1526,7 @@ class Unit extends BattleMapElement {
 
         // 迅雷やノヴァの聖戦士が発動したかを記録しておく
         this.isOneTimeActionActivatedForWeapon = false;
+        this.isOneTimeActionActivatedForWeapon2 = false;
         this.isOneTimeActionActivatedForSpecial = false;
         this.isOneTimeActionActivatedForSupport = false;
         this.isOneTimeActionActivatedForPassiveB = false;
@@ -2109,6 +2110,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForPassiveB)
             + ValueDelimiter + this.moveCountAtBeginningOfTurn
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForWeapon)
+            + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForWeapon2)
             + ValueDelimiter + boolToInt(this.isEnemyActionTriggered)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForShieldEffect)
             + ValueDelimiter + this.perTurnStatusesToString()
@@ -2221,6 +2223,7 @@ class Unit extends BattleMapElement {
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForPassiveB = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.moveCountAtBeginningOfTurn = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForWeapon = intToBool(Number(splited[i])); ++i; }
+        if (splited[i] != undefined) { this.isOneTimeActionActivatedForWeapon2 = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isEnemyActionTriggered = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.isOneTimeActionActivatedForShieldEffect = intToBool(Number(splited[i])); ++i; }
         if (splited[i] != undefined) { this.setPerTurnStatusesFromString(splited[i]); ++i; }
@@ -3145,6 +3148,7 @@ class Unit extends BattleMapElement {
 
     resetOneTimeActionActivationStates() {
         this.isOneTimeActionActivatedForWeapon = false;
+        this.isOneTimeActionActivatedForWeapon2 = false;
         this.isOneTimeActionActivatedForSpecial = false;
         this.isOneTimeActionActivatedForSupport = false;
         this.isOneTimeActionActivatedForPassiveB = false;
@@ -3164,18 +3168,29 @@ class Unit extends BattleMapElement {
             this.isOneTimeActionActivatedForDeepStar = true;
         }
 
-        switch (this.passiveB) {
-            case PassiveB.GuardBearing4:
-                // 各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時
-                if (!this.battleContext.initiatesCombat) {
-                    this.isOneTimeActionActivatedForPassiveB = true;
+        for (let skillId of this.enumerateSkills()) {
+            let funcMap = setOnetimeActionActivatedFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                 }
-                break;
-            case PassiveB.TrueDragonWall:
-            case PassiveB.ArmoredWall:
-            case PassiveB.GuardBearing3:
-                this.isOneTimeActionActivatedForPassiveB = true;
-                break;
+            }
+            switch (skillId) {
+                case PassiveB.GuardBearing4:
+                    // 各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時
+                    if (!this.battleContext.initiatesCombat) {
+                        this.isOneTimeActionActivatedForPassiveB = true;
+                    }
+                    break;
+                case PassiveB.TrueDragonWall:
+                case PassiveB.ArmoredWall:
+                case PassiveB.GuardBearing3:
+                    this.isOneTimeActionActivatedForPassiveB = true;
+                    break;
+            }
         }
     }
 
@@ -5642,6 +5657,15 @@ class Unit extends BattleMapElement {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         for (let skillId of this.enumerateSkills()) {
+            let funcMap = calcMoveCountForCantoFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    moveCountForCanto = Math.max(moveCountForCanto, func.call(this, moveCountForCanto));
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 // 再移動(1)
