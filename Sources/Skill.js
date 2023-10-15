@@ -2771,6 +2771,7 @@ const PassiveC = {
     DistantGuard2: 1143, // 遠距離警戒2
     DistantGuard3: 685, // 遠距離警戒3
     JointDistGuard: 1823, // 遠距離相互警戒
+    JointCloseGuard: 2618, // 近距離相互警戒
 
     SorakaranoSendo3: 735, // 空からの先導3
     Guidance4: 2391, // 空からの先導4
@@ -4182,11 +4183,13 @@ const evalSpdAddFuncMap = new Map();
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
 const applySkillForBeginningOfTurnFuncMap = new Map();
 const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
-const setOnetimeActionActivatedFuncMap = new Map()
+const setOnetimeActionActivatedFuncMap = new Map();
+const applySkillEffectFromAlliesFuncMap = new Map();
 
 // 各スキルの実装
 // {
 //     let skillId = Weapon.W;
+//     // ターン開始時スキル
 //     applySkillForBeginningOfTurnFuncMap.set(skillId,
 //         function (skillOwner) {
 //         }
@@ -4196,6 +4199,29 @@ const setOnetimeActionActivatedFuncMap = new Map()
 //         }
 //     );
 // }
+
+// 近距離相互警戒
+{
+    let skillId = PassiveC.JointCloseGuard;
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                if (enemyUnit.isMeleeWeaponType()) {
+                    targetUnit.addDefResSpurs(4);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                if (enemyUnit.isMeleeWeaponType()) {
+                    targetUnit.addDefResSpurs(4);
+                }
+            }
+        }
+    );
+}
 
 // 老練の槍
 {
