@@ -34,6 +34,10 @@ updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects 
 化身状態なら
 if (targetUnit.isTransformed) {}
 
+ターン開始時
+applySkillForBeginningOfTurnFuncMap.set(skillId,
+    function (skillOwner) {
+    })
 ターン開始時(通常)
 applySkillForBeginningOfTurn(skillId, skillOwner) {}
 ターン開始時(回復)
@@ -123,6 +127,18 @@ if (this.__isSolo(targetUnit) || calcPotentialDamage) {}
 周囲Nマス以内にいる、最も近い敵
 for (let unit of this.__findNearestEnemies(<unit>, <N>)) {}
 
+周囲からのスキル効果
+applySkillEffectFromAlliesFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+    }
+);
+
+暗闘の効果を受けない周囲からのスキル効果
+applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+    }
+);
+
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
@@ -163,6 +179,12 @@ __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
 __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
     // <バフ以外の効果>
 }
+
+周囲の敵からのバフ[牽制]
+updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+    }
+);
 
 周囲3マス以内の敵は、戦闘中、<ステータス>-N
 __updateUnitSpur() {
@@ -787,7 +809,12 @@ __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTar
 戦闘を行なっている時[戦闘を行っていない時]
 unit.isCombatDone
 
-「歌う」「踊る」使用時
+対象を行動可能な状態にする時のスキル[「歌う」「踊る」使用時]
+applyRefreshFuncMap.set(skillId,
+    function (skillOwnerUnit, targetUnit) {
+    }
+);
+もしくは
 __applyRefresh(skillOwnerUnit, targetUnit) {}
 
 このスキルは「歌う」「踊る｣として扱われる。「歌う」「踊る」を持つ対象には使用できない。対象を行動可能な状態にする。
@@ -837,7 +864,7 @@ calcMoveCountForCantoFuncMap.set(skillId, function () {
     // thisはUnit
     // 再移動N
     return N;
-})
+});
 もしくは
 __canActivateCanto(unit) {}
 unit.calcMoveCountForCanto() {} // ワープの場合は必要なし

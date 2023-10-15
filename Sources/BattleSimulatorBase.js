@@ -369,6 +369,18 @@ class BattleSimmulatorBase {
                 // 曲技飛行等で移動範囲が変わる
                 updateAllUi();
             },
+            passiveXChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) { return; }
+                let currentUnit = self.__getCurrentUnit();
+                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                g_app.updateAllUnitSpur();
+                g_appData.updateArenaScore(unit);
+
+                // 曲技飛行等で移動範囲が変わる
+                updateAllUi();
+            },
             captainChanged: function () {
                 if (g_app == null) { return; }
                 let unit = g_app.__getEditingTargetUnit();
@@ -795,6 +807,7 @@ class BattleSimmulatorBase {
             g_appData.passiveBInfos,
             g_appData.passiveCInfos,
             g_appData.passiveSInfos]);
+        unit.passiveX = this.__getMaxSpSkillId(unit.passiveX, unit.heroInfo.passiveXOptions, [g_appData.passiveXInfos]);
 
         // A、Cスキルは240から300にしてもスコアが変わらない場合があるのでチェック
         {
@@ -2128,6 +2141,10 @@ class BattleSimmulatorBase {
         if (skillIds[i] != null) {
             unit.passiveS = skillIds[i];
         }
+        ++i;
+        if (skillIds[i] != null) {
+            unit.passiveX = skillIds[i];
+        }
         return unit;
     }
 
@@ -2999,6 +3016,9 @@ class BattleSimmulatorBase {
         for (let info of g_appData.passiveSInfos) {
             yield info;
         }
+        for (let info of g_appData.passiveXInfos) {
+            yield info;
+        }
     }
 
     __findPassiveAInfoByName(name) {
@@ -3028,6 +3048,9 @@ class BattleSimmulatorBase {
     }
     __findPassiveSInfo(id) {
         return g_appData.__findPassiveSInfo(id);
+    }
+    __findPassiveXInfo(id) {
+        return g_appData.__findPassiveXInfo(id);
     }
 
     __findSkillInfoByName(skillInfos, name) {
@@ -3061,11 +3084,11 @@ class BattleSimmulatorBase {
     }
 
     registerSkillOptions(
-        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills = []
+        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs, captainSkills = []
     ) {
         let self = this;
         using_(new ScopedStopwatch(time => self.writeDebugLogLine("スキル情報の登録: " + time + " ms")), () => {
-            this.data.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills);
+            this.data.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs, captainSkills);
 
             self.passiveSkillCharWhiteList = "";
             self.weaponSkillCharWhiteList = "";
@@ -3124,6 +3147,9 @@ class BattleSimmulatorBase {
             for (let info of g_appData.skillDatabase.passiveSInfos) {
                 self.passiveSkillCharWhiteList += info.name;
             }
+            for (let info of g_appData.skillDatabase.passiveXInfos) {
+                self.passiveSkillCharWhiteList += info.name;
+            }
 
             distinctStr(self.supportSkillCharWhiteList);
             distinctStr(self.specialSkillCharWhiteList);
@@ -3140,6 +3166,7 @@ class BattleSimmulatorBase {
             self.__markUnsupportedSkills(self.vm.passiveSOptions,
                 [g_appData.passiveSInfos, g_appData.passiveAInfos, g_appData.passiveBInfos, g_appData.passiveCInfos, g_appData.passiveSInfos],
                 () => ++self.vm.passiveSCount, () => ++self.vm.passiveSImplCount);
+            self.__markUnsupportedSkills(self.vm.passiveXOptions, [g_appData.passiveXInfos], () => ++self.vm.passiveXCount, () => ++self.vm.passiveXImplCount);
             self.__markUnsupportedSkills(self.vm.captainOptions, [g_appData.captainInfos]);
 
             // アルファベットソート(今は全スキルのオプションをメインで使ってないので速度優先でソートは無効化)
@@ -3150,6 +3177,7 @@ class BattleSimmulatorBase {
             // self.__sortSkillOptionsAlphabetically(self.vm.passiveBOptions);
             // self.__sortSkillOptionsAlphabetically(self.vm.passiveCOptions);
             // self.__sortSkillOptionsAlphabetically(self.vm.passiveSOptions);
+            // self.__sortSkillOptionsAlphabetically(self.vm.passiveXOptions);
         });
     }
     outputSkillsNotImplemented() {
@@ -3195,6 +3223,11 @@ class BattleSimmulatorBase {
             }
         }
         for (let option of self.vm.passiveSOptions) {
+            if (option.text.startsWith("×")) {
+                yield option;
+            }
+        }
+        for (let option of self.vm.passiveXOptions) {
             if (option.text.startsWith("×")) {
                 yield option;
             }
@@ -8255,6 +8288,15 @@ class BattleSimmulatorBase {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
+            let funcMap = applyRefreshFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    let result = func.call(this, skillOwnerUnit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.NightmaresEgg:
                     targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);

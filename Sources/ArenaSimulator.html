@@ -2005,16 +2005,36 @@
                             </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveSOptions" v-if="g_app.vm.enableAllSkillOptions"
-                                    v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
+                                         v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
                                 </select2>
                                 <select2 :options="value.heroInfo.passiveSOptions" v-bind:name="value.id+'-passiveS'" v-else-if="value.heroInfo!=null"
-                                    v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
+                                         v-model="value.passiveS" @input="g_app.vm.passiveSChanged" class="skill">
                                 </select2>
                                 <a v-bind:href="value.passiveSInfo.detailPageUrl" target="_blank" v-if="value.passiveSInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
 
                                 <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
                                     ({{value.passiveS}}) {{value.heroInfo!=null?value.heroInfo.passiveSOptions.length:0}}, {{g_appData.passiveSImplCount}}/{{g_appData.passiveSCount}}({{Math.floor(100*g_appData.passiveSImplCount/g_appData.passiveSCount, 2)}}%)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='skillHeader'>
+                                <img v-if="value.passiveXInfo != null" v-bind:src="value.passiveXInfo.iconPath" width="25" height="25" />
+                                <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
+                                <img v-bind:src="g_imageRootPath + 'X.png'" class="skillTypeText" width="12" height="12" />
+                            </td>
+                            <td>
+                                <select2 :options="g_app.vm.passiveXOptions" v-if="g_app.vm.enableAllSkillOptions"
+                                    v-model="value.passiveX" @input="g_app.vm.passiveXChanged" class="skill">
+                                </select2>
+                                <select2 :options="value.heroInfo.passiveXOptions" v-bind:name="value.id+'-passiveX'" v-else-if="value.heroInfo!=null"
+                                    v-model="value.passiveX" @input="g_app.vm.passiveXChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.passiveXInfo.detailPageUrl" target="_blank" v-if="value.passiveXInfo != null" >
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+
+                                <span class="debugInfo"  v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.passiveX}}) {{value.heroInfo!=null?value.heroInfo.passiveXOptions.length:0}}, {{g_appData.passiveXImplCount}}/{{g_appData.passiveXCount}}({{Math.floor(100*g_appData.passiveXImplCount/g_appData.passiveXCount, 2)}}%)</span>
                             </td>
                         </tr>
                     </table>
@@ -2483,7 +2503,7 @@
                     console.log("initializing application");
                 }
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-                    passiveSInfos);
+                    passiveSInfos, passiveXInfos);
                 g_app.registerHeroOptions(heroInfos, false);
 
                 if (isLocal) {

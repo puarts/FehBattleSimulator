@@ -1087,7 +1087,9 @@ class DamageCalculator {
                 // 通常攻撃
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, normalDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ${currentDamage}`);
-                this.writeSimpleLog(`${atkUnit.getNameWithGroup()}→${defUnit.getNameWithGroup()}<br/>通常攻撃ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
+                let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
+                let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
+                this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/>通常攻撃ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
             }
 

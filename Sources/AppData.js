@@ -213,6 +213,7 @@ class AppData extends UnitManager {
         this.hallOfFormsSkillSimPassiveB = PassiveB.None;
         this.hallOfFormsSkillSimPassiveC = PassiveC.None;
         this.hallOfFormsSkillSimPassiveS = PassiveS.None;
+        this.hallOfFormsSkillSimPassiveX = PassiveX.None;
 
         // ロキの盤上遊戯の設定
         this.pawnsOfLokiTotalScore = 0;
@@ -411,6 +412,9 @@ class AppData extends UnitManager {
         this.passiveSOptions = [
             { id: -1, text: "なし" }
         ];
+        this.passiveXOptions = [
+            { id: -1, text: "なし" }
+        ];
         this.captainOptions = [
             { id: -1, text: "なし" }
         ];
@@ -461,6 +465,8 @@ class AppData extends UnitManager {
         this.passiveCImplCount = 0;
         this.passiveSCount = 0;
         this.passiveSImplCount = 0;
+        this.passiveXCount = 0;
+        this.passiveXImplCount = 0;
         this.commandQueuePerAction = new CommandQueue(100);
         this.commandQueue = new CommandQueue(100);
 
@@ -601,7 +607,8 @@ class AppData extends UnitManager {
             + this.passiveACount
             + this.passiveBCount
             + this.passiveCCount
-            + this.passiveSCount;
+            + this.passiveSCount
+            + this.passiveXCount;
     }
     get totalImplementedSkillCount() {
         return this.weaponImplCount
@@ -610,7 +617,8 @@ class AppData extends UnitManager {
             + this.passiveAImplCount
             + this.passiveBImplCount
             + this.passiveCImplCount
-            + this.passiveSImplCount;
+            + this.passiveSImplCount
+            + this.passiveXImplCount;
     }
     /**
      * @param  {HeroInfo[]} heroInfos
@@ -645,13 +653,14 @@ class AppData extends UnitManager {
         heroInfo.registerPassiveBOptions(this.passiveBInfos);
         heroInfo.registerPassiveCOptions(this.passiveCInfos);
         heroInfo.registerPassiveSOptions(this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos);
+        heroInfo.registerPassiveXOptions(this.passiveXInfos);
     }
 
     registerSkillOptions(
-        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills = []
+        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs, captainSkills = []
     ) {
         this.skillDatabase.registerSkillOptions(
-            weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, captainSkills);
+            weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs, captainSkills);
 
         __registerSkillOptions(this.weaponOptions, weapons);
         __registerSkillOptions(this.supportOptions, supports);
@@ -660,6 +669,7 @@ class AppData extends UnitManager {
         __registerSkillOptions(this.passiveBOptions, passiveBs);
         __registerSkillOptions(this.passiveCOptions, passiveCs);
         __registerSkillOptions(this.passiveSOptions, passiveSs);
+        __registerSkillOptions(this.passiveXOptions, passiveXs);
         __registerSkillOptions(this.captainOptions, captainSkills);
         __registerPassiveSOptions(this.passiveSOptions, passiveAs);
         __registerPassiveSOptions(this.passiveSOptions, passiveBs);
@@ -703,6 +713,9 @@ class AppData extends UnitManager {
     get passiveSInfos() {
         return this.skillDatabase.passiveSInfos;
     }
+    get passiveXInfos() {
+        return this.skillDatabase.passiveXInfos;
+    }
     get captainInfos() {
         return this.skillDatabase.captainInfos;
     }
@@ -729,6 +742,9 @@ class AppData extends UnitManager {
         return this.findSkillInfoByDict(id);
     }
     __findPassiveSInfo(id) {
+        return this.findSkillInfoByDict(id);
+    }
+    __findPassiveXInfo(id) {
         return this.findSkillInfoByDict(id);
     }
     __showStatusToAttackerInfo() {

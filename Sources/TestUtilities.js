@@ -27,10 +27,10 @@ function test_createDefaultUnit(groupId = UnitGroupType.Ally) {
 }
 
 class test_HeroDatabase extends HeroDatabase {
-    constructor(inputHeroInfos, weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
+    constructor(inputHeroInfos, weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs) {
         super(inputHeroInfos);
         this.skillDatabase = new SkillDatabase();
-        this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
+        this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs);
     }
     /**
      * @param  {String} heroName

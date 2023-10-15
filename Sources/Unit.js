@@ -1465,6 +1465,7 @@ class Unit extends BattleMapElement {
         this.passiveB = -1;
         this.passiveC = -1;
         this.passiveS = -1;
+        this.passiveX = -1;
         this.captain = -1;
         this.deffensiveTile = false; // 防御床
         this.setMoveCountFromMoveType();
@@ -1503,6 +1504,7 @@ class Unit extends BattleMapElement {
         this.passiveBInfo = null;
         this.passiveCInfo = null;
         this.passiveSInfo = null;
+        this.passiveXInfo = null;
         /** @type {SkillInfo} */
         this.captainInfo = null;
 
@@ -1578,6 +1580,7 @@ class Unit extends BattleMapElement {
         this.passiveBSp = 0;
         this.passiveCSp = 0;
         this.passiveSSp = 0;
+        this.passiveXSp = 0;
 
         // 攻撃可能なタイル
         this.movableTiles = [];
@@ -1597,6 +1600,7 @@ class Unit extends BattleMapElement {
         this.reservedPassiveB = NotReserved;
         this.reservedPassiveC = NotReserved;
         this.reservedPassiveS = NotReserved;
+        this.reservedPassiveX = NotReserved;
 
         this.chaseTargetTile = null;
 
@@ -1759,6 +1763,7 @@ class Unit extends BattleMapElement {
         this.reservedPassiveB = NotReserved;
         this.reservedPassiveC = NotReserved;
         this.reservedPassiveS = NotReserved;
+        this.reservedPassiveX = NotReserved;
     }
 
     reserveCurrentSkills() {
@@ -1769,6 +1774,7 @@ class Unit extends BattleMapElement {
         this.reservedPassiveB = this.passiveB;
         this.reservedPassiveC = this.passiveC;
         this.reservedPassiveS = this.passiveS;
+        this.reservedPassiveX = this.passiveX;
     }
 
     restoreReservedSkills() {
@@ -1779,6 +1785,7 @@ class Unit extends BattleMapElement {
         this.restoreReservedPassiveB();
         this.restoreReservedPassiveC();
         this.restoreReservedPassiveS();
+        this.restoreReservedPassiveX();
     }
 
     hasReservedWeapon() {
@@ -1853,6 +1860,17 @@ class Unit extends BattleMapElement {
         if (this.reservedPassiveS != NotReserved) {
             this.passiveS = this.reservedPassiveS;
             this.reservedPassiveS = NotReserved;
+            return true;
+        }
+        return false;
+    }
+    hasReservedPassiveX() {
+        return this.reservedPassiveX != NotReserved;
+    }
+    restoreReservedPassiveX() {
+        if (this.reservedPassiveX != NotReserved) {
+            this.passiveX = this.reservedPassiveX;
+            this.reservedPassiveX = NotReserved;
             return true;
         }
         return false;
@@ -1939,6 +1957,7 @@ class Unit extends BattleMapElement {
         this.passiveB = -1;
         this.passiveC = -1;
         this.passiveS = -1;
+        this.passiveX = -1;
         this.captain = -1;
         this.weaponInfo = null;
         this.supportInfo = null;
@@ -1947,6 +1966,7 @@ class Unit extends BattleMapElement {
         this.passiveBInfo = null;
         this.passiveCInfo = null;
         this.passiveSInfo = null;
+        this.passiveXInfo = null;
         this.captainInfo = null;
     }
 
@@ -2081,6 +2101,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.blessing6
             + ValueDelimiter + this.ascendedAsset
             + ValueDelimiter + this.captain
+            + ValueDelimiter + this.passiveX
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -2183,6 +2204,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.blessing6 = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.ascendedAsset = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.captain = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.passiveX = Number(splited[i]); ++i; }
         if (i < elemCount) { this.__setPairUpUnitFromCompressedUri(splited[i]); ++i; }
     }
 
@@ -2290,6 +2312,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.rarity
             + ValueDelimiter + this.initPosX
             + ValueDelimiter + this.initPosY
+            + ValueDelimiter + this.passiveX
             ;
     }
 
@@ -2341,6 +2364,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.rarity = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.initPosX = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.initPosY = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.passiveX = Number(splited[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -2548,6 +2572,7 @@ class Unit extends BattleMapElement {
         this.snapshot.passiveBInfo = this.passiveBInfo;
         this.snapshot.passiveCInfo = this.passiveCInfo;
         this.snapshot.passiveSInfo = this.passiveSInfo;
+        this.snapshot.passiveXInfo = this.passiveXInfo;
         this.snapshot.captainInfo = this.captainInfo;
         this.snapshot.fromString(this.toString());
         return this.snapshot;
@@ -3986,6 +4011,13 @@ class Unit extends BattleMapElement {
         }
         return this.passiveSInfo.name;
     }
+    /// 装備中の聖印名を取得します。
+    getPassiveXName() {
+        if (this.passiveXInfo == null) {
+            return "‐";
+        }
+        return this.passiveXInfo.name;
+    }
 
     getVisibleStatusTotal() {
         return this.getAtkInPrecombat()
@@ -4297,14 +4329,16 @@ class Unit extends BattleMapElement {
             || this.passiveA == skillId
             || this.passiveB == skillId
             || this.passiveC == skillId
-            || this.passiveS == skillId;
+            || this.passiveS == skillId
+            || this.passiveX == skillId;
     }
 
     hasPassiveSkill(skillId) {
         return this.passiveA == skillId
             || this.passiveB == skillId
             || this.passiveC == skillId
-            || this.passiveS == skillId;
+            || this.passiveS == skillId
+            || this.passiveX == skillId;
     }
 
     isPhysicalAttacker() {
@@ -4656,6 +4690,9 @@ class Unit extends BattleMapElement {
         if (this.passiveSInfo != null) {
             yield this.passiveSInfo;
         }
+        if (this.passiveXInfo != null) {
+            yield this.passiveXInfo;
+        }
         if (this.isCaptain && this.captainInfo != null) {
             yield this.captainInfo;
         }
@@ -4669,6 +4706,7 @@ class Unit extends BattleMapElement {
         if (this.passiveB != NoneValue) { yield this.passiveB; }
         if (this.passiveC != NoneValue) { yield this.passiveC; }
         if (this.passiveS != NoneValue) { yield this.passiveS; }
+        if (this.passiveX != NoneValue) { yield this.passiveX; }
         if (this.isCaptain && this.captain != NoneValue) { yield this.captain; }
     }
 
@@ -4677,6 +4715,7 @@ class Unit extends BattleMapElement {
         if (this.passiveB != NoneValue) { yield this.passiveB; }
         if (this.passiveC != NoneValue) { yield this.passiveC; }
         if (this.passiveS != NoneValue) { yield this.passiveS; }
+        if (this.passiveX != NoneValue) { yield this.passiveX; }
     }
 
     hasDagger7Effect() {
@@ -4815,6 +4854,7 @@ class Unit extends BattleMapElement {
         this.passiveBSp = 0;
         this.passiveCSp = 0;
         this.passiveSSp = 0;
+        this.passiveXSp = 0;
         this.totalSp = 0;
         this.arenaScore = this.__calcArenaScore(0, 0, 0, 0);
     }
@@ -4830,6 +4870,7 @@ class Unit extends BattleMapElement {
         this.passiveBSp = this.passiveBInfo != null ? this.passiveBInfo.sp : 0;
         this.passiveCSp = this.passiveCInfo != null ? this.passiveCInfo.sp : 0;
         this.passiveSSp = this.passiveSInfo != null ? this.passiveSInfo.sp : 0;
+        this.passiveXSp = this.passiveXInfo != null ? this.passiveXInfo.sp : 0;
         this.totalSp = this.getTotalSp();
         return this.totalSp;
     }
@@ -4854,6 +4895,7 @@ class Unit extends BattleMapElement {
         totalSp += this.passiveBInfo != null ? this.passiveBInfo.sp : 0;
         totalSp += this.passiveCInfo != null ? this.passiveCInfo.sp : 0;
         totalSp += this.passiveSInfo != null ? this.passiveSInfo.sp : 0;
+        totalSp += this.passiveXInfo != null ? this.passiveXInfo.sp : 0;
         return totalSp;
     }
 
@@ -4994,6 +5036,7 @@ class Unit extends BattleMapElement {
         this.passiveB = heroInfo.passiveB;
         this.passiveC = heroInfo.passiveC;
         // this.passiveS = PassiveS.None;
+        // this.passiveX = PassiveX.None;
     }
 
     hasMovementAssist() {
@@ -5033,6 +5076,7 @@ class Unit extends BattleMapElement {
         this.passiveB = PassiveB.None;
         this.passiveC = PassiveC.None;
         this.passiveS = PassiveS.None;
+        this.passiveX = PassiveX.None;
         this.merge = 0;
         this.dragonflower = 0;
     }
@@ -5966,6 +6010,8 @@ function isDebufferTier2(attackUnit, targetUnit) {
 function isAfflictor(attackUnit, lossesInCombat) {
     for (let skillId of attackUnit.enumerateSkills()) {
         switch (skillId) {
+            case Weapon.DuskDawnStaff:
+                return true;
             case Weapon.TigerSpirit:
                 if (attackUnit.battleContext.restHpPercentage >= 25) {
                     return true;

@@ -17,7 +17,8 @@ const SkillType = {
     PassiveB: 4,
     PassiveC: 5,
     PassiveS: 6,
-    Captain: 7,
+    PassiveX: 7,
+    Captain: 8,
 };
 
 const WeaponType = {
@@ -1757,6 +1758,15 @@ const Weapon = {
     // 2023年10月 武器錬成
     HyperionLance: 2602, // 傭兵竜騎士の槍
     WildcatDagger: 2603, // 山猫の暗器
+
+    // 新英雄召喚（響心ピアニー＆響心スカビオサ）
+    // https://www.youtube.com/watch?v=MWVcKLt8UZA&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=hB12vhKP-bQ&ab_channel=NintendoMobile
+    ArcCaliburnus: 2619, // 魔器カリブルヌス
+    WorldlyLance: 2617, // 老練の槍
+    FlowerOfTribute: 2613, // 犠牲の花
+    FlowerOfCaring: 2607, // 親愛の花
+    BlardeerPlus: 2622, // ブラーディア+
 };
 
 const Support = {
@@ -1782,11 +1792,13 @@ const Support = {
     GrayWaves2: 2017, // ユラリユルレリ・承
     GentleDream: 1061, // やさしいゆめ
     GentleDreamPlus: 2349, // やさしいゆめ・神
+    TenderDream: 2610, // やさしいひとのゆめ
     WhimsicalDream: 1362, // しろいゆめ
     WhimsicalDreamPlus: 2560, // しろいゆめ・神
     SweetDreams: 1489, // あまいゆめ
     CloyingDreams: 2585, // あまいみつのゆめ
     FrightfulDream: 1537, // こわいゆめ
+    HarrowingDream: 2614, // こわいかこのゆめ
     Play: 1135, // 奏でる
     CallToFlame: 2079, // オイデ、ヒノコタチ
     DragonsDance: 2210, // 尊き竜の血を継ぐ娘
@@ -2210,6 +2222,7 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
 
     // 専用A
+    BeyondWitchery: 2620, // 魔女を超える者
     RareTalent: 2549, // 類稀なる魔道の才
     RealmsUnited: 2545, // 白夜と暗夜と共に
     Mastermind: 2536, // 天才
@@ -2431,6 +2444,7 @@ const PassiveB = {
     GeyserDance1: 1243, // 大地静水の舞い1
     GeyserDance2: 645, // 大地静水の舞い2
     RockslideDance2: 643, // 疾風大地の舞い2
+    RockslideDance3: 2608, // 疾風大地の舞い3
 
     // 魅了
     AtkCantrip3: 1380, // 攻撃の魅了3
@@ -2665,6 +2679,7 @@ const PassiveB = {
     // 怒涛
     FlowFlight3: 2025, // 怒涛・飛竜行空3
     FlowRefresh3: 1763, // 怒涛・再起3
+    FlowRefresh4: 2615, // 怒涛・再起4
     FlowGuard3: 1912, // 怒涛・キャンセル3
     FlowForce3: 2088, // 怒涛・不屈3
     FlowFeather3: 2139, // 怒涛・天馬行空3
@@ -2739,6 +2754,7 @@ const PassiveC = {
     JointDriveDef: 1805, // 守備の相互大紋章
     // 十字紋章
     CrossSpurAtk: 1941, // 攻撃の十字紋章
+    CrossSpurSpd: 2611, // 速さの十字紋章
     CrossSpurRes: 1967, // 魔防の十字紋章
 
     GoadArmor: 686, // 重刃の紋章
@@ -2763,6 +2779,7 @@ const PassiveC = {
     DistantGuard2: 1143, // 遠距離警戒2
     DistantGuard3: 685, // 遠距離警戒3
     JointDistGuard: 1823, // 遠距離相互警戒
+    JointCloseGuard: 2618, // 近距離相互警戒
 
     SorakaranoSendo3: 735, // 空からの先導3
     Guidance4: 2391, // 空からの先導4
@@ -2869,6 +2886,7 @@ const PassiveC = {
     ResPloy3: 725, // 魔防の謀策3
 
     // 2種謀策
+    AtkResPloy3: 2621, // 攻撃魔防の謀策3
     DefResPloy3: 2586, // 守備魔防の謀策3
 
     HajimariNoKodo3: 957,
@@ -3070,6 +3088,11 @@ const PassiveS = {
     TozokuNoGuzoKusuri: 1400,
     TozokuNoGuzoOugi: 1401,
     TozokuNoGuzoOdori: 1402,
+};
+
+const PassiveX = {
+    DeathBlowEcho: 2616, // 響・鬼神の一撃
+    AtkOathEcho: 2612, // 響・攻撃の信義
 };
 
 // 隊長スキル
@@ -3415,10 +3438,12 @@ function isRefreshSupportSkill(skillId) {
         case Support.GrayWaves:
         case Support.GentleDream:
         case Support.GentleDreamPlus:
+        case Support.TenderDream:
         case Support.WhimsicalDream:
         case Support.SweetDreams:
         case Support.CloyingDreams:
         case Support.FrightfulDream:
+        case Support.HarrowingDream:
         case Support.Play:
             return true;
         default:
@@ -3974,6 +3999,7 @@ const PassiveAValueDict = __createValueDict(PassiveA);
 const PassiveBValueDict = __createValueDict(PassiveB);
 const PassiveCValueDict = __createValueDict(PassiveC);
 const PassiveSValueDict = __createValueDict(PassiveS);
+const PassiveXValueDict = __createValueDict(PassiveX);
 const CaptainValueDict = __createValueDict(Captain);
 
 const SaveSkills = new Set([
@@ -4135,6 +4161,7 @@ class SkillInfo {
             case SkillType.PassiveB: return this.id in PassiveBValueDict;
             case SkillType.PassiveC: return this.id in PassiveCValueDict;
             case SkillType.PassiveS: return this.id in PassiveSValueDict;
+            case SkillType.PassiveX: return this.id in PassiveXValueDict;
             case SkillType.Captain: return this.id in CaptainValueDict;
             default:
                 throw new Error("Invalid skill type");
@@ -4151,6 +4178,7 @@ class SkillInfo {
             case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName;
             case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName;
             case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName;
+            case SkillType.PassiveX: return iconRoot + "PassiveX/" + iconName;
             case SkillType.Captain: return iconRoot + "Captain/" + iconName;
             default:
                 return "";
@@ -4165,16 +4193,311 @@ const calcMoveCountForCantoFuncMap = new Map();
 const evalSpdAddFuncMap = new Map();
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
 const applySkillForBeginningOfTurnFuncMap = new Map();
-const setOnetimeActionActivatedFuncMap = new Map()
+const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
+const setOnetimeActionActivatedFuncMap = new Map();
+const applySkillEffectFromAlliesFuncMap = new Map();
+const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
+const updateUnitSpurFromEnemiesFuncMap = new Map();
+const applyRefreshFuncMap = new Map();
 
 // 各スキルの実装
 // {
-//     let skillId = Weapon.W;
+//     let skillId = Weapon.<W>;
+//     // ターン開始時スキル
+//     applySkillForBeginningOfTurnFuncMap.set(skillId,
+//         function (skillOwner) {
+//         }
+//     );
 //     applySkillEffectForUnitFuncMap.set(skillId,
 //         function (targetUnit, enemyUnit, calcPotentialDamage) {
 //         }
 //     );
 // }
+
+// ブラーディア+
+{
+    let skillId = Weapon.BlardeerPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+    );
+}
+
+// 響・攻撃の信義
+{
+    let skillId = PassiveX.AtkOathEcho;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                skillOwner.reserveToApplyBuffs(6, 0, 0, 0);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+            }
+        }
+    );
+}
+
+// 速さの十字紋章
+{
+    let skillId = PassiveC.CrossSpurSpd;
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.isInClossOf(allyUnit)) {
+                targetUnit.spdSpur += 99;
+            }
+        }
+    );
+}
+
+// 疾風大地の舞い3
+{
+    let skillId = PassiveB.RockslideDance3;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return unit.battleContext.isRefreshActivated;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            targetUnit.applyBuffs(0, 6, 6, 0);
+            targetUnit.addStatusEffect(StatusEffectType.Dodge);
+        }
+    );
+}
+
+// やさしいひとのゆめ
+{
+    let skillId = Support.TenderDream;
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit)) {
+                if (this.__isInCloss(unit, skillOwnerUnit) ||
+                    this.__isInCloss(unit, targetUnit)) {
+                    unit.applyBuffs(4, 4, 4, 4);
+                    unit.addStatusEffect(StatusEffectType.AirOrders);
+                    unit.addStatusEffect(StatusEffectType.Canto1);
+                }
+            }
+        }
+    );
+}
+
+// 親愛の花
+{
+    let skillId = Weapon.FlowerOfCaring;
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.isInClossOf(allyUnit)) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.healedHpAfterCombat += 5;
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 5;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (unit.isInClossOf(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                        break;
+                    }
+                }
+            }
+        }
+    );
+}
+
+// 響・鬼神の一撃
+{
+    let skillId = PassiveX.DeathBlowEcho;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.atkSpur += 4;
+            }
+        }
+    );
+}
+
+// 怒涛・再起4
+{
+    let skillId = PassiveB.FlowRefresh4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.addSpdDefSpurs(-4);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+    );
+}
+
+// こわいかこのゆめ
+{
+    let skillId = Support.HarrowingDream;
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
+                if (this.__isInCloss(unit, skillOwnerUnit) ||
+                    this.__isInCloss(unit, targetUnit)) {
+                    unit.applyDebuffs(-5, -5, -5, -5);
+                    unit.addStatusEffect(StatusEffectType.Guard);
+                    unit.addStatusEffect(StatusEffectType.Sabotage);
+                }
+            }
+        }
+    );
+}
+
+// 犠牲の花
+{
+    let skillId = Weapon.FlowerOfTribute;
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            if (enemyAllyUnit.isInClossWithOffset(targetUnit, 1)) {
+                targetUnit.addSpdDefSpurs(-5);
+                targetUnit.battleContext.damageAfterBeginningOfCombat += 5;
+                let logMessage = `${enemyAllyUnit.nameWithGroup}のスキル(${skillId})により${targetUnit.getNameWithGroup()}に<span style="color: #ff0000">${5}</span>ダメージ`;
+                this.__writeDamageCalcDebugLog(logMessage);
+                this._damageCalc.writeSimpleLog(logMessage);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
+
+// 近距離相互警戒
+{
+    let skillId = PassiveC.JointCloseGuard;
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                if (enemyUnit.isMeleeWeaponType()) {
+                    targetUnit.addDefResSpurs(4);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                if (enemyUnit.isMeleeWeaponType()) {
+                    targetUnit.addDefResSpurs(4);
+                }
+            }
+        }
+    );
+}
+
+// 老練の槍
+{
+    let skillId = Weapon.WorldlyLance;
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.reserveToApplyBuffs(0, 0, 6, 6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat)
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addAtkDefSpurs(-6);
+                let def = targetUnit.getDefInPrecombat();
+                let amount = Math.trunc(def * 0.2);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+    );
+}
+
+// 攻撃魔防の謀策3
+{
+    let skillId = PassiveC.AtkResPloy3;
+    let func = function (skillOwner) {
+        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+            if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
+                unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
+                unit.reserveToApplyDebuffs(-7, 0, 0, -7);
+                unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
+                unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+            }
+        }
+    };
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        func
+    );
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+        func
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+        }
+    );
+}
+
+// 魔女を超える者
+{
+    let skillId = PassiveA.BeyondWitchery;
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        let amount = this.globalBattleContext.currentTurn === 1 ? 2 : 1;
+            skillOwner.reserveToReduceSpecialCount(amount);
+            skillOwner.reserveTakeDamage(amount);
+        })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+}
+
+// 魔器カリブルヌス
+{
+    let skillId = Weapon.ArcCaliburnus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidateBuffs(true, false, false, true);
+            }
+        }
+    );
+}
 
 // 農具+
 {
