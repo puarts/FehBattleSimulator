@@ -1763,6 +1763,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=MWVcKLt8UZA&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=hB12vhKP-bQ&ab_channel=NintendoMobile
     ArcCaliburnus: 2619, // 魔器カリブルヌス
+    WorldlyLance: 2617, // 老練の槍
 };
 
 const Support = {
@@ -4195,6 +4196,33 @@ const setOnetimeActionActivatedFuncMap = new Map()
 //         }
 //     );
 // }
+
+// 老練の槍
+{
+    let skillId = Weapon.WorldlyLance;
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.reserveToApplyBuffs(0, 0, 6, 6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat)
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addAtkDefSpurs(-6);
+                let def = targetUnit.getDefInPrecombat();
+                let amount = Math.trunc(def * 0.2);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+    );
+}
 
 // 攻撃魔防の謀策3
 {
