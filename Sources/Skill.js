@@ -1766,6 +1766,7 @@ const Weapon = {
     WorldlyLance: 2617, // 老練の槍
     FlowerOfTribute: 2613, // 犠牲の花
     FlowerOfCaring: 2607, // 親愛の花
+    BlardeerPlus: 2622, // ブラーディア+
 };
 
 const Support = {
@@ -4212,6 +4213,21 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// ブラーディア+
+{
+    let skillId = Weapon.BlardeerPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+    );
+}
 
 // 響・攻撃の信義
 {
