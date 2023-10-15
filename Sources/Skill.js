@@ -3086,7 +3086,7 @@ const PassiveS = {
 };
 
 const PassiveX = {
-
+    DeathBlowEcho: 2616, // 響・鬼神の一撃
 };
 
 // 隊長スキル
@@ -4206,6 +4206,18 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 響・鬼神の一撃
+{
+    let skillId = PassiveX.DeathBlowEcho;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.atkSpur += 4;
+            }
+        }
+    );
+}
 
 // 怒涛・再起4
 {
