@@ -2753,6 +2753,7 @@ const PassiveC = {
     JointDriveDef: 1805, // 守備の相互大紋章
     // 十字紋章
     CrossSpurAtk: 1941, // 攻撃の十字紋章
+    CrossSpurSpd: 2611, // 速さの十字紋章
     CrossSpurRes: 1967, // 魔防の十字紋章
 
     GoadArmor: 686, // 重刃の紋章
@@ -4211,6 +4212,18 @@ const applyRefreshFuncMap = new Map();
 //     );
 // }
 
+// 速さの十字紋章
+{
+    let skillId = PassiveC.CrossSpurSpd;
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.isInClossOf(allyUnit)) {
+                targetUnit.spdSpur += 99;
+            }
+        }
+    );
+}
+
 // 疾風大地の舞い3
 {
     let skillId = PassiveB.RockslideDance3;
@@ -4224,10 +4237,6 @@ const applyRefreshFuncMap = new Map();
         function (skillOwnerUnit, targetUnit) {
             targetUnit.applyBuffs(0, 6, 6, 0);
             targetUnit.addStatusEffect(StatusEffectType.Dodge);
-        }
-    );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
         }
     );
 }
