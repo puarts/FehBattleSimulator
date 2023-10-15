@@ -3091,6 +3091,7 @@ const PassiveS = {
 
 const PassiveX = {
     DeathBlowEcho: 2616, // 響・鬼神の一撃
+    AtkOathEcho: 2612, // 響・攻撃の信義
 };
 
 // 隊長スキル
@@ -4200,7 +4201,7 @@ const applyRefreshFuncMap = new Map();
 
 // 各スキルの実装
 // {
-//     let skillId = Weapon.W;
+//     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
 //     applySkillForBeginningOfTurnFuncMap.set(skillId,
 //         function (skillOwner) {
@@ -4211,6 +4212,20 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 響・攻撃の信義
+{
+    let skillId = PassiveX.AtkOathEcho;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                skillOwner.reserveToApplyBuffs(6, 0, 0, 0);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+            }
+        }
+    );
+}
 
 // 速さの十字紋章
 {
