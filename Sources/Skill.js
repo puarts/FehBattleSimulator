@@ -1795,6 +1795,7 @@ const Support = {
     SweetDreams: 1489, // あまいゆめ
     CloyingDreams: 2585, // あまいみつのゆめ
     FrightfulDream: 1537, // こわいゆめ
+    HarrowingDream: 2614, // こわいかこのゆめ
     Play: 1135, // 奏でる
     CallToFlame: 2079, // オイデ、ヒノコタチ
     DragonsDance: 2210, // 尊き竜の血を継ぐ娘
@@ -3434,6 +3435,7 @@ function isRefreshSupportSkill(skillId) {
         case Support.SweetDreams:
         case Support.CloyingDreams:
         case Support.FrightfulDream:
+        case Support.HarrowingDream:
         case Support.Play:
             return true;
         default:
@@ -4188,6 +4190,7 @@ const setOnetimeActionActivatedFuncMap = new Map();
 const applySkillEffectFromAlliesFuncMap = new Map();
 const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
 const updateUnitSpurFromEnemiesFuncMap = new Map();
+const applyRefreshFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4202,6 +4205,23 @@ const updateUnitSpurFromEnemiesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// こわいかこのゆめ
+{
+    let skillId = Support.HarrowingDream;
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
+                if (this.__isInCloss(unit, skillOwnerUnit) ||
+                    this.__isInCloss(unit, targetUnit)) {
+                    unit.applyDebuffs(-5, -5, -5, -5);
+                    unit.addStatusEffect(StatusEffectType.Guard);
+                    unit.addStatusEffect(StatusEffectType.Sabotage);
+                }
+            }
+        }
+    );
+}
 
 // 犠牲の花
 {

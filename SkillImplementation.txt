@@ -809,7 +809,12 @@ __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTar
 戦闘を行なっている時[戦闘を行っていない時]
 unit.isCombatDone
 
-「歌う」「踊る」使用時
+対象を行動可能な状態にする時のスキル[「歌う」「踊る」使用時]
+applyRefreshFuncMap.set(skillId,
+    function (skillOwnerUnit, targetUnit) {
+    }
+);
+もしくは
 __applyRefresh(skillOwnerUnit, targetUnit) {}
 
 このスキルは「歌う」「踊る｣として扱われる。「歌う」「踊る」を持つ対象には使用できない。対象を行動可能な状態にする。

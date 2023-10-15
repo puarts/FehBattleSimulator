@@ -8288,6 +8288,15 @@ class BattleSimmulatorBase {
         if (targetUnit == null) { return false; }
         targetUnit.isActionDone = false;
         for (let skillId of skillOwnerUnit.enumerateSkills()) {
+            let funcMap = applyRefreshFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    let result = func.call(this, skillOwnerUnit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.NightmaresEgg:
                     targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
