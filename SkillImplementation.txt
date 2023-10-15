@@ -133,6 +133,12 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
     }
 );
 
+暗闘の効果を受けない周囲からのスキル効果
+applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+    }
+);
+
 戦闘中バフ(N)
 targetUnit.addAllSpur(N)
 targetUnit.atkSpur += N
@@ -173,6 +179,12 @@ __addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
 __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
     // <バフ以外の効果>
 }
+
+周囲の敵からのバフ[牽制]
+updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+    }
+);
 
 周囲3マス以内の敵は、戦闘中、<ステータス>-N
 __updateUnitSpur() {

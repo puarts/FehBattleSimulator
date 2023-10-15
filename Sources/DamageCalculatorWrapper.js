@@ -10785,6 +10785,15 @@ class DamageCalculatorWrapper {
         // マップ全域
         for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
             for (let skillId of allyUnit.enumerateSkills()) {
+                let funcMap = applySkillEffectFromAlliesExcludedFromFeudFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
                 switch (skillId) {
                     case Weapon.ChargingHorn: // 味方に7回復効果
                         if (allyUnit.isWeaponSpecialRefined && allyUnit.isInClossWithOffset(targetUnit, 1)) {
@@ -17149,6 +17158,18 @@ class DamageCalculatorWrapper {
             // 特定の色か確認
             if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
                 continue;
+            }
+
+            for (let skillId of unit.enumerateSkills()) {
+                let funcMap = updateUnitSpurFromEnemiesFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, targetUnit, enemyUnit, unit, calcPotentialDamage);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
             }
             // 十字方向
             if (this.__isInCloss(unit, targetUnit)) {

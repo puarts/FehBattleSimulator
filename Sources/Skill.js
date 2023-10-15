@@ -1764,6 +1764,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=hB12vhKP-bQ&ab_channel=NintendoMobile
     ArcCaliburnus: 2619, // 魔器カリブルヌス
     WorldlyLance: 2617, // 老練の槍
+    FlowerOfTribute: 2613, // 犠牲の花
 };
 
 const Support = {
@@ -4185,6 +4186,8 @@ const applySkillForBeginningOfTurnFuncMap = new Map();
 const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
 const setOnetimeActionActivatedFuncMap = new Map();
 const applySkillEffectFromAlliesFuncMap = new Map();
+const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
+const updateUnitSpurFromEnemiesFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4199,6 +4202,34 @@ const applySkillEffectFromAlliesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 犠牲の花
+{
+    let skillId = Weapon.FlowerOfTribute;
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            if (enemyAllyUnit.isInClossWithOffset(targetUnit, 1)) {
+                targetUnit.addSpdDefSpurs(-5);
+                targetUnit.battleContext.damageAfterBeginningOfCombat += 5;
+                let logMessage = `${enemyAllyUnit.nameWithGroup}のスキル(${skillId})により${targetUnit.getNameWithGroup()}に<span style="color: #ff0000">${5}</span>ダメージ`;
+                this.__writeDamageCalcDebugLog(logMessage);
+                this._damageCalc.writeSimpleLog(logMessage);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
 
 // 近距離相互警戒
 {
