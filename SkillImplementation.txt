@@ -34,6 +34,10 @@ updateStatusBySkillsAndMerges(updatesPureGrowthRate = true, syncBlessingEffects 
 化身状態なら
 if (targetUnit.isTransformed) {}
 
+ターン開始時
+applySkillForBeginningOfTurnFuncMap.set(skillId,
+    function (skillOwner) {
+    })
 ターン開始時(通常)
 applySkillForBeginningOfTurn(skillId, skillOwner) {}
 ターン開始時(回復)

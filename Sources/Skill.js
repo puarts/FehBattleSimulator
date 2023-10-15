@@ -2216,6 +2216,7 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
 
     // 専用A
+    BeyondWitchery: 2620, // 魔女を超える者
     RareTalent: 2549, // 類稀なる魔道の才
     RealmsUnited: 2545, // 白夜と暗夜と共に
     Mastermind: 2536, // 天才
@@ -4183,11 +4184,34 @@ const setOnetimeActionActivatedFuncMap = new Map()
 // 各スキルの実装
 // {
 //     let skillId = Weapon.W;
+//     applySkillForBeginningOfTurnFuncMap.set(skillId,
+//         function (skillOwner) {
+//         }
 //     applySkillEffectForUnitFuncMap.set(skillId,
 //         function (targetUnit, enemyUnit, calcPotentialDamage) {
 //         }
 //     );
 // }
+
+// 魔女を超える者
+{
+    let skillId = PassiveA.BeyondWitchery;
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        let amount = this.globalBattleContext.currentTurn === 1 ? 2 : 1;
+            skillOwner.reserveToReduceSpecialCount(amount);
+            skillOwner.reserveTakeDamage(amount);
+        })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+}
 
 // 魔器カリブルヌス
 {
