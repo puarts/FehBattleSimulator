@@ -1791,6 +1791,7 @@ const Support = {
     GrayWaves2: 2017, // ユラリユルレリ・承
     GentleDream: 1061, // やさしいゆめ
     GentleDreamPlus: 2349, // やさしいゆめ・神
+    TenderDream: 2610, // やさしいひとのゆめ
     WhimsicalDream: 1362, // しろいゆめ
     WhimsicalDreamPlus: 2560, // しろいゆめ・神
     SweetDreams: 1489, // あまいゆめ
@@ -3433,6 +3434,7 @@ function isRefreshSupportSkill(skillId) {
         case Support.GrayWaves:
         case Support.GentleDream:
         case Support.GentleDreamPlus:
+        case Support.TenderDream:
         case Support.WhimsicalDream:
         case Support.SweetDreams:
         case Support.CloyingDreams:
@@ -4207,6 +4209,23 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// やさしいひとのゆめ
+{
+    let skillId = Support.TenderDream;
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit)) {
+                if (this.__isInCloss(unit, skillOwnerUnit) ||
+                    this.__isInCloss(unit, targetUnit)) {
+                    unit.applyBuffs(4, 4, 4, 4);
+                    unit.addStatusEffect(StatusEffectType.AirOrders);
+                    unit.addStatusEffect(StatusEffectType.Canto1);
+                }
+            }
+        }
+    );
+}
 
 // 親愛の花
 {
