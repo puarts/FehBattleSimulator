@@ -4556,7 +4556,12 @@ class DamageCalculatorWrapper {
                     let yDiff = Math.abs(targetUnit.posY - unit.posY);
                     return xDiff <= 1 || yDiff <= 1;
                 }
-                let count = self.__countEnemiesWithinSpecifiedSpaces(targetUnit, 99, func);
+                let count = 0;
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                    if (unit.isInClossWithOffset(targetUnit, 1)) {
+                        count++;
+                    }
+                }
                 let amount = Math.min(count * 3, 9);
                 enemyUnit.addSpurs(-amount, -amount, -amount, 0);
                 if (count >= 2) {
