@@ -2876,6 +2876,7 @@ const PassiveC = {
     ResPloy3: 725, // 魔防の謀策3
 
     // 2種謀策
+    AtkResPloy3: 2621, // 攻撃魔防の謀策3
     DefResPloy3: 2586, // 守備魔防の謀策3
 
     HajimariNoKodo3: 957,
@@ -4179,6 +4180,7 @@ const calcMoveCountForCantoFuncMap = new Map();
 const evalSpdAddFuncMap = new Map();
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
 const applySkillForBeginningOfTurnFuncMap = new Map();
+const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
 const setOnetimeActionActivatedFuncMap = new Map()
 
 // 各スキルの実装
@@ -4187,11 +4189,37 @@ const setOnetimeActionActivatedFuncMap = new Map()
 //     applySkillForBeginningOfTurnFuncMap.set(skillId,
 //         function (skillOwner) {
 //         }
+//     );
 //     applySkillEffectForUnitFuncMap.set(skillId,
 //         function (targetUnit, enemyUnit, calcPotentialDamage) {
 //         }
 //     );
 // }
+
+// 攻撃魔防の謀策3
+{
+    let skillId = PassiveC.AtkResPloy3;
+    let func = function (skillOwner) {
+        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+            if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
+                unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
+                unit.reserveToApplyDebuffs(-7, 0, 0, -7);
+                unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
+                unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+            }
+        }
+    };
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        func
+    );
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+        func
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+        }
+    );
+}
 
 // 魔女を超える者
 {

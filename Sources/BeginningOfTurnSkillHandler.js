@@ -2904,6 +2904,15 @@ class BeginningOfTurnSkillHandler {
     applyEnemySkillForBeginningOfTurn(skillId, skillOwner) {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
+        let funcMap = applyEnemySkillForBeginningOfTurnFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                func.call(this, skillOwner);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (skillId) {
             case Weapon.InspiritedSpear:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
