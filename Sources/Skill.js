@@ -1758,6 +1758,11 @@ const Weapon = {
     // 2023年10月 武器錬成
     HyperionLance: 2602, // 傭兵竜騎士の槍
     WildcatDagger: 2603, // 山猫の暗器
+
+    // 新英雄召喚（響心ピアニー＆響心スカビオサ）
+    // https://www.youtube.com/watch?v=MWVcKLt8UZA&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=hB12vhKP-bQ&ab_channel=NintendoMobile
+    ArcCaliburnus: 2619, // 魔器カリブルヌス
 };
 
 const Support = {
@@ -4183,6 +4188,21 @@ const setOnetimeActionActivatedFuncMap = new Map()
 //         }
 //     );
 // }
+
+// 魔器カリブルヌス
+{
+    let skillId = Weapon.ArcCaliburnus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidateBuffs(true, false, false, true);
+            }
+        }
+    );
+}
 
 // 農具+
 {
