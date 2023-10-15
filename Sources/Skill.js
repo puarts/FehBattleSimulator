@@ -1765,6 +1765,7 @@ const Weapon = {
     ArcCaliburnus: 2619, // 魔器カリブルヌス
     WorldlyLance: 2617, // 老練の槍
     FlowerOfTribute: 2613, // 犠牲の花
+    FlowerOfCaring: 2607, // 親愛の花
 };
 
 const Support = {
@@ -4206,6 +4207,34 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 親愛の花
+{
+    let skillId = Weapon.FlowerOfCaring;
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.isInClossOf(allyUnit)) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.healedHpAfterCombat += 5;
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 5;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (unit.isInClossOf(targetUnit)) {
+                        targetUnit.addAllSpur(4);
+                        break;
+                    }
+                }
+            }
+        }
+    );
+}
 
 // 響・鬼神の一撃
 {
