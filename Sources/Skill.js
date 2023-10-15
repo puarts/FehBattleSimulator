@@ -2675,6 +2675,7 @@ const PassiveB = {
     // 怒涛
     FlowFlight3: 2025, // 怒涛・飛竜行空3
     FlowRefresh3: 1763, // 怒涛・再起3
+    FlowRefresh4: 2615, // 怒涛・再起4
     FlowGuard3: 1912, // 怒涛・キャンセル3
     FlowForce3: 2088, // 怒涛・不屈3
     FlowFeather3: 2139, // 怒涛・天馬行空3
@@ -4205,6 +4206,21 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 怒涛・再起4
+{
+    let skillId = PassiveB.FlowRefresh4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.addSpdDefSpurs(-4);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+    );
+}
 
 // こわいかこのゆめ
 {
