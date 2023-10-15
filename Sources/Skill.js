@@ -2443,6 +2443,7 @@ const PassiveB = {
     GeyserDance1: 1243, // 大地静水の舞い1
     GeyserDance2: 645, // 大地静水の舞い2
     RockslideDance2: 643, // 疾風大地の舞い2
+    RockslideDance3: 2608, // 疾風大地の舞い3
 
     // 魅了
     AtkCantrip3: 1380, // 攻撃の魅了3
@@ -4209,6 +4210,27 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 疾風大地の舞い3
+{
+    let skillId = PassiveB.RockslideDance3;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return unit.battleContext.isRefreshActivated;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            targetUnit.applyBuffs(0, 6, 6, 0);
+            targetUnit.addStatusEffect(StatusEffectType.Dodge);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+        }
+    );
+}
 
 // やさしいひとのゆめ
 {
