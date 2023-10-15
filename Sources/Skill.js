@@ -17,7 +17,8 @@ const SkillType = {
     PassiveB: 4,
     PassiveC: 5,
     PassiveS: 6,
-    Captain: 7,
+    PassiveX: 7,
+    Captain: 8,
 };
 
 const WeaponType = {
@@ -3072,6 +3073,10 @@ const PassiveS = {
     TozokuNoGuzoOdori: 1402,
 };
 
+const PassiveX = {
+
+};
+
 // 隊長スキル
 const Captain = {
     None: -1,
@@ -3974,6 +3979,7 @@ const PassiveAValueDict = __createValueDict(PassiveA);
 const PassiveBValueDict = __createValueDict(PassiveB);
 const PassiveCValueDict = __createValueDict(PassiveC);
 const PassiveSValueDict = __createValueDict(PassiveS);
+const PassiveXValueDict = __createValueDict(PassiveX);
 const CaptainValueDict = __createValueDict(Captain);
 
 const SaveSkills = new Set([
@@ -4135,6 +4141,7 @@ class SkillInfo {
             case SkillType.PassiveB: return this.id in PassiveBValueDict;
             case SkillType.PassiveC: return this.id in PassiveCValueDict;
             case SkillType.PassiveS: return this.id in PassiveSValueDict;
+            case SkillType.PassiveX: return this.id in PassiveXValueDict;
             case SkillType.Captain: return this.id in CaptainValueDict;
             default:
                 throw new Error("Invalid skill type");
@@ -4151,6 +4158,7 @@ class SkillInfo {
             case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName;
             case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName;
             case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName;
+            case SkillType.PassiveX: return iconRoot + "PassiveX/" + iconName;
             case SkillType.Captain: return iconRoot + "Captain/" + iconName;
             default:
                 return "";

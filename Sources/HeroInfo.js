@@ -233,7 +233,7 @@ class HeroInfo {
         hp, atk, spd, def, res,
         hpLv1, atkLv1, spdLv1, defLv1, resLv1,
         hpVar, atkVar, spdVar, defVar, resVar,
-        weapon, support, special, passiveA, passiveB, passiveC,
+        weapon, support, special, passiveA, passiveB, passiveC, passiveX,
         seasonType,
         blessingType,
         epithet,
@@ -249,7 +249,8 @@ class HeroInfo {
         specials,
         passiveAs,
         passiveBs,
-        passiveCs
+        passiveCs,
+        passiveXs = [],
     ) {
         this.id = id;
         this.seasonType = seasonType;
@@ -271,6 +272,7 @@ class HeroInfo {
         this.passiveA = passiveA;
         this.passiveB = passiveB;
         this.passiveC = passiveC;
+        this.passiveX = passiveX;
         this.hpLv1 = Number(hpLv1);
         this.atkLv1 = Number(atkLv1);
         this.spdLv1 = Number(spdLv1);
@@ -319,12 +321,14 @@ class HeroInfo {
         this.passiveBOptions = [];
         this.passiveCOptions = [];
         this.passiveSOptions = [];
+        this.passiveXOptions = [];
         this.weapons = weapons;
         this.supports = supports;
         this.specials = specials;
         this.passiveAs = passiveAs;
         this.passiveBs = passiveBs;
         this.passiveCs = passiveCs;
+        this.passiveXs = passiveXs;
         this.isResplendent = resplendent;
         this.origin = origin;
         this.origins = origin?.split("|").filter(x => x != '') ?? [];
@@ -340,6 +344,7 @@ class HeroInfo {
         this.passiveBOptionsForHallOfForms = [];
         this.passiveCOptionsForHallOfForms = [];
         this.passiveSOptionsForHallOfForms = [];
+        this.passiveXOptionsForHallOfForms = [];
 
         this.__updateLv1Statuses();
 
@@ -424,7 +429,8 @@ class HeroInfo {
         return this.special == skillId
             || this.passiveA == skillId
             || this.passiveB == skillId
-            || this.passiveC == skillId;
+            || this.passiveC == skillId
+            || this.passiveX == skillId;
     }
 
     get detailPageUrl() {
@@ -582,6 +588,8 @@ class HeroInfo {
                     return this.passiveBs.includes(skillInfo.id);
                 case SkillType.PassiveC:
                     return this.passiveCs.includes(skillInfo.id);
+                case SkillType.PassiveX:
+                    return this.passiveXs.includes(skillInfo.id);
             }
         }
 
@@ -605,6 +613,7 @@ class HeroInfo {
             && this.passiveBOptions.length > 0
             && this.passiveCOptions.length > 0
             && this.passiveSOptions.length > 0
+            && this.passiveXOptions.length > 0
             ;
     }
 
@@ -653,6 +662,10 @@ class HeroInfo {
         this.__registerInheritableSkills(this.passiveSOptions,
             [passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos],
             x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && this.canEquipSkill(x));
+    }
+
+    registerPassiveXOptions(infos) {
+        this.__registerInheritableSkills(this.passiveXOptions, [infos], x => this.canEquipSkill(x));
     }
 
     /**

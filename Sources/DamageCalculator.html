@@ -350,6 +350,16 @@
                             </option>
                         </select>
                     </dd>
+                    <dt>X:</dt>
+                    <dd>
+                        <select2 :options="passiveXOptions" v-model="roundRobinParam.passiveX" class="skill">
+                        </select2>
+                        <select v-model="roundRobinParam.passiveX_skillSwappingMode">
+                            <option v-for="option in SkillSwappingModeOptions" v-bind:value="option.value">
+                                {{option.label}}
+                            </option>
+                        </select>
+                    </dd>
                 </dl>
             </fieldset>
 
@@ -472,7 +482,7 @@
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-                    passiveSInfos);
+                    passiveSInfos, passiveXInfos);
                 addKeyRepeatEvents();
 
                 const loader = document.getElementById("loader");

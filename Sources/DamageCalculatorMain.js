@@ -124,11 +124,13 @@ class DamageCalcHeroDatabase extends HeroDatabase {
      * @param  {SkillInfo[]} passiveBs
      * @param  {SkillInfo[]} passiveCs
      * @param  {SkillInfo[]} passiveSs
+     * @param  {SkillInfo[]} passiveXs
      */
-    constructor(inputHeroInfos, weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs) {
+    constructor(inputHeroInfos, weapons, supports, specials,
+                passiveAs, passiveBs, passiveCs, passiveSs, passiveXs) {
         super(inputHeroInfos);
         this.skillDatabase = new SkillDatabase();
-        this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs);
+        this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs);
 
         for (let i = 0; i < inputHeroInfos.length; ++i) {
             let heroInfo = inputHeroInfos[i];
@@ -139,6 +141,7 @@ class DamageCalcHeroDatabase extends HeroDatabase {
             heroInfo.registerPassiveBOptions(passiveBs);
             heroInfo.registerPassiveCOptions(passiveCs);
             heroInfo.registerPassiveSOptions(passiveAs, passiveBs, passiveCs, passiveSs);
+            heroInfo.registerPassiveXOptions(passiveXs);
         }
     }
     /**
@@ -248,12 +251,14 @@ class RoundRobinParam {
         this.passiveB = PassiveB.None;
         this.passiveC = PassiveC.None;
         this.passiveS = PassiveS.None;
+        this.passiveX = PassiveX.None;
 
         this.special_skillSwappingMode = SkillSwappingMode.IfNone;
         this.passiveA_skillSwappingMode = SkillSwappingMode.IfNone;
         this.passiveB_skillSwappingMode = SkillSwappingMode.IfNone;
         this.passiveC_skillSwappingMode = SkillSwappingMode.IfNone;
         this.passiveS_skillSwappingMode = SkillSwappingMode.IfNone;
+        this.passiveX_skillSwappingMode = SkillSwappingMode.IfNone;
     }
 }
 
@@ -266,7 +271,7 @@ class BoolOption {
 
 class DamageCalcData {
     constructor(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-        passiveSInfos) {
+        passiveSInfos, passiveXInfos) {
         this.logger = new HtmlLogger();
         this.unitManager = new UnitManager();
         this.unitManager.units = [];
@@ -289,7 +294,7 @@ class DamageCalcData {
         );
         this.heroDatabase = new DamageCalcHeroDatabase(
             heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-            passiveSInfos);
+            passiveSInfos, passiveXInfos);
 
         this.mode = DamageCalculatorMode.RoundRobin;
         this.roundRobinParam = new RoundRobinParam();
@@ -362,6 +367,13 @@ class DamageCalcData {
             }
         }
 
+        this.passiveXOptions = [];
+        this.passiveXOptions.push({ id: -1, text: "なし" });
+        for (let info of passiveXInfos) {
+            if (info.canInherit) {
+                this.passiveXOptions.push({ id: info.id, text: info.name });
+            }
+        }
 
         this.damageReductionPercentage = 0;
         this._graph = null;
@@ -653,6 +665,10 @@ class DamageCalcData {
             if (this.__canSwapSkill(unit, unit.passiveSInfo, this.roundRobinParam.passiveS,
                 this.roundRobinParam.passiveS_skillSwappingMode)) {
                 unit.passiveS = this.roundRobinParam.passiveS;
+            }
+            if (this.__canSwapSkill(unit, unit.passiveXInfo, this.roundRobinParam.passiveX,
+                this.roundRobinParam.passiveX_skillSwappingMode)) {
+                unit.passiveX = this.roundRobinParam.passiveX;
             }
             this.heroDatabase.initUnitStatus(unit, false);
 
@@ -1035,10 +1051,10 @@ function* enumerateColors() {
 }
 
 function initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-    passiveSInfos) {
+    passiveSInfos, passiveXInfos) {
     g_damageCalcData = new DamageCalcData(
         heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-        passiveSInfos);
+        passiveSInfos, passiveXInfos);
     g_damageCalcVm = new Vue({
         el: "#damageCalc",
         data: g_damageCalcData,
