@@ -824,7 +824,10 @@ class ImageProcessor {
                                         // 武器抽出
                                         cropAndPostProcessAndOcr(
                                             ocrInputCanvas6, sourceCanvas,
-                                            0.575, 0.625, 0.32, 0.03,
+                                            0.575,
+                                            0.614,
+                                            0.32,
+                                            0.03,
                                             (srcCanvas) => {
                                                 manipurateHsv(srcCanvas, srcCanvas,
                                                     (hue, saturation, brightness) => brightness < 140
@@ -844,7 +847,7 @@ class ImageProcessor {
                                             // 武器錬成抽出
                                             cropAndPostProcessAndOcr(
                                                 ocrInputCanvas7, sourceCanvas,
-                                                0.575, 0.625, 0.32, 0.03,
+                                                0.575, 0.614, 0.32, 0.03,
                                                 (srcCanvas) => {
                                                     manipurateHsv(srcCanvas, srcCanvas,
                                                         (hue, saturation, brightness) => saturation < 40, true);
@@ -870,7 +873,7 @@ class ImageProcessor {
                                                 // 武器、S以外のスキル名抽出
                                                 cropAndBinarizeImageAndOcr(
                                                     ocrInputCanvas9, binarizedCanvas,
-                                                    0.575, 0.657, 0.32, 0.20,
+                                                    0.575, 0.646, 0.32, 0.20,
                                                     -1,
                                                     p => g_app.ocrProgress(p, `スキル抽出(${unit.id})`),
                                                     ocrResult => {
@@ -885,7 +888,7 @@ class ImageProcessor {
                                                 ).then(() => {
                                                     cropAndBinarizeImageAndOcr(
                                                         ocrInputCanvas10, binarizedCanvas,
-                                                        0.575, 0.855, 0.32, 0.03, -1,
+                                                        0.575, 0.840, 0.32, 0.03, -1,
                                                         p => g_app.ocrProgress(p, `聖印抽出(${unit.id})`),
                                                         ocrResult => {
                                                             self.extractSacredSeal(unit, ocrResult);
