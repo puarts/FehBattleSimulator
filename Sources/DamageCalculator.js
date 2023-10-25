@@ -481,6 +481,8 @@ class DamageCalculator {
         if (this.isLogEnabled) this.__logAttackerAndAttackee(atkUnit, defUnit, context);
 
         this.__calcAndSetCooldownCount(atkUnit, defUnit);
+        this.__applySkillEffectsPerCombat(atkUnit, defUnit, context);
+        this.__applySkillEffectsPerCombat(defUnit, atkUnit, context);
         // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
         if (context.isFirstAttack(atkUnit)) {
             let totalCount =
@@ -1174,16 +1176,6 @@ class DamageCalculator {
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case Special.Flare:
-                    if (atkUnit.battleContext.restHpPercentage >= 70) {
-                        let res = defUnit.getResInCombat(atkUnit);
-                        atkUnit.battleContext.specialAddDamage = Math.trunc(res * 0.6);
-                    } else {
-                        let res = defUnit.getResInCombat(atkUnit);
-                        atkUnit.battleContext.specialAddDamage = Math.trunc(res * 0.4);
-                        atkUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
-                    }
-                    break;
                 case Weapon.GustyWarBow:
                     if (atkUnit.battleContext.weaponSkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
@@ -1243,6 +1235,20 @@ class DamageCalculator {
                         }
                     }
                     break;
+            }
+        }
+    }
+
+    __applySkillEffectsPerCombat(targetUnit, enemyUnit, context) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectsPerCombatFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit, context);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
             }
         }
     }

@@ -4199,6 +4199,7 @@ const applySkillEffectFromAlliesFuncMap = new Map();
 const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
 const updateUnitSpurFromEnemiesFuncMap = new Map();
 const applyRefreshFuncMap = new Map();
+const applySkillEffectsPerCombatFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4213,6 +4214,32 @@ const applyRefreshFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 陽光
+{
+    let skillId = Special.Flare;
+    applySkillEffectsPerCombatFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, context) {
+            if (targetUnit.battleContext.restHpPercentage >= 70) {
+                let res = enemyUnit.getResInCombat(targetUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.6);
+            } else {
+                let res = enemyUnit.getResInCombat(targetUnit);
+                targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.4);
+                targetUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
+            }
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+        }
+    );
+}
 
 // ブラーディア+
 {
