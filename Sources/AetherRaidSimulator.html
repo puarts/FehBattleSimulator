@@ -1902,8 +1902,9 @@
                                 <div style="padding:5px">
                                     <label class="normal" >状態: </label>
                                     <span v-for="statusEffect in value.statusEffects">
-                                        <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px" />
+                                        <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px" v-bind:title="statusEffect" />
                                     </span>
+                                    <span v-bind:style="g_app.vm.debugMenuStyle">{{value.statusEffects}}</span>
                                 </div>
                             </td>
                         </tr>
