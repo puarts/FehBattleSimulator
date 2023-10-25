@@ -1046,7 +1046,9 @@ class DamageCalculator {
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog(`奥義によるダメージ${currentDamage}`);
-                this.writeSimpleLog(`${atkUnit.getNameWithGroup()}→${defUnit.getNameWithGroup()}<br/><span style="color: #ff00ff">奥義</span>ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
+                let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
+                let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
+                this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/><span style="color: #ff00ff">奥義</span>ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 this.__restoreMaxSpecialCount(atkUnit);
                 // 奥義発動後の奥義カウント変動
                 for (let skillId of atkUnit.enumerateSkills()) {
