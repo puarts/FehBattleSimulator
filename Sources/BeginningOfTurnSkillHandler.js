@@ -924,7 +924,9 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.InfNullFollow3:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                    unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp)
+                    if (unit.moveType === MoveType.Infantry) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    }
                 }
                 break;
             case Weapon.DivineWhimsy: {
