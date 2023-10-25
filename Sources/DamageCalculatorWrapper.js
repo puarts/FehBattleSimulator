@@ -2782,7 +2782,7 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.addAtkSpdSpurs(7);
                 targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
                     (targetUnit, enemyUnit) => {
                         let placedTile = enemyUnit.placedTile;

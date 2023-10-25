@@ -479,7 +479,7 @@ class BeginningOfTurnSkillHandler {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                     if (unit.moveType === MoveType.Armor ||
-                        (isMeleeWeaponType(unit.weaponType) && unit.weaponType === MoveType.Infantry)) {
+                        (isMeleeWeaponType(unit.weaponType) && unit.moveType === MoveType.Infantry)) {
                         found = true;
                         unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                     }
@@ -924,7 +924,9 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.InfNullFollow3:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                    unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp)
+                    if (unit.moveType === MoveType.Infantry) {
+                        unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    }
                 }
                 break;
             case Weapon.DivineWhimsy: {
