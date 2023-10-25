@@ -702,6 +702,7 @@ class ImageProcessor {
             const ocrInputCanvas9 = document.getElementById("ocrInputImage9");
             const ocrInputCanvas10 = document.getElementById("ocrInputImage10");
             const ocrInputCanvas11 = document.getElementById("ocrInputImage11");
+            const ocrInputCanvas12 = document.getElementById("ocrInputImage12");
 
             g_appData.ocrResult = "";
             // キャラ名抽出、祝福抽出
@@ -824,7 +825,10 @@ class ImageProcessor {
                                         // 武器抽出
                                         cropAndPostProcessAndOcr(
                                             ocrInputCanvas6, sourceCanvas,
-                                            0.575, 0.625, 0.32, 0.03,
+                                            0.575,
+                                            0.614,
+                                            0.32,
+                                            0.03,
                                             (srcCanvas) => {
                                                 manipurateHsv(srcCanvas, srcCanvas,
                                                     (hue, saturation, brightness) => brightness < 140
@@ -844,7 +848,7 @@ class ImageProcessor {
                                             // 武器錬成抽出
                                             cropAndPostProcessAndOcr(
                                                 ocrInputCanvas7, sourceCanvas,
-                                                0.575, 0.625, 0.32, 0.03,
+                                                0.575, 0.614, 0.32, 0.03,
                                                 (srcCanvas) => {
                                                     manipurateHsv(srcCanvas, srcCanvas,
                                                         (hue, saturation, brightness) => saturation < 40, true);
@@ -870,7 +874,7 @@ class ImageProcessor {
                                                 // 武器、S以外のスキル名抽出
                                                 cropAndBinarizeImageAndOcr(
                                                     ocrInputCanvas9, binarizedCanvas,
-                                                    0.575, 0.657, 0.32, 0.20,
+                                                    0.575, 0.646, 0.32, 0.20,
                                                     -1,
                                                     p => g_app.ocrProgress(p, `スキル抽出(${unit.id})`),
                                                     ocrResult => {
@@ -881,11 +885,11 @@ class ImageProcessor {
                                                         app.supportSkillCharWhiteList +
                                                         app.specialSkillCharWhiteList +
                                                         app.passiveSkillCharWhiteList : "",
-                                                    app.passiveSkillCharBlackList,
+                                                    app.passiveSkillCharBlackList
                                                 ).then(() => {
                                                     cropAndBinarizeImageAndOcr(
                                                         ocrInputCanvas10, binarizedCanvas,
-                                                        0.575, 0.855, 0.32, 0.03, -1,
+                                                        0.575, 0.840, 0.32, 0.03, -1,
                                                         p => g_app.ocrProgress(p, `聖印抽出(${unit.id})`),
                                                         ocrResult => {
                                                             self.extractSacredSeal(unit, ocrResult);
@@ -895,9 +899,22 @@ class ImageProcessor {
                                                             app.passiveSkillCharWhiteList : "",
                                                         app.passiveSkillCharBlackList,
                                                     ).then(() => {
-                                                        // 最後にユニットをリセット
-                                                        g_appData.__updateStatusBySkillsAndMerges(unit, false);
-                                                        unit.resetMaxSpecialCount();
+                                                        cropAndBinarizeImageAndOcr(
+                                                            ocrInputCanvas12, binarizedCanvas,
+                                                            0.575, 0.874, 0.32, 0.03, -1,
+                                                            p => g_app.ocrProgress(p, `響心抽出(${unit.id})`),
+                                                            ocrResult => {
+                                                                self.extractAttunedSkill(unit, ocrResult);
+                                                            },
+                                                            "jpn",
+                                                            app.vm.useWhitelistForOcr ?
+                                                                app.passiveSkillCharWhiteList : "",
+                                                            app.passiveSkillCharBlackList
+                                                        ).then(() => {
+                                                            // 最後にユニットをリセット
+                                                            g_appData.__updateStatusBySkillsAndMerges(unit, false);
+                                                            unit.resetMaxSpecialCount();
+                                                        })
                                                     });
                                                 });
                                             });
@@ -965,7 +982,26 @@ class ImageProcessor {
             g_appData.__updateStatusBySkillsAndMerges(unit);
         }
     }
+    extractAttunedSkill(unit, ocrResult) {
+        let app = g_app;
+        app.clearOcrProgress();
+        console.log(ocrResult);
+        g_appData.ocrResult += "響心スキル名: " + ocrResult.text + "\n";
+        var filtered = convertOcrResultToArray(ocrResult.text);
+        let partialName = getMaxLengthElem(filtered);
+        console.log(filtered);
 
+        if (partialName != null) {
+            let result = g_app.findSimilarNameSkill(partialName,
+                app.__enumerateElemOfArrays([
+                    g_appData.passiveXInfos]));
+            if (result != null) {
+                let skillInfo = result[0];
+                console.log(skillInfo.name);
+                unit.passiveX = skillInfo.id;
+            }
+        }
+    }
     extractSacredSeal(unit, ocrResult) {
         let app = g_app;
         app.clearOcrProgress();

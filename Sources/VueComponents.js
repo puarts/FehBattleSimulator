@@ -190,6 +190,16 @@ Vue.component('select2', {
                     console.log("restore passiveS for " + unit.getNameWithGroup());
                 }
             }
+            else if (skillType == "passiveX") {
+                if (!unit.hasReservedPassiveX()) {
+                    // 普通にUIからスキルが変更された場合
+                    $(this.$el).val(val).trigger('change');
+                }
+                else if (val == -1) {
+                    unit.restoreReservedPassiveX();
+                    console.log("restore passiveX for " + unit.getNameWithGroup());
+                }
+            }
         },
         // update options
         options: function (options) {

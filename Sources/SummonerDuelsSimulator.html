@@ -462,7 +462,8 @@
                                                                 <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
                                                                                         v-bind:src="units[attackTargetUnitIndex].icon"></td> -->
                                                     </tr>
-                                                    <tr class="attackInfo" :style="{'height': isDebugMenuEnabled ? '90px' : '65px'}">
+                                                    <tr class="attackInfo"
+                                                        :style="{'height': isDebugMenuEnabled ? '90px' : '65px'}">
                                                         <td class="ally" align="center">
                                                             <div v-html="attackerInfo"></div>
                                                         </td>
@@ -1490,6 +1491,7 @@
             <canvas id="ocrInputImage8"></canvas>
             <canvas id="ocrInputImage9"></canvas>
             <canvas id="ocrInputImage10"></canvas>
+            <canvas id="ocrInputImage12"></canvas>
 
             <span v-for="imgFile in templateWeaponRefinementImageFiles">
                 <img src="https://puarts.com/images/dummy.png"
