@@ -980,7 +980,7 @@
                             <td class='skillHeader'>
                                 <img v-if="value.passiveXInfo != null" v-bind:src="value.passiveXInfo.iconPath" width="25" height="25" />
                                 <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                <img v-bind:src="g_imageRootPath + 'X.png'" class="skillTypeText" width="12" height="12" />
+                                <img v-bind:src="g_imageRootPath + 'X.webp'" class="skillTypeText" width="12" height="12" />
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.passiveXOptions" v-bind:name="value.id+'-passiveX'" v-if="value.heroInfo!=null"
