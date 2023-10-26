@@ -2660,7 +2660,7 @@ const PassiveB = {
     SoaringWings: 2390, // 天かける翼
     FruitOfLife: 2424, // 地に生まれ地に還る
     SunlightBangle: 2477, // 華日の腕輪
-    GetBehindMe : 2511, // 僕が守ります!
+    GetBehindMe: 2511, // 僕が守ります!
     HolyWarsEnd: 1376, // 最後の聖戦
     HolyWarsEnd2: 2537, // 最後の聖戦・承
 
@@ -4178,7 +4178,7 @@ class SkillInfo {
             case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName;
             case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName;
             case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName;
-            case SkillType.PassiveX: return iconRoot + "PassiveX/" + iconName;
+            case SkillType.PassiveX: return iconRoot + "Attuned/" + iconName;
             case SkillType.Captain: return iconRoot + "Captain/" + iconName;
             default:
                 return "";
@@ -4496,7 +4496,7 @@ const applySkillEffectsPerCombatFuncMap = new Map();
     let skillId = PassiveA.BeyondWitchery;
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-        let amount = this.globalBattleContext.currentTurn === 1 ? 2 : 1;
+            let amount = this.globalBattleContext.currentTurn === 1 ? 2 : 1;
             skillOwner.reserveToReduceSpecialCount(amount);
             skillOwner.reserveTakeDamage(amount);
         })
