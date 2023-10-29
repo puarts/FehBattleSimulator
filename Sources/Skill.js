@@ -3356,6 +3356,7 @@ DefenseSpecialDict[Special.IceMirror2] = 0;
 DefenseSpecialDict[Special.FrostbiteMirror] = 0;
 DefenseSpecialDict[Special.NegatingFang] = 0;
 DefenseSpecialDict[Special.GodlikeReflexes] = 0;
+DefenseSpecialDict[Special.Miracle] = 0;
 
 /// 防御系の奥義かどうかを判定します。
 function isDefenseSpecial(special) {
