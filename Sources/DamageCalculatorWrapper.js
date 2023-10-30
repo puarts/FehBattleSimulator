@@ -2367,6 +2367,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
                 let amount = Math.min(Math.max(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 8, 0), 10);
+                targetUnit.addAtkSpdSpurs(amount);
                 if (targetUnit.getPositiveStatusEffects().length >= 3) {
                     targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 }

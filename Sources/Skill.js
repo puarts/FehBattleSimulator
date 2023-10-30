@@ -1767,6 +1767,11 @@ const Weapon = {
     FlowerOfTribute: 2613, // 犠牲の花
     FlowerOfCaring: 2607, // 親愛の花
     BlardeerPlus: 2622, // ブラーディア+
+
+    // 神階英雄（優しき竜 ヴェイル）
+    // https://www.youtube.com/watch?v=aZ1XhkT0SbE&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Mv-aGuxvvmg&ab_channel=NintendoMobile
+    Obscurite: 2633, // オヴスキュリテ
 };
 
 const Support = {
@@ -2690,6 +2695,7 @@ const PassiveB = {
     AtkResTempo3: 2184, // 攻撃魔防の拍節3
     SpdDefTempo3: 2046, // 速さ守備の拍節3
     SpdResTempo3: 2204, // 速さ魔坊の拍節3
+    AtkResTempo4: 2634, // 攻撃魔防の拍節4
 
     // 防壁
     AtkSpdBulwark3: 2414, // 攻撃速さの防壁3
@@ -3009,6 +3015,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    FellProtection: 2635, // 邪竜の救済
     HeartOfCrimea: 2590, // クリミアの心
     TipTheScales: 2555, // 戦局を変える!
     SeimeiNoKagayaki: 773, // 生命の輝き
@@ -3356,6 +3363,7 @@ DefenseSpecialDict[Special.IceMirror2] = 0;
 DefenseSpecialDict[Special.FrostbiteMirror] = 0;
 DefenseSpecialDict[Special.NegatingFang] = 0;
 DefenseSpecialDict[Special.GodlikeReflexes] = 0;
+DefenseSpecialDict[Special.Miracle] = 0;
 
 /// 防御系の奥義かどうかを判定します。
 function isDefenseSpecial(special) {
@@ -4214,6 +4222,101 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 邪竜の救済
+{
+    let skillId = PassiveC.FellProtection;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkResSpurs(5);
+                // 魔防が5以上高い時
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                                return 0.3;
+                            });
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addAtkResSpurs(4);
+                if (targetUnit.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + 5) {
+                    targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                        return 0.3;
+                    });
+                    if (isNormalAttackSpecial(enemyUnit.special)) {
+                        enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                    }
+                }
+            }
+        }
+    );
+}
+
+// 攻撃魔防の拍節4
+{
+    let skillId = PassiveB.AtkResTempo4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addAtkResSpurs(-4);
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+            );
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+        }
+    );
+}
+
+// オヴスキュリテ
+{
+    let skillId = Weapon.Obscurite;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                found = true;
+                unit.reserveToApplyBuffs(6, 0, 0, 6);
+                unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
+                unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(6, 0, 0, 6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+                targetUnit.battleContext.invalidateBuffs(true, false, false, true);
+            }
+        }
+    );
+}
 
 // 陽光
 {
