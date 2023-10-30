@@ -3015,6 +3015,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    FellProtection: 2635, // 邪竜の救済
     HeartOfCrimea: 2590, // クリミアの心
     TipTheScales: 2555, // 戦局を変える!
     SeimeiNoKagayaki: 773, // 生命の輝き
@@ -4221,6 +4222,47 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 邪竜の救済
+{
+    let skillId = PassiveC.FellProtection;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkResSpurs(5);
+                // 魔防が5以上高い時
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) >= enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                                return 0.3;
+                            });
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addAtkResSpurs(4);
+                if (targetUnit.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + 5) {
+                    targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                        return 0.3;
+                    });
+                    if (isNormalAttackSpecial(enemyUnit.special)) {
+                        enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                    }
+                }
+            }
+        }
+    );
+}
 
 // 攻撃魔防の拍節4
 {
