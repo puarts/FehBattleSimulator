@@ -2695,6 +2695,7 @@ const PassiveB = {
     AtkResTempo3: 2184, // 攻撃魔防の拍節3
     SpdDefTempo3: 2046, // 速さ守備の拍節3
     SpdResTempo3: 2204, // 速さ魔坊の拍節3
+    AtkResTempo4: 2634, // 攻撃魔防の拍節4
 
     // 防壁
     AtkSpdBulwark3: 2414, // 攻撃速さの防壁3
@@ -4220,6 +4221,24 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 攻撃魔防の拍節4
+{
+    let skillId = PassiveB.AtkResTempo4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addAtkResSpurs(-4);
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                }
+            );
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+        }
+    );
+}
 
 // オヴスキュリテ
 {
