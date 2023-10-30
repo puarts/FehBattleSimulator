@@ -1767,6 +1767,11 @@ const Weapon = {
     FlowerOfTribute: 2613, // 犠牲の花
     FlowerOfCaring: 2607, // 親愛の花
     BlardeerPlus: 2622, // ブラーディア+
+
+    // 神階英雄（優しき竜 ヴェイル）
+    // https://www.youtube.com/watch?v=aZ1XhkT0SbE&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Mv-aGuxvvmg&ab_channel=NintendoMobile
+    Obscurite: 2633, // オヴスキュリテ
 };
 
 const Support = {
@@ -4215,6 +4220,42 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 //         }
 //     );
 // }
+
+// オヴスキュリテ
+{
+    let skillId = Weapon.Obscurite;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                found = true;
+                unit.reserveToApplyBuffs(6, 0, 0, 6);
+                unit.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
+                unit.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(6, 0, 0, 6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.ResonantBlades);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.ResonantShield);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+                targetUnit.battleContext.invalidateBuffs(true, false, false, true);
+            }
+        }
+    );
+}
 
 // 陽光
 {
