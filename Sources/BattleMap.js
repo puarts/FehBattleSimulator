@@ -1984,6 +1984,15 @@ class BattleMap {
         }
 
         for (let skillId of unit.enumerateSkills()) {
+            let funcMap = enumerateTeleportTilesForUnitFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    yield* func.call(this, unit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case PassiveB.AerialManeuvers:
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit); // 2, 2

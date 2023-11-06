@@ -1778,6 +1778,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=QB6JvE4E2N4&ab_channel=NintendoMobile
     ScarletSpear: 2640, // 将軍忍者の紅槍
     SpysShuriken: 2643, // 密偵忍者の手裏剣
+    KumoYumiPlus: 2645, // 白夜忍の和弓+
 };
 
 const Support = {
@@ -4284,6 +4285,7 @@ const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
 const applySupportSkillFuncMap = new Map();
 const canRallyForciblyFuncMap = new Map();
 const canRalliedForciblyFuncMap = new Map();
+const enumerateTeleportTilesForUnitFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4298,6 +4300,24 @@ const canRalliedForciblyFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 白夜忍の和弓+
+{
+    let skillId = Weapon.KumoYumiPlus;
+    TeleportationSkillDict[skillId] = 0;
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+}
 
 // 速さ守備の大共謀4
 {

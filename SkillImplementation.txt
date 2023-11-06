@@ -915,7 +915,15 @@ unit.calcMoveCountForCanto() {} // ワープの場合は必要なし
 * enumerateWarpCantoTiles(unit) {}
 
 移動可能[ワープ]
-const TeleportationSkillDictに登録
+// const TeleportationSkillDictに登録
+TeleportationSkillDict[skillId] = 0;
+enumerateTeleportTilesForUnitFuncMap.set(skillId,
+    function (unit) {
+        // 周囲2マス以内の味方の、周囲1マス以内に移動可能
+        return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+    }
+);
+もしくは
 Main.js
 *__enumerateTeleportTiles(unit) {
     // 周囲2マス以内の味方の、周囲2マス以内に移動可能(PassiveC.OpeningRetainer)
