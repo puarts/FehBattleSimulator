@@ -861,6 +861,13 @@ applySupportSkillFuncMap.set(skillId,
     }
 );
 
+// 共謀系
+canRallyForciblyFuncMap.set(skillId,
+    function (unit) {
+        return true;
+    }
+);
+
 自分を除く自軍内の移動タイプの種類数によって異なる効果を発動
 enumerateUnitsInTheSameGroupOnMap()
 let sameMoveTypeCount = 0;

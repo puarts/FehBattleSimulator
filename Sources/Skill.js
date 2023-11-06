@@ -3702,6 +3702,19 @@ function weaponTypeToString(weaponType) {
 
 /// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
 function canRallyForcibly(skill, unit) {
+    let skillId = skill;
+    let funcMap = canRallyForciblyFuncMap;
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            let result = func.call(this, unit);
+            if (result) {
+                return true;
+            }
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
     switch (skill) {
         case Support.GoldSerpent:
             // TODO: 調査する
@@ -4227,6 +4240,7 @@ const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 const applySkillsAfterRallyForSupporterFuncMap = new Map();
 const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
 const applySupportSkillFuncMap = new Map();
+const canRallyForciblyFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4270,6 +4284,11 @@ const applySupportSkillFuncMap = new Map();
                 supporterUnit.isActionDone = false;
                 supporterUnit.isOneTimeActionActivatedForWeapon = true;
             }
+        }
+    );
+    canRallyForciblyFuncMap.set(skillId,
+        function (unit) {
+            return true;
         }
     );
 }
