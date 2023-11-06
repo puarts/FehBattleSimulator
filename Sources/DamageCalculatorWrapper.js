@@ -15412,6 +15412,9 @@ class DamageCalculatorWrapper {
     }
 
     __init__applySpecialSkillEffect() {
+        for (let [key, value] of initApplySpecialSkillEffectFuncMap) {
+            this._applySpecialSkillEffectFuncDict[key] = value;
+        }
         this._applySpecialSkillEffectFuncDict[Special.Taiyo] = (targetUnit) => {
             targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
         };

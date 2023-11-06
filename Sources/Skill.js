@@ -1929,6 +1929,7 @@ const Special = {
     HonoNoMonsyo: 466, // 炎の紋章
     HerosBlood: 1232, // 英雄の血脈
     KuroNoGekko: 471, // 黒の月光
+    LightlessLuna: 2641, // 漆黒の月光
     Lethality: 1898, // 滅殺
     AoNoTenku: 472, // 蒼の天空
     RadiantAether2: 1628, // 蒼の天空・承
@@ -4219,6 +4220,8 @@ const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
 const updateUnitSpurFromEnemiesFuncMap = new Map();
 const applyRefreshFuncMap = new Map();
 const applySkillEffectsPerCombatFuncMap = new Map();
+const initApplySpecialSkillEffectFuncMap = new Map();
+const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4233,6 +4236,27 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 漆黒の月光
+{
+    let skillId = Special.LightlessLuna;
+    NormalAttackSpecialDict[skillId] = 0;
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit) {
+            targetUnit.battleContext.specialSufferPercentage = 80;
+        }
+    );
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+            }
+        }
+    );
+}
 
 // 将軍忍者の紅槍
 {
@@ -4404,15 +4428,6 @@ const applySkillEffectsPerCombatFuncMap = new Map();
                 targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.4);
                 targetUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
             }
-        }
-    );
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-        }
-    );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
         }
     );
 }

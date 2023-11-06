@@ -593,6 +593,18 @@ __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
     atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
 }
 
+自分または敵が奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で自分または敵が奥義発動済みの時、戦闘中、受けた攻撃のダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
+applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    function (atkUnit, defUnit) {
+        if (defUnit.tmpSpecialCount === 0 ||
+            atkUnit.tmpSpecialCount === 0 ||
+            defUnit.battleContext.isSpecialActivated ||
+            atkUnit.battleContext.isSpecialActivated) {
+            defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+        }
+    }
+);
+
 支援効果を無効
 atkUnit.battleContext.invalidatesSupportEffect = true;
 
