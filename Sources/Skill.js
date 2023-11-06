@@ -2020,6 +2020,7 @@ const PassiveA = {
     DistantStorm: 2015, // 遠反・攻撃の渾身
     DistantPressure: 1795, // 遠反・速さの渾身
     DistantASSolo: 2433, // 遠反・高速の孤軍
+    DistantDRSolo: 2642, // 遠反・守魔の孤軍
     CloseSalvo: 1981, // 近反・攻撃の渾身
     DeathBlow3: 528, // 鬼神の一撃3
     DeathBlow4: 529, // 鬼神の一撃4
@@ -4236,6 +4237,18 @@ const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 遠反・守魔の孤軍
+{
+    let skillId = PassiveA.DistantDRSolo;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                targetUnit.addDefResSpurs(5);
+            }
+        }
+    );
+}
 
 // 漆黒の月光
 {
