@@ -10873,10 +10873,12 @@ class DamageCalculatorWrapper {
         }
 
         // Triangle Attack
-        if (targetUnit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.TriangleAttack) &&
+            !targetUnit.hasStatusEffect(StatusEffectType.Schism)) {
             let triangleAttackerCount = 0;
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-                if (unit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+                if (unit.hasStatusEffect(StatusEffectType.TriangleAttack) &&
+                    !unit.hasStatusEffect(StatusEffectType.Schism)) {
                     triangleAttackerCount++;
                 }
             }
@@ -10886,10 +10888,12 @@ class DamageCalculatorWrapper {
         }
 
         // デュアルアタック
-        if (targetUnit.hasStatusEffect(StatusEffectType.DualStrike)) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.DualStrike) &&
+            !targetUnit.hasStatusEffect(StatusEffectType.Schism)) {
             let found = false;
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 1, false)) {
-                if (unit.hasStatusEffect(StatusEffectType.DualStrike)) {
+                if (unit.hasStatusEffect(StatusEffectType.DualStrike) &&
+                    !unit.hasStatusEffect(StatusEffectType.Schism)) {
                     found = true;
                 }
             }

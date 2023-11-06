@@ -244,6 +244,7 @@ const StatusEffectType = {
     RallySpectrum: 51, // 七色の叫び
     DeepStar: 52, // 真落星
     Ploy: 53, // 謀策
+    Schism: 54, // 連携阻害
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -301,6 +302,7 @@ NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
 NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
 NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
 NegativeStatusEffectTable[StatusEffectType.Ploy] = 0;
+NegativeStatusEffectTable[StatusEffectType.Schism] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -424,6 +426,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_DeepStar.png";
         case StatusEffectType.Ploy:
             return g_imageRootPath + "StatusEffect_Ploy.png";
+        case StatusEffectType.Schism:
+            return g_imageRootPath + "StatusEffect_Schism.png";
         default: return "";
     }
 }
@@ -2377,6 +2381,16 @@ class Unit extends BattleMapElement {
         return false;
     }
 
+    // 被応援を強制的に実行可能か
+    canRalliedForcibly() {
+        for (let skillId of this.enumerateSkills()) {
+            if (canRalliedForcibly(skillId, this)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     get canGrantBlessing() {
         return !this.isLegendaryHero && !this.isMythicHero;
     }
@@ -2845,7 +2859,13 @@ class Unit extends BattleMapElement {
     }
 
     clearNegativeStatusEffects() {
+        let negativeStatusEffects = this.getNegativeStatusEffects();
         this.statusEffects = this.getPositiveStatusEffects();
+        if (negativeStatusEffects.includes(StatusEffectType.Schism)) {
+            this.clearPositiveStatusEffect(StatusEffectType.TriangleAttack);
+            this.clearPositiveStatusEffect(StatusEffectType.DualStrike);
+            this.clearPositiveStatusEffect(StatusEffectType.Pathfinder);
+        }
     }
 
     clearPositiveStatusEffect(statusEffect) {
@@ -5490,7 +5510,8 @@ class Unit extends BattleMapElement {
 
     /// 天駆の道の効果を持つか
     hasPathfinderEffect() {
-        if (this.hasStatusEffect(StatusEffectType.Pathfinder)) {
+        if (this.hasStatusEffect(StatusEffectType.Pathfinder) &&
+            !this.hasStatusEffect(StatusEffectType.Schism)) {
             return true;
         }
         for (let skillId of this.enumerateSkills()) {

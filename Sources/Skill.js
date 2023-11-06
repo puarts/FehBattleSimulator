@@ -2551,6 +2551,7 @@ const PassiveB = {
     DefResRuse3: 935,
     SpdResRuse3: 1004,
     SpdDefRuse3: 1105,
+    SpdDefRuse4: 2644, // 速さ守備の大共謀4
 
     KillingIntent: 999, // 死んでほしいの
     KillingIntentPlus: 2348, // 死んでほしいの・神
@@ -3744,6 +3745,47 @@ function canRallyForcibly(skill, unit) {
     }
 }
 
+function canRalliedForcibly(skillId, unit) {
+    let funcMap = canRalliedForciblyFuncMap;
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            let result = func.call(this, unit);
+            if (result) {
+                return true;
+            }
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
+    switch (skillId) {
+        case Support.GoldSerpent:
+            // TODO: 調査する
+            return true;
+        case Weapon.Heidr:
+        case Weapon.GoldenCurse:
+            return true;
+        case Weapon.RetainersReport:
+            if (unit.isWeaponSpecialRefined) {
+                return true;
+            }
+            break;
+        case PassiveB.AtkFeint3:
+        case PassiveB.SpdFeint3:
+        case PassiveB.DefFeint3:
+        case PassiveB.ResFeint3:
+        case PassiveB.AtkSpdRuse3:
+        case PassiveB.AtkDefRuse3:
+        case PassiveB.AtkResRuse3:
+        case PassiveB.DefResRuse3:
+        case PassiveB.SpdResRuse3:
+        case PassiveB.SpdDefRuse3:
+            return true;
+        default:
+            return false;
+    }
+}
+
 /// 戦闘前に発動するスペシャルであるかどうかを判定します。
 function isPrecombatSpecial(special) {
     return isRangedAttackSpecial(special);
@@ -4241,6 +4283,7 @@ const applySkillsAfterRallyForSupporterFuncMap = new Map();
 const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
 const applySupportSkillFuncMap = new Map();
 const canRallyForciblyFuncMap = new Map();
+const canRalliedForciblyFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4255,6 +4298,30 @@ const canRallyForciblyFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 速さ守備の大共謀4
+{
+    let skillId = PassiveB.SpdDefRuse4;
+    canRallyForciblyFuncMap.set(skillId,
+        function (unit) {
+            return true;
+        }
+    );
+    canRalliedForciblyFuncMap.set(skillId,
+        function (unit) {
+            return true;
+        }
+    );
+    let func = function (supporterUnit, targetUnit) {
+        this.__applyRuse(supporterUnit, targetUnit, unit => {
+            unit.applyDebuffs(0, -6, -6, 0);
+            unit.addStatusEffect(StatusEffectType.Discord);
+            unit.addStatusEffect(StatusEffectType.Schism);
+        });
+    };
+    applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
+    applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
+}
 
 // 密偵忍者の手裏剣
 {
@@ -4287,6 +4354,11 @@ const canRallyForciblyFuncMap = new Map();
         }
     );
     canRallyForciblyFuncMap.set(skillId,
+        function (unit) {
+            return true;
+        }
+    );
+    canRalliedForciblyFuncMap.set(skillId,
         function (unit) {
             return true;
         }
