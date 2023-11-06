@@ -1772,6 +1772,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=aZ1XhkT0SbE&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Mv-aGuxvvmg&ab_channel=NintendoMobile
     Obscurite: 2633, // オヴスキュリテ
+
+    // 超英雄 (私たちはこれから)
+    // https://www.youtube.com/watch?v=00vRDCOJNy4&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=QB6JvE4E2N4&ab_channel=NintendoMobile
+    ScarletSpear: 2640, // 将軍忍者の紅槍
 };
 
 const Support = {
@@ -4228,6 +4233,24 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 将軍忍者の紅槍
+{
+    let skillId = Weapon.ScarletSpear;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let amount = Math.min(Math.max(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25), 6), 12);
+                targetUnit.atkSpur += amount;
+                enemyUnit.atkSpur -= amount;
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
 
 // あまいゆめ・神
 {
