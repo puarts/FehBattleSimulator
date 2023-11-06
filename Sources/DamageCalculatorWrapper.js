@@ -2726,6 +2726,12 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3, unit => unit.isPartner(targetUnit))) {
                 targetUnit.battleContext.specialSkillCondSatisfied = true;
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (targetUnit.isPartner(unit)) {
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                }
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DragonsFist] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -10801,11 +10807,6 @@ class DamageCalculatorWrapper {
                             targetUnit.battleContext.healedHpAfterCombat += 7;
                         }
                         break;
-                    case Special.DragonBlast:
-                        if (allyUnit.isPartner(targetUnit)) {
-                            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                        }
-                        break;
                 }
             }
         }
@@ -17187,7 +17188,7 @@ class DamageCalculatorWrapper {
                 switch (unit.weapon) {
                     case Weapon.FlowerOfEase:
                         if (targetUnit.hasNegativeStatusEffect()) {
-                            let amount = targetUnit.isWeaponRefined ? 4 : 3;
+                            let amount = unit.isWeaponRefined ? 4 : 3;
                             targetUnit.addSpurs(-amount, 0, -amount, -amount);
                         }
                         break;

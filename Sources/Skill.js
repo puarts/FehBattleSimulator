@@ -1802,6 +1802,7 @@ const Support = {
     WhimsicalDreamPlus: 2560, // しろいゆめ・神
     SweetDreams: 1489, // あまいゆめ
     CloyingDreams: 2585, // あまいみつのゆめ
+    SweetDreamsPlus: 2636, // あまいゆめ・神
     FrightfulDream: 1537, // こわいゆめ
     HarrowingDream: 2614, // こわいかこのゆめ
     Play: 1135, // 奏でる
@@ -2648,6 +2649,7 @@ const PassiveB = {
     BlueLionRule: 1451, // 蒼き獅子王
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨
+    Atrocity2: 2637, // 無惨・承
     BindingNecklace: 1540, // 束縛の首飾り
     BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
@@ -3437,7 +3439,11 @@ function isNormalAttackSpecial(special) {
 }
 
 /// 再行動補助スキルかどうかを判定します。
+const refreshSupportSkillSet = new Set();
 function isRefreshSupportSkill(skillId) {
+    if (refreshSupportSkillSet.has(skillId)) {
+        return true;
+    }
     switch (skillId) {
         case Support.DragonsDance:
         case Support.CallToFlame:
@@ -4222,6 +4228,50 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 //         }
 //     );
 // }
+
+// あまいゆめ・神
+{
+    let skillId = Support.SweetDreamsPlus;
+    refreshSupportSkillSet.add(skillId);
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            targetUnit.applyAllBuff(5);
+            targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+            targetUnit.addStatusEffect(StatusEffectType.Hexblade);
+            for (let unit of this.__findNearestEnemies(targetUnit, 5)) {
+                unit.applyAllDebuff(-5);
+            }
+        }
+    );
+}
+
+// 無惨・承
+{
+    let skillId = PassiveB.Atrocity2;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 40) {
+                enemyUnit.addSpursWithoutRes(-4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.25);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                        (targetUnit, enemyUnit) => {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 3, true)) {
+                                unit.applyAllDebuff(-6);
+                                unit.addStatusEffect(StatusEffectType.Guard);
+                                // この段階では上限を考慮しない（後から増減をまとめて確定する）
+                                unit.specialCount++;
+                            }
+                        }
+                    );
+                });
+            }
+        }
+    );
+}
 
 // 邪竜の救済
 {
