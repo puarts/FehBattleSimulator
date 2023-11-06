@@ -2564,7 +2564,7 @@ class DamageCalculatorWrapper {
                             (attackUnit, attackTargetUnit) => {
                                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(attackUnit)) {
                                     // TODO: [公式バグ] attackUnit => attackTargetUnitに修正予定
-                                    if (Math.abs(attackUnit.posX - unit.posX) <= 1) {
+                                    if (Math.abs(attackTargetUnit.posX - unit.posX) <= 1) {
                                         unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                                     }
                                 }
