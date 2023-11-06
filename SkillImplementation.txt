@@ -838,7 +838,28 @@ function isRefreshSupportSkill(skillId) {return true;}
 __applyMovementAssistSkill() {}
 
 応援を使用した時、または自分に使用された時
+// 使用した時
+applySkillsAfterRallyForSupporterFuncMap.set(skillId,
+    function (supporterUnit, targetUnit) {
+    }
+);
+// 使用された時
+applySkillsAfterRallyForTargetUnitFuncMap.set(skillId,
+    function (supporterUnit, targetUnit) {
+    }
+);
+または
 __applySkillsAfterRally(supporterUnit, targetUnit) {}
+
+応援を使用した時、自分を行動可能にする(1ターンに1回のみ)
+applySupportSkillFuncMap.set(skillId,
+    function (supporterUnit, targetUnit) {
+        if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+            supporterUnit.isActionDone = false;
+            supporterUnit.isOneTimeActionActivatedForWeapon = true;
+        }
+    }
+);
 
 自分を除く自軍内の移動タイプの種類数によって異なる効果を発動
 enumerateUnitsInTheSameGroupOnMap()

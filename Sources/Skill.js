@@ -1777,6 +1777,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=00vRDCOJNy4&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=QB6JvE4E2N4&ab_channel=NintendoMobile
     ScarletSpear: 2640, // 将軍忍者の紅槍
+    SpysShuriken: 2643, // 密偵忍者の手裏剣
 };
 
 const Support = {
@@ -4223,6 +4224,9 @@ const applyRefreshFuncMap = new Map();
 const applySkillEffectsPerCombatFuncMap = new Map();
 const initApplySpecialSkillEffectFuncMap = new Map();
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
+const applySkillsAfterRallyForSupporterFuncMap = new Map();
+const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
+const applySupportSkillFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4237,6 +4241,38 @@ const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 密偵忍者の手裏剣
+{
+    let skillId = Weapon.SpysShuriken;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+    );
+    let func = function (supporterUnit, targetUnit) {
+        supporterUnit.addStatusEffect(StatusEffectType.NullFollowUp);
+        targetUnit.addStatusEffect(StatusEffectType.NullFollowUp);
+        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+            if (unit.isInClossOf(supporterUnit) ||
+                unit.isInClossOf(targetUnit)) {
+                unit.addStatusEffect(StatusEffectType.Exposure);
+            }
+        }
+    };
+    applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
+    applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
+    applySupportSkillFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                supporterUnit.isActionDone = false;
+                supporterUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    );
+}
 
 // 遠反・守魔の孤軍
 {

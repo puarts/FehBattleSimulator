@@ -8588,6 +8588,15 @@ class BattleSimmulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
         for (let skillId of supporterUnit.enumerateSkills()) {
+            let funcMap = applySkillsAfterRallyForSupporterFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, supporterUnit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Support.GoldSerpent:
                     break;
@@ -8680,6 +8689,15 @@ class BattleSimmulatorBase {
 
         // 自分に使用された時
         for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillsAfterRallyForTargetUnitFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, supporterUnit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.Heidr:
                 case Weapon.GoldenCurse:
@@ -8924,6 +8942,15 @@ class BattleSimmulatorBase {
                 supporterUnit.endAction();
             }
             for (let skillId of supporterUnit.enumerateSkills()) {
+                let funcMap = applySupportSkillFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, supporterUnit, targetUnit, supportTile);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
                 switch (skillId) {
                     case Support.GoldSerpent: {
                         let currentTurn = g_appData.globalBattleContext.currentTurn;
