@@ -2098,7 +2098,7 @@ class BattleMap {
                             }
                         }
                         if (ally.hpPercentage <= 60) {
-                            yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
+                            yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
                         }
                     }
                     break;
