@@ -1780,6 +1780,7 @@ const Weapon = {
     SpysShuriken: 2643, // 密偵忍者の手裏剣
     KumoYumiPlus: 2645, // 白夜忍の和弓+
     RadiantScrolls: 2647, // 光炎の姉妹の忍法帖
+    KumoNaginataPlus: 2649, // 白夜忍の薙刀+
 };
 
 const Support = {
@@ -4305,6 +4306,24 @@ const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 //     );
 // }
 
+// 白夜忍の薙刀+
+{
+    let skillId = Weapon.KumoNaginataPlus;
+    TeleportationSkillDict[skillId] = 0;
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+}
+
 // 鬼神明鏡の炎撃
 {
     let skillId = PassiveA.FlaredMirror;
@@ -4404,7 +4423,6 @@ const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
         }
     );
 }
-
 
 // 白夜忍の和弓+
 {
