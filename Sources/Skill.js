@@ -4341,6 +4341,11 @@ const enumerateTeleportTilesForUnitFuncMap = new Map();
     };
     applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
     applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdDefSpurs(-4);
+        }
+    );
 }
 
 // 密偵忍者の手裏剣
