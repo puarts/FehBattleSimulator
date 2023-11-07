@@ -979,15 +979,6 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
                     }
                     break;
-                case Weapon.Areadbhar:
-                    {
-                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                        if (diff > 0 && defUnit.battleContext.restHpPercentage >= 25) {
-                            let percentage = Math.min(diff * 4, 40);
-                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
-                        }
-                    }
-                    break;
                 case Weapon.GiltGoblet:
                     if (atkUnit.battleContext.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
@@ -7720,11 +7711,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Areadbhar] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAllSpur(5);
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.DarkCreatorS] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
                 let count = self.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
@@ -13333,16 +13319,6 @@ class DamageCalculatorWrapper {
             case Weapon.LilacJadeBreath:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
                     return 0.4;
-                }
-                break;
-            case Weapon.Areadbhar:
-                {
-                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                    if (diff > 0 && defUnit.battleContext.restHpPercentage >= 25) {
-                        let percentage = Math.min(diff * 4, 40);
-                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
-                        return percentage / 100.0;
-                    }
                 }
                 break;
             case Weapon.GiltGoblet:

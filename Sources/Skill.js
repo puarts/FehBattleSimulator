@@ -4306,6 +4306,49 @@ const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 //     );
 // }
 
+// アラドヴァル
+{
+    let skillId = Weapon.Areadbhar;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUit.addAllSpur(5);
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                });
+            }
+            if (targetUit.isWeaponRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+                if (targetUit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUit)) {
+                        targetUit.addAllSpur(4);
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                                enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                        targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                    }
+                }
+            }
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            // 速度回避
+            if (defUnit.battleContext.restHpPercentage >= 25) {
+                let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+            }
+        }
+    );
+}
+
+
 // 白夜忍の薙刀+
 {
     let skillId = Weapon.KumoNaginataPlus;
