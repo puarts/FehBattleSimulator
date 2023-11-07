@@ -17382,6 +17382,15 @@ class DamageCalculatorWrapper {
             }
             // 距離に関係ないもの
             for (let skillId of unit.enumerateSkills()) {
+                let funcMap = updateUnitSpurFromAlliesFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, targetUnit, unit, calcPotentialDamage, enemyUnit);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
                 switch (skillId) {
                     case PassiveC.SparklingBoostPlus:
                         if (targetUnit.battleContext.restHpPercentage >= 50) {
@@ -17396,18 +17405,6 @@ class DamageCalculatorWrapper {
                             targetUnit.addAllSpur(2 + this.currentTurn);
                         }
                         break;
-                }
-            }
-
-            if (Math.abs(unit.posX - targetUnit.posX) <= 1 && Math.abs(unit.posY - targetUnit.posY) <= 2) {
-                // 5×3マス以内にいる場合
-                for (let skillId of unit.enumerateSkills()) {
-                    switch (skillId) {
-                        case Weapon.FlowerOfPlenty:
-                            targetUnit.atkSpur += 3;
-                            targetUnit.resSpur += 3;
-                            break;
-                    }
                 }
             }
 
