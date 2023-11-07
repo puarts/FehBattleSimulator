@@ -933,6 +933,7 @@ class BattleSimmulatorBase {
         }
 
         switch (duoUnit.heroIndex) {
+            case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
             case Hero.DuoLyn:
@@ -1350,6 +1351,7 @@ class BattleSimmulatorBase {
                     duoUnit.addStatusEffect(StatusEffectType.Vantage);
                 }
                 break;
+            case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
             case Hero.DuoLyn:
