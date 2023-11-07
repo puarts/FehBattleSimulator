@@ -933,6 +933,7 @@ class BattleSimmulatorBase {
         }
 
         switch (duoUnit.heroIndex) {
+            case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
             case Hero.DuoLyn:
@@ -1350,6 +1351,7 @@ class BattleSimmulatorBase {
                     duoUnit.addStatusEffect(StatusEffectType.Vantage);
                 }
                 break;
+            case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
             case Hero.DuoLyn:
@@ -8576,7 +8578,10 @@ class BattleSimmulatorBase {
         if (targetUnit.applyDefBuff(getDefBuffAmount(supportId))) { isBuffed = true; }
         if (targetUnit.applyResBuff(getResBuffAmount(supportId))) { isBuffed = true; }
         if (!isBuffed) {
-            isBuffed = supporterUnit.canRallyForcibly()
+            isBuffed = supporterUnit.canRallyForcibly();
+        }
+        if (!isBuffed) {
+            isBuffed = targetUnit.canRalliedForcibly();
         }
 
         if (isBuffed) {
@@ -8588,6 +8593,15 @@ class BattleSimmulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
         for (let skillId of supporterUnit.enumerateSkills()) {
+            let funcMap = applySkillsAfterRallyForSupporterFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, supporterUnit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Support.GoldSerpent:
                     break;
@@ -8680,6 +8694,15 @@ class BattleSimmulatorBase {
 
         // 自分に使用された時
         for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillsAfterRallyForTargetUnitFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, supporterUnit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.Heidr:
                 case Weapon.GoldenCurse:
@@ -8707,6 +8730,30 @@ class BattleSimmulatorBase {
                 case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
                 case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
                 case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
+                case PassiveB.AtkSpdRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
+                    break;
+                case PassiveB.AtkDefRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); });
+                    break;
+                case PassiveB.AtkResRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
+                    break;
+                case PassiveB.DefResRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyDefDebuff(-5); unit.applyResDebuff(-5); });
+                    break;
+                case PassiveB.SpdResRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyResDebuff(-5); unit.applySpdDebuff(-5); });
+                    break;
+                case PassiveB.SpdDefRuse3:
+                    this.__applyRuse(supporterUnit, targetUnit,
+                        unit => { unit.applyDefDebuff(-5); unit.applySpdDebuff(-5); });
+                    break;
             }
         }
     }
@@ -8745,7 +8792,7 @@ class BattleSimmulatorBase {
             buffAmount = getResBuffAmount(supportId);
             if (unit.resBuff < buffAmount) { unit.resBuff = buffAmount; success = true; }
         }
-        if (supporterUnit.canRallyForcibly()) {
+        if (supporterUnit.canRallyForcibly() || targetUnit.canRalliedForcibly()) {
             success = true;
         }
 
@@ -8766,7 +8813,7 @@ class BattleSimmulatorBase {
             if (unit.spdBuff < buffAmount) { unit.spdBuff = buffAmount; success = true; }
             buffAmount = getDefBuffAmount(supportId);
         }
-        if (supporterUnit.canRallyForcibly()) {
+        if (supporterUnit.canRallyForcibly() || targetUnit.canRalliedForcibly()) {
             success = true;
         }
 
@@ -8924,6 +8971,15 @@ class BattleSimmulatorBase {
                 supporterUnit.endAction();
             }
             for (let skillId of supporterUnit.enumerateSkills()) {
+                let funcMap = applySupportSkillFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, supporterUnit, targetUnit, supportTile);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
                 switch (skillId) {
                     case Support.GoldSerpent: {
                         let currentTurn = g_appData.globalBattleContext.currentTurn;
@@ -9085,7 +9141,9 @@ class BattleSimmulatorBase {
             case AssistType.Refresh:
                 return canRefereshTo(targetUnit);
             case AssistType.Rally:
-                return supporterUnit.canRallyForcibly() || supporterUnit.canRallyTo(targetUnit, 1);
+                return supporterUnit.canRallyForcibly() ||
+                    supporterUnit.canRallyTo(targetUnit, 1) ||
+                    targetUnit.canRalliedForcibly();
             case AssistType.Heal:
                 switch (supporterUnit.support) {
                     case Support.MaidensSolace:

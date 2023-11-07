@@ -333,6 +333,15 @@ class PostCombatSkillHander {
             }
         }
         for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectAfterCombatForUnitFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.FathersSonAxe:
                     if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
@@ -814,6 +823,63 @@ class PostCombatSkillHander {
         }
     }
 
+    __applyFlaredSkillEffect(targetUnit, enemyUnit) {
+        let placedTile = enemyUnit.placedTile;
+        // キャラの位置関係によって天脈対象のタイルが異なる
+        if (targetUnit.posX === enemyUnit.posX) {
+            // x軸が等しい時
+            for (let tile of this.map.enumerateTiles()) {
+                if (tile.posY === placedTile.posY &&
+                    Math.abs(tile.posX - placedTile.posX) <= 2) {
+                    tile.divineVein = DivineVeinType.Flame;
+                    tile.divineVeinGroup = targetUnit.groupId;
+                }
+            }
+        } else if (targetUnit.posY === enemyUnit.posY) {
+            // y軸が等しい時
+            for (let tile of this.map.enumerateTiles()) {
+                if (tile.posX === placedTile.posX &&
+                    Math.abs(tile.posY - placedTile.posY) <= 2) {
+                    tile.divineVein = DivineVeinType.Flame;
+                    tile.divineVeinGroup = targetUnit.groupId;
+                }
+            }
+        } else if (
+            targetUnit.posX > enemyUnit.posX && targetUnit.posY > enemyUnit.posY ||
+            targetUnit.posX < enemyUnit.posX && targetUnit.posY < enemyUnit.posY
+        ) {
+            // 第1, 3象限
+            for (let tile of this.map.enumerateTiles()) {
+                if (
+                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
+                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY - 1) ||
+                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY - 2) ||
+                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY + 1) ||
+                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY + 2)
+                ) {
+                    tile.divineVein = DivineVeinType.Flame;
+                    tile.divineVeinGroup = targetUnit.groupId;
+                }
+            }
+        } else if (
+            targetUnit.posX > enemyUnit.posX && targetUnit.posY < enemyUnit.posY ||
+            targetUnit.posX < enemyUnit.posX && targetUnit.posY > enemyUnit.posY
+        ) {
+            // 第2, 4象限
+            for (let tile of this.map.enumerateTiles()) {
+                if (
+                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
+                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY + 1) ||
+                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY + 2) ||
+                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY - 1) ||
+                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY - 2)
+                ) {
+                    tile.divineVein = DivineVeinType.Flame;
+                    tile.divineVeinGroup = targetUnit.groupId;
+                }
+            }
+        }
+    }
 
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
         for (let func of attackUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs) {

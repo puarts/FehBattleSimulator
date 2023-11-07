@@ -929,6 +929,15 @@ class DamageCalculator {
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
             if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
                 for (let skillId of defUnit.enumerateSkills()) {
+                    let funcMap = applyDamageReductionRatiosWhenCondSatisfiedFuncMap;
+                    if (funcMap.has(skillId)) {
+                        let func = funcMap.get(skillId);
+                        if (typeof func === "function") {
+                            func.call(this, atkUnit, defUnit);
+                        } else {
+                            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                        }
+                    }
                     switch (skillId) {
                         case Special.DragonBlast:
                             if (defUnit.tmpSpecialCount === 0 ||

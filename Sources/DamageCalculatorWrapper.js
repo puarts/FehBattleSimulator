@@ -2180,15 +2180,14 @@ class DamageCalculatorWrapper {
         }
         // スキル
         for (let skillId of targetUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveA.FlaredSparrow:
-                    if (targetUnit.battleContext.initiatesCombat) {
-                        enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
-                        let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に<span style="color: #ff0000">${7}</span>ダメージ`;
-                        this.__writeDamageCalcDebugLog(logMessage);
-                        this._damageCalc.writeSimpleLog(logMessage);
-                    }
-                    break;
+            let funcMap = applySKillEffectForUnitAtBeginningOfCombatFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit, calcPotentialDamage);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
             }
         }
     }
@@ -2564,7 +2563,7 @@ class DamageCalculatorWrapper {
                             (attackUnit, attackTargetUnit) => {
                                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(attackUnit)) {
                                     // TODO: [公式バグ] attackUnit => attackTargetUnitに修正予定
-                                    if (Math.abs(attackUnit.posX - unit.posX) <= 1) {
+                                    if (Math.abs(attackTargetUnit.posX - unit.posX) <= 1) {
                                         unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                                     }
                                 }
@@ -2726,6 +2725,12 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3, unit => unit.isPartner(targetUnit))) {
                 targetUnit.battleContext.specialSkillCondSatisfied = true;
+                let found = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (targetUnit.isPartner(unit)) {
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                }
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DragonsFist] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -2779,70 +2784,6 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 50 &&
                 targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.addAtkSpdSpurs(7);
-                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
-                    (targetUnit, enemyUnit) => {
-                        let placedTile = enemyUnit.placedTile;
-                        // キャラの位置関係によって天脈対象のタイルが異なる
-                        if (targetUnit.posX === enemyUnit.posX) {
-                            // x軸が等しい時
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (tile.posY === placedTile.posY &&
-                                    Math.abs(tile.posX - placedTile.posX) <= 2) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        } else if (targetUnit.posY === enemyUnit.posY) {
-                            // y軸が等しい時
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (tile.posX === placedTile.posX &&
-                                    Math.abs(tile.posY - placedTile.posY) <= 2) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        } else if (
-                            targetUnit.posX > enemyUnit.posX && targetUnit.posY > enemyUnit.posY ||
-                            targetUnit.posX < enemyUnit.posX && targetUnit.posY < enemyUnit.posY
-                        ) {
-                            // 第1, 3象限
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (
-                                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
-                                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY - 1) ||
-                                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY - 2) ||
-                                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY + 1) ||
-                                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY + 2)
-                                ) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        } else if (
-                            targetUnit.posX > enemyUnit.posX && targetUnit.posY < enemyUnit.posY ||
-                            targetUnit.posX < enemyUnit.posX && targetUnit.posY > enemyUnit.posY
-                        ) {
-                            // 第2, 4象限
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (
-                                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
-                                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY + 1) ||
-                                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY + 2) ||
-                                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY - 1) ||
-                                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY - 2)
-                                ) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        }
-                    }
-                );
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.TheCyclesTurn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -10801,11 +10742,6 @@ class DamageCalculatorWrapper {
                             targetUnit.battleContext.healedHpAfterCombat += 7;
                         }
                         break;
-                    case Special.DragonBlast:
-                        if (allyUnit.isPartner(targetUnit)) {
-                            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                        }
-                        break;
                 }
             }
         }
@@ -10872,10 +10808,12 @@ class DamageCalculatorWrapper {
         }
 
         // Triangle Attack
-        if (targetUnit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.TriangleAttack) &&
+            !targetUnit.hasStatusEffect(StatusEffectType.Schism)) {
             let triangleAttackerCount = 0;
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-                if (unit.hasStatusEffect(StatusEffectType.TriangleAttack)) {
+                if (unit.hasStatusEffect(StatusEffectType.TriangleAttack) &&
+                    !unit.hasStatusEffect(StatusEffectType.Schism)) {
                     triangleAttackerCount++;
                 }
             }
@@ -10885,10 +10823,12 @@ class DamageCalculatorWrapper {
         }
 
         // デュアルアタック
-        if (targetUnit.hasStatusEffect(StatusEffectType.DualStrike)) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.DualStrike) &&
+            !targetUnit.hasStatusEffect(StatusEffectType.Schism)) {
             let found = false;
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 1, false)) {
-                if (unit.hasStatusEffect(StatusEffectType.DualStrike)) {
+                if (unit.hasStatusEffect(StatusEffectType.DualStrike) &&
+                    !unit.hasStatusEffect(StatusEffectType.Schism)) {
                     found = true;
                 }
             }
@@ -15411,6 +15351,9 @@ class DamageCalculatorWrapper {
     }
 
     __init__applySpecialSkillEffect() {
+        for (let [key, value] of initApplySpecialSkillEffectFuncMap) {
+            this._applySpecialSkillEffectFuncDict[key] = value;
+        }
         this._applySpecialSkillEffectFuncDict[Special.Taiyo] = (targetUnit) => {
             targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
         };
@@ -17187,7 +17130,7 @@ class DamageCalculatorWrapper {
                 switch (unit.weapon) {
                     case Weapon.FlowerOfEase:
                         if (targetUnit.hasNegativeStatusEffect()) {
-                            let amount = targetUnit.isWeaponRefined ? 4 : 3;
+                            let amount = unit.isWeaponRefined ? 4 : 3;
                             targetUnit.addSpurs(-amount, 0, -amount, -amount);
                         }
                         break;

@@ -408,6 +408,12 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
 }
 
+戦闘相手の弱化の合計値と、その周囲2マス以内の敵の弱化の合計値のうち、最も高い値
+let debuffTotal = enemyUnit.debuffTotal;
+for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+    debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
+}
+
 ステータス決定後のバフ効果
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -438,6 +444,12 @@ targetUnit.reserveHeal(N);
 targetUnit.battleContext.healedHpByAttack += N
 
 戦闘後
+// こちらはthisをPostCombatSkillHandlerにしたい場合に使用する
+applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+    function(targetUnit, enemyUnit) {
+    }
+);
+もしくは
 targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
     (targetUnit, enemyUnit) => {
     }
@@ -450,6 +462,12 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
   targetUnit.reserveTakeDamage(N);
 }
+
+戦闘開始後スキル
+applySKillEffectForUnitAtBeginningOfCombatFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, calcPotentialDamage) {
+    }
+);
 
 戦闘開始後、敵に7ダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
 __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage) {
@@ -592,6 +610,18 @@ enemyUnit.battleContext.preventedDefenderSpecial = true;
 __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
     atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
 }
+
+自分または敵が奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で自分または敵が奥義発動済みの時、戦闘中、受けた攻撃のダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
+applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    function (atkUnit, defUnit) {
+        if (defUnit.tmpSpecialCount === 0 ||
+            atkUnit.tmpSpecialCount === 0 ||
+            defUnit.battleContext.isSpecialActivated ||
+            atkUnit.battleContext.isSpecialActivated) {
+            defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+        }
+    }
+);
 
 支援効果を無効
 atkUnit.battleContext.invalidatesSupportEffect = true;
@@ -818,13 +848,43 @@ applyRefreshFuncMap.set(skillId,
 __applyRefresh(skillOwnerUnit, targetUnit) {}
 
 このスキルは「歌う」「踊る｣として扱われる。「歌う」「踊る」を持つ対象には使用できない。対象を行動可能な状態にする。
+refreshSupportSkillSet.add(skillId);
+もしくは
 function isRefreshSupportSkill(skillId) {return true;}
 
 移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
 __applyMovementAssistSkill() {}
 
 応援を使用した時、または自分に使用された時
+// 使用した時
+applySkillsAfterRallyForSupporterFuncMap.set(skillId,
+    function (supporterUnit, targetUnit) {
+    }
+);
+// 使用された時
+applySkillsAfterRallyForTargetUnitFuncMap.set(skillId,
+    function (supporterUnit, targetUnit) {
+    }
+);
+または
 __applySkillsAfterRally(supporterUnit, targetUnit) {}
+
+応援を使用した時、自分を行動可能にする(1ターンに1回のみ)
+applySupportSkillFuncMap.set(skillId,
+    function (supporterUnit, targetUnit) {
+        if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+            supporterUnit.isActionDone = false;
+            supporterUnit.isOneTimeActionActivatedForWeapon = true;
+        }
+    }
+);
+
+// 共謀系
+canRallyForciblyFuncMap.set(skillId,
+    function (unit) {
+        return true;
+    }
+);
 
 自分を除く自軍内の移動タイプの種類数によって異なる効果を発動
 enumerateUnitsInTheSameGroupOnMap()
@@ -864,6 +924,8 @@ calcMoveCountForCantoFuncMap.set(skillId, function () {
     // thisはUnit
     // 再移動N
     return N;
+    // 再移動残り+1
+    // return this.restMoveCount + 1;
 });
 もしくは
 __canActivateCanto(unit) {}
@@ -873,7 +935,15 @@ unit.calcMoveCountForCanto() {} // ワープの場合は必要なし
 * enumerateWarpCantoTiles(unit) {}
 
 移動可能[ワープ]
-const TeleportationSkillDictに登録
+// const TeleportationSkillDictに登録
+TeleportationSkillDict[skillId] = 0;
+enumerateTeleportTilesForUnitFuncMap.set(skillId,
+    function (unit) {
+        // 周囲2マス以内の味方の、周囲1マス以内に移動可能
+        return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+    }
+);
+もしくは
 Main.js
 *__enumerateTeleportTiles(unit) {
     // 周囲2マス以内の味方の、周囲2マス以内に移動可能(PassiveC.OpeningRetainer)
