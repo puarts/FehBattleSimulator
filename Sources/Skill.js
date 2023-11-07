@@ -1781,6 +1781,9 @@ const Weapon = {
     KumoYumiPlus: 2645, // 白夜忍の和弓+
     RadiantScrolls: 2647, // 光炎の姉妹の忍法帖
     KumoNaginataPlus: 2649, // 白夜忍の薙刀+
+
+    // 2023年11月 武器錬成
+    FlameBattleaxe: 2639, // 炎帝の烈斧
 };
 
 const Support = {
@@ -4306,6 +4309,42 @@ const updateUnitSpurFromAlliesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 炎帝の烈斧
+{
+    let skillId = Weapon.FlameBattleaxe;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.isWeaponSpecialRefined) {
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (unit.isInClossWithOffset(skillOwner, 1)) {
+                        unit.reserveToApplyAtkDebuff(-7);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let amount = Math.max(15 - enemyUnit.maxSpecialCount * 2, 7);
+                if (enemyUnit.special === Special.None) {
+                    amount = 7;
+                }
+                enemyUnit.addAtkDefSpurs(-amount);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.addAtkDefSpurs(-5);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
+    );
+}
+
 
 // 豊潤の花
 {

@@ -5624,6 +5624,7 @@ class Unit extends BattleMapElement {
 
 
     /// ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
+    /// 例えば縦3列の場合はoffset=1, 5列の場合はoffset=2。
     isInClossWithOffset(unit, offset) {
         return (unit.posX - offset <= this.posX && this.posX <= unit.posX + offset)
             || (unit.posY - offset <= this.posY && this.posY <= unit.posY + offset);
