@@ -1779,6 +1779,7 @@ const Weapon = {
     ScarletSpear: 2640, // 将軍忍者の紅槍
     SpysShuriken: 2643, // 密偵忍者の手裏剣
     KumoYumiPlus: 2645, // 白夜忍の和弓+
+    RadiantScrolls: 2647, // 光炎の姉妹の忍法帖
 };
 
 const Support = {
@@ -4300,6 +4301,49 @@ const enumerateTeleportTilesForUnitFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 光炎の姉妹の忍法帖
+{
+    let skillId = Weapon.RadiantScrolls;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.restMoveCount;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                enemyUnit.addAtkResSpurs(-6);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let debuffTotal = enemyUnit.debuffTotal;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                            debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
+                        }
+                        let amount = Math.abs(debuffTotal);
+                        let ratio = Math.min(1, amount * 4 / 100.0);
+                        this.writeDebugLog(`${targetUnit.weaponInfo.name}のデバフ参照値${amount}`);
+                        this.writeDebugLog(`${targetUnit.weaponInfo.name}の効果により奥義以外のダメージ軽減を${ratio}無効`);
+                        targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+                    }
+                );
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let debuffTotal = defUnit.debuffTotal;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2)) {
+                        debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
+                    }
+                    let amount = Math.abs(debuffTotal);
+                    this.writeDebugLog(`${targetUnit.weaponInfo.name}の効果により固定ダメージを${amount}追加`);
+                    atkUnit.battleContext.additionalDamage += amount;
+                });
+            }
+        }
+    );
+}
+
 
 // 白夜忍の和弓+
 {

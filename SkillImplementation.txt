@@ -408,6 +408,12 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
     enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
 }
 
+戦闘相手の弱化の合計値と、その周囲2マス以内の敵の弱化の合計値のうち、最も高い値
+let debuffTotal = enemyUnit.debuffTotal;
+for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+    debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
+}
+
 ステータス決定後のバフ効果
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -906,6 +912,8 @@ calcMoveCountForCantoFuncMap.set(skillId, function () {
     // thisはUnit
     // 再移動N
     return N;
+    // 再移動残り+1
+    // return this.restMoveCount + 1;
 });
 もしくは
 __canActivateCanto(unit) {}
