@@ -2354,6 +2354,7 @@ const PassiveA = {
 
     // 炎撃
     FlaredSparrow: 2551, // 鬼神飛燕の炎撃
+    FlaredMirror: 2648, // 鬼神明鏡の炎撃
 
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
@@ -4287,6 +4288,8 @@ const applySupportSkillFuncMap = new Map();
 const canRallyForciblyFuncMap = new Map();
 const canRalliedForciblyFuncMap = new Map();
 const enumerateTeleportTilesForUnitFuncMap = new Map();
+const applySkillEffectAfterCombatForUnitFuncMap = new Map();
+const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4301,6 +4304,64 @@ const enumerateTeleportTilesForUnitFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 鬼神明鏡の炎撃
+{
+    let skillId = PassiveA.FlaredMirror;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkResSpurs(7, 10);
+            }
+        }
+    );
+    applySKillEffectForUnitAtBeginningOfCombatFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
+                let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に<span style="color: #ff0000">${7}</span>ダメージ`;
+                this.__writeDamageCalcDebugLog(logMessage);
+                this._damageCalc.writeSimpleLog(logMessage);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
+            }
+        }
+    );
+}
+
+// 鬼神飛燕の炎撃
+{
+    let skillId = PassiveA.FlaredSparrow;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkSpdSpurs(7);
+            }
+        }
+    );
+    applySKillEffectForUnitAtBeginningOfCombatFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
+                let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に<span style="color: #ff0000">${7}</span>ダメージ`;
+                this.__writeDamageCalcDebugLog(logMessage);
+                this._damageCalc.writeSimpleLog(logMessage);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
+            }
+        }
+    );
+}
 
 // 光炎の姉妹の忍法帖
 {

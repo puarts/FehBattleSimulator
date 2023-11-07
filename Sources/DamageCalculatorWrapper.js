@@ -2180,15 +2180,14 @@ class DamageCalculatorWrapper {
         }
         // スキル
         for (let skillId of targetUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveA.FlaredSparrow:
-                    if (targetUnit.battleContext.initiatesCombat) {
-                        enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
-                        let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に<span style="color: #ff0000">${7}</span>ダメージ`;
-                        this.__writeDamageCalcDebugLog(logMessage);
-                        this._damageCalc.writeSimpleLog(logMessage);
-                    }
-                    break;
+            let funcMap = applySKillEffectForUnitAtBeginningOfCombatFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit, calcPotentialDamage);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
             }
         }
     }
@@ -2785,70 +2784,6 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 50 &&
                 targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.FlaredSparrow] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.addAtkSpdSpurs(7);
-                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
-                    (targetUnit, enemyUnit) => {
-                        let placedTile = enemyUnit.placedTile;
-                        // キャラの位置関係によって天脈対象のタイルが異なる
-                        if (targetUnit.posX === enemyUnit.posX) {
-                            // x軸が等しい時
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (tile.posY === placedTile.posY &&
-                                    Math.abs(tile.posX - placedTile.posX) <= 2) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        } else if (targetUnit.posY === enemyUnit.posY) {
-                            // y軸が等しい時
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (tile.posX === placedTile.posX &&
-                                    Math.abs(tile.posY - placedTile.posY) <= 2) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        } else if (
-                            targetUnit.posX > enemyUnit.posX && targetUnit.posY > enemyUnit.posY ||
-                            targetUnit.posX < enemyUnit.posX && targetUnit.posY < enemyUnit.posY
-                        ) {
-                            // 第1, 3象限
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (
-                                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
-                                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY - 1) ||
-                                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY - 2) ||
-                                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY + 1) ||
-                                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY + 2)
-                                ) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        } else if (
-                            targetUnit.posX > enemyUnit.posX && targetUnit.posY < enemyUnit.posY ||
-                            targetUnit.posX < enemyUnit.posX && targetUnit.posY > enemyUnit.posY
-                        ) {
-                            // 第2, 4象限
-                            for (let tile of this.map.enumerateTiles()) {
-                                if (
-                                    (tile.posX === placedTile.posX && tile.posY === placedTile.posY) ||
-                                    (tile.posX === placedTile.posX + 1 && tile.posY === placedTile.posY + 1) ||
-                                    (tile.posX === placedTile.posX + 2 && tile.posY === placedTile.posY + 2) ||
-                                    (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY - 1) ||
-                                    (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY - 2)
-                                ) {
-                                    tile.divineVein = DivineVeinType.Flame;
-                                    tile.divineVeinGroup = targetUnit.groupId;
-                                }
-                            }
-                        }
-                    }
-                );
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.TheCyclesTurn] = (targetUnit, enemyUnit, calcPotentialDamage) => {

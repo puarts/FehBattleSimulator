@@ -444,6 +444,12 @@ targetUnit.reserveHeal(N);
 targetUnit.battleContext.healedHpByAttack += N
 
 戦闘後
+// こちらはthisをPostCombatSkillHandlerにしたい場合に使用する
+applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+    function(targetUnit, enemyUnit) {
+    }
+);
+もしくは
 targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
     (targetUnit, enemyUnit) => {
     }
@@ -456,6 +462,12 @@ __applySkillEffectAfterCombatForUnit() {
   targetUnit.reserveHeal(N);
   targetUnit.reserveTakeDamage(N);
 }
+
+戦闘開始後スキル
+applySKillEffectForUnitAtBeginningOfCombatFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, calcPotentialDamage) {
+    }
+);
 
 戦闘開始後、敵に7ダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
 __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage) {
