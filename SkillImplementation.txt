@@ -751,10 +751,12 @@ targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
 
 与えるダメージ+自分の守備の20%、受けるダメージ-自分の守備の20%
-__applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
-    targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
-    targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
-}
+targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+        targetUnit.battleContext.damageReductionValue += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.20);
+    }
+);
 
 戦闘中、最初に与える攻撃のダメージに...
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...

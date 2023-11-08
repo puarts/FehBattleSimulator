@@ -8906,17 +8906,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.ChisouGeiborugu] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.moveType === MoveType.Infantry
-                || enemyUnit.moveType === MoveType.Armor
-                || enemyUnit.moveType === MoveType.Cavalry
-            ) {
-                enemyUnit.atkSpur -= 5;
-                enemyUnit.defSpur -= 5;
-                targetUnit.battleContext.invalidatesAtkBuff = true;
-                targetUnit.battleContext.invalidatesDefBuff = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.KokukarasuNoSyo] = (targetUnit, enemyUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.getAtkInPrecombat() >= targetUnit.getAtkInPrecombat() + 3) {

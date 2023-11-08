@@ -4313,6 +4313,48 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 //     );
 // }
 
+// 地槍ゲイボルグ
+{
+    let skillId = Weapon.ChisouGeiborugu;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.moveType === MoveType.Infantry ||
+                    enemyUnit.moveType === MoveType.Armor ||
+                    enemyUnit.moveType === MoveType.Cavalry) {
+                    enemyUnit.addAtkDefSpurs(-5);
+                    targetUnit.battleContext.invalidateBuffs(true, false, true, false);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.moveType === MoveType.Infantry ||
+                    enemyUnit.moveType === MoveType.Armor ||
+                    enemyUnit.moveType === MoveType.Cavalry ||
+                    targetUnit.battleContext.restHpPercentage >= 50) {
+                    enemyUnit.addAtkDefSpurs(-5);
+                    targetUnit.battleContext.invalidateBuffs(true, false, true, false);
+                    targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            targetUnit.battleContext.additionalDamage += Math.trunc(targetUnit.getEvalDefInCombat(enemyUnit) * 0.10);
+                        }
+                    );
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addAtkDefSpurs(-5);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnDefDebuff = true;
+                    }
+                }
+            }
+        }
+    );
+}
+
 // プージ
 {
     let skillId = Weapon.Puji;
