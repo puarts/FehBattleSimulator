@@ -11249,7 +11249,7 @@ class DamageCalculatorWrapper {
                     if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
                         enemyUnit.addAtkResSpurs(-3);
                         let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
-                        enemyUnit.addAtkResSpurs(-maxDebuffs[0], -maxDebuffs[3]);
+                        enemyUnit.addAtkResSpurs(maxDebuffs[0], maxDebuffs[3]);
                     }
                     break;
                 case Weapon.Merikuru:
@@ -12028,24 +12028,16 @@ class DamageCalculatorWrapper {
     // 最大のデバフを返す
     // デバフが最大とはマイナスの値が大きいことであることに注意
     __maxDebuffsFromAlliesWithinSpecificSpaces(targetUnit, spaces = 2, withTargetUnit = true) {
-        let atkMax = 0;
-        let spdMax = 0;
-        let defMax = 0;
-        let resMax = 0;
-        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit)) {
-            let atkDebuff = Math.abs(unit.atkDebuffTotal);
-            if (atkMax < atkDebuff) atkMax = atkDebuff;
-
-            let spdDebuff = Math.abs(unit.spdDebuffTotal);
-            if (spdMax < spdDebuff) spdMax = spdDebuff;
-
-            let defDebuff = Math.abs(unit.defDebuffTotal);
-            if (defMax < defDebuff) defMax = defDebuff;
-
-            let resDebuff = Math.abs(unit.resDebuffTotal);
-            if (resMax < resDebuff) resMax = resDebuff;
+        let debuffsArray = [];
+        if (withTargetUnit) {
+            debuffsArray.push(targetUnit.debuffTotals);
         }
-        return [-atkMax, -spdMax, -defMax, -resMax];
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces)) {
+            debuffsArray.push(unit.getDebuffTotals(true));
+        }
+        let func = (previousDebuffs, currentDebuffs) =>
+            previousDebuffs.map((debuff, index) => Math.min(debuff, currentDebuffs[index]));
+        return debuffsArray.reduce(func, [0, 0, 0, 0]);
     }
 
     __isThereAllyIn2Spaces(targetUnit) {
