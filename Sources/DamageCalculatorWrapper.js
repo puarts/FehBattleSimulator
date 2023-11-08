@@ -8940,12 +8940,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.GeneiBattleAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.defSpur += 6;
-                targetUnit.resSpur += 6;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.BaraNoYari] = (targetUnit, enemyUnit) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -14962,11 +14956,6 @@ class DamageCalculatorWrapper {
                             --followupAttackPriority;
                         }
                         break;
-                    case Weapon.GeneiBattleAxe:
-                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
-                            --followupAttackPriority;
-                        }
-                        break;
                     case PassiveB.WaryFighter3:
                         if (defUnit.battleContext.restHpPercentage >= 50) {
                             --followupAttackPriority;
@@ -15853,6 +15842,10 @@ class DamageCalculatorWrapper {
 
     __countEnemiesActionDone(targetUnit) {
         return this._unitManager.countUnitInSpecifiedGroupOnMap(targetUnit.getEnemyGroupId(), x => x.isActionDone);
+    }
+
+    __countEnemiesActionNotDone(targetUnit) {
+        return this._unitManager.countUnitInSpecifiedGroupOnMap(targetUnit.getEnemyGroupId(), x => !x.isActionDone);
     }
 
     __isThereAnyAllyUnit(unit, conditionFunc) {

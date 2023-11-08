@@ -4311,6 +4311,57 @@ const updateUnitSpurFromAlliesFuncMap = new Map();
 //     );
 // }
 
+// 幻影バトルアクス
+{
+    let skillId = Weapon.GeneiBattleAxe;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (this.__isThereAllyIn2Spaces(targetUnit) && !calcPotentialDamage) {
+                    targetUnit.addDefResSpurs(6);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            } else {
+                // <錬成効果>
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) && !calcPotentialDamage) {
+                    targetUnit.addAtkSpdSpurs(4);
+                    targetUnit.addDefResSpurs(6);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                    if (enemyUnit.battleContext.initiatesCombat) {
+                        let count = this.__countEnemiesActionNotDone(targetUnit);
+                        let amount = Math.max(Math.min(count * 3, 12), 6);
+                        targetUnit.addDefResSpurs(amount);
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            if (!allyUnit.isWeaponSpecialRefined) {
+                return;
+            }
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addDefResSpurs(6);
+            }
+        }
+    );
+    applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (!allyUnit.isWeaponSpecialRefined) {
+                return;
+            }
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 光明レイピア
 {
     let skillId = Weapon.BrilliantRapier;
