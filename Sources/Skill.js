@@ -1784,6 +1784,7 @@ const Weapon = {
 
     // 2023年11月 武器錬成
     FlameBattleaxe: 2639, // 炎帝の烈斧
+    BrilliantRapier: 2638, // 光明レイピア
 };
 
 const Support = {
@@ -4309,6 +4310,47 @@ const updateUnitSpurFromAlliesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 光明レイピア
+{
+    let skillId = Weapon.BrilliantRapier;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+            }
+            if (targetUnit.battleContext.restHpPercentage <= 80 &&
+                enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.isVantageActivatable = true;
+            }
+            if (!targetUnit.isWeaponSpecialRefined) {
+                return;
+            }
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true);
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                });
+            }
+        }
+    );
+}
 
 // 炎帝の烈斧
 {

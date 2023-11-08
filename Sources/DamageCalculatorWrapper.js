@@ -12006,24 +12006,22 @@ class DamageCalculatorWrapper {
     // 最も高い強化値を返す。
     // 対象キャラ全員にパニックがかかっている場合でもマイナスは返さない（0を返す）。
     __getHighestBuffs(targetUnit, enemyUnit, units, withTargetUnit = false) {
-        let buffs = [];
+        let buffsArray = [];
         if (withTargetUnit) {
-            buffs.push(targetUnit.getBuffsInCombat(enemyUnit));
+            buffsArray.push(targetUnit.getBuffsInCombat(enemyUnit));
         }
         for (let unit of units) {
-            buffs.push(unit.buffs);
+            buffsArray.push(unit.buffs);
         }
-        buffs.push([
+        buffsArray.push([
             targetUnit.getAtkBuffInCombat(enemyUnit),
             targetUnit.getSpdBuffInCombat(enemyUnit),
             targetUnit.getDefBuffInCombat(enemyUnit),
             targetUnit.getResBuffInCombat(enemyUnit),
         ]);
-        let amounts = buffs.reduce(
-            (previousValue, currentValue) =>
-                previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
-            [0, 0, 0, 0]);
-        return amounts;
+        let func = (previousBuffs, currentBuffs) =>
+            previousBuffs.map((buff, index) => Math.max(buff, currentBuffs[index]));
+        return buffsArray.reduce(func, [0, 0, 0, 0]);
     }
 
     __applyBuffAbsorption(targetUnit, enemyUnit,
