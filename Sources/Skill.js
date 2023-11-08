@@ -4363,7 +4363,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
                 if (targetUnit.battleContext.restHpPercentage >= 50) {
-                    unit.battleContext.canCounterattackToAllDistance = true;
+                    targetUnit.battleContext.canCounterattackToAllDistance = true;
                 }
             } else {
                 // <錬成効果>
@@ -4603,20 +4603,20 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 {
     let skillId = Weapon.Areadbhar;
     applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUit, enemyUnit, calcPotentialDamage) {
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUit.addAllSpur(5);
+                targetUnit.addAllSpur(5);
                 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
                     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
                 });
             }
-            if (targetUit.isWeaponRefined) {
+            if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.battleContext.healedHpAfterCombat += 7;
                 }
-                if (targetUit.isWeaponSpecialRefined) {
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUit)) {
-                        targetUit.addAllSpur(4);
+                if (targetUnit.isWeaponSpecialRefined) {
+                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAllSpur(4);
                         targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
                             (targetUnit, enemyUnit, calcPotentialDamage) => {
                                 enemyUnit.battleContext.increaseCooldownCountForAttack = false;
