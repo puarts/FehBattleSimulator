@@ -2009,16 +2009,11 @@ class DamageCalculatorWrapper {
 
 
 
-        {
-            let func = (defUnit) => {
-                if (defUnit.battleContext.restHpPercentage >= 50) {
-                    defUnit.battleContext.canCounterattackToAllDistance = true;
-                }
-            };
-
-            self._applySkillEffectForDefUnitFuncDict[Weapon.Amatsu] = func;
-            self._applySkillEffectForDefUnitFuncDict[Weapon.Puji] = func;
-        }
+        self._applySkillEffectForDefUnitFuncDict[Weapon.Amatsu] = (defUnit) => {
+            if (defUnit.battleContext.restHpPercentage >= 50) {
+                defUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        };
 
         {
             let func = (defUnit, atkUnit) => {

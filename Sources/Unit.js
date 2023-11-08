@@ -3037,7 +3037,22 @@ class Unit extends BattleMapElement {
 
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
-        let hasSkills =
+        let hasSkills = false;
+        for (let skillId of this.enumerateSkills()) {
+            let funcMap = canActivateObstractToTilesIn2SpacesFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    if (func.call(this, this, moveUnit)) {
+                        hasSkills = true;
+                        break;
+                    }
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
+        hasSkills |=
             this.weapon === Weapon.CaptainsSword ||
             this.passiveB === PassiveB.AtkSpdBulwark3 ||
             this.passiveB === PassiveB.AtkDefBulwark3 ||
@@ -3049,14 +3064,30 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToAdjacentTiles(moveUnit) {
-        return (this.passiveB === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50)
-            || (this.weapon === Weapon.CaptainsSword)
-            || (this.passiveB === PassiveB.DetailedReport)
-            || (this.passiveB === PassiveB.AtkSpdBulwark3)
-            || (this.passiveB === PassiveB.AtkDefBulwark3)
-            || (this.passiveB === PassiveB.SpdDefBulwark3)
-            || (this.passiveB === PassiveB.SpdResBulwark3)
-            || (this.passiveS === PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
+        let hasSkills = false;
+        for (let skillId of this.enumerateSkills()) {
+            let funcMap = canActivateObstructToAdjacentTilesFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    if (func.call(this, this, moveUnit)) {
+                        hasSkills = true;
+                        break;
+                    }
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
+        hasSkills |=
+            this.passiveB === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50 ||
+            this.weapon === Weapon.CaptainsSword ||
+            this.passiveB === PassiveB.DetailedReport ||
+            this.passiveB === PassiveB.AtkSpdBulwark3 ||
+            this.passiveB === PassiveB.AtkDefBulwark3 ||
+            this.passiveB === PassiveB.SpdDefBulwark3 ||
+            this.passiveB === PassiveB.SpdResBulwark3;
+        return hasSkills || (this.passiveS === PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
     }
 
     get isOnMap() {

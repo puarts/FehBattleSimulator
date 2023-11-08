@@ -4296,6 +4296,8 @@ const enumerateTeleportTilesForUnitFuncMap = new Map();
 const applySkillEffectAfterCombatForUnitFuncMap = new Map();
 const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 const updateUnitSpurFromAlliesFuncMap = new Map();
+const canActivateObstructToAdjacentTilesFuncMap = new Map();
+const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 
 // 各スキルの実装
 // {
@@ -4310,6 +4312,65 @@ const updateUnitSpurFromAlliesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// プージ
+{
+    let skillId = Weapon.Puji;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage >= 50) {
+                    unit.battleContext.canCounterattackToAllDistance = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.canCounterattackToAllDistance = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        // 最初に受けた攻撃のダメージを軽減
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                        // ダメージ軽減分を保存
+                        targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+                            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                                if (!context.isFirstAttack(atkUnit)) return;
+                                defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                            }
+                        );
+                        // 攻撃ごとの固定ダメージに軽減した分を加算
+                        targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                                atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                                let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                                atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                                return addDamage;
+                            }
+                            return 0;
+                        });
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                    }
+                }
+            }
+        }
+    );
+    canActivateObstructToAdjacentTilesFuncMap.set(skillId,
+        function (unit, moveUnit) {
+            return unit.isWeaponSpecialRefined && moveUnit.isMeleeWeaponType();
+        }
+    );
+    canActivateObstractToTilesIn2SpacesFuncMap.set(skillId,
+        function (unit, moveUnit) {
+            return unit.isWeaponSpecialRefined && moveUnit.isRangedWeaponType();
+        }
+    );
+}
 
 // 幻影バトルアクス
 {
