@@ -979,15 +979,6 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
                     }
                     break;
-                case Weapon.Areadbhar:
-                    {
-                        let diff = defUnit.getEvalSpdInPrecombat() - atkUnit.getEvalSpdInPrecombat();
-                        if (diff > 0 && defUnit.battleContext.restHpPercentage >= 25) {
-                            let percentage = Math.min(diff * 4, 40);
-                            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(percentage / 100.0);
-                        }
-                    }
-                    break;
                 case Weapon.GiltGoblet:
                     if (atkUnit.battleContext.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
@@ -2018,16 +2009,11 @@ class DamageCalculatorWrapper {
 
 
 
-        {
-            let func = (defUnit) => {
-                if (defUnit.battleContext.restHpPercentage >= 50) {
-                    defUnit.battleContext.canCounterattackToAllDistance = true;
-                }
-            };
-
-            self._applySkillEffectForDefUnitFuncDict[Weapon.Amatsu] = func;
-            self._applySkillEffectForDefUnitFuncDict[Weapon.Puji] = func;
-        }
+        self._applySkillEffectForDefUnitFuncDict[Weapon.Amatsu] = (defUnit) => {
+            if (defUnit.battleContext.restHpPercentage >= 50) {
+                defUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        };
 
         {
             let func = (defUnit, atkUnit) => {
@@ -7720,11 +7706,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Areadbhar] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAllSpur(5);
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.DarkCreatorS] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
                 let count = self.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
@@ -8925,17 +8906,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.ChisouGeiborugu] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.moveType === MoveType.Infantry
-                || enemyUnit.moveType === MoveType.Armor
-                || enemyUnit.moveType === MoveType.Cavalry
-            ) {
-                enemyUnit.atkSpur -= 5;
-                enemyUnit.defSpur -= 5;
-                targetUnit.battleContext.invalidatesAtkBuff = true;
-                targetUnit.battleContext.invalidatesDefBuff = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.KokukarasuNoSyo] = (targetUnit, enemyUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (enemyUnit.getAtkInPrecombat() >= targetUnit.getAtkInPrecombat() + 3) {
@@ -8952,12 +8922,6 @@ class DamageCalculatorWrapper {
                     targetUnit.atkSpur += 4;
                     targetUnit.spdSpur += 4;
                 }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.GeneiBattleAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.defSpur += 6;
-                targetUnit.resSpur += 6;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.BaraNoYari] = (targetUnit, enemyUnit) => {
@@ -11285,7 +11249,7 @@ class DamageCalculatorWrapper {
                     if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
                         enemyUnit.addAtkResSpurs(-3);
                         let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
-                        enemyUnit.addAtkResSpurs(-maxDebuffs[0], -maxDebuffs[3]);
+                        enemyUnit.addAtkResSpurs(maxDebuffs[0], maxDebuffs[3]);
                     }
                     break;
                 case Weapon.Merikuru:
@@ -12020,24 +11984,22 @@ class DamageCalculatorWrapper {
     // 最も高い強化値を返す。
     // 対象キャラ全員にパニックがかかっている場合でもマイナスは返さない（0を返す）。
     __getHighestBuffs(targetUnit, enemyUnit, units, withTargetUnit = false) {
-        let buffs = [];
+        let buffsArray = [];
         if (withTargetUnit) {
-            buffs.push(targetUnit.getBuffsInCombat(enemyUnit));
+            buffsArray.push(targetUnit.getBuffsInCombat(enemyUnit));
         }
         for (let unit of units) {
-            buffs.push(unit.buffs);
+            buffsArray.push(unit.buffs);
         }
-        buffs.push([
+        buffsArray.push([
             targetUnit.getAtkBuffInCombat(enemyUnit),
             targetUnit.getSpdBuffInCombat(enemyUnit),
             targetUnit.getDefBuffInCombat(enemyUnit),
             targetUnit.getResBuffInCombat(enemyUnit),
         ]);
-        let amounts = buffs.reduce(
-            (previousValue, currentValue) =>
-                previousValue.map((buff, index) => Math.max(buff, currentValue[index])),
-            [0, 0, 0, 0]);
-        return amounts;
+        let func = (previousBuffs, currentBuffs) =>
+            previousBuffs.map((buff, index) => Math.max(buff, currentBuffs[index]));
+        return buffsArray.reduce(func, [0, 0, 0, 0]);
     }
 
     __applyBuffAbsorption(targetUnit, enemyUnit,
@@ -12066,24 +12028,16 @@ class DamageCalculatorWrapper {
     // 最大のデバフを返す
     // デバフが最大とはマイナスの値が大きいことであることに注意
     __maxDebuffsFromAlliesWithinSpecificSpaces(targetUnit, spaces = 2, withTargetUnit = true) {
-        let atkMax = 0;
-        let spdMax = 0;
-        let defMax = 0;
-        let resMax = 0;
-        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit)) {
-            let atkDebuff = Math.abs(unit.atkDebuffTotal);
-            if (atkMax < atkDebuff) atkMax = atkDebuff;
-
-            let spdDebuff = Math.abs(unit.spdDebuffTotal);
-            if (spdMax < spdDebuff) spdMax = spdDebuff;
-
-            let defDebuff = Math.abs(unit.defDebuffTotal);
-            if (defMax < defDebuff) defMax = defDebuff;
-
-            let resDebuff = Math.abs(unit.resDebuffTotal);
-            if (resMax < resDebuff) resMax = resDebuff;
+        let debuffsArray = [];
+        if (withTargetUnit) {
+            debuffsArray.push(targetUnit.debuffTotals);
         }
-        return [-atkMax, -spdMax, -defMax, -resMax];
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces)) {
+            debuffsArray.push(unit.getDebuffTotals(true));
+        }
+        let func = (previousDebuffs, currentDebuffs) =>
+            previousDebuffs.map((debuff, index) => Math.min(debuff, currentDebuffs[index]));
+        return debuffsArray.reduce(func, [0, 0, 0, 0]);
     }
 
     __isThereAllyIn2Spaces(targetUnit) {
@@ -13333,16 +13287,6 @@ class DamageCalculatorWrapper {
             case Weapon.LilacJadeBreath:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
                     return 0.4;
-                }
-                break;
-            case Weapon.Areadbhar:
-                {
-                    let diff = defUnit.getEvalSpdInCombat(atkUnit) - atkUnit.getEvalSpdInCombat(defUnit);
-                    if (diff > 0 && defUnit.battleContext.restHpPercentage >= 25) {
-                        let percentage = Math.min(diff * 4, 40);
-                        if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`アラドヴァルによりダメージ${percentage}%軽減(速さの差 ${(defUnit.getEvalSpdInCombat(atkUnit))}-${(atkUnit.getEvalSpdInCombat(defUnit))}=${diff})`);
-                        return percentage / 100.0;
-                    }
                 }
                 break;
             case Weapon.GiltGoblet:
@@ -14988,11 +14932,6 @@ class DamageCalculatorWrapper {
                             --followupAttackPriority;
                         }
                         break;
-                    case Weapon.GeneiBattleAxe:
-                        if (this.__isThereAllyInSpecifiedSpaces(defUnit, 2)) {
-                            --followupAttackPriority;
-                        }
-                        break;
                     case PassiveB.WaryFighter3:
                         if (defUnit.battleContext.restHpPercentage >= 50) {
                             --followupAttackPriority;
@@ -15879,6 +15818,10 @@ class DamageCalculatorWrapper {
 
     __countEnemiesActionDone(targetUnit) {
         return this._unitManager.countUnitInSpecifiedGroupOnMap(targetUnit.getEnemyGroupId(), x => x.isActionDone);
+    }
+
+    __countEnemiesActionNotDone(targetUnit) {
+        return this._unitManager.countUnitInSpecifiedGroupOnMap(targetUnit.getEnemyGroupId(), x => !x.isActionDone);
     }
 
     __isThereAnyAllyUnit(unit, conditionFunc) {
@@ -17406,6 +17349,15 @@ class DamageCalculatorWrapper {
             }
             // 距離に関係ないもの
             for (let skillId of unit.enumerateSkills()) {
+                let funcMap = updateUnitSpurFromAlliesFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, targetUnit, unit, calcPotentialDamage, enemyUnit);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
                 switch (skillId) {
                     case PassiveC.SparklingBoostPlus:
                         if (targetUnit.battleContext.restHpPercentage >= 50) {
@@ -17420,18 +17372,6 @@ class DamageCalculatorWrapper {
                             targetUnit.addAllSpur(2 + this.currentTurn);
                         }
                         break;
-                }
-            }
-
-            if (Math.abs(unit.posX - targetUnit.posX) <= 1 && Math.abs(unit.posY - targetUnit.posY) <= 2) {
-                // 5×3マス以内にいる場合
-                for (let skillId of unit.enumerateSkills()) {
-                    switch (skillId) {
-                        case Weapon.FlowerOfPlenty:
-                            targetUnit.atkSpur += 3;
-                            targetUnit.resSpur += 3;
-                            break;
-                    }
                 }
             }
 
