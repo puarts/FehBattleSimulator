@@ -4620,12 +4620,46 @@ class Unit extends BattleMapElement {
     }
 
     updateStatusByMergeAndDragonFlower() {
+        const addValues = Unit.calcStatusAddValuesByMergeAndDragonFlower(
+            this.ivHighStat, this.ivLowStat, this.ascendedAsset, this.merge, this.dragonflower,
+            this.heroInfo.hpLv1,
+            this.heroInfo.atkLv1,
+            this.heroInfo.spdLv1,
+            this.heroInfo.defLv1,
+            this.heroInfo.resLv1);
+
+        this._maxHpWithSkills += addValues[0];
+        this.atkWithSkills += addValues[1];
+        this.spdWithSkills += addValues[2];
+        this.defWithSkills += addValues[3];
+        this.resWithSkills += addValues[4];
+    }
+    /**
+     * @param  {StatusType} ivHighStat
+     * @param  {StatusType} ivLowStat
+     * @param  {StatusType} ascendedAsset
+     * @param  {Number} merge
+     * @param  {Number} dragonflower
+     * @param  {Number} hpLv1
+     * @param  {Number} atkLv1
+     * @param  {Number} spdLv1
+     * @param  {Number} defLv1
+     * @param  {Number} resLv1
+     */
+    static calcStatusAddValuesByMergeAndDragonFlower(
+        ivHighStat, ivLowStat, ascendedAsset, merge, dragonflower,
+        hpLv1,
+        atkLv1,
+        spdLv1,
+        defLv1,
+        resLv1
+    ) {
         let hpLv1IvChange = 0;
         let atkLv1IvChange = 0;
         let spdLv1IvChange = 0;
         let defLv1IvChange = 0;
         let resLv1IvChange = 0;
-        switch (this.ivHighStat) {
+        switch (ivHighStat) {
             case StatusType.None: break;
             case StatusType.Hp: hpLv1IvChange = 1; break;
             case StatusType.Atk: atkLv1IvChange = 1; break;
@@ -4635,7 +4669,7 @@ class Unit extends BattleMapElement {
         }
 
         // 開花得意は順序に影響しない
-        // switch (this.ascendedAsset) {
+        // switch (ascendedAsset) {
         //     case StatusType.None: break;
         //     case StatusType.Hp: hpLv1IvChange = 1; break;
         //     case StatusType.Atk: atkLv1IvChange = 1; break;
@@ -4644,7 +4678,7 @@ class Unit extends BattleMapElement {
         //     case StatusType.Res: resLv1IvChange = 1; break;
         // }
 
-        switch (this.ivLowStat) {
+        switch (ivLowStat) {
             case StatusType.None: break;
             case StatusType.Hp: hpLv1IvChange = -1; break;
             case StatusType.Atk: atkLv1IvChange = -1; break;
@@ -4653,43 +4687,45 @@ class Unit extends BattleMapElement {
             case StatusType.Res: resLv1IvChange = -1; break;
         }
 
+        const addValues = [0, 0, 0, 0, 0];
+
         // 限界突破によるステータス上昇
-        if (this.merge > 0 || this.dragonflower > 0) {
-            let statusList = [
-                { type: StatusType.Hp, value: this.heroInfo.hpLv1 + hpLv1IvChange },
-                { type: StatusType.Atk, value: this.heroInfo.atkLv1 + atkLv1IvChange },
-                { type: StatusType.Spd, value: this.heroInfo.spdLv1 + spdLv1IvChange },
-                { type: StatusType.Def, value: this.heroInfo.defLv1 + defLv1IvChange },
-                { type: StatusType.Res, value: this.heroInfo.resLv1 + resLv1IvChange },
+        if (merge > 0 || dragonflower > 0) {
+            const statusList = [
+                { type: StatusType.Hp, value: hpLv1 + hpLv1IvChange },
+                { type: StatusType.Atk, value: atkLv1 + atkLv1IvChange },
+                { type: StatusType.Spd, value: spdLv1 + spdLv1IvChange },
+                { type: StatusType.Def, value: defLv1 + defLv1IvChange },
+                { type: StatusType.Res, value: resLv1 + resLv1IvChange },
             ];
             statusList.sort((a, b) => {
                 return b.value - a.value;
             });
-            let updateStatus = (statItr) => {
+            const updateStatus = (statItr) => {
                 let statIndex = statItr % 5;
                 switch (statusList[statIndex].type) {
-                    case StatusType.Hp: this._maxHpWithSkills += 1; break;
-                    case StatusType.Atk: this.atkWithSkills += 1; break;
-                    case StatusType.Spd: this.spdWithSkills += 1; break;
-                    case StatusType.Def: this.defWithSkills += 1; break;
-                    case StatusType.Res: this.resWithSkills += 1; break;
+                    case StatusType.Hp: addValues[0] += 1; break;
+                    case StatusType.Atk: addValues[1] += 1; break;
+                    case StatusType.Spd: addValues[2] += 1; break;
+                    case StatusType.Def: addValues[3] += 1; break;
+                    case StatusType.Res: addValues[4] += 1; break;
                 }
             };
 
-            if (this.merge > 0 && this.ivHighStat == StatusType.None) {
+            if (merge > 0 && ivHighStat == StatusType.None) {
                 // 基準値で限界突破済みの場合
                 let updatedCount = 0;
                 let statIndex = 0;
                 do {
                     let targetStatus = statusList[statIndex].type;
-                    if (targetStatus !== this.ascendedAsset) {
+                    if (targetStatus !== ascendedAsset) {
                         // 開花得意は基準値の上昇ステータスから除外
                         switch (targetStatus) {
-                            case StatusType.Hp: this._maxHpWithSkills += 1; break;
-                            case StatusType.Atk: this.atkWithSkills += 1; break;
-                            case StatusType.Spd: this.spdWithSkills += 1; break;
-                            case StatusType.Def: this.defWithSkills += 1; break;
-                            case StatusType.Res: this.resWithSkills += 1; break;
+                            case StatusType.Hp: addValues[0] += 1; break;
+                            case StatusType.Atk: addValues[1] += 1; break;
+                            case StatusType.Spd: addValues[2] += 1; break;
+                            case StatusType.Def: addValues[3] += 1; break;
+                            case StatusType.Res: addValues[4] += 1; break;
                         }
                         ++updatedCount;
                     }
@@ -4698,7 +4734,7 @@ class Unit extends BattleMapElement {
             }
 
             // 限界突破
-            for (let mergeItr = 0, statItr = 0; mergeItr < this.merge; ++mergeItr) {
+            for (let mergeItr = 0, statItr = 0; mergeItr < merge; ++mergeItr) {
                 updateStatus(statItr);
                 statItr += 1;
                 updateStatus(statItr);
@@ -4706,10 +4742,12 @@ class Unit extends BattleMapElement {
             }
 
             // 神竜の花
-            for (let i = 0; i < this.dragonflower; ++i) {
+            for (let i = 0; i < dragonflower; ++i) {
                 updateStatus(i);
             }
         }
+
+        return addValues;
     }
 
     canHeal(requiredHealAmount = 1) {
