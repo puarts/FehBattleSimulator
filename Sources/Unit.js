@@ -4634,6 +4634,7 @@ class Unit extends BattleMapElement {
         this.defWithSkills += addValues[3];
         this.resWithSkills += addValues[4];
     }
+
     /**
      * @param  {StatusType} ivHighStat
      * @param  {StatusType} ivLowStat
