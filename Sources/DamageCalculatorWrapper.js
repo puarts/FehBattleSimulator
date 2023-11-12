@@ -12932,14 +12932,16 @@ class DamageCalculatorWrapper {
                         break;
                     case PassiveB.SavvyFighter4:
                         if (enemyUnit.battleContext.initiatesCombat) {
-                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInPrecombat() - 10) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >=
+                                enemyUnit.getEvalSpdInCombat(targetUnit) - 10) {
                                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                             }
                         }
                         break;
                     case PassiveB.SavvyFighter3:
                         if (enemyUnit.battleContext.initiatesCombat) {
-                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInPrecombat() - 4) {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >=
+                                enemyUnit.getEvalSpdInCombat(targetUnit) - 4) {
                                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                             }
                         }
