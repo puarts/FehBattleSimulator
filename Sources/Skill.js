@@ -4588,7 +4588,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.isWeaponSpecialRefined &&
                 targetUnit.battleContext.restHpPercentage >= 25) {
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
@@ -4681,7 +4681,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.initiatesCombat) {
                 this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
             }
@@ -4710,7 +4710,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.initiatesCombat) {
                 this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
             }
@@ -5091,7 +5091,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     applySkillEffectFromAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
             if (targetUnit.isInClossOf(allyUnit)) {
-                targetUnit.spdSpur += 99;
+                targetUnit.spdSpur += 5;
             }
         }
     );
