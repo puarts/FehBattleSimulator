@@ -50,7 +50,6 @@
     <p>
         ユニットのステータスやスキル構成をシミュレートするツールです。闘技場スコアも表示しているので、闘技場スコア(査定)の計算にもご活用下さい。
     </p>
-    <div id="initMessage">初期化中..</div>
     <style>
         .container {
             /* margin: 20px auto; */
@@ -1248,13 +1247,10 @@
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-                    passiveSInfos, passiveXInfos);
+                    passiveSInfos, passiveXInfos, [], false);
                 g_app.registerHeroOptions(heroInfos, false);
 
                 initUnitBuilder();
-
-                let initMessage = document.getElementById("initMessage");
-                initMessage.textContent = "";
 
                 if (isLocal) {
                     loadLazyImages();

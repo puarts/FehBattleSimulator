@@ -3084,12 +3084,32 @@ class BattleSimmulatorBase {
 
         return null;
     }
+    /**
+     * @param  {SkillInfo[]} skillInfos
+     */
+    __forceToBeImplemented(skillInfos) {
+        for (const skillInfo of skillInfos) {
+            skillInfo.isAdditionalImplRequired = false;
+        }
+    }
 
     registerSkillOptions(
-        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs, captainSkills = []
+        weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs, captainSkills = [], marksUnsupportedSkills = true
     ) {
         let self = this;
         using_(new ScopedStopwatch(time => self.writeDebugLogLine("スキル情報の登録: " + time + " ms")), () => {
+            if (!marksUnsupportedSkills) {
+                // 未実装に×マークがつかないようにする
+                this.__forceToBeImplemented(weapons);
+                this.__forceToBeImplemented(supports);
+                this.__forceToBeImplemented(specials);
+                this.__forceToBeImplemented(passiveAs);
+                this.__forceToBeImplemented(passiveBs);
+                this.__forceToBeImplemented(passiveCs);
+                this.__forceToBeImplemented(passiveSs);
+                this.__forceToBeImplemented(passiveXs);
+                this.__forceToBeImplemented(captainSkills);
+            }
             this.data.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs, captainSkills);
 
             self.passiveSkillCharWhiteList = "";
@@ -8365,19 +8385,19 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case Support.WhimsicalDream:
-                {
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-                        if (skillOwnerUnit === unit) continue;
-                        unit.applyAtkBuff(5);
-                    }
+                    {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                            if (skillOwnerUnit === unit) continue;
+                            unit.applyAtkBuff(5);
+                        }
 
-                    let targetEnemies = this.__findNearestEnemies(targetUnit, 4);
-                    for (let targetEnemy of targetEnemies) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
-                            unit.applyAtkDebuff(-5);
+                        let targetEnemies = this.__findNearestEnemies(targetUnit, 4);
+                        for (let targetEnemy of targetEnemies) {
+                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
+                                unit.applyAtkDebuff(-5);
+                            }
                         }
                     }
-                }
                     break;
                 case Support.WhimsicalDreamPlus:
                     {
