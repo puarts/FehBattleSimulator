@@ -12025,14 +12025,16 @@ class DamageCalculatorWrapper {
         targetUnit.addSpurs(...maxDebuffs);
     }
 
-    // 最大のデバフを返す
+    // 能力値ごとの最大のデバフを返す
     // デバフが最大とはマイナスの値が大きいことであることに注意
     __maxDebuffsFromAlliesWithinSpecificSpaces(targetUnit, spaces = 2, withTargetUnit = true) {
         let debuffsArray = [];
         if (withTargetUnit) {
+            // 戦闘相手は戦闘中弱化無効を考慮
             debuffsArray.push(targetUnit.debuffTotals);
         }
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces)) {
+            // 周囲のユニットは戦闘中弱化無効を考慮しない
             debuffsArray.push(unit.getDebuffTotals(true));
         }
         let func = (previousDebuffs, currentDebuffs) =>

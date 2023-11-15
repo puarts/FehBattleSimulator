@@ -432,6 +432,14 @@ for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUni
     debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
 }
 
+敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, spaces = 2, withTargetUnit = true);
+        enemyUnit.addSpurs(...debuffs);
+    }
+);
+
 ステータス決定後のバフ効果
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
