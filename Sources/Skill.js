@@ -5091,7 +5091,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     applySkillEffectFromAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
             if (targetUnit.isInClossOf(allyUnit)) {
-                targetUnit.spdSpur += 99;
+                targetUnit.spdSpur += 5;
             }
         }
     );
