@@ -2654,6 +2654,7 @@ const PassiveB = {
     // 干渉
     AtkSpdSnag3: 1685, // 攻撃速さの干渉3
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
+    AtkDefSnag4: 2658, // 攻撃守備の干渉4
     AtkResSnag3: 2153, // 攻撃魔坊の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
@@ -4300,7 +4301,7 @@ const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 // 応援後のスキル
 const applySkillsAfterRallyForSupporterFuncMap = new Map();
 const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
-// 移動補助スキル後
+// 移動補助スキル後(スキル使用者、被使用者両者入れ替えて呼び出される)
 const applyMovementAssistSkillFuncMap = new Map();
 // 2023年11月時点では片方にだけかかるスキルは存在しない
 // const applyMovementAssistSkillForSupporterFuncMap = new Map();
@@ -4331,6 +4332,28 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 速さ守備の干渉4
+{
+    let skillId = PassiveB.SpdDefSnag4;
+    applyMovementAssistSkillFuncMap.set(skillId,
+        function (unit1, unit2) {
+            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(0, -7, -7, 0));
+        }
+    );
+}
+
+// 攻撃守備の干渉4
+{
+    let skillId = PassiveB.AtkDefSnag4;
+    applyMovementAssistSkillFuncMap.set(skillId,
+        function (unit1, unit2) {
+            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(-7, 0, -7, 0));
+        }
+    );
+}
+
+// 守護騎士の白槍
 {
     let skillId = Weapon.GuardingLance;
     applySkillEffectForUnitFuncMap.set(skillId,

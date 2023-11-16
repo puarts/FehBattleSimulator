@@ -5886,6 +5886,25 @@ class Unit extends BattleMapElement {
         return moveCountForCanto;
     }
 
+    __hasSaveSkills() {
+        for (let skillId of this.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveC.WoefulUpheaval:
+                case PassiveC.WithEveryone2:
+                case PassiveC.AsFarSave3:
+                case PassiveC.AdFarSave3:
+                case PassiveC.ArFarSave3:
+                case PassiveC.DrFarSave3:
+                case PassiveC.AsNearSave3:
+                case PassiveC.ArNearSave3:
+                case PassiveC.AdNearSave3:
+                case PassiveC.DrNearSave3:
+                    return true;
+            }
+        }
+        return false;
+    }
+
     // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
     static calcAttackerMoveDistance(unit1, unit2) {
         let unit = unit1.battleContext.initiatesCombat ? unit1 : unit2;
