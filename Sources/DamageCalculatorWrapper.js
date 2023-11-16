@@ -11984,6 +11984,17 @@ class DamageCalculatorWrapper {
         return buffsArray.reduce(func, [0, 0, 0, 0]);
     }
 
+    __getHighestTotalBuff(targetUnit, enemyUnit, units, withTargetUnit = false) {
+        let buffArray = [];
+        if (withTargetUnit) {
+            buffArray.push(targetUnit.getBuffTotalInCombat(enemyUnit));
+        }
+        for (let unit of units) {
+            buffArray.push(unit.buffTotal);
+        }
+        return Math.max(...buffArray);
+    }
+
     __applyBuffAbsorption(targetUnit, enemyUnit,
         atk = 1, spd = 1, def = 1, res = 1) {
         let enemyBuffs = enemyUnit.getBuffsInCombat(targetUnit);

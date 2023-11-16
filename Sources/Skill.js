@@ -1794,6 +1794,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=bcsoic6gc94&ab_channel=NintendoMobile
     GuardingLance: 2657, // 守護騎士の白槍
     TroublingBlade: 2659, // 影の勇者の黒剣
+    Gondul: 2660, // ゴンドゥル
 };
 
 const Support = {
@@ -4333,6 +4334,44 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// ゴンドゥル
+{
+    let skillId = Weapon.Gondul;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                found = true;
+                unit.reserveToApplyBuffs(6, 6, 0, 0);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                isRangedWeaponType(enemyUnit.weapon)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 周囲3マス以内の場合
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let amount = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        targetUnit.atkSpur += amount;
+                        let amount2 = Math.trunc(amount * 0.5);
+                        targetUnit.addSpursWithoutAtk(amount2);
+                    }
+                );
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
 
 // 影の勇者の黒剣
 {
