@@ -1788,6 +1788,11 @@ const Weapon = {
 
     // ギンヌンガガプ(敵)
     ArcaneVoid: 2654, // 魔器ギンヌンガガプ
+
+    // 新英雄召喚（響心ニノ＆魔器ギンヌンガガプ）
+    // https://www.youtube.com/watch?v=8zmweFNm8b0&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=bcsoic6gc94&ab_channel=NintendoMobile
+    GuardingLance: 2657, // 守護騎士の白槍
 };
 
 const Support = {
@@ -4292,9 +4297,17 @@ const applyRefreshFuncMap = new Map();
 const applySkillEffectsPerCombatFuncMap = new Map();
 const initApplySpecialSkillEffectFuncMap = new Map();
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
+// 応援後のスキル
 const applySkillsAfterRallyForSupporterFuncMap = new Map();
 const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
-const applySupportSkillFuncMap = new Map();
+// 移動補助スキル後
+const applyMovementAssistSkillFuncMap = new Map();
+// 2023年11月時点では片方にだけかかるスキルは存在しない
+// const applyMovementAssistSkillForSupporterFuncMap = new Map();
+// const applyMovementAssistSkillForTargetUnitFuncMap = new Map();
+// サポートスキル後
+const applySupportSkillForSupporterFuncMap = new Map();
+const applySupportSkillForTargetUnitFuncMap = new Map();
 const canRallyForciblyFuncMap = new Map();
 const canRalliedForciblyFuncMap = new Map();
 const enumerateTeleportTilesForUnitFuncMap = new Map();
@@ -4304,7 +4317,6 @@ const updateUnitSpurFromAlliesFuncMap = new Map();
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
 const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 
-// 各スキルの実装
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4317,6 +4329,33 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 各スキルの実装
+{
+    let skillId = Weapon.GuardingLance;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+    );
+    let func = function (supporterUnit, targetUnit) {
+        supporterUnit.applyBuffs(6, 6, 6, 0);
+        targetUnit.applyBuffs(6, 6, 6, 0);
+        supporterUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+        targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+        supporterUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+        targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+    };
+    applyMovementAssistSkillFuncMap.set(skillId, func);
+    applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
+    applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
+}
 
 // 不治の幻煙4
 {
@@ -4902,8 +4941,8 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     };
     applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
     applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
-    applySupportSkillFuncMap.set(skillId,
-        function (supporterUnit, targetUnit) {
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
                 supporterUnit.isActionDone = false;
                 supporterUnit.isOneTimeActionActivatedForWeapon = true;

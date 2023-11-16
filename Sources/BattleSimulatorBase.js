@@ -8086,6 +8086,15 @@ class BattleSimmulatorBase {
 
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
+            let funcMap = applyMovementAssistSkillFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, unit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.RetainersReport:
                     if (unit.isWeaponSpecialRefined) {
@@ -8970,8 +8979,10 @@ class BattleSimmulatorBase {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
             }
+
+            // サポートを行う側
             for (let skillId of supporterUnit.enumerateSkills()) {
-                let funcMap = applySupportSkillFuncMap;
+                let funcMap = applySupportSkillForSupporterFuncMap;
                 if (funcMap.has(skillId)) {
                     let func = funcMap.get(skillId);
                     if (typeof func === "function") {
@@ -9091,6 +9102,19 @@ class BattleSimmulatorBase {
                             }
                         }
                         break;
+                }
+            }
+
+            // サポートを受ける側
+            for (let skillId of targetUnit.enumerateSkills()) {
+                let funcMap = applySupportSkillForTargetUnitFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, supporterUnit, targetUnit, supportTile);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
                 }
             }
 
