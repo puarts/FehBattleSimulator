@@ -246,6 +246,7 @@ const StatusEffectType = {
     DeepStar: 52, // 真落星
     Ploy: 53, // 謀策
     Schism: 54, // 連携阻害
+    PenaltyThatNeutralizesNonSpecialMiracle: 55, // 奥義以外の祈り無効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -757,6 +758,8 @@ class BattleContext {
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
         this.damageAfterBeginningOfCombat = 0;
 
+        // 奥義以外の祈り無効
+        this.neutralizesNonSpecialMiracle = false;
 
         // フック関数
         // 固定ダメージ
@@ -945,6 +948,7 @@ class BattleContext {
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
         this.damageAfterBeginningOfCombat = 0;
+        this.neutralizesNonSpecialMiracle = false;
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];

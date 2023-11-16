@@ -1119,12 +1119,40 @@ class DamageCalculator {
             let canActivateMiracle = this.__canActivateMiracle(defUnit, atkUnit);
             // 祈り+99回復
             let canActivateMiracleAndHeal = this.__canActivateMiracleAndHeal(defUnit, atkUnit);
+            if (atkUnit.battleContext.neutralizesNonSpecialMiracle) {
+                if (this.isLogEnabled) {
+                    if (canActivateMiracle ||
+                        canActivateMiracleAndHeal) {
+                        let message = `スキル効果により${defUnit.nameWithGroup}の祈りを無効`;
+                        this.writeLog(message);
+                        this.writeSimpleLog(message);
+                    }
+                }
+                canActivateMiracle = false;
+                canActivateMiracleAndHeal = false;
+            }
+            if (defUnit.hasStatusEffect(StatusEffectType.PenaltyThatNeutralizesNonSpecialMiracle)) {
+                if (this.isLogEnabled) {
+                    if (canActivateMiracle ||
+                        canActivateMiracleAndHeal) {
+                        let message = `ステータス効果により${defUnit.nameWithGroup}の祈りを無効`;
+                        this.writeLog(message);
+                        this.writeSimpleLog(message);
+                    }
+                }
+                canActivateMiracle = false;
+                canActivateMiracleAndHeal = false;
+            }
             // 奥義による祈り
             let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
             if ((canActivateMiracle || canActivateMiracleAndHeal) &&
                 (defUnit.restHp - totalDamage > 1) &&
                 (defUnit.restHp - totalDamage - currentDamage <= 0)) {
-                if (this.isLogEnabled) this.writeLog("祈り効果発動、" + defUnit.getNameWithGroup() + "はHP1残る");
+                if (this.isLogEnabled) {
+                    let message = `祈り効果発動、${defUnit.getNameWithGroup()}はHP1残る`;
+                    this.writeLog(message);
+                    this.writeSimpleLog(message);
+                }
                 // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
                 if (defUnit.battleContext.nextAttackAddReducedDamageActivated) {
                     let currentHp = defUnit.restHp - totalDamage;

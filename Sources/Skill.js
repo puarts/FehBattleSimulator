@@ -3014,6 +3014,7 @@ const PassiveC = {
     ArNearSave3: 1857, // 兜の護り手・近間3
 
     FatalSmoke3: 1631, // 不治の幻煙3
+    FatalSmoke4: 2656, // 不治の幻煙4
 
     // 脅嚇
     AtkSpdMenace: 1733, // 攻撃速さの脅嚇
@@ -4316,6 +4317,27 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 不治の幻煙4
+{
+    let skillId = PassiveC.FatalSmoke4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.invalidatesHeal = true;
+            targetUnit.battleContext.neutralizesNonSpecialMiracle = true;
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                unit.addStatusEffect(StatusEffectType.DeepWounds);
+                unit.addStatusEffect(StatusEffectType.PenaltyThatNeutralizesNonSpecialMiracle);
+            }
+        }
+    );
+}
+
+// 虚無の王
 {
     let skillId = PassiveB.RulerOfNihility;
     // ターン開始時スキル
