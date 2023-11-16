@@ -1793,6 +1793,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=8zmweFNm8b0&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=bcsoic6gc94&ab_channel=NintendoMobile
     GuardingLance: 2657, // 守護騎士の白槍
+    TroublingBlade: 2659, // 影の勇者の黒剣
 };
 
 const Support = {
@@ -4332,6 +4333,26 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 影の勇者の黒剣
+{
+    let skillId = Weapon.TroublingBlade;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+    TeleportationSkillDict[skillId] = 0;
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
+        }
+    );
+}
 
 // 速さ守備の干渉4
 {

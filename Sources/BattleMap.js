@@ -1998,26 +1998,7 @@ class BattleMap {
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit); // 2, 2
                     break;
                 case PassiveC.InevitableDeathPlus: {
-                    for (let enemyUnit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 4)) {
-                        // 一番近いマスを求める
-                        let nearestTiles = [];
-                        let minDistance = Number.MAX_SAFE_INTEGER;
-                        for (let tile of this.enumerateTilesWithinSpecifiedDistance(enemyUnit.placedTile, 1)) {
-                            let distance = unit.placedTile.calculateDistance(tile);
-                            if (distance < minDistance) {
-                                minDistance = distance;
-                                nearestTiles = [tile];
-                            } else if (distance === minDistance) {
-                                nearestTiles.push(tile);
-                            }
-                        }
-                        // そのマスが移動可能ならばワープ先に追加する
-                        for (let tile of nearestTiles) {
-                            if (tile.isUnitPlacableForUnit(unit)) {
-                                yield tile;
-                            }
-                        }
-                    }
+                    yield* this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
                 }
                     break;
                 case PassiveC.TipTheScales: {
@@ -2247,6 +2228,29 @@ class BattleMap {
                             }
                         }
                         break;
+                }
+            }
+        }
+    }
+
+    * enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, spaces) {
+        for (let enemyUnit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, spaces)) {
+            // 一番近いマスを求める
+            let nearestTiles = [];
+            let minDistance = Number.MAX_SAFE_INTEGER;
+            for (let tile of this.enumerateTilesWithinSpecifiedDistance(enemyUnit.placedTile, 1)) {
+                let distance = unit.placedTile.calculateDistance(tile);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestTiles = [tile];
+                } else if (distance === minDistance) {
+                    nearestTiles.push(tile);
+                }
+            }
+            // そのマスが移動可能ならばワープ先に追加する
+            for (let tile of nearestTiles) {
+                if (tile.isUnitPlacableForUnit(unit)) {
+                    yield tile;
                 }
             }
         }
