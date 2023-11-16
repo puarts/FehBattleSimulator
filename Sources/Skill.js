@@ -1785,6 +1785,9 @@ const Weapon = {
     // 2023年11月 武器錬成
     FlameBattleaxe: 2639, // 炎帝の烈斧
     BrilliantRapier: 2638, // 光明レイピア
+
+    // ギンヌンガガプ(敵)
+    ArcaneVoid: 2654, // 魔器ギンヌンガガプ
 };
 
 const Support = {
@@ -4312,6 +4315,26 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 魔器ギンヌンガガプ
+{
+    let skillId = Weapon.ArcaneVoid;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, spaces = 2, withTargetUnit = true);
+                        enemyUnit.addSpurs(...debuffs);
+                    }
+                );
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+}
 
 // 地槍ゲイボルグ
 {
