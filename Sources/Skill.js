@@ -2663,7 +2663,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
-    RulerOfNihility: 100004, // 虚無の王
+    RulerOfNihility: 2655, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
     DeepStar: 2566, // 真落星
     GoldUnwinding: 2552, // 時を戻す黄金の魔女
