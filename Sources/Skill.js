@@ -2663,6 +2663,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    RulerOfNihility: 100004, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
     DeepStar: 2566, // 真落星
     GoldUnwinding: 2552, // 時を戻す黄金の魔女
@@ -4315,6 +4316,33 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 //         }
 //     );
 // }
+{
+    let skillId = PassiveB.RulerOfNihility;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let nearestEnemy of this.__findNearestEnemies(skillOwner, 5)) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                    unit.reserveToApplyDebuffs(-7, 0, -7, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 75 ||
+                enemyUnit.hasNegativeStatusEffect()) {
+                enemyUnit.addAtkDefSpurs(-5);
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                }
+            }
+        }
+    );
+}
+
 
 // 魔器ギンヌンガガプ
 {
