@@ -405,10 +405,17 @@ __applySpurForUnitAfterCombatStatusFixed
     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
         maxBuff = Math.max(unit.buffTotal, maxBuff);
     }
-
     targetUnit.atkSpur += maxBuff;
 }
 
+自分と周囲3マス以内にいる味方のうち、強化の合計値が最も高い値
+targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        // 周囲3マス以内の場合
+        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+        let buffTotal = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+    }
+);
 
 敵が強化を受けていれば、戦闘中、自身の攻撃、速さ、守備、魔防が敵が受けている強化の値だけ上昇(能力値ごとに計算)[敵強化増幅]
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
@@ -862,6 +869,9 @@ __canActivateMiracle() {
     return true;
 }
 
+奥義以外の祈り無効
+targetUnit.battleContext.neutralizesNonSpecialMiracle = true;
+
 戦闘中に攻撃していれば
 targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
     (attackUnit, attackTargetUnit) => {
@@ -887,6 +897,11 @@ refreshSupportSkillSet.add(skillId);
 function isRefreshSupportSkill(skillId) {return true;}
 
 移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
+applyMovementAssistSkillFuncMap.set(skillId,
+    function (unit1, unit2) {
+    }
+);
+または
 __applyMovementAssistSkill() {}
 
 応援を使用した時、または自分に使用された時
@@ -989,6 +1004,8 @@ enumerateTeleportTilesForUnitFuncMap.set(skillId,
     function (unit) {
         // 周囲2マス以内の味方の、周囲1マス以内に移動可能
         return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+        // 周囲4マス以内にいる敵の隣接マスのうち、自分から最も近いマスに移動可能(敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない)
+        return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
     }
 );
 もしくは

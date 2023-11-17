@@ -704,7 +704,7 @@ class DamageCalculatorWrapper {
         }
 
         if (unit.hasStatusEffect(StatusEffectType.AssignDecoy)) {
-            if (this.__hasSaveSkills(unit)) {
+            if (unit.__hasSaveSkills()) {
                 return false;
             }
             if (isRangedWeaponType(unit.weaponType) && isRangedWeaponType(atkUnit.weaponType)) {
@@ -741,24 +741,6 @@ class DamageCalculatorWrapper {
         return false;
     }
 
-    __hasSaveSkills(unit) {
-        for (let skillId of unit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveC.WoefulUpheaval:
-                case PassiveC.WithEveryone2:
-                case PassiveC.AsFarSave3:
-                case PassiveC.AdFarSave3:
-                case PassiveC.ArFarSave3:
-                case PassiveC.DrFarSave3:
-                case PassiveC.AsNearSave3:
-                case PassiveC.ArNearSave3:
-                case PassiveC.AdNearSave3:
-                case PassiveC.DrNearSave3:
-                    return true;
-            }
-        }
-        return false;
-    }
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
@@ -12000,6 +11982,17 @@ class DamageCalculatorWrapper {
         let func = (previousBuffs, currentBuffs) =>
             previousBuffs.map((buff, index) => Math.max(buff, currentBuffs[index]));
         return buffsArray.reduce(func, [0, 0, 0, 0]);
+    }
+
+    __getHighestTotalBuff(targetUnit, enemyUnit, units, withTargetUnit = false) {
+        let buffArray = [];
+        if (withTargetUnit) {
+            buffArray.push(targetUnit.getBuffTotalInCombat(enemyUnit));
+        }
+        for (let unit of units) {
+            buffArray.push(unit.buffTotal);
+        }
+        return Math.max(...buffArray);
     }
 
     __applyBuffAbsorption(targetUnit, enemyUnit,

@@ -8106,6 +8106,15 @@ class BattleSimmulatorBase {
 
     __applyMovementAssistSkill(unit, targetUnit) {
         for (let skillId of unit.enumerateSkills()) {
+            let funcMap = applyMovementAssistSkillFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, unit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.RetainersReport:
                     if (unit.isWeaponSpecialRefined) {
@@ -8195,22 +8204,6 @@ class BattleSimmulatorBase {
                     for (let u of this.__findNearestEnemies(targetUnit, 4)) {
                         u.applySpdDebuff(-6);
                         u.applyResDebuff(-6);
-                    }
-                    break;
-                case PassiveB.SpdDefSnag4:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
-                        for (let t of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(u, 2, true)) {
-                            t.applySpdDebuff(-7);
-                            t.applyDefDebuff(-7);
-                            t.addStatusEffect(StatusEffectType.Sabotage)
-                        }
-                    }
-                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
-                        for (let t of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(u, 2, true)) {
-                            t.applySpdDebuff(-7);
-                            t.applyDefDebuff(-7);
-                            t.addStatusEffect(StatusEffectType.Sabotage)
-                        }
                     }
                     break;
                 case PassiveB.SpdDefSnag3:
@@ -8990,8 +8983,10 @@ class BattleSimmulatorBase {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
             }
+
+            // サポートを行う側
             for (let skillId of supporterUnit.enumerateSkills()) {
-                let funcMap = applySupportSkillFuncMap;
+                let funcMap = applySupportSkillForSupporterFuncMap;
                 if (funcMap.has(skillId)) {
                     let func = funcMap.get(skillId);
                     if (typeof func === "function") {
@@ -9111,6 +9106,19 @@ class BattleSimmulatorBase {
                             }
                         }
                         break;
+                }
+            }
+
+            // サポートを受ける側
+            for (let skillId of targetUnit.enumerateSkills()) {
+                let funcMap = applySupportSkillForTargetUnitFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, supporterUnit, targetUnit, supportTile);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
                 }
             }
 
@@ -9440,6 +9448,24 @@ class BattleSimmulatorBase {
         else {
             this.selectItem(targetId, true);
         }
+    }
+
+    __applySnag4Skill(unit, debuffFunc) {
+        for (let nearestEnemy of this.__findNearestEnemies(unit, 4)) {
+            debuffFunc.call(this, nearestEnemy);
+            nearestEnemy.addStatusEffect(StatusEffectType.Sabotage)
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2)) {
+                if (unit.__hasSaveSkills()) {
+                    debuffFunc.call(this, unit);
+                    unit.addStatusEffect(StatusEffectType.Sabotage)
+                }
+            }
+        }
+    }
+
+    __applySnag4Skills(unit1, unit2, debuffFunc) {
+        this.__applySnag4Skill(unit1, debuffFunc);
+        this.__applySnag4Skill(unit2, debuffFunc);
     }
 }
 

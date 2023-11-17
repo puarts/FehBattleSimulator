@@ -1788,6 +1788,13 @@ const Weapon = {
 
     // ギンヌンガガプ(敵)
     ArcaneVoid: 2654, // 魔器ギンヌンガガプ
+
+    // 新英雄召喚（響心ニノ＆魔器ギンヌンガガプ）
+    // https://www.youtube.com/watch?v=8zmweFNm8b0&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=bcsoic6gc94&ab_channel=NintendoMobile
+    GuardingLance: 2657, // 守護騎士の白槍
+    TroublingBlade: 2659, // 影の勇者の黒剣
+    Gondul: 2660, // ゴンドゥル
 };
 
 const Support = {
@@ -2649,6 +2656,7 @@ const PassiveB = {
     // 干渉
     AtkSpdSnag3: 1685, // 攻撃速さの干渉3
     AtkDefSnag3: 1587, // 攻撃守備の干渉3
+    AtkDefSnag4: 2658, // 攻撃守備の干渉4
     AtkResSnag3: 2153, // 攻撃魔坊の干渉3
     SpdResSnag3: 1367, // 速さ魔防の干渉3
     SpdDefSnag3: 1373, // 速さ守備の干渉3
@@ -2663,6 +2671,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    RulerOfNihility: 2655, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
     DeepStar: 2566, // 真落星
     GoldUnwinding: 2552, // 時を戻す黄金の魔女
@@ -2718,6 +2727,7 @@ const PassiveB = {
     SpdDefTempo3: 2046, // 速さ守備の拍節3
     SpdResTempo3: 2204, // 速さ魔坊の拍節3
     AtkResTempo4: 2634, // 攻撃魔防の拍節4
+    SpdDefTempo4: 2661, // 速さ守備の拍節4
 
     // 防壁
     AtkSpdBulwark3: 2414, // 攻撃速さの防壁3
@@ -3013,6 +3023,7 @@ const PassiveC = {
     ArNearSave3: 1857, // 兜の護り手・近間3
 
     FatalSmoke3: 1631, // 不治の幻煙3
+    FatalSmoke4: 2656, // 不治の幻煙4
 
     // 脅嚇
     AtkSpdMenace: 1733, // 攻撃速さの脅嚇
@@ -3037,6 +3048,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    FangedTies: 2662, // 牙の絆
     FellProtection: 2635, // 邪竜の救済
     HeartOfCrimea: 2590, // クリミアの心
     TipTheScales: 2555, // 戦局を変える!
@@ -3122,6 +3134,7 @@ const PassiveS = {
 const PassiveX = {
     DeathBlowEcho: 2616, // 響・鬼神の一撃
     AtkOathEcho: 2612, // 響・攻撃の信義
+    FleetingEcho: 2663, // 響・飛燕の離撃
 };
 
 // 隊長スキル
@@ -4290,9 +4303,17 @@ const applyRefreshFuncMap = new Map();
 const applySkillEffectsPerCombatFuncMap = new Map();
 const initApplySpecialSkillEffectFuncMap = new Map();
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
+// 応援後のスキル
 const applySkillsAfterRallyForSupporterFuncMap = new Map();
 const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
-const applySupportSkillFuncMap = new Map();
+// 移動補助スキル後(スキル使用者、被使用者両者入れ替えて呼び出される)
+const applyMovementAssistSkillFuncMap = new Map();
+// 2023年11月時点では片方にだけかかるスキルは存在しない
+// const applyMovementAssistSkillForSupporterFuncMap = new Map();
+// const applyMovementAssistSkillForTargetUnitFuncMap = new Map();
+// サポートスキル後
+const applySupportSkillForSupporterFuncMap = new Map();
+const applySupportSkillForTargetUnitFuncMap = new Map();
 const canRallyForciblyFuncMap = new Map();
 const canRalliedForciblyFuncMap = new Map();
 const enumerateTeleportTilesForUnitFuncMap = new Map();
@@ -4302,7 +4323,6 @@ const updateUnitSpurFromAlliesFuncMap = new Map();
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
 const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 
-// 各スキルの実装
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4315,6 +4335,194 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 //         }
 //     );
 // }
+
+// 各スキルの実装
+
+// 響・飛燕の離撃
+{
+    let skillId = PassiveX.FleetingEcho;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.spdSpur += 2;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+    );
+}
+
+// 牙の絆
+{
+    let skillId = PassiveC.FangedTies;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                let unit = this.__getStatusEvalUnit(skillOwner);
+                if (unit.isSpecialCountMax) {
+                    skillOwner.reserveToReduceSpecialCount(2);
+                } else if (unit.maxSpecialCount - 1 === unit.specialCount) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+            }
+        }
+    );
+}
+
+// ゴンドゥル
+{
+    let skillId = Weapon.Gondul;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                found = true;
+                unit.reserveToApplyBuffs(6, 6, 0, 0);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                isRangedWeaponType(enemyUnit.weapon)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 周囲3マス以内の場合
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let amount = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        targetUnit.atkSpur += amount;
+                        let amount2 = Math.trunc(amount * 0.5);
+                        targetUnit.addSpursWithoutAtk(amount2);
+                    }
+                );
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 影の勇者の黒剣
+{
+    let skillId = Weapon.TroublingBlade;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+    TeleportationSkillDict[skillId] = 0;
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
+        }
+    );
+}
+
+// 速さ守備の干渉4
+{
+    let skillId = PassiveB.SpdDefSnag4;
+    applyMovementAssistSkillFuncMap.set(skillId,
+        function (unit1, unit2) {
+            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(0, -7, -7, 0));
+        }
+    );
+}
+
+// 攻撃守備の干渉4
+{
+    let skillId = PassiveB.AtkDefSnag4;
+    applyMovementAssistSkillFuncMap.set(skillId,
+        function (unit1, unit2) {
+            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(-7, 0, -7, 0));
+        }
+    );
+}
+
+// 守護騎士の白槍
+{
+    let skillId = Weapon.GuardingLance;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
+    );
+    let func = function (supporterUnit, targetUnit) {
+        supporterUnit.applyBuffs(6, 6, 6, 0);
+        targetUnit.applyBuffs(6, 6, 6, 0);
+        supporterUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+        targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+        supporterUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+        targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+    };
+    applyMovementAssistSkillFuncMap.set(skillId, func);
+    applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
+    applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
+}
+
+// 不治の幻煙4
+{
+    let skillId = PassiveC.FatalSmoke4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.invalidatesHeal = true;
+            targetUnit.battleContext.neutralizesNonSpecialMiracle = true;
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                unit.addStatusEffect(StatusEffectType.DeepWounds);
+                unit.addStatusEffect(StatusEffectType.PenaltyThatNeutralizesNonSpecialMiracle);
+            }
+        }
+    );
+}
+
+// 虚無の王
+{
+    let skillId = PassiveB.RulerOfNihility;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let nearestEnemy of this.__findNearestEnemies(skillOwner, 5)) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                    unit.reserveToApplyDebuffs(-7, 0, -7, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 75 ||
+                enemyUnit.hasNegativeStatusEffect()) {
+                enemyUnit.addAtkDefSpurs(-5);
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                }
+            }
+        }
+    );
+}
+
 
 // 魔器ギンヌンガガプ
 {
@@ -4852,8 +5060,8 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     };
     applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
     applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
-    applySupportSkillFuncMap.set(skillId,
-        function (supporterUnit, targetUnit) {
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
                 supporterUnit.isActionDone = false;
                 supporterUnit.isOneTimeActionActivatedForWeapon = true;
@@ -5008,22 +5216,28 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     );
 }
 
-// 攻撃魔防の拍節4
+// 拍節
 {
-    let skillId = PassiveB.AtkResTempo4;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            enemyUnit.addAtkResSpurs(-4);
-            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
-                (targetUnit, enemyUnit, calcPotentialDamage) => {
-                    enemyUnit.battleContext.reducesCooldownCount = false;
-                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
-                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
-                }
-            );
-            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
-        }
-    );
+    let setTempo4Skill = function (skillId, func) {
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                func(enemyUnit);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                );
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+            }
+        );
+    }
+
+    // 攻撃魔防の拍節4
+    setTempo4Skill(PassiveB.AtkResTempo4, unit => unit.addAtkResSpurs(-4));
+    // 速さ守備の拍節4
+    setTempo4Skill(PassiveB.SpdDefTempo4, unit => unit.addSpdDefSpurs(-4));
 }
 
 // オヴスキュリテ
