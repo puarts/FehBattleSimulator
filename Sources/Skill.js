@@ -3048,6 +3048,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    FangedTies: 2662, // 牙の絆
     FellProtection: 2635, // 邪竜の救済
     HeartOfCrimea: 2590, // クリミアの心
     TipTheScales: 2555, // 戦局を変える!
@@ -4335,6 +4336,26 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 牙の絆
+{
+    let skillId = PassiveC.FangedTies;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                let unit = this.__getStatusEvalUnit(skillOwner);
+                if (unit.isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(2);
+                } else if (unit.maxSpecialCount - 1 === unit.specialCount) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+            }
+        }
+    );
+}
 
 // ゴンドゥル
 {
