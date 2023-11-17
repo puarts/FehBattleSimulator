@@ -5218,7 +5218,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 
 // 拍節
 {
-    function setTempo4Skill(skillId, func) {
+    let setTempo4Skill = function (skillId, func) {
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 func(enemyUnit);
