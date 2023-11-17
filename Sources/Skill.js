@@ -3134,6 +3134,7 @@ const PassiveS = {
 const PassiveX = {
     DeathBlowEcho: 2616, // 響・鬼神の一撃
     AtkOathEcho: 2612, // 響・攻撃の信義
+    FleetingEcho: 2663, // 響・飛燕の離撃
 };
 
 // 隊長スキル
@@ -4336,6 +4337,19 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 響・飛燕の離撃
+{
+    let skillId = PassiveX.FleetingEcho;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.spdSpur += 2;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+    );
+}
 
 // 牙の絆
 {
