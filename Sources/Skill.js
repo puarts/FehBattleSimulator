@@ -4362,9 +4362,9 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
                 let unit = this.__getStatusEvalUnit(skillOwner);
                 if (unit.isSpecialCountMax) {
-                    skillOwner.reduceSpecialCount(2);
+                    skillOwner.reserveToReduceSpecialCount(2);
                 } else if (unit.maxSpecialCount - 1 === unit.specialCount) {
-                    skillOwner.reduceSpecialCount(1);
+                    skillOwner.reserveToReduceSpecialCount(1);
                 }
             }
         }
