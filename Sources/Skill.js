@@ -1795,6 +1795,7 @@ const Weapon = {
     GuardingLance: 2657, // 守護騎士の白槍
     TroublingBlade: 2659, // 影の勇者の黒剣
     Gondul: 2660, // ゴンドゥル
+    HaltingBowPlus: 2664, // 制止の弓+
 };
 
 const Support = {
@@ -4337,6 +4338,19 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 制止の弓+
+{
+    let skillId = Weapon.HaltingBowPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-5);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+            }
+        }
+    );
+}
 
 // 響・飛燕の離撃
 {
