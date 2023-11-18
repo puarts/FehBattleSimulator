@@ -1796,6 +1796,7 @@ const Weapon = {
     TroublingBlade: 2659, // 影の勇者の黒剣
     Gondul: 2660, // ゴンドゥル
     HaltingBowPlus: 2664, // 制止の弓+
+    CorsairCleaver: 2666, // 海賊の長の大斧
 };
 
 const Support = {
@@ -4338,6 +4339,41 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 海賊の長の大斧
+{
+    let skillId = Weapon.CorsairCleaver;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
+                found = true;
+                unit.reserveToApplyBuffs(6, 6, 0, 0);
+                unit.reservedStatusEffects(StatusEffectType.AirOrders);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                skillOwner.reservedStatusEffects(StatusEffectType.AirOrders);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
 
 // 制止の弓+
 {
