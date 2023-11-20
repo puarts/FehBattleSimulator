@@ -246,7 +246,7 @@ const StatusEffectType = {
     DeepStar: 52, // 真落星
     Ploy: 53, // 謀策
     Schism: 54, // 連携阻害
-    PenaltyThatNeutralizesNonSpecialMiracle: 55, // 奥義以外の祈り無効
+    NeutralizeUnitSurvivesWith1HP: 55, // 奥義以外の祈り無効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -305,6 +305,7 @@ NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
 NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
 NegativeStatusEffectTable[StatusEffectType.Ploy] = 0;
 NegativeStatusEffectTable[StatusEffectType.Schism] = 0;
+NegativeStatusEffectTable[StatusEffectType.NeutralizeUnitSurvivesWith1HP] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -430,6 +431,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Ploy.png";
         case StatusEffectType.Schism:
             return g_imageRootPath + "StatusEffect_Schism.png";
+        case StatusEffectType.NeutralizeUnitSurvivesWith1HP:
+            return g_imageRootPath + "StatusEffect_NeutralizeUnitSurvivesWith1HP.webp";
         default: return "";
     }
 }

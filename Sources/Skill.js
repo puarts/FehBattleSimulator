@@ -4484,7 +4484,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     let skillId = PassiveB.SpdDefSnag4;
     applyMovementAssistSkillFuncMap.set(skillId,
         function (unit1, unit2) {
-            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(0, -7, -7, 0));
+            this.__applySnag4Skills(unit1, unit2, unit => unit.applyDebuffs(0, -7, -7, 0));
         }
     );
 }
@@ -4494,7 +4494,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     let skillId = PassiveB.AtkDefSnag4;
     applyMovementAssistSkillFuncMap.set(skillId,
         function (unit1, unit2) {
-            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(-7, 0, -7, 0));
+            this.__applySnag4Skills(unit1, unit2, unit => unit.applyDebuffs(-7, 0, -7, 0));
         }
     );
 }
@@ -4536,10 +4536,10 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                 unit.addStatusEffect(StatusEffectType.DeepWounds);
-                unit.addStatusEffect(StatusEffectType.PenaltyThatNeutralizesNonSpecialMiracle);
+                unit.addStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
             }
         }
     );
