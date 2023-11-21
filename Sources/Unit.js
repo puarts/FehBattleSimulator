@@ -417,6 +417,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp";
         case StatusEffectType.NeutralizesPenalties:
             return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
+        case StatusEffectType.RallySpectrum:
+            return g_imageRootPath + "StatusEffect_RallySpectrum.webp";
         case StatusEffectType.Hexblade:
             return g_imageRootPath + "StatusEffect_Hexblade.webp";
         case StatusEffectType.Sabotage:

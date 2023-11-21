@@ -12066,15 +12066,13 @@ class DamageCalculatorWrapper {
      */
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
         if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
-            if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
-                if (isNormalAttackSpecial(targetUnit.special)) {
-                    let n = 2;
-                    if (targetUnit.battleContext.attackCount === 2 ||
-                        targetUnit.maxSpecialCount < targetUnit.specialInfo.specialCount) {
-                        n = 1;
-                    }
-                    targetUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack += n;
+            if (isNormalAttackSpecial(targetUnit.special)) {
+                let n = 2;
+                if (targetUnit.battleContext.attackCount === 2 ||
+                    targetUnit.maxSpecialCount < targetUnit.specialInfo.specialCount) {
+                    n = 1;
                 }
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack += n;
             }
         }
         for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
