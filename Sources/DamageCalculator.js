@@ -1078,8 +1078,8 @@ class DamageCalculator {
                 // 奥義発動時の回復
                 {
                     let actualDamage = currentDamage;
-                    if (defUnit.restHp < currentDamage) {
-                        actualDamage = defUnit.restHp;
+                    if (defUnit.restHp - totalDamage < currentDamage) {
+                        actualDamage = defUnit.restHp - totalDamage;
                     }
 
                     let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
@@ -1160,7 +1160,7 @@ class DamageCalculator {
                     let miracleReducedDamage = currentDamage - miracleDamage;
                     defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
                 }
-                totalDamage = defUnit.restHp - 1;
+                totalDamage = defUnit.restHp - totalDamage - 1;
                 if (canActivateSpecialMiracle) {
                     if (defUnit.special === Special.Miracle ||
                         defUnit.special === Special.LifeUnending) {
