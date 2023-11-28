@@ -2984,6 +2984,9 @@ const PassiveC = {
     AlarmAtkDef: 2478, // 攻撃守備の奮進
     AlarmSpdDef: 2459, // 速さ守備の奮進
 
+    // 奮激
+    InciteAtkSpd: 2670, // 攻撃速さの奮激
+
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
     HokoNoJugeki3: 733, // 歩行の柔撃3
@@ -4349,6 +4352,27 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 攻撃速さの奮激
+{
+    let skillId = PassiveC.InciteAtkSpd;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Incited);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAtkSpdSpurs(3);
+            }
+        }
+    );
+}
 
 // 速さ魔防の凪4
 {

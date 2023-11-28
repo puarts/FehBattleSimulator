@@ -247,7 +247,8 @@ const StatusEffectType = {
     Ploy: 53, // 謀策
     Schism: 54, // 連携阻害
     PenaltyThatNeutralizesNonSpecialMiracle: 55, // 奥義以外の祈り無効
-    TimesGate: 56,
+    TimesGate: 56, // 時の門
+    Incited: 57, // 奮激
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
