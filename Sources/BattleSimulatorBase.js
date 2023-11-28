@@ -3345,6 +3345,15 @@ class BattleSimmulatorBase {
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         for (let skillId of atkUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectAfterMovementSkillsActivatedFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, atkUnit, defUnit, tileToAttack);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case PassiveB.GoldUnwinding: {
                     let logMessage = `${atkUnit.nameWithGroup}のBスキル効果発動可能まで残り${atkUnit.restPassiveBSkillAvailableTurn}ターン`;

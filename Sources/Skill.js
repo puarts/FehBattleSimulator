@@ -1802,6 +1802,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=NPRH8ksJatU&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=l6Z6SqP3ZeY&ab_channel=NintendoMobile
     IncipitKvasir: 2667, // 始端クワシル
+    QuietusGullveig: 2671, // 終端グルヴェイグ
 };
 
 const Support = {
@@ -4337,6 +4338,8 @@ const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 const updateUnitSpurFromAlliesFuncMap = new Map();
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
 const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
+// 切り込みなど移動スキル終了後に発動するスキル効果
+const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
 
 // {
 //     let skillId = Weapon.<W>;
@@ -4352,6 +4355,46 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 終端グルヴェイグ
+{
+    let skillId = Weapon.QuietusGullveig;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+    applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+        function (atkUnit, deUnit, tileToAttack) {
+            let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
+            this.writeLogLine(logMessage);
+            this.writeSimpleLogLine(logMessage);
+            if (atkUnit.restWeaponSkillAvailableTurn !== 0) {
+                this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+            }
+            if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                atkUnit.isActionDone &&
+                atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.weaponInfo.name}により再行動`;
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                atkUnit.restWeaponSkillAvailableTurn = 2;
+                atkUnit.isActionDone = false;
+                atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                atkUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    );
+}
 
 // 攻撃速さの奮激
 {
