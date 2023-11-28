@@ -2516,6 +2516,7 @@ const PassiveB = {
     LullSpdDef3: 952, // 速さ守備の凪3
     LullSpdDef4: 2475, // 速さ守備の凪4
     LullSpdRes3: 1156,
+    LullSpdRes4: 2669, // 速さ魔防の凪4
 
     SabotageAtk3: 846, // 攻撃の混乱3
     SabotageSpd3: 1026, // 速さの混乱3
@@ -4348,6 +4349,22 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 速さ魔防の凪4
+{
+    let skillId = PassiveB.LullSpdRes4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdResSpurs(-4);
+            let amount = Math.min(enemyUnit.getPositiveStatusEffects().length, 4);
+            enemyUnit.addSpdResSpurs(-amount);
+            targetUnit.battleContext.invalidatesSpdBuff = true;
+            targetUnit.battleContext.invalidatesResBuff = true;
+        }
+    );
+}
+
+// 光は時
 {
     let skillId = Special.LightIsTime;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
