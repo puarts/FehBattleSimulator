@@ -945,6 +945,17 @@ for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
 上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
 targetUnit.isOneTimeActionActivatedForWeapon
 
+各ターンについて、このスキル所持者が自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時のみ
+setOnetimeActionActivatedFuncMap.set(skillId,
+    function () {
+        if (this.battleContext.initiatesCombat) {
+            this.isOneTimeActionActivatedForWeapon = true;
+        } else {
+            this.isOneTimeActionActivatedForWeapon2 = true;
+        }
+    }
+);
+
 戦闘後、自分を行動可能にする(1ターンに1回のみ)[再行動]
 updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case Weapon.TwinCrestPower:

@@ -1797,6 +1797,11 @@ const Weapon = {
     Gondul: 2660, // ゴンドゥル
     HaltingBowPlus: 2664, // 制止の弓+
     CorsairCleaver: 2666, // 海賊の長の大斧
+
+    // Ｗ神階英雄召喚 (グルヴェイグ＆クワシル)
+    // https://www.youtube.com/watch?v=NPRH8ksJatU&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=l6Z6SqP3ZeY&ab_channel=NintendoMobile
+    IncipitKvasir: 2667, // 始端クワシル
 };
 
 const Support = {
@@ -4339,6 +4344,48 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 始端クワシル
+{
+    let skillId = Weapon.IncipitKvasir;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                enemyUnit.addSpdResSpurs(-amount);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+                    }
+                } else if (enemyUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon2) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+                    }
+                }
+                targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                    (attackUnit, attackTargetUnit) => {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.Panic);
+                        }
+                    }
+                );
+            }
+        }
+    );
+    setOnetimeActionActivatedFuncMap.set(skillId,
+        function () {
+            if (this.battleContext.initiatesCombat) {
+                this.isOneTimeActionActivatedForWeapon = true;
+            } else {
+                this.isOneTimeActionActivatedForWeapon2 = true;
+            }
+        }
+    );
+}
 
 // 海賊の長の大斧
 {
