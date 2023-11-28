@@ -938,7 +938,6 @@ class DamageCalcData {
     }
     __getInheritableCount3Specials() {
         return [
-            Special.DragonBlast, // 神竜破
             Special.Flare, // 陽光
             Special.Deadeye, // 狙撃(2倍)
             Special.BlueFrame, // ブルーフレイム(+10 or +25)
@@ -948,17 +947,18 @@ class DamageCalcData {
             Special.ArmoredFloe, // 重装の聖氷(+魔防40%)
             Special.Bonfire, // 緋炎(+守備50%)
             Special.Luna, // 月光(守備魔防-50%)
-        ];
+        ].concat(inheritableCount3Specials);
     }
     __getCount3Specials() {
         return [
+            Special.DragonBlast, // 神竜破
             Special.BrutalShell, // 凶弾
             Special.SeidrShell, // 魔弾(+15)
             // Special.OpenTheFuture, // 開世(+守備50%)
             Special.KuroNoGekko, // 黒の月光(守備魔防-80%)
             Special.LightlessLuna, // 漆黒の月光(守備魔防-80%)
             Special.HolyPressure, // 重圧の聖光
-        ];
+        ].concat(count3Specials);
     }
     __getInheritableCount4Specials() {
         return [

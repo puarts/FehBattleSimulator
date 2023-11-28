@@ -522,6 +522,29 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 }
 
 奥義実装
+{
+    let skillId = Special.<S>;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    // NormalAttackSpecialDict[skillId] = 0;
+    // 守備奥義
+    // DefenseSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    // count<N>Specials.push(skillId);
+    // inheritableCount<N>Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 緋炎
+            let totalDef = targetUnit.getDefInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
+            // 黒の月光
+            targetUnit.battleContext.specialSufferPercentage = 80;
+        }
+    );
+}
+
+または
 __getCount<N>Specials() {}
 NormalAttackSpecialDict か DefenseSpecialDict を選択
 __init__applySpecialSkillEffect() {}
@@ -1077,7 +1100,9 @@ function statusEffectTypeToIconFilePath(value) {
     case StatusEffectType.XXX:
     return g_imageRootPath + "XXX.png";
 }
-/// ステータス効果が不利なステータス効果であるかどうかを判定(不利なステータス異常の場合はNegativeStatusEffectTableに登録すること)
+/// ステータス効果が不利なステータス効果であるかどうかを判定
+// 不利なステータス異常の場合はNegativeStatusEffectTableに登録すること
+// 有利な場合は不要
 function isNegativeStatusEffect(type) {}
 
 ステータス付与

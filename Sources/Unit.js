@@ -247,6 +247,7 @@ const StatusEffectType = {
     Ploy: 53, // 謀策
     Schism: 54, // 連携阻害
     PenaltyThatNeutralizesNonSpecialMiracle: 55, // 奥義以外の祈り無効
+    TimesGate: 56,
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -430,6 +431,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Ploy.png";
         case StatusEffectType.Schism:
             return g_imageRootPath + "StatusEffect_Schism.png";
+        case StatusEffectType.TimesGate:
+            return g_imageRootPath + "TimesGate.png";
         default: return "";
     }
 }

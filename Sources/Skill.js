@@ -2018,6 +2018,7 @@ const Special = {
     NegatingFang: 1469, // 反竜穿
 
     // 専用奥義
+    LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
     ChivalricAura: 2527, // グランベルの騎士道
@@ -4294,6 +4295,9 @@ class SkillInfo {
     }
 }
 
+const count3Specials = [];
+const inheritableCount3Specials = [];
+
 // TODO: ここから下の内容を別ファイルに分ける
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
@@ -4344,6 +4348,59 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+{
+    let skillId = Special.LightIsTime;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = enemyUnit.getAtkInCombat(targetUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.6);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat &&
+                targetUnit.battleContext.isSpecialActivated &&
+                targetUnit.isAlive) {
+                let maxHP = 0;
+                let units = [];
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                    if (!unit.isActionDone) {
+                        continue;
+                    }
+                    if (unit.restHp > maxHP) {
+                        maxHP = unit.restHp;
+                        units = [unit];
+                    } else if (unit.restHp === maxHP) {
+                        units.push(unit);
+                    }
+                }
+                if (units.length === 1) {
+                    // 効果A
+                    let unit = units[0];
+                    unit.isActionDone = false;
+                    if (isRangedWeaponType(unit.weaponType)) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                } else {
+                    // 効果B
+                    targetUnit.addStatusEffect(StatusEffectType.TimesGate);
+                }
+            }
+        }
+    );
+}
 
 // 始端クワシル
 {
@@ -5194,7 +5251,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     let skillId = Special.LightlessLuna;
     NormalAttackSpecialDict[skillId] = 0;
     initApplySpecialSkillEffectFuncMap.set(skillId,
-        function (targetUnit) {
+        function (targetUnit, enemyUnit) {
             targetUnit.battleContext.specialSufferPercentage = 80;
         }
     );
