@@ -126,7 +126,8 @@ function getGrowthRateOfStar5(growthAmount) {
         return growthRate;
     }
 
-    throw new Error("Invalid growth amount " + growthAmount);
+    // throw new Error("Invalid growth amount " + growthAmount);
+    return 0;
 }
 
 function calcAppliedGrowthRate(growthRate, rarity) {

@@ -50,7 +50,6 @@
     <p>
         ユニットのステータスやスキル構成をシミュレートするツールです。闘技場スコアも表示しているので、闘技場スコア(査定)の計算にもご活用下さい。
     </p>
-    <div id="initMessage">初期化中..</div>
     <style>
         .container {
             /* margin: 20px auto; */
@@ -269,6 +268,7 @@
             border: 2px solid #59726c;
             /* border: 2px solid #accfb9; */
             border-radius: 20px;
+            margin: 2px;
         }
 
         .assetStatus {
@@ -379,6 +379,14 @@
             overflow: visible;
             cursor: pointer;
         }
+
+        .editField {
+            margin: 2px;
+            display: inline-flex;
+            background-color: #ddd;
+            border: solid 1px #999;
+            border-radius: 20px;
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -387,6 +395,7 @@
 
     <!-- ローディングアイコン -->
     <div class="sk-fading-circle" id="loader">
+        <div class="feh_loading_anim"></div>
         <div class="sk-circle1 sk-circle"></div>
         <div class="sk-circle2 sk-circle"></div>
         <div class="sk-circle3 sk-circle"></div>
@@ -594,7 +603,7 @@
             float: left;
             display: block;
             /* background-color: #f33; */
-            width: 338px;
+            width: 312px;
             padding: 10px 0px 10px 10px;
         }
 
@@ -980,7 +989,7 @@
                             <td class='skillHeader'>
                                 <img v-if="value.passiveXInfo != null" v-bind:src="value.passiveXInfo.iconPath" width="25" height="25" />
                                 <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                <img v-bind:src="g_imageRootPath + 'X.png'" class="skillTypeText" width="12" height="12" />
+                                <img v-bind:src="g_imageRootPath + 'X.webp'" class="skillTypeText" width="12" height="12" />
                             </td>
                             <td colspan="2">
                                 <select2 :options="value.heroInfo.passiveXOptions" v-bind:name="value.id+'-passiveX'" v-if="value.heroInfo!=null"
@@ -1021,97 +1030,97 @@
                     </table>
                 </div>
             </div>
-            <div class="card">
-                <dl style="margin: 0;">
-                    <dt><label class="title">英雄:</label></dt>
-                    <dd>
-                        <select2 :options="g_app.vm.heroOptions" v-model="value.heroIndex" class="hero"
-                            @input="g_app.vm.heroIndexChanged(); updateUrl();">
-                        </select2>
-                        <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
-                            <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
-                        <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.heroIndex}})</span>
-                    </dd>
+            <div class="editField">
+                <div class="card">
+                    <dl style="margin: 0;">
+                        <dt><label class="title">英雄:</label></dt>
+                        <dd>
+                            <select2 :options="g_app.vm.heroOptions" v-model="value.heroIndex" class="hero"
+                                @input="g_app.vm.heroIndexChanged(); updateUrl();">
+                            </select2>
+                            <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
+                                <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
+                            <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.heroIndex}})</span>
+                        </dd>
 
-                    <dt><label class="title">個性:</label></dt>
-                    <dd>
-                        <label class="normal" for="ivHigh">得意 </label>
-                        <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged(); updateUrl();">
-                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <label class="normal" for="ivLow">苦手 </label>
-                        <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged(); updateUrl();">
-                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <label class="normal"><img
-                                src="/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
-                                height="20"></label>
-                        <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged(); updateUrl();">
-                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                    </dd>
-                    <dt v-if="value.providableBlessingSeason == SeasonType.None && !value.isPairUpUnit">
-                        <label class="title">祝福:</label></dt>
-                    <dd v-if="value.providableBlessingSeason == SeasonType.None && !value.isPairUpUnit">
-                        <select v-model="value.grantedBlessing" @change="g_app.vm.grantedBlessingChanged">
-                            <option v-for="option in g_appData.seasonOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                    </dd>
-                    <dt v-if="!value.isPairUpUnit" ><label class="title">祝福効果: </label></dt>
-                    <dd v-if="!value.isPairUpUnit">  
-                        <select v-model="value.blessing1" @change="updateStatus(value);">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing2" @change="updateStatus(value);">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing3" @change="updateStatus(value);">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing4" @change="updateStatus(value);">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing5" @change="updateStatus(value);">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                    </dd>
-                </dl>
-            </div>
-            <div class="card">
-                <input type="button" class="buttonUi" value="凸と花を最大化" @click="value.maximizeMergeAndDragonflower();updateStatus(value);" />
-                <input type="button" class="buttonUi" value="リセット" @click="resetUnit(value)" />
-                <input type="button" class="buttonUi" @click="g_app.setUnitToMaxArenaScore(value)"  v-if="!value.isPairUpUnit" value="最大査定に設定"></input>
-                <input type="button" class="buttonUi" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();updateUrl();" >
-                <input type="button" class="buttonUi" value="スキル全て外す" @click="value.clearReservedSkills();value.clearSkills();updateUrl();" >
-            </div>
-            <div class="card">
-            <fieldset style="font-size:12px;"  v-if="!value.isPairUpUnit">
-                <legend>闘技場スコア詳細</legend>
-                
-                <span>スコア: {{value.arenaScore}}({{value.arenaScore*2}})</span><br/>
-                <span style="color:#555">
-                計算式: (150 + {{value.rarityScore}} + {{value.levelScore}} + ({{value.rating}} / 5) + ({{value.totalSp}} / 100) + ({{value.merge}} * 2)) * 2<br/>
-                基礎能力: {{value.rating}}<br/>
-                合計SP: {{value.totalSp}}({{value.weaponSp}}+{{value.supportSp}}+{{value.specialSp}}+{{value.passiveASp}}+{{value.passiveBSp}}+{{value.passiveCSp}}+{{value.passiveSSp}})</span><br/>
-            </fieldset>
+                        <dt><label class="title">個性:</label></dt>
+                        <dd>
+                            <label class="normal" for="ivHigh">得意 </label>
+                            <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged(); updateUrl();">
+                                <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <label class="normal" for="ivLow">苦手 </label>
+                            <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged(); updateUrl();">
+                                <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <label class="normal"><img
+                                    src="/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
+                                    height="20"></label>
+                            <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged(); updateUrl();">
+                                <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                        </dd>
+                        <dt v-if="value.providableBlessingSeason == SeasonType.None && !value.isPairUpUnit">
+                            <label class="title">祝福:</label></dt>
+                        <dd v-if="value.providableBlessingSeason == SeasonType.None && !value.isPairUpUnit">
+                            <select v-model="value.grantedBlessing" @change="g_app.vm.grantedBlessingChanged">
+                                <option v-for="option in g_appData.seasonOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                        </dd>
+                        <dt v-if="!value.isPairUpUnit" ><label class="title">祝福効果: </label></dt>
+                        <dd v-if="!value.isPairUpUnit">  
+                            <select v-model="value.blessing1" @change="updateStatus(value);">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing2" @change="updateStatus(value);">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing3" @change="updateStatus(value);">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing4" @change="updateStatus(value);">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing5" @change="updateStatus(value);">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                        </dd>
+                    </dl>
+                    <div style="margin: 10px 0">
+                        <input type="button" class="buttonUi" value="凸と花を最大化" @click="value.maximizeMergeAndDragonflower();updateStatus(value);" />
+                        <input type="button" class="buttonUi" value="リセット" @click="resetUnit(value)" />
+                        <input type="button" class="buttonUi" @click="g_app.setUnitToMaxArenaScore(value)"  v-if="!value.isPairUpUnit" value="最大査定に設定"></input>
+                        <input type="button" class="buttonUi" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();updateUrl();" >
+                        <input type="button" class="buttonUi" value="スキル全て外す" @click="value.clearReservedSkills();value.clearSkills();updateUrl();" >
+                    </div>
+                    <fieldset style="font-size:12px;background-color:#eee;border-radius: 10px;margin-right:10px;"  v-if="!value.isPairUpUnit">
+                        <legend>闘技場スコア詳細</legend>
+                        
+                        <span>スコア: {{value.arenaScore}}({{value.arenaScore*2}})</span><br/>
+                        <span style="color:#555">
+                        計算式: (150 + {{value.rarityScore}} + {{value.levelScore}} + ({{value.rating}} / 5) + ({{value.totalSp}} / 100) + ({{value.merge}} * 2)) * 2<br/>
+                        基礎能力: {{value.rating}}<br/>
+                        合計SP: {{value.totalSp}}({{value.weaponSp}}+{{value.supportSp}}+{{value.specialSp}}+{{value.passiveASp}}+{{value.passiveBSp}}+{{value.passiveCSp}}+{{value.passiveSSp}})</span><br/>
+                    </fieldset>
+                </div>
             </div>
         </div>
     </script>
@@ -1238,13 +1247,10 @@
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-                    passiveSInfos, passiveXInfos);
+                    passiveSInfos, passiveXInfos, [], false);
                 g_app.registerHeroOptions(heroInfos, false);
 
                 initUnitBuilder();
-
-                let initMessage = document.getElementById("initMessage");
-                initMessage.textContent = "";
 
                 if (isLocal) {
                     loadLazyImages();

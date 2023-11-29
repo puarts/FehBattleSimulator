@@ -2707,7 +2707,7 @@ const PassiveB = {
     SoaringWings: 2390, // 天かける翼
     FruitOfLife: 2424, // 地に生まれ地に還る
     SunlightBangle: 2477, // 華日の腕輪
-    GetBehindMe : 2511, // 僕が守ります!
+    GetBehindMe: 2511, // 僕が守ります!
     HolyWarsEnd: 1376, // 最後の聖戦
     HolyWarsEnd2: 2537, // 最後の聖戦・承
 
@@ -4296,7 +4296,7 @@ class SkillInfo {
             case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName;
             case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName;
             case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName;
-            case SkillType.PassiveX: return iconRoot + "PassiveX/" + iconName;
+            case SkillType.PassiveX: return iconRoot + "Attuned/" + iconName;
             case SkillType.Captain: return iconRoot + "Captain/" + iconName;
             default:
                 return "";
@@ -4740,7 +4740,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
     let skillId = PassiveB.SpdDefSnag4;
     applyMovementAssistSkillFuncMap.set(skillId,
         function (unit1, unit2) {
-            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(0, -7, -7, 0));
+            this.__applySnag4Skills(unit1, unit2, unit => unit.applyDebuffs(0, -7, -7, 0));
         }
     );
 }
@@ -4750,7 +4750,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
     let skillId = PassiveB.AtkDefSnag4;
     applyMovementAssistSkillFuncMap.set(skillId,
         function (unit1, unit2) {
-            this.__applySnag4Skills(unit1, unit2,  unit => unit.applyDebuffs(-7, 0, -7, 0));
+            this.__applySnag4Skills(unit1, unit2, unit => unit.applyDebuffs(-7, 0, -7, 0));
         }
     );
 }
@@ -4792,10 +4792,10 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                 unit.addStatusEffect(StatusEffectType.DeepWounds);
-                unit.addStatusEffect(StatusEffectType.PenaltyThatNeutralizesNonSpecialMiracle);
+                unit.addStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
             }
         }
     );
@@ -5125,7 +5125,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.isWeaponSpecialRefined &&
                 targetUnit.battleContext.restHpPercentage >= 25) {
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
@@ -5218,7 +5218,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.initiatesCombat) {
                 this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
             }
@@ -5247,7 +5247,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.initiatesCombat) {
                 this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
             }
@@ -5854,7 +5854,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
     let skillId = PassiveA.BeyondWitchery;
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-        let amount = this.globalBattleContext.currentTurn === 1 ? 2 : 1;
+            let amount = this.globalBattleContext.currentTurn === 1 ? 2 : 1;
             skillOwner.reserveToReduceSpecialCount(amount);
             skillOwner.reserveTakeDamage(amount);
         })

@@ -1071,7 +1071,7 @@ class DamageCalculator {
                                 }
                                 this.__reduceSpecialCount(atkUnit, 1);
                             }
-                                break;
+                            break;
                     }
                 }
 
@@ -1131,7 +1131,7 @@ class DamageCalculator {
                 canActivateMiracle = false;
                 canActivateMiracleAndHeal = false;
             }
-            if (defUnit.hasStatusEffect(StatusEffectType.PenaltyThatNeutralizesNonSpecialMiracle)) {
+            if (defUnit.hasStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP)) {
                 if (this.isLogEnabled) {
                     if (canActivateMiracle ||
                         canActivateMiracleAndHeal) {

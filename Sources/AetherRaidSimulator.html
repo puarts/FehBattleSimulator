@@ -351,6 +351,7 @@
 
     <!-- ローディングアイコン -->
     <div class="sk-fading-circle" id="loader">
+        <div class="feh_loading_anim"></div>
         <div class="sk-circle1 sk-circle"></div>
         <div class="sk-circle2 sk-circle"></div>
         <div class="sk-circle3 sk-circle"></div>
@@ -2087,7 +2088,7 @@
                             <td class='skillHeader'>
                                 <img v-if="value.passiveXInfo != null" v-bind:src="value.passiveXInfo.iconPath" width="25" height="25" />
                                 <img v-else v-bind:src="g_imageRootPath + 'None.png'" width="25" height="25" />
-                                <img v-bind:src="g_imageRootPath + 'X.png'" class="skillTypeText" width="12" height="12" />
+                                <img v-bind:src="g_imageRootPath + 'X.webp'" class="skillTypeText" width="12" height="12" />
                             </td>
                             <td>
                                 <select2 :options="g_app.vm.passiveXOptions" v-if="g_app.vm.enableAllSkillOptions"
