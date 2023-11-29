@@ -1972,6 +1972,12 @@ class BattleMap {
 
         // 味方を自身の周囲にワープさせるスキル
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+            // ステータス: 時の門
+            if (ally.hasStatusEffect(StatusEffectType.TimesGate)) {
+                if (unit.distance(ally) <= 4) {
+                    yield* ally.placedTile.getMovableNeighborTiles(ally, 1, false, true);
+                }
+            }
             for (let skillId of ally.enumerateSkills()) {
                 switch (skillId) {
                     case Weapon.NewHeightBow:

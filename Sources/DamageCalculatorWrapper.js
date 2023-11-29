@@ -2250,6 +2250,12 @@ class DamageCalculatorWrapper {
      * @param  {GameMode} gameMode
      */
     ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.Incited)) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                let amount = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
+                targetUnit.addAllSpur(amount);
+            }
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
             targetUnit.addAllSpur(5);
         }

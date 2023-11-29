@@ -1797,6 +1797,12 @@ const Weapon = {
     Gondul: 2660, // ゴンドゥル
     HaltingBowPlus: 2664, // 制止の弓+
     CorsairCleaver: 2666, // 海賊の長の大斧
+
+    // Ｗ神階英雄召喚 (グルヴェイグ＆クワシル)
+    // https://www.youtube.com/watch?v=NPRH8ksJatU&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=l6Z6SqP3ZeY&ab_channel=NintendoMobile
+    IncipitKvasir: 2667, // 始端クワシル
+    QuietusGullveig: 2671, // 終端グルヴェイグ
 };
 
 const Support = {
@@ -2013,6 +2019,8 @@ const Special = {
     NegatingFang: 1469, // 反竜穿
 
     // 専用奥義
+    TimeIsLight: 2672, // 時は光
+    LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
     ChivalricAura: 2527, // グランベルの騎士道
@@ -2510,6 +2518,7 @@ const PassiveB = {
     LullSpdDef3: 952, // 速さ守備の凪3
     LullSpdDef4: 2475, // 速さ守備の凪4
     LullSpdRes3: 1156,
+    LullSpdRes4: 2669, // 速さ魔防の凪4
 
     SabotageAtk3: 846, // 攻撃の混乱3
     SabotageSpd3: 1026, // 速さの混乱3
@@ -2754,6 +2763,9 @@ const PassiveB = {
 
     // 猛襲
     AerialManeuvers: 2589, // 空からの猛襲
+
+    // 蛇毒
+    OccultistsStrike: 2673, // 魔の蛇毒
 };
 
 const PassiveC = {
@@ -2976,6 +2988,9 @@ const PassiveC = {
     AlarmAtkSpd: 2425, // 攻撃速さの奮進
     AlarmAtkDef: 2478, // 攻撃守備の奮進
     AlarmSpdDef: 2459, // 速さ守備の奮進
+
+    // 奮激
+    InciteAtkSpd: 2670, // 攻撃速さの奮激
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
@@ -4289,6 +4304,9 @@ class SkillInfo {
     }
 }
 
+const count3Specials = [];
+const inheritableCount3Specials = [];
+
 // TODO: ここから下の内容を別ファイルに分ける
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
@@ -4324,6 +4342,10 @@ const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 const updateUnitSpurFromAlliesFuncMap = new Map();
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
 const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
+// 切り込みなど移動スキル終了後に発動するスキル効果
+const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
+// 優先度の高い再行動スキルの評価
+const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
 
 // {
 //     let skillId = Weapon.<W>;
@@ -4339,6 +4361,240 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 魔の蛇毒
+{
+    let skillId = PassiveB.OccultistsStrike;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
+                enemyUnit.addSpdResSpurs(-4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getRes(defUnit, atkUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
+
+// 時は光
+{
+    let skillId = Special.TimeIsLight;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.45);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+    applyHighPriorityAnotherActionSkillEffectFuncMap.set(skillId,
+        function (atkUnit, defUnit, tileToAttack) {
+            if (atkUnit.battleContext.initiatesCombat &&
+                atkUnit.battleContext.isSpecialActivated &&
+                atkUnit.isAlive &&
+                !atkUnit.isOneTimeActionActivatedForSpecial &&
+                atkUnit.isActionDone) {
+                let logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.specialInfo.name}により再行動`;
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                atkUnit.isActionDone = false;
+                atkUnit.isOneTimeActionActivatedForSpecial = true;
+            }
+        }
+    );
+}
+
+// 終端グルヴェイグ
+{
+    let skillId = Weapon.QuietusGullveig;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+    applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+        function (atkUnit, defUnit, tileToAttack) {
+            let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
+            if (atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.nameWithGroup}の武器スキル効果は現在発動可能`;
+            }
+            this.writeLogLine(logMessage);
+            this.writeSimpleLogLine(logMessage);
+            if (atkUnit.restWeaponSkillAvailableTurn !== 0) {
+                this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+            }
+            if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                atkUnit.isActionDone &&
+                atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.weaponInfo.name}により再行動`;
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                atkUnit.restWeaponSkillAvailableTurn = 2;
+                atkUnit.isActionDone = false;
+                atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                atkUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    );
+}
+
+// 攻撃速さの奮激
+{
+    let skillId = PassiveC.InciteAtkSpd;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Incited);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addAtkSpdSpurs(3);
+            }
+        }
+    );
+}
+
+// 速さ魔防の凪4
+{
+    let skillId = PassiveB.LullSpdRes4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdResSpurs(-4);
+            let amount = Math.min(enemyUnit.getPositiveStatusEffects().length, 4);
+            enemyUnit.addSpdResSpurs(-amount);
+            targetUnit.battleContext.invalidatesSpdBuff = true;
+            targetUnit.battleContext.invalidatesResBuff = true;
+        }
+    );
+}
+
+// 光は時
+{
+    let skillId = Special.LightIsTime;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = enemyUnit.getAtkInCombat(targetUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.6);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat &&
+                targetUnit.battleContext.isSpecialActivated &&
+                targetUnit.isAlive) {
+                let maxHP = 0;
+                let units = [];
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                    if (!unit.isActionDone) {
+                        continue;
+                    }
+                    if (unit.restHp > maxHP) {
+                        maxHP = unit.restHp;
+                        units = [unit];
+                    } else if (unit.restHp === maxHP) {
+                        units.push(unit);
+                    }
+                }
+                if (units.length === 1) {
+                    // 効果A
+                    let unit = units[0];
+                    unit.isActionDone = false;
+                    if (isRangedWeaponType(unit.weaponType)) {
+                        unit.addStatusEffect(StatusEffectType.Gravity);
+                    }
+                } else {
+                    // 効果B
+                    targetUnit.addStatusEffect(StatusEffectType.TimesGate);
+                }
+            }
+        }
+    );
+}
+
+// 始端クワシル
+{
+    let skillId = Weapon.IncipitKvasir;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                enemyUnit.addSpdResSpurs(-amount);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+                    }
+                } else if (enemyUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon2) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+                    }
+                }
+                targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                    (attackUnit, attackTargetUnit) => {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.Panic);
+                        }
+                    }
+                );
+            }
+        }
+    );
+    setOnetimeActionActivatedFuncMap.set(skillId,
+        function () {
+            if (this.battleContext.initiatesCombat) {
+                this.isOneTimeActionActivatedForWeapon = true;
+            } else {
+                this.isOneTimeActionActivatedForWeapon2 = true;
+            }
+        }
+    );
+}
 
 // 海賊の長の大斧
 {
@@ -5147,7 +5403,7 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
     let skillId = Special.LightlessLuna;
     NormalAttackSpecialDict[skillId] = 0;
     initApplySpecialSkillEffectFuncMap.set(skillId,
-        function (targetUnit) {
+        function (targetUnit, enemyUnit) {
             targetUnit.battleContext.specialSufferPercentage = 80;
         }
     );

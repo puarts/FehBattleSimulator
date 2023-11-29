@@ -247,6 +247,8 @@ const StatusEffectType = {
     Ploy: 53, // 謀策
     Schism: 54, // 連携阻害
     NeutralizeUnitSurvivesWith1HP: 55, // 奥義以外の祈り無効
+    TimesGate: 56, // 時の門
+    Incited: 57, // 奮激
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -435,6 +437,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_Schism.png";
         case StatusEffectType.NeutralizeUnitSurvivesWith1HP:
             return g_imageRootPath + "StatusEffect_NeutralizeUnitSurvivesWith1HP.webp";
+        case StatusEffectType.TimesGate:
+            return g_imageRootPath + "TimesGate.png";
         default: return "";
     }
 }
@@ -1632,6 +1636,7 @@ class Unit extends BattleMapElement {
 
         this.restMoveCount = 0; // 再移動(残り)で参照する残り移動量
 
+        this.restWeaponSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restSupportSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restPassiveBSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
@@ -2162,6 +2167,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.fromPosX
             + ValueDelimiter + this.fromPosY
             + ValueDelimiter + boolToInt(this.isCombatDone)
+            + ValueDelimiter + this.restWeaponSkillAvailableTurn
             + ValueDelimiter + this.restSupportSkillAvailableTurn
             + ValueDelimiter + this.restPassiveBSkillAvailableTurn
             ;
@@ -2276,6 +2282,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.fromPosX = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.restWeaponSkillAvailableTurn = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restSupportSkillAvailableTurn = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.restPassiveBSkillAvailableTurn = Number(splited[i]); ++i; }
     }

@@ -522,6 +522,29 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 }
 
 奥義実装
+{
+    let skillId = Special.<S>;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    // NormalAttackSpecialDict[skillId] = 0;
+    // 守備奥義
+    // DefenseSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    // count<N>Specials.push(skillId);
+    // inheritableCount<N>Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 緋炎
+            let status = targetUnit.get<Def>InCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.5);
+            // 黒の月光
+            targetUnit.battleContext.specialSufferPercentage = 80;
+        }
+    );
+}
+
+または
 __getCount<N>Specials() {}
 NormalAttackSpecialDict か DefenseSpecialDict を選択
 __init__applySpecialSkillEffect() {}
@@ -777,7 +800,8 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
-targetUnit.battleContext.damageAfterBeginningOfCombat = N;
+// ダメージを受けるのはenemyUnit
+enemyUnit.battleContext.damageAfterBeginningOfCombat += N;
 
 ダメージ+N(固定ダメージ) （同名のメソッドがあるので注意すること）
 // 戦闘開始後に呼ばれるので戦闘前奥義は__calcFixedAddDamageに直接実装すること
@@ -945,6 +969,17 @@ for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
 上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ
 targetUnit.isOneTimeActionActivatedForWeapon
 
+各ターンについて、このスキル所持者が自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時のみ
+setOnetimeActionActivatedFuncMap.set(skillId,
+    function () {
+        if (this.battleContext.initiatesCombat) {
+            this.isOneTimeActionActivatedForWeapon = true;
+        } else {
+            this.isOneTimeActionActivatedForWeapon2 = true;
+        }
+    }
+);
+
 戦闘後、自分を行動可能にする(1ターンに1回のみ)[再行動]
 updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case Weapon.TwinCrestPower:
@@ -1066,7 +1101,9 @@ function statusEffectTypeToIconFilePath(value) {
     case StatusEffectType.XXX:
     return g_imageRootPath + "XXX.png";
 }
-/// ステータス効果が不利なステータス効果であるかどうかを判定(不利なステータス異常の場合はNegativeStatusEffectTableに登録すること)
+/// ステータス効果が不利なステータス効果であるかどうかを判定
+// 不利なステータス異常の場合はNegativeStatusEffectTableに登録すること
+// 有利な場合は不要
 function isNegativeStatusEffect(type) {}
 
 ステータス付与
