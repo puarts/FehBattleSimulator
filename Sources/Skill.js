@@ -2019,6 +2019,7 @@ const Special = {
     NegatingFang: 1469, // 反竜穿
 
     // 専用奥義
+    TimeIsLight: 2672, // 時は光
     LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
@@ -4340,6 +4341,8 @@ const canActivateObstructToAdjacentTilesFuncMap = new Map();
 const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 // 切り込みなど移動スキル終了後に発動するスキル効果
 const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
+// 優先度の高い再行動スキルの評価
+const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
 
 // {
 //     let skillId = Weapon.<W>;
@@ -4355,6 +4358,47 @@ const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 時は光
+{
+    let skillId = Special.TimeIsLight;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.45);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+    applyHighPriorityAnotherActionSkillEffectFuncMap.set(skillId,
+        function (atkUnit, defUnit, tileToAttack) {
+            if (atkUnit.battleContext.initiatesCombat &&
+                atkUnit.battleContext.isSpecialActivated &&
+                atkUnit.isAlive &&
+                !atkUnit.isOneTimeActionActivatedForSpecial &&
+                atkUnit.isActionDone) {
+                let logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.specialInfo.name}により再行動`;
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                atkUnit.isActionDone = false;
+                atkUnit.isOneTimeActionActivatedForSpecial = true;
+            }
+        }
+    );
+}
 
 // 終端グルヴェイグ
 {
@@ -4374,8 +4418,11 @@ const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
         }
     );
     applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
-        function (atkUnit, deUnit, tileToAttack) {
+        function (atkUnit, defUnit, tileToAttack) {
             let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
+            if (atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.nameWithGroup}の武器スキル効果は現在発動可能`;
+            }
             this.writeLogLine(logMessage);
             this.writeSimpleLogLine(logMessage);
             if (atkUnit.restWeaponSkillAvailableTurn !== 0) {

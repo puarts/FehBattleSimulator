@@ -3298,20 +3298,23 @@ class BattleSimmulatorBase {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
         }
 
-        if (atkUnit.hp == 0) {
+        // battleContextが必要なスキル発動後に追跡対象を更新する(追跡対象更新時にbattleContextが初期化されるため)
+        // そのために現時点で更新が必要なタイルを保存しておく
+        let tilesForUpdateChaseTargetTile = [];
+
+        if (atkUnit.hp === 0) {
             this.audioManager.playSoundEffect(SoundEffectId.Dead);
             g_appData.globalBattleContext.RemovedUnitCountsInCombat[atkUnit.groupId]++;
 
-            // マップからの除外と追跡対象の更新
+            // マップからの除外
             let updateRequiredTile = atkUnit.placedTile;
             moveUnitToTrashBox(atkUnit);
-            this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
-        }
-        else {
-            // マップからの除外と追跡対象の更新
+            tilesForUpdateChaseTargetTile.push(updateRequiredTile);
+        } else {
+            // マップからの除外
             // 護り手ユニットが倒されている可能性もあるので全員見る
             for (let unit of this.enumerateUnitsInTheSameGroupOnMap(defUnit, true)) {
-                if (unit.hp == 0) {
+                if (unit.hp === 0) {
                     this.audioManager.playSoundEffect(SoundEffectId.Dead);
                     g_appData.globalBattleContext.RemovedUnitCountsInCombat[unit.groupId]++;
                     switch (unit.passiveS) {
@@ -3337,8 +3340,21 @@ class BattleSimmulatorBase {
 
                     let updateRequiredTile = unit.placedTile;
                     moveUnitToTrashBox(unit);
-                    this.__updateChaseTargetTilesForSpecifiedTile(updateRequiredTile);
+                    tilesForUpdateChaseTargetTile.push(updateRequiredTile);
                     break;
+                }
+            }
+        }
+
+        // 優先度の高い再行動スキルの評価
+        for (let skillId of atkUnit.enumerateSkills()) {
+            let funcMap = applyHighPriorityAnotherActionSkillEffectFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, atkUnit, defUnit, tileToAttack);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                 }
             }
         }
@@ -3357,6 +3373,9 @@ class BattleSimmulatorBase {
             switch (skillId) {
                 case PassiveB.GoldUnwinding: {
                     let logMessage = `${atkUnit.nameWithGroup}のBスキル効果発動可能まで残り${atkUnit.restPassiveBSkillAvailableTurn}ターン`;
+                    if (atkUnit.restPassiveBSkillAvailableTurn === 0) {
+                        logMessage = `${atkUnit.nameWithGroup}のBスキル効果は現在発動可能`;
+                    }
                     this.writeLogLine(logMessage);
                     this.writeSimpleLogLine(logMessage);
                     if (atkUnit.restPassiveBSkillAvailableTurn !== 0) {
@@ -3365,7 +3384,7 @@ class BattleSimmulatorBase {
                     if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
                         atkUnit.isActionDone &&
                         atkUnit.restPassiveBSkillAvailableTurn === 0) {
-                        logMessage = atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動";
+                        logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`;
                         this.writeLogLine(logMessage);
                         this.writeSimpleLogLine(logMessage);
                         atkUnit.restPassiveBSkillAvailableTurn = 2;
@@ -3477,6 +3496,11 @@ class BattleSimmulatorBase {
         let cantoActivated = this.__activateCantoIfPossible(atkUnit);
         if (!cantoActivated) {
             atkUnit.applyEndActionSkills();
+        }
+
+        // 追跡対象の更新
+        for (let tile of tilesForUpdateChaseTargetTile) {
+            this.__updateChaseTargetTilesForSpecifiedTile(tile);
         }
 
         // 罠は再行動奥義や再移動の後に評価する必要がある(停止罠で迅雷や再移動は無効化される)

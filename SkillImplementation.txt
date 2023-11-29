@@ -536,8 +536,8 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 緋炎
-            let totalDef = targetUnit.getDefInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(totalDef * 0.5);
+            let status = targetUnit.get<Def>InCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.5);
             // 黒の月光
             targetUnit.battleContext.specialSufferPercentage = 80;
         }
