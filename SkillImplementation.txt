@@ -800,7 +800,8 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
 targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 
 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
-targetUnit.battleContext.damageAfterBeginningOfCombat = N;
+// ダメージを受けるのはenemyUnit
+enemyUnit.battleContext.damageAfterBeginningOfCombat += N;
 
 ダメージ+N(固定ダメージ) （同名のメソッドがあるので注意すること）
 // 戦闘開始後に呼ばれるので戦闘前奥義は__calcFixedAddDamageに直接実装すること

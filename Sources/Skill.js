@@ -2763,6 +2763,9 @@ const PassiveB = {
 
     // 猛襲
     AerialManeuvers: 2589, // 空からの猛襲
+
+    // 蛇毒
+    OccultistsStrike: 2673, // 魔の蛇毒
 };
 
 const PassiveC = {
@@ -4358,6 +4361,24 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 魔の蛇毒
+{
+    let skillId = PassiveB.OccultistsStrike;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
+                enemyUnit.addSpdResSpurs(-4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getRes(defUnit, atkUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
 
 // 時は光
 {
