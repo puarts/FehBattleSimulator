@@ -9685,7 +9685,7 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
                 case HeavyTrap:
                 case BoltTrap:
                     trapCondSatisfied =
-                        unit.passiveB != PassiveB.Wanakaijo3 ||
+                        unit.passiveB != PassiveB.Wanakaijo3 &&
                         unit.passiveB != PassiveB.DisarmTrap4;
                     break;
                 case HexTrap:
