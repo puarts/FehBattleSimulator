@@ -4416,6 +4416,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
                 this.writeSimpleLogLine(logMessage);
                 atkUnit.isActionDone = false;
                 atkUnit.isOneTimeActionActivatedForSpecial = true;
+                atkUnit.addStatusEffect(StatusEffectType.Gravity);
             }
         }
     );
@@ -4433,6 +4434,8 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
                 targetUnit.addAtkSpdSpurs(amount);
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+            if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.7, enemyUnit);
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
