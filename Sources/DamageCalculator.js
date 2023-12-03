@@ -921,6 +921,25 @@ class DamageCalculator {
                 activatesAttackerSpecial &&
                 invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack &&
                 !atkUnit.battleContext.preventedAttackerSpecial;
+
+            // ダメージ軽減をN%無効
+            if (atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.length >= 1) {
+                let reducedRatio = 1 - damageReductionRatio;
+                if (this.isLogEnabled) {
+                    this.writeDebugLog(`奥義以外のダメージ軽減をN%無効: [${atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial}]`);
+                }
+                for (let ratio of atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial) {
+                    let tmpRatio = reducedRatio;
+                    reducedRatio -= Math.trunc(reducedRatio * 100 * ratio) * 0.01;
+                    reducedRatio = Math.min(reducedRatio, 1);
+                    if (this.isLogEnabled) {
+                        this.writeDebugLog(`奥義以外のダメージ軽減を${floorNumberWithFloatError(ratio * 100)}%無効。軽減率: ${floorNumberWithFloatError(tmpRatio * 100)}% → ${floorNumberWithFloatError(reducedRatio * 100)}%`);
+                    }
+                }
+                damageReductionRatio = 1 - reducedRatio;
+            }
+
+            // ダメージ軽減を無効
             if (invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial) {
                 if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
                 damageReductionRatio = 1.0;

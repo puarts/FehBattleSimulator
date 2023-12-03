@@ -1028,8 +1028,7 @@ class BattleContext {
 
     // ダメージ軽減積
     static multDamageReductionRatio(sourceRatio, ratio, atkUnit) {
-        let modifiedRatio = BattleContext.calcDamageReductionRatio(ratio, atkUnit);
-        return 1 - (1 - sourceRatio) * (1 - modifiedRatio);
+        return 1 - (1 - sourceRatio) * (1 - ratio);
     }
 
     // 奥義のダメージ軽減積
