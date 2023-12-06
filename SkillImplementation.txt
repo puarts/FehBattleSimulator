@@ -445,7 +445,7 @@ for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUni
 敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
-        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, spaces = 2, withTargetUnit = true);
+        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
         enemyUnit.addSpurs(...debuffs);
     }
 );

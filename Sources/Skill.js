@@ -1808,6 +1808,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=9RI6oc0RkIM&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=oeDT847NOGE&ab_channel=NintendoMobile
     WorldTreeTail: 2677, // 世界樹の栗鼠の尻尾
+    ArcaneThrima: 2680, // 魔器スリマ
 };
 
 const Support = {
@@ -4373,6 +4374,52 @@ const hasTransformSkillsFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 魔器スリマ
+{
+    let skillId = Weapon.ArcaneThrima;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                let nearestEnemies = this.__findNearestEnemies(skillOwner);
+                for (let nearestEnemy of nearestEnemies) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                        unit.reserveToApplyDebuffs(-6, 0, -6, 0);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
+                        enemyUnit.addSpurs(...debuffs);
+                    }
+                );
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getSpdInCombat(enemyUnit) >= enemyUnit.getSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
 
 // 絶対化身・敏捷4
 {
