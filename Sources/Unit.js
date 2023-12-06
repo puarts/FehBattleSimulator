@@ -3512,6 +3512,11 @@ class Unit extends BattleMapElement {
         this.applyDefBuff(def);
     }
 
+    applyDefResBuffs(def, res = def) {
+        this.applyDefBuff(def);
+        this.applyResBuff(def);
+    }
+
     reserveToApplyAtkDebuff(amount) {
         if (this.reservedAtkDebuff > amount) {
             this.reservedAtkDebuff = amount;

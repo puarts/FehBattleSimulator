@@ -2998,6 +2998,7 @@ const PassiveC = {
     AlarmAtkSpd: 2425, // 攻撃速さの奮進
     AlarmAtkDef: 2478, // 攻撃守備の奮進
     AlarmSpdDef: 2459, // 速さ守備の奮進
+    AlarmDefRes: 2676, // 守備魔防の奮進
 
     // 奮激
     InciteAtkSpd: 2670, // 攻撃速さの奮激
@@ -4378,6 +4379,27 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 守備魔防の奮進
+{
+    let skillId = PassiveC.AlarmDefRes;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                skillOwner.applyDefResBuffs(6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addDefResSpurs(3);
+            }
+        }
+    );
+}
 
 // 未来を変える瞳
 {
