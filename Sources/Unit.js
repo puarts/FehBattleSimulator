@@ -249,6 +249,7 @@ const StatusEffectType = {
     NeutralizeUnitSurvivesWith1HP: 55, // 奥義以外の祈り無効
     TimesGate: 56, // 時の門
     Incited: 57, // 奮激
+    ReducesDamageFromFirstAttackBy40Percent: 58, // 自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -439,6 +440,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_NeutralizeUnitSurvivesWith1HP.webp";
         case StatusEffectType.TimesGate:
             return g_imageRootPath + "TimesGate.png";
+        case StatusEffectType.ReducesDamageFromFirstAttackBy40Percent:
+            return g_imageRootPath + "ReducesDamageFromFirstAttackBy40Percent.png";
         default: return "";
     }
 }

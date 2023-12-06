@@ -1818,10 +1818,13 @@ const Support = {
     Drawback: 415, // 引き寄せ
     Shove: 424, // 体当たり
     Swap: 416, // 入れ替え
+    Pivot: 422, // 回り込み
+
+    // 専用補助
     FutureVision: 433, // 未来を移す瞳
     FutureVision2: 1948, // 未来を映す瞳・承
+    FutureSight: 2675, // 未来を変える瞳
     FoulPlay: 1840, // トリック
-    Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
     ToChangeFate2: 2489, // 運命を変える!・承
     AFateChanged: 2176, // 運命は変わった!
@@ -4359,7 +4362,8 @@ const applyEndActionSkillsFuncMap = new Map();
 // thisはUnit
 const applySkillsAfterCantoActivatedFuncMap = new Map();
 const hasTransformSkillsFuncMap = new Map();
-
+const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
+const findTileAfterMovementAssistFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4374,6 +4378,40 @@ const hasTransformSkillsFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 未来を変える瞳
+{
+    let skillId = Support.FutureSight;
+    getTargetUnitTileAfterMoveAssistFuncMap.set(skillId, function (unit, targetUnit, assistTile) {
+        return this.__findTileAfterSwap(unit, targetUnit, assistTile);
+    });
+    findTileAfterMovementAssistFuncMap.set(skillId, function (unit, target, tile) {
+        return this.__findTileAfterSwap(unit, target, tile);
+    });
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
+            if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                supporterUnit.isActionDone = false;
+                supporterUnit.isOneTimeActionActivatedForSupport = true;
+            }
+            supporterUnit.applyBuffs(6, 6, 0, 0);
+            targetUnit.applyBuffs(6, 6, 0, 0);
+            supporterUnit.addStatusEffect(StatusEffectType.Treachery);
+            targetUnit.addStatusEffect(StatusEffectType.Treachery);
+            supporterUnit.addStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+            targetUnit.addStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+        }
+    );
+}
 
 // 魔器スリマ
 {

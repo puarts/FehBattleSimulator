@@ -8596,26 +8596,48 @@ class BattleSimmulatorBase {
      */
     __getTargetUnitTileAfterMoveAssist(unit, targetUnit, assistTile) {
         let result = null;
+        let funcMap = getTargetUnitTileAfterMoveAssistFuncMap;
+        let skillId = unit.support;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                result = func.call(this, unit, targetUnit, assistTile);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (unit.support) {
             case Support.RescuePlus:
             case Support.Rescue:
-            case Support.Drawback: result = this.__findTileAfterDrawback(unit, targetUnit, assistTile); break;
+            case Support.Drawback:
+                result = this.__findTileAfterDrawback(unit, targetUnit, assistTile);
+                break;
             case Support.ToChangeFate:
             case Support.ToChangeFate2:
             case Support.AFateChanged:
             case Support.FateUnchanged:
             case Support.ReturnPlus:
             case Support.Return:
-            case Support.Reposition: result = this.__findTileAfterReposition(unit, targetUnit, assistTile); break;
+            case Support.Reposition:
+                result = this.__findTileAfterReposition(unit, targetUnit, assistTile);
+                break;
             case Support.FoulPlay:
             case Support.FutureVision:
             case Support.FutureVision2:
-            case Support.Swap: result = this.__findTileAfterSwap(unit, targetUnit, assistTile); break;
-            case Support.Smite: result = this.__findTileAfterSmite(unit, targetUnit, assistTile); break;
+            case Support.Swap:
+                result = this.__findTileAfterSwap(unit, targetUnit, assistTile);
+                break;
+            case Support.Smite:
+                result = this.__findTileAfterSmite(unit, targetUnit, assistTile);
+                break;
             case Support.NudgePlus:
             case Support.Nudge:
-            case Support.Shove: result = this.__findTileAfterShove(unit, targetUnit, assistTile); break;
-            case Support.Pivot: result = this.__findTileAfterPivot(unit, targetUnit, assistTile); break;
+            case Support.Shove:
+                result = this.__findTileAfterShove(unit, targetUnit, assistTile);
+                break;
+            case Support.Pivot:
+                result = this.__findTileAfterPivot(unit, targetUnit, assistTile);
+                break;
             default:
                 this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
                 return -1;
@@ -9245,6 +9267,16 @@ class BattleSimmulatorBase {
     __findTileAfterMovementAssist(unit, target, tile) {
         if (!unit.hasSupport) {
             return new MovementAssistResult(false, null, null);
+        }
+        let funcMap = findTileAfterMovementAssistFuncMap;
+        let skillId = unit.support;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                return func.call(this, unit, target, tile);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
         }
 
         switch (unit.support) {

@@ -989,7 +989,24 @@ updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case PassiveB.RagingStorm:
 }
 
+入れ替え
+getTargetUnitTileAfterMoveAssistFuncMap.set(skillId, function (unit, targetUnit, assistTile) {
+    return this.__findTileAfterSwap(unit, targetUnit, assistTile);
+});
+findTileAfterMovementAssistFuncMap.set(skillId, function (unit, target, tile) {
+    return this.__findTileAfterSwap(unit, target, tile);
+});
+
 補助後、自分を行動可能にする[再行動]
+applySupportSkillForSupporterFuncMap.set(skillId,
+    function (supporterUnit, targetUnit, supportTile) {
+        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+            supporterUnit.isActionDone = false;
+            supporterUnit.isOneTimeActionActivatedForSupport = true;
+        }
+    }
+);
+もしくは
 applySupportSkill() {
     // case Support.FutureVision
 }
