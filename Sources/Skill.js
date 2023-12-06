@@ -2756,6 +2756,7 @@ const PassiveB = {
 
     // 絶対化身
     BeastAgility3: 2270, // 絶対化身・敏捷3
+    BeastAgility4: 2678, // 絶対化身・敏捷4
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
     BeastSense4: 2515, // 絶対化身・察知4
@@ -4356,6 +4357,7 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
 const applyEndActionSkillsFuncMap = new Map();
 // thisはUnit
 const applySkillsAfterCantoActivatedFuncMap = new Map();
+const hasTransformSkillsFuncMap = new Map();
 
 // {
 //     let skillId = Weapon.<W>;
@@ -4371,6 +4373,32 @@ const applySkillsAfterCantoActivatedFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 絶対化身・敏捷4
+{
+    let skillId = PassiveB.BeastAgility4;
+    hasTransformSkillsFuncMap.set(skillId, function () {
+        return true;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.getSpdInCombat(enemyUnit) >= enemyUnit.getSpdInCombat(targetUnit) + 1) {
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                }
+            );
+            targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                if (isPrecombat) return;
+                let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+            });
+        }
+    );
+}
 
 // 世界樹の栗鼠の尻尾
 {
