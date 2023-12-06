@@ -50,6 +50,9 @@ applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
 applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {}
 
 獣の共通の化身スキル
+WeaponTypesAddAtk2AfterTransform[skillId] = 0;
+BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+もしくは
 const WeaponTypesAddAtk2AfterTransform = {};
 WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
 const BeastCommonSkillMap =

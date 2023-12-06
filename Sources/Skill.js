@@ -1803,6 +1803,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=l6Z6SqP3ZeY&ab_channel=NintendoMobile
     IncipitKvasir: 2667, // 始端クワシル
     QuietusGullveig: 2671, // 終端グルヴェイグ
+
+    // 第８部開幕記念（新英雄＆魔器英雄＆ラタトスク）
+    // https://www.youtube.com/watch?v=9RI6oc0RkIM&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=oeDT847NOGE&ab_channel=NintendoMobile
+    WorldTreeTail: 2677, // 世界樹の栗鼠の尻尾
 };
 
 const Support = {
@@ -4366,6 +4371,43 @@ const applySkillsAfterCantoActivatedFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 世界樹の栗鼠の尻尾
+{
+    let skillId = Weapon.WorldTreeTail;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動N
+        return 2;
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = 0;
+                for (let ally of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (ally.battleContext.restHpPercentage <= 40) {
+                        count++;
+                    }
+                }
+                let amount = Math.max(9 - count * 3, 0)
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
+    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+}
 
 // 癒し手の心
 {
