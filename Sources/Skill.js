@@ -3065,6 +3065,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    MendingHeart: 2679, // 癒し手の心
     FangedTies: 2662, // 牙の絆
     FellProtection: 2635, // 邪竜の救済
     HeartOfCrimea: 2590, // クリミアの心
@@ -4346,6 +4347,10 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
 // 優先度の高い再行動スキルの評価
 const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
+// thisはUnit
+const applyEndActionSkillsFuncMap = new Map();
+// thisはUnit
+const applySkillsAfterCantoActivatedFuncMap = new Map();
 
 // {
 //     let skillId = Weapon.<W>;
@@ -4361,6 +4366,38 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 癒し手の心
+{
+    let skillId = PassiveC.MendingHeart;
+    let divineFunc = function () {
+        for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
+            tile.reservedDivineVeinSet.add(DivineVeinType.Green);
+            tile.reservedDivineVeinGroup = this.groupId;
+        }
+    };
+    applyEndActionSkillsFuncMap.set(skillId, divineFunc);
+    applySkillsAfterCantoActivatedFuncMap.set(skillId, divineFunc);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                );
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+    applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
+    );
+}
 
 // 魔の蛇毒
 {

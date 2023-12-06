@@ -2706,14 +2706,7 @@ class BattleMap {
                 }
                 if (tile.divineVein !== DivineVeinType.None) {
                     let divineString = "";
-                    switch (tile.divineVein) {
-                        case DivineVeinType.Stone:
-                            divineString = "護";
-                            break;
-                        case DivineVeinType.Flame:
-                            divineString = "炎";
-                            break;
-                    }
+                    divineString = DivineVeinStrings[tile.divineVein];
                     let divineColor = "";
                     switch (tile.divineVeinGroup) {
                         case UnitGroupType.Ally:
