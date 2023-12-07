@@ -1810,6 +1810,7 @@ const Weapon = {
     WorldTreeTail: 2677, // 世界樹の栗鼠の尻尾
     ArcaneThrima: 2680, // 魔器スリマ
     StrivingSword: 2681, // 憧憬の剣
+    HvitrdeerPlus: 2683, // ヒータディア+
 };
 
 const Support = {
@@ -5877,19 +5878,19 @@ const findTileAfterMovementAssistFuncMap = new Map();
     );
 }
 
+// ヒータディア+
 // ブラーディア+
 {
-    let skillId = Weapon.BlardeerPlus;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (enemyUnit.battleContext.initiatesCombat ||
-                enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 5;
-                enemyUnit.atkSpur -= 5;
-                targetUnit.battleContext.reducesCooldownCount = true;
-            }
+    let func = function (targetUnit, enemyUnit, calcPotentialDamage) {
+        if (enemyUnit.battleContext.initiatesCombat ||
+            enemyUnit.battleContext.restHpPercentage >= 75) {
+            targetUnit.atkSpur += 5;
+            enemyUnit.atkSpur -= 5;
+            targetUnit.battleContext.reducesCooldownCount = true;
         }
-    );
+    };
+    applySkillEffectForUnitFuncMap.set(Weapon.BlardeerPlus, func);
+    applySkillEffectForUnitFuncMap.set(Weapon.HvitrdeerPlus, func);
 }
 
 // 響・攻撃の信義
