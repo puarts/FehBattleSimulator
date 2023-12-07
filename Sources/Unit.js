@@ -642,6 +642,10 @@ class BattleContext {
 
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
+        this.invalidatesDamageReductionExceptSpecialForNextAttack = false;
+
+        // 敵から攻撃を受ける際に発動する奥義発動時、自分の次の攻撃は、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(その戦闘中のみ)
+        this.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = false;
 
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(奥義発動時)
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
@@ -910,6 +914,8 @@ class BattleContext {
         this.additionalDamageOfFirstAttack = 0;
 
         this.invalidatesDamageReductionExceptSpecial = false;
+        this.invalidatesDamageReductionExceptSpecialForNextAttack = false;
+        this.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
         this.invalidatesCounterattack = false;

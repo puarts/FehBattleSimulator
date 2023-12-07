@@ -540,7 +540,10 @@ class DamageCalculator {
 
 
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
-        let invalidatesDamageReductionExceptSpecial = atkUnit.battleContext.invalidatesDamageReductionExceptSpecial;
+        let invalidatesDamageReductionExceptSpecial =
+            atkUnit.battleContext.invalidatesDamageReductionExceptSpecial ||
+            atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack;
+        atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = false;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
         switch (atkUnit.special) {
             case Special.IceMirror:
@@ -1038,6 +1041,10 @@ class DamageCalculator {
                     }
                     // 奥義カウントを最大まで戻す
                     this.__restoreMaxSpecialCount(defUnit);
+
+                    if (defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial) {
+                        defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = true;
+                    }
                 }
             }
 

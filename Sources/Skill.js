@@ -1809,6 +1809,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=oeDT847NOGE&ab_channel=NintendoMobile
     WorldTreeTail: 2677, // 世界樹の栗鼠の尻尾
     ArcaneThrima: 2680, // 魔器スリマ
+    StrivingSword: 2681, // 憧憬の剣
 };
 
 const Support = {
@@ -4379,6 +4380,32 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 憧憬の剣
+{
+    let skillId = Weapon.StrivingSword;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                let atk = enemyUnit.getAtkInPrecombat();
+                let amount = Math.max(Math.min(Math.trunc(atk * 0.25) - 4, 14), 5);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.iisThereAllyInSpecifiedSpacesnvalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                if (isDefenseSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
+                }
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.isSpecialActivated) {
+                targetUnit.specialCount -= 2;
+            }
+        }
+    );
+}
 
 // 守備魔防の奮進
 {
