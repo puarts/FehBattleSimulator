@@ -1803,6 +1803,14 @@ const Weapon = {
     // https://www.youtube.com/watch?v=l6Z6SqP3ZeY&ab_channel=NintendoMobile
     IncipitKvasir: 2667, // 始端クワシル
     QuietusGullveig: 2671, // 終端グルヴェイグ
+
+    // 第８部開幕記念（新英雄＆魔器英雄＆ラタトスク）
+    // https://www.youtube.com/watch?v=9RI6oc0RkIM&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=oeDT847NOGE&ab_channel=NintendoMobile
+    WorldTreeTail: 2677, // 世界樹の栗鼠の尻尾
+    ArcaneThrima: 2680, // 魔器スリマ
+    StrivingSword: 2681, // 憧憬の剣
+    HvitrdeerPlus: 2683, // ヒータディア+
 };
 
 const Support = {
@@ -1812,10 +1820,13 @@ const Support = {
     Drawback: 415, // 引き寄せ
     Shove: 424, // 体当たり
     Swap: 416, // 入れ替え
+    Pivot: 422, // 回り込み
+
+    // 専用補助
     FutureVision: 433, // 未来を移す瞳
     FutureVision2: 1948, // 未来を映す瞳・承
+    FutureSight: 2675, // 未来を変える瞳
     FoulPlay: 1840, // トリック
-    Pivot: 422, // 回り込み
     ToChangeFate: 1152, // 運命を変える!
     ToChangeFate2: 2489, // 運命を変える!・承
     AFateChanged: 2176, // 運命は変わった!
@@ -2599,6 +2610,7 @@ const PassiveB = {
     CloseCall4: 2328, // 回避・一撃離脱4
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
     Repel4: 2357, // 回避・叩き込み4
+    Buffer4: 2682, // 回避・盾の鼓動4
     Kirikomi: 589, // 切り込み
     Tatakikomi: 588, // 叩き込み
     Hikikomi: 590, // 引き込み
@@ -2751,6 +2763,7 @@ const PassiveB = {
 
     // 絶対化身
     BeastAgility3: 2270, // 絶対化身・敏捷3
+    BeastAgility4: 2678, // 絶対化身・敏捷4
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
     BeastSense4: 2515, // 絶対化身・察知4
@@ -2988,6 +3001,7 @@ const PassiveC = {
     AlarmAtkSpd: 2425, // 攻撃速さの奮進
     AlarmAtkDef: 2478, // 攻撃守備の奮進
     AlarmSpdDef: 2459, // 速さ守備の奮進
+    AlarmDefRes: 2676, // 守備魔防の奮進
 
     // 奮激
     InciteAtkSpd: 2670, // 攻撃速さの奮激
@@ -3065,6 +3079,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    MendingHeart: 2679, // 癒し手の心
     FangedTies: 2662, // 牙の絆
     FellProtection: 2635, // 邪竜の救済
     HeartOfCrimea: 2590, // クリミアの心
@@ -4346,7 +4361,13 @@ const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
 const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
 // 優先度の高い再行動スキルの評価
 const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
-
+// thisはUnit
+const applyEndActionSkillsFuncMap = new Map();
+// thisはUnit
+const applySkillsAfterCantoActivatedFuncMap = new Map();
+const hasTransformSkillsFuncMap = new Map();
+const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
+const findTileAfterMovementAssistFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4361,6 +4382,261 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 回避・盾の鼓動4
+{
+    let skillId = PassiveB.Buffer4;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.globalBattleContext.currentTurn === 1) {
+                if (isDefenseSpecial(skillOwner.special)) {
+                    skillOwner.reserveToReduceSpecialCount(2);
+                }
+            }
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            // 速度回避
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
+            });
+        }
+    );
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return 7;
+    })
+}
+
+// 憧憬の剣
+{
+    let skillId = Weapon.StrivingSword;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                let atk = enemyUnit.getAtkInPrecombat();
+                let amount = Math.max(Math.min(Math.trunc(atk * 0.25) - 4, 14), 5);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.iisThereAllyInSpecifiedSpacesnvalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                if (isDefenseSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
+                }
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.isSpecialActivated) {
+                targetUnit.specialCount -= 2;
+            }
+        }
+    );
+}
+
+// 守備魔防の奮進
+{
+    let skillId = PassiveC.AlarmDefRes;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                skillOwner.applyDefResBuffs(6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Canto1);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                targetUnit.addDefResSpurs(3);
+            }
+        }
+    );
+}
+
+// 未来を変える瞳
+{
+    let skillId = Support.FutureSight;
+    getTargetUnitTileAfterMoveAssistFuncMap.set(skillId, function (unit, targetUnit, assistTile) {
+        return this.__findTileAfterSwap(unit, targetUnit, assistTile);
+    });
+    findTileAfterMovementAssistFuncMap.set(skillId, function (unit, target, tile) {
+        return this.__findTileAfterSwap(unit, target, tile);
+    });
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
+            if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                supporterUnit.isActionDone = false;
+                supporterUnit.isOneTimeActionActivatedForSupport = true;
+            }
+            supporterUnit.applyBuffs(6, 6, 0, 0);
+            targetUnit.applyBuffs(6, 6, 0, 0);
+            supporterUnit.addStatusEffect(StatusEffectType.Treachery);
+            targetUnit.addStatusEffect(StatusEffectType.Treachery);
+            supporterUnit.addStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+            targetUnit.addStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+        }
+    );
+}
+
+// 魔器スリマ
+{
+    let skillId = Weapon.ArcaneThrima;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                let nearestEnemies = this.__findNearestEnemies(skillOwner);
+                for (let nearestEnemy of nearestEnemies) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                        unit.reserveToApplyDebuffs(-6, 0, -6, 0);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
+                        enemyUnit.addSpurs(...debuffs);
+                    }
+                );
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getSpdInCombat(enemyUnit) >= enemyUnit.getSpdInCombat(targetUnit) + 1) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
+// 絶対化身・敏捷4
+{
+    let skillId = PassiveB.BeastAgility4;
+    hasTransformSkillsFuncMap.set(skillId, function () {
+        return true;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.getSpdInCombat(enemyUnit) >= enemyUnit.getSpdInCombat(targetUnit) + 1) {
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                }
+            );
+            targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                if (isPrecombat) return;
+                let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+            });
+        }
+    );
+}
+
+// 世界樹の栗鼠の尻尾
+{
+    let skillId = Weapon.WorldTreeTail;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動N
+        return 2;
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = 0;
+                for (let ally of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                    if (ally.battleContext.restHpPercentage <= 40) {
+                        count++;
+                    }
+                }
+                let amount = Math.max(9 - count * 3, 0)
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
+    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+}
+
+// 癒し手の心
+{
+    let skillId = PassiveC.MendingHeart;
+    let divineFunc = function () {
+        for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
+            tile.reservedDivineVeinSet.add(DivineVeinType.Green);
+            tile.reservedDivineVeinGroup = this.groupId;
+        }
+    };
+    applyEndActionSkillsFuncMap.set(skillId, divineFunc);
+    applySkillsAfterCantoActivatedFuncMap.set(skillId, divineFunc);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                );
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+    applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
+    );
+}
 
 // 魔の蛇毒
 {
@@ -5602,19 +5878,19 @@ const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
     );
 }
 
+// ヒータディア+
 // ブラーディア+
 {
-    let skillId = Weapon.BlardeerPlus;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (enemyUnit.battleContext.initiatesCombat ||
-                enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 5;
-                enemyUnit.atkSpur -= 5;
-                targetUnit.battleContext.reducesCooldownCount = true;
-            }
+    let func = function (targetUnit, enemyUnit, calcPotentialDamage) {
+        if (enemyUnit.battleContext.initiatesCombat ||
+            enemyUnit.battleContext.restHpPercentage >= 75) {
+            targetUnit.atkSpur += 5;
+            enemyUnit.atkSpur -= 5;
+            targetUnit.battleContext.reducesCooldownCount = true;
         }
-    );
+    };
+    applySkillEffectForUnitFuncMap.set(Weapon.BlardeerPlus, func);
+    applySkillEffectForUnitFuncMap.set(Weapon.HvitrdeerPlus, func);
 }
 
 // 響・攻撃の信義

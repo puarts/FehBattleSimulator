@@ -2296,6 +2296,11 @@ class BattleMap {
     }
 
     __canWarp(targetTile, warpUnit) {
+        if (warpUnit.canActivatePass()) return true;
+        if (targetTile.divineVein === DivineVeinType.Green &&
+            targetTile.divineVeinGroup !== warpUnit.groupId) {
+            return false;
+        }
         for (let tile of this.enumerateTilesWithinSpecifiedDistance(targetTile, 4)) {
             if (tile.isEnemyUnitAvailable(warpUnit)) {
                 let enemyUnit = tile.placedUnit;
@@ -2325,23 +2330,28 @@ class BattleMap {
         }
 
         if (!ignoresTeleportTile) {
-            for (let tile of this.__enumerateTeleportTiles(unit)) {
-                if (!this.__canWarp(tile, unit)) {
-                    continue;
-                }
+            let isOnGreenTile =
+                startTile.divineVein === DivineVeinType.Green &&
+                startTile.divineVeinGroup !== unit.groupId;
+            let cannotWarpFromHere = isOnGreenTile && !unit.canActivatePass();
+            if (!cannotWarpFromHere) {
+                for (let tile of this.__enumerateTeleportTiles(unit)) {
+                    if (!this.__canWarp(tile, unit)) {
+                        continue;
+                    }
 
-                if (unit.isCantoActivated()) {
-                    if (tile.calculateDistanceToUnit(unit) <= unit.moveCountForCanto) {
+                    if (unit.isCantoActivated()) {
+                        if (tile.calculateDistanceToUnit(unit) <= unit.moveCountForCanto) {
+                            yield tile;
+                        }
+                    } else {
                         yield tile;
                     }
                 }
-                else {
-                    yield tile;
+                // ワープ再移動のタイルを生成
+                if (unit.isCantoActivated()) {
+                    yield* this.enumerateWarpCantoTiles(unit);
                 }
-            }
-            // ワープ再移動のタイルを生成
-            if (unit.isCantoActivated()) {
-                yield* this.enumerateWarpCantoTiles(unit);
             }
         }
     }
@@ -2353,14 +2363,18 @@ class BattleMap {
                     for (let tile of this.enumerateTiles()) {
                         if (tile.posX === unit.fromPosX &&
                             tile.posY === unit.fromPosY) {
-                            yield tile;
+                            if (this.__canWarp(tile, unit)) {
+                                yield tile;
+                            }
                         }
                     }
                     break;
                 case Weapon.SoothingScent:
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
                         for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
-                            yield tile;
+                            if (this.__canWarp(tile, unit)) {
+                                yield tile;
+                            }
                         }
                     }
                     break;
@@ -2369,7 +2383,9 @@ class BattleMap {
                         // 現在位置のタイルは含まれないのでunit.pos<X, Y>, tile.pos<X, Y>が共に等しい場合の判定は不要
                         if (Math.abs(unit.posX - tile.posX) <= 1 &&
                             Math.abs(unit.posY - tile.posY) <= 1) {
-                            yield tile;
+                            if (this.__canWarp(tile, unit)) {
+                                yield tile;
+                            }
                         }
                     }
                     break;
@@ -2706,14 +2722,7 @@ class BattleMap {
                 }
                 if (tile.divineVein !== DivineVeinType.None) {
                     let divineString = "";
-                    switch (tile.divineVein) {
-                        case DivineVeinType.Stone:
-                            divineString = "護";
-                            break;
-                        case DivineVeinType.Flame:
-                            divineString = "炎";
-                            break;
-                    }
+                    divineString = DivineVeinStrings[tile.divineVein];
                     let divineColor = "";
                     switch (tile.divineVeinGroup) {
                         case UnitGroupType.Ally:

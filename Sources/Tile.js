@@ -46,7 +46,9 @@ const DivineVeinType = {
     None: 0,
     Stone: 1,
     Flame: 2,
+    Green: 3,
 };
+const DivineVeinStrings = ['', '護', '炎', '緑'];
 
 /**
  * ユニットをタイルに配置します。
@@ -104,7 +106,9 @@ class Tile extends BattleMapElement {
         this.overrideText = "";
 
         this.divineVein = DivineVeinType.None;
+        this.reservedDivineVeinSet = new Set();
         this.divineVeinGroup = null;
+        this.reservedDivineVeinGroup = null;
 
         /** @type {Tile} */
         this.snapshot = null;

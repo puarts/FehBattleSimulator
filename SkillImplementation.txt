@@ -50,6 +50,9 @@ applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
 applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {}
 
 獣の共通の化身スキル
+WeaponTypesAddAtk2AfterTransform[skillId] = 0;
+BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+もしくは
 const WeaponTypesAddAtk2AfterTransform = {};
 WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
 const BeastCommonSkillMap =
@@ -442,7 +445,7 @@ for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUni
 敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
-        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, spaces = 2, withTargetUnit = true);
+        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
         enemyUnit.addSpurs(...debuffs);
     }
 );
@@ -784,9 +787,23 @@ targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push
 
 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+// 次の攻撃
+targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = true;
+
+敵から攻撃を受ける際に発動する奥義発動時、自分の次の攻撃は、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(その戦闘中のみ)
+targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
 
 奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+
+[螺旋効果]
+applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+    function(targetUnit, enemyUnit) {
+        if (targetUnit.battleContext.isSpecialActivated) {
+            targetUnit.specialCount -= 2;
+        }
+    }
+);
 
 与えるダメージ+自分の守備の20%、受けるダメージ-自分の守備の20%
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
@@ -986,7 +1003,24 @@ updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case PassiveB.RagingStorm:
 }
 
+入れ替え
+getTargetUnitTileAfterMoveAssistFuncMap.set(skillId, function (unit, targetUnit, assistTile) {
+    return this.__findTileAfterSwap(unit, targetUnit, assistTile);
+});
+findTileAfterMovementAssistFuncMap.set(skillId, function (unit, target, tile) {
+    return this.__findTileAfterSwap(unit, target, tile);
+});
+
 補助後、自分を行動可能にする[再行動]
+applySupportSkillForSupporterFuncMap.set(skillId,
+    function (supporterUnit, targetUnit, supportTile) {
+        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+            supporterUnit.isActionDone = false;
+            supporterUnit.isOneTimeActionActivatedForSupport = true;
+        }
+    }
+);
+もしくは
 applySupportSkill() {
     // case Support.FutureVision
 }

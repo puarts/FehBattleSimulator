@@ -2250,6 +2250,11 @@ class DamageCalculatorWrapper {
      * @param  {GameMode} gameMode
      */
     ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent)) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+            }
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.Incited)) {
             if (targetUnit.battleContext.initiatesCombat) {
                 let amount = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
@@ -2312,6 +2317,11 @@ class DamageCalculatorWrapper {
                 if (tile.divineVeinGroup === targetUnit.groupId) {
                     targetUnit.addDefResSpurs(6);
                     targetUnit.battleContext.damageReductionValueOfSpecialAttack += 10;
+                }
+                break;
+            case DivineVeinType.Green:
+                if (tile.divineVeinGroup === enemyUnit.groupId) {
+                    enemyUnit.battleContext.reducesCooldownCount = true;
                 }
                 break;
         }
