@@ -2609,6 +2609,7 @@ const PassiveB = {
     CloseCall4: 2328, // 回避・一撃離脱4
     KaihiTatakikomi3: 1100, // 回避・叩き込み3
     Repel4: 2357, // 回避・叩き込み4
+    Buffer4: 2682, // 回避・盾の鼓動4
     Kirikomi: 589, // 切り込み
     Tatakikomi: 588, // 叩き込み
     Hikikomi: 590, // 引き込み
@@ -4380,6 +4381,39 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 回避・盾の鼓動4
+{
+    let skillId = PassiveB.Buffer4;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.globalBattleContext.currentTurn === 1) {
+                if (isDefenseSpecial(skillOwner.special)) {
+                    skillOwner.reserveToReduceSpecialCount(2);
+                }
+            }
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            // 速度回避
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
+            });
+        }
+    );
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return 7;
+    })
+}
 
 // 憧憬の剣
 {
