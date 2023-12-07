@@ -2319,6 +2319,11 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.damageReductionValueOfSpecialAttack += 10;
                 }
                 break;
+            case DivineVeinType.Green:
+                if (tile.divineVeinGroup === enemyUnit.groupId) {
+                    enemyUnit.battleContext.reducesCooldownCount = true;
+                }
+                break;
         }
 
         for (let skillId of targetUnit.enumerateSkills()) {
