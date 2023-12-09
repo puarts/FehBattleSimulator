@@ -10513,13 +10513,6 @@ class DamageCalculatorWrapper {
                                 }
                             }
                             break;
-                        case Weapon.ElisesStaff:
-                            if (allyUnit.isWeaponSpecialRefined) {
-                                if (enemyUnit.battleContext.initiatesCombat) {
-                                    targetUnit.addAllSpur(-4);
-                                }
-                            }
-                            break;
                         case Weapon.Geirusukeguru:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 if (targetUnit.isPhysicalAttacker()) {
@@ -17247,6 +17240,13 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.ElisesStaff:
+                        if (unit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat) {
+                                targetUnit.addAllSpur(-4);
+                            }
+                        }
+                        break;
                     case PassiveC.FettersOfDromi:
                         targetUnit.addAllSpur(-4);
                         break;
