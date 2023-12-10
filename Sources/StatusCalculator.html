@@ -1,64 +1,19 @@
 <html>
 
 <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>ステータス計算機</title>
-    <link rel="stylesheet" href="../../css/main.css?20181201" type="text/css" />
+    <link type="text/css" rel="stylesheet" href="css/main.css">
     <script>
         const g_startTime = Date.now();
-    </script>
-    <script>
-        // 画像の遅延ロード用の処理。以下の要素を作ると遅延ロードされる
-        // <img src="dummy.png" data-src="actual.png" class="lazy" />
-        document.addEventListener("DOMContentLoaded", function () {
-            let lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
-            let lazyInputs = [].slice.call(document.querySelectorAll("input.lazy"));
-            if ("IntersectionObserver" in window) {
-                let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
-                    entries.forEach(function (entry) {
-                        if (entry.isIntersecting) {
-                            let lazyImage = entry.target;
-                            if (lazyImage.tagName == "IMG") {
-                                lazyImage.src = lazyImage.dataset.src;
-                                if (typeof lazyImage.dataset.srcset === "undefined") {
-                                } else {
-                                    lazyImage.srcset = lazyImage.dataset.srcset;
-                                }
-                            }
-                            else if (lazyImage.tagName == "INPUT") {
-                                lazyImage.style.backgroundImage = `url("${lazyImage.dataset.src}")`;
-                            }
-                            lazyImage.classList.remove("lazy");
-                            lazyImageObserver.unobserve(lazyImage);
-                        }
-                    });
-                });
-
-                lazyImages.forEach(function (lazyImage) {
-                    lazyImageObserver.observe(lazyImage);
-                });
-                lazyInputs.forEach(function (lazyInput) {
-                    lazyImageObserver.observe(lazyInput);
-                });
-            } else {
-                // Possibly fall back to a more compatible method here
-            }
-        });
     </script>
 </head>
 
 <body>
-    <!-- 重要なところは予め接続 -->
-    <link rel="preconnect" href="//cdnjs.cloudflare.com">
-    <link rel="preconnect" href="//code.jquery.com">
-
-    <!-- jquery -->
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-            integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
-    <script rel="preconnect" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 
     <!-- select2 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 
     <!-- jquery-ui -->
@@ -68,178 +23,202 @@
     <!-- vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
-    <style>
-        .button {
-            width: 120px
-        }
-    </style>
+    <div id="app">
+        <div
+            style="text-align: left;background-color: #6aa5a2;border: solid 2px #ded;padding: 10px;width: fit-content;border-radius: 20px; font-size: 14px;text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px">
+            <table style="border:none 0px #999;color: white;">
+                <tr>
+                    <td>
+                        <table style="color:white">
+                            <tr>
+                                <td rowspan="2">
+                                    <img v-bind:src="value.icon" width="50" height="50" alt="英雄アイコン">
+                                </td>
+                                <td>
+                                    ★<select v-model="value.rarity" @change="updateStatus();">
+                                        <option v-for="item in UnitRarity" v-bind:value="item">
+                                            {{ item}}
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    LV.<input name="merge" type="number" v-model="value.level" min="1" max="99"
+                                        @input="updateStatus()" style="width:50px">
+                                    +
+                                    <select v-model="value.merge" @change="updateStatus();">
+                                        <option v-for="(value, i) in (10+1)" v-bind:value="i">
+                                            {{ i }}
+                                        </option>
+                                    </select>
+                                    <label>
+                                        <img v-if="value.moveType == MoveType.Infantry"
+                                            src="/blog/images/feh/Dragonflower_Infantry.png" width="30" height="30"
+                                            alt="神竜の花">
+                                        <img v-else-if="value.moveType == MoveType.Flying"
+                                            src="/blog/images/feh/Dragonflower_Flying.png" width="30" height="30"
+                                            alt="神竜の花">
+                                        <img v-else-if="value.moveType == MoveType.Cavalry"
+                                            src="/blog/images/feh/Dragonflower_Cavalry.png" width="30" height="30"
+                                            alt="神竜の花">
+                                        <img v-else-if="value.moveType == MoveType.Armor"
+                                            src="/blog/images/feh/Dragonflower_Armored.png" width="30" height="30"
+                                            alt="神竜の花">
+                                        +</label>
+                                    <select v-model="value.dragonflower" @change="updateStatus();">
+                                        <option v-for="(value, i) in (value.maxDragonflower+1)" v-bind:value="i">
+                                            {{ i }}
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
 
-    <div id="app" style="text-align:center">
-        <table border="0" style="border-style: none;">
-            <tr>
-                <td>
-                    <p>
-                        <img v-bind:src="value.icon" width="50" height="50" /> {{value.name}} ☆
-                        <select v-model="value.rarity" @change="updateStatus();">
-                            <option v-for="item in UnitRarity" v-bind:value="item">
-                                {{ item}}
-                            </option>
-                        </select>
-                        LV.
-                        <input name="merge" type="number" v-model="value.level" min="1" max="99" @input="updateStatus()"
-                            style="width:50px" />
-                        +
-                        <select v-model="value.merge" @change="updateStatus();">
-                            <option v-for="(value, i) in (10+1)" v-bind:value="i">
-                                {{ i }}
-                            </option>
-                        </select>
-                        <label for="dragonflower">
-                            <img v-if="value.moveType == MoveType.Infantry"
-                                src="/blog/images/feh/Dragonflower_Infantry.png" width="30" height="30" />
-                            <img v-else-if="value.moveType == MoveType.Flying"
-                                src="/blog/images/feh/Dragonflower_Flying.png" width="30" height="30" />
-                            <img v-else-if="value.moveType == MoveType.Cavalry"
-                                src="/blog/images/feh/Dragonflower_Cavalry.png" width="30" height="30" />
-                            <img v-else-if="value.moveType == MoveType.Armor"
-                                src="/blog/images/feh/Dragonflower_Armored.png" width="30" height="30" />
-                            +</label>
-                        <select v-model="value.dragonflower" @change="updateStatus();">
-                            <option v-for="(value, i) in (value.maxDragonflower+1)" v-bind:value="i">
-                                {{ i }}
-                            </option>
-                        </select>
-                    </p>
-                    <p>
-                        <label class="normal">得意: </label>
-                        <select v-model="value.ivHighStat" @change="updateStatus()">
-                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <label class="normal">苦手: </label>
-                        <select v-model="value.ivLowStat" @change="updateStatus()">
-                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <label class="normal"><img src="/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
-                                height="20"></label>
-                        <select v-model="value.ascendedAsset" @change="updateStatus()">
-                            <option v-for="option in IvStateOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <br />
-                        <span v-if="value.groupId == UnitGroupType.Ally">
-                            <label class="normal">召喚士との絆: </label>
-                            <select v-model="value.summonerLevel" @change="updateStatus()">
-                                <option v-for="option in SummonerLevelOptions" v-bind:value="option.id">
+                        <p>
+                            <label class="normal">得意: </label>
+                            <select v-model="value.ivHighStat" @change="updateStatus()">
+                                <option v-for="option in IvStateOptions" v-bind:value="option.id">
                                     {{ option.text }}
                                 </option>
                             </select>
-                        </span>
-                    </p>
-                    <p>
-                        <input id="isWeaponEnabled" type="checkbox" v-model="isWeaponEnabled"
-                            @change="updateStatus()" />
-                        <label class="normal" for="isWeaponEnabled">武器</label>
+                            <label class="normal">苦手: </label>
+                            <select v-model="value.ivLowStat" @change="updateStatus()">
+                                <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <label class="normal"><img src="/AetherRaidTacticsBoard/images/AscendedFloret.png" alt="開花"
+                                    width="20" height="20"></label>
+                            <select v-model="value.ascendedAsset" @change="updateStatus()">
+                                <option v-for="option in IvStateOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <br>
+                            <span v-if="value.groupId == UnitGroupType.Ally">
+                                <label class="normal">絆: </label>
+                                <select v-model="value.summonerLevel" @change="updateStatus()">
+                                    <option v-for="option in SummonerLevelOptions" v-bind:value="option.id">
+                                        {{ option.text }}
+                                    </option>
+                                </select>
+                            </span>
+                        </p>
+                        <p>
+                            <input id="isWeaponEnabled" type="checkbox" v-model="isWeaponEnabled"
+                                @change="updateStatus()">
+                            <label class="normal" for="isWeaponEnabled">武器装備</label>
 
-                        <input id="isBonusChar" type="checkbox" v-model="value.isBonusChar" @change="updateStatus()" />
-                        <label class="normal" for="isBonusChar">ボナキャラ</label>
-                        <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
-                            <input id="isResplendent" type="checkbox" v-model="value.isResplendent"
-                                @change="updateStatus()" />
-                            <label class="normal" for="isResplendent">神装</label>
-                        </span>
-                    </p>
-                    <p>
-                        <label class="normal">祝福: </label>
-                        <select v-model="value.blessing1" @change="updateStatus()">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing2" @change="updateStatus()">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing3" @change="updateStatus()">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing4" @change="updateStatus()">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                        <select v-model="value.blessing5" @change="updateStatus()">
-                            <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
-                                {{ option.text }}
-                            </option>
-                        </select>
-                    </p>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <table border="1">
-                        <tr>
-                            <th></th>
-                            <th>HP</th>
-                            <th>攻撃</th>
-                            <th>速さ</th>
-                            <th>守備</th>
-                            <th>魔防</th>
-                            <th>総合</th>
-                        </tr>
-                        <tr>
-                            <th>能力値</th>
-                            <td>{{value.maxHpWithSkills}}</td>
-                            <td>{{value.atkWithSkills}}</td>
-                            <td>{{value.spdWithSkills}}</td>
-                            <td>{{value.defWithSkills}}</td>
-                            <td>{{value.resWithSkills}}</td>
-                            <td>{{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>加算値</th>
-                            <td>{{value.maxHpWithSkills - value.maxHp}}</td>
-                            <td>{{value.atkWithSkills - value.atk}}</td>
-                            <td>{{value.spdWithSkills - value.spd}}</td>
-                            <td>{{value.defWithSkills - value.def}}</td>
-                            <td>{{value.resWithSkills - value.res}}</td>
-                            <td>{{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills-value.maxHp-value.atk-value.spd-value.def-value.res}}
-                            </td>
-                        </tr>
+                            <input id="isBonusChar" type="checkbox" v-model="value.isBonusChar"
+                                @change="updateStatus()">
+                            <label class="normal" for="isBonusChar">ボナキャラ補正</label>
+                            <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
+                                <input id="isResplendent" type="checkbox" v-model="value.isResplendent"
+                                    @change="updateStatus()">
+                                <label class="normal" for="isResplendent">神装</label>
+                            </span>
+                        </p>
+                        <details style="max-width:290px;">
+                            <summary>祝福による能力値補正</summary>
+                            <select v-model="value.blessing1" @change="updateStatus()">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing2" @change="updateStatus()">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing3" @change="updateStatus()">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing4" @change="updateStatus()">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                            <select v-model="value.blessing5" @change="updateStatus()">
+                                <option v-for="option in BlessingTypeOptions" v-bind:value="option.id">
+                                    {{ option.text }}
+                                </option>
+                            </select>
+                        </details>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table style="border:solid 1px #999;text-shadow: none;color: black;width:100%">
+                            <tbody style="text-align: center;">
+                                <tr>
+                                    <!-- <th></th> -->
+                                    <th>HP</th>
+                                    <th>攻撃</th>
+                                    <th>速さ</th>
+                                    <th>守備</th>
+                                    <th>魔防</th>
+                                    <th>総合</th>
+                                </tr>
+                                <tr style="background-color: white;">
+                                    <!-- <th>能力値</th> -->
+                                    <td>{{value.maxHpWithSkills}}</td>
+                                    <td>{{value.atkWithSkills}}</td>
+                                    <td>{{value.spdWithSkills}}</td>
+                                    <td>{{value.defWithSkills}}</td>
+                                    <td>{{value.resWithSkills}}</td>
+                                    <td>
+                                        {{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills}}
+                                    </td>
+                                </tr>
+                            </tbody>
 
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    最大SP: {{totalSp}}<br />
-                    査定総合値: {{value.rating}}
-                    <span v-if="value.moveType != MoveType.Armor">
-                        <input id="isDuelSkillEnabled" type="checkbox" v-model="isDuelSkillEnabled"
-                            @change="updateStatus()" />
-                        <label class="normal" for="isDuelSkillEnabled">死闘4装備で計算</label>
-                    </span>
-                    <br />
-                    闘技場スコア: {{value.arenaScore * 2}}({{value.arenaScore}})
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="button" class="button" value="凸と花を最大化" @click="maximaizeMergeAndDragonflower" />
-                    <input type="button" class="button" value="リセット" @click="reset" />
-                </td>
-            </tr>
-
-        </table>
+                            <!-- <tr>
+                                <th>加算値</th>
+                                <td class="statusTable">{{value.maxHpWithSkills - value.maxHp}}</td>
+                                <td class="statusTable">{{value.atkWithSkills - value.atk}}</td>
+                                <td class="statusTable">{{value.spdWithSkills - value.spd}}</td>
+                                <td class="statusTable">{{value.defWithSkills - value.def}}</td>
+                                <td class="statusTable">{{value.resWithSkills - value.res}}</td>
+                                <td class="statusTable">
+                                    {{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills-value.maxHp-value.atk-value.spd-value.def-value.res}}
+                                </td>
+                            </tr> -->
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" style="width:49%" value="凸と花を最大化" @click="maximaizeMergeAndDragonflower">
+                        <input type="button" style="width:49%" value="リセット" @click="reset">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <fieldset style="background-color:#517e7c">
+                            <legend>闘技場最大スコア</legend>
+                            <span style="color:#ff6;font-size:20px;width:100px;display:inline-block">{{value.arenaScore
+                                *
+                                2}}
+                                ({{value.arenaScore}})</span>
+                            <div style="font-size:14px">
+                                (最大SP: {{totalSp}}, 査定総合値: {{value.rating}})
+                            </div>
+                            <div style="padding-top:5px">
+                                <span v-if="value.moveType != MoveType.Armor">
+                                    <input id="isDuelSkillEnabled" type="checkbox" v-model="isDuelSkillEnabled"
+                                        @change="updateStatus()">
+                                    <label class="normal" for="isDuelSkillEnabled"
+                                        style="font-size:14px">死闘4装備で計算</label>
+                                </span>
+                            </div>
+                        </fieldset>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -264,7 +243,7 @@
 
     <script>
         $(function () {
-            let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '0/0', '0/0', '0/0', '0/0', '0/0', 24, -1, 476, -1, 620, 689, SeasonType.None, BlessingType.None, 'リキア一の騎士', ['エリウッド',], 0, [24, 33,], [], 82, true, '烈火の剣', 'ガチャ', '2017-02-02', [476,], [], [620,], [689,]);
+            let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '0/0', '0/0', '0/0', '0/0', '0/0', 24, -1, 476, -1, 620, 689, -1, SeasonType.None, BlessingType.None, 'リキア一の騎士', ['エリウッド',], 0, [24, 33,], [], 82, true, '烈火の剣', 'ガチャ', '2017-02-02', [476,], [], [620,], [689,]);
             let weaponInfo = new SkillInfo(24, 'デュランダル', 16, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 16, false, false, AssistType.None, false, 0, WeaponType.Sword, 400, false, [], [], true);
             init(heroInfo, [weaponInfo], 2100);
         });
