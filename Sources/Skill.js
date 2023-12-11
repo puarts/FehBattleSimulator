@@ -4384,6 +4384,86 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 白き飛翔の槍
+{
+    let skillId = Weapon.WhitedownSpear;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
+                        enemyUnit.addAtkDefSpurs(-4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                    targetUnit.battleContext.setAttackCountFuncs.push(
+                        (targetUnit, enemyUnit) => {
+                            let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2,
+                                x => x.moveType === MoveType.Flying
+                            );
+                            if (targetUnit.battleContext.initiatesCombat && allyCount >= 2) {
+                                targetUnit.battleContext.attackCount = 2;
+                            }
+                        }
+                    );
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    if (this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
+                        enemyUnit.addSpursWithoutRes(-4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
+                targetUnit.battleContext.setAttackCountFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3,
+                            x => x.moveType === MoveType.Flying
+                        );
+                        if (targetUnit.battleContext.initiatesCombat && allyCount >= 2) {
+                            targetUnit.battleContext.attackCount = 2;
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    }
+                );
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                        });
+                        let count = 0;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                            if (unit.moveType === MoveType.Flying) {
+                                count++;
+                            }
+                        }
+                        if (count >= 2) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                    }
+                }
+            }
+        }
+    );
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        let pred = unit => unit.moveType === MoveType.Flying;
+        return unit.isWeaponSpecialRefined && this.__isThereAllyInSpecifiedSpaces(unit, 3, pred);
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動残り+1
+        return this.restMoveCount + 1;
+    });
+}
 
 // マクベスの惑書
 {

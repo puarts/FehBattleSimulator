@@ -1415,12 +1415,6 @@ class DamageCalculatorWrapper {
                 atkUnit.defSpur += 4;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.WhitedownSpear] = (atkUnit, defUnit) => {
-            if (self.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
-                defUnit.atkSpur -= 4;
-                defUnit.defSpur -= 4;
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[PassiveB.BeliefInLove] = (atkUnit, defUnit) => {
             if (defUnit.battleContext.restHpPercentage === 100) {
                 defUnit.atkSpur -= 5;
@@ -10874,14 +10868,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.WhitedownSpear:
-                    if (targetUnit.battleContext.initiatesCombat
-                        && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
-                            x.moveType === MoveType.Flying) >= 2
-                    ) {
-                        targetUnit.battleContext.attackCount = 2;
-                    }
-                    break;
                 case Weapon.ShirokiNoTyokusou:
                 case Weapon.ShirokiNoTyouken:
                 case Weapon.ShirokiNoTansou:
@@ -14192,11 +14178,6 @@ class DamageCalculatorWrapper {
                 switch (skillId) {
                     case Weapon.DarkSpikesT:
                         if (atkUnit.battleContext.restHpPercentage <= 99) {
-                            ++followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.WhitedownSpear:
-                        if (this.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
                             ++followupAttackPriority;
                         }
                         break;
