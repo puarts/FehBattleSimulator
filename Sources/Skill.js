@@ -1813,6 +1813,9 @@ const Weapon = {
     HvitrdeerPlus: 2683, // ヒータディア+
     GrimlealText: 2691, // 禁書ギムレー
     NullBladePlus: 2689, // 見切り追撃の剣+
+
+    // 2023年12月 武器錬成
+    SacaenWolfBow: 2685, // 若き狼の鋭弓
 };
 
 const Support = {
@@ -4386,6 +4389,30 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 若き狼の鋭弓
+{
+    let skillId = Weapon.SacaenWolfBow;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                }
+            }
+        }
+    );
+}
+
 // バルムンク
 {
     let skillId = Weapon.Balmung;
