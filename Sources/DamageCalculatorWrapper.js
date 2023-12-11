@@ -14587,11 +14587,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.GeneiLongBow:
-                    if (atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)) {
-                        return true;
-                    }
-                    break;
                 case Weapon.SnipersBow:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 50

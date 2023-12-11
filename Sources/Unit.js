@@ -5485,6 +5485,16 @@ class Unit extends BattleMapElement {
         let specialCountMax = this.specialInfo.specialCount;
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
+            let skillId = this.weapon;
+            let funcMap = resetMaxSpecialCountFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    specialCountMax += func.call(this);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (this.weapon) {
                 case Weapon.CrimeanScepter:
                 case Weapon.DuskDawnStaff:

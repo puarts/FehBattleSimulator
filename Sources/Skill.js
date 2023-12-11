@@ -4370,6 +4370,8 @@ const applySkillsAfterCantoActivatedFuncMap = new Map();
 const hasTransformSkillsFuncMap = new Map();
 const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
 const findTileAfterMovementAssistFuncMap = new Map();
+// thisはUnit
+const resetMaxSpecialCountFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4384,6 +4386,55 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 幻影ロングボウ
+{
+    let skillId = Weapon.GeneiLongBow;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                            enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesCounterattack = true;
+                        }
+                    }
+                );
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                    });
+                    targetUnit.battleContext.invalidatesCounterattack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAtkSpdSpurs(5);
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                        targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+                    }
+                }
+            }
+        }
+    );
+    resetMaxSpecialCountFuncMap.set(skillId,
+        function () {
+            if (this.isWeaponSpecialRefined) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+    );
+}
+
 // 白き飛翔の槍
 {
     let skillId = Weapon.WhitedownSpear;
@@ -4572,14 +4623,14 @@ const findTileAfterMovementAssistFuncMap = new Map();
                 targetUnit.addAtkSpdSpurs(5);
                 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
-                        if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
                             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                         }
                     }
                 );
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                    if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
                         atkUnit.battleContext.additionalDamage += 5;
                     }
                 });
@@ -4596,7 +4647,7 @@ const findTileAfterMovementAssistFuncMap = new Map();
         function (skillOwner) {
             for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                 if (skillOwner.isInClossWithOffset(unit, 1)) {
-                    if (unit.getResInPrecombat() < skillOwner.getResInPrecombat()) {
+                    if (unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat()) {
                         unit.reserveToApplyDebuffs(0, 0, -6, -6);
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                         unit.reserveToAddStatusEffect(StatusEffectType.Discord);
