@@ -1415,12 +1415,6 @@ class DamageCalculatorWrapper {
                 atkUnit.defSpur += 4;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.WhitedownSpear] = (atkUnit, defUnit) => {
-            if (self.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
-                defUnit.atkSpur -= 4;
-                defUnit.defSpur -= 4;
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[PassiveB.BeliefInLove] = (atkUnit, defUnit) => {
             if (defUnit.battleContext.restHpPercentage === 100) {
                 defUnit.atkSpur -= 5;
@@ -1541,12 +1535,6 @@ class DamageCalculatorWrapper {
             if (isWeaponSpecialRefined(atkUnit.weaponRefinement)) {
                 atkUnit.spdSpur += 7;
                 atkUnit.defSpur += 10;
-            }
-        };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.Balmung] = (atkUnit, defUnit) => {
-            if (defUnit.battleContext.isRestHpFull) {
-                atkUnit.battleContext.invalidateAllOwnDebuffs();
-                atkUnit.addAllSpur(5);
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.NinissIceLance] = (atkUnit) => {
@@ -1859,10 +1847,6 @@ class DamageCalculatorWrapper {
                 defUnit.defSpur += amount;
                 defUnit.resSpur += amount;
             }
-        };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.Balmung] = (defUnit) => {
-            defUnit.battleContext.invalidateAllOwnDebuffs();
-            defUnit.addAllSpur(5);
         };
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DartingBreath] = (defUnit) => {
             defUnit.spdSpur += 4;
@@ -10513,13 +10497,6 @@ class DamageCalculatorWrapper {
                                 }
                             }
                             break;
-                        case Weapon.ElisesStaff:
-                            if (allyUnit.isWeaponSpecialRefined) {
-                                if (enemyUnit.battleContext.initiatesCombat) {
-                                    targetUnit.addAllSpur(-4);
-                                }
-                            }
-                            break;
                         case Weapon.Geirusukeguru:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 if (targetUnit.isPhysicalAttacker()) {
@@ -10879,14 +10856,6 @@ class DamageCalculatorWrapper {
                         if (targetUnit.battleContext.restHpPercentage === 100) {
                             targetUnit.battleContext.attackCount = 2;
                         }
-                    }
-                    break;
-                case Weapon.WhitedownSpear:
-                    if (targetUnit.battleContext.initiatesCombat
-                        && this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, x =>
-                            x.moveType === MoveType.Flying) >= 2
-                    ) {
-                        targetUnit.battleContext.attackCount = 2;
                     }
                     break;
                 case Weapon.ShirokiNoTyokusou:
@@ -14202,11 +14171,6 @@ class DamageCalculatorWrapper {
                             ++followupAttackPriority;
                         }
                         break;
-                    case Weapon.WhitedownSpear:
-                        if (this.__countUnit(atkUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
-                            ++followupAttackPriority;
-                        }
-                        break;
                     case Weapon.Jikumunt:
                         if (atkUnit.battleContext.restHpPercentage >= 90) {
                             ++followupAttackPriority;
@@ -14611,11 +14575,6 @@ class DamageCalculatorWrapper {
                         if (isWeaponTypeTome(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
                             return true;
                         }
-                    }
-                    break;
-                case Weapon.GeneiLongBow:
-                    if (atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)) {
-                        return true;
                     }
                     break;
                 case Weapon.SnipersBow:
@@ -17247,6 +17206,13 @@ class DamageCalculatorWrapper {
             }
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
+                    case Weapon.ElisesStaff:
+                        if (unit.isWeaponSpecialRefined) {
+                            if (targetUnit.battleContext.initiatesCombat) {
+                                targetUnit.addAllSpur(-4);
+                            }
+                        }
+                        break;
                     case PassiveC.FettersOfDromi:
                         targetUnit.addAllSpur(-4);
                         break;

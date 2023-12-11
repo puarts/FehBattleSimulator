@@ -1811,6 +1811,11 @@ const Weapon = {
     ArcaneThrima: 2680, // 魔器スリマ
     StrivingSword: 2681, // 憧憬の剣
     HvitrdeerPlus: 2683, // ヒータディア+
+    GrimlealText: 2691, // 禁書ギムレー
+    NullBladePlus: 2689, // 見切り追撃の剣+
+
+    // 2023年12月 武器錬成
+    SacaenWolfBow: 2685, // 若き狼の鋭弓
 };
 
 const Support = {
@@ -4368,6 +4373,8 @@ const applySkillsAfterCantoActivatedFuncMap = new Map();
 const hasTransformSkillsFuncMap = new Map();
 const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
 const findTileAfterMovementAssistFuncMap = new Map();
+// thisはUnit
+const resetMaxSpecialCountFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4382,6 +4389,368 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 若き狼の鋭弓
+{
+    let skillId = Weapon.SacaenWolfBow;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                }
+            }
+        }
+    );
+}
+
+// バルムンク
+{
+    let skillId = Weapon.Balmung;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.addAllSpur(5);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                            enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                        targetUnit.addAllSpur(amount);
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                        });
+                    }
+                }
+            }
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
+                // 速度回避
+                let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+            }
+        }
+    );
+}
+
+// 幻影ロングボウ
+{
+    let skillId = Weapon.GeneiLongBow;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                            enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesCounterattack = true;
+                        }
+                    }
+                );
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                    });
+                    targetUnit.battleContext.invalidatesCounterattack = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAtkSpdSpurs(5);
+                        targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                        targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                        targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+                    }
+                }
+            }
+        }
+    );
+    resetMaxSpecialCountFuncMap.set(skillId,
+        function () {
+            if (this.isWeaponSpecialRefined) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+    );
+}
+
+// 白き飛翔の槍
+{
+    let skillId = Weapon.WhitedownSpear;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
+                        enemyUnit.addAtkDefSpurs(-4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                    targetUnit.battleContext.setAttackCountFuncs.push(
+                        (targetUnit, enemyUnit) => {
+                            let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2,
+                                x => x.moveType === MoveType.Flying
+                            );
+                            if (targetUnit.battleContext.initiatesCombat && allyCount >= 2) {
+                                targetUnit.battleContext.attackCount = 2;
+                            }
+                        }
+                    );
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    if (this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.moveType === MoveType.Flying) >= 3) {
+                        enemyUnit.addSpursWithoutRes(-4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
+                targetUnit.battleContext.setAttackCountFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3,
+                            x => x.moveType === MoveType.Flying
+                        );
+                        if (targetUnit.battleContext.initiatesCombat && allyCount >= 2) {
+                            targetUnit.battleContext.attackCount = 2;
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    }
+                );
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                        });
+                        let count = 0;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
+                            if (unit.moveType === MoveType.Flying) {
+                                count++;
+                            }
+                        }
+                        if (count >= 2) {
+                            targetUnit.battleContext.increaseCooldownCountForBoth();
+                        }
+                    }
+                }
+            }
+        }
+    );
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        let pred = unit => unit.moveType === MoveType.Flying;
+        return unit.isWeaponSpecialRefined && this.__isThereAllyInSpecifiedSpaces(unit, 3, pred);
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動残り+1
+        return this.restMoveCount + 1;
+    });
+}
+
+// マクベスの惑書
+{
+    let skillId = Weapon.IagosTome;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) {
+                            continue;
+                        }
+                        unit.reserveToApplyAtkDebuff(-4);
+                        unit.reserveToApplySpdDebuff(-4);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                } else {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (!this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) {
+                            continue;
+                        }
+                        unit.reserveToApplyDefDebuff(-4);
+                        unit.reserveToApplyResDebuff(-4);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 1))) {
+                            continue;
+                        }
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplySpdDebuff(-6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                } else {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (!this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 1))) {
+                            continue;
+                        }
+                        unit.reserveToApplyDefDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (this.isOddTurn) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.reserveToApplyBuffs(0, 0, 6, 6);
+                            unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                            unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                        }
+                    } else {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.reserveToApplyBuffs(6, 6, 0, 0);
+                            unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                        }
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.isWeaponRefined) {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
+    );
+}
+
+// 見切り追撃の剣+
+{
+    let skillId = Weapon.NullBladePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                        atkUnit.battleContext.additionalDamage += 5;
+                    }
+                });
+            }
+        }
+    );
+}
+
+// 禁書ギムレー
+{
+    let skillId = Weapon.GrimlealText;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                if (skillOwner.isInClossWithOffset(unit, 1)) {
+                    if (unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat()) {
+                        unit.reserveToApplyDebuffs(0, 0, -6, -6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkResSpurs(-6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let amount = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                        amount += unit.getNegativeStatusEffects().length;
+                    }
+                    atkUnit.battleContext.additionalDamage += amount * 4;
+                });
+            }
+        }
+    );
+}
 
 // 回避・盾の鼓動4
 {

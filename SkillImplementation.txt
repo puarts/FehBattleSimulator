@@ -291,11 +291,11 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
 反撃不可
+targetUnit.battleContext.invalidatesCounterattack = true;
+もしくは
 static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
-もしくは
-targetUnit.battleContext.invalidatesCounterattack = true;
 
 全距離反撃
 targetUnit.battleContext.canCounterattackToAllDistance = true;
@@ -591,6 +591,15 @@ targetUnit.battleContext.nullInvalidatesHealRatio = 0.6
 敵の奥義カウント変動量-1(キャンセル)
 targetUnit.battleContext.reducesCooldownCount = true;
 
+[拍節]
+targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+        enemyUnit.battleContext.reducesCooldownCount = false;
+    }
+);
+
 自身の奥義発動カウント変動量-を無効
 targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -622,6 +631,17 @@ atkUnit.battleContext.increaseCooldownCountForAttack = true;
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
 奥義が発動しやすい(錬成武器)
+resetMaxSpecialCountFuncMap.set(skillId,
+    function () {
+        // 特殊錬成の場合奥義が発動しやすい
+        if (this.isWeaponSpecialRefined) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+);
+もしくは
 resetMaxSpecialCount() {
     specialCountMax -= 1;
     // 奥義発動カウント最大値の下限は1

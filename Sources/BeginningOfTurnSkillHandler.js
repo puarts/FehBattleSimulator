@@ -2353,26 +2353,6 @@ class BeginningOfTurnSkillHandler {
                     skillOwner,
                     unit => { unit.reserveToApplyDefDebuff(-5); unit.reserveToApplyResDebuff(-5); });
                 break;
-            case Weapon.IagosTome:
-                if (this.isOddTurn) {
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                        if (this.__isNextToOtherUnits(unit)) { continue; }
-                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) { continue; }
-                        unit.reserveToApplyAtkDebuff(-4);
-                        unit.reserveToApplySpdDebuff(-4);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
-                    }
-                }
-                else {
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                        if (!this.__isNextToOtherUnits(unit)) { continue; }
-                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) { continue; }
-                        unit.reserveToApplyDefDebuff(-4);
-                        unit.reserveToApplyResDebuff(-4);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
-                    }
-                }
-                break;
             case Weapon.AversasNight: {
                 let amount = skillOwner.isWeaponRefined ? -4 : -3;
                 this.__applySabotageSkillImpl(

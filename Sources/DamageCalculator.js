@@ -1186,7 +1186,7 @@ class DamageCalculator {
                     let miracleReducedDamage = currentDamage - miracleDamage;
                     defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
                 }
-                totalDamage = defUnit.restHp - totalDamage - 1;
+                totalDamage += defUnit.restHp - totalDamage - 1;
                 if (canActivateSpecialMiracle) {
                     if (defUnit.special === Special.Miracle ||
                         defUnit.special === Special.LifeUnending) {
