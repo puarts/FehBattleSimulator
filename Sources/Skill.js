@@ -4385,6 +4385,104 @@ const findTileAfterMovementAssistFuncMap = new Map();
 
 // 各スキルの実装
 
+// マクベスの惑書
+{
+    let skillId = Weapon.IagosTome;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) {
+                            continue;
+                        }
+                        unit.reserveToApplyAtkDebuff(-4);
+                        unit.reserveToApplySpdDebuff(-4);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                } else {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (!this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 3))) {
+                            continue;
+                        }
+                        unit.reserveToApplyDefDebuff(-4);
+                        unit.reserveToApplyResDebuff(-4);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (this.isOddTurn) {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 1))) {
+                            continue;
+                        }
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplySpdDebuff(-6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                } else {
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (!this.__isNextToOtherUnits(unit)) {
+                            continue;
+                        }
+                        if (!(this.__getStatusEvalUnit(unit).hp <= (this.__getStatusEvalUnit(skillOwner).hp - 1))) {
+                            continue;
+                        }
+                        unit.reserveToApplyDefDebuff(-6);
+                        unit.reserveToApplyResDebuff(-6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (this.isOddTurn) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.reserveToApplyBuffs(0, 0, 6, 6);
+                            unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                            unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                        }
+                    } else {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.reserveToApplyBuffs(6, 6, 0, 0);
+                            unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                        }
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.isWeaponRefined) {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 見切り追撃の剣+
 {
     let skillId = Weapon.NullBladePlus;
