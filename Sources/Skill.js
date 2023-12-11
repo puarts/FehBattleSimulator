@@ -1811,6 +1811,7 @@ const Weapon = {
     ArcaneThrima: 2680, // 魔器スリマ
     StrivingSword: 2681, // 憧憬の剣
     HvitrdeerPlus: 2683, // ヒータディア+
+    GrimlealText: 2691, // 禁書ギムレー
 };
 
 const Support = {
@@ -4382,6 +4383,39 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+{
+    let skillId = Weapon.GrimlealText;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                if (skillOwner.isInClossWithOffset(unit, 1)) {
+                    if (unit.getResInPrecombat() < skillOwner.getResInPrecombat()) {
+                        unit.reserveToApplyDebuffs(0, 0, -6, -6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkResSpurs(-6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let amount = 0;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                        amount += unit.getNegativeStatusEffects().length;
+                    }
+                    atkUnit.battleContext.additionalDamage += amount * 4;
+                });
+            }
+        }
+    );
+}
 
 // 回避・盾の鼓動4
 {
