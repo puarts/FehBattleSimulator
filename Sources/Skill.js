@@ -1812,6 +1812,7 @@ const Weapon = {
     StrivingSword: 2681, // 憧憬の剣
     HvitrdeerPlus: 2683, // ヒータディア+
     GrimlealText: 2691, // 禁書ギムレー
+    NullBladePlus: 2689, // 見切り追撃の剣+
 };
 
 const Support = {
@@ -4383,6 +4384,33 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // }
 
 // 各スキルの実装
+
+// 見切り追撃の剣+
+{
+    let skillId = Weapon.NullBladePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (targetUnit.getSpdInCombat(enemyUnit) > enemyUnit.getSpdInCombat(targetUnit)) {
+                        atkUnit.battleContext.additionalDamage += 5;
+                    }
+                });
+            }
+        }
+    );
+}
+
+// 禁書ギムレー
 {
     let skillId = Weapon.GrimlealText;
     // ターン開始時スキル
