@@ -1537,12 +1537,6 @@ class DamageCalculatorWrapper {
                 atkUnit.defSpur += 10;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.Balmung] = (atkUnit, defUnit) => {
-            if (defUnit.battleContext.isRestHpFull) {
-                atkUnit.battleContext.invalidateAllOwnDebuffs();
-                atkUnit.addAllSpur(5);
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.NinissIceLance] = (atkUnit) => {
             if (!atkUnit.isWeaponRefined) {
                 atkUnit.addAllSpur(4);
@@ -1853,10 +1847,6 @@ class DamageCalculatorWrapper {
                 defUnit.defSpur += amount;
                 defUnit.resSpur += amount;
             }
-        };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.Balmung] = (defUnit) => {
-            defUnit.battleContext.invalidateAllOwnDebuffs();
-            defUnit.addAllSpur(5);
         };
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DartingBreath] = (defUnit) => {
             defUnit.spdSpur += 4;

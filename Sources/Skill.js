@@ -4386,6 +4386,57 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// バルムンク
+{
+    let skillId = Weapon.Balmung;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.addAllSpur(5);
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                            enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                        targetUnit.addAllSpur(amount);
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
+                        });
+                    }
+                }
+            }
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isWeaponSpecialRefined && defUnit.battleContext.restHpPercentage >= 25) {
+                // 速度回避
+                let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+            }
+        }
+    );
+}
+
 // 幻影ロングボウ
 {
     let skillId = Weapon.GeneiLongBow;
