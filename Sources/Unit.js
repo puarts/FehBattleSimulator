@@ -65,6 +65,7 @@ const Hero = {
     DuoKagero: 1016,
     HarmonizedAnna: 1029,
     DuoSanaki: 1042,
+    DuoByleth: 1062,
 };
 
 function isThiefIndex(heroIndex) {
