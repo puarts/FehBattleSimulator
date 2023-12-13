@@ -1822,6 +1822,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=yLu5QoWJa64&ab_channel=NintendoMobile
     SilentYuleKnife: 100113, // 見えざる聖夜の刃
     BlackYuleLance: 100201, // 黒鷲の聖夜の槍
+    BlueYuleAxe: 100302, // 青獅子の聖夜の斧
 };
 
 const Support = {
@@ -2687,6 +2688,7 @@ const PassiveB = {
     FaithfulLoyalty: 2016, // 信じつづける誓い
     RagingStorm: 1303, // 狂嵐
     RagingStorm2: 2427, // 狂嵐・承
+    RagingTempest: 140002, // 真狂嵐
     Chivalry: 2123, // 騎士道
 
     // 干渉
@@ -4398,6 +4400,41 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 青獅子の聖夜の斧
+{
+    let skillId = Weapon.BlueYuleAxe;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 2;
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.addAllSpur(Math.trunc(targetUnit.getSpdInPrecombat() * 0.15));
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (targetUnit.getPositiveStatusEffects().length >= 4) {
+                    dist = 3;
+                }
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.min(dist, 3);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 真狂嵐
 {
     let skillId = PassiveB.RagingTempest;
