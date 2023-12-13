@@ -1764,16 +1764,7 @@ class Unit extends BattleMapElement {
                 }
             }
             // 同時タイミングに付与された天脈を消滅させる
-            // TODO: 複数に同じ処理があるので関数にまとめる
-            for (let tile of g_appData.map.enumerateTiles()) {
-                if (tile.reservedDivineVeinSet.size === 1) {
-                    let [divineVein] = tile.reservedDivineVeinSet;
-                    tile.divineVein = divineVein;
-                    tile.divineVeinGroup = tile.reservedDivineVeinGroup;
-                }
-                tile.reservedDivineVeinSet.clear();
-                tile.reservedDivineVeinGroup = null;
-            }
+            g_appData.map.applyReservedDivineVein();
         }
     }
 
@@ -3373,23 +3364,14 @@ class Unit extends BattleMapElement {
             switch (skillId) {
                 case Weapon.Vallastone:
                     for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
-                        tile.reservedDivineVeinSet.add(DivineVeinType.Stone);
-                        tile.reservedDivineVeinGroup = this.groupId;
+                        tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
                     }
                     break;
             }
         }
 
         // 同時タイミングに付与された天脈を消滅させる
-        for (let tile of g_appData.map.enumerateTiles()) {
-            if (tile.reservedDivineVeinSet.size === 1) {
-                let [divineVein] = tile.reservedDivineVeinSet;
-                tile.divineVein = divineVein;
-                tile.divineVeinGroup = tile.reservedDivineVeinGroup;
-            }
-            tile.reservedDivineVeinSet.clear();
-            tile.reservedDivineVeinGroup = null;
-        }
+        g_appData.map.applyReservedDivineVein();
     }
 
     applyAllBuff(amount) {

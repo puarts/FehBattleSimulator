@@ -1821,6 +1821,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Iy5DQlXrrSY&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=yLu5QoWJa64&ab_channel=NintendoMobile
     SilentYuleKnife: 100113, // 見えざる聖夜の刃
+    BlackYuleLance: 100201, // 黒鷲の聖夜の槍
 };
 
 const Support = {
@@ -4395,6 +4396,44 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 黒鷲の聖夜の槍
+{
+    let skillId = Weapon.BlackYuleLance;
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                targetUnit.battleContext.initiatesCombat) {
+                this.__applyBlackEffect(targetUnit, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-6);
+                let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let amount = Math.max(9 - allyCount * 2, 0);
+                enemyUnit.addAtkDefSpurs(-amount);
+                let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
+                let tile = enemyUnit.placedTile;
+                let onFlame =
+                    tile.divineVein === DivineVeinType.Flame &&
+                    tile.divineVeinGroup === targetUnit.groupId;
+                if (onFlame) {
+                    dist = 3;
+                }
+                let ratio = Math.max(1 - 3.0 * allyCount / 100.0, 0);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.min(dist, 3);
+                let advantageType = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+                if (advantageType === TriangleAdvantage.Advantageous || onFlame) {
+                    targetUnit.battleContext.neutralizesNonSpecialMiracle = true;
+                }
+            }
+        }
+    );
+}
+
 // 理の蛇毒
 {
     let skillId = PassiveB.AssassinsStrike;
@@ -4430,6 +4469,7 @@ const resetMaxSpecialCountFuncMap = new Map();
                 targetUnit.addAllSpur(5);
                 let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1);
                 let amount = Math.max(9 - count * 2, 0);
+                targetUnit.addAtkSpdSpurs(amount);
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                 targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -5053,8 +5093,7 @@ const resetMaxSpecialCountFuncMap = new Map();
     let skillId = PassiveC.MendingHeart;
     let divineFunc = function () {
         for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
-            tile.reservedDivineVeinSet.add(DivineVeinType.Green);
-            tile.reservedDivineVeinGroup = this.groupId;
+            tile.reserveDivineVein(DivineVeinType.Green, this.groupId);
         }
     };
     applyEndActionSkillsFuncMap.set(skillId, divineFunc);

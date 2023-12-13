@@ -94,6 +94,8 @@ class PostCombatSkillHander {
             }
             this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit);
         }
+        // 戦闘後のタイミング終了
+        g_appData.map.applyReservedDivineVein();
 
         if (result.atkUnit_actualTotalAttackCount > 0) {
             this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(atkUnit, defUnit);
@@ -823,6 +825,39 @@ class PostCombatSkillHander {
         }
     }
 
+    __applyBlackEffect(targetUnit, enemyUnit) {
+        let placedTile = enemyUnit.placedTile;
+        let tx = targetUnit.posX;
+        let ty = targetUnit.posY;
+        let ex = placedTile.posX;
+        let ey = placedTile.posY;
+        if (ty === ey + 1) {
+            for (let tile of this.map.enumerateTiles()) {
+                if (tile.isInRange(ex - 2, ex + 2, ey - 1, ey)) {
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                }
+            }
+        } else if (ty === ey - 1) {
+            for (let tile of this.map.enumerateTiles()) {
+                if (tile.isInRange(ex - 2, ex + 2, ey, ey + 1)) {
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                }
+            }
+        } else if (tx === ex + 1) {
+            for (let tile of this.map.enumerateTiles()) {
+                if (tile.isInRange(ex - 1, ex, ey - 2, ey + 2)) {
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                }
+            }
+        } else if (tx === ex - 1) {
+            for (let tile of this.map.enumerateTiles()) {
+                if (tile.isInRange(ex, ex + 1, ey - 2, ey + 2)) {
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                }
+            }
+        }
+    }
+
     __applyFlaredSkillEffect(targetUnit, enemyUnit) {
         let placedTile = enemyUnit.placedTile;
         // キャラの位置関係によって天脈対象のタイルが異なる
@@ -831,8 +866,7 @@ class PostCombatSkillHander {
             for (let tile of this.map.enumerateTiles()) {
                 if (tile.posY === placedTile.posY &&
                     Math.abs(tile.posX - placedTile.posX) <= 2) {
-                    tile.divineVein = DivineVeinType.Flame;
-                    tile.divineVeinGroup = targetUnit.groupId;
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
                 }
             }
         } else if (targetUnit.posY === enemyUnit.posY) {
@@ -840,8 +874,7 @@ class PostCombatSkillHander {
             for (let tile of this.map.enumerateTiles()) {
                 if (tile.posX === placedTile.posX &&
                     Math.abs(tile.posY - placedTile.posY) <= 2) {
-                    tile.divineVein = DivineVeinType.Flame;
-                    tile.divineVeinGroup = targetUnit.groupId;
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
                 }
             }
         } else if (
@@ -857,8 +890,7 @@ class PostCombatSkillHander {
                     (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY + 1) ||
                     (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY + 2)
                 ) {
-                    tile.divineVein = DivineVeinType.Flame;
-                    tile.divineVeinGroup = targetUnit.groupId;
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
                 }
             }
         } else if (
@@ -874,8 +906,7 @@ class PostCombatSkillHander {
                     (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY - 1) ||
                     (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY - 2)
                 ) {
-                    tile.divineVein = DivineVeinType.Flame;
-                    tile.divineVeinGroup = targetUnit.groupId;
+                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
                 }
             }
         }
