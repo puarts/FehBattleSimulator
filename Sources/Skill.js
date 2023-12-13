@@ -2718,6 +2718,7 @@ const PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨
     Atrocity2: 2637, // 無惨・承
+    Barbarity: 140003, // 真無惨
     BindingNecklace: 1540, // 束縛の首飾り
     BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
@@ -4401,6 +4402,35 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 真無惨
+{
+    let skillId = PassiveB.Barbarity;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpursWithoutRes(-4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.25);
+                });
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (enemyUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addStatusEffect(StatusEffectType.Vantage);
+                targetUnit.addStatusEffect(StatusEffectType.Dodge);
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 3, true)) {
+                    unit.applyAllDebuff(-6);
+                }
+            }
+        }
+    );
+}
+
 // 車懸
 {
     let skillId = Special.NoQuarter;
