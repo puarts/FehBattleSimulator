@@ -1816,6 +1816,11 @@ const Weapon = {
 
     // 2023年12月 武器錬成
     SacaenWolfBow: 2685, // 若き狼の鋭弓
+
+    // 超英雄 (聖夜の課外授業)
+    // https://www.youtube.com/watch?v=Iy5DQlXrrSY&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=yLu5QoWJa64&ab_channel=NintendoMobile
+    SilentYuleKnife: 100113, // 見えざる聖夜の刃
 };
 
 const Support = {
@@ -4389,6 +4394,55 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 見えざる聖夜の刃
+{
+    let skillId = Weapon.SilentYuleKnife;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        let dist = Unit.calcMoveDistance(this)
+        return Math.min(dist, 3);
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let amount = Math.max(9 - count * 2, 0);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                if (targetUnit.battleContext.initiatesCombat) {
+                    let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
+                    let found = false;
+                    for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2)) {
+                        if (tile.divineVein !== DivineVeinType.None) {
+                            found = true;
+                            break;
+                        }
+                        let satisfiedTile = !(tile.type === TileType.Normal || tile.type === TileType.Wall);
+                        if (satisfiedTile) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        dist = 3;
+                    }
+                    let ratio = 0.3 * dist;
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+                }
+            }
+        }
+    );
+}
+
 // 若き狼の鋭弓
 {
     let skillId = Weapon.SacaenWolfBow;
