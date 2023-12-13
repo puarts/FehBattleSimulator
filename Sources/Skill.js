@@ -4398,6 +4398,54 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 真狂嵐
+{
+    let skillId = PassiveB.RagingTempest;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                if (unit.isInClossWithOffset(skillOwner, 1)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found || skillOwner.battleContext.restHpPercentage === 100) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+            if (allyCount <= 1) {
+                enemyUnit.addAtkDefSpurs(-5);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                });
+            }
+        }
+    );
+    applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+        function (atkUnit, defUnit, tileToAttack) {
+            let allyCount = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 1);
+            if (allyCount <= 1) {
+                if (atkUnit.battleContext.initiatesCombat) {
+                    if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
+                        atkUnit.isActionDone ) {
+                        this.writeLogLine(`${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`);
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 備え4
 {
     let generatePrimeFunc = func => function (targetUnit, enemyUnit, calcPotentialDamage) {

@@ -1034,6 +1034,20 @@ setOnetimeActionActivatedFuncMap.set(skillId,
 );
 
 戦闘後、自分を行動可能にする(1ターンに1回のみ)[再行動]
+applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+    function (atkUnit, defUnit, tileToAttack) {
+        if (atkUnit.battleContext.initiatesCombat) {
+            // Bスキルでの再行動
+            if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
+                atkUnit.isActionDone ) {
+                this.writeLogLine(`${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`);
+                atkUnit.isActionDone = false;
+                atkUnit.isOneTimeActionActivatedForPassiveB = true;
+            }
+        }
+    }
+);
+もしくは
 updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case Weapon.TwinCrestPower:
     // case PassiveB.RagingStorm:
