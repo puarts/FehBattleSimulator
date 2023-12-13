@@ -2052,6 +2052,7 @@ const Special = {
     ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
+    SupremeHeaven: 120004, // 真覇天
     DevinePulse: 2167, // 天刻の拍動
 
     RequiemDance: 1800, // 鎮魂の舞
@@ -4403,6 +4404,41 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 真覇天
+{
+    let skillId = Special.SupremeHeaven;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            let ratio = isWeaponTypeBreath(enemyUnit.weaponType) ? 0.5 : 0.25;
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * ratio);
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                if (defUnit.battleContext.restHpPercentage >= 25 &&
+                    isRangedWeaponType(atkUnit.weaponType)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
+                }
+            }
+        }
+    );
+}
+
 // 師の聖夜の剣
 {
     let skillId = Weapon.HolyYuleBlade;

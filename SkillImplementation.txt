@@ -557,7 +557,6 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
                 if (isMeleeWeaponType(atkUnit.weaponType)) {
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
                 }
-                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
             }
         }
     );
