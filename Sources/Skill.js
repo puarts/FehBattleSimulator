@@ -1948,6 +1948,7 @@ const Special = {
     Astra: 461, // 流星
     ArmoredBeacon: 2400, // 重装の聖炎
     ArmoredFloe: 2448, // 重装の聖氷
+    ArmoredBlaze: 120002, // 重装の大炎
     Bonfire: 455, // 緋炎
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
@@ -4396,6 +4397,39 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 重装の大炎
+{
+    let skillId = Special.ArmoredBlaze;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getDefInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                // 40%軽減
+                if (isMeleeWeaponType(atkUnit.weaponType)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
 // 黒鷲の聖夜の槍
 {
     let skillId = Weapon.BlackYuleLance;

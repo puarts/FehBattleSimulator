@@ -526,7 +526,7 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 
 奥義実装
 {
-    let skillId = Special.<S>;
+    let skillId = Special.SSS;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
     // NormalAttackSpecialDict[skillId] = 0;
     // 守備奥義
@@ -543,6 +543,22 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
             targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.5);
             // 黒の月光
             targetUnit.battleContext.specialSufferPercentage = 80;
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                // 敵が1距離の時40%軽減
+                if (isMeleeWeaponType(atkUnit.weaponType)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+            }
         }
     );
 }
