@@ -2571,74 +2571,71 @@
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
-                // weaponInfos.push(new SkillInfo(
-                //     '100000', '開発用武器1', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
-                //     AssistType.None, true, 0,
-                //     WeaponType.GreenBreath, 50, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.Weapon));
-                // supportInfos.push(new SkillInfo(
-                //     '100001', '開発用補助スキル1', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false,
-                //     AssistType.Refresh, false, 0,
-                //     WeaponType.None, 150, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.Support));
-                // specialInfos.push(new SkillInfo(
-                //     '100002', '開発用奥義スキル1', 0, 3, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, // 奥義カウント3
-                //     AssistType.None, false, 0,
-                //     WeaponType.None, 200, true,
-                //     [WeaponType.ExceptStaff,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.Special));
-                // passiveAInfos.push(new SkillInfo(
-                //     '100003', '開発用Aスキル1', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
-                //     AssistType.None, true, 0,
-                //     WeaponType.None, 50, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.PassiveA)
-                // );
-                // passiveBInfos.push(new SkillInfo(
-                //     '100004', '開発用Bスキル1', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
-                //     AssistType.None, true, 0,
-                //     WeaponType.None, 50, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.PassiveB)
-                // );
-                // passiveCInfos.push(new SkillInfo(
-                //     '100005', '開発用Cスキル1', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
-                //     AssistType.None, true, 0,
-                //     WeaponType.None, 50, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.PassiveC)
-                // );
-                // weaponInfos.push(new SkillInfo(
-                //     '100010', '開発用武器2', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
-                //     AssistType.None, true, 0,
-                //     WeaponType.ColorlessTome, 50, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.Weapon));
-                // passiveAInfos.push(new SkillInfo(
-                //     '100013', '開発用Aスキル2', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
-                //     AssistType.None, true, 0,
-                //     WeaponType.None, 50, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.PassiveA)
-                // );
-                // passiveBInfos.push(new SkillInfo(
-                //     '100014', '開発用Bスキル2', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
-                //     AssistType.None, true, 0,
-                //     WeaponType.None, 50, true,
-                //     [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
-                //     false, false, '',
-                //     SkillType.PassiveB)
-                // );
+                if (isLocal) {
+                    for (let i = 1; i <= 10; i++) {
+                        for (let weaponKey of Object.keys(WeaponType)) {
+                            if (WeaponType[weaponKey] < 0) {
+                                continue;
+                            }
+                            let weaponId = 100_000 + i * 100 + WeaponType[weaponKey];
+                            weaponInfos.push(new SkillInfo(
+                                `${weaponId}`, `dev-${weaponId}-${weaponKey}`, 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                                AssistType.None, true, 0,
+                                WeaponType[weaponKey], 50, true,
+                                [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                                false, false, '',
+                                SkillType.Weapon));
+                        }
+
+                        let supportId = 110_000 + i;
+                        supportInfos.push(new SkillInfo(
+                            `${supportId}`, `dev-${supportId}`, 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false,
+                            AssistType.Refresh, false, 0,
+                            WeaponType.None, 150, true,
+                            [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                            false, false, '',
+                            SkillType.Support));
+
+                        let specialId = 120_000 + i;
+                        specialInfos.push(new SkillInfo(
+                            `${specialId}`, `dev-${specialId}`, 0, 3, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, // 奥義カウント3
+                            AssistType.None, false, 0,
+                            WeaponType.None, 200, true,
+                            [WeaponType.ExceptStaff,], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                            false, false, '',
+                            SkillType.Special));
+
+                        let passiveAId = 130_000 + i;
+                        passiveAInfos.push(new SkillInfo(
+                            `${passiveAId}`, `dev-${passiveAId}`, 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                            AssistType.None, true, 0,
+                            WeaponType.None, 50, true,
+                            [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                            false, false, '',
+                            SkillType.PassiveA)
+                        );
+
+                        let passiveBId = 140_000 + i;
+                        passiveBInfos.push(new SkillInfo(
+                            `${passiveBId}`, `dev-${passiveBId}`, 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                            AssistType.None, true, 0,
+                            WeaponType.None, 50, true,
+                            [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                            false, false, '',
+                            SkillType.PassiveB)
+                        );
+
+                        let passiveCId = 150_000 + i;
+                        passiveCInfos.push(new SkillInfo(
+                            `${passiveCId}`, `dev-${passiveCId}`, 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false,
+                            AssistType.None, true, 0,
+                            WeaponType.None, 50, true,
+                            [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry],
+                            false, false, '',
+                            SkillType.PassiveC)
+                        );
+                    }
+                }
                 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos, passiveXInfos);
                 g_app.registerHeroOptions(heroInfos, false);
