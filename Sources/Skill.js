@@ -2789,6 +2789,7 @@ const PassiveB = {
 
     // 蛇毒
     OccultistsStrike: 2673, // 魔の蛇毒
+    AssassinsStrike: 140001, // 理の蛇毒
 };
 
 const PassiveC = {
@@ -4394,6 +4395,24 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 理の蛇毒
+{
+    let skillId = PassiveB.AssassinsStrike;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
+                enemyUnit.addSpdDefSpurs(-4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getDef(defUnit, atkUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
+
 // 見えざる聖夜の刃
 {
     let skillId = Weapon.SilentYuleKnife;
