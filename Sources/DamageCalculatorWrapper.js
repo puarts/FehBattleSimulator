@@ -3505,7 +3505,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveA.AtkResScowl4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAtkResSpurs(7);
-
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.RevealingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {

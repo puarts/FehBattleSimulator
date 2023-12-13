@@ -1823,6 +1823,7 @@ const Weapon = {
     SilentYuleKnife: 100113, // 見えざる聖夜の刃
     BlackYuleLance: 100201, // 黒鷲の聖夜の槍
     BlueYuleAxe: 100302, // 青獅子の聖夜の斧
+    HolyYuleBlade: 100400, // 師の聖夜の剣
 };
 
 const Support = {
@@ -4402,6 +4403,47 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 師の聖夜の剣
+{
+    let skillId = Weapon.HolyYuleBlade;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpursWithoutSpd(5);
+                let res = targetUnit.getResInPrecombat();
+                targetUnit.addSpursWithoutSpd(Math.trunc(res * 0.2));
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (isNormalAttackSpecial(enemyUnit.special)) {
+                            let diff =
+                                targetUnit.getEvalResInCombat(enemyUnit) -
+                                enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 5) {
+                                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                                if (targetUnit.isSaviorActivated) {
+                                   dist = 3;
+                                }
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += Math.min(dist, 3);
+                            }
+                        }
+                    }
+                );
+                if (isRangedWeaponType(enemyUnit.weaponType)) {
+                    targetUnit.battleContext.nullCounterDisrupt = true;
+                }
+            }
+        }
+    );
+}
+
 // 真無惨
 {
     let skillId = PassiveB.Barbarity;
