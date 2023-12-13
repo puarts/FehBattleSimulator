@@ -2406,6 +2406,7 @@ const PassiveA = {
 
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
+    AtkDefPrime4: 130002, // 攻撃守備の備え4
 };
 
 const PassiveB = {
@@ -4397,6 +4398,22 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 備え4
+{
+    let generatePrimeFunc = func => function (targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+            let positiveCount = targetUnit.getPositiveStatusEffects().length;
+            let amount = Math.min(positiveCount * 2 + 3, 9);
+            func(targetUnit, amount);
+            if (positiveCount >= 4) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
+    };
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdPrime4, generatePrimeFunc((u, n) => u.addAtkSpdSpurs(n)));
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkDefPrime4, generatePrimeFunc((u, n) => u.addAtkDefSpurs(n)));
+}
+
 // 重装の大炎
 {
     let skillId = Special.ArmoredBlaze;
