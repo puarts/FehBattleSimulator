@@ -1990,6 +1990,7 @@ const Special = {
     SeidrShell: 1542, // 魔弾
     BrutalShell: 1853, // 凶弾
     Flare: 2548, // 陽光
+    NoQuarter: 120003, // 車懸
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -4400,6 +4401,26 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 車懸
+{
+    let skillId = Special.NoQuarter;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            let ratio = enemyUnit.moveType === MoveType.Armor ? 0.4 : 0.3;
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * ratio);
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+}
+
 // 青獅子の聖夜の斧
 {
     let skillId = Weapon.BlueYuleAxe;
