@@ -2475,6 +2475,7 @@ const PassiveB = {
     VengefulFighter3: 602, // 迎撃隊形3
     VengefulFighter4: 2384, // 迎撃隊形4
     WaryFighter3: 600, // 守備隊形3
+    WeavingFighter: 140004, // 理の守備隊形
     SpecialFighter3: 603,// 奥義隊形3
     SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
@@ -4339,6 +4340,8 @@ class SkillInfo {
     }
 }
 
+const count2Specials = [];
+const inheritableCount2Specials = [];
 const count3Specials = [];
 const inheritableCount3Specials = [];
 
@@ -4404,6 +4407,24 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 理の守備隊形
+{
+    let skillId = PassiveB.WeavingFighter;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-4);
+                targetUnit.battleContext.followupAttackPriorityDecrement--;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+
+                let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 真覇天
 {
     let skillId = Special.SupremeHeaven;
