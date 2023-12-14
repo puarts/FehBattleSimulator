@@ -1820,10 +1820,10 @@ const Weapon = {
     // 超英雄 (聖夜の課外授業)
     // https://www.youtube.com/watch?v=Iy5DQlXrrSY&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=yLu5QoWJa64&ab_channel=NintendoMobile
-    SilentYuleKnife: 100113, // 見えざる聖夜の刃
-    BlackYuleLance: 100201, // 黒鷲の聖夜の槍
-    BlueYuleAxe: 100302, // 青獅子の聖夜の斧
-    HolyYuleBlade: 100400, // 師の聖夜の剣
+    SilentYuleKnife: 2695, // 見えざる聖夜の刃
+    BlackYuleLance: 2697, // 黒鷲の聖夜の槍
+    BlueYuleAxe: 2701, // 青獅子の聖夜の斧
+    HolyYuleBlade: 2704, // 師の聖夜の剣
     GoldenYuleBowPlus: 2708, // 金鹿の聖夜の弓+
 };
 
@@ -1951,7 +1951,7 @@ const Special = {
     Astra: 461, // 流星
     ArmoredBeacon: 2400, // 重装の聖炎
     ArmoredFloe: 2448, // 重装の聖氷
-    ArmoredBlaze: 120002, // 重装の大炎
+    ArmoredBlaze: 2698, // 重装の大炎
     Bonfire: 455, // 緋炎
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
@@ -1992,7 +1992,7 @@ const Special = {
     SeidrShell: 1542, // 魔弾
     BrutalShell: 1853, // 凶弾
     Flare: 2548, // 陽光
-    NoQuarter: 120003, // 車懸
+    NoQuarter: 2702, // 車懸
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -2053,7 +2053,7 @@ const Special = {
     ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
-    SupremeHeaven: 120004, // 真覇天
+    SupremeHeaven: 2705, // 真覇天
     DevinePulse: 2167, // 天刻の拍動
 
     RequiemDance: 1800, // 鎮魂の舞
@@ -2411,7 +2411,7 @@ const PassiveA = {
 
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
-    AtkDefPrime4: 130002, // 攻撃守備の備え4
+    AtkDefPrime4: 2699, // 攻撃守備の備え4
 };
 
 const PassiveB = {
@@ -2476,7 +2476,7 @@ const PassiveB = {
     VengefulFighter3: 602, // 迎撃隊形3
     VengefulFighter4: 2384, // 迎撃隊形4
     WaryFighter3: 600, // 守備隊形3
-    WeavingFighter: 140004, // 理の守備隊形
+    WeavingFighter: 2706, // 理の守備隊形
     SpecialFighter3: 603,// 奥義隊形3
     SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
@@ -2693,7 +2693,7 @@ const PassiveB = {
     FaithfulLoyalty: 2016, // 信じつづける誓い
     RagingStorm: 1303, // 狂嵐
     RagingStorm2: 2427, // 狂嵐・承
-    RagingTempest: 140002, // 真狂嵐
+    RagingTempest: 2700, // 真狂嵐
     Chivalry: 2123, // 騎士道
 
     // 干渉
@@ -2722,7 +2722,7 @@ const PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨
     Atrocity2: 2637, // 無惨・承
-    Barbarity: 140003, // 真無惨
+    Barbarity: 2703, // 真無惨
     BindingNecklace: 1540, // 束縛の首飾り
     BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
@@ -2800,7 +2800,7 @@ const PassiveB = {
 
     // 蛇毒
     OccultistsStrike: 2673, // 魔の蛇毒
-    AssassinsStrike: 140001, // 理の蛇毒
+    AssassinsStrike: 2696, // 理の蛇毒
 };
 
 const PassiveC = {
