@@ -1824,6 +1824,7 @@ const Weapon = {
     BlackYuleLance: 100201, // 黒鷲の聖夜の槍
     BlueYuleAxe: 100302, // 青獅子の聖夜の斧
     HolyYuleBlade: 100400, // 師の聖夜の剣
+    GoldenYuleBowPlus: 2708, // 金鹿の聖夜の弓+
 };
 
 const Support = {
@@ -4407,6 +4408,25 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 金鹿の聖夜の弓+
+{
+    let skillId = Weapon.GoldenYuleBowPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (enemyUnit.hasNegativeStatusEffect()) {
+                    dist = 3;
+                }
+                let amount = Math.min(dist, 3);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += amount;
+            }
+        }
+    );
+}
+
 // 理の守備隊形
 {
     let skillId = PassiveB.WeavingFighter;
