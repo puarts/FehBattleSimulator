@@ -2416,6 +2416,18 @@ class BattleMap {
         }
     }
 
+    applyReservedDivineVein() {
+        for (let tile of this.enumerateTiles()) {
+            if (tile.reservedDivineVeinSet.size === 1) {
+                let [divineVein] = tile.reservedDivineVeinSet;
+                tile.divineVein = divineVein;
+                tile.divineVeinGroup = tile.reservedDivineVeinGroup;
+            }
+            tile.reservedDivineVeinSet.clear();
+            tile.reservedDivineVeinGroup = null;
+        }
+    }
+
     examinesCanAttack(attackerUnit, attackTargetUnit, ignoresTeleportTile,
         moveTile = null, // 指定した場合は、指定タイルに移動した前提で評価します
         ignoreTileFunc = null,

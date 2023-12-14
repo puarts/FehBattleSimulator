@@ -526,7 +526,7 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 
 奥義実装
 {
-    let skillId = Special.<S>;
+    let skillId = Special.SSS;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
     // NormalAttackSpecialDict[skillId] = 0;
     // 守備奥義
@@ -543,6 +543,21 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
             targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.5);
             // 黒の月光
             targetUnit.battleContext.specialSufferPercentage = 80;
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                // 敵が1距離の時40%軽減
+                if (isMeleeWeaponType(atkUnit.weaponType)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
         }
     );
 }
@@ -671,7 +686,7 @@ targetUnit.battleContext.specialCountReductionBeforeFirstAttack += N;
 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += N;
 
-敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)
+敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)[竜眼]
 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 
 奥義ダメージ+N
@@ -1018,6 +1033,20 @@ setOnetimeActionActivatedFuncMap.set(skillId,
 );
 
 戦闘後、自分を行動可能にする(1ターンに1回のみ)[再行動]
+applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+    function (atkUnit, defUnit, tileToAttack) {
+        if (atkUnit.battleContext.initiatesCombat) {
+            // Bスキルでの再行動
+            if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
+                atkUnit.isActionDone ) {
+                this.writeLogLine(`${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`);
+                atkUnit.isActionDone = false;
+                atkUnit.isOneTimeActionActivatedForPassiveB = true;
+            }
+        }
+    }
+);
+もしくは
 updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case Weapon.TwinCrestPower:
     // case PassiveB.RagingStorm:
@@ -1078,6 +1107,9 @@ calcMoveCountForCantoFuncMap.set(skillId, function () {
     return N;
     // 再移動残り+1
     // return this.restMoveCount + 1;
+    // マス間の距離+1、最大4
+    // let dist = Unit.calcMoveDistance(this)
+    // return Math.min(dist + 1, 4);
 });
 もしくは
 __canActivateCanto(unit) {}
@@ -1163,6 +1195,12 @@ function isNegativeStatusEffect(type) {}
 ステータス付与
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
+
+天脈を予約
+tile.reserveDivineVein(DivineVeinType.Green, unit.groupId);
+
+予約された天脈を付与
+g_appData.map.applyReservedDivineVein();
 
 出典の配列を返す
 unit.getOrigins();

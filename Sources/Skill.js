@@ -1816,6 +1816,15 @@ const Weapon = {
 
     // 2023年12月 武器錬成
     SacaenWolfBow: 2685, // 若き狼の鋭弓
+
+    // 超英雄 (聖夜の課外授業)
+    // https://www.youtube.com/watch?v=Iy5DQlXrrSY&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=yLu5QoWJa64&ab_channel=NintendoMobile
+    SilentYuleKnife: 2695, // 見えざる聖夜の刃
+    BlackYuleLance: 2697, // 黒鷲の聖夜の槍
+    BlueYuleAxe: 2701, // 青獅子の聖夜の斧
+    HolyYuleBlade: 2704, // 師の聖夜の剣
+    GoldenYuleBowPlus: 2708, // 金鹿の聖夜の弓+
 };
 
 const Support = {
@@ -1942,6 +1951,7 @@ const Special = {
     Astra: 461, // 流星
     ArmoredBeacon: 2400, // 重装の聖炎
     ArmoredFloe: 2448, // 重装の聖氷
+    ArmoredBlaze: 2698, // 重装の大炎
     Bonfire: 455, // 緋炎
     Ignis: 450, // 華炎
     Iceberg: 456, // 氷蒼
@@ -1982,6 +1992,7 @@ const Special = {
     SeidrShell: 1542, // 魔弾
     BrutalShell: 1853, // 凶弾
     Flare: 2548, // 陽光
+    NoQuarter: 2702, // 車懸
 
     GrowingFlame: 485,
     GrowingLight: 486,
@@ -2042,6 +2053,7 @@ const Special = {
     ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
+    SupremeHeaven: 2705, // 真覇天
     DevinePulse: 2167, // 天刻の拍動
 
     RequiemDance: 1800, // 鎮魂の舞
@@ -2399,6 +2411,7 @@ const PassiveA = {
 
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
+    AtkDefPrime4: 2699, // 攻撃守備の備え4
 };
 
 const PassiveB = {
@@ -2463,6 +2476,7 @@ const PassiveB = {
     VengefulFighter3: 602, // 迎撃隊形3
     VengefulFighter4: 2384, // 迎撃隊形4
     WaryFighter3: 600, // 守備隊形3
+    WeavingFighter: 2706, // 理の守備隊形
     SpecialFighter3: 603,// 奥義隊形3
     SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
@@ -2679,6 +2693,7 @@ const PassiveB = {
     FaithfulLoyalty: 2016, // 信じつづける誓い
     RagingStorm: 1303, // 狂嵐
     RagingStorm2: 2427, // 狂嵐・承
+    RagingTempest: 2700, // 真狂嵐
     Chivalry: 2123, // 騎士道
 
     // 干渉
@@ -2707,6 +2722,7 @@ const PassiveB = {
     BlackEagleRule: 1453, // 黒鷲の覇王
     Atrocity: 1514, // 無惨
     Atrocity2: 2637, // 無惨・承
+    Barbarity: 2703, // 真無惨
     BindingNecklace: 1540, // 束縛の首飾り
     BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
@@ -2784,6 +2800,7 @@ const PassiveB = {
 
     // 蛇毒
     OccultistsStrike: 2673, // 魔の蛇毒
+    AssassinsStrike: 2696, // 理の蛇毒
 };
 
 const PassiveC = {
@@ -4324,6 +4341,8 @@ class SkillInfo {
     }
 }
 
+const count2Specials = [];
+const inheritableCount2Specials = [];
 const count3Specials = [];
 const inheritableCount3Specials = [];
 
@@ -4389,6 +4408,406 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 金鹿の聖夜の弓+
+{
+    let skillId = Weapon.GoldenYuleBowPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (enemyUnit.hasNegativeStatusEffect()) {
+                    dist = 3;
+                }
+                let amount = Math.min(dist, 3);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += amount;
+            }
+        }
+    );
+}
+
+// 理の守備隊形
+{
+    let skillId = PassiveB.WeavingFighter;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-4);
+                targetUnit.battleContext.followupAttackPriorityDecrement--;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+
+                let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 真覇天
+{
+    let skillId = Special.SupremeHeaven;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            let ratio = isWeaponTypeBreath(enemyUnit.weaponType) ? 0.5 : 0.25;
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * ratio);
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                if (defUnit.battleContext.restHpPercentage >= 25 &&
+                    isRangedWeaponType(atkUnit.weaponType)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
+                }
+            }
+        }
+    );
+}
+
+// 師の聖夜の剣
+{
+    let skillId = Weapon.HolyYuleBlade;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpursWithoutSpd(5);
+                let res = targetUnit.getResInPrecombat();
+                targetUnit.addSpursWithoutSpd(Math.trunc(res * 0.2));
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (isNormalAttackSpecial(enemyUnit.special)) {
+                            let diff =
+                                targetUnit.getEvalResInCombat(enemyUnit) -
+                                enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 5) {
+                                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                                if (targetUnit.isSaviorActivated) {
+                                   dist = 3;
+                                }
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += Math.min(dist, 3);
+                            }
+                        }
+                    }
+                );
+                if (isRangedWeaponType(enemyUnit.weaponType)) {
+                    targetUnit.battleContext.nullCounterDisrupt = true;
+                }
+            }
+        }
+    );
+}
+
+// 真無惨
+{
+    let skillId = PassiveB.Barbarity;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpursWithoutRes(-4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.25);
+                });
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (enemyUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addStatusEffect(StatusEffectType.Vantage);
+                targetUnit.addStatusEffect(StatusEffectType.Dodge);
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 3, true)) {
+                    unit.applyAllDebuff(-6);
+                }
+            }
+        }
+    );
+}
+
+// 車懸
+{
+    let skillId = Special.NoQuarter;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            let ratio = enemyUnit.moveType === MoveType.Armor ? 0.4 : 0.3;
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * ratio);
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+}
+
+// 青獅子の聖夜の斧
+{
+    let skillId = Weapon.BlueYuleAxe;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 2;
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.addAllSpur(Math.trunc(targetUnit.getSpdInPrecombat() * 0.15));
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (targetUnit.getPositiveStatusEffects().length >= 4) {
+                    dist = 3;
+                }
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.min(dist, 3);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 真狂嵐
+{
+    let skillId = PassiveB.RagingTempest;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                if (unit.isInClossWithOffset(skillOwner, 1)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found || skillOwner.battleContext.restHpPercentage === 100) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Charge);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+            if (allyCount <= 1) {
+                enemyUnit.addAtkDefSpurs(-5);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                });
+            }
+        }
+    );
+    applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+        function (atkUnit, defUnit, tileToAttack) {
+            let allyCount = this.__countAlliesWithinSpecifiedSpaces(atkUnit, 1);
+            if (allyCount <= 1) {
+                if (atkUnit.battleContext.initiatesCombat) {
+                    if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
+                        atkUnit.isActionDone ) {
+                        this.writeLogLine(`${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`);
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
+                    }
+                }
+            }
+        }
+    );
+}
+
+// 備え4
+{
+    let generatePrimeFunc = func => function (targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+            let positiveCount = targetUnit.getPositiveStatusEffects().length;
+            let amount = Math.min(positiveCount * 2 + 3, 9);
+            func(targetUnit, amount);
+            if (positiveCount >= 4) {
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
+    };
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdPrime4, generatePrimeFunc((u, n) => u.addAtkSpdSpurs(n)));
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkDefPrime4, generatePrimeFunc((u, n) => u.addAtkDefSpurs(n)));
+}
+
+// 重装の大炎
+{
+    let skillId = Special.ArmoredBlaze;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getDefInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                // 40%軽減
+                if (isMeleeWeaponType(atkUnit.weaponType)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
+// 黒鷲の聖夜の槍
+{
+    let skillId = Weapon.BlackYuleLance;
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.restHpPercentage >= 25 &&
+                targetUnit.battleContext.initiatesCombat) {
+                this.__applyBlackEffect(targetUnit, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-6);
+                let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let amount = Math.max(9 - allyCount * 2, 0);
+                enemyUnit.addAtkDefSpurs(-amount);
+                let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
+                let tile = enemyUnit.placedTile;
+                let onFlame =
+                    tile.divineVein === DivineVeinType.Flame &&
+                    tile.divineVeinGroup === targetUnit.groupId;
+                if (onFlame) {
+                    dist = 3;
+                }
+                let ratio = Math.max(1 - 3.0 * allyCount / 100.0, 0);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += Math.min(dist, 3);
+                let advantageType = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+                if (advantageType === TriangleAdvantage.Advantageous || onFlame) {
+                    targetUnit.battleContext.neutralizesNonSpecialMiracle = true;
+                }
+            }
+        }
+    );
+}
+
+// 理の蛇毒
+{
+    let skillId = PassiveB.AssassinsStrike;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
+                enemyUnit.addSpdDefSpurs(-4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getDef(defUnit, atkUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
+
+// 見えざる聖夜の刃
+{
+    let skillId = Weapon.SilentYuleKnife;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        let dist = Unit.calcMoveDistance(this)
+        return Math.min(dist, 3);
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let amount = Math.max(9 - count * 2, 0);
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                if (targetUnit.battleContext.initiatesCombat) {
+                    let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
+                    let found = false;
+                    for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2)) {
+                        if (tile.divineVein !== DivineVeinType.None) {
+                            found = true;
+                            break;
+                        }
+                        let satisfiedTile = !(tile.type === TileType.Normal || tile.type === TileType.Wall);
+                        if (satisfiedTile) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        dist = 3;
+                    }
+                    let ratio = 0.3 * dist;
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+                }
+            }
+        }
+    );
+}
+
 // 若き狼の鋭弓
 {
     let skillId = Weapon.SacaenWolfBow;
@@ -4980,8 +5399,7 @@ const resetMaxSpecialCountFuncMap = new Map();
     let skillId = PassiveC.MendingHeart;
     let divineFunc = function () {
         for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
-            tile.reservedDivineVeinSet.add(DivineVeinType.Green);
-            tile.reservedDivineVeinGroup = this.groupId;
+            tile.reserveDivineVein(DivineVeinType.Green, this.groupId);
         }
     };
     applyEndActionSkillsFuncMap.set(skillId, divineFunc);

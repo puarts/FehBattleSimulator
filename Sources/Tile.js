@@ -114,6 +114,24 @@ class Tile extends BattleMapElement {
         this.snapshot = null;
     }
 
+    isInXRange(fromX, toX) {
+        return fromX <= this.posX && this.posX <= toX;
+    }
+
+    isInYRange(fromY, toY) {
+        return fromY <= this.posY && this.posY <= toY;
+    }
+
+    isInRange(fromX, toX, fromY, toY) {
+        return this.isInXRange(fromX, toX) && this.isInYRange(fromY, toY);
+    }
+
+    // 天脈の予約を行う
+    reserveDivineVein(divineVein, divineVeinGroup) {
+        this.reservedDivineVeinSet.add(divineVein);
+        this.reservedDivineVeinGroup = divineVeinGroup;
+    }
+
     createSnapshot() {
         let tile = new Tile(this.posX, this.posY);
         tile._dangerLevel = this._dangerLevel;

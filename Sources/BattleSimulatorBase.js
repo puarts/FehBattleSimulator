@@ -1044,6 +1044,14 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoByleth:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
+                    unit.applyBuffs(0, 0, 6, 6);
+                    unit.addStatusEffect(StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent);
+                    unit.addStatusEffect(StatusEffectType.Hexblade);
+                }
+                duoUnit.addStatusEffect(StatusEffectType.ShieldArmor);
+                break;
             case Hero.HarmonizedAnna:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantShield);

@@ -909,7 +909,7 @@ class DamageCalcData {
             Special.Moonbow, // 月虹(守備魔防-30%)
             Special.Glimmer, // 凶星(1.5倍)
             Special.RupturedSky, // 破天(+攻撃20%)
-        ];
+        ].concat(inheritableCount2Specials);
     }
 
 
@@ -934,7 +934,7 @@ class DamageCalcData {
             Special.CircletOfBalance, // 聖神と暗黒神の冠(+魔坊40%)
             Special.LightsRestraint, // 抑制の聖光
             Special.HolyPanic, // 恐慌の聖光
-        ];
+        ].concat(count2Specials);
     }
     __getInheritableCount3Specials() {
         return [
