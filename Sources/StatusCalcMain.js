@@ -130,3 +130,10 @@ function init(heroInfo, skillInfos, totalSp) {
     vm.totalSp = totalSp;
     updateStatus();
 }
+
+function diffToHtml(value) {
+    const signedValue = value >= 0 ? `+${value}` : value;
+    if (value > 0) return `<span style='color:blue'>${signedValue}</span>`;
+    else if (value < 0) return `<span style='color:red'>${signedValue}</span>`;
+    else return signedValue;
+}

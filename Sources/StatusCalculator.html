@@ -152,7 +152,7 @@
                 <tr>
                     <td>
                         <table style="border:solid 1px #999;text-shadow: none;color: black;width:100%">
-                            <tbody style="text-align: center;">
+                            <thead style="text-align: center;">
                                 <tr>
                                     <!-- <th></th> -->
                                     <th>HP</th>
@@ -162,7 +162,9 @@
                                     <th>魔防</th>
                                     <th>総合</th>
                                 </tr>
-                                <tr style="background-color: white;">
+                            </thead>
+                            <tbody style="text-align: center;background-color: white">
+                                <tr>
                                     <!-- <th>能力値</th> -->
                                     <td>{{value.maxHpWithSkills}}</td>
                                     <td>{{value.atkWithSkills}}</td>
@@ -173,19 +175,18 @@
                                         {{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills}}
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td class="statusTable" v-html="diffToHtml(value.maxHpWithSkills - value.maxHp)">
+                                    </td>
+                                    <td class="statusTable" v-html="diffToHtml(value.atkWithSkills - value.atk)"></td>
+                                    <td class="statusTable" v-html="diffToHtml(value.spdWithSkills - value.spd)"></td>
+                                    <td class="statusTable" v-html="diffToHtml(value.defWithSkills - value.def)"></td>
+                                    <td class="statusTable" v-html="diffToHtml(value.resWithSkills - value.res)"></td>
+                                    <td class="statusTable"
+                                        v-html="diffToHtml(value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills-value.maxHp-value.atk-value.spd-value.def-value.res)">
+                                    </td>
+                                </tr>
                             </tbody>
-
-                            <!-- <tr>
-                                <th>加算値</th>
-                                <td class="statusTable">{{value.maxHpWithSkills - value.maxHp}}</td>
-                                <td class="statusTable">{{value.atkWithSkills - value.atk}}</td>
-                                <td class="statusTable">{{value.spdWithSkills - value.spd}}</td>
-                                <td class="statusTable">{{value.defWithSkills - value.def}}</td>
-                                <td class="statusTable">{{value.resWithSkills - value.res}}</td>
-                                <td class="statusTable">
-                                    {{value.maxHpWithSkills+value.atkWithSkills+value.spdWithSkills+value.defWithSkills+value.resWithSkills-value.maxHp-value.atk-value.spd-value.def-value.res}}
-                                </td>
-                            </tr> -->
                         </table>
                     </td>
                 </tr>
