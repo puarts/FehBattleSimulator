@@ -434,7 +434,7 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.DeepStar:
             return g_imageRootPath + "StatusEffect_DeepStar.png";
         case StatusEffectType.Ploy:
-            return g_imageRootPath + "StatusEffect_Ploy.png";
+            return g_imageRootPath + "StatusEffect_Ploy.webp";
         case StatusEffectType.Schism:
             return g_imageRootPath + "StatusEffect_Schism.png";
         case StatusEffectType.NeutralizeUnitSurvivesWith1HP:
