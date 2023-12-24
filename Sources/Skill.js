@@ -1825,6 +1825,11 @@ const Weapon = {
     BlueYuleAxe: 2701, // 青獅子の聖夜の斧
     HolyYuleBlade: 2704, // 師の聖夜の剣
     GoldenYuleBowPlus: 2708, // 金鹿の聖夜の弓+
+
+    // 伝承英雄 (黒檀に薫る妖花 カミラ)
+    // https://www.youtube.com/watch?v=M00XF01kTVI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=W9fzhdN2Nnk&ab_channel=NintendoMobile
+    BewitchingTome: 100105, // 妖艶なる夜の書
 };
 
 const Support = {
@@ -4409,6 +4414,33 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 妖艶なる夜の書
+{
+    let skillId = Weapon.BewitchingTome;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                isRangedWeaponType(enemyUnit.weaponType)) {
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let advantageous = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+                        let isAdvantageous= advantageous === TriangleAdvantage.Advantageous;
+                        let spdCond = targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit);
+                        let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
+                        let ratio = isAdvantageous || spdCond ? 0.4 : 0.2;
+                        enemyUnit.battleContext.damageAfterBeginningOfCombat += Math.trunc(enemyAtk * ratio);
+                    }
+                );
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 恐慌の幻煙4
 {
     let skillId = PassiveC.PanicSmoke4;
