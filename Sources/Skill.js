@@ -2719,6 +2719,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    SpoilRotten: 140001, // 可愛がってあげる
     RulerOfNihility: 2655, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
     DeepStar: 2566, // 真落星
@@ -4414,6 +4415,41 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 可愛がってあげる
+{
+    let skillId = PassiveB.SpoilRotten;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                let enemies = this.__findNearestEnemies(skillOwner);
+                for (let nearestEnemy of this.__findNearestEnemies(skillOwner)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                        unit.reserveToApplyDebuffs(0, -7, 0, -7);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                    }
+                }
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpdResSpurs(-5);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 妖艶なる夜の書
 {
     let skillId = Weapon.BewitchingTome;

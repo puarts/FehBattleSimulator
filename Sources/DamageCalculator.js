@@ -926,12 +926,16 @@ class DamageCalculator {
                 !atkUnit.battleContext.preventedAttackerSpecial;
 
             // ダメージ軽減をN%無効
-            if (atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.length >= 1) {
+            let reductionRatios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
+            if (atkUnit.hasStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent)) {
+                reductionRatios.push(0.5);
+            }
+            if (reductionRatios.length >= 1) {
                 let reducedRatio = 1 - damageReductionRatio;
                 if (this.isLogEnabled) {
-                    this.writeDebugLog(`奥義以外のダメージ軽減をN%無効: [${atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial}]`);
+                    this.writeDebugLog(`奥義以外のダメージ軽減をN%無効: [${reductionRatios}]`);
                 }
-                for (let ratio of atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial) {
+                for (let ratio of reductionRatios) {
                     let tmpRatio = reducedRatio;
                     reducedRatio -= Math.trunc(reducedRatio * 100 * ratio) * 0.01;
                     reducedRatio = Math.min(reducedRatio, 1);
