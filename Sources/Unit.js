@@ -450,6 +450,14 @@ function statusEffectTypeToIconFilePath(value) {
     }
 }
 
+function getStatusEffectName(effect) {
+    for (let name in StatusEffectType) {
+        if (StatusEffectType[name] === effect) {
+            return name;
+        }
+    }
+    return "";
+}
 
 function combatResultToString(result) {
     switch (result) {

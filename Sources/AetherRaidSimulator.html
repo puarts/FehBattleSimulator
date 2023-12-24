@@ -1902,11 +1902,11 @@
                         <tr>
                             <td colspan="7">
                                 <div style="padding:5px">
-                                    <label class="normal" >状態: </label>
+                                    <label class="normal" >状態({{ value.getPositiveStatusEffects().length }}, {{ value.getNegativeStatusEffects().length }}): </label>
                                     <span v-for="statusEffect in value.statusEffects">
-                                        <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px" v-bind:title="statusEffect" />
+                                        <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px" v-bind:title="getStatusEffectName(statusEffect)" v-bind:alt="getStatusEffectName(statusEffect)" />
                                     </span>
-                                    <span v-bind:style="g_app.vm.debugMenuStyle">{{value.statusEffects}}</span>
+                                    <span v-bind:style="g_app.vm.debugMenuStyle">{{ value.statusEffects.map(e => getStatusEffectName(e)) }}</span>
                                 </div>
                             </td>
                         </tr>
