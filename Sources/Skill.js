@@ -1829,7 +1829,7 @@ const Weapon = {
     // 伝承英雄 (黒檀に薫る妖花 カミラ)
     // https://www.youtube.com/watch?v=M00XF01kTVI&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=W9fzhdN2Nnk&ab_channel=NintendoMobile
-    BewitchingTome: 100105, // 妖艶なる夜の書
+    BewitchingTome: 2709, // 妖艶なる夜の書
 };
 
 const Support = {
@@ -2719,7 +2719,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
-    SpoilRotten: 140001, // 可愛がってあげる
+    SpoilRotten: 2710, // 可愛がってあげる
     RulerOfNihility: 2655, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
     DeepStar: 2566, // 真落星
@@ -3107,7 +3107,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
-    DeadlyMiasma: 150001, // 死の瘴気
+    DeadlyMiasma: 2711, // 死の瘴気
     MendingHeart: 2679, // 癒し手の心
     FangedTies: 2662, // 牙の絆
     FellProtection: 2635, // 邪竜の救済
