@@ -4394,6 +4394,7 @@ const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
 const findTileAfterMovementAssistFuncMap = new Map();
 // thisはUnit
 const resetMaxSpecialCountFuncMap = new Map();
+const isAfflictorFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4408,6 +4409,25 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 恐慌の幻煙4
+{
+    let skillId = PassiveC.PanicSmoke4;
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                unit.applyAllDebuff(-3);
+                unit.addStatusEffect(StatusEffectType.Panic);
+            }
+            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, true)) {
+                if (unit.posX === targetUnit.posX ||
+                    unit.posY === targetUnit.posY) {
+                    unit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                }
+            }
+        }
+    );
+}
+
 // 金鹿の聖夜の弓+
 {
     let skillId = Weapon.GoldenYuleBowPlus;
@@ -4423,6 +4443,11 @@ const resetMaxSpecialCountFuncMap = new Map();
                 targetUnit.addAllSpur(amount);
                 targetUnit.battleContext.specialCountReductionBeforeFirstAttack += amount;
             }
+        }
+    );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat) {
+            return !lossesInCombat;
         }
     );
 }

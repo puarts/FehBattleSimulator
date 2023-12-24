@@ -6189,6 +6189,17 @@ function isDebufferTier2(attackUnit, targetUnit) {
  */
 function isAfflictor(attackUnit, lossesInCombat) {
     for (let skillId of attackUnit.enumerateSkills()) {
+        let funcMap = isAfflictorFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                if (func.call(this, attackUnit, lossesInCombat)) {
+                    return true;
+                }
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (skillId) {
             case Weapon.DuskDawnStaff:
                 return true;
@@ -6231,6 +6242,7 @@ function isAfflictor(attackUnit, lossesInCombat) {
                 }
                 break;
             case PassiveC.PanicSmoke3:
+            case PassiveC.PanicSmoke4:
             case PassiveC.FatalSmoke3:
             case PassiveC.DefResSmoke3:
                 return !lossesInCombat;

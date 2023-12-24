@@ -130,18 +130,6 @@ class PostCombatSkillHander {
     __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case PassiveC.PanicSmoke4:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAllDebuff(-3);
-                        unit.addStatusEffect(StatusEffectType.Panic);
-                    }
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, true)) {
-                        if (unit.posX === atkUnit.posX ||
-                            unit.posY === atkUnit.posY) {
-                            unit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
-                        }
-                    }
-                    break;
                 case Weapon.Simuberin:
                     if (!atkUnit.isWeaponRefined) {
                         this.__applyHoneSkill(atkUnit, x => true, x => x.applyAtkBuff(4));
