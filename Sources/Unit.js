@@ -251,6 +251,7 @@ const StatusEffectType = {
     TimesGate: 56, // 時の門
     Incited: 57, // 奮激
     ReducesDamageFromFirstAttackBy40Percent: 58, // 自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減
+    ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent: 59, // 「ダメージを〇〇%軽減」を半分無効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -443,6 +444,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "TimesGate.png";
         case StatusEffectType.ReducesDamageFromFirstAttackBy40Percent:
             return g_imageRootPath + "ReducesDamageFromFirstAttackBy40Percent.png";
+        case StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent:
+            return g_imageRootPath + "ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent.png";
         default: return "";
     }
 }

@@ -79,7 +79,7 @@ class PostCombatSkillHander {
         // 戦闘後発動のスキル効果
         if (atkUnit.isAlive) {
             if (result.atkUnit_actualTotalAttackCount > 0) {
-                this.writeDebugLogLine(atkUnit.getNameWithGroup() + "の戦闘後発動のスキル効果を評価");
+                this.writeDebugLogLine(`${atkUnit.getNameWithGroup()}の戦闘後発動のスキル効果を評価`);
                 this.__applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, defUnit);
                 this.__applyAttackSkillEffectAfterCombat(atkUnit, defUnit);
             }
@@ -89,6 +89,7 @@ class PostCombatSkillHander {
 
         if (defUnit.isAlive) {
             if (result.defUnit_actualTotalAttackCount > 0) {
+                this.writeDebugLogLine(`${defUnit.getNameWithGroup()}の戦闘後発動のスキル効果を評価`);
                 this.__applyAttackSkillEffectForDefenseAfterCombat(defUnit, atkUnit);
                 this.__applyAttackSkillEffectAfterCombat(defUnit, atkUnit);
             }

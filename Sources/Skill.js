@@ -3107,6 +3107,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    DeadlyMiasma: 150001, // 死の瘴気
     MendingHeart: 2679, // 癒し手の心
     FangedTies: 2662, // 牙の絆
     FellProtection: 2635, // 邪竜の救済
@@ -4415,6 +4416,38 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 死の瘴気
+{
+    let skillId = PassiveC.DeadlyMiasma;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.addAllSpur(-5);
+                targetUnit.battleContext.invalidateAllBuffs();
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                            unit.reserveTakeDamage(7);
+                        }
+                    }
+                );
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let enemyTile = enemyUnit.placedTile;
+            if (targetUnit.battleContext.initiatesCombat) {
+                for (let tile of this.map.enumerateTiles()) {
+                    if (tile.calculateDistance(enemyTile) <= 2) {
+                        tile.reserveDivineVein(DivineVeinType.Haze, targetUnit.groupId);
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 可愛がってあげる
 {
     let skillId = PassiveB.SpoilRotten;
