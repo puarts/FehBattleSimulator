@@ -1178,6 +1178,17 @@ __canActivateSaveSkill(atkUnit, unit) {
     return true;
 }
 
+[アフリクター]
+isAfflictorFuncMap.set(skillId,
+    function (attackUnit, lossesInCombat) {
+        // 死んでいなければ
+        return !lossesInCombat;
+    }
+);
+もしくは
+function isAfflictor(attackUnit, lossesInCombat) {
+}
+
 【XXX】の状態を付与(ステータス追加)
 Unit.js
 const StatusEffectType = {

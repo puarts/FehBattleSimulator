@@ -1825,6 +1825,11 @@ const Weapon = {
     BlueYuleAxe: 2701, // 青獅子の聖夜の斧
     HolyYuleBlade: 2704, // 師の聖夜の剣
     GoldenYuleBowPlus: 2708, // 金鹿の聖夜の弓+
+
+    // 伝承英雄 (黒檀に薫る妖花 カミラ)
+    // https://www.youtube.com/watch?v=M00XF01kTVI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=W9fzhdN2Nnk&ab_channel=NintendoMobile
+    BewitchingTome: 2709, // 妖艶なる夜の書
 };
 
 const Support = {
@@ -2714,6 +2719,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    SpoilRotten: 2710, // 可愛がってあげる
     RulerOfNihility: 2655, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
     DeepStar: 2566, // 真落星
@@ -3101,6 +3107,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    DeadlyMiasma: 2711, // 死の瘴気
     MendingHeart: 2679, // 癒し手の心
     FangedTies: 2662, // 牙の絆
     FellProtection: 2635, // 邪竜の救済
@@ -4394,6 +4401,7 @@ const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
 const findTileAfterMovementAssistFuncMap = new Map();
 // thisはUnit
 const resetMaxSpecialCountFuncMap = new Map();
+const isAfflictorFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4408,6 +4416,119 @@ const resetMaxSpecialCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 死の瘴気
+{
+    let skillId = PassiveC.DeadlyMiasma;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.addAllSpur(-5);
+                targetUnit.battleContext.invalidateAllBuffs();
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                            unit.reserveTakeDamage(7);
+                        }
+                    }
+                );
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let enemyTile = enemyUnit.placedTile;
+            if (targetUnit.battleContext.initiatesCombat) {
+                for (let tile of this.map.enumerateTiles()) {
+                    if (tile.calculateDistance(enemyTile) <= 2) {
+                        tile.reserveDivineVein(DivineVeinType.Haze, targetUnit.groupId);
+                    }
+                }
+            }
+        }
+    );
+}
+
+// 可愛がってあげる
+{
+    let skillId = PassiveB.SpoilRotten;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                let enemies = this.__findNearestEnemies(skillOwner);
+                for (let nearestEnemy of this.__findNearestEnemies(skillOwner)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                        unit.reserveToApplyDebuffs(0, -7, 0, -7);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                    }
+                }
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpdResSpurs(-5);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
+// 妖艶なる夜の書
+{
+    let skillId = Weapon.BewitchingTome;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                isRangedWeaponType(enemyUnit.weaponType)) {
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let advantageous = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+                        let isAdvantageous= advantageous === TriangleAdvantage.Advantageous;
+                        let spdCond = targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit);
+                        let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
+                        let ratio = isAdvantageous || spdCond ? 0.4 : 0.2;
+                        enemyUnit.battleContext.damageAfterBeginningOfCombat += Math.trunc(enemyAtk * ratio);
+                    }
+                );
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 恐慌の幻煙4
+{
+    let skillId = PassiveC.PanicSmoke4;
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                unit.applyAllDebuff(-3);
+                unit.addStatusEffect(StatusEffectType.Panic);
+            }
+            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, true)) {
+                if (unit.posX === targetUnit.posX ||
+                    unit.posY === targetUnit.posY) {
+                    unit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                }
+            }
+        }
+    );
+}
+
 // 金鹿の聖夜の弓+
 {
     let skillId = Weapon.GoldenYuleBowPlus;
@@ -4423,6 +4544,11 @@ const resetMaxSpecialCountFuncMap = new Map();
                 targetUnit.addAllSpur(amount);
                 targetUnit.battleContext.specialCountReductionBeforeFirstAttack += amount;
             }
+        }
+    );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat) {
+            return !lossesInCombat;
         }
     );
 }

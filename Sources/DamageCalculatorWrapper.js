@@ -2295,17 +2295,23 @@ class DamageCalculatorWrapper {
         targetUnit.battleContext.selfDamageDealtRateToAddSpecialDamage = getSelfDamageDealtRateToAddSpecialDamage(targetUnit.special);
 
         // 天脈効果
-        let tile = targetUnit.placedTile;
-        switch (tile.divineVein) {
+        let targetTile = targetUnit.placedTile;
+        switch (targetTile.divineVein) {
             case DivineVeinType.Stone:
-                if (tile.divineVeinGroup === targetUnit.groupId) {
+                if (targetTile.divineVeinGroup === targetUnit.groupId) {
                     targetUnit.addDefResSpurs(6);
                     targetUnit.battleContext.damageReductionValueOfSpecialAttack += 10;
                 }
                 break;
             case DivineVeinType.Green:
-                if (tile.divineVeinGroup === enemyUnit.groupId) {
+                if (targetTile.divineVeinGroup === enemyUnit.groupId) {
                     enemyUnit.battleContext.reducesCooldownCount = true;
+                }
+                break;
+            case DivineVeinType.Haze:
+                if (targetTile.divineVeinGroup === enemyUnit.groupId) {
+                    targetUnit.addAllSpur(-5);
+                    enemyUnit.battleContext.invalidateAllBuffs();
                 }
                 break;
         }

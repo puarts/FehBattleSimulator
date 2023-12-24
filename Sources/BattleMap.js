@@ -2423,6 +2423,11 @@ class BattleMap {
                 tile.divineVein = divineVein;
                 tile.divineVeinGroup = tile.reservedDivineVeinGroup;
             }
+            // 重複して天脈が付与されると元々の天脈も消滅する
+            if (tile.reservedDivineVeinSet.size >= 2) {
+                tile.divineVein = DivineVeinType.None;
+                tile.divineVeinGroup = null;
+            }
             tile.reservedDivineVeinSet.clear();
             tile.reservedDivineVeinGroup = null;
         }

@@ -47,8 +47,9 @@ const DivineVeinType = {
     Stone: 1,
     Flame: 2,
     Green: 3,
+    Haze: 4,
 };
-const DivineVeinStrings = ['', '護', '炎', '緑'];
+const DivineVeinStrings = ['', '護', '炎', '緑', '瘴'];
 
 /**
  * ユニットをタイルに配置します。

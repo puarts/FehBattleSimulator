@@ -79,7 +79,7 @@ class PostCombatSkillHander {
         // 戦闘後発動のスキル効果
         if (atkUnit.isAlive) {
             if (result.atkUnit_actualTotalAttackCount > 0) {
-                this.writeDebugLogLine(atkUnit.getNameWithGroup() + "の戦闘後発動のスキル効果を評価");
+                this.writeDebugLogLine(`${atkUnit.getNameWithGroup()}の戦闘後発動のスキル効果を評価`);
                 this.__applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, defUnit);
                 this.__applyAttackSkillEffectAfterCombat(atkUnit, defUnit);
             }
@@ -89,6 +89,7 @@ class PostCombatSkillHander {
 
         if (defUnit.isAlive) {
             if (result.defUnit_actualTotalAttackCount > 0) {
+                this.writeDebugLogLine(`${defUnit.getNameWithGroup()}の戦闘後発動のスキル効果を評価`);
                 this.__applyAttackSkillEffectForDefenseAfterCombat(defUnit, atkUnit);
                 this.__applyAttackSkillEffectAfterCombat(defUnit, atkUnit);
             }
@@ -130,18 +131,6 @@ class PostCombatSkillHander {
     __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case PassiveC.PanicSmoke4:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAllDebuff(-3);
-                        unit.addStatusEffect(StatusEffectType.Panic);
-                    }
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, true)) {
-                        if (unit.posX === atkUnit.posX ||
-                            unit.posY === atkUnit.posY) {
-                            unit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
-                        }
-                    }
-                    break;
                 case Weapon.Simuberin:
                     if (!atkUnit.isWeaponRefined) {
                         this.__applyHoneSkill(atkUnit, x => true, x => x.applyAtkBuff(4));

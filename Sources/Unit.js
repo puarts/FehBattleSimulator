@@ -251,6 +251,7 @@ const StatusEffectType = {
     TimesGate: 56, // 時の門
     Incited: 57, // 奮激
     ReducesDamageFromFirstAttackBy40Percent: 58, // 自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減
+    ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent: 59, // 「ダメージを〇〇%軽減」を半分無効
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -443,10 +444,20 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "TimesGate.png";
         case StatusEffectType.ReducesDamageFromFirstAttackBy40Percent:
             return g_imageRootPath + "ReducesDamageFromFirstAttackBy40Percent.png";
+        case StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent:
+            return g_imageRootPath + "ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent.png";
         default: return "";
     }
 }
 
+function getStatusEffectName(effect) {
+    for (let name in StatusEffectType) {
+        if (StatusEffectType[name] === effect) {
+            return name;
+        }
+    }
+    return "";
+}
 
 function combatResultToString(result) {
     switch (result) {
@@ -6189,6 +6200,17 @@ function isDebufferTier2(attackUnit, targetUnit) {
  */
 function isAfflictor(attackUnit, lossesInCombat) {
     for (let skillId of attackUnit.enumerateSkills()) {
+        let funcMap = isAfflictorFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                if (func.call(this, attackUnit, lossesInCombat)) {
+                    return true;
+                }
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (skillId) {
             case Weapon.DuskDawnStaff:
                 return true;
@@ -6231,6 +6253,7 @@ function isAfflictor(attackUnit, lossesInCombat) {
                 }
                 break;
             case PassiveC.PanicSmoke3:
+            case PassiveC.PanicSmoke4:
             case PassiveC.FatalSmoke3:
             case PassiveC.DefResSmoke3:
                 return !lossesInCombat;
