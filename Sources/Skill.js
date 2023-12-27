@@ -4486,6 +4486,13 @@ const isAfflictorFuncMap = new Map();
 // 妖艶なる夜の書
 {
     let skillId = Weapon.BewitchingTome;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.initiatesCombat ||
