@@ -1830,6 +1830,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=M00XF01kTVI&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=W9fzhdN2Nnk&ab_channel=NintendoMobile
     BewitchingTome: 2709, // 妖艶なる夜の書
+
+    // 超英雄 (新春挨拶合戦)
+    // https://www.youtube.com/watch?v=c0qKMdsH8ZM&t=173&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=xiZQ3WjQJYA&t=11s&ab_channel=NintendoMobile
+    CutePaperCrane: 100122, // 地の女神の折り鶴
 };
 
 const Support = {
@@ -4416,6 +4421,36 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 地の女神の折り鶴
+{
+    let skillId = Weapon.CutePaperCrane;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 2;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = targetUnit.maxSpecialCount * 2;
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let amount = Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.25);
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                    }
+                );
+            }
+        }
+    );
+    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
+    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+}
+
 // 死の瘴気
 {
     let skillId = PassiveC.DeadlyMiasma;
