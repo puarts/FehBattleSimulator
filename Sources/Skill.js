@@ -3119,6 +3119,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
+    FutureSighted: 150004, // 共に未来を変えて
     DeadlyMiasma: 2711, // 死の瘴気
     MendingHeart: 2679, // 癒し手の心
     FangedTies: 2662, // 牙の絆
@@ -4414,6 +4415,7 @@ const findTileAfterMovementAssistFuncMap = new Map();
 // thisはUnit
 const resetMaxSpecialCountFuncMap = new Map();
 const isAfflictorFuncMap = new Map();
+const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4428,6 +4430,48 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 共に未来を変えて
+{
+    let skillId = PassiveC.FutureSighted;
+    applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let units = [];
+            let distance = Number.MAX_SAFE_INTEGER;
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                if (!skillOwner.isInClossOf(unit)) {
+                    continue;
+                }
+                let d = skillOwner.distance(unit);
+                if (d > distance) continue;
+                if (d === distance) {
+                    units.push(unit);
+                } else {
+                    units = [unit]
+                    distance = d;
+                }
+            }
+            for (let unit of units) {
+                if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3 - 5) {
+                    if (!unit.hasStatusEffect(StatusEffectType.TimesGrip)) {
+                        unit.isActionDone = true;
+                        // TODO: 予約が必要になれば予約を実装する
+                        unit.addStatusEffect(StatusEffectType.TimesGrip);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+    );
+}
+
 // 女神姉妹の手毬
 {
     let skillId = Weapon.GoddessTemari;
