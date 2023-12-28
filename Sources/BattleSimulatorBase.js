@@ -1044,6 +1044,12 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoSeidr:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 4, true)) {
+                    unit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    unit.addStatusEffect(StatusEffectType.TimesGate);
+                }
+                break;
             case Hero.DuoByleth:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
                     unit.applyBuffs(0, 0, 6, 6);
