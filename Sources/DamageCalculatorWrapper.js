@@ -2234,6 +2234,9 @@ class DamageCalculatorWrapper {
      * @param  {GameMode} gameMode
      */
     ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.TimesGrip)) {
+            targetUnit.addAllSpur(-4);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent)) {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
@@ -17493,6 +17496,9 @@ class DamageCalculatorWrapper {
         }
         if (targetUnit.battleContext.disablesSkillsFromColorlessEnemiesInCombat &&
             allyUnit.color === ColorType.Colorless) {
+            return true;
+        }
+        if (allyUnit.hasStatusEffect(StatusEffectType.TimesGrip)) {
             return true;
         }
         return false;

@@ -1837,6 +1837,7 @@ const Weapon = {
     CutePaperCrane: 100122, // 地の女神の折り鶴
     FadedPaperFan: 100105, // 過去の女神の扇子
     DragonsStonePlus: 100115, // 辰年の御子の竜石+
+    GoddessTemari: 100104, // 女神姉妹の手毬
 };
 
 const Support = {
@@ -4427,6 +4428,74 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 女神姉妹の手毬
+{
+    let skillId = Weapon.GoddessTemari;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return g_appData.currentTurn >= 2;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    unit.reserveToApplyBuffs(6, 0, 0, 6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let turn = this.globalBattleContext.currentTurn;
+                let hasTimesGrip = false;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
+                    if (unit.hasStatusEffect(StatusEffectType.TimesGrip)) {
+                        hasTimesGrip = true;
+                        break;
+                    }
+                }
+                if (targetUnit.hasStatusEffect(StatusEffectType.TimesGate) || hasTimesGrip) {
+                    turn = Math.max(turn, 4);
+                }
+                targetUnit.addAllSpur(Math.min(turn * 2, 8));
+                if (turn >= 3) {
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2);
+                        let buffTotal = this.__getHighestTotalBuff(atkUnit, defUnit, units, true); // 自分を含む場合はtrueを指定
+                        atkUnit.battleContext.additionalDamage += buffTotal;
+                    });
+                }
+                if (turn >= 4) {
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                if (targetUnit.getEvalResInCombat(enemyUnit) >=
+                                    enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                                    targetUnit.battleContext.setAttackCountFuncs.push(
+                                        (targetUnit, enemyUnit) => {
+                                            // 攻撃時
+                                            targetUnit.battleContext.attackCount = 2;
+                                            // 攻撃を受けた時
+                                            targetUnit.battleContext.counterattackCount = 2;
+                                        }
+                                    );
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 辰年の御子の竜石+
 {
     let skillId = Weapon.DragonsStonePlus;

@@ -252,6 +252,7 @@ const StatusEffectType = {
     Incited: 57, // 奮激
     ReducesDamageFromFirstAttackBy40Percent: 58, // 自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減
     ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent: 59, // 「ダメージを〇〇%軽減」を半分無効
+    TimesGrip: 60, // 時の陥穽
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -311,6 +312,7 @@ NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
 NegativeStatusEffectTable[StatusEffectType.Ploy] = 0;
 NegativeStatusEffectTable[StatusEffectType.Schism] = 0;
 NegativeStatusEffectTable[StatusEffectType.NeutralizeUnitSurvivesWith1HP] = 0;
+NegativeStatusEffectTable[StatusEffectType.TimesGrip] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -446,6 +448,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "ReducesDamageFromFirstAttackBy40Percent.png";
         case StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent:
             return g_imageRootPath + "ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent.png";
+        case StatusEffectType.TimesGrip:
+            return g_imageRootPath + "TimesGrip.png";
         default: return "";
     }
 }
