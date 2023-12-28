@@ -1836,6 +1836,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=xiZQ3WjQJYA&t=11s&ab_channel=NintendoMobile
     CutePaperCrane: 100122, // 地の女神の折り鶴
     FadedPaperFan: 100105, // 過去の女神の扇子
+    DragonsStonePlus: 100115, // 辰年の御子の竜石+
 };
 
 const Support = {
@@ -4426,6 +4427,28 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 辰年の御子の竜石+
+{
+    let skillId = Weapon.DragonsStonePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let amount = Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.20);
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 歩行の見切り追撃4
 {
     let skillId = PassiveC.InfNullFollow4;
