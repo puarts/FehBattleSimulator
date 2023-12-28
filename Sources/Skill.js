@@ -1835,6 +1835,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=c0qKMdsH8ZM&t=173&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=xiZQ3WjQJYA&t=11s&ab_channel=NintendoMobile
     CutePaperCrane: 100122, // 地の女神の折り鶴
+    FadedPaperFan: 100105, // 過去の女神の扇子
 };
 
 const Support = {
@@ -4424,6 +4425,38 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 過去の女神の扇子
+{
+    let skillId = Weapon.FadedPaperFan;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addSpdResSpurs(-amount);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+                    }
+                } else if (enemyUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon2) {
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+                    }
+                }
+                targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                    (attackUnit, attackTargetUnit) => {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                            unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 野生
 {
     let generatePrimeFunc = func => function (targetUnit, enemyUnit, calcPotentialDamage) {
