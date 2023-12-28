@@ -3049,6 +3049,7 @@ const PassiveC = {
     HokoNoKokyu3: 921, // 歩行の呼吸3
     HokoNoMajin3: 961, // 歩行の魔刃3
     InfNullFollow3: 2137, // 歩行の見切り追撃3
+    InfNullFollow4: 150001, // 歩行の見切り追撃4
 
     ArmoredStride3: 1304, // 重装の遊撃3
 
@@ -4425,6 +4426,27 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 歩行の見切り追撃4
+{
+    let skillId = PassiveC.InfNullFollow4;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                found |= true;
+                if (unit.moveType === MoveType.Infantry) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                }
+            }
+            if (found) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+            }
+        }
+    );
+}
+
 // 過去の女神の扇子
 {
     let skillId = Weapon.FadedPaperFan;
