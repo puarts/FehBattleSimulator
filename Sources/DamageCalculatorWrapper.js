@@ -12531,7 +12531,14 @@ class DamageCalculatorWrapper {
                             if (5 <= diff && diff <= 14) {
                                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                             } else if (15 <= diff) {
-                                targetUnit.battleContext.attackCount = 2;
+                                targetUnit.battleContext.setAttackCountFuncs.push(
+                                    (targetUnit, enemyUnit) => {
+                                        // 攻撃時
+                                        targetUnit.battleContext.attackCount = 2;
+                                        // 攻撃を受けた時
+                                        targetUnit.battleContext.counterattackCount = 2;
+                                    }
+                                );
                             }
                         }
                         break;
