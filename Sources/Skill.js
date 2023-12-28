@@ -2422,6 +2422,9 @@ const PassiveA = {
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
     AtkDefPrime4: 2699, // 攻撃守備の備え4
+
+    // 野生
+    AtkSpdWild: 130001, // 攻撃速さの野生
 };
 
 const PassiveB = {
@@ -4421,6 +4424,21 @@ const isAfflictorFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 野生
+{
+    let generatePrimeFunc = func => function (targetUnit, enemyUnit, calcPotentialDamage) {
+        let pred = unit => !isWeaponTypeBreathOrBeast(unit.weaponType);
+        if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1, pred) <= 1 ||
+            targetUnit.isTransformed) {
+            func(targetUnit);
+            targetUnit.battleContext.increaseCooldownCountForBoth();
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
+    };
+    // 攻撃速さの野生
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdWild, generatePrimeFunc(u => u.addAtkSpdSpurs(7)));
+}
+
 // 地の女神の折り鶴
 {
     let skillId = Weapon.CutePaperCrane;
