@@ -861,6 +861,13 @@ class DamageCalculator {
 
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
+
+        // ダメカを半分無効
+        let reductionRatios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
+        if (atkUnit.hasStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent)) {
+            reductionRatios.push(0.5);
+        }
+
         let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
@@ -926,10 +933,6 @@ class DamageCalculator {
                 !atkUnit.battleContext.preventedAttackerSpecial;
 
             // ダメージ軽減をN%無効
-            let reductionRatios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
-            if (atkUnit.hasStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent)) {
-                reductionRatios.push(0.5);
-            }
             if (reductionRatios.length >= 1) {
                 let reducedRatio = 1 - damageReductionRatio;
                 if (this.isLogEnabled) {
