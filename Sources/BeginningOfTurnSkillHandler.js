@@ -110,7 +110,7 @@ class BeginningOfTurnSkillHandler {
             unit.applyReservedStatusEffects();
         } else {
             // applyReservedDebuffsは呼び出さない
-            unit.resetReservedBuffs();
+            unit.applyReservedBuffs();
             unit.resetReservedDebuffs();
             // 有利な異常状態だけ残しapplyReservedStatusEffectsを呼び出す
             unit.reservedStatusEffects = unit.reservedStatusEffects.filter(e => isPositiveStatusEffect(e));
