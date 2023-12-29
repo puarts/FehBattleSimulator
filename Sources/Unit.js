@@ -66,8 +66,7 @@ const Hero = {
     HarmonizedAnna: 1029,
     DuoSanaki: 1042,
     DuoByleth: 1062,
-    // TODO: 修正する
-    DuoSeidr: 156,
+    DuoSeidr: 1068,
 };
 
 function isThiefIndex(heroIndex) {

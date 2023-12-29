@@ -1834,10 +1834,10 @@ const Weapon = {
     // 超英雄 (新春挨拶合戦)
     // https://www.youtube.com/watch?v=c0qKMdsH8ZM&t=173&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=xiZQ3WjQJYA&t=11s&ab_channel=NintendoMobile
-    CutePaperCrane: 100122, // 地の女神の折り鶴
-    FadedPaperFan: 100105, // 過去の女神の扇子
-    DragonsStonePlus: 100115, // 辰年の御子の竜石+
-    GoddessTemari: 100104, // 女神姉妹の手毬
+    CutePaperCrane: 2713, // 地の女神の折り鶴
+    FadedPaperFan: 2715, // 過去の女神の扇子
+    DragonsStonePlus: 2719, // 辰年の御子の竜石+
+    GoddessTemari: 2718, // 女神姉妹の手毬
 };
 
 const Support = {
@@ -2428,7 +2428,7 @@ const PassiveA = {
     AtkDefPrime4: 2699, // 攻撃守備の備え4
 
     // 野生
-    AtkSpdWild: 130001, // 攻撃速さの野生
+    AtkSpdWild: 2712, // 攻撃速さの野生
 };
 
 const PassiveB = {
@@ -3054,7 +3054,7 @@ const PassiveC = {
     HokoNoKokyu3: 921, // 歩行の呼吸3
     HokoNoMajin3: 961, // 歩行の魔刃3
     InfNullFollow3: 2137, // 歩行の見切り追撃3
-    InfNullFollow4: 150001, // 歩行の見切り追撃4
+    InfNullFollow4: 2714, // 歩行の見切り追撃4
 
     ArmoredStride3: 1304, // 重装の遊撃3
 
