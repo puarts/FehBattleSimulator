@@ -2326,13 +2326,6 @@ class BeginningOfTurnSkillHandler {
             case PassiveB.SabotageRes3:
                 this.__applySabotageSkill(skillOwner, unit => { unit.reserveToApplyResDebuff(-7); });
                 break;
-            case PassiveB.SabotageAR3: {
-                let debuffFunc = unit => {
-                    unit.reserveToApplyDebuffs(-6, 0, 0, -6);
-                };
-                this.__applySabotageSkill(skillOwner, debuffFunc, 1);
-            }
-                break;
             case Weapon.WeirdingTome:
                 this.__applySabotageSkill(
                     skillOwner,

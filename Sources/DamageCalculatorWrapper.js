@@ -11201,13 +11201,6 @@ class DamageCalculatorWrapper {
                         enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
                     }
                     break;
-                case PassiveB.SabotageAR3:
-                    if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
-                        enemyUnit.addAtkResSpurs(-3);
-                        let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
-                        enemyUnit.addAtkResSpurs(maxDebuffs[0], maxDebuffs[3]);
-                    }
-                    break;
                 case Weapon.Merikuru:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);

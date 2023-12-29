@@ -2572,7 +2572,9 @@ const PassiveB = {
     SabotageDef3: 937, // 守備の混乱3
     SabotageRes3: 867, // 魔防の混乱3
 
+    // 2種混乱
     SabotageAR3: 2407, // 攻撃魔防の混乱3
+    SabotageSR3: 2717, // 速さ魔防の混乱3
 
     OgiNoRasen3: 654, // 奥義の螺旋3
     SpecialSpiral4: 2275, // 奥義の螺旋4
@@ -4431,6 +4433,39 @@ const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 2種混乱3
+{
+    const setSabotageFuncs = (skillId, indices, spurFunc) => {
+        let reservedDebuffs = [0, 0, 0, 0];
+        let debuffs = [-6, -6, -6, -6];
+        reservedDebuffs[indices[0]] = debuffs[indices[0]];
+        reservedDebuffs[indices[1]] = debuffs[indices[1]];
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                this.__applySabotageSkill(skillOwner, u => u.reserveToApplyDebuffs(...reservedDebuffs), 1);
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
+                            spurFunc(enemyUnit, -3, -3);
+                            let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
+                            spurFunc(enemyUnit, maxDebuffs[indices[0]], maxDebuffs[indices[1]]);
+                        }
+                    }
+                );
+            }
+        );
+    };
+
+    // 攻撃魔防の混乱3
+    setSabotageFuncs(PassiveB.SabotageAR3, [0, 3], (u, v1, v2) => u.addAtkResSpurs(v1, v2));
+    // 速さ魔防の混乱3
+    setSabotageFuncs(PassiveB.SabotageSR3, [1, 3], (u, v1, v2) => u.addSpdResSpurs(v1, v2));
+}
+
 // 竜眼
 {
     let getScowlFunc = (spurFunc, threshold) => {
