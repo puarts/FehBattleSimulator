@@ -2326,13 +2326,6 @@ class BeginningOfTurnSkillHandler {
             case PassiveB.SabotageRes3:
                 this.__applySabotageSkill(skillOwner, unit => { unit.reserveToApplyResDebuff(-7); });
                 break;
-            case PassiveB.SabotageAR3: {
-                let debuffFunc = unit => {
-                    unit.reserveToApplyDebuffs(-6, 0, 0, -6);
-                };
-                this.__applySabotageSkill(skillOwner, debuffFunc, 1);
-            }
-                break;
             case Weapon.WeirdingTome:
                 this.__applySabotageSkill(
                     skillOwner,
@@ -2966,8 +2959,15 @@ class BeginningOfTurnSkillHandler {
     }
 
     applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {
-        if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
-
+        let funcMap = applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                func.call(this, skillOwner);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (skillId) {
             case PassiveC.FutureFocused:
                 if (this.isOddTurn) {

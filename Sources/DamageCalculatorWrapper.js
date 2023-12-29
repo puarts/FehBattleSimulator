@@ -2234,6 +2234,9 @@ class DamageCalculatorWrapper {
      * @param  {GameMode} gameMode
      */
     ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.TimesGrip)) {
+            targetUnit.addAllSpur(-4);
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent)) {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
@@ -3506,11 +3509,6 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.invalidateBuffs(false, true, true, false);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkResScowl4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAtkResSpurs(7);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.RevealingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -11203,13 +11201,6 @@ class DamageCalculatorWrapper {
                         enemyUnit.resSpur -= Math.max(enemyUnit.getResBuffInCombat(targetUnit), 0) * 2;
                     }
                     break;
-                case PassiveB.SabotageAR3:
-                    if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
-                        enemyUnit.addAtkResSpurs(-3);
-                        let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
-                        enemyUnit.addAtkResSpurs(maxDebuffs[0], maxDebuffs[3]);
-                    }
-                    break;
                 case Weapon.Merikuru:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
@@ -12166,19 +12157,6 @@ class DamageCalculatorWrapper {
                             }
                         }
                         break;
-                    case PassiveA.AtkResScowl4:
-                        if (enemyUnit.battleContext.initiatesCombat ||
-                            enemyUnit.battleContext.restHpPercentage >= 75) {
-                            if (isNormalAttackSpecial(enemyUnit.special)) {
-                                let diff =
-                                    targetUnit.getEvalResInCombat(enemyUnit) -
-                                    enemyUnit.getEvalResInCombat(targetUnit);
-                                if (diff >= 5) {
-                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
-                                }
-                            }
-                        }
-                        break;
                     case Weapon.RevealingBreath:
                         if (enemyUnit.battleContext.initiatesCombat ||
                             enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -12528,7 +12506,14 @@ class DamageCalculatorWrapper {
                             if (5 <= diff && diff <= 14) {
                                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                             } else if (15 <= diff) {
-                                targetUnit.battleContext.attackCount = 2;
+                                targetUnit.battleContext.setAttackCountFuncs.push(
+                                    (targetUnit, enemyUnit) => {
+                                        // 攻撃時
+                                        targetUnit.battleContext.attackCount = 2;
+                                        // 攻撃を受けた時
+                                        targetUnit.battleContext.counterattackCount = 2;
+                                    }
+                                );
                             }
                         }
                         break;
@@ -17493,6 +17478,9 @@ class DamageCalculatorWrapper {
         }
         if (targetUnit.battleContext.disablesSkillsFromColorlessEnemiesInCombat &&
             allyUnit.color === ColorType.Colorless) {
+            return true;
+        }
+        if (allyUnit.hasStatusEffect(StatusEffectType.TimesGrip)) {
             return true;
         }
         return false;
