@@ -2413,6 +2413,7 @@ const PassiveA = {
     SpdResHexblade: 2582, // 速さ魔防の魔刃
 
     // 竜眼
+    AtkResScowl3: 2422, // 攻撃魔防の竜眼3
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
 
     // 柔撃
@@ -4430,6 +4431,32 @@ const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 竜眼
+{
+    let getScowlFunc = (spurFunc, threshold) => {
+        return function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                spurFunc(targetUnit);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (isNormalAttackSpecial(enemyUnit.special)) {
+                            let diff =
+                                targetUnit.getEvalResInCombat(enemyUnit) -
+                                enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= threshold) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    };
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl3, getScowlFunc(u => u.addAtkResSpurs(6), 9));
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl4, getScowlFunc(u => u.addAtkResSpurs(7), 5));
+}
+
 // 共に未来を変えて
 {
     let skillId = PassiveC.FutureSighted;

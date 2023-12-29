@@ -3511,11 +3511,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidateBuffs(false, true, true, false);
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkResScowl4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAtkResSpurs(7);
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.RevealingBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(5);
@@ -12166,19 +12161,6 @@ class DamageCalculatorWrapper {
                                 enemyUnit.getEvalSpdInCombat(targetUnit)) {
                                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                            }
-                        }
-                        break;
-                    case PassiveA.AtkResScowl4:
-                        if (enemyUnit.battleContext.initiatesCombat ||
-                            enemyUnit.battleContext.restHpPercentage >= 75) {
-                            if (isNormalAttackSpecial(enemyUnit.special)) {
-                                let diff =
-                                    targetUnit.getEvalResInCombat(enemyUnit) -
-                                    enemyUnit.getEvalResInCombat(targetUnit);
-                                if (diff >= 5) {
-                                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
-                                }
                             }
                         }
                         break;
