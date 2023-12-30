@@ -6,6 +6,7 @@ const g_imageRootPath = g_siteRootPath + "AetherRaidTacticsBoard/images/";
 const g_corsImageRootPath = "../images/"; // CORS制約を回避するため画像認識のテンプレート等はローカル画像を参照
 const g_audioRootPath = g_siteRootPath + "AetherRaidTacticsBoard/audio/";
 const g_heroIconRootPath = g_siteRootPath + "blog/images/FehHeroThumbs/";
+const g_skillIconRootPath = g_siteRootPath + "blog/images/FehSkillIcons/";
 const TurnSettingCookiePrefix = "turn_";
 const UnitCookiePrefix = "unit_";
 const StructureCookiePrefix = "st_";
