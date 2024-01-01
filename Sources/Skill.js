@@ -4434,7 +4434,7 @@ const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
-// 辰年の御子の竜石+
+// 辰年の幼姫の竜石+
 {
     let skillId = Weapon.NewSunStonePlus;
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -4443,13 +4443,9 @@ const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
                 targetUnit.addAllSpur(4);
                 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
-                        let amount = Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.2);
+                        let amount = Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.15);
                         targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
-                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >
-                            enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                        }
+                        targetUnit.battleContext.reducesCooldownCount = true;
                     }
                 );
             }
