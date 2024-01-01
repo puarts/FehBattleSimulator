@@ -4436,7 +4436,7 @@ const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 // 各スキルの実装
 // 辰年の御子の竜石+
 {
-    let skillId = Weapon.DragonsStonePlus;
+    let skillId = Weapon.NewSunStonePlus;
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
