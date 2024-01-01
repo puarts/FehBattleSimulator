@@ -3123,7 +3123,7 @@ const PassiveC = {
     AssaultTroop3: 2117, // 一斉突撃3
 
     // 専用C
-    FutureSighted: 150004, // 共に未来を変えて
+    FutureSighted: 2716, // 共に未来を変えて
     DeadlyMiasma: 2711, // 死の瘴気
     MendingHeart: 2679, // 癒し手の心
     FangedTies: 2662, // 牙の絆
