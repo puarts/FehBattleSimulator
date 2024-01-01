@@ -1838,6 +1838,7 @@ const Weapon = {
     FadedPaperFan: 2715, // 過去の女神の扇子
     DragonsStonePlus: 2719, // 辰年の御子の竜石+
     GoddessTemari: 2718, // 女神姉妹の手毬
+    DragonsStonePlus: 2719, // 辰年の御子の竜石+
 };
 
 const Support = {
@@ -4433,6 +4434,29 @@ const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 辰年の御子の竜石+
+{
+    let skillId = Weapon.DragonsStonePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let amount = Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.2);
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                            enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 2種混乱3
 {
     const setSabotageFuncs = (skillId, indices, spurFunc) => {
