@@ -1838,7 +1838,7 @@ const Weapon = {
     FadedPaperFan: 2715, // 過去の女神の扇子
     DragonsStonePlus: 2719, // 辰年の御子の竜石+
     GoddessTemari: 2718, // 女神姉妹の手毬
-    DragonsStonePlus: 2719, // 辰年の御子の竜石+
+    NewSunStonePlus: 2721, // 辰年の幼姫の竜石+
 };
 
 const Support = {
