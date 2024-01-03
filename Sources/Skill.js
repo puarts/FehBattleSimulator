@@ -4884,7 +4884,7 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
                 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
                         let advantageous = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
-                        let isAdvantageous= advantageous === TriangleAdvantage.Advantageous;
+                        let isAdvantageous = advantageous === TriangleAdvantage.Advantageous;
                         let spdCond = targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit);
                         let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
                         let ratio = isAdvantageous || spdCond ? 0.4 : 0.2;
@@ -5023,7 +5023,7 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
                             if (diff >= 5) {
                                 let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
                                 if (targetUnit.isSaviorActivated) {
-                                   dist = 3;
+                                    dist = 3;
                                 }
                                 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += Math.min(dist, 3);
                             }
@@ -5055,7 +5055,7 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (enemyUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addStatusEffect(StatusEffectType.Vantage);
                 targetUnit.addStatusEffect(StatusEffectType.Dodge);
@@ -5159,7 +5159,7 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
             if (allyCount <= 1) {
                 if (atkUnit.battleContext.initiatesCombat) {
                     if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
-                        atkUnit.isActionDone ) {
+                        atkUnit.isActionDone) {
                         this.writeLogLine(`${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`);
                         atkUnit.isActionDone = false;
                         atkUnit.isOneTimeActionActivatedForPassiveB = true;
@@ -5223,7 +5223,7 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
 {
     let skillId = Weapon.BlackYuleLance;
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.restHpPercentage >= 25 &&
                 targetUnit.battleContext.initiatesCombat) {
                 this.__applyBlackEffect(targetUnit, enemyUnit);
@@ -5739,7 +5739,7 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.isSpecialActivated) {
                 targetUnit.specialCount -= 2;
             }
@@ -6104,7 +6104,7 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.initiatesCombat &&
                 targetUnit.battleContext.isSpecialActivated &&
                 targetUnit.isAlive) {
