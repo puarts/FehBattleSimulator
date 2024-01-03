@@ -545,6 +545,17 @@ class DamageCalculator {
             atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack;
         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = false;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
+        for (let skillId of atkUnit.enumerateSkills()) {
+            let funcMap = addSpecialDamageAfterDefenderSpecialActivatedFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    fixedAddDamage += func.call(this, atkUnit, defUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
         switch (atkUnit.special) {
             case Special.IceMirror:
                 // 通常ダメージに加算
@@ -1023,6 +1034,7 @@ class DamageCalculator {
                 // 攻撃を受ける際に発動する奥義発動可能時に奥義を発動する処理
                 if (isDefenderSpecialActivated) {
                     defUnit.battleContext.isSpecialActivated = true;
+                    defUnit.battleContext.specialActivatedCount++;
                     // ダメージ軽減
                     if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
                         defUnit.passiveB === PassiveB.HardyFighter3) {
@@ -1048,6 +1060,8 @@ class DamageCalculator {
                     }
                     // 奥義カウントを最大まで戻す
                     this.__restoreMaxSpecialCount(defUnit);
+                    // 奥義発動直後のスキル効果（奥義カウント変動など）
+                    this.applySkillEffectAfterSpecialActivated(defUnit, atkUnit, context);
 
                     if (defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial) {
                         defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = true;
@@ -1068,6 +1082,7 @@ class DamageCalculator {
             specialDamage += atkUnit.battleContext.additionalDamagePerAttack;
             if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
+                atkUnit.battleContext.specialActivatedCount++;
                 for (let skillId of atkUnit.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.ChildsCompass:
@@ -1094,19 +1109,8 @@ class DamageCalculator {
                 let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
                 this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/><span style="color: #ff00ff">奥義</span>ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 this.__restoreMaxSpecialCount(atkUnit);
-                // 奥義発動後の奥義カウント変動
-                for (let skillId of atkUnit.enumerateSkills()) {
-                    switch (skillId) {
-                        case Special.SupremeAstra:
-                            if (!atkUnit.isOneTimeActionActivatedForSpecial) {
-                                if (context.damageType === DamageType.ActualDamage) {
-                                    atkUnit.isOneTimeActionActivatedForSpecial = true;
-                                }
-                                this.__reduceSpecialCount(atkUnit, 1);
-                            }
-                            break;
-                    }
-                }
+                // 奥義発動直後のスキル効果（奥義カウント変動など）
+                this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
 
                 // 奥義発動時の回復
                 {
@@ -1232,6 +1236,31 @@ class DamageCalculator {
         }
 
         return totalDamage;
+    }
+
+    applySkillEffectAfterSpecialActivated(targetUnit, enemyUnit, context) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectAfterSpecialActivatedFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit, context);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+            switch (skillId) {
+                case Special.SupremeAstra:
+                    if (!targetUnit.isOneTimeActionActivatedForSpecial) {
+                        if (context.damageType === DamageType.ActualDamage) {
+                            targetUnit.isOneTimeActionActivatedForSpecial = true;
+                        }
+                        this.writeDebugLog(`${targetUnit.nameWithGroup}の奥義発動直後の奥義カウントが${targetUnit.tmpSpecialCount}から1減少`);
+                        this.__reduceSpecialCount(targetUnit, 1);
+                    }
+                    break;
+            }
+        }
     }
 
     __initContextPerAttack(unit) {
@@ -1469,6 +1498,17 @@ class DamageCalculator {
         }
 
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
+            for (let skillId of defUnit.enumerateSkills()) {
+                let funcMap = activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, defUnit, atkUnit);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
+            }
             switch (defUnit.special) {
                 case Special.IceMirror2:
                     if (atkUnit.getActualAttackRange(defUnit) !== 2) break;

@@ -14910,6 +14910,17 @@ class DamageCalculatorWrapper {
 
     __applyDamageReductionRatioBySpecial(defUnit, atkUnit) {
         let attackRange = atkUnit.getActualAttackRange(defUnit);
+        for (let skillId of defUnit.enumerateSkills()) {
+            let funcMap = applyDamageReductionRatioBySpecialFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, defUnit, atkUnit, attackRange);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
         switch (defUnit.special) {
             case Special.GodlikeReflexes:
                 defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
