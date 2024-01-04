@@ -4256,7 +4256,7 @@ class SkillInfo {
         skillType
     ) {
         this.id = id;
-        this.detailPageUrl = "https://puarts.com/?fehskill=" + id;
+        this.detailPageUrl = "https://feh.puarts.com/?fehskill=" + id;
         this.name = name;
         this.might = might;
         this.mightRefine = mightRefine;
