@@ -2021,7 +2021,7 @@ const Special = {
     RisingWind: 491,
     RisingThunder: 492,
     GiftedMagic: 1582, // 天与の魔道
-    GiftedMagic2: 120002, // 天与の魔道・承
+    GiftedMagic2: 2724, // 天与の魔道・承
 
     NjorunsZeal: 1021, // ノヴァの聖戦士
     NjorunsZeal2: 2309, // ノヴァの聖戦士・承
@@ -2059,7 +2059,7 @@ const Special = {
     ShiningEmblem: 1794, // 光炎の紋章
 
     NegatingFang: 1469, // 反竜穿
-    NegatingFang2: 120001, // 反竜穿・承
+    NegatingFang2: 2725, // 反竜穿・承
 
     // 専用奥義
     TimeIsLight: 2672, // 時は光
