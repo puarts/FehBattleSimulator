@@ -2021,6 +2021,7 @@ const Special = {
     RisingWind: 491,
     RisingThunder: 492,
     GiftedMagic: 1582, // 天与の魔道
+    GiftedMagic2: 120002, // 天与の魔道・承
 
     NjorunsZeal: 1021, // ノヴァの聖戦士
     NjorunsZeal2: 2309, // ノヴァの聖戦士・承
@@ -4425,6 +4426,8 @@ const applyDamageReductionRatioBySpecialFuncMap = new Map();
 const activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap = new Map();
 const addSpecialDamageAfterDefenderSpecialActivatedFuncMap = new Map();
 const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
+const enumerateRangedSpecialTilesFuncMap = new Map();
+const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4439,6 +4442,42 @@ const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 天与の魔道・承
+{
+    let skillId = Special.GiftedMagic2;
+    // 範囲奥義
+    RangedAttackSpecialDict[skillId] = 0;
+    RangedAttackSpecialDamageRateDict[skillId] = 1;
+
+    // 十字範囲
+    enumerateRangedSpecialTilesFuncMap.set(skillId,
+        function* (targetTile) {
+            yield targetTile;
+            yield this.getTile(targetTile.posX - 1, targetTile.posY);
+            yield this.getTile(targetTile.posX + 1, targetTile.posY);
+            yield this.getTile(targetTile.posX, targetTile.posY - 1);
+            yield this.getTile(targetTile.posX, targetTile.posY + 1);
+        }
+    );
+
+    applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit, attackCount) {
+            if (attackUnit.battleContext.isSpecialActivated) {
+                let ax = attackUnit.posX;
+                let ay = attackUnit.posY;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
+                    let ux = unit.posX;
+                    let uy = unit.posY;
+                    if ((ax - 1 <= ux && ux <= ax + 1) ||
+                        (ay - 1 <= uy && uy <= ay + 1)) {
+                        unit.addStatusEffect(StatusEffectType.Canto1);
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 反竜穿・承
 {
     let skillId = Special.NegatingFang2;

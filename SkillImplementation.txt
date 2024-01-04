@@ -491,6 +491,12 @@ targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
     }
 );
 
+戦闘後（その戦闘で自分のHPが0になっても発動）
+applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+    function (attackUnit, attackTargetUnit, attackCount) {
+    }
+);
+
 戦闘後、HP N回復/Nダメージ
 targetUnit.battleContext.healedHpAfterCombat += N;
 または
@@ -605,6 +611,21 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
                 }
             }
+        }
+    );
+
+    // 範囲奥義
+    RangedAttackSpecialDict[skillId] = 0;
+    RangedAttackSpecialDamageRateDict[skillId] = 1;
+
+    // 十字範囲
+    enumerateRangedSpecialTilesFuncMap.set(skillId,
+        function* (targetTile) {
+            yield targetTile;
+            yield this.getTile(targetTile.posX - 1, targetTile.posY);
+            yield this.getTile(targetTile.posX + 1, targetTile.posY);
+            yield this.getTile(targetTile.posX, targetTile.posY - 1);
+            yield this.getTile(targetTile.posX, targetTile.posY + 1);
         }
     );
 }
