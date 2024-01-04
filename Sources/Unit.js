@@ -520,6 +520,7 @@ class BattleContext {
 
         // 戦闘中に奥義が発動されたかどうか
         this.isSpecialActivated = false;
+        this.specialActivatedCount = 0;
 
         // 自身の奥義発動カウント変動量を+1
         this.increaseCooldownCountForAttack = false;
@@ -875,6 +876,7 @@ class BattleContext {
         this.cooldownCountForDefense = 1;
 
         this.isSpecialActivated = false;
+        this.specialActivatedCount = 0;
 
         this.increaseCooldownCountForAttack = false;
         this.increaseCooldownCountForDefense = false;
@@ -5484,7 +5486,8 @@ class Unit extends BattleMapElement {
         let specialCountMax = this.specialInfo.specialCount;
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
-            let skillId = this.weapon;
+        }
+        for (let skillId of this.enumerateSkills()) {
             let funcMap = resetMaxSpecialCountFuncMap;
             if (funcMap.has(skillId)) {
                 let func = funcMap.get(skillId);
@@ -5494,7 +5497,7 @@ class Unit extends BattleMapElement {
                     console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                 }
             }
-            switch (this.weapon) {
+            switch (skillId) {
                 case Weapon.CrimeanScepter:
                 case Weapon.DuskDawnStaff:
                     if (specialCountMax === 0) {

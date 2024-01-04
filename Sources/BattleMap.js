@@ -1857,6 +1857,16 @@ class BattleMap {
     }
 
     * __enumerateRangedSpecialTiles(targetTile, special) {
+        let skillId = special;
+        let funcMap = enumerateRangedSpecialTilesFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                yield* func.call(this, targetTile);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (special) {
             case Special.RisingFlame:
             case Special.BlazingFlame:

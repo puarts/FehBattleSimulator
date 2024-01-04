@@ -2021,6 +2021,7 @@ const Special = {
     RisingWind: 491,
     RisingThunder: 492,
     GiftedMagic: 1582, // 天与の魔道
+    GiftedMagic2: 2724, // 天与の魔道・承
 
     NjorunsZeal: 1021, // ノヴァの聖戦士
     NjorunsZeal2: 2309, // ノヴァの聖戦士・承
@@ -2058,6 +2059,7 @@ const Special = {
     ShiningEmblem: 1794, // 光炎の紋章
 
     NegatingFang: 1469, // 反竜穿
+    NegatingFang2: 2725, // 反竜穿・承
 
     // 専用奥義
     TimeIsLight: 2672, // 時は光
@@ -4254,7 +4256,7 @@ class SkillInfo {
         skillType
     ) {
         this.id = id;
-        this.detailPageUrl = "https://puarts.com/?fehskill=" + id;
+        this.detailPageUrl = "https://feh.puarts.com/?fehskill=" + id;
         this.name = name;
         this.might = might;
         this.mightRefine = mightRefine;
@@ -4420,6 +4422,12 @@ const findTileAfterMovementAssistFuncMap = new Map();
 const resetMaxSpecialCountFuncMap = new Map();
 const isAfflictorFuncMap = new Map();
 const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
+const applyDamageReductionRatioBySpecialFuncMap = new Map();
+const activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap = new Map();
+const addSpecialDamageAfterDefenderSpecialActivatedFuncMap = new Map();
+const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
+const enumerateRangedSpecialTilesFuncMap = new Map();
+const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4434,6 +4442,95 @@ const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 天与の魔道・承
+{
+    let skillId = Special.GiftedMagic2;
+    // 範囲奥義
+    RangedAttackSpecialDict[skillId] = 0;
+    RangedAttackSpecialDamageRateDict[skillId] = 1;
+
+    // 十字範囲
+    enumerateRangedSpecialTilesFuncMap.set(skillId,
+        function* (targetTile) {
+            yield targetTile;
+            yield this.getTile(targetTile.posX - 1, targetTile.posY);
+            yield this.getTile(targetTile.posX + 1, targetTile.posY);
+            yield this.getTile(targetTile.posX, targetTile.posY - 1);
+            yield this.getTile(targetTile.posX, targetTile.posY + 1);
+        }
+    );
+
+    applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit, attackCount) {
+            if (attackUnit.battleContext.isSpecialActivated) {
+                let ax = attackUnit.posX;
+                let ay = attackUnit.posY;
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
+                    let ux = unit.posX;
+                    let uy = unit.posY;
+                    if ((ax - 1 <= ux && ux <= ax + 1) ||
+                        (ay - 1 <= uy && uy <= ay + 1)) {
+                        unit.addStatusEffect(StatusEffectType.Canto1);
+                    }
+                }
+            }
+        }
+    );
+}
+
+// 反竜穿・承
+{
+    let skillId = Special.NegatingFang2;
+    // 守備奥義
+    DefenseSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    // 奥義によるダメージ軽減
+    applyDamageReductionRatioBySpecialFuncMap.set(skillId,
+        function (defUnit, atkUnit, attackRange) {
+            defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+        }
+    );
+
+    // 奥義発動後、自分の次の攻撃のスキル効果を発動
+    activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
+        }
+    );
+
+    // 奥義発動後のスキル効果
+    // 奥義を発動したユニットがtargetUnit
+    applySkillEffectAfterSpecialActivatedFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, context) {
+            if (targetUnit.battleContext.specialActivatedCount === 1) {
+                let isAttackTwice =
+                    (targetUnit.battleContext.initiatesCombat && enemyUnit.battleContext.counterattackCount === 2) ||
+                    (enemyUnit.battleContext.initiatesCombat && enemyUnit.battleContext.attackCount === 2);
+                if (isAttackTwice) {
+                    this.writeDebugLog(`${targetUnit.nameWithGroup}の奥義発動直後の奥義カウントが${targetUnit.tmpSpecialCount}から2減少`);
+                    this.__reduceSpecialCount(targetUnit, 2);
+                }
+            }
+        }
+    );
+
+    // 攻撃を受けた時に発動する奥義発動後の攻撃のダメージ加算
+    addSpecialDamageAfterDefenderSpecialActivatedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 自分の攻撃の40%
+            if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
+                atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+                return floorNumberWithFloatError(atkUnit.getAtkInCombat(defUnit) * 0.4);
+            }
+            return 0;
+        }
+    );
+}
+
 // 辰年の幼姫の竜石+
 {
     let skillId = Weapon.NewSunStonePlus;

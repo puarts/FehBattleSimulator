@@ -491,6 +491,12 @@ targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
     }
 );
 
+戦闘後（その戦闘で自分のHPが0になっても発動）
+applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+    function (attackUnit, attackTargetUnit, attackCount) {
+    }
+);
+
 戦闘後、HP N回復/Nダメージ
 targetUnit.battleContext.healedHpAfterCombat += N;
 または
@@ -524,7 +530,7 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
   targetUnit.battleContext.healedHpAfterCombat += 7;
 }
 
-奥義実装
+奥義実装テンプレ
 {
     let skillId = Special.SSS;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
@@ -546,6 +552,53 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
         }
     );
 
+    // 奥義によるダメージ軽減
+    applyDamageReductionRatioBySpecialFuncMap.set(skillId,
+        function (defUnit, atkUnit, attackRange) {
+            // 40%軽減
+            defUnit.battleContext.damageReductionRatioBySpecial = 0.4;
+        }
+    );
+
+    // 奥義発動後、自分の次の攻撃のスキル効果を発動
+    activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            // 2距離の場合
+            if (atkUnit.getActualAttackRange(defUnit) === 2) {
+                defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
+            }
+        }
+    );
+
+    // 攻撃を受けた時に発動する奥義発動後の攻撃のダメージ加算
+    addSpecialDamageAfterDefenderSpecialActivatedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 自分の攻撃の40%
+            if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
+                atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+                return floorNumberWithFloatError(atkUnit.getAtkInCombat(defUnit) * 0.4);
+            }
+            return 0;
+        }
+    );
+
+    // 奥義発動後のスキル効果
+    // 奥義を発動したユニットがtargetUnit
+    applySkillEffectAfterSpecialActivatedFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, context) {
+            // 反竜穿・承
+            if (targetUnit.battleContext.specialActivatedCount === 1) {
+                let isAttackTwice =
+                    (targetUnit.battleContext.initiatesCombat && enemyUnit.battleContext.counterattackCount === 2) ||
+                    (enemyUnit.battleContext.initiatesCombat && enemyUnit.battleContext.attackCount === 2);
+                if (isAttackTwice) {
+                    this.writeDebugLog(`${targetUnit.nameWithGroup}の奥義発動直後の奥義カウントが${targetUnit.tmpSpecialCount}から2減少`);
+                    this.__reduceSpecialCount(targetUnit, 2);
+                }
+            }
+        }
+    );
+
     // 攻撃奥義のダメージ軽減
     applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
@@ -558,6 +611,21 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
                 }
             }
+        }
+    );
+
+    // 範囲奥義
+    RangedAttackSpecialDict[skillId] = 0;
+    RangedAttackSpecialDamageRateDict[skillId] = 1;
+
+    // 十字範囲
+    enumerateRangedSpecialTilesFuncMap.set(skillId,
+        function* (targetTile) {
+            yield targetTile;
+            yield this.getTile(targetTile.posX - 1, targetTile.posY);
+            yield this.getTile(targetTile.posX + 1, targetTile.posY);
+            yield this.getTile(targetTile.posX, targetTile.posY - 1);
+            yield this.getTile(targetTile.posX, targetTile.posY + 1);
         }
     );
 }
