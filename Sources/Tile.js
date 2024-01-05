@@ -396,10 +396,11 @@ class Tile extends BattleMapElement {
         }
 
         // 天脈・炎の場合は敵の2距離はコスト+1
+        // ただし移動制限がかかっている場合は侵入可能
         if (isRangedWeaponType(unit.weaponType) &&
             this.divineVein === DivineVeinType.Flame &&
             this.divineVeinGroup !== unit.groupId) {
-            return 2;
+            return unit.moveCount === 1 ? 1 : 2;
         }
 
         return this._moveWeights[unit.moveType];
