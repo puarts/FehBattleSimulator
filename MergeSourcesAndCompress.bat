@@ -12,7 +12,7 @@ goto CHECK_AND_SHIFT_ARGS
 set trunk_root=%~dp0..\..\trunk
 set JSMIN=%trunk_root%\PortableApplications\JSMin-master\jsmin.bat
 set root=%trunk_root%\Websites\puarts.com
-set destination=%root%\AetherRaidTacticsBoard\Release2
+set destination=%root%\feh\AetherRaidTacticsBoard\Release2
 set output_js=%destination%\%outputname%.js
 
 call %~dp0MergeSources.bat %output_js% %filenames%
