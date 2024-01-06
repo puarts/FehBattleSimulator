@@ -1610,7 +1610,7 @@ class BattleSimmulatorBase {
             self.openCvLoadState = ModuleLoadState.Loading;
             self.writeSimpleLogLine("OpenCV の初期化開始..");
             // let jsPath = "https://docs.opencv.org/4.3.0/opencv.js";
-            let jsPath = g_siteRootPath + "externals/opencv4.5.3/opencv.js";
+            let jsPath = g_siteRootPath + "js/opencv4.5.3/opencv.js";
             importJs(jsPath, x => {
                 cv['onRuntimeInitialized'] = () => {
                     self.openCvLoadState = ModuleLoadState.Loaded;
