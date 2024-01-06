@@ -1,12 +1,11 @@
 
-// const g_siteRootPath = "/";
-const g_siteRootPath = "https://puarts.com/";
+const g_siteRootPath = "/";
 
 const g_imageRootPath = g_siteRootPath + "AetherRaidTacticsBoard/images/";
 const g_corsImageRootPath = g_imageRootPath;
 const g_audioRootPath = g_siteRootPath + "AetherRaidTacticsBoard/audio/";
-const g_heroIconRootPath = g_siteRootPath + "blog/images/FehHeroThumbs/";
-const g_skillIconRootPath = g_siteRootPath + "blog/images/FehSkillIcons/";
+const g_heroIconRootPath = g_siteRootPath + "images/FehHeroThumbs/";
+const g_skillIconRootPath = g_siteRootPath + "images/FehSkillIcons/";
 const TurnSettingCookiePrefix = "turn_";
 const UnitCookiePrefix = "unit_";
 const StructureCookiePrefix = "st_";
