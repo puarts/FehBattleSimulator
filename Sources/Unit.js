@@ -5804,14 +5804,20 @@ class Unit extends BattleMapElement {
     /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
     canDisableAttackOrderSwapSkill(restHpPercentage, defUnit) {
         for (let skillId of this.enumerateSkills()) {
+            let funcMap = canDisableAttackOrderSwapSkillFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    if (func.call(this, restHpPercentage, defUnit)) {
+                        return true;
+                    }
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.Queensblade:
                     return true;
-                case Weapon.StudiedForblaze:
-                    if (restHpPercentage >= 25) {
-                        return true;
-                    }
-                    break;
                 case Weapon.ArmorpinDaggerPlus:
                 case Weapon.DawnSuzu:
                 case Weapon.YoiyamiNoDanougi:

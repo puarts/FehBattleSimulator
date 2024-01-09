@@ -4428,6 +4428,8 @@ const addSpecialDamageAfterDefenderSpecialActivatedFuncMap = new Map();
 const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
 const enumerateRangedSpecialTilesFuncMap = new Map();
 const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
+// thisはUnit
+const canDisableAttackOrderSwapSkillFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4442,6 +4444,87 @@ const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 神祖竜のブレス
+{
+    let skillId = Weapon.PrimordialBreath;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+}
+
+// 業炎フォルブレイズ
+{
+    let skillId = Weapon.StudiedForblaze;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAtkResSpurs(6);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    canDisableAttackOrderSwapSkillFuncMap.set(skillId,
+        function (restHpPercentage, defUnit) {
+            if (!this.isWeaponRefined) {
+                // <通常効果>
+                if (restHpPercentage >= 25) {
+                    return true;
+                }
+            } else {
+                // <錬成効果>
+                if (this.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+            return false;
+        }
+    );
+}
+
 // 天与の魔道・承
 {
     let skillId = Special.GiftedMagic2;

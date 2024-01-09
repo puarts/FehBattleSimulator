@@ -7614,12 +7614,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.increaseCooldownCountForBoth();
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.StudiedForblaze] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.atkSpur += 6;
-                targetUnit.resSpur += 6;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Hrist] = (targetUnit) => {
             if (targetUnit.battleContext.restHpPercentage <= 99) {
                 targetUnit.atkSpur += 6;
@@ -7816,12 +7810,6 @@ class DamageCalculatorWrapper {
                 if (targetUnit.hasPositiveStatusEffect()) {
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                 }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.PrimordialBreath] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.increaseCooldownCountForAttack = true;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ArmorsmasherPlus] = (targetUnit, enemyUnit) => {
