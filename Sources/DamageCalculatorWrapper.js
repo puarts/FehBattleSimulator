@@ -13450,6 +13450,15 @@ class DamageCalculatorWrapper {
         }
 
         for (let skillId of atkUnit.enumerateSkills()) {
+            let funcMap = calcFixedAddDamageFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, atkUnit, defUnit, isPrecombat);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.TeatimesEdge:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {

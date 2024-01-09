@@ -4430,6 +4430,7 @@ const enumerateRangedSpecialTilesFuncMap = new Map();
 const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 // thisはUnit
 const canDisableAttackOrderSwapSkillFuncMap = new Map();
+const calcFixedAddDamageFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4489,6 +4490,10 @@ const canDisableAttackOrderSwapSkillFuncMap = new Map();
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reserveToReduceSpecialCount(1);
                 }
+            } else {
+                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(1);
+                }
             }
         }
     );
@@ -4503,24 +4508,27 @@ const canDisableAttackOrderSwapSkillFuncMap = new Map();
                 // <錬成効果>
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAtkResSpurs(5);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
                 }
             }
         }
     );
     canDisableAttackOrderSwapSkillFuncMap.set(skillId,
         function (restHpPercentage, defUnit) {
-            if (!this.isWeaponRefined) {
-                // <通常効果>
-                if (restHpPercentage >= 25) {
-                    return true;
-                }
-            } else {
-                // <錬成効果>
-                if (this.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // 錬成で共通
+            return restHpPercentage >= 25;
+        }
+    );
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            if (atkUnit.isWeaponSpecialRefined) {
+                let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
             }
-            return false;
         }
     );
 }
