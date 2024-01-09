@@ -1482,6 +1482,7 @@ class Unit extends BattleMapElement {
         this.reservedHeal = 0;
         this.reservedStatusEffects = [];
         this.currentStatusEffectSet = new Set();
+        this.reservedStatusEffectToDeleteSet = new Set();
         this.reservedAtkBuff = 0;
         this.reservedSpdBuff = 0;
         this.reservedDefBuff = 0;
@@ -3699,7 +3700,12 @@ class Unit extends BattleMapElement {
     }
 
     applyReservedStatusEffects() {
-        // すでに付与されている状態に予約された状態を加える
+        // 削除予約を反映
+        for (let e of this.reservedStatusEffectToDeleteSet) {
+            this.currentStatusEffectSet.delete(e);
+        }
+        this.reservedStatusEffectToDeleteSet.clear();
+        // すでに付与されている状態（解除は反映済み）に予約された状態を加える
         this.reservedStatusEffects.forEach(e => this.currentStatusEffectSet.add(e));
         this.statusEffects = [...this.currentStatusEffectSet];
         this.reservedStatusEffects = [];

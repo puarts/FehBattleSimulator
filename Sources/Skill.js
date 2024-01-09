@@ -1839,6 +1839,11 @@ const Weapon = {
     DragonsStonePlus: 2719, // 辰年の御子の竜石+
     GoddessTemari: 2718, // 女神姉妹の手毬
     NewSunStonePlus: 2721, // 辰年の幼姫の竜石+
+
+    // 新英雄召喚（新英雄＆魔器ラインハルト）
+    // https://www.youtube.com/watch?v=-mcTc_VkaMM&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Y_YYS8s8LxM&ab_channel=NintendoMobile
+    Thief: 100114, // シーフ
 };
 
 const Support = {
@@ -4445,6 +4450,59 @@ const calcFixedAddDamageFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// シーフ
+{
+    let skillId = Weapon.Thief;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let enemies = [];
+            let maxEffectCount = 0;
+            for (let enemy of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                let effectCount = enemy.getPositiveStatusEffects().length;
+                if (effectCount > maxEffectCount) {
+                    maxEffectCount = effectCount;
+                    enemies = [enemy];
+                } else if (effectCount === maxEffectCount) {
+                    enemies.push(enemy);
+                }
+            }
+            // ステータス付与予約
+            let statusSet = new Set();
+            enemies.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => statusSet.add(e)));
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                for (let statusEffect of statusSet) {
+                    unit.reserveToAddStatusEffect(statusEffect);
+                }
+            }
+            // ステータス解除予約
+            for (let enemy of enemies) {
+                // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
+                enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectToDeleteSet.add(e));
+            }
+            // 縦横3列デバフ
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                if (unit.isInClossWithOffset(skillOwner, 1)) {
+                    unit.reserveToApplyAllDebuff(-4);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let n = Math.min(atkUnit.getPositiveStatusEffects().length * 5, 20);
+                    // Nダメージ
+                    atkUnit.battleContext.additionalDamage += n;
+                });
+            }
+        }
+    );
+}
+
 // 神祖竜のブレス
 {
     let skillId = Weapon.PrimordialBreath;
