@@ -2315,6 +2315,7 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
 
     // 専用A
+    ThundersFist: 130004, // 雷神の右腕
     BeyondWitchery: 2620, // 魔女を超える者
     RareTalent: 2549, // 類稀なる魔道の才
     RealmsUnited: 2545, // 白夜と暗夜と共に
@@ -4456,6 +4457,37 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 雷神の右腕
+{
+    let skillId = PassiveA.ThundersFist;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(7);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                });
+            }
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (dist >= 2) {
+                    targetUnit.battleContext.setAttackCountFuncs.push(
+                        (targetUnit, enemyUnit) => {
+                            // 攻撃時
+                            targetUnit.battleContext.attackCount = 2;
+                            // 攻撃を受けた時
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    );
+                }
+            }
+        }
+    );
+}
+
 // 魔器・雷公の書
 {
     let skillId = Weapon.ArcaneThunder;
