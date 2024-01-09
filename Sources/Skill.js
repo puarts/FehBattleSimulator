@@ -2788,6 +2788,7 @@ const PassiveB = {
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdDefFarTrace3: 2105, // 速さ魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
+    SpdResFarTrace4: 140004, // 速さ魔防の遠影4
 
     // 怒涛
     FlowFlight3: 2025, // 怒涛・飛竜行空3
@@ -4457,6 +4458,28 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 速さ魔防の遠影4
+{
+    let skillId = PassiveB.SpdResFarTrace4;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.restMoveCount === 0 ? 1 : this.restMoveCount;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdResSpurs(-4);
+        }
+    );
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            atkUnit.battleContext.additionalDamage += 7;
+        }
+    );
+}
+
 // 雷神の右腕
 {
     let skillId = PassiveA.ThundersFist;
