@@ -1845,6 +1845,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Y_YYS8s8LxM&ab_channel=NintendoMobile
     Thief: 100114, // シーフ
     Repair: 100214, // リペア
+    CleverDaggerPlus: 100110, // 攻防の暗器+
 };
 
 const Support = {
@@ -4454,6 +4455,19 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 攻防の暗器+
+{
+    let skillId = Weapon.CleverDaggerPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+    );
+}
+
 // リペア
 {
     let skillId = Weapon.Repair;
