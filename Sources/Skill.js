@@ -1846,6 +1846,7 @@ const Weapon = {
     Thief: 100114, // シーフ
     Repair: 100214, // リペア
     CleverDaggerPlus: 100110, // 攻防の暗器+
+    ArcaneThunder: 100404, // 魔器・雷公の書
 };
 
 const Support = {
@@ -4455,6 +4456,29 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 魔器・雷公の書
+{
+    let skillId = Weapon.ArcaneThunder;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                            enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 攻防の暗器+
 {
     let skillId = Weapon.CleverDaggerPlus;
