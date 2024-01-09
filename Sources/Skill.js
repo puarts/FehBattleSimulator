@@ -1843,10 +1843,10 @@ const Weapon = {
     // 新英雄召喚（新英雄＆魔器ラインハルト）
     // https://www.youtube.com/watch?v=-mcTc_VkaMM&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Y_YYS8s8LxM&ab_channel=NintendoMobile
-    Thief: 100114, // シーフ
-    Repair: 100214, // リペア
-    CleverDaggerPlus: 100110, // 攻防の暗器+
-    ArcaneThunder: 100404, // 魔器・雷公の書
+    Thief: 2729, // シーフ
+    Repair: 2727, // リペア
+    CleverDaggerPlus: 2734, // 攻防の暗器+
+    ArcaneThunder: 2731, // 魔器・雷公の書
 };
 
 const Support = {
@@ -2315,7 +2315,7 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
 
     // 専用A
-    ThundersFist: 130004, // 雷神の右腕
+    ThundersFist: 2732, // 雷神の右腕
     BeyondWitchery: 2620, // 魔女を超える者
     RareTalent: 2549, // 類稀なる魔道の才
     RealmsUnited: 2545, // 白夜と暗夜と共に
@@ -2476,7 +2476,7 @@ const PassiveB = {
     KyokugiHiKo3: 636, // 曲技飛行3
     WrathfulStaff3: 632, // 神罰の杖3
     PoeticJustice: 2345, // 神罰・因果応報
-    WrathfulTempo: 140001, // 神罰・拍節
+    WrathfulTempo: 2730, // 神罰・拍節
     DazzlingStaff3: 633, // 幻惑の杖3
     DazzlingShift: 2363, // 幻惑・転移
     DazzleFarTrace: 2594, // 幻惑・遠影
@@ -2788,7 +2788,7 @@ const PassiveB = {
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdDefFarTrace3: 2105, // 速さ魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
-    SpdResFarTrace4: 140004, // 速さ魔防の遠影4
+    SpdResFarTrace4: 2733, // 速さ魔防の遠影4
 
     // 怒涛
     FlowFlight3: 2025, // 怒涛・飛竜行空3
@@ -3007,7 +3007,7 @@ const PassiveC = {
     ResPloy3: 725, // 魔防の謀策3
 
     // 2種謀策
-    AtkSpdPloy3: 150002, // 攻撃速さの謀策3
+    AtkSpdPloy3: 2728, // 攻撃速さの謀策3
     AtkResPloy3: 2621, // 攻撃魔防の謀策3
     DefResPloy3: 2586, // 守備魔防の謀策3
 
