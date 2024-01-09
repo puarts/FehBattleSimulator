@@ -4457,6 +4457,9 @@ const calcFixedAddDamageFuncMap = new Map();
                 // <錬成効果>
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (isDefenseSpecial(skillOwner.special)) {
+                        skillOwner.reserveToReduceSpecialCount(2);
+                    }
                 }
             }
         }
@@ -4472,8 +4475,37 @@ const calcFixedAddDamageFuncMap = new Map();
                 }
             } else {
                 // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                    targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+                }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                        // 回避
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            return 0.3;
+                        });
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                    }
+                }
+            }
+        }
+    );
+    // 回避
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isWeaponSpecialRefined) {
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
                 }
             }
         }
