@@ -3937,7 +3937,7 @@ class BattleSimmulatorBase {
             unit.createSnapshot();
         }
 
-        this.__initReservedHpForAllUnitsOnMap();
+        this.__initReservedStateForAllUnitsOnMap();
 
         this.executeStructuresByUnitGroupType(targetUnits[0].groupId, false);
         this.applyTileEffect();
@@ -4668,7 +4668,7 @@ class BattleSimmulatorBase {
         targetUnit.endAction();
         targetUnit.beginAction();
 
-        this.__initReservedHpForAllUnitsOnMap();
+        this.__initReservedStateForAllUnitsOnMap();
 
         // ターン開始スキル(通常)
         this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(targetUnit);
@@ -7647,7 +7647,7 @@ class BattleSimmulatorBase {
 
     executeStructuresByUnitGroupType(groupType, appliesDamage) {
         if (appliesDamage) {
-            this.__initReservedHpForAllUnitsOnMap();
+            this.__initReservedStateForAllUnitsOnMap();
         }
 
         switch (groupType) {
@@ -7745,21 +7745,21 @@ class BattleSimmulatorBase {
     /**
      * @param  {Unit} unit
      */
-    __initReservedHp(unit) {
+    __initReservedState(unit) {
         unit.initReservedDebuffs();
         unit.initReservedStatusEffects();
         unit.initReservedHp();
     }
 
-    __initReservedHpForAllUnitsOnMap() {
+    __initReservedStateForAllUnitsOnMap() {
         for (let unit of this.enumerateAllUnitsOnMap()) {
-            this.__initReservedHp(unit);
+            this.__initReservedState(unit);
         }
     }
 
     executeStructure(structure, appliesDamage = true) {
         if (appliesDamage) {
-            this.__initReservedHpForAllUnitsOnMap();
+            this.__initReservedStateForAllUnitsOnMap();
         }
 
         let px = structure.posX;
