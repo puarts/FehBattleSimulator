@@ -2472,6 +2472,7 @@ const PassiveB = {
     KyokugiHiKo3: 636, // 曲技飛行3
     WrathfulStaff3: 632, // 神罰の杖3
     PoeticJustice: 2345, // 神罰・因果応報
+    WrathfulTempo: 140001, // 神罰・拍節
     DazzlingStaff3: 633, // 幻惑の杖3
     DazzlingShift: 2363, // 幻惑・転移
     DazzleFarTrace: 2594, // 幻惑・遠影
@@ -4450,6 +4451,23 @@ const calcFixedAddDamageFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 神罰・拍節
+{
+    let skillId = PassiveB.WrathfulTempo;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdResSpurs(-4);
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+}
+
 // シーフ
 {
     let skillId = Weapon.Thief;
