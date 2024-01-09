@@ -3003,6 +3003,7 @@ const PassiveC = {
     ResPloy3: 725, // 魔防の謀策3
 
     // 2種謀策
+    AtkSpdPloy3: 150002, // 攻撃速さの謀策3
     AtkResPloy3: 2621, // 攻撃魔防の謀策3
     DefResPloy3: 2586, // 守備魔防の謀策3
 
@@ -7679,29 +7680,29 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
     );
 }
 
-// 攻撃魔防の謀策3
+// 2種謀策3
 {
-    let skillId = PassiveC.AtkResPloy3;
-    let func = function (skillOwner) {
+    let generateFunc = debuffFunc => function (skillOwner) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
             if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
                 unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
-                unit.reserveToApplyDebuffs(-7, 0, 0, -7);
+                debuffFunc(unit);
                 unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
                 unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
             }
         }
     };
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        func
-    );
-    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
-        func
-    );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-        }
-    );
+    let setSkill = (skillId, debuffFunc) => {
+        applySkillForBeginningOfTurnFuncMap.set(skillId, generateFunc(debuffFunc));
+        applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, generateFunc(debuffFunc));
+    }
+
+    // 攻撃魔防の謀策3
+    setSkill(PassiveC.AtkSpdPloy3, u => u.reserveToApplyDebuffs(-7, -7, 0, 0));
+    // 攻撃魔防の謀策3
+    setSkill(PassiveC.AtkResPloy3, u => u.reserveToApplyDebuffs(-7, 0, 0, -7));
+    // 守備魔防の謀策3
+    setSkill(PassiveC.DefResPloy3, u => u.reserveToApplyDebuffs(0, 0, -7, -7));
 }
 
 // 魔女を超える者

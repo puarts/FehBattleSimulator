@@ -246,16 +246,6 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case PassiveC.DefResPloy3:
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
-                        unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
-                        unit.reserveToApplyDebuffs(0, 0, -7, -7);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
-                    }
-                }
-                break;
             case Weapon.HeiredForseti:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
@@ -2905,16 +2895,6 @@ class BeginningOfTurnSkillHandler {
                             unit.getEvalDefInPrecombat() < skillOwner.getEvalDefInPrecombat()) {
                             unit.reserveToIncreaseSpecialCount(1);
                         }
-                    }
-                }
-                break;
-            case PassiveC.DefResPloy3:
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
-                        unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
-                        unit.reserveToApplyDebuffs(0, 0, -7, -7);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
                     }
                 }
                 break;
