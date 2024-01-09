@@ -2915,7 +2915,7 @@ class Unit extends BattleMapElement {
     }
 
     reserveToClearNegativeStatusEffects() {
-        this.reservedStatusEffects = this.__getPositiveStatusEffects(this.reservedStatusEffects);
+        this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectToDeleteSet.add(e));
     }
 
     clearNegativeStatusEffects() {
