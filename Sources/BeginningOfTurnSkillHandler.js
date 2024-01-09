@@ -246,16 +246,6 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case PassiveC.DefResPloy3:
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
-                        unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
-                        unit.reserveToApplyDebuffs(0, 0, -7, -7);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
-                    }
-                }
-                break;
             case Weapon.HeiredForseti:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
                     skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
@@ -1555,11 +1545,6 @@ class BeginningOfTurnSkillHandler {
                 break;
             }
             case Weapon.TrueLoveRoses:
-            case Weapon.StudiedForblaze:
-                if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reserveToReduceSpecialCount(1);
-                }
-                break;
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
@@ -2913,16 +2898,6 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case PassiveC.DefResPloy3:
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
-                        unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
-                        unit.reserveToApplyDebuffs(0, 0, -7, -7);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
-                    }
-                }
-                break;
             case PassiveC.DreamDeliverer:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
@@ -3039,6 +3014,15 @@ class BeginningOfTurnSkillHandler {
     }
 
     applyHealSkillForBeginningOfTurn(skillId, skillOwner) {
+        let funcMap = applyHealSkillForBeginningOfTurnFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                func.call(this, skillOwner);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
         switch (skillId) {
             case Weapon.DriftingGracePlus:
             case Weapon.LuminousGracePlus:

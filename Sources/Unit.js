@@ -1481,6 +1481,8 @@ class Unit extends BattleMapElement {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
         this.reservedStatusEffects = [];
+        this.currentStatusEffectSet = new Set();
+        this.reservedStatusEffectToDeleteSet = new Set();
         this.reservedAtkBuff = 0;
         this.reservedSpdBuff = 0;
         this.reservedDefBuff = 0;
@@ -2913,7 +2915,7 @@ class Unit extends BattleMapElement {
     }
 
     reserveToClearNegativeStatusEffects() {
-        this.reservedStatusEffects = this.__getPositiveStatusEffects(this.reservedStatusEffects);
+        this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectToDeleteSet.add(e));
     }
 
     clearNegativeStatusEffects() {
@@ -3649,7 +3651,10 @@ class Unit extends BattleMapElement {
     }
 
     initReservedStatusEffects() {
-        this.reservedStatusEffects = Array.from(this.statusEffects);
+        this.reservedStatusEffects = [];
+        // 現在付与されているステータス(this.statusEffects)を保存する（シーフなどによる解除対象と対象外の付与予約を区別するため）
+        this.currentStatusEffectSet = new Set();
+        this.statusEffects.forEach(e => this.currentStatusEffectSet.add(e));
     }
 
     initReservedDebuffs() {
@@ -3695,7 +3700,14 @@ class Unit extends BattleMapElement {
     }
 
     applyReservedStatusEffects() {
-        this.statusEffects = this.reservedStatusEffects;
+        // 削除予約を反映
+        for (let e of this.reservedStatusEffectToDeleteSet) {
+            this.currentStatusEffectSet.delete(e);
+        }
+        this.reservedStatusEffectToDeleteSet.clear();
+        // すでに付与されている状態（解除は反映済み）に予約された状態を加える
+        this.reservedStatusEffects.forEach(e => this.currentStatusEffectSet.add(e));
+        this.statusEffects = [...this.currentStatusEffectSet];
         this.reservedStatusEffects = [];
     }
     /**
@@ -5804,14 +5816,20 @@ class Unit extends BattleMapElement {
     /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
     canDisableAttackOrderSwapSkill(restHpPercentage, defUnit) {
         for (let skillId of this.enumerateSkills()) {
+            let funcMap = canDisableAttackOrderSwapSkillFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    if (func.call(this, restHpPercentage, defUnit)) {
+                        return true;
+                    }
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.Queensblade:
                     return true;
-                case Weapon.StudiedForblaze:
-                    if (restHpPercentage >= 25) {
-                        return true;
-                    }
-                    break;
                 case Weapon.ArmorpinDaggerPlus:
                 case Weapon.DawnSuzu:
                 case Weapon.YoiyamiNoDanougi:

@@ -476,6 +476,16 @@ __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotenti
 HP N回復
 targetUnit.reserveHeal(N);
 
+ターン開始時HP回復
+applyHealSkillForBeginningOfTurnFuncMap.set(skillId,
+    function (skillOwner) {
+        // 周囲2マスと自分
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+            unit.reserveHeal(20);
+        }
+    }
+);
+
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack += N
 
@@ -924,6 +934,18 @@ targetUnit.battleContext.additionalDamageOfFirstAttack += ...
 enemyUnit.battleContext.damageAfterBeginningOfCombat += N;
 
 ダメージ+N(固定ダメージ) （同名のメソッドがあるので注意すること）
+// 戦闘開始時にも対応
+calcFixedAddDamageFuncMap.set(skillId,
+    function (atkUnit, defUnit, isPrecombat) {
+        // Nダメージ
+        atkUnit.battleContext.additionalDamage += N;
+        // ステータスの20%(奥義含む。含まない場合はisPrecombatで条件わけする)
+        // if (isPrecombat) return;
+        let status = DamageCalculatorWrapper.__get<XXX>(atkUnit, defUnit, isPrecombat);
+        atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+    }
+);
+もしくは
 // 戦闘開始後に呼ばれるので戦闘前奥義は__calcFixedAddDamageに直接実装すること
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     // Nダメージ

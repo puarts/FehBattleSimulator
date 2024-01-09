@@ -1839,6 +1839,14 @@ const Weapon = {
     DragonsStonePlus: 2719, // 辰年の御子の竜石+
     GoddessTemari: 2718, // 女神姉妹の手毬
     NewSunStonePlus: 2721, // 辰年の幼姫の竜石+
+
+    // 新英雄召喚（新英雄＆魔器ラインハルト）
+    // https://www.youtube.com/watch?v=-mcTc_VkaMM&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Y_YYS8s8LxM&ab_channel=NintendoMobile
+    Thief: 2729, // シーフ
+    Repair: 2727, // リペア
+    CleverDaggerPlus: 2734, // 攻防の暗器+
+    ArcaneThunder: 2731, // 魔器・雷公の書
 };
 
 const Support = {
@@ -2307,6 +2315,7 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
 
     // 専用A
+    ThundersFist: 2732, // 雷神の右腕
     BeyondWitchery: 2620, // 魔女を超える者
     RareTalent: 2549, // 類稀なる魔道の才
     RealmsUnited: 2545, // 白夜と暗夜と共に
@@ -2467,6 +2476,7 @@ const PassiveB = {
     KyokugiHiKo3: 636, // 曲技飛行3
     WrathfulStaff3: 632, // 神罰の杖3
     PoeticJustice: 2345, // 神罰・因果応報
+    WrathfulTempo: 2730, // 神罰・拍節
     DazzlingStaff3: 633, // 幻惑の杖3
     DazzlingShift: 2363, // 幻惑・転移
     DazzleFarTrace: 2594, // 幻惑・遠影
@@ -2778,6 +2788,7 @@ const PassiveB = {
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdDefFarTrace3: 2105, // 速さ魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
+    SpdResFarTrace4: 2733, // 速さ魔防の遠影4
 
     // 怒涛
     FlowFlight3: 2025, // 怒涛・飛竜行空3
@@ -2996,6 +3007,7 @@ const PassiveC = {
     ResPloy3: 725, // 魔防の謀策3
 
     // 2種謀策
+    AtkSpdPloy3: 2728, // 攻撃速さの謀策3
     AtkResPloy3: 2621, // 攻撃魔防の謀策3
     DefResPloy3: 2586, // 守備魔防の謀策3
 
@@ -4428,6 +4440,10 @@ const addSpecialDamageAfterDefenderSpecialActivatedFuncMap = new Map();
 const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
 const enumerateRangedSpecialTilesFuncMap = new Map();
 const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
+// thisはUnit
+const canDisableAttackOrderSwapSkillFuncMap = new Map();
+const calcFixedAddDamageFuncMap = new Map();
+const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4442,6 +4458,317 @@ const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 速さ魔防の遠影4
+{
+    let skillId = PassiveB.SpdResFarTrace4;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.restMoveCount === 0 ? 1 : this.restMoveCount;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdResSpurs(-4);
+        }
+    );
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            atkUnit.battleContext.additionalDamage += 7;
+        }
+    );
+}
+
+// 雷神の右腕
+{
+    let skillId = PassiveA.ThundersFist;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(7);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                });
+            }
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
+                let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (dist >= 2) {
+                    targetUnit.battleContext.setAttackCountFuncs.push(
+                        (targetUnit, enemyUnit) => {
+                            // 攻撃時
+                            targetUnit.battleContext.attackCount = 2;
+                            // 攻撃を受けた時
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    );
+                }
+            }
+        }
+    );
+}
+
+// 魔器・雷公の書
+{
+    let skillId = Weapon.ArcaneThunder;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                            enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                            targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+// 攻防の暗器+
+{
+    let skillId = Weapon.CleverDaggerPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+    );
+}
+
+// リペア
+{
+    let skillId = Weapon.Repair;
+    applyHealSkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                unit.reserveHeal(20);
+            }
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                unit.reserveToResetDebuffs();
+                unit.reserveToClearNegativeStatusEffects();
+                unit.reserveToApplyBuffs(4, 4, 4, 4);
+            }
+            skillOwner.reserveToResetDebuffs();
+            skillOwner.reserveToClearNegativeStatusEffects();
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
+// 神罰・拍節
+{
+    let skillId = PassiveB.WrathfulTempo;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdResSpurs(-4);
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                    enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+}
+
+// シーフ
+{
+    let skillId = Weapon.Thief;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let enemies = [];
+            let maxEffectCount = 0;
+            for (let enemy of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                let effectCount = enemy.getPositiveStatusEffects().length;
+                if (effectCount > maxEffectCount) {
+                    maxEffectCount = effectCount;
+                    enemies = [enemy];
+                } else if (effectCount === maxEffectCount) {
+                    enemies.push(enemy);
+                }
+            }
+            // ステータス付与予約
+            let statusSet = new Set();
+            enemies.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => statusSet.add(e)));
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                for (let statusEffect of statusSet) {
+                    unit.reserveToAddStatusEffect(statusEffect);
+                }
+            }
+            // ステータス解除予約
+            for (let enemy of enemies) {
+                // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
+                enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectToDeleteSet.add(e));
+            }
+            // 縦横3列デバフ
+            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                if (unit.isInClossWithOffset(skillOwner, 1)) {
+                    unit.reserveToApplyAllDebuff(-4);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let n = Math.min(atkUnit.getPositiveStatusEffects().length * 5, 20);
+                    // Nダメージ
+                    atkUnit.battleContext.additionalDamage += n;
+                });
+            }
+        }
+    );
+}
+
+// 神祖竜のブレス
+{
+    let skillId = Weapon.PrimordialBreath;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (isDefenseSpecial(skillOwner.special)) {
+                        skillOwner.reserveToReduceSpecialCount(2);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.increaseCooldownCountForAttack = true;
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                    targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                        // 回避
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            return 0.3;
+                        });
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                    }
+                }
+            }
+        }
+    );
+    // 回避
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isWeaponSpecialRefined) {
+                if (defUnit.battleContext.restHpPercentage >= 25) {
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+                }
+            }
+        }
+    );
+}
+
+// 業炎フォルブレイズ
+{
+    let skillId = Weapon.StudiedForblaze;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+            } else {
+                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                    skillOwner.reduceSpecialCount(1);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAtkResSpurs(6);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAtkResSpurs(5);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    }
+                }
+            }
+        }
+    );
+    canDisableAttackOrderSwapSkillFuncMap.set(skillId,
+        function (restHpPercentage, defUnit) {
+            // 錬成で共通
+            return restHpPercentage >= 25;
+        }
+    );
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            if (atkUnit.isWeaponSpecialRefined) {
+                let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+            }
+        }
+    );
+}
+
 // 天与の魔道・承
 {
     let skillId = Special.GiftedMagic2;
@@ -7446,29 +7773,29 @@ const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
     );
 }
 
-// 攻撃魔防の謀策3
+// 2種謀策3
 {
-    let skillId = PassiveC.AtkResPloy3;
-    let func = function (skillOwner) {
+    let generateFunc = debuffFunc => function (skillOwner) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
             if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
                 unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
-                unit.reserveToApplyDebuffs(-7, 0, 0, -7);
+                debuffFunc(unit);
                 unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
                 unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
             }
         }
     };
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        func
-    );
-    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
-        func
-    );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-        }
-    );
+    let setSkill = (skillId, debuffFunc) => {
+        applySkillForBeginningOfTurnFuncMap.set(skillId, generateFunc(debuffFunc));
+        applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, generateFunc(debuffFunc));
+    }
+
+    // 攻撃魔防の謀策3
+    setSkill(PassiveC.AtkSpdPloy3, u => u.reserveToApplyDebuffs(-7, -7, 0, 0));
+    // 攻撃魔防の謀策3
+    setSkill(PassiveC.AtkResPloy3, u => u.reserveToApplyDebuffs(-7, 0, 0, -7));
+    // 守備魔防の謀策3
+    setSkill(PassiveC.DefResPloy3, u => u.reserveToApplyDebuffs(0, 0, -7, -7));
 }
 
 // 魔女を超える者
