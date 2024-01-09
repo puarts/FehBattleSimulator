@@ -476,6 +476,16 @@ __applySkillEffectRelatedToEnemyStatusEffects(targetUnit, enemyUnit, calcPotenti
 HP N回復
 targetUnit.reserveHeal(N);
 
+ターン開始時HP回復
+applyHealSkillForBeginningOfTurnFuncMap.set(skillId,
+    function (skillOwner) {
+        // 周囲2マスと自分
+        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+            unit.reserveHeal(20);
+        }
+    }
+);
+
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack += N
 

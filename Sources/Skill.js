@@ -1844,6 +1844,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=-mcTc_VkaMM&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Y_YYS8s8LxM&ab_channel=NintendoMobile
     Thief: 100114, // シーフ
+    Repair: 100214, // リペア
 };
 
 const Support = {
@@ -4437,6 +4438,7 @@ const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 // thisはUnit
 const canDisableAttackOrderSwapSkillFuncMap = new Map();
 const calcFixedAddDamageFuncMap = new Map();
+const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4451,6 +4453,38 @@ const calcFixedAddDamageFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// リペア
+{
+    let skillId = Weapon.Repair;
+    applyHealSkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                unit.reserveHeal(20);
+            }
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                unit.reserveToResetDebuffs();
+                unit.reserveToClearNegativeStatusEffects();
+                unit.reserveToApplyBuffs(4, 4, 4, 4);
+            }
+            skillOwner.reserveToResetDebuffs();
+            skillOwner.reserveToClearNegativeStatusEffects();
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
 // 神罰・拍節
 {
     let skillId = PassiveB.WrathfulTempo;
