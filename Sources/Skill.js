@@ -816,7 +816,6 @@ const Weapon = {
     IagosTome: 1188, // マクベスの惑書
 
     FeatherSword: 1234, // フェザーソード
-    WindsOfChange: 1236, // 予兆の風
     WhitedownSpear: 1238, // 白き飛翔の槍
 
     SeijuNoKeshinHiko: 1299, // 成獣の化身・飛行
@@ -1849,6 +1848,7 @@ const Weapon = {
     DragoonAxe: 1288, // 赤い竜騎士の斧
     MirageRod: 1108, // 幻影ロッド
     ConstantDagger: 1140, // 影身の暗器
+    WindsOfChange: 1236, // 予兆の風
 };
 
 const Support = {
@@ -4461,6 +4461,50 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 予兆の風
+{
+    let skillId = Weapon.WindsOfChange;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.isBuffed || targetUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit) ||
+                    targetUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                    });
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAtkSpdSpurs(5);
+                        targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                enemyUnit.battleContext.reducesCooldownCount = false;
+                            }
+                        );
+                        targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 影身の暗器
 {
     let skillId = Weapon.ConstantDagger;
