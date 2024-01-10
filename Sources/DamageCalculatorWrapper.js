@@ -8071,12 +8071,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.AkaiRyukishiNoOno] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage === 100) {
-                targetUnit.addAllSpur(4);
-                targetUnit.battleContext.reducesCooldownCount = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.WindsOfChange] = (targetUnit) => {
             if (targetUnit.isBuffed || targetUnit.battleContext.restHpPercentage >= 50) {
                 targetUnit.atkSpur += 5;

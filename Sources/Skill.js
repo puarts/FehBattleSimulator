@@ -821,8 +821,6 @@ const Weapon = {
     WindsOfChange: 1236, // 予兆の風
     WhitedownSpear: 1238, // 白き飛翔の槍
 
-    AkaiRyukishiNoOno: 1288, // 赤い竜騎士の斧
-
     SeijuNoKeshinHiko: 1299, // 成獣の化身・飛行
 
     Aymr: 1302, // アイムール
@@ -1850,6 +1848,7 @@ const Weapon = {
 
     // 2024年1月 武器錬成
     StoutheartLance: 2726, // 自信家の長槍
+    DragoonAxe: 1288, // 赤い竜騎士の斧
 };
 
 const Support = {
@@ -4461,6 +4460,56 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 赤い竜騎士の斧
+{
+    let skillId = Weapon.DragoonAxe;
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                            unit.reserveToApplyBuffs(6, 6, 0, 0);
+                            unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                        }
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 自信家の長槍
 {
     let skillId = Weapon.StoutheartLance;
