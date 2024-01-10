@@ -1842,6 +1842,7 @@ const Weapon = {
     Repair: 2727, // リペア
     CleverDaggerPlus: 2734, // 攻防の暗器+
     ArcaneThunder: 2731, // 魔器・雷公の書
+    BladeRoyale: 2736, // 王者の刃
 
     // 2024年1月 武器錬成
     StoutheartLance: 2726, // 自信家の長槍
@@ -4461,6 +4462,34 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 王者の刃
+{
+    let skillId = Weapon.BladeRoyale;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                unit.reserveToApplyBuffs(6, 6, 0, 0);
+                unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesPenalties);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NeutralizesPenalties);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+}
+
 // 予兆の風
 {
     let skillId = Weapon.WindsOfChange;
