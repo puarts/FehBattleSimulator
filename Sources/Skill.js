@@ -460,7 +460,6 @@ const Weapon = {
     BariaNoYariPlus: 917,
 
     LarceisEdge: 1099, // ラクチェの流剣
-    GeneiLod: 1108, // 幻影ロッド
 
     Durandal: 24, // デュランダル
     ArdentDurandal: 931, // 緋剣デュランダル
@@ -1849,6 +1848,7 @@ const Weapon = {
     // 2024年1月 武器錬成
     StoutheartLance: 2726, // 自信家の長槍
     DragoonAxe: 1288, // 赤い竜騎士の斧
+    MirageRod: 1108, // 幻影ロッド
 };
 
 const Support = {
@@ -4460,6 +4460,74 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 幻影ロッド
+{
+    let skillId = Weapon.MirageRod;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                        if (unit.isInClossWithOffset(skillOwner, 1)) {
+                            unit.reserveToApplyDebuffs(-6, 0, 0, -6);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                        }
+                    }
+                }
+            }
+        }
+    );
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            if (!enemyAllyUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.distance(enemyAllyUnit) <= 2) {
+                    targetUnit.addAtkResSpurs(-6);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.distance(enemyAllyUnit) <= 2) {
+                    targetUnit.addAtkResSpurs(-6);
+                }
+                if (enemyAllyUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.75, enemyUnit);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addAtkResSpurs(-5);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                        });
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 赤い竜騎士の斧
 {
     let skillId = Weapon.DragoonAxe;

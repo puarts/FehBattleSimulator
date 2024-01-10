@@ -154,6 +154,24 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
     }
 );
 
+周囲の敵からのデバフ効果[周囲2マスの敵は、戦闘中...]
+updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+        // enemyAllyUnitからのスキルなので錬成判定に注意
+        if (!enemyAllyUnit.isWeaponRefined) {
+            // <通常効果>
+            if (targetUnit.distance(enemyAllyUnit) <= 2) {
+                targetUnit.addAtkResSpurs(-6);
+            }
+        } else {
+            // <錬成効果>
+            if (enemyAllyUnit.isWeaponSpecialRefined) {
+                // <特殊錬成効果>
+            }
+        }
+    }
+);
+
 暗闘の効果を受けない周囲からのスキル効果
 applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
     function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {

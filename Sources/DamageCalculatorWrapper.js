@@ -15736,6 +15736,11 @@ class DamageCalculatorWrapper {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
 
+    /**
+     * @param  {Unit} unit
+     * @param  {Boolean} withTargetUnit=false
+     * @returns {Unit[]}
+     */
     enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
         return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);
     }
@@ -17244,10 +17249,6 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur -= 4;
                             targetUnit.spdSpur -= 4;
                         }
-                        break;
-                    case Weapon.GeneiLod:
-                        targetUnit.atkSpur -= 6;
-                        targetUnit.resSpur -= 6;
                         break;
                     case Weapon.Gurgurant:
                         targetUnit.atkSpur -= 5;
