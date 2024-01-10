@@ -3646,6 +3646,15 @@ class BattleSimmulatorBase {
         let isMoved = false;
         let executesTrap = false; // トラップは迅雷や再移動の発動後に評価する必要がある
         for (let skillId of atkUnit.enumerateSkills()) {
+            let funcMap = applyMovementSkillAfterCombatFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    isMoved = func.call(this, atkUnit, attackTargetUnit, executesTrap);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case PassiveB.Repel4:
                 case PassiveB.KaihiTatakikomi3:
@@ -3670,17 +3679,6 @@ class BattleSimmulatorBase {
                     isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),
                         false, false, executesTrap);
-                    break;
-                case Weapon.EishinNoAnki:
-                    {
-                        let partners = this.__getPartnersInSpecifiedRange(atkUnit, 2);
-                        if (partners.length == 1) {
-                            let partner = partners[0];
-                            isMoved = this.__applyMovementAssist(atkUnit, partner,
-                                (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile),
-                                false, true, executesTrap);
-                        }
-                    }
                     break;
             }
         }

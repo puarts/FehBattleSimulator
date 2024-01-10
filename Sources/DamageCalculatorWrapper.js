@@ -1444,10 +1444,6 @@ class DamageCalculatorWrapper {
                 atkUnit.atkSpur += 6;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.EishinNoAnki] = (atkUnit) => {
-            atkUnit.atkSpur += 5;
-            atkUnit.spdSpur += 5;
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.KinranNoSyo] = (atkUnit) => {
             atkUnit.atkSpur += 6;
         };
@@ -8071,20 +8067,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.AkaiRyukishiNoOno] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage === 100) {
-                targetUnit.addAllSpur(4);
-                targetUnit.battleContext.reducesCooldownCount = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.WindsOfChange] = (targetUnit) => {
-            if (targetUnit.isBuffed || targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.TenmaNoNinjinPlus] = (targetUnit, enemyUnit) => {
             if (DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit) === TriangleAdvantage.Advantageous) {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -14559,11 +14541,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.EishinNoAnki:
-                    if (this.__isTherePartnerInSpace2(atkUnit)) {
-                        return true;
-                    }
-                    break;
                 case Weapon.DeathlyDagger:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (isWeaponTypeTome(defUnit.weaponType)) {
@@ -15742,6 +15719,11 @@ class DamageCalculatorWrapper {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
 
+    /**
+     * @param  {Unit} unit
+     * @param  {Boolean} withTargetUnit=false
+     * @returns {Unit[]}
+     */
     enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
         return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);
     }
@@ -17250,10 +17232,6 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur -= 4;
                             targetUnit.spdSpur -= 4;
                         }
-                        break;
-                    case Weapon.GeneiLod:
-                        targetUnit.atkSpur -= 6;
-                        targetUnit.resSpur -= 6;
                         break;
                     case Weapon.Gurgurant:
                         targetUnit.atkSpur -= 5;
