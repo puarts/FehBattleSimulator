@@ -1847,6 +1847,9 @@ const Weapon = {
     Repair: 2727, // リペア
     CleverDaggerPlus: 2734, // 攻防の暗器+
     ArcaneThunder: 2731, // 魔器・雷公の書
+
+    // 2024年1月 武器錬成
+    StoutheartLance: 2726, // 自信家の長槍
 };
 
 const Support = {
@@ -4458,6 +4461,41 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 自信家の長槍
+{
+    let skillId = Weapon.StoutheartLance;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
+                    }
+                );
+                if (targetUnit.battleContext.restHpPercentage >= 50) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+                if (targetUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        atkUnit.battleContext.additionalDamage += 7;
+                    });
+                }
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+            }
+        }
+    );
+}
+
 // 速さ魔防の遠影4
 {
     let skillId = PassiveB.SpdResFarTrace4;
