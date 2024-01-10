@@ -4373,6 +4373,13 @@ class SkillInfo {
             case SkillType.Weapon: return iconRoot + "Weapon.png";
             case SkillType.Support: return iconRoot + "Support.png";
             case SkillType.Special: return iconRoot + "Special.png";
+        }
+
+        if (iconName == "" || iconName == null) {
+            return iconRoot + "None.png";
+        }
+
+        switch (this.type) {
             case SkillType.PassiveA: return iconRoot + "PassiveA/" + iconName;
             case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName;
             case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName;
