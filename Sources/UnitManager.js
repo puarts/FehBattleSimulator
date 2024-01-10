@@ -247,11 +247,14 @@ class UnitManager {
     }
 
     enumeratePartnersInSpecifiedRange(targetUnit, spaces) {
-        return this.enumerateUnitsWithPredicator(x =>
-            targetUnit.groupId == x.groupId
-            && x.isOnMap
-            && targetUnit.calculateDistanceToUnit(x) <= spaces
-            && targetUnit.partnerHeroIndex == x.heroIndex);
+        let pred = unit => {
+            const isSameGroup = targetUnit.groupId === unit.groupId;
+            const inRange = targetUnit.calculateDistanceToUnit(unit) <= spaces;
+            const isPartner = targetUnit.isPartner(unit);
+
+            return isSameGroup && unit.isOnMap && inRange && isPartner;
+        }
+        return this.enumerateUnitsWithPredicator(pred);
     }
 
     __createDefaultUnit(id, unitGroupType) {

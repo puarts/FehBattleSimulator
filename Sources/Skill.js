@@ -679,7 +679,6 @@ const Weapon = {
     KinranNoSyo: 967, // 金蘭の書
     GeneiFalcion: 1112, // 幻影ファルシオン
     HyosyoNoBreath: 1134, // 氷晶のブレス
-    EishinNoAnki: 1140, // 影身の暗器
     ChichiNoSenjutsusyo: 1131, // 父の戦術書
     RazuwarudoNoMaiken: 1130, // ラズワルドの舞剣
     YujoNoHanaNoTsuePlus: 1128,// 友情の花の杖
@@ -1849,6 +1848,7 @@ const Weapon = {
     StoutheartLance: 2726, // 自信家の長槍
     DragoonAxe: 1288, // 赤い竜騎士の斧
     MirageRod: 1108, // 幻影ロッド
+    ConstantDagger: 1140, // 影身の暗器
 };
 
 const Support = {
@@ -4446,6 +4446,7 @@ const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 const canDisableAttackOrderSwapSkillFuncMap = new Map();
 const calcFixedAddDamageFuncMap = new Map();
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
+const applyMovementSkillAfterCombatFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4460,6 +4461,95 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 影身の暗器
+{
+    let skillId = Weapon.ConstantDagger;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    for (let nearestEnemy of this.__findNearestEnemies(skillOwner, 5)) {
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                            unit.reserveToApplyDebuffs(0, -6, -6, 0);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                        }
+                    }
+                }
+            }
+        }
+    );
+    applyMovementSkillAfterCombatFuncMap.set(skillId,
+        function (atkUnit, attackTargetUnit, executesTrap) {
+            // 錬成と共通の効果
+            let partners = this.__getPartnersInSpecifiedRange(atkUnit, 2);
+            if (partners.length === 1) {
+                let partner = partners[0];
+                let func = (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile);
+                return this.__applyMovementAssist(atkUnit, partner, func, false, true, executesTrap);
+            }
+            return false;
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    if (this.__isTherePartnerInSpace2(targetUnit)) {
+                        targetUnit.battleContext.invalidatesCounterattack = true;
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    // 固定ダメージ
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+                    });
+                    // 反撃不可
+                    targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            if (targetUnit.getEvalSpdInCombat(enemyUnit) >
+                                enemyUnit.getEvalSpdInCombat(targetUnit)) {
+                                targetUnit.battleContext.invalidatesCounterattack = true;
+                            }
+                        }
+                    );
+                    if (this.__isTherePartnerInSpace2(targetUnit)) {
+                        targetUnit.battleContext.invalidatesCounterattack = true;
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAtkSpdSpurs(5);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                        if (targetUnit.battleContext.initiatesCombat) {
+                            targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                                (attackUnit, attackTargetUnit) => {
+                                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                                        unit.reserveTakeDamage(7);
+                                    }
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 幻影ロッド
 {
     let skillId = Weapon.MirageRod;

@@ -1067,6 +1067,20 @@ __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTar
 戦闘を行なっている時[戦闘を行っていない時]
 unit.isCombatDone
 
+戦闘後の移動スキル[叩き込み、切り込み、一撃離脱など]
+applyMovementSkillAfterCombatFuncMap.set(skillId,
+    function (atkUnit, attackTargetUnit, executesTrap) {
+        // (例) レイラのスキル
+        let partners = this.__getPartnersInSpecifiedRange(atkUnit, 2);
+        if (partners.length === 1) {
+            let partner = partners[0];
+            let func = (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile);
+            return this.__applyMovementAssist(atkUnit, partner, func, false, true, executesTrap);
+        }
+        return false;
+    }
+);
+
 対象を行動可能な状態にする時のスキル[「歌う」「踊る」使用時]
 applyRefreshFuncMap.set(skillId,
     function (skillOwnerUnit, targetUnit) {

@@ -1444,10 +1444,6 @@ class DamageCalculatorWrapper {
                 atkUnit.atkSpur += 6;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.EishinNoAnki] = (atkUnit) => {
-            atkUnit.atkSpur += 5;
-            atkUnit.spdSpur += 5;
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.KinranNoSyo] = (atkUnit) => {
             atkUnit.atkSpur += 6;
         };
@@ -14551,11 +14547,6 @@ class DamageCalculatorWrapper {
                         ) {
                             return true;
                         }
-                    }
-                    break;
-                case Weapon.EishinNoAnki:
-                    if (this.__isTherePartnerInSpace2(atkUnit)) {
-                        return true;
                     }
                     break;
                 case Weapon.DeathlyDagger:
