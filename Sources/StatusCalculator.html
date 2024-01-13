@@ -10,18 +10,18 @@
 </head>
 
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 
     <!-- select2 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 
     <!-- jquery-ui -->
     <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script defer src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
     <!-- vue.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
     <div id="app">
         <div
@@ -227,23 +227,23 @@
         // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
         let reloadSuffix = "20200513";
 
-        document.write("<script type='text/javascript' src='" + jsRootPath + "GlobalDefinitions.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Utilities.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Skill.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script defer type='text/javascript' src='" + jsRootPath + "GlobalDefinitions.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script defer type='text/javascript' src='" + jsRootPath + "Utilities.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script defer type='text/javascript' src='" + jsRootPath + "Skill.js?" + reloadSuffix + "'><\/script>");
         // document.write("<script type='text/javascript' src='" + jsRootPath + "Map.js?" + reloadSuffix + "'><\/script>");
         // document.write("<script type='text/javascript' src='" + jsRootPath + "Structures.js?" + reloadSuffix + "'><\/script>");
         // document.write("<script type='text/javascript' src='" + jsRootPath + "Table.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "HeroInfo.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "BattleMapElement.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Unit.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script defer type='text/javascript' src='" + jsRootPath + "HeroInfo.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script defer type='text/javascript' src='" + jsRootPath + "BattleMapElement.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script defer type='text/javascript' src='" + jsRootPath + "Unit.js?" + reloadSuffix + "'><\/script>");
         // document.write("<script type='text/javascript' src='" + jsRootPath + "DamageCalculator.js?" + reloadSuffix + "'><\/script>");
         // document.write("<script type='text/javascript' src='" + jsRootPath + "Settings.js?" + reloadSuffix + "'><\/script>");
         // document.write("<script type='text/javascript' src='" + jsRootPath + "AudioManager.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "StatusCalcMain.js?" + reloadSuffix + "'><\/script>");
+        document.write("<script defer type='text/javascript' src='" + jsRootPath + "StatusCalcMain.js?" + reloadSuffix + "'><\/script>");
     </script>
 
     <script>
-        $(function () {
+        window.addEventListener("load", (event) => {
             let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '0/0', '0/0', '0/0', '0/0', '0/0', 24, -1, 476, -1, 620, 689, -1, SeasonType.None, BlessingType.None, 'リキア一の騎士', ['エリウッド',], 0, [24, 33,], [], 82, true, '烈火の剣', 'ガチャ', '2017-02-02', [476,], [], [620,], [689,]);
             let weaponInfo = new SkillInfo(24, 'デュランダル', 16, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 16, false, false, AssistType.None, false, 0, WeaponType.Sword, 400, false, [], [], true);
             init(heroInfo, [weaponInfo], 2100);
