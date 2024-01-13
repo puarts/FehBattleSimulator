@@ -3,38 +3,38 @@
 set battle_simulator_filenames=GlobalDefinitions,Utilities,Logger,Skill,BattleMapElement,Tile,BattleMap,BattleMapSettings,Structures,Cell,Table,HeroInfo,Unit,UnitManager,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,PostCombatSkillHander,DamageCalculatorWrapper,BeginningOfTurnSkillHandler,SkillDatabase,HeroDatabase,TurnSetting,AudioManager,AetherRaidDefensePresets,SettingManager,AppData,Main_ImageProcessing,Main_OriginalAi,Main_MouseAndTouch,BattleSimulatorBase,VueComponents
 
 
-rem ”ò‹óéƒVƒ~ƒ…ƒŒ[ƒ^[
+rem ï¿½ï¿½ï¿½ï¿½Vï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½[
 call %~dp0MergeSourcesAndCompress.bat FehBattleSimulator %battle_simulator_filenames%,AetherRaidSimulatorMain
 
-rem “¬‹ZêƒVƒ~ƒ…ƒŒ[ƒ^[
+rem ï¿½ï¿½ï¿½Zï¿½ï¿½Vï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½[
 call %~dp0MergeSourcesAndCompress.bat FehArenaSimulator %battle_simulator_filenames%,ArenaSimulatorMain
 
-rem ‰p—YŒˆ“¬ƒVƒ~ƒ…ƒŒ[ƒ^[
+rem ï¿½pï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½Vï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½[
 call %~dp0MergeSourcesAndCompress.bat FehSummonerDuelsSimulator %battle_simulator_filenames%,SummonerDuelsSimulatorMain
 
-rem ƒXƒe[ƒ^ƒXŒvZ‹@
+rem ï¿½Xï¿½eï¿½[ï¿½^ï¿½Xï¿½vï¿½Zï¿½@
 call %~dp0MergeSourcesAndCompress.bat FehStatusCalculator GlobalDefinitions,Utilities,Skill,BattleMapElement,HeroInfo,Unit,StatusCalcMain
 
-rem ƒ†ƒjƒbƒgƒrƒ‹ƒ_[
+rem ï¿½ï¿½ï¿½jï¿½bï¿½gï¿½rï¿½ï¿½ï¿½_ï¿½[
 call %~dp0MergeSourcesAndCompress.bat FehUnitBuilder GlobalDefinitions,Cell,Table,Utilities,Logger, Skill,BattleMapElement,Tile, Structures,HeroInfo,Unit,UnitManager,BattleMap,BattleMapSettings,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,PostCombatSkillHander,DamageCalculatorWrapper,BeginningOfTurnSkillHandler,TurnSetting,AudioManager,AetherRaidDefensePresets,SkillDatabase,HeroDatabase,SettingManager,AppData,Main_ImageProcessing,Main_OriginalAi,Main_MouseAndTouch,BattleSimulatorBase,UnitBuilderMain,VueComponents
 
-rem ƒ_ƒ[ƒWŒvZ‹@
+rem ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½vï¿½Zï¿½@
 call %~dp0MergeSourcesAndCompress.bat FehDamageCalculator GlobalDefinitions,Utilities,Logger,Skill,BattleMapElement,Tile,BattleMap,GlobalBattleContext,Structures,Table,HeroInfo,Unit,UnitManager,SkillDatabase,HeroDatabase,DamageCalculationUtility,DamageCalculator,PostCombatSkillHander,DamageCalculatorWrapper,BeginningOfTurnSkillHandler,SampleSkillInfos,SampleHeroInfos,VueComponents,KeyRepeatHandler,DamageCalculatorMain
 
-rem ‰p—YƒAƒCƒRƒ“ƒŠƒXƒg
+rem ï¿½pï¿½Yï¿½Aï¿½Cï¿½Rï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½g
 call %~dp0MergeSourcesAndCompress.bat FehHeroIconLister GlobalDefinitions,Utilities,Logger,Skill,HeroInfo,HeroDatabase,HeroIconListerMain,SampleHeroInfos
 
-rem ‚»‚Ì‘¼ƒc[ƒ‹‚Åg‚¤ƒtƒ@ƒCƒ‹
+rem ï¿½ï¿½ï¿½Ì‘ï¿½ï¿½cï¿½[ï¿½ï¿½ï¿½Ågï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½
 echo other files
 set copyfiles=%battle_simulator_filenames% StatusCalcMain SampleSkillInfos SampleHeroInfos KeyRepeatHandler DamageCalculatorMain HeroStatusClustererMain
 for %%n in (%copyfiles%) do (
     copy %~dp0Sources\%%n.js %destination%\%%n.js
 )
 
-rem HTMLƒtƒ@ƒCƒ‹
+rem HTMLï¿½tï¿½@ï¿½Cï¿½ï¿½
 echo html files
 set trunk_root=%~dp0..\..\trunk
-set root=%trunk_root%\Websites\puarts.com
+set root=%trunk_root%\Websites\fire-emblem.fun
 set html_destination=%root%\blog\entries
 set copyfiles=AetherRaidSimulator ArenaSimulator DamageCalculator SummonerDuelsSimulator UnitBuilder HeroIconLister
 for %%n in (%copyfiles%) do (

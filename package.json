@@ -1,7 +1,7 @@
 {
   "name": "fehbattlesimulator",
   "version": "1.0.0",
-  "description": "## 概要 FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦渦の連戦、双界を越えてのバトルをシミュレートできるツールである[飛空城シミュレーター](https://puarts.com/?pid=1469)のソースコードです。",
+  "description": "## 概要 FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦渦の連戦、双界を越えてのバトルをシミュレートできるツールである[飛空城シミュレーター](https://fire-emblem.fun/?pid=1469)のソースコードです。",
   "main": "Sources/index.html",
   "scripts": {
     "test": "jest && eslint ./Sources/"

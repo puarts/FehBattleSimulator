@@ -1,12 +1,12 @@
 # FehBattleSimulator
 
 ## 概要
-FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦渦の連戦、双界を越えてのバトルをシミュレートできるツールである[飛空城シミュレーター](https://puarts.com/?pid=1469)のソースコードです。
+FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦渦の連戦、双界を越えてのバトルをシミュレートできるツールである[飛空城シミュレーター](https://fire-emblem.fun/?pid=1469)のソースコードです。
 
 ## スキル実装の追加方法
 ### スキルの実装手順
-1. 追加スキルが SampleSkilInfos.js 内に存在しない場合、https://puarts.com/?pid=1469 のソースに定義されている weaponInfos 等の変数を SampleSkilInfos.js や SampleHeroInfos.js にコピーする
-    - https://puarts.com/?pid=1469 にも存在しない場合はデータベースに登録されていないので puarts にデータベース登録を依頼する
+1. 追加スキルが SampleSkilInfos.js 内に存在しない場合、https://fire-emblem.fun/?pid=1469 のソースに定義されている weaponInfos 等の変数を SampleSkilInfos.js や SampleHeroInfos.js にコピーする
+    - https://fire-emblem.fun/?pid=1469 にも存在しない場合はデータベースに登録されていないので puarts にデータベース登録を依頼する
 1. Skill.js内に定義されている辞書 Weapon、Support、Special、PassiveA、PassiveB、PassiveC、PassiveS のうち、適切な辞書に追加スキルのIDを追加する
     - スキルIDはシミュレーターを起動してデバッグモードを有効にすると、スキル選択ボックスの隣に表示される
     - これらの辞書に登録すると未実装スキル名の先頭に付与される×印が消える
@@ -15,7 +15,7 @@ FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦
 ### スキル実装箇所のヒント
 
 * 追加予定のスキルと同じ効果のスキルが既に存在すれば、そのスキル効果と同様に実装する
-  * 同様の効果のスキルが既に存在するかは https://puarts.com/?pid=1329 で調べられる
+  * 同様の効果のスキルが既に存在するかは https://fire-emblem.fun/?pid=1329 で調べられる
 * ほとんどのスキル効果は Main.js 内に実装されている
   * 戦闘中に発動するスキル効果は AetherRaidTacticsBoard.calcDamage()
     * ほとんどは calcDamage() 内で呼んでいる AetherRaidTacticsBoard.\_\_applySkillEffectForUnit() に実装されている
