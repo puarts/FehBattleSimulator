@@ -2210,7 +2210,7 @@
             }
         }
         function setImageSrcToDummy(lazyImages) {
-            const dummyImageUrl = g_siteRoot + "images/dummy.png";
+            const dummyImageUrl = g_siteRootPath + "images/dummy.png";
             for (let lazyImage of lazyImages) {
                 if (lazyImage.src != dummyImageUrl) {
                     lazyImage.src = dummyImageUrl;
