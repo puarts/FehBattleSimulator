@@ -100,7 +100,7 @@ class Queue {
 class CookieWriter {
     constructor() {
         this.useCookieJs = false;
-        this.domain = ".puarts.com"
+        this.domain = ".fire-emblem.fun"
     }
 
     delete(name) {

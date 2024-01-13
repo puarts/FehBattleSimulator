@@ -1313,7 +1313,7 @@ class AppData extends UnitManager {
         //     let prefix = location.includes("?") ? "&" : "?";
         //     this.exportSettingUrl = location + prefix + "s=" + LZString.compressToEncodedURIComponent(settingText);
         // }
-        this.exportSettingUrl = "https://puarts.com/?pid=1469&s=" + LZString.compressToEncodedURIComponent(settingText);
+        this.exportSettingUrl = g_explicitSiteRootPath + "?pid=1469&s=" + LZString.compressToEncodedURIComponent(settingText);
     }
 
     decompressSettingAutomatically(inputText) {

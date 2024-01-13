@@ -1,5 +1,6 @@
 
 const g_siteRootPath = "/";
+const g_explicitSiteRootPath = "https://fire-emblem.fun/";
 
 const g_imageRootPath = g_siteRootPath + "AetherRaidTacticsBoard/images/";
 const g_corsImageRootPath = g_imageRootPath;

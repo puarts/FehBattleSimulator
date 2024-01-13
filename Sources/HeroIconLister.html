@@ -45,20 +45,21 @@
             }
         });
     </script>
+
+    <!-- jquery -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 </head>
 
 <body>
     <p>
         FEHの全英雄のアイコン一覧です。特定の英雄について説明用の資料を作る時などに使います。
     </p>
-    <!-- jquery -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 
     <!-- vue.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
 
     <!-- rasterizehtml -->
-    <script src="https://puarts.com/js/rasterizeHTML.allinone.js"></script>
+    <script async src="https://fire-emblem.fun/js/rasterizeHTML.allinone.js"></script>
 
     <style>
         .button {
@@ -105,7 +106,7 @@
                     <img v-bind:src="heroInfo.iconUrl" class="heroThumb" v-bind:alt="heroInfo.name"
                         v-bind:width="iconSize" v-bind:height="iconSize">
                     <span style="position:absolute;bottom:0px;right:0px;" v-if="heroInfo.seasonType != SeasonType.None">
-                        <img v-bind:src="'https://puarts.com/AetherRaidTacticsBoard/images/Season_'+getSeasonTypeName(heroInfo.seasonType)+'.png'"
+                        <img v-bind:src="g_imageRootPath + 'Season_'+getSeasonTypeName(heroInfo.seasonType)+'.png'"
                             v-bind:width="iconSize*15/40" v-bind:height="iconSize*15/40">
                     </span>
                 </a>
@@ -117,7 +118,7 @@
         function drawElementToCanvas(sourceElem, canvas) {
             let serialized = new XMLSerializer().serializeToString(sourceElem);
 
-            serialized = serialized.replaceAll("https://puarts.com", "")
+            serialized = serialized.replaceAll("https://fire-emblem.fun", "")
 
             // レンダリング時に上下左右に隙間が入ってしまうので、その分をcanvasサイズに加味
             const paddingW = 10;

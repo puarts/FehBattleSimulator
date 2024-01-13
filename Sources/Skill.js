@@ -4274,7 +4274,7 @@ class SkillInfo {
         skillType
     ) {
         this.id = id;
-        this.detailPageUrl = "https://feh.puarts.com/?fehskill=" + id;
+        this.detailPageUrl = g_siteRootPath + "?fehskill=" + id;
         this.name = name;
         this.might = might;
         this.mightRefine = mightRefine;

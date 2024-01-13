@@ -435,7 +435,7 @@ class HeroInfo {
     }
 
     get detailPageUrl() {
-        return "https://feh.puarts.com/?fehhero=" + this.id;
+        return g_siteRootPath + "?fehhero=" + this.id;
     }
 
     get iconUrl() {

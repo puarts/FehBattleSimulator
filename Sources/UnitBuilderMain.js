@@ -102,7 +102,7 @@ function importUrl(url) {
 function updateUrl() {
     // g_app.writeDebugLogLine(`■URLの更新`);
     let settingText = g_app.getCurrentSetting();
-    g_appData.exportSettingUrl = "https://puarts.com/?pid=1736&s=" + LZString.compressToEncodedURIComponent(settingText) + "#app";
+    g_appData.exportSettingUrl = g_explicitSiteRootPath + "?pid=1736&s=" + LZString.compressToEncodedURIComponent(settingText) + "#app";
     let textarea = $("#urlTextArea")[0];
     textarea.textContent = settingText;
 }

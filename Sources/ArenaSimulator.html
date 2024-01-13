@@ -1,7 +1,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title> 闘技場シミュレーター</title>
-    <link rel="stylesheet" href="https://puarts.com/css/main.css?20181201" type="text/css" />
+    <link rel="stylesheet" href="css/main.css?20181201" type="text/css" />
     <script>
         const g_startTime = Date.now();
     </script>
@@ -373,28 +373,26 @@
                             <td>
                                 <input id="isLightSeason" type="checkbox" v-model="globalBattleContext.isLightSeason"
                                     @change="lightSeasonChanged"><label class="normal" for="isLightSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Light.png" />
-                                    <img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Dark.png" /></label>
+                                        :src="g_imageRootPath + 'Season_Light.png'" />
+                                    <img :src="g_imageRootPath + 'Season_Dark.png'" /></label>
                                 <input id="isAstraSeason" type="checkbox" v-model="globalBattleContext.isAstraSeason"
                                     @change="astraSeasonChanged"><label class="normal" for="isAstraSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Astra.png" />
-                                    <img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Anima.png" /></label>
+                                        :src="g_imageRootPath + 'Season_Astra.png'" />
+                                    <img :src="g_imageRootPath + 'Season_Anima.png'" /></label>
                                 <input id="isFireSeason" type="checkbox" v-model="globalBattleContext.isFireSeason"
                                     @change="seasonChanged"><label class="normal" for="isFireSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Fire.png" /></label>
+                                        :src="g_imageRootPath + 'Season_Fire.png'" /></label>
                                 <input id="isWaterSeason" type="checkbox" v-model="globalBattleContext.isWaterSeason"
                                     @change="seasonChanged"><label class="normal" for="isWaterSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Water.png" /></label>
+                                        :src="g_imageRootPath + 'Season_Water.png'" /></label>
                                 <input id="isWindSeason" type="checkbox" v-model="globalBattleContext.isWindSeason"
                                     @change="seasonChanged">
                                 <label class="normal" for="isWindSeason">
-                                    <img src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Wind.png" />
+                                    <img :src="g_imageRootPath + 'Season_Wind.png'" />
                                 </label>
                                 <input id="isEarthSeason" type="checkbox" v-model="globalBattleContext.isEarthSeason"
                                     @change="seasonChanged"><label class="normal" for="isEarthSeason"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/Season_Earth.png" /></label>
+                                        :src="g_imageRootPath + 'Season_Earth.png'" /></label>
                             </td>
                         </tr>
                     </table>
@@ -474,7 +472,7 @@
                                     <tr>
                                         <td colspan="1">
                                             <div id="trashArea" class="droppable-elem"
-                                                style="border-width: 2px; background-color:#eee;width:192px;min-height: 128px; background-image: url('https://puarts.com/AetherRaidTacticsBoard/images/tempArea.png');background-repeat: no-repeat; background-position: center;"
+                                                style="border-width: 2px; background-color:#eee;width:192px;min-height: 128px; background-image: url('/AetherRaidTacticsBoard/images/tempArea.png');background-repeat: no-repeat; background-position: center;"
                                                 ondragover="f_dragover(event)" ondrop="f_drop(event)"></div>
                                         </td>
                                     </tr>
@@ -496,11 +494,11 @@
                                                     <td>
                                                         <span v-if="globalBattleContext.currentTurn > 0">
                                                             <input type="button"
-                                                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/BackToZeroTurn.png) "
+                                                                style="background-image: url(/AetherRaidTacticsBoard/images/BackToZeroTurn.png) "
                                                                 class="playerButton imageButton"
                                                                 @click="g_app.backToZeroTurn();" />
                                                             <input type="button"
-                                                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/BackTurn.png) "
+                                                                style="background-image: url(/AetherRaidTacticsBoard/images/BackTurn.png) "
                                                                 class="playerButton imageButton"
                                                                 @click="g_app.backCurrentTurn();" />
                                                         </span>
@@ -520,7 +518,7 @@
                                                             <span v-if="globalBattleContext.currentTurn == 0">
                                                                 <input type="button"
                                                                     style="width: 140px;height:34px; background-color: #ffffff; border-style: none;
-                                                                            background-size:cover;background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/StartBattle.png) ;cursor: pointer;"
+                                                                            background-size:cover;background-image: url(/AetherRaidTacticsBoard/images/StartBattle.png) ;cursor: pointer;"
                                                                     class="buttonUi imageButton"
                                                                     @click="g_app.clearLog();g_app.simulateBeginningOfAllyTurn();g_app.__executeAllCommands(g_app.commandQueuePerAction, 0);updateAllUi();">
                                                             </span>
@@ -529,7 +527,7 @@
                                                     <td>
                                                         <span v-if="globalBattleContext.currentTurn > 0">
                                                             <input type="button"
-                                                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/GainTurn.png) "
+                                                                style="background-image: url(/AetherRaidTacticsBoard/images/GainTurn.png) "
                                                                 class="playerButton imageButton"
                                                                 onclick="g_app.gainCurrentTurn()" />
                                                         </span>
@@ -543,28 +541,28 @@
                                             <span v-if="isCommandUndoable">
                                                 <span v-if="commandQueuePerAction.isUndoable">
                                                     <input type="button"
-                                                        style="background-image: url(https://puarts.com/images/dummy.png) "
-                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Undo.png"
+                                                        style="background-image: url(/images/dummy.png) "
+                                                        data-src="/AetherRaidTacticsBoard/images/Undo.png"
                                                         class="lazy menuButton imageButton"
                                                         onclick="g_app.undoCommand()" />
                                                 </span>
                                                 <span v-if="!commandQueuePerAction.isUndoable">
                                                     <input type="button"
-                                                        style="filter:brightness(50%);cursor:auto;background-image: url(https://puarts.com/images/dummy.png)"
-                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Undo.png"
+                                                        style="filter:brightness(50%);cursor:auto;background-image: url(/images/dummy.png)"
+                                                        data-src="/AetherRaidTacticsBoard/images/Undo.png"
                                                         class="lazy menuButton" onclick="" />
                                                 </span>
                                                 <span v-if="commandQueuePerAction.isRedoable">
                                                     <input type="button"
-                                                        style="background-image: url(https://puarts.com/images/dummy.png)"
-                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Redo.png"
+                                                        style="background-image: url(/images/dummy.png)"
+                                                        data-src="/AetherRaidTacticsBoard/images/Redo.png"
                                                         class="lazy menuButton imageButton"
                                                         onclick="g_app.redoCommand()" />
                                                 </span>
                                                 <span v-if="!commandQueuePerAction.isRedoable">
                                                     <input type="button"
-                                                        style="filter:brightness(50%);cursor:auto;background-image: url(https://puarts.com/images/dummy.png)"
-                                                        data-src="https://puarts.com/AetherRaidTacticsBoard/images/Redo.png"
+                                                        style="filter:brightness(50%);cursor:auto;background-image: url(/images/dummy.png)"
+                                                        data-src="/AetherRaidTacticsBoard/images/Redo.png"
                                                         class="lazy menuButton" onclick="" />
                                                 </span>
 
@@ -572,14 +570,14 @@
 
                                                     <span v-if="commandQueuePerAction.isRedoable">
                                                         <input type="button"
-                                                            style="background-image: url(https://puarts.com/images/dummy.png)"
-                                                            data-src="https://puarts.com/AetherRaidTacticsBoard/images/RedoAll.png"
+                                                            style="background-image: url(/images/dummy.png)"
+                                                            data-src="/AetherRaidTacticsBoard/images/RedoAll.png"
                                                             class="menuButton" onclick="g_app.redoAllCommand()" />
                                                     </span>
                                                     <span v-if="!commandQueuePerAction.isRedoable">
                                                         <input type="button"
-                                                            style="filter:brightness(50%);cursor:auto; background-image: url(https://puarts.com/images/dummy.png) "
-                                                            data-src="https://puarts.com/AetherRaidTacticsBoard/images/RedoAll.png"
+                                                            style="filter:brightness(50%);cursor:auto; background-image: url(/images/dummy.png) "
+                                                            data-src="/AetherRaidTacticsBoard/images/RedoAll.png"
                                                             class="lazy menuButton" onclick="" />
                                                     </span>
                                                 </span>
@@ -603,45 +601,43 @@
                                             <td>
                                                 <span v-if="map.showEnemyAttackRange == true">
                                                     <input type="button"
-                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/DangerAreaEnabled.png) "
+                                                        style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaEnabled.png) "
                                                         class="fehButton imageButton"
                                                         @click=" map.switchEnemyAttackRange();updateMap();">
                                                 </span>
                                                 <span v-if="map.showEnemyAttackRange == false">
                                                     <input type="button"
-                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/DangerAreaDisabled.png) "
+                                                        style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaDisabled.png) "
                                                         class="fehButton imageButton"
                                                         @click="map.switchEnemyAttackRange();updateMap();">
                                                 </span>
-                                                <input type="button"
-                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                <input type="button" style="background-image: url(/images/dummy.png) "
                                                     class="lazy fehButton imageButton"
-                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/SaveState.png"
+                                                    data-src="/AetherRaidTacticsBoard/images/SaveState.png"
                                                     @click="g_app.clearSimpleLog();saveSettings();">
-                                                <input type="button"
-                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                <input type="button" style="background-image: url(/images/dummy.png) "
                                                     class="lazy fehButton imageButton"
-                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/LoadState.png"
+                                                    data-src="/AetherRaidTacticsBoard/images/LoadState.png"
                                                     @click="g_app.clearSimpleLog();loadSettings();">
 
                                                 <span
                                                     v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
                                                     <input type="button"
-                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/AutoPlay.png) "
+                                                        style="background-image: url(/AetherRaidTacticsBoard/images/AutoPlay.png) "
                                                         class="fehButton imageButton"
                                                         @click="g_app.clearLog(); g_app.simulateAllyAction();">
                                                 </span>
                                                 <span
                                                     v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
                                                     <input type="button"
-                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/EndTurn.png)"
+                                                        style="background-image: url(/AetherRaidTacticsBoard/images/EndTurn.png)"
                                                         class="fehButton imageButton" @click="endTurn">
                                                 </span>
 
                                                 <span
                                                     v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy">
                                                     <input type="button"
-                                                        style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
+                                                        style="background-image: url(/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
                                                         class="fehButton imageButton"
                                                         @click="g_app.clearLog(); g_app.simulateEnemyAction();">
                                                 </span>
@@ -649,25 +645,22 @@
                                         </tr>
                                         <tr>
                                             <td style="padding:0px" align="left">
-                                                <input type="button"
-                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                <input type="button" style="background-image: url(/images/dummy.png) "
                                                     class="lazy fehButton imageButton"
-                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/Settings.png"
+                                                    data-src="/AetherRaidTacticsBoard/images/Settings.png"
                                                     @click="showSettingDialog();">
-                                                <input type="button"
-                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                <input type="button" style="background-image: url(/images/dummy.png) "
                                                     class="lazy fehButton imageButton"
-                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/ImportSettings.png"
+                                                    data-src="/AetherRaidTacticsBoard/images/ImportSettings.png"
                                                     @click="showImportDialog();">
-                                                <input type="button"
-                                                    style="background-image: url(https://puarts.com/images/dummy.png) "
+                                                <input type="button" style="background-image: url(/images/dummy.png) "
                                                     class="lazy fehButton imageButton"
-                                                    data-src="https://puarts.com/AetherRaidTacticsBoard/images/ExportSettings.png"
+                                                    data-src="/AetherRaidTacticsBoard/images/ExportSettings.png"
                                                     @click="showExportDialog();">
                                                 <input type="checkbox" id="enableSound" class="fehButton"
                                                     v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
                                                 <label for="enableSound" class="fehButton"
-                                                    style="background-image: url('https://puarts.com/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
+                                                    style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
                                             </td>
                                         </tr>
                                     </table>
@@ -762,7 +755,7 @@
                                         </span>
                                         <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
                                     </button>
-                                    <!-- <img v-for="unit in allyUnits" :key="unit.id" src="https://puarts.com/images/dummy.png" v-bind:data-src="unit.icon"
+                                    <!-- <img v-for="unit in allyUnits" :key="unit.id" src="/images/dummy.png" v-bind:data-src="unit.icon"
                                         class="lazy" v-bind:name="unit.id" style="max-width: 35px;" /> -->
                                 </draggable>
                             </td>
@@ -1370,29 +1363,24 @@
             <canvas id="ocrInputImage12"></canvas>
 
             <span v-for="imgFile in templateWeaponRefinementImageFiles">
-                <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
-                    class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
+                <img src="/images/dummy.png" v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName"
+                    v-bind:id="imgFile.fileName" class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in templateBlessingImageFiles">
-                <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName" v-bind:id="imgFile.fileName"
-                    class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
+                <img src="/images/dummy.png" v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName"
+                    v-bind:id="imgFile.fileName" class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in templateImageFiles">
-                <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile" class="lazyTemplateImage"
-                    v-bind:id="imgFile" v-bind:alt="imgFile" />
+                <img src="/images/dummy.png" v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile"
+                    class="lazyTemplateImage" v-bind:id="imgFile" v-bind:alt="imgFile" />
             </span>
             <span v-for="imgFile in mapImageFiles">
-                <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName"
+                <img src="/images/dummy.png" v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName"
                     class="lazyTemplateImageForAetherRaid" v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in arenaMapImageFiles">
-                <img src="https://puarts.com/images/dummy.png"
-                    v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName" class="lazyTemplateImageForArena"
-                    v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
+                <img src="/images/dummy.png" v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName"
+                    class="lazyTemplateImageForArena" v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
             </span>
         </div>
     </div>
@@ -1554,7 +1542,7 @@
                                     </option>
                                 </select>
                                 <label class="normal"><img
-                                        src="https://puarts.com/AetherRaidTacticsBoard/images/AscendedFloret.png" width="20"
+                                        :src="g_imageRootPath + 'AscendedFloret.png'" width="20"
                                         height="20"></label>
                                 <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged">
                                     <option v-for="option in IvStateOptions" v-bind:value="option.id">
@@ -2052,24 +2040,24 @@
                     <div style="padding:5px">
                         <span v-if="(value.isDuoHero) && value.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
                             <input type="button"
-                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
+                                style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
                                 class="fehButton"
                                  @click="g_app.activateDuoOrHarmonizedSkill(value);">
                         </span>
                         <span v-if="(value.isDuoHero) && value.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
                             <input type="button" v-if="value.isDuoHero " disabled
-                                style=" background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
                                 class="fehButtonDisabled">
                         </span>
                         <span v-if="(value.isHarmonicHero) && value.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
                             <input type="button"
-                                style="background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
+                                style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
                                 class="fehButton"
                                  @click="g_app.activateDuoOrHarmonizedSkill(value);">
                         </span>
                         <span v-if="(value.isHarmonicHero) && value.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
                             <input type="button" v-if="value.isHarmonicHero" disabled
-                                style=" background-image: url(https://puarts.com/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
+                                style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
                                 class="fehButtonDisabled">
                         </span>
                     </div>
@@ -2164,7 +2152,7 @@
             }
         }
         function setImageSrcToDummy(lazyImages) {
-            const dummyImageUrl = "https://puarts.com/images/dummy.png";
+            const dummyImageUrl = "/images/dummy.png";
             for (let lazyImage of lazyImages) {
                 if (lazyImage.src != dummyImageUrl) {
                     lazyImage.src = dummyImageUrl;
