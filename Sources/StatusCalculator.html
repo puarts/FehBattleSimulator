@@ -10,9 +10,6 @@
 </head>
 
 <body>
-    <!-- vue.js -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
-
     <div id="app">
         <div
             style="text-align: left;background-color: #6aa5a2;border: solid 2px #ded;padding: 10px;width: fit-content;border-radius: 20px; font-size: 14px;text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px">
@@ -211,6 +208,7 @@
             </table>
         </div>
     </div>
+
     <script>
         function createScriptElement(src, onloadFunc) {
             let element = document.createElement("script");
@@ -241,8 +239,8 @@
             });
         }
 
-        window.addEventListener('load', (event) => {
-            const isLocal = typeof g_heroInfo == 'undefined';
+        const isLocal = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+        function initCalculatorLocal() {
             console.log(`isLocal=${isLocal}`);
             let additionalScripts = [];
             if (isLocal) {
@@ -257,21 +255,24 @@
                 ];
             }
             const startTime = Date.now();
-            loadScripts(additionalScripts, () => {
-                const endTime = Date.now();
-                console.log(`${endTime - startTime} ms to load all scripts`);
-                console.log("initializing application");
-                if (isLocal) {
+            createScriptElement("https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js", x => {
+                loadScripts(additionalScripts, () => {
+                    const endTime = Date.now();
+                    console.log(`${endTime - startTime} ms to load all scripts`);
+                    console.log("initializing application");
                     const heroInfo = new HeroInfo('魔器ラインハルト', 'RearmedReinhardt-Icon.png', MoveType.Cavalry, '青魔', 2, 41, 46, 45, 22, 20, 19, 11, 12, 3, 3, '0/0', '0/0', '0/0', '0/0', '0/0', 2731, -1, 468, 2732, 2733, 2164, -1, SeasonType.None, BlessingType.None, 'トードの再来', ['ラインハルト',], 0, [2731,], [], 1081, false, 'トラキア776', '魔器英雄', '2024-01-10', [468,], [2732,], [2733,], [2164,], []);
                     const weaponInfo = new SkillInfo(2731, '魔器・雷公の書', 14, 0, 0, 0, 0, 0, 0, [], [], -1, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.BlueTome, 300, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, true, '', SkillType.Weapon);
                     const maxSp = 2390;
                     init(heroInfo, [weaponInfo], maxSp);
-                }
-                else {
-                    init(g_heroInfo, g_skillInfos, g_maxSp);
-                }
+                });
             });
-        });
+        }
+
+        if (isLocal) {
+            window.addEventListener('load', (event) => {
+                initCalculatorLocal();
+            });
+        }
     </script>
 </body>
 
