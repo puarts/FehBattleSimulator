@@ -444,13 +444,13 @@ function statusEffectTypeToIconFilePath(value) {
         case StatusEffectType.NeutralizeUnitSurvivesWith1HP:
             return g_imageRootPath + "StatusEffect_NeutralizeUnitSurvivesWith1HP.webp";
         case StatusEffectType.TimesGate:
-            return g_imageRootPath + "TimesGate.png";
+            return g_imageRootPath + "StatusEffect_TimesGate.webp";
         case StatusEffectType.ReducesDamageFromFirstAttackBy40Percent:
-            return g_imageRootPath + "ReducesDamageFromFirstAttackBy40Percent.png";
+            return g_imageRootPath + "StatusEffect_ReduceFirstAttackDamage.webp";
         case StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent:
-            return g_imageRootPath + "ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent.png";
+            return g_imageRootPath + "StatusEffect_ReduceReduceDamageByX.webp";
         case StatusEffectType.TimesGrip:
-            return g_imageRootPath + "TimesGrip.png";
+            return g_imageRootPath + "StatusEffect_TimesGrip.webp";
         default: return "";
     }
 }
