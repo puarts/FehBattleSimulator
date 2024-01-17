@@ -17450,6 +17450,10 @@ class DamageCalculatorWrapper {
     }
 
     __canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit) {
+        // 周囲からでなく自分のスキルの場合
+        if (enemyUnit === allyUnit) {
+            return false;
+        }
         if (targetUnit.battleContext.disablesSkillsFromRedEnemiesInCombat &&
             allyUnit.color === ColorType.Red) {
             return true;
