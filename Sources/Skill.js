@@ -3034,6 +3034,7 @@ const PassiveC = {
     AtkSpdOath3: 1077, // 攻撃速さの信義3
     AtkSpdOath4: 2128, // 攻撃速さの信義4
     AtkDefOath3: 1045,
+    AtkDefOath4: 2742, // 攻撃守備の信義4
     AtkResOath3: 982,
     AtkResOath4: 2242, // 攻撃魔防の信義4
     DefResOath3: 1092,
@@ -4482,6 +4483,32 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 信義4
+{
+    let setSkill = (skillId, func, spurFunc) => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                func(skillOwner);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (this.__isThereAllyIn2Spaces(targetUnit, 2)) {
+                    spurFunc(targetUnit);
+                }
+            }
+        );
+    };
+
+    // 攻撃守備の信義4
+    setSkill(PassiveC.AtkDefOath4,
+        u => u.reserveToApplyBuffs(6, 0, 6, 0),
+        u => u.addAtkDefSpurs(3)
+    );
+}
+
 // 砂漠の天馬騎士の剣
 {
     let skillId = Weapon.BladeOfSands;
