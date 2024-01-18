@@ -4614,6 +4614,23 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
             );
         }
     );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isSpecialCharged) {
+                let targetRes = defUnit.getEvalResInPrecombat();
+                let enemyRes = atkUnit.getEvalResInPrecombat();
+                let diff = targetRes - enemyRes;
+                this.writeDebugLog(`奥義${defUnit.specialInfo.name}による戦闘開始時魔防参照。${defUnit.nameWithGroup}: ${targetRes}, ${atkUnit.nameWithGroup}: ${enemyRes}`);
+                if (diff > 0) {
+                    let ratio = Math.min(0.03 * diff, 0.3);
+                    this.writeDebugLog(`奥義${defUnit.specialInfo.name}により範囲奥義のダメージを${ratio}軽減(diff: ${diff})`);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                } else {
+                    this.writeDebugLog(`奥義${defUnit.specialInfo.name}は戦闘開始時の魔防条件を満たさない(diff: ${diff})`);
+                }
+            }
+        }
+    );
 }
 
 // 永遠の理想郷の双斧
