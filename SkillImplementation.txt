@@ -1199,6 +1199,7 @@ applySupportSkill() {
     // case Support.FutureVision
 }
 
+進軍阻止・防壁
 進軍阻止(1マス)
 canActivateObstructToAdjacentTilesFuncMap.set(skillId,
     function (unit, moveUnit) {

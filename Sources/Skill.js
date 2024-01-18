@@ -2825,6 +2825,8 @@ const PassiveB = {
     AtkDefBulwark3: 2150, // 攻撃守備の防壁3
     SpdDefBulwark3: 2202, // 速さ守備の防壁3
     SpdResBulwark3: 2260, // 速さ魔防の防壁3
+    // 防壁4
+    AtkDefBulwark4: 2750, // 攻撃守備の防壁4
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3
@@ -4479,6 +4481,33 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 防壁
+{
+    let generateFunc = (func, isBulwalk4=false) => function (targetUnit, enemyUnit, calcPotentialDamage) {
+        func(enemyUnit);
+        if (isBulwalk4) {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+        }
+        targetUnit.battleContext.healedHpAfterCombat += 7;
+    };
+    let setSkill = (skillId, func, isBulwalk4) => {
+        canActivateObstructToAdjacentTilesFuncMap.set(skillId,
+            function (unit, moveUnit) {
+                return true;
+            }
+        );
+        canActivateObstractToTilesIn2SpacesFuncMap.set(skillId,
+            function (unit, moveUnit) {
+                return true;
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId, generateFunc(func, isBulwalk4));
+    };
+
+    // 攻撃守備の防壁4
+    setSkill(PassiveB.AtkDefBulwark4, u => u.addAtkDefSpurs(-4), true);
+}
+
 // 三雄の双刃
 {
     let skillId = Special.ArmsOfTheThree;
