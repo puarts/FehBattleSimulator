@@ -608,6 +608,9 @@ class BattleContext {
         // 防御系奥義によるダメージ軽減率
         this.damageReductionRatioBySpecial = 0;
 
+        // 防御系でない奥義によるダメージ軽減率
+        this.damageReductionRatiosByNonDefenderSpecial = [];
+
         // 次の敵の攻撃ダメージ軽減(奥義による軽減)
         this.damageReductionRatiosBySpecialOfNextAttack = [];
 
@@ -959,6 +962,7 @@ class BattleContext {
         this.damageRatioToHeal = 0;
         this.selfDamageDealtRateToAddSpecialDamage = 0;
         this.damageReductionRatioBySpecial = 0;
+        this.damageReductionRatiosByNonDefenderSpecial = [];
         this.isOnDefensiveTile = false;
         this.preventedAttackerSpecial = false;
         this.preventedDefenderSpecial = false;

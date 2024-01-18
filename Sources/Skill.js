@@ -2082,6 +2082,7 @@ const Special = {
     NegatingFang2: 2725, // 反竜穿・承
 
     // 専用奥義
+    ArmsOfTheThree: 2749, // 三雄の双刃
     TimeIsLight: 2672, // 時は光
     LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
@@ -4478,6 +4479,48 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 三雄の双刃
+{
+    let skillId = Special.ArmsOfTheThree;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    // ダメージ軽減
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.isSpecialCharged) {
+                        let targetRes = targetUnit.getEvalResInCombat(enemyUnit);
+                        let enemyRes = enemyUnit.getEvalResInCombat(targetUnit);
+                        let diff = targetRes - enemyRes;
+                        this.writeDebugLog(`奥義${targetUnit.specialInfo.name}による魔防参照。${targetUnit.nameWithGroup}: ${targetRes}, ${enemyUnit.nameWithGroup}: ${enemyRes}`);
+                        if (diff > 0) {
+                            let ratio = Math.min(0.03 * diff, 0.3);
+                            this.writeDebugLog(`奥義${targetUnit.specialInfo.name}によりダメージを${ratio}軽減(diff: ${diff})`);
+                            targetUnit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(ratio);
+                        } else {
+                            this.writeDebugLog(`奥義${targetUnit.specialInfo.name}は魔防条件を満たさない(diff: ${diff})`);
+                        }
+                    }
+                }
+            );
+        }
+    );
+}
+
 // 永遠の理想郷の双斧
 {
     let skillId = Weapon.ArcadianAxes;
