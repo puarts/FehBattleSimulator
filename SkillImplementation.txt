@@ -1045,6 +1045,9 @@ __init__applySkillEffectForUnitFuncDict() {
     });
 }
 
+// 防御系奥義以外の奥義によるダメージ軽減
+targetUnit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(ratio);
+
 最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
 targetUnit.battleContext.reducedRatioForNextAttack = Math.max(0.3, targetUnit.battleContext.reducedRatioForNextAttack);
 
