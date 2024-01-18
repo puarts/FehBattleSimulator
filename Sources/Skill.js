@@ -1853,6 +1853,16 @@ const Weapon = {
 
     // フレスベルグ(敵)
     QuietingClaw: 2737, // 刃の葬り手の爪
+
+    // New Skills
+    // 超英雄 (理想郷の守護者)
+    // https://www.youtube.com/watch?v=y9LRrSYLkbc&t=18s&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=c8IqvCHroKU&ab_channel=NintendoMobile
+    ArcadianAxes: 2748, // 永遠の理想郷の双斧
+    BladeOfSands: 2741, // 砂漠の天馬騎士の剣
+    NabataBeaconPlus: 2743, // ナバタの燭台+
+    SandglassBow: 2746, // 悠久の黄砂の絆弓
+    NabataLancePlus: 2751, // ナバタの槍+
 };
 
 const Support = {
@@ -2076,6 +2086,7 @@ const Special = {
     NegatingFang2: 2725, // 反竜穿・承
 
     // 専用奥義
+    ArmsOfTheThree: 2749, // 三雄の双刃
     TimeIsLight: 2672, // 時は光
     LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
@@ -2818,6 +2829,8 @@ const PassiveB = {
     AtkDefBulwark3: 2150, // 攻撃守備の防壁3
     SpdDefBulwark3: 2202, // 速さ守備の防壁3
     SpdResBulwark3: 2260, // 速さ魔防の防壁3
+    // 防壁4
+    AtkDefBulwark4: 2750, // 攻撃守備の防壁4
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3
@@ -3024,6 +3037,7 @@ const PassiveC = {
     AtkSpdOath3: 1077, // 攻撃速さの信義3
     AtkSpdOath4: 2128, // 攻撃速さの信義4
     AtkDefOath3: 1045,
+    AtkDefOath4: 2742, // 攻撃守備の信義4
     AtkResOath3: 982,
     AtkResOath4: 2242, // 攻撃魔防の信義4
     DefResOath3: 1092,
@@ -3141,6 +3155,9 @@ const PassiveC = {
 
     // 一斉突撃
     AssaultTroop3: 2117, // 一斉突撃3
+
+    // 鍛錬の鼓動
+    PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
     FutureSighted: 2716, // 共に未来を変えて
@@ -4472,6 +4489,296 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// ナバタの槍+
+{
+    let skillId = Weapon.NabataLancePlus;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner, 2)) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+                });
+            }
+        }
+    );
+}
+
+// 鍛錬の鼓動
+{
+    let setSkill = (skillId, func) => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                let turn = this.globalBattleContext.currentTurn;
+                let amount = Math.min(turn * 2, 6);
+                func(skillOwner, amount);
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        );
+    };
+    // 鍛錬の鼓動・刃
+    setSkill(PassiveC.PulseUpBlades, (u, a) => u.reserveToApplyBuffs(a, a, 0, 0));
+}
+
+// 悠久の黄砂の絆弓
+{
+    let skillId = Weapon.SandglassBow;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.globalBattleContext.currentTurn === 1) {
+                skillOwner.reserveToReduceSpecialCount(2);
+            }
+            let found = false;
+            /** @type {Unit[]} */
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+            for (let unit of allies) {
+                found = true;
+                let moveType = unit.moveType;
+                if (moveType === MoveType.Infantry ||
+                    moveType === MoveType.Armor) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+            }
+            if (found) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkSpdSpurs(6);
+            }
+        }
+    );
+    // 固定ダメージ
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+            // 奥義発動時
+            let ratio = 0.1 + 0.1 * atkUnit.maxSpecialCount;
+            let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+            atkUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+        }
+    );
+}
+
+// ナバタの燭台+
+{
+    let skillId = Weapon.NabataBeaconPlus;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+                });
+            }
+        }
+    );
+}
+
+// 信義4
+{
+    let setSkill = (skillId, func, spurFunc) => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                func(skillOwner);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (this.__isThereAllyIn2Spaces(targetUnit, 2)) {
+                    spurFunc(targetUnit);
+                }
+            }
+        );
+    };
+
+    // 攻撃守備の信義4
+    setSkill(PassiveC.AtkDefOath4,
+        u => u.reserveToApplyBuffs(6, 0, 6, 0),
+        u => u.addAtkDefSpurs(3)
+    );
+}
+
+// 砂漠の天馬騎士の剣
+{
+    let skillId = Weapon.BladeOfSands;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            /** @type {Unit[]} */
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+            for (let unit of allies) {
+                found = true;
+                unit.reserveToApplyBuffs(0, 6, 0, 6);
+                unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(0, 6, 0, 6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit, 2)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
+
+// 防壁
+{
+    let generateFunc = (func, isBulwalk4=false) => function (targetUnit, enemyUnit, calcPotentialDamage) {
+        func(enemyUnit);
+        if (isBulwalk4) {
+            targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+        }
+        targetUnit.battleContext.healedHpAfterCombat += 7;
+    };
+    let setSkill = (skillId, func, isBulwalk4) => {
+        canActivateObstructToAdjacentTilesFuncMap.set(skillId,
+            function (unit, moveUnit) {
+                return true;
+            }
+        );
+        canActivateObstractToTilesIn2SpacesFuncMap.set(skillId,
+            function (unit, moveUnit) {
+                return true;
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId, generateFunc(func, isBulwalk4));
+    };
+
+    // 攻撃守備の防壁4
+    setSkill(PassiveB.AtkDefBulwark4, u => u.addAtkDefSpurs(-4), true);
+}
+
+// 三雄の双刃
+{
+    let skillId = Special.ArmsOfTheThree;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    // ダメージ軽減
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.isSpecialCharged) {
+                        let targetRes = targetUnit.getEvalResInCombat(enemyUnit);
+                        let enemyRes = enemyUnit.getEvalResInCombat(targetUnit);
+                        let diff = targetRes - enemyRes;
+                        this.writeDebugLog(`奥義${targetUnit.specialInfo.name}による魔防参照。${targetUnit.nameWithGroup}: ${targetRes}, ${enemyUnit.nameWithGroup}: ${enemyRes}`);
+                        if (diff > 0) {
+                            let ratio = Math.min(0.03 * diff, 0.3);
+                            this.writeDebugLog(`奥義${targetUnit.specialInfo.name}によりダメージを${ratio}軽減(diff: ${diff})`);
+                            targetUnit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(ratio);
+                        } else {
+                            this.writeDebugLog(`奥義${targetUnit.specialInfo.name}は魔防条件を満たさない(diff: ${diff})`);
+                        }
+                    }
+                }
+            );
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isSpecialCharged) {
+                let targetRes = defUnit.getEvalResInPrecombat();
+                let enemyRes = atkUnit.getEvalResInPrecombat();
+                let diff = targetRes - enemyRes;
+                this.writeDebugLog(`奥義${defUnit.specialInfo.name}による戦闘開始時魔防参照。${defUnit.nameWithGroup}: ${targetRes}, ${atkUnit.nameWithGroup}: ${enemyRes}`);
+                if (diff > 0) {
+                    let ratio = Math.min(0.03 * diff, 0.3);
+                    this.writeDebugLog(`奥義${defUnit.specialInfo.name}により範囲奥義のダメージを${ratio}軽減(diff: ${diff})`);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                } else {
+                    this.writeDebugLog(`奥義${defUnit.specialInfo.name}は戦闘開始時の魔防条件を満たさない(diff: ${diff})`);
+                }
+            }
+        }
+    );
+}
+
+// 永遠の理想郷の双斧
+{
+    let skillId = Weapon.ArcadianAxes;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpursWithoutSpd(-5);
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                enemyUnit.addSpursWithoutSpd(-amount);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) >=
+                            enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 刃の葬り手の爪 
 {
     let skillId = Weapon.QuietingClaw;

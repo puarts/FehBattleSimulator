@@ -1005,13 +1005,24 @@ class DamageCalculator {
                 // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
                 if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.length > 0) {
                     for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
+                        let oldRatio = damageReductionRatio;
                         damageReductionRatio *= 1.0 - ratio;
+                        this.writeDebugLog(`1戦闘1回の奥義によるダメージ軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
                     }
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
                 }
+                // 防御系奥義以外によるダメージ軽減
+                let reductionRatios = defUnit.battleContext.damageReductionRatiosByNonDefenderSpecial;
+                if (reductionRatios.length > 0) {
+                    for (let ratio of reductionRatios) {
+                        let oldRatio = damageReductionRatio;
+                        damageReductionRatio *= 1.0 - ratio;
+                        this.writeDebugLog(`防御系奥義以外の奥義によるダメージ軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+                    }
+                }
             }
 
-            // 奥義によるダメージ軽減
+            // 防御系奥義によるダメージ軽減
             let isDefenderSpecialActivated = false;
             // 奥義の次の攻撃のダメージ軽減
             for (let ratio of defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack) {

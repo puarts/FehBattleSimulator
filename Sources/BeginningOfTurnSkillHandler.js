@@ -3369,12 +3369,6 @@ class BeginningOfTurnSkillHandler {
     __findMinStatusUnits(unitGroup, getStatusFunc) {
         return this._unitManager.findMinStatusUnits(unitGroup, getStatusFunc);
     }
-    /**
-     * @param  {Unit} targetUnit
-     * @param  {Number} spaces
-     * @param  {Boolean} withTargetUnit=false
-     * @returns {Unit[]}
-     */
     enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
     }
