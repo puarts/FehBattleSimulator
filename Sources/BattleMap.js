@@ -2857,11 +2857,6 @@ class BattleMap {
         }
     }
 
-    /**
-     * @param  {Unit} targetUnit
-     * @param  {Number} spaces
-     * @returns {Unit[]}
-     */
     * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit)) {
             let dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);

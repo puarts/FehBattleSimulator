@@ -1859,6 +1859,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=y9LRrSYLkbc&t=18s&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=c8IqvCHroKU&ab_channel=NintendoMobile
     ArcadianAxes: 2748, // 永遠の理想郷の双斧
+    BladeOfSands: 2741, // 砂漠の天馬騎士の剣
 };
 
 const Support = {
@@ -4481,6 +4482,44 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 砂漠の天馬騎士の剣
+{
+    let skillId = Weapon.BladeOfSands;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            /** @type {Unit[]} */
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+            for (let unit of allies) {
+                found = true;
+                unit.reserveToApplyBuffs(0, 6, 0, 6);
+                unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+            }
+            if (found) {
+                skillOwner.reserveToApplyBuffs(0, 6, 0, 6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit, 2)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+            }
+        }
+    );
+}
+
 // 防壁
 {
     let generateFunc = (func, isBulwalk4=false) => function (targetUnit, enemyUnit, calcPotentialDamage) {
