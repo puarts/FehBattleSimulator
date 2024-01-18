@@ -1860,6 +1860,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=c8IqvCHroKU&ab_channel=NintendoMobile
     ArcadianAxes: 2748, // 永遠の理想郷の双斧
     BladeOfSands: 2741, // 砂漠の天馬騎士の剣
+    NabataBeaconPlus: 2743, // ナバタの燭台+
 };
 
 const Support = {
@@ -4483,6 +4484,32 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// ナバタの燭台+
+{
+    let skillId = Weapon.NabataBeaconPlus;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+                });
+            }
+        }
+    );
+}
+
 // 信義4
 {
     let setSkill = (skillId, func, spurFunc) => {
