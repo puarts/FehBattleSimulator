@@ -3155,6 +3155,9 @@ const PassiveC = {
     // 一斉突撃
     AssaultTroop3: 2117, // 一斉突撃3
 
+    // 鍛錬の鼓動
+    PulseUpBlades: 2747, // 鍛錬の鼓動・刃
+
     // 専用C
     FutureSighted: 2716, // 共に未来を変えて
     DeadlyMiasma: 2711, // 死の瘴気
@@ -4485,6 +4488,23 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 鍛錬の鼓動
+{
+    let setSkill = (skillId, func) => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                let turn = this.globalBattleContext.currentTurn;
+                let amount = Math.min(turn * 2, 6);
+                func(skillOwner, amount);
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        );
+    };
+    // 鍛錬の鼓動・刃
+    setSkill(PassiveC.PulseUpBlades, (u, a) => u.reserveToApplyBuffs(a, a, 0, 0));
+}
+
 // 悠久の黄砂の絆弓
 {
     let skillId = Weapon.SandglassBow;
