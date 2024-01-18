@@ -4546,8 +4546,12 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
             let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
             for (let unit of allies) {
                 found = true;
-                unit.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
-                unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                let moveType = unit.moveType;
+                if (moveType === MoveType.Infantry ||
+                    moveType === MoveType.Armor) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                    unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                }
             }
             if (found) {
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
