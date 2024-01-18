@@ -1853,6 +1853,12 @@ const Weapon = {
 
     // フレスベルグ(敵)
     QuietingClaw: 2737, // 刃の葬り手の爪
+
+    // New Skills
+    // 超英雄 (理想郷の守護者)
+    // https://www.youtube.com/watch?v=y9LRrSYLkbc&t=18s&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=c8IqvCHroKU&ab_channel=NintendoMobile
+    ArcadianAxes: 2748, // 永遠の理想郷の双斧
 };
 
 const Support = {
@@ -4472,6 +4478,30 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 永遠の理想郷の双斧
+{
+    let skillId = Weapon.ArcadianAxes;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpursWithoutSpd(-5);
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                enemyUnit.addSpursWithoutSpd(-amount);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) >=
+                            enemyUnit.getEvalResInCombat(targetUnit) + 5) {
+                            if (isNormalAttackSpecial(enemyUnit.special)) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 刃の葬り手の爪 
 {
     let skillId = Weapon.QuietingClaw;
