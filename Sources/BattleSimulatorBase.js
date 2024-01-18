@@ -1044,6 +1044,11 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedIgrene:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Treachery);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Desperation);
+                break;
             case Hero.DuoSeidr:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 4, true)) {
                     unit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
