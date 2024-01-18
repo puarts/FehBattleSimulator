@@ -1861,6 +1861,7 @@ const Weapon = {
     ArcadianAxes: 2748, // 永遠の理想郷の双斧
     BladeOfSands: 2741, // 砂漠の天馬騎士の剣
     NabataBeaconPlus: 2743, // ナバタの燭台+
+    SandglassBow: 2746, // 悠久の黄砂の絆弓
 };
 
 const Support = {
@@ -4484,6 +4485,49 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 悠久の黄砂の絆弓
+{
+    let skillId = Weapon.SandglassBow;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.globalBattleContext.currentTurn === 1) {
+                skillOwner.reserveToReduceSpecialCount(2);
+            }
+            let found = false;
+            /** @type {Unit[]} */
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+            for (let unit of allies) {
+                found = true;
+                unit.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+            }
+            if (found) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkSpdSpurs(6);
+            }
+        }
+    );
+    // 固定ダメージ
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+            // 奥義発動時
+            let ratio = 0.1 + 0.1 * atkUnit.maxSpecialCount;
+            let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+            atkUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+        }
+    );
+}
+
 // ナバタの燭台+
 {
     let skillId = Weapon.NabataBeaconPlus;
