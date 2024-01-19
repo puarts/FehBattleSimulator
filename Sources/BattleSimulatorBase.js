@@ -3999,7 +3999,7 @@ class BattleSimmulatorBase {
      * ターン開始時のシミュレーション。
      * @param  {Unit[]} targetUnits - ターン開始処理を行うユニット
      * @param  {Unit[]} enemyTurnSkillTargetUnits - 敵軍ターン開始時スキル対象ユニット
-     * @param  {UnitGroupType} group - グループ
+     * @param  {UnitGroupType} group - グループ。どちらのターン開始時かを渡す。決闘の場合は引数を指定しない。
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
@@ -4118,15 +4118,13 @@ class BattleSimmulatorBase {
     }
 
     __initializeTilesPerTurn(tiles, group) {
-        if (group === null) {
-            return;
-        }
         for (let y = 0; y < this.map.height; ++y) {
             for (let x = 0; x < this.map.width; ++x) {
                 let index = y * this.map.width + x;
                 let tile = tiles[index];
-                if (tile.divineVeinGroup === group) {
+                if (tile.divineVeinGroup === group || group === null) {
                     tile.divineVein = DivineVeinType.None;
+                    tile.divineVeinGroup = null;
                 }
             }
         }
