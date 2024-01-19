@@ -27,7 +27,8 @@ class SummonerDuelsSimulator extends BattleSimmulatorBase {
             }
             self.data.isDisplayingMapMessage = true;
             self.audioManager.playSoundEffect(SoundEffectId.PlayerPhase);
-            self.__simulateBeginningOfTurn(self.__getUnits(x => x.isOnMap));
+            let allUnitsOnMap = self.__getUnits(x => x.isOnMap);
+            self.__simulateBeginningOfTurn(allUnitsOnMap, allUnitsOnMap);
             const displayingMessageMilliseconds = 2500;
             setTimeout(() => {
                 self.data.isDisplayingMapMessage = false;

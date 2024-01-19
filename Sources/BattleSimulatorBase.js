@@ -3929,10 +3929,13 @@ class BattleSimmulatorBase {
             this.damageCalc.updateUnitSpur(unit, calcPotentialDamage);
         }
     }
+
     /**
-     * @param  {Unit[]} targetUnits
+     * ターン開始時スキルを発動。
+     * @param  {Unit[]} targetUnits - ターン開始処理を行うユニット
+     * @param  {Unit[]} enemyTurnSkillTargetUnits - 敵軍ターン開始時スキル対象ユニット
      */
-    __applySkillsForBeginningOfTurn(targetUnits, enemyUnits) {
+    __applySkillsForBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits) {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.resetOneTimeActionActivationStates();
 
@@ -3951,7 +3954,7 @@ class BattleSimmulatorBase {
             this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
         }
         // ターン開始時スキル(敵ユニット)
-        for (let unit of enemyUnits) {
+        for (let unit of enemyTurnSkillTargetUnits) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "の敵ターン開始時発動スキルを適用..");
             this.beginningOfTurnSkillHandler.applyEnemySkillsForBeginningOfTurn(unit);
         }
@@ -3976,7 +3979,7 @@ class BattleSimmulatorBase {
         this.data.__updateStatusBySkillsAndMergeForAllHeroes();
 
         // セイズなど敵軍のターン開始時スキル発動後の効果
-        for (let unit of enemyUnits) {
+        for (let unit of enemyTurnSkillTargetUnits) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "の敵軍のターン開始時スキル発動後のスキルを適用..");
             this.beginningOfTurnSkillHandler.applyAfterEnemySkillsSkillsForBeginningOfTurn(unit);
         }
@@ -3993,9 +3996,12 @@ class BattleSimmulatorBase {
     }
 
     /**
-     * @param  {Unit[]} targetUnits
+     * ターン開始時のシミュレーション。
+     * @param  {Unit[]} targetUnits - ターン開始処理を行うユニット
+     * @param  {Unit[]} enemyTurnSkillTargetUnits - 敵軍ターン開始時スキル対象ユニット
+     * @param  {UnitGroupType} group - グループ
      */
-    __simulateBeginningOfTurn(targetUnits, enemyUnits, group = null) {
+    __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
 
         if (targetUnits.length == 0) {
@@ -4024,7 +4030,7 @@ class BattleSimmulatorBase {
             }
         }
 
-        this.__applySkillsForBeginningOfTurn(targetUnits, enemyUnits);
+        this.__applySkillsForBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits);
 
         if (this.data.gameMode == GameMode.SummonerDuels) {
             this.data.globalBattleContext.initializeSummonerDuelsTurnContext(
