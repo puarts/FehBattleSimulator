@@ -10,19 +10,6 @@
 </head>
 
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-
-    <!-- select2 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-
-    <!-- jquery-ui -->
-    <link type="text/css" rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-
-    <!-- vue.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
-
     <div id="app">
         <div
             style="text-align: left;background-color: #6aa5a2;border: solid 2px #ded;padding: 10px;width: fit-content;border-radius: 20px; font-size: 14px;text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px">
@@ -54,17 +41,17 @@
                                     </select>
                                     <label>
                                         <img v-if="value.moveType == MoveType.Infantry"
-                                            src="/blog/images/feh/Dragonflower_Infantry.png" width="30" height="30"
-                                            alt="神竜の花">
+                                            :src="g_siteRootPath + 'images/feh/Dragonflower_Infantry.png'" width="30"
+                                            height="30" alt="神竜の花">
                                         <img v-else-if="value.moveType == MoveType.Flying"
-                                            src="/blog/images/feh/Dragonflower_Flying.png" width="30" height="30"
-                                            alt="神竜の花">
+                                            :src="g_siteRootPath + 'images/feh/Dragonflower_Flying.png'" width="30"
+                                            height="30" alt="神竜の花">
                                         <img v-else-if="value.moveType == MoveType.Cavalry"
-                                            src="/blog/images/feh/Dragonflower_Cavalry.png" width="30" height="30"
-                                            alt="神竜の花">
+                                            :src="g_siteRootPath + 'images/feh/Dragonflower_Cavalry.png'" width="30"
+                                            height="30" alt="神竜の花">
                                         <img v-else-if="value.moveType == MoveType.Armor"
-                                            src="/blog/images/feh/Dragonflower_Armored.png" width="30" height="30"
-                                            alt="神竜の花">
+                                            :src="g_siteRootPath + 'images/feh/Dragonflower_Armored.png'" width="30"
+                                            height="30" alt="神竜の花">
                                         +</label>
                                     <select v-model="value.dragonflower" @change="updateStatus();">
                                         <option v-for="(value, i) in (value.maxDragonflower+1)" v-bind:value="i">
@@ -223,35 +210,70 @@
     </div>
 
     <script>
-        let jsRootPath = "./";
-        // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
-        let reloadSuffix = "20200513";
+        function createScriptElement(src, onloadFunc) {
+            let element = document.createElement("script");
+            element.type = "text/javascript";
+            element.src = src;
+            element.onload = onloadFunc;
+            // document.body.appendChild(element);
+            let headElement = document.getElementsByTagName('head')[0];
+            headElement.appendChild(element);
+        }
 
-        document.write("<script type='text/javascript' src='" + jsRootPath + "GlobalDefinitions.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Utilities.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Skill.js?" + reloadSuffix + "'><\/script>");
-        // document.write("<script type='text/javascript' src='" + jsRootPath + "Map.js?" + reloadSuffix + "'><\/script>");
-        // document.write("<script type='text/javascript' src='" + jsRootPath + "Structures.js?" + reloadSuffix + "'><\/script>");
-        // document.write("<script type='text/javascript' src='" + jsRootPath + "Table.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "HeroInfo.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "BattleMapElement.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "Unit.js?" + reloadSuffix + "'><\/script>");
-        // document.write("<script type='text/javascript' src='" + jsRootPath + "DamageCalculator.js?" + reloadSuffix + "'><\/script>");
-        // document.write("<script type='text/javascript' src='" + jsRootPath + "Settings.js?" + reloadSuffix + "'><\/script>");
-        // document.write("<script type='text/javascript' src='" + jsRootPath + "AudioManager.js?" + reloadSuffix + "'><\/script>");
-        document.write("<script type='text/javascript' src='" + jsRootPath + "StatusCalcMain.js?" + reloadSuffix + "'><\/script>");
+        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
+            if (index == scriptFileNames.length) {
+                allScriptLoaded();
+                return;
+            }
+
+            let jsRootPath = "./";
+            // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
+            let reloadSuffix = "20200513";
+            let scriptFileName = scriptFileNames[index];
+            let src = jsRootPath + scriptFileName + "?" + reloadSuffix;
+            const startTime = Date.now();
+            createScriptElement(src, x => {
+                const endTime = Date.now();
+                console.log(`${endTime - startTime} ms to load ${src}`);
+                loadScripts(scriptFileNames, allScriptLoaded, ++index);
+            });
+        }
+
+        const isLocal = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+        function initCalculatorLocal() {
+            console.log(`isLocal=${isLocal}`);
+            let additionalScripts = [];
+            if (isLocal) {
+                additionalScripts = [
+                    "GlobalDefinitions_Debug.js",
+                    "Utilities.js",
+                    "Skill.js",
+                    "BattleMapElement.js",
+                    "HeroInfo.js",
+                    "Unit.js",
+                    "StatusCalcMain.js",
+                ];
+            }
+            const startTime = Date.now();
+            createScriptElement("https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js", x => {
+                loadScripts(additionalScripts, () => {
+                    const endTime = Date.now();
+                    console.log(`${endTime - startTime} ms to load all scripts`);
+                    console.log("initializing application");
+                    const heroInfo = new HeroInfo('魔器ラインハルト', 'RearmedReinhardt-Icon.png', MoveType.Cavalry, '青魔', 2, 41, 46, 45, 22, 20, 19, 11, 12, 3, 3, '0/0', '0/0', '0/0', '0/0', '0/0', 2731, -1, 468, 2732, 2733, 2164, -1, SeasonType.None, BlessingType.None, 'トードの再来', ['ラインハルト',], 0, [2731,], [], 1081, false, 'トラキア776', '魔器英雄', '2024-01-10', [468,], [2732,], [2733,], [2164,], []);
+                    const weaponInfo = new SkillInfo(2731, '魔器・雷公の書', 14, 0, 0, 0, 0, 0, 0, [], [], -1, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.BlueTome, 300, true, [WeaponType.All], [MoveType.Infantry, MoveType.Armor, MoveType.Flying, MoveType.Cavalry], false, true, '', SkillType.Weapon);
+                    const maxSp = 2390;
+                    init(heroInfo, [weaponInfo], maxSp);
+                });
+            });
+        }
+
+        if (isLocal) {
+            window.addEventListener('load', (event) => {
+                initCalculatorLocal();
+            });
+        }
     </script>
-
-    <script>
-        $(function () {
-            let heroInfo = new HeroInfo('エリウッド', 'Eliwood.png', MoveType.Cavalry, '剣', 1, 39, 31, 30, 23, 32, 17, 7, 8, 6, 8, '0/0', '0/0', '0/0', '0/0', '0/0', 24, -1, 476, -1, 620, 689, -1, SeasonType.None, BlessingType.None, 'リキア一の騎士', ['エリウッド',], 0, [24, 33,], [], 82, true, '烈火の剣', 'ガチャ', '2017-02-02', [476,], [], [620,], [689,]);
-            let weaponInfo = new SkillInfo(24, 'デュランダル', 16, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 16, false, false, AssistType.None, false, 0, WeaponType.Sword, 400, false, [], [], true);
-            init(heroInfo, [weaponInfo], 2100);
-        });
-    </script>
-
-
-
 </body>
 
 </html>

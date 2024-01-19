@@ -2,56 +2,7 @@
 /// @brief ステータス計算器のメインコードです。
 
 let unit = new Unit();
-
-let vm = new Vue({
-    el: "#app",
-    data: {
-        /** @member {Unit} */
-        value: unit,
-        isWeaponEnabled: false,
-        totalSp: 0,
-        isDuelSkillEnabled: false,
-    },
-    methods: {
-        reset() {
-            unit.rarity = 5;
-            unit.merge = 0;
-            unit.dragonflower = 0;
-            unit.ascendedAsset = StatusType.None;
-            unit.ivHighStat = StatusType.None;
-            unit.ivLowStat = StatusType.None;
-            unit.isBonusChar = false;
-            unit.isResplendent = false;
-            unit.clearBlessingEffects();
-            unit.summonerLevel = SummonerLevel.None;
-            this.isWeaponEnabled = false;
-            updateStatus();
-        },
-        maximaizeMergeAndDragonflower: function () {
-            unit.maximizeMergeAndDragonflower();
-            updateStatus();
-        },
-        maximaizeMerge: function () {
-            unit.maximizeMerge();
-            updateStatus();
-        },
-        maximaizeDragonflower: function () {
-            unit.maximizeDragonflower();
-            updateStatus();
-        },
-        resetMerge: function () {
-            unit.merge = 0;
-            unit.updateStatusByMergeAndDragonFlower();
-            updateStatus();
-        },
-        resetDragonflower: function () {
-            unit.dragonflower = 0;
-            unit.updateStatusByMergeAndDragonFlower();
-            updateStatus();
-        },
-    }
-});
-
+let g_app = null;
 
 function updateStatus() {
     unit.updateBaseStatus();
@@ -65,7 +16,7 @@ function updateStatus() {
     // 個体値と限界突破によるステータス上昇
     unit.updateStatusByMergeAndDragonFlower();
 
-    if (vm.isWeaponEnabled) {
+    if (g_app.isWeaponEnabled) {
         unit.updateStatusByWeapon();
 
         // 武器錬成
@@ -101,14 +52,14 @@ function updateStatus() {
     unit.__updateStatusByBlessing(unit.blessing5);
     unit.__updateStatusByBlessing(unit.blessing6);
 
-    if (vm.isDuelSkillEnabled) {
+    if (g_app.isDuelSkillEnabled) {
         unit.passiveAInfo = new SkillInfo("", "死闘4");
     }
     else {
         unit.passiveAInfo = null;
     }
 
-    unit.arenaScore = unit.calcArenaScore(vm.totalSp);
+    unit.arenaScore = unit.calcArenaScore(g_app.totalSp);
 }
 
 
@@ -127,7 +78,56 @@ function init(heroInfo, skillInfos, totalSp) {
     unit.initByHeroInfo(heroInfo);
     unit.initializeSkillsToDefault();
     unit.weaponInfo = __findSkillInfo(skillInfos, unit.weapon);
-    vm.totalSp = totalSp;
+
+    g_app = new Vue({
+        el: "#app",
+        data: {
+            /** @member {Unit} */
+            value: unit,
+            isWeaponEnabled: false,
+            totalSp: 0,
+            isDuelSkillEnabled: false,
+        },
+        methods: {
+            reset() {
+                unit.rarity = 5;
+                unit.merge = 0;
+                unit.dragonflower = 0;
+                unit.ascendedAsset = StatusType.None;
+                unit.ivHighStat = StatusType.None;
+                unit.ivLowStat = StatusType.None;
+                unit.isBonusChar = false;
+                unit.isResplendent = false;
+                unit.clearBlessingEffects();
+                unit.summonerLevel = SummonerLevel.None;
+                this.isWeaponEnabled = false;
+                updateStatus();
+            },
+            maximaizeMergeAndDragonflower: function () {
+                unit.maximizeMergeAndDragonflower();
+                updateStatus();
+            },
+            maximaizeMerge: function () {
+                unit.maximizeMerge();
+                updateStatus();
+            },
+            maximaizeDragonflower: function () {
+                unit.maximizeDragonflower();
+                updateStatus();
+            },
+            resetMerge: function () {
+                unit.merge = 0;
+                unit.updateStatusByMergeAndDragonFlower();
+                updateStatus();
+            },
+            resetDragonflower: function () {
+                unit.dragonflower = 0;
+                unit.updateStatusByMergeAndDragonFlower();
+                updateStatus();
+            },
+        }
+    });
+    g_app.totalSp = totalSp;
     updateStatus();
 }
 

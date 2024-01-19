@@ -36,7 +36,7 @@ echo html files
 set trunk_root=%~dp0..\..\trunk
 set root=%trunk_root%\Websites\fire-emblem.fun
 set html_destination=%root%\blog\entries
-set copyfiles=AetherRaidSimulator ArenaSimulator DamageCalculator SummonerDuelsSimulator UnitBuilder HeroIconLister
+set copyfiles=AetherRaidSimulator ArenaSimulator DamageCalculator SummonerDuelsSimulator UnitBuilder HeroIconLister StatusCalculator
 for %%n in (%copyfiles%) do (
     copy %~dp0Sources\%%n.html %html_destination%\%%n.html
 )
