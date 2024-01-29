@@ -1854,7 +1854,6 @@ const Weapon = {
     // フレスベルグ(敵)
     QuietingClaw: 2737, // 刃の葬り手の爪
 
-    // New Skills
     // 超英雄 (理想郷の守護者)
     // https://www.youtube.com/watch?v=y9LRrSYLkbc&t=18s&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=c8IqvCHroKU&ab_channel=NintendoMobile
@@ -1863,6 +1862,11 @@ const Weapon = {
     NabataBeaconPlus: 2743, // ナバタの燭台+
     SandglassBow: 2746, // 悠久の黄砂の絆弓
     NabataLancePlus: 2751, // ナバタの槍+
+
+    // 紋章士＆神階英雄 (マルス＆ルミエル)
+    // https://www.youtube.com/watch?v=EYXWjg5GfnU&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=ljQ6oIZFbk0&ab_channel=NintendoMobile
+    MonarchsStone: 2753, // 白き神竜王のブレス
 };
 
 const Support = {
@@ -4409,6 +4413,19 @@ class SkillInfo {
     }
 }
 
+class MathUtil {
+    static limitTo(value, min = null, max = null) {
+        let v = value;
+        if (min !== null) {
+            v = Math.max(v, min);
+        }
+        if (max !== null) {
+            v = Math.min(v, max);
+        }
+        return v;
+    }
+}
+
 const count2Specials = [];
 const inheritableCount2Specials = [];
 const count3Specials = [];
@@ -4489,6 +4506,26 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 白き神竜王のブレス
+{
+    let skillId = Weapon.MonarchsStone;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let atk = enemyUnit.getAtkInPrecombat();
+                let amount = MathUtil.limitTo(Math.trunc(atk * 0.25) - 4, 5, 14);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                });
+            }
+        }
+    );
+}
+
 // ナバタの槍+
 {
     let skillId = Weapon.NabataLancePlus;
