@@ -3166,6 +3166,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    DragonMonarch: 2756, // リトスの神竜王
     FutureSighted: 2716, // 共に未来を変えて
     DeadlyMiasma: 2711, // 死の瘴気
     MendingHeart: 2679, // 癒し手の心
@@ -4508,6 +4509,52 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// リトスの神竜王
+{
+    let skillId = PassiveC.DragonMonarch;
+    let divineFunc = function () {
+        for (let tile of g_appData.map.enumerateTilesInSquare(this.placedTile, 5)) {
+            tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
+        }
+    };
+    applyEndActionSkillsFuncMap.set(skillId, divineFunc);
+    applySkillsAfterCantoActivatedFuncMap.set(skillId, divineFunc);
+
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            if (Math.abs(allyUnit.posX - targetUnit.posX) <= 2 &&
+                Math.abs(allyUnit.posY - targetUnit.posY) <= 2) {
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (Math.abs(allyUnit.posX - targetUnit.posX) <= 2 &&
+                Math.abs(allyUnit.posY - targetUnit.posY) <= 2) {
+                enemyUnit.battleContext.reducesCooldownCount = false;
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSquare(targetUnit, 5)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 白き神竜王のブレス
 {
     let skillId = Weapon.MonarchsStone;

@@ -11980,6 +11980,23 @@ class DamageCalculatorWrapper {
         return this._unitManager.isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator);
     }
 
+    __isThereAllyInSquare(targetUnit, n, predicator = null) {
+        let m = Math.trunc(n / 2);
+        for (let ally of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            if (Math.abs(ally.posX - targetUnit.posX) <= m &&
+                Math.abs(ally.posY - targetUnit.posY) <= m) {
+                if (predicator) {
+                    if (predicator(ally)) {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     static __applyIdealEffect(targetUnit, enemyUnit, buffFunc, buffAmount = 7, additionalBuffAmount = 2) {
         if (targetUnit.battleContext.restHpPercentage === 100 || targetUnit.hasPositiveStatusEffect(enemyUnit)) {
             buffFunc(targetUnit, buffAmount);
