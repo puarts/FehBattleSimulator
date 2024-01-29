@@ -58,6 +58,12 @@
                                             {{ i }}
                                         </option>
                                     </select>
+                                    紋+
+                                    <select v-model="value.emblemHeroMerge" @change="updateStatus();">
+                                        <option v-for="(value, i) in (10+1)" v-bind:value="i">
+                                            {{ i }}
+                                        </option>
+                                    </select>
                                 </td>
                             </tr>
                         </table>
@@ -180,6 +186,7 @@
                 <tr>
                     <td>
                         <input type="button" style="width:49%" value="凸と花を最大化" @click="maximaizeMergeAndDragonflower">
+                        <input type="button" style="width:49%" value="凸、花、紋凸を最大化" @click="maximaizeMergeAndDragonflowerAndEmblemHeroMerge">
                         <input type="button" style="width:49%" value="リセット" @click="reset">
                     </td>
                 </tr>

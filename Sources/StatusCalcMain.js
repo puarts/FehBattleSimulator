@@ -93,6 +93,7 @@ function init(heroInfo, skillInfos, totalSp) {
                 unit.rarity = 5;
                 unit.merge = 0;
                 unit.dragonflower = 0;
+                unit.emblemHeroMerge = 0;
                 unit.ascendedAsset = StatusType.None;
                 unit.ivHighStat = StatusType.None;
                 unit.ivLowStat = StatusType.None;
@@ -101,6 +102,10 @@ function init(heroInfo, skillInfos, totalSp) {
                 unit.clearBlessingEffects();
                 unit.summonerLevel = SummonerLevel.None;
                 this.isWeaponEnabled = false;
+                updateStatus();
+            },
+            maximaizeMergeAndDragonflowerAndEmblemHeroMerge: function () {
+                unit.maximizeMergeAndDragonflower(true);
                 updateStatus();
             },
             maximaizeMergeAndDragonflower: function () {

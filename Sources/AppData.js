@@ -310,6 +310,9 @@ class AppData extends UnitManager {
         this.heroOptions = [
             { id: -1, text: "なし" },
         ];
+        this.emblemHeroOptions = [
+            { id: -1, text: "なし" },
+        ];
         this.ivStateOptions = [
             { id: StatusType.None, text: "なし" },
             { id: StatusType.Hp, text: "HP" },
@@ -632,7 +635,9 @@ class AppData extends UnitManager {
         for (let i = 0; i < heroInfos.length; ++i) {
             let heroInfo = heroInfos[i];
             this.heroOptions.push({ id: i, text: heroInfo.name });
-            // this.heroOptions.push({ id: heroInfo.id, text: heroInfo.name });
+            if (EmblemHeroSet.has(i)) {
+                this.emblemHeroOptions.push({ id: i, text: heroInfo.name });
+            }
             if (registersSkillOption) {
                 this.registerSkillInfos(heroInfo);
             }

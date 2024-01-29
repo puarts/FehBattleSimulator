@@ -70,6 +70,19 @@ const Hero = {
     HarmonizedIgrene: 1079,
 };
 
+// 紋章士
+// heroIndexを指定する。HeroInfo.idの値ではないので注意
+const EmblemHero = {
+    // Marth: xxx,
+};
+
+// 紋章士のリスト
+const EmblemHeroSet = new Set(Object.values(EmblemHero));
+
+// 奥義が発動しやすい紋章士
+const ReduceSpecialCountEmblemHeroSet = new Set();
+ReduceSpecialCountEmblemHeroSet.add(EmblemHero.Marth);
+
 function isThiefIndex(heroIndex) {
     return heroIndex == Hero.Thief
         || heroIndex == Hero.RedThief
@@ -1443,6 +1456,7 @@ class Unit extends BattleMapElement {
         this.summonerLevel = SummonerLevel.None; // 絆レベル
         this.merge = 0; // 限界突破数
         this.dragonflower = 0; // 神竜の花
+        this.emblemHeroMerge = 0; // 紋章士の限界突破
         this.blessingEffects = [];
         this.blessing1 = BlessingType.None;
         this.blessing2 = BlessingType.None;
@@ -1561,6 +1575,7 @@ class Unit extends BattleMapElement {
         this.captainInfo = null;
 
         this.partnerHeroIndex = 0;
+        this.emblemHeroIndex = 0;
         this.partnerLevel = PartnerLevel.None; // 支援レベル
 
         this.isTransformed = false; // 化身
@@ -2137,12 +2152,14 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.blessing3
             + ValueDelimiter + this.merge
             + ValueDelimiter + this.dragonflower
+            + ValueDelimiter + this.emblemHeroMerge
             + ValueDelimiter + this.ivHighStat
             + ValueDelimiter + this.ivLowStat
             + ValueDelimiter + this.summonerLevel
             + ValueDelimiter + boolToInt(this.isBonusChar)
             + ValueDelimiter + this.weaponRefinement
             + ValueDelimiter + this.partnerHeroIndex
+            + ValueDelimiter + this.emblemHeroIndex
             + ValueDelimiter + this.partnerLevel
             + ValueDelimiter + this.slotOrder
             + ValueDelimiter + this.blessing4
@@ -2241,12 +2258,14 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.blessing3 = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.merge = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.dragonflower = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroMerge = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.ivHighStat = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.ivLowStat = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.summonerLevel = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.isBonusChar = intToBool(Number(splited[i])); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.weaponRefinement = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.partnerHeroIndex = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroIndex = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.partnerLevel = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.slotOrder = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.blessing4 = Number(splited[i]); ++i; }
@@ -2353,6 +2372,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.blessing3
             + ValueDelimiter + this.merge
             + ValueDelimiter + this.dragonflower
+            + ValueDelimiter + this.emblemHeroMerge
             + ValueDelimiter + this.ivHighStat
             + ValueDelimiter + this.ivLowStat
             + ValueDelimiter + this.summonerLevel
@@ -2372,6 +2392,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.specialCount
             + ValueDelimiter + this.statusEffectsToString()
             + ValueDelimiter + this.partnerHeroIndex
+            + ValueDelimiter + this.emblemHeroIndex
             + ValueDelimiter + this.partnerLevel
             + ValueDelimiter + boolToInt(this.isTransformed)
             + ValueDelimiter + this.slotOrder
@@ -2405,6 +2426,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.blessing3 = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.merge = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.dragonflower = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroMerge = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.ivHighStat = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.ivLowStat = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.summonerLevel = Number(splited[i]); ++i; }
@@ -2424,6 +2446,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(splited[i]))) { this.specialCount = Number(splited[i]); ++i; }
         this.setStatusEffectsFromString(splited[i]); ++i;
         if (Number.isInteger(Number(splited[i]))) { this.partnerHeroIndex = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroIndex = Number(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.partnerLevel = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.isTransformed = toBoolean(splited[i]); ++i; }
         if (Number.isInteger(Number(splited[i]))) { this.slotOrder = Number(splited[i]); ++i; }
@@ -3877,9 +3900,12 @@ class Unit extends BattleMapElement {
         this.dragonflower = Math.min(value, this.maxDragonflower);
     }
 
-    maximizeMergeAndDragonflower() {
+    maximizeMergeAndDragonflower(includeEmblemHeroMerge=false) {
         this.merge = 10;
         this.dragonflower = this.maxDragonflower;
+        if (includeEmblemHeroMerge) {
+            this.emblemHeroMerge = 10;
+        }
         this.updateStatusByMergeAndDragonFlower();
     }
 
@@ -4714,12 +4740,14 @@ class Unit extends BattleMapElement {
 
     updateStatusByMergeAndDragonFlower() {
         const addValues = Unit.calcStatusAddValuesByMergeAndDragonFlower(
-            this.ivHighStat, this.ivLowStat, this.ascendedAsset, this.merge, this.dragonflower,
+            this.ivHighStat, this.ivLowStat, this.ascendedAsset,
+            this.merge, this.dragonflower, this.emblemHeroMerge,
             this.heroInfo.hpLv1,
             this.heroInfo.atkLv1,
             this.heroInfo.spdLv1,
             this.heroInfo.defLv1,
-            this.heroInfo.resLv1);
+            this.heroInfo.resLv1
+        );
 
         this._maxHpWithSkills += addValues[0];
         this.atkWithSkills += addValues[1];
@@ -4729,11 +4757,14 @@ class Unit extends BattleMapElement {
     }
 
     /**
+     * 限界突破と神竜の花によるステータス加算を計算する。
+     * 限界突破にはエンゲージされた紋章士の凸数も含む
      * @param  {StatusType} ivHighStat
      * @param  {StatusType} ivLowStat
      * @param  {StatusType} ascendedAsset
      * @param  {Number} merge
      * @param  {Number} dragonflower
+     * @param  {Number} emblemHeroMerge
      * @param  {Number} hpLv1
      * @param  {Number} atkLv1
      * @param  {Number} spdLv1
@@ -4741,7 +4772,8 @@ class Unit extends BattleMapElement {
      * @param  {Number} resLv1
      */
     static calcStatusAddValuesByMergeAndDragonFlower(
-        ivHighStat, ivLowStat, ascendedAsset, merge, dragonflower,
+        ivHighStat, ivLowStat, ascendedAsset,
+        merge, dragonflower, emblemHeroMerge,
         hpLv1,
         atkLv1,
         spdLv1,
@@ -4784,7 +4816,7 @@ class Unit extends BattleMapElement {
         const addValues = [0, 0, 0, 0, 0];
 
         // 限界突破によるステータス上昇
-        if (merge > 0 || dragonflower > 0) {
+        if (merge > 0 || dragonflower > 0 || emblemHeroMerge) {
             const statusList = [
                 { type: StatusType.Hp, value: hpLv1 + hpLv1IvChange },
                 { type: StatusType.Atk, value: atkLv1 + atkLv1IvChange },
@@ -4837,6 +4869,11 @@ class Unit extends BattleMapElement {
 
             // 神竜の花
             for (let i = 0; i < dragonflower; ++i) {
+                updateStatus(i);
+            }
+
+            // 紋章士の限界突破
+            for (let i = 0; i < emblemHeroMerge; ++i) {
                 updateStatus(i);
             }
         }

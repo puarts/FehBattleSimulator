@@ -246,6 +246,7 @@ class RoundRobinParam {
     constructor() {
         this.merge = 10;
         this.dragonflower = MaxDragonFlower;
+        this.emblemHeroMerge = 10;
         this.special = Special.None;
         this.passiveA = PassiveA.None;
         this.passiveB = PassiveB.None;
@@ -634,6 +635,7 @@ class DamageCalcData {
             unit.merge = this.roundRobinParam.merge;
             unit.dragonflower = this.roundRobinParam.dragonflower == MaxDragonFlower ?
                 heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
+            unit.emblemHeroMerge = this.roundRobinParam.emblemHeroMerge;
             unit.isBonusChar = false;
             unit.isResplendent = heroInfo.isResplendent;
             if (!unit.isMythicHero) {
@@ -696,6 +698,7 @@ class DamageCalcData {
             unit.merge = this.roundRobinParam.merge;
             unit.dragonflower = this.roundRobinParam.dragonflower == MaxDragonFlower ?
                 heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
+            unit.emblemHeroMerge = this.roundRobinParam.emblemHeroMerge;
             unit.isBonusChar = false;
             unit.isResplendent = heroInfo.isResplendent;
             if (!unit.isMythicHero) {
