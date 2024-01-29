@@ -32,6 +32,7 @@ class DamageCalcContext {
     constructor() {
         this.isCounterattack = false;
         this.isFollowupAttack = false;
+        this.isPotentFollowupAttack = false;
         /** @type {DamageLog[]} */
         this.damageHistory = []; // 攻撃ダメージの履歴
         this.damageType = DamageType.ActualDamage;
@@ -49,6 +50,30 @@ class DamageCalcContext {
 
     isConsecutiveAttack(atkUnit) {
         return this.damageHistory[this.damageHistory.length - 1].attackUnit === atkUnit;
+    }
+
+    isFollowupOrPotentFollowupAttack() {
+        return this.isFollowupAttack || this.isPotentFollowupAttack;
+    }
+
+    isFirstFollowupAttack() {
+        return this.isFollowupAttack && !this.isPotentFollowupAttack;
+    }
+
+    getAttackTypeString() {
+        let result = "";
+        if (!this.isCounterattack) {
+            result += "攻撃";
+        } else {
+            result += "反撃";
+        }
+        if (this.isFollowupAttack) {
+            result = `追撃${result}`;
+        }
+        if (this.isPotentFollowupAttack) {
+            result = `神速${result}`;
+        }
+        return result;
     }
 }
 
@@ -218,69 +243,121 @@ class DamageCalculator {
     *__enumerateCombatFuncs(atkUnit, defUnit, result, context) {
         let self = this;
         if (defUnit.battleContext.isVantageActivated) {
+            let message = `${defUnit.nameWithGroup}の待ち伏せが発動`;
+            this.writeDebugLog(message);
+            this.writeSimpleLog(message);
+
             // 反撃
             yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
             if (defUnit.battleContext.isDefDesperationActivated) {
+                let message = `${defUnit.nameWithGroup}の受けの攻め立てが発動`;
+                this.writeDebugLog(message);
+                this.writeSimpleLog(message);
+
                 // 反撃の追撃
                 yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                // 反撃の神速追撃
+                yield () => self.__potentFollowupCounterattack(atkUnit, defUnit, result, context);
 
                 // 攻撃
                 yield () => self.__attack(atkUnit, defUnit, result, context);
 
                 // 攻撃の追撃
                 yield () => self.__followupAttack(atkUnit, defUnit, result, context);
-            }
-            else {
+
+                // 攻撃の神速追撃
+                yield () => self.__potentFollowupAttack(atkUnit, defUnit, result, context);
+            } else {
                 // 攻撃
                 yield () => self.__attack(atkUnit, defUnit, result, context);
 
                 if (atkUnit.battleContext.isDesperationActivated) {
-                    // 攻撃の追撃
-                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
-
-                    // 反撃の追撃
-                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
-                }
-                else {
-                    // 反撃の追撃
-                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+                    let message = `${atkUnit.nameWithGroup}の攻め立てが発動`;
+                    this.writeDebugLog(message);
+                    this.writeSimpleLog(message);
 
                     // 攻撃の追撃
                     yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の神速追撃
+                    yield () => self.__potentFollowupAttack(atkUnit, defUnit, result, context);
+
+                    // 反撃の追撃
+                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 反撃の神速追撃
+                    yield () => self.__potentFollowupCounterattack(atkUnit, defUnit, result, context);
+                } else {
+                    // 反撃の追撃
+                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 反撃の神速追撃
+                    yield () => self.__potentFollowupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の追撃
+                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の神速追撃
+                    yield () => self.__potentFollowupAttack(atkUnit, defUnit, result, context);
                 }
             }
-        }
-        else {
+        } else {
             // 攻撃
             yield () => self.__attack(atkUnit, defUnit, result, context);
 
-            if (atkUnit.battleContext.isDesperationActivated) {
+            if (atkUnit.battleContext.isDesperationActivated) { // 攻め立て
+                let message = `${atkUnit.nameWithGroup}の攻め立てが発動`;
+                this.writeDebugLog(message);
+                this.writeSimpleLog(message);
+
                 // 攻撃の追撃
                 yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                // 攻撃の神速追撃
+                yield () => self.__potentFollowupAttack(atkUnit, defUnit, result, context);
 
                 // 反撃
                 yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
                 // 反撃の追撃
                 yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                // 反撃の神速追撃
+                yield () => self.__potentFollowupCounterattack(atkUnit, defUnit, result, context);
             } else {
                 // 反撃
                 yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
                 if (defUnit.battleContext.isDefDesperationActivated) {
-                    // 反撃の追撃
-                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
-
-                    // 攻撃の追撃
-                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
-                }
-                else {
-                    // 攻撃の追撃
-                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+                    let message = `${defUnit.nameWithGroup}の受けの攻め立てが発動`;
+                    this.writeDebugLog(message);
+                    this.writeSimpleLog(message);
 
                     // 反撃の追撃
                     yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 反撃の神速追撃
+                    yield () => self.__potentFollowupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の追撃
+                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の神速追撃
+                    yield () => self.__potentFollowupAttack(atkUnit, defUnit, result, context);
+                } else {
+                    // 攻撃の追撃
+                    yield () => self.__followupAttack(atkUnit, defUnit, result, context);
+
+                    // 攻撃の神速追撃
+                    yield () => self.__potentFollowupAttack(atkUnit, defUnit, result, context);
+
+                    // 反撃の追撃
+                    yield () => self.__followupCounterattack(atkUnit, defUnit, result, context);
+
+                    // 反撃の神速追撃
+                    yield () => self.__potentFollowupCounterattack(atkUnit, defUnit, result, context);
                 }
             }
         }
@@ -297,6 +374,7 @@ class DamageCalculator {
     __attack(atkUnit, defUnit, result, context) {
         context.isCounterattack = false;
         context.isFollowupAttack = false;
+        context.isPotentFollowupAttack = false;
         let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
         result.atkUnit_normalAttackDamage = combatResult.damagePerAttack;
         result.atkUnit_totalAttackCount += combatResult.attackCount;
@@ -310,6 +388,20 @@ class DamageCalculator {
         if (atkUnit.battleContext.canFollowupAttack) {
             context.isCounterattack = false;
             context.isFollowupAttack = true;
+            context.isPotentFollowupAttack = false;
+            let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
+            result.atkUnit_totalAttackCount += combatResult.attackCount;
+            if (atkUnit.restHp > 0) {
+                result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
+            }
+        }
+    }
+
+    __potentFollowupAttack(atkUnit, defUnit, result, context) {
+        if (atkUnit.battleContext.canPotentFollowupAttack()) {
+            context.isCounterattack = false;
+            context.isFollowupAttack = true;
+            context.isPotentFollowupAttack = true;
             let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
             result.atkUnit_totalAttackCount += combatResult.attackCount;
             if (atkUnit.restHp > 0) {
@@ -322,6 +414,7 @@ class DamageCalculator {
         if (defUnit.battleContext.canCounterattack) {
             context.isCounterattack = true;
             context.isFollowupAttack = false;
+            context.isPotentFollowupAttack = false;
             let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
             result.defUnit_normalAttackDamage = combatResult.damagePerAttack;
             result.defUnit_totalAttackCount += combatResult.attackCount;
@@ -344,6 +437,7 @@ class DamageCalculator {
         if (defUnit.battleContext.canCounterattack && defUnit.battleContext.canFollowupAttack) {
             context.isCounterattack = true;
             context.isFollowupAttack = true;
+            context.isPotentFollowupAttack = false;
             let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
             result.defUnit_totalAttackCount += combatResult.attackCount;
             if (defUnit.restHp > 0) {
@@ -352,6 +446,18 @@ class DamageCalculator {
         }
     }
 
+    __potentFollowupCounterattack(atkUnit, defUnit, result, context) {
+        if (defUnit.battleContext.canCounterattack && defUnit.battleContext.canPotentFollowupAttack()) {
+            context.isCounterattack = true;
+            context.isFollowupAttack = true;
+            context.isPotentFollowupAttack = true;
+            let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
+            result.defUnit_totalAttackCount += combatResult.attackCount;
+            if (defUnit.restHp > 0) {
+                result.defUnit_actualTotalAttackCount += combatResult.attackCount;
+            }
+        }
+    }
 
     // 1回ごとの攻撃で呼ばれる。
     // 攻撃ごとに変化がない場合はDamageCalculatorWrapper.jsにある方で実装すること。
@@ -456,21 +562,30 @@ class DamageCalculator {
     }
 
     __logAttackerAndAttackee(atkUnit, defUnit, context) {
-        if (!this.__isDead(atkUnit)) {
-            this.writeDebugLog("----");
-            if (context.isCounterattack) {
-                this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に反撃");
+        // TODO: 修正する
+        if (this.__isDead(atkUnit)) {
+            return;
+        }
+        this.writeDebugLog("----");
+        if (!context.isCounterattack) {
+            if (!context.isFollowupOrPotentFollowupAttack()) {
+                this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}を攻撃`);
+            } else if (context.isFirstFollowupAttack()) {
+                this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に追撃`);
+            } else {
+                this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に神速追撃`);
             }
-            else {
-                if (context.isFollowupAttack) {
-                    this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "に追撃");
-                }
-                else {
-                    this.writeLog(atkUnit.getNameWithGroup() + "が" + defUnit.getNameWithGroup() + "を攻撃");
-                }
+        } else {
+            if (!context.isFollowupOrPotentFollowupAttack()) {
+                this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に反撃`);
+            } else if (context.isFirstFollowupAttack()) {
+                this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に反撃追撃`);
+            } else {
+                this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に反撃神速追撃`);
             }
         }
     }
+
     /**
      * 一回分の攻撃ダメージを計算します。
      * @param  {Unit} atkUnit
@@ -478,7 +593,13 @@ class DamageCalculator {
      * @param  {DamageCalcContext} context
      */
     __calcCombatDamage(atkUnit, defUnit, context) {
-        if (this.isLogEnabled) this.__logAttackerAndAttackee(atkUnit, defUnit, context);
+        if (this.isLogEnabled) {
+            this.__logAttackerAndAttackee(atkUnit, defUnit, context);
+            let message = `[${context.getAttackTypeString()}]`;
+            this.writeSimpleLog("");
+            this.writeSimpleLog(message);
+            this.writeDebugLog(message);
+        }
 
         this.__calcAndSetCooldownCount(atkUnit, defUnit);
         this.__applySkillEffectsPerCombat(atkUnit, defUnit, context);
@@ -496,7 +617,8 @@ class DamageCalculator {
             ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
             atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
         }
-        if (context.isFollowupAttack) {
+        // 最初の追撃前の効果
+        if (context.isFirstFollowupAttack()) {
             let totalCount =
                 atkUnit.tmpSpecialCount
                 - atkUnit.battleContext.specialCountReductionBeforeFollowupAttack;
@@ -508,6 +630,11 @@ class DamageCalculator {
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 
         let atkCountPerOneAttack = context.isCounterattack ? atkUnit.battleContext.counterattackCount : atkUnit.battleContext.attackCount;
+        // 神速追撃の場合は2回攻撃は発動しない
+        if (context.isPotentFollowupAttack) {
+            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerOneAttack} → ${1}`);
+            atkCountPerOneAttack = 1;
+        }
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.specialAddDamage;
 
@@ -917,7 +1044,7 @@ class DamageCalculator {
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfConsecutiveAttacks;
                 }
 
-                if (context.isFollowupAttack) {
+                if (context.isFollowupOrPotentFollowupAttack()) {
                     // 追撃
                     damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
                 } else {
@@ -1080,9 +1207,18 @@ class DamageCalculator {
                 }
             }
 
+            // 神速追撃によるダメージ軽減
+            if (context.isPotentFollowupAttack) {
+                for (let ratio of atkUnit.battleContext.potentRatios) {
+                    let oldRatio = damageReductionRatio;
+                    damageReductionRatio *= 1.0 - ratio;
+                    this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+                }
+            }
+
             damageReductionRatio = 1.0 - damageReductionRatio;
             damageReductionValue += defUnit.battleContext.damageReductionValue;
-            if (context.isFollowupAttack) {
+            if (context.isFollowupOrPotentFollowupAttack()) {
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfFollowupAttack;
             } else {
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfFirstAttacks;

@@ -1546,6 +1546,27 @@ class BattleMap {
         }
     }
 
+    /**
+     * nxn以内のタイルを列挙。
+     * @param  {Tile} targetTile
+     * @param  {Number} n
+     * @returns {Tile[]}
+     */
+    *enumerateTilesInSquare(targetTile, n) {
+        let tx = targetTile.posX;
+        let ty = targetTile.posY;
+        let m = Math.trunc(n / 2);
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let index = y * this._width + x;
+                let tile = this._tiles[index];
+                if (tile.isInRange(tx - m, tx + m, ty - m, ty + m)) {
+                    yield tile;
+                }
+            }
+        }
+    }
+
     *enumerateAttackableTiles(attackerUnit, targetUnitTile) {
         for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(targetUnitTile, attackerUnit.attackRange)) {
             if (tile.isMovableTileForUnit(attackerUnit)) {

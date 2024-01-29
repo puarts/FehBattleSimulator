@@ -14958,17 +14958,25 @@ class DamageCalculatorWrapper {
     }
 
     /// 追撃可能かどうかが条件として必要なスキル効果の適用
-    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, _enemyUnit) {
-        switch (targetUnit.weapon) {
-            case Weapon.VengefulLance:
-                {
-                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)
-                        && !targetUnit.battleContext.canFollowupAttack
-                    ) {
+    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectRelatedToFollowupAttackPossibilityFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+            switch (skillId) {
+                case Weapon.VengefulLance:
+                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1) &&
+                        !targetUnit.battleContext.canFollowupAttack) {
                         targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
                     }
-                }
-                break;
+                    break;
+            }
         }
     }
     /**

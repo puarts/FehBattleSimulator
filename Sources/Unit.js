@@ -812,6 +812,9 @@ class BattleContext {
         // 奥義以外の祈り無効
         this.neutralizesNonSpecialMiracle = false;
 
+        // 神速
+        this.potentRatios = [];
+
         // フック関数
         // 固定ダメージ
         this.calcFixedAddDamageFuncs = [];
@@ -1004,6 +1007,7 @@ class BattleContext {
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
         this.damageAfterBeginningOfCombat = 0;
         this.neutralizesNonSpecialMiracle = false;
+        this.potentRatios = [];
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];
@@ -1111,6 +1115,19 @@ class BattleContext {
     multDamageReductionRatioOfPrecombatSpecial(ratio) {
         this.damageReductionRatioForPrecombat = BattleContext.multDamageReductionRatioForSpecial(
             this.damageReductionRatioForPrecombat, ratio);
+    }
+
+    // 自分から攻撃したかを考慮して2回攻撃可能かを判定する
+    isTwiceAttackActivating() {
+        if (this.initiatesCombat) {
+            return this.attackCount === 2;
+        } else {
+            return this.counterattackCount === 2;
+        }
+    }
+
+    canPotentFollowupAttack() {
+        return this.potentRatios.length > 0;
     }
 }
 

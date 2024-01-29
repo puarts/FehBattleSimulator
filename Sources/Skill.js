@@ -2861,6 +2861,9 @@ const PassiveB = {
     // 蛇毒
     OccultistsStrike: 2673, // 魔の蛇毒
     AssassinsStrike: 2696, // 理の蛇毒
+
+    // 神速
+    Potent4: 2759, // 神速4
 };
 
 const PassiveC = {
@@ -4496,6 +4499,7 @@ const canDisableAttackOrderSwapSkillFuncMap = new Map();
 const calcFixedAddDamageFuncMap = new Map();
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 const applyMovementSkillAfterCombatFuncMap = new Map();
+const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4510,6 +4514,36 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 神速4
+{
+    let skillId = PassiveB.Potent4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                return 0.3;
+            });
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+        }
+    );
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, -25)) {
+                let potentRatio = 0.4;
+                if (!targetUnit.battleContext.isTwiceAttackActivating() &&
+                    !targetUnit.battleContext.canFollowupAttack) {
+                    potentRatio = 0.8;
+                }
+                targetUnit.battleContext.potentRatios.push(potentRatio);
+            }
+        }
+    );
+}
+
 // 英雄王の剣
 {
     let skillId = Weapon.HeroKingSword;
