@@ -1867,6 +1867,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=EYXWjg5GfnU&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=ljQ6oIZFbk0&ab_channel=NintendoMobile
     MonarchsStone: 2753, // 白き神竜王のブレス
+    HeroKingSword: 2757, // 英雄王の剣
 };
 
 const Support = {
@@ -4509,6 +4510,23 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 英雄王の剣
+{
+    let skillId = Weapon.HeroKingSword;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                targetUnit.battleContext.isDesperationActivatable = true;
+            }
+        }
+    );
+}
+
 // リトスの神竜王
 {
     let skillId = PassiveC.DragonMonarch;
