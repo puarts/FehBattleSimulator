@@ -2659,6 +2659,7 @@ const PassiveB = {
 
     // 大共謀
     AtkSpdRuse3: 973,
+    AtkSpdRuse4: 2755, // 攻撃速さの大共謀4
     AtkDefRuse3: 1141,
     AtkResRuse3: 1546,
     DefResRuse3: 935,
@@ -7990,33 +7991,39 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
     );
 }
 
-// 速さ守備の大共謀4
+// 大共謀4
 {
-    let skillId = PassiveB.SpdDefRuse4;
-    canRallyForciblyFuncMap.set(skillId,
-        function (unit) {
-            return true;
-        }
-    );
-    canRalliedForciblyFuncMap.set(skillId,
-        function (unit) {
-            return true;
-        }
-    );
-    let func = function (supporterUnit, targetUnit) {
-        this.__applyRuse(supporterUnit, targetUnit, unit => {
-            unit.applyDebuffs(0, -6, -6, 0);
-            unit.addStatusEffect(StatusEffectType.Discord);
-            unit.addStatusEffect(StatusEffectType.Schism);
-        });
+    let setSkill = (skillId, debuffFunc) => {
+        canRallyForciblyFuncMap.set(skillId,
+            function (unit) {
+                return true;
+            }
+        );
+        canRalliedForciblyFuncMap.set(skillId,
+            function (unit) {
+                return true;
+            }
+        );
+        let func = function (supporterUnit, targetUnit) {
+            this.__applyRuse(supporterUnit, targetUnit, unit => {
+                // unit.applyDebuffs(0, -6, -6, 0);
+                debuffFunc(unit);
+                unit.addStatusEffect(StatusEffectType.Discord);
+                unit.addStatusEffect(StatusEffectType.Schism);
+            });
+        };
+        applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
+        applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                enemyUnit.addSpdDefSpurs(-4);
+            }
+        );
     };
-    applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
-    applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            enemyUnit.addSpdDefSpurs(-4);
-        }
-    );
+    // 速さ守備の大共謀4
+    setSkill(PassiveB.SpdDefRuse4, u => u.applyDebuffs(0, -6, -6, 0));
+    // 攻撃速さの大共謀4
+    setSkill(PassiveB.AtkSpdRuse4, u => u.applyDebuffs(-6, -6, 0, 0));
 }
 
 // 密偵忍者の手裏剣
