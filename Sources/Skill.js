@@ -2091,6 +2091,7 @@ const Special = {
     NegatingFang2: 2725, // 反竜穿・承
 
     // 専用奥義
+    LodestarRush: 2758, // スターラッシュ
     ArmsOfTheThree: 2749, // 三雄の双刃
     TimeIsLight: 2672, // 時は光
     LightIsTime: 2668, // 光は時
@@ -4500,6 +4501,7 @@ const calcFixedAddDamageFuncMap = new Map();
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 const applyMovementSkillAfterCombatFuncMap = new Map();
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
+const applySkillEffectsPerAttackFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4514,6 +4516,55 @@ const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// スターラッシュ
+{
+    let skillId = Special.LodestarRush;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+            if (targetUnit.tmpSpecialCount === 0 ||
+                targetUnit.battleContext.isSpecialActivated) {
+                targetUnit.battleContext.potentOverwriteRatio = 1.0;
+            }
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+            }
+        }
+    );
+}
+
 // 神速4
 {
     let skillId = PassiveB.Potent4;

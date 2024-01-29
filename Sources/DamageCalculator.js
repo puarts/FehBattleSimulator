@@ -1209,9 +1209,17 @@ class DamageCalculator {
 
             // 神速追撃によるダメージ軽減
             if (context.isPotentFollowupAttack) {
-                for (let ratio of atkUnit.battleContext.potentRatios) {
+                if (atkUnit.battleContext.potentOverwriteRatio === null) {
+                    for (let ratio of atkUnit.battleContext.potentRatios) {
+                        let oldRatio = damageReductionRatio;
+                        damageReductionRatio *= ratio;
+                        this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+                    }
+                } else {
+                    let ratio = atkUnit.battleContext.potentOverwriteRatio;
+                    this.writeDebugLog(`神速追撃上書き値による軽減。ratios: ${atkUnit.battleContext.potentRatios} → ratio: ${ratio}`);
                     let oldRatio = damageReductionRatio;
-                    damageReductionRatio *= 1.0 - ratio;
+                    damageReductionRatio *= ratio;
                     this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
                 }
             }
@@ -1421,6 +1429,15 @@ class DamageCalculator {
 
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
         for (let skillId of atkUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectsPerAttackFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, atkUnit, defUnit, canActivateAttackerSpecial);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.GustyWarBow:
                     if (atkUnit.battleContext.weaponSkillCondSatisfied) {

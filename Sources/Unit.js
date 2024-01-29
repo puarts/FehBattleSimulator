@@ -812,8 +812,11 @@ class BattleContext {
         // 奥義以外の祈り無効
         this.neutralizesNonSpecialMiracle = false;
 
-        // 神速
+        // 神速追撃
         this.potentRatios = [];
+
+        // 神速追撃上書き
+        this.potentOverwriteRatio = null;
 
         // フック関数
         // 固定ダメージ
@@ -1008,6 +1011,7 @@ class BattleContext {
         this.damageAfterBeginningOfCombat = 0;
         this.neutralizesNonSpecialMiracle = false;
         this.potentRatios = [];
+        this.potentOverwriteRatio = null;
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
         this.canActivateMiracleFuncs = [];
