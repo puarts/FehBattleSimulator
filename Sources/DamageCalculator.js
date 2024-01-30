@@ -1214,6 +1214,7 @@ class DamageCalculator {
                         let oldRatio = damageReductionRatio;
                         damageReductionRatio *= ratio;
                         this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+                        this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
                     }
                 } else {
                     let ratio = atkUnit.battleContext.potentOverwriteRatio;
@@ -1221,6 +1222,7 @@ class DamageCalculator {
                     let oldRatio = damageReductionRatio;
                     damageReductionRatio *= ratio;
                     this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+                    this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
                 }
             }
 

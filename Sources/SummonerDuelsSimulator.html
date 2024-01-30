@@ -1691,7 +1691,7 @@
                                 <label class="normal">紋章士: </label>
                                 <select2 :options="g_app.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
                                          class="hero"
-                                         @input="g_app.updateAllUnitSpur()">
+                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur()">
                                 </select2>
                                 <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.emblemHeroIndex}})</span>
 

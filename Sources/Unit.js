@@ -70,19 +70,6 @@ const Hero = {
     HarmonizedIgrene: 1079,
 };
 
-// 紋章士
-// heroIndexを指定する。HeroInfo.idの値ではないので注意
-const EmblemHero = {
-    // Marth: xxx,
-};
-
-// 紋章士のリスト
-const EmblemHeroSet = new Set(Object.values(EmblemHero));
-
-// 奥義が発動しやすい紋章士
-const ReduceSpecialCountEmblemHeroSet = new Set();
-ReduceSpecialCountEmblemHeroSet.add(EmblemHero.Marth);
-
 function isThiefIndex(heroIndex) {
     return heroIndex == Hero.Thief
         || heroIndex == Hero.RedThief
@@ -4950,6 +4937,7 @@ class Unit extends BattleMapElement {
         if (this.passiveS != NoneValue) { yield this.passiveS; }
         if (this.passiveX != NoneValue) { yield this.passiveX; }
         if (this.isCaptain && this.captain != NoneValue) { yield this.captain; }
+        if (this.emblemHeroIndex > 0) { yield getEmblemHeroSkillId(this.emblemHeroIndex); }
     }
 
     *enumeratePassiveSkills() {
@@ -5600,6 +5588,10 @@ class Unit extends BattleMapElement {
                     }
                     break;
             }
+        }
+        // TODO: 常に奥義カウントが0になるスキルが実装されたら修正する
+        if (specialCountMax === 0) {
+            specialCountMax = 1;
         }
 
         this.maxSpecialCount = specialCountMax;

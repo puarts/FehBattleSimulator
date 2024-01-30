@@ -492,6 +492,9 @@ class DamageCalculatorWrapper {
         self.__setAttackCount(atkUnit, defUnit);
         self.__setAttackCount(defUnit, atkUnit);
 
+        self.__applySkillEffectAfterSetAttackCount(atkUnit, defUnit);
+        self.__applySkillEffectAfterSetAttackCount(defUnit, atkUnit);
+
         // ダメージ軽減率の計算(ダメージ軽減効果を軽減する効果の後に実行する必要がある)
         {
             self.__applyDamageReductionRatio(atkUnit, defUnit);
@@ -10873,6 +10876,20 @@ class DamageCalculatorWrapper {
                     }
                 }
                     break;
+            }
+        }
+    }
+
+    __applySkillEffectAfterSetAttackCount(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectAfterSetAttackCountFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
             }
         }
     }

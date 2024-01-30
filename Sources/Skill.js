@@ -3259,6 +3259,7 @@ const PassiveS = {
 };
 
 const PassiveX = {
+    None: -1,
     DeathBlowEcho: 2616, // 響・鬼神の一撃
     AtkOathEcho: 2612, // 響・攻撃の信義
     FleetingEcho: 2663, // 響・飛燕の離撃
@@ -3282,6 +3283,17 @@ const Captain = {
     Dauntless: 2181, // 剛毅果断
 };
 
+// 紋章士
+const EmblemHero = {
+    Marth: 1082,
+};
+
+// スキルIDが被らないようにプレフィックスをつける
+function getEmblemHeroSkillId(emblemHeroIndex) {
+    return `e_${emblemHeroIndex}`;
+}
+
+const EmblemHeroSet = new Set(Object.values(EmblemHero));
 
 const PhysicalWeaponTypeDict = {};
 PhysicalWeaponTypeDict[WeaponType.Sword] = 0;
@@ -4502,6 +4514,7 @@ const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 const applyMovementSkillAfterCombatFuncMap = new Map();
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 const applySkillEffectsPerAttackFuncMap = new Map();
+const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4516,6 +4529,24 @@ const applySkillEffectsPerAttackFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 紋章士マルス
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Marth);
+    console.log(`skillId: ${skillId}`);
+    resetMaxSpecialCountFuncMap.set(skillId,
+        function () {
+            return -1;
+        }
+    );
+    applySkillEffectAfterSetAttackCountFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.isTwiceAttackActivating()) {
+                enemyUnit.battleContext.damageReductionValueOfSpecialAttack += 8;
+            }
+        }
+    );
+}
+
 // スターラッシュ
 {
     let skillId = Special.LodestarRush;
