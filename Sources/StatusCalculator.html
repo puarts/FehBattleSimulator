@@ -27,10 +27,7 @@
                                             {{ item}}
                                         </option>
                                     </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
+
                                     LV.<input name="merge" type="number" v-model="value.level" min="1" max="99"
                                         @input="updateStatus()" style="width:50px">
                                     +
@@ -39,6 +36,10 @@
                                             {{ i }}
                                         </option>
                                     </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
                                     <label>
                                         <img v-if="value.moveType == MoveType.Infantry"
                                             :src="g_siteRootPath + 'images/feh/Dragonflower_Infantry.png'" width="30"
@@ -186,7 +187,8 @@
                 <tr>
                     <td>
                         <input type="button" style="width:49%" value="凸と花を最大化" @click="maximaizeMergeAndDragonflower">
-                        <input type="button" style="width:49%" value="凸、花、紋凸を最大化" @click="maximaizeMergeAndDragonflowerAndEmblemHeroMerge">
+                        <input type="button" style="width:49%" value="凸、花、紋凸を最大化"
+                            @click="maximaizeMergeAndDragonflowerAndEmblemHeroMerge">
                         <input type="button" style="width:49%" value="リセット" @click="reset">
                     </td>
                 </tr>

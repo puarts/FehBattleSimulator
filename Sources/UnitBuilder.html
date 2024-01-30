@@ -641,10 +641,7 @@
                                         {{ item}}
                                     </option>
                                 </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="paramHeader">
+
                                 <label class="normal" for="merge">LV.</label>
                                 <input name="level" type="number" v-model="value.level"
                                     min="1" max="99" class="numeric" @input="updateStatus(value);" />
@@ -654,6 +651,11 @@
                                         {{ i }}
                                     </option>
                                 </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="paramHeader">
+
 
                                 <label class="normal" for="dragonflower">
                                     <img v-bind:src="value.dragonflowerIcon" width="25" height="25" />
