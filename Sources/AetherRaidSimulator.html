@@ -1523,7 +1523,7 @@
                                 </select2>
                                 <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
-                                <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.heroIndex}})</span>
+                                <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >(index: {{value.heroIndex}}, id: {{value.heroInfo.id}})</span>
                                 <br/>
                                 ★
                                 <select v-model="value.rarity" @change="g_app.vm.ivChanged">
@@ -1540,6 +1540,10 @@
                                 <input name="dragonflower" type="number"
                                     v-model="value.dragonflower" min="0" v-bind:max="value.maxDragonflower"
                                     class="numeric" @input="g_app.vm.dragonflowerChanged" />
+                                <label class="normal" for="emblemHeroMerge">紋+</label>
+                                <input name="emblemHeroMerge" type="number"
+                                       v-model="value.emblemHeroMerge" min="0" v-bind:max="10"
+                                       class="numeric" @input="g_app.vm.emblemHeroMergeChanged" />
                             </td>
                         </tr>
                         <tr  v-bind:style="g_app.vm.debugMenuStyle">
@@ -1617,13 +1621,29 @@
                                     <label class="normal" >支援: </label>
                                     <select2 :options="g_app.vm.heroOptions" v-model="value.partnerHeroIndex" class="hero"
                                         @input="g_app.updateAllUnitSpur()">
-                                    </select2><label class="normal" >レベル</label>
+                                    </select2>
+                                    <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.partnerHeroIndex}})</span>
+
+                                    <label class="normal" >レベル</label>
                                     <select v-model="value.partnerLevel" @change="g_app.updateAllUnitSpur()">
                                         <option v-for="option in g_appData.partnerLevelOptions" v-bind:value="option.id">
                                             {{ option.text }}
                                         </option>
                                     </select>
+                                    <br />
                                 </span>
+
+                                <label class="normal">紋章士: </label>
+                                <select2 :options="g_app.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
+                                         class="hero"
+                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur()">
+                                </select2>
+                                <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.emblemHeroIndex}})</span>
+
+                                <label class="normal">＋: </label>
+                                <input name="emblemHeroMerge" type="number"
+                                       v-model="value.emblemHeroMerge" min="0" v-bind:max="10"
+                                       class="numeric" @input="g_app.vm.emblemHeroMergeChanged" />
                             </td>
                         </tr>
                         <tr v-bind:style="g_app.vm.debugMenuStyle">

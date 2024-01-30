@@ -492,6 +492,9 @@ class DamageCalculatorWrapper {
         self.__setAttackCount(atkUnit, defUnit);
         self.__setAttackCount(defUnit, atkUnit);
 
+        self.__applySkillEffectAfterSetAttackCount(atkUnit, defUnit);
+        self.__applySkillEffectAfterSetAttackCount(defUnit, atkUnit);
+
         // ダメージ軽減率の計算(ダメージ軽減効果を軽減する効果の後に実行する必要がある)
         {
             self.__applyDamageReductionRatio(atkUnit, defUnit);
@@ -10877,6 +10880,20 @@ class DamageCalculatorWrapper {
         }
     }
 
+    __applySkillEffectAfterSetAttackCount(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectAfterSetAttackCountFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
+    }
+
     __isEnemyCountIsGreaterThanOrEqualToAllyCount(skillUnit, battleTargetUnit, calcPotentialDamage) {
         if (calcPotentialDamage) {
             return true;
@@ -11978,6 +11995,23 @@ class DamageCalculatorWrapper {
 
     __isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         return this._unitManager.isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator);
+    }
+
+    __isThereAllyInSquare(targetUnit, n, predicator = null) {
+        let m = Math.trunc(n / 2);
+        for (let ally of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            if (Math.abs(ally.posX - targetUnit.posX) <= m &&
+                Math.abs(ally.posY - targetUnit.posY) <= m) {
+                if (predicator) {
+                    if (predicator(ally)) {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     static __applyIdealEffect(targetUnit, enemyUnit, buffFunc, buffAmount = 7, additionalBuffAmount = 2) {
@@ -14941,17 +14975,25 @@ class DamageCalculatorWrapper {
     }
 
     /// 追撃可能かどうかが条件として必要なスキル効果の適用
-    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, _enemyUnit) {
-        switch (targetUnit.weapon) {
-            case Weapon.VengefulLance:
-                {
-                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)
-                        && !targetUnit.battleContext.canFollowupAttack
-                    ) {
+    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySkillEffectRelatedToFollowupAttackPossibilityFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+            switch (skillId) {
+                case Weapon.VengefulLance:
+                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1) &&
+                        !targetUnit.battleContext.canFollowupAttack) {
                         targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
                     }
-                }
-                break;
+                    break;
+            }
         }
     }
     /**

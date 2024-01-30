@@ -1854,7 +1854,6 @@ const Weapon = {
     // フレスベルグ(敵)
     QuietingClaw: 2737, // 刃の葬り手の爪
 
-    // New Skills
     // 超英雄 (理想郷の守護者)
     // https://www.youtube.com/watch?v=y9LRrSYLkbc&t=18s&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=c8IqvCHroKU&ab_channel=NintendoMobile
@@ -1863,6 +1862,12 @@ const Weapon = {
     NabataBeaconPlus: 2743, // ナバタの燭台+
     SandglassBow: 2746, // 悠久の黄砂の絆弓
     NabataLancePlus: 2751, // ナバタの槍+
+
+    // 紋章士＆神階英雄 (マルス＆ルミエル)
+    // https://www.youtube.com/watch?v=EYXWjg5GfnU&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=ljQ6oIZFbk0&ab_channel=NintendoMobile
+    MonarchsStone: 2753, // 白き神竜王のブレス
+    HeroKingSword: 2757, // 英雄王の剣
 };
 
 const Support = {
@@ -2086,6 +2091,7 @@ const Special = {
     NegatingFang2: 2725, // 反竜穿・承
 
     // 専用奥義
+    LodestarRush: 2758, // スターラッシュ
     ArmsOfTheThree: 2749, // 三雄の双刃
     TimeIsLight: 2672, // 時は光
     LightIsTime: 2668, // 光は時
@@ -2444,6 +2450,7 @@ const PassiveA = {
     // 竜眼
     AtkResScowl3: 2422, // 攻撃魔防の竜眼3
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
+    AtkSpdScowl4: 2754, // 攻撃速さの竜眼4
 
     // 柔撃
     FlashSparrow: 2510, // 鬼神飛燕の柔撃
@@ -2654,6 +2661,7 @@ const PassiveB = {
 
     // 大共謀
     AtkSpdRuse3: 973,
+    AtkSpdRuse4: 2755, // 攻撃速さの大共謀4
     AtkDefRuse3: 1141,
     AtkResRuse3: 1546,
     DefResRuse3: 935,
@@ -2854,6 +2862,9 @@ const PassiveB = {
     // 蛇毒
     OccultistsStrike: 2673, // 魔の蛇毒
     AssassinsStrike: 2696, // 理の蛇毒
+
+    // 神速
+    Potent4: 2759, // 神速4
 };
 
 const PassiveC = {
@@ -3160,6 +3171,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    DragonMonarch: 2756, // リトスの神竜王
     FutureSighted: 2716, // 共に未来を変えて
     DeadlyMiasma: 2711, // 死の瘴気
     MendingHeart: 2679, // 癒し手の心
@@ -3247,6 +3259,7 @@ const PassiveS = {
 };
 
 const PassiveX = {
+    None: -1,
     DeathBlowEcho: 2616, // 響・鬼神の一撃
     AtkOathEcho: 2612, // 響・攻撃の信義
     FleetingEcho: 2663, // 響・飛燕の離撃
@@ -3270,6 +3283,17 @@ const Captain = {
     Dauntless: 2181, // 剛毅果断
 };
 
+// 紋章士
+const EmblemHero = {
+    Marth: 1082,
+};
+
+// スキルIDが被らないようにプレフィックスをつける
+function getEmblemHeroSkillId(emblemHeroIndex) {
+    return `e_${emblemHeroIndex}`;
+}
+
+const EmblemHeroSet = new Set(Object.values(EmblemHero));
 
 const PhysicalWeaponTypeDict = {};
 PhysicalWeaponTypeDict[WeaponType.Sword] = 0;
@@ -4409,6 +4433,19 @@ class SkillInfo {
     }
 }
 
+class MathUtil {
+    static limitTo(value, min = null, max = null) {
+        let v = value;
+        if (min !== null) {
+            v = Math.max(v, min);
+        }
+        if (max !== null) {
+            v = Math.min(v, max);
+        }
+        return v;
+    }
+}
+
 const count2Specials = [];
 const inheritableCount2Specials = [];
 const count3Specials = [];
@@ -4475,6 +4512,9 @@ const canDisableAttackOrderSwapSkillFuncMap = new Map();
 const calcFixedAddDamageFuncMap = new Map();
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 const applyMovementSkillAfterCombatFuncMap = new Map();
+const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
+const applySkillEffectsPerAttackFuncMap = new Map();
+const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4489,6 +4529,186 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 紋章士マルス
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Marth);
+    console.log(`skillId: ${skillId}`);
+    resetMaxSpecialCountFuncMap.set(skillId,
+        function () {
+            return -1;
+        }
+    );
+    applySkillEffectAfterSetAttackCountFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.isTwiceAttackActivating()) {
+                enemyUnit.battleContext.damageReductionValueOfSpecialAttack += 8;
+            }
+        }
+    );
+}
+
+// スターラッシュ
+{
+    let skillId = Special.LodestarRush;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+            if (targetUnit.tmpSpecialCount === 0 ||
+                targetUnit.battleContext.isSpecialActivated) {
+                targetUnit.battleContext.potentOverwriteRatio = 1.0;
+            }
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+            }
+        }
+    );
+}
+
+// 神速4
+{
+    let skillId = PassiveB.Potent4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addSpdDefSpurs(-4);
+            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                return 0.3;
+            });
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
+        }
+    );
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, -25)) {
+                let potentRatio = 0.4;
+                if (!targetUnit.battleContext.isTwiceAttackActivating() &&
+                    !targetUnit.battleContext.canFollowupAttack) {
+                    potentRatio = 0.8;
+                }
+                targetUnit.battleContext.potentRatios.push(potentRatio);
+            }
+        }
+    );
+}
+
+// 英雄王の剣
+{
+    let skillId = Weapon.HeroKingSword;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                targetUnit.battleContext.isDesperationActivatable = true;
+            }
+        }
+    );
+}
+
+// リトスの神竜王
+{
+    let skillId = PassiveC.DragonMonarch;
+    let divineFunc = function () {
+        for (let tile of g_appData.map.enumerateTilesInSquare(this.placedTile, 5)) {
+            tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
+        }
+    };
+    applyEndActionSkillsFuncMap.set(skillId, divineFunc);
+    applySkillsAfterCantoActivatedFuncMap.set(skillId, divineFunc);
+
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            if (Math.abs(allyUnit.posX - targetUnit.posX) <= 2 &&
+                Math.abs(allyUnit.posY - targetUnit.posY) <= 2) {
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (Math.abs(allyUnit.posX - targetUnit.posX) <= 2 &&
+                Math.abs(allyUnit.posY - targetUnit.posY) <= 2) {
+                enemyUnit.battleContext.reducesCooldownCount = false;
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSquare(targetUnit, 5)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
+// 白き神竜王のブレス
+{
+    let skillId = Weapon.MonarchsStone;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let atk = enemyUnit.getAtkInPrecombat();
+                let amount = MathUtil.limitTo(Math.trunc(atk * 0.25) - 4, 5, 14);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                });
+            }
+        }
+    );
+}
+
 // ナバタの槍+
 {
     let skillId = Weapon.NabataLancePlus;
@@ -5621,6 +5841,7 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
     };
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl3, getScowlFunc(u => u.addAtkResSpurs(6), 9));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl4, getScowlFunc(u => u.addAtkResSpurs(7), 5));
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdScowl4, getScowlFunc(u => u.addAtkSpdSpurs(7), 5));
 }
 
 // 共に未来を変えて
@@ -7951,33 +8172,39 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
     );
 }
 
-// 速さ守備の大共謀4
+// 大共謀4
 {
-    let skillId = PassiveB.SpdDefRuse4;
-    canRallyForciblyFuncMap.set(skillId,
-        function (unit) {
-            return true;
-        }
-    );
-    canRalliedForciblyFuncMap.set(skillId,
-        function (unit) {
-            return true;
-        }
-    );
-    let func = function (supporterUnit, targetUnit) {
-        this.__applyRuse(supporterUnit, targetUnit, unit => {
-            unit.applyDebuffs(0, -6, -6, 0);
-            unit.addStatusEffect(StatusEffectType.Discord);
-            unit.addStatusEffect(StatusEffectType.Schism);
-        });
+    let setSkill = (skillId, debuffFunc) => {
+        canRallyForciblyFuncMap.set(skillId,
+            function (unit) {
+                return true;
+            }
+        );
+        canRalliedForciblyFuncMap.set(skillId,
+            function (unit) {
+                return true;
+            }
+        );
+        let func = function (supporterUnit, targetUnit) {
+            this.__applyRuse(supporterUnit, targetUnit, unit => {
+                // unit.applyDebuffs(0, -6, -6, 0);
+                debuffFunc(unit);
+                unit.addStatusEffect(StatusEffectType.Discord);
+                unit.addStatusEffect(StatusEffectType.Schism);
+            });
+        };
+        applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
+        applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                enemyUnit.addSpdDefSpurs(-4);
+            }
+        );
     };
-    applySkillsAfterRallyForSupporterFuncMap.set(skillId, func);
-    applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            enemyUnit.addSpdDefSpurs(-4);
-        }
-    );
+    // 速さ守備の大共謀4
+    setSkill(PassiveB.SpdDefRuse4, u => u.applyDebuffs(0, -6, -6, 0));
+    // 攻撃速さの大共謀4
+    setSkill(PassiveB.AtkSpdRuse4, u => u.applyDebuffs(-6, -6, 0, 0));
 }
 
 // 密偵忍者の手裏剣
