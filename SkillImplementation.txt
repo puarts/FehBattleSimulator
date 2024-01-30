@@ -288,6 +288,12 @@ __setBothOfAtkDefSkillEffetToContext(targetUnit, enemyUnit) {
     }
 }
 
+[追撃可能の判定に関するスキル効果]
+applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+    function (targetUnit, enemyUnit) {
+    }
+);
+
 敵から攻撃された時、先制攻撃[待ち伏せ]
 targetUnit.battleContext.isVantageActivatable = true;
 

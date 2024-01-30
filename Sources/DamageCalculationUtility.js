@@ -111,13 +111,14 @@ class DamageCalculationUtility {
     }
 
     /// 速さ比較で追撃可能かどうかを調べます。
-    static examinesCanFollowupAttack(atkUnit, defUnit) {
+    static examinesCanFollowupAttack(atkUnit, defUnit, evalValue=0) {
         let totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
         let totalSpdDef = defUnit.getSpdInCombat(atkUnit);
         // TODO: 追撃条件に必要な速さの差についてきちんと検証する
         let d = 5 +
             atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack +
-            defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack;
+            defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack +
+            evalValue;
         return totalSpdAtk >= totalSpdDef + d;
     }
 

@@ -405,6 +405,14 @@ class BattleSimmulatorBase {
                 g_appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
+            emblemHeroMergeChanged: function () {
+                if (g_app == null) { return; }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) { return; }
+                let currentUnit = self.__getCurrentUnit();
+                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                updateAllUi();
+            },
             summonerLevelChanged: function () {
                 if (g_app == null) { return; }
                 let unit = g_app.__getEditingTargetUnit();
