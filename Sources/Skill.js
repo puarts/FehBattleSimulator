@@ -4646,13 +4646,13 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 // リトスの神竜王
 {
     let skillId = PassiveC.DragonMonarch;
-    let divineFunc = function () {
-        for (let tile of g_appData.map.enumerateTilesInSquare(this.placedTile, 5)) {
-            tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
+    applyEndActionSkillsFuncMap.set(skillId,
+        function () {
+            for (let tile of g_appData.map.enumerateTilesInSquare(this.placedTile, 5)) {
+                tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
+            }
         }
-    };
-    applyEndActionSkillsFuncMap.set(skillId, divineFunc);
-    applySkillsAfterCantoActivatedFuncMap.set(skillId, divineFunc);
+    );
 
     updateUnitSpurFromAlliesFuncMap.set(skillId,
         function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
