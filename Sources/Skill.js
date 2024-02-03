@@ -5520,24 +5520,32 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
                     enemies.push(enemy);
                 }
             }
+            this.writeDebugLog(`${skillOwner.nameWithGroup}のシーフの対象キャラ: ${enemies.map(u => u.nameWithGroup)}(${enemies.length})`);
             // ステータス付与予約
             let statusSet = new Set();
-            enemies.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => statusSet.add(e)));
+            enemies.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => {
+                this.writeDebugLog(`シーフにより${enemy.nameWithGroup}から${getStatusEffectName(e)}を解除`);
+                statusSet.add(e);
+            }));
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                // ステータス
                 for (let statusEffect of statusSet) {
                     unit.reserveToAddStatusEffect(statusEffect);
                 }
+                // 強化
+                enemies.forEach(enemy => {
+                    let buffs = enemy.getBuffs(false);
+                    unit.reserveToApplyBuffs(...buffs);
+                    if (buffs.some(i => i > 0)) {
+                        this.writeDebugLog(`シーフにより${enemy.nameWithGroup} → ${unit.nameWithGroup}へ強化${buffs}を付与`);
+                    }
+                });
             }
             // ステータス解除予約
             for (let enemy of enemies) {
                 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
                 enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectToDeleteSet.add(e));
-            }
-            // 縦横3列デバフ
-            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                if (unit.isInClossWithOffset(skillOwner, 1)) {
-                    unit.reserveToApplyAllDebuff(-4);
-                }
+                enemy.reservedStatusesToDelete = [true, true, true, true];
             }
         }
     );
@@ -5551,6 +5559,14 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
                     // Nダメージ
                     atkUnit.battleContext.additionalDamage += n;
                 });
+            }
+        }
+    );
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // 縦横3列デバフ
+            if (enemyAllyUnit.isInClossWithOffset(targetUnit, 1)) {
+                targetUnit.addAllSpur(-4);
             }
         }
     );
