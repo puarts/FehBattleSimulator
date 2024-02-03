@@ -4702,8 +4702,8 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
                     if (isPrecombat) return;
                     let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
                     atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
-                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                 });
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
             }
         }
     );
