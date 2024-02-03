@@ -8174,7 +8174,7 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 
 // 大共謀4
 {
-    let setSkill = (skillId, debuffFunc) => {
+    let setSkill = (skillId, statusValues=[0, 0, 0, 0]) => {
         canRallyForciblyFuncMap.set(skillId,
             function (unit) {
                 return true;
@@ -8187,8 +8187,7 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
         );
         let func = function (supporterUnit, targetUnit) {
             this.__applyRuse(supporterUnit, targetUnit, unit => {
-                // unit.applyDebuffs(0, -6, -6, 0);
-                debuffFunc(unit);
+                unit.applyDebuffs(...statusValues.map(i => i * -6));
                 unit.addStatusEffect(StatusEffectType.Discord);
                 unit.addStatusEffect(StatusEffectType.Schism);
             });
@@ -8197,14 +8196,14 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
         applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
-                enemyUnit.addSpdDefSpurs(-4);
+                enemyUnit.addSpurs(...statusValues.map(i => i * -4));
             }
         );
     };
     // 速さ守備の大共謀4
-    setSkill(PassiveB.SpdDefRuse4, u => u.applyDebuffs(0, -6, -6, 0));
+    setSkill(PassiveB.SpdDefRuse4, [0, 1, 1, 0]);
     // 攻撃速さの大共謀4
-    setSkill(PassiveB.AtkSpdRuse4, u => u.applyDebuffs(-6, -6, 0, 0));
+    setSkill(PassiveB.AtkSpdRuse4, [1, 1, 0, 0]);
 }
 
 // 密偵忍者の手裏剣
