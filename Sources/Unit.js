@@ -1519,6 +1519,7 @@ class Unit extends BattleMapElement {
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
         this.reservedSpecialCount = 0;
+        this.reservedStatusesToDelete = [false, false, false, false];
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = WeaponType.None;
@@ -2908,6 +2909,13 @@ class Unit extends BattleMapElement {
         return [this.atkBuff, this.spdBuff, this.defBuff, this.resBuff];
     }
 
+    getBuffs(considerPanic=true) {
+        if (considerPanic) {
+            return this.buffs;
+        }
+        return [this.atkBuff, this.spdBuff, this.defBuff, this.resBuff];
+    }
+
     get debuffTotal() {
         return this.atkDebuffTotal + this.spdDebuffTotal + this.defDebuffTotal + this.resDebuffTotal;
     }
@@ -3740,7 +3748,13 @@ class Unit extends BattleMapElement {
         for (let e of this.reservedStatusEffectToDeleteSet) {
             this.currentStatusEffectSet.delete(e);
         }
+        if (this.reservedStatusesToDelete[0]) this.atkBuff = 0;
+        if (this.reservedStatusesToDelete[1]) this.spdBuff = 0;
+        if (this.reservedStatusesToDelete[2]) this.defBuff = 0;
+        if (this.reservedStatusesToDelete[3]) this.resBuff = 0;
+
         this.reservedStatusEffectToDeleteSet.clear();
+        this.reservedStatusesToDelete = [false, false, false, false];
         // すでに付与されている状態（解除は反映済み）に予約された状態を加える
         this.reservedStatusEffects.forEach(e => this.currentStatusEffectSet.add(e));
         this.statusEffects = [...this.currentStatusEffectSet];

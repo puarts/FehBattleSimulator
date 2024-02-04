@@ -4646,13 +4646,13 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 // リトスの神竜王
 {
     let skillId = PassiveC.DragonMonarch;
-    let divineFunc = function () {
-        for (let tile of g_appData.map.enumerateTilesInSquare(this.placedTile, 5)) {
-            tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
+    applyEndActionSkillsFuncMap.set(skillId,
+        function () {
+            for (let tile of g_appData.map.enumerateTilesInSquare(this.placedTile, 5)) {
+                tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
+            }
         }
-    };
-    applyEndActionSkillsFuncMap.set(skillId, divineFunc);
-    applySkillsAfterCantoActivatedFuncMap.set(skillId, divineFunc);
+    );
 
     updateUnitSpurFromAlliesFuncMap.set(skillId,
         function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
@@ -4702,8 +4702,8 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
                     if (isPrecombat) return;
                     let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
                     atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
-                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                 });
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
             }
         }
     );
@@ -5520,24 +5520,32 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
                     enemies.push(enemy);
                 }
             }
+            this.writeDebugLog(`${skillOwner.nameWithGroup}のシーフの対象キャラ: ${enemies.map(u => u.nameWithGroup)}(${enemies.length})`);
             // ステータス付与予約
             let statusSet = new Set();
-            enemies.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => statusSet.add(e)));
+            enemies.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => {
+                this.writeDebugLog(`シーフにより${enemy.nameWithGroup}から${getStatusEffectName(e)}を解除`);
+                statusSet.add(e);
+            }));
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                // ステータス
                 for (let statusEffect of statusSet) {
                     unit.reserveToAddStatusEffect(statusEffect);
                 }
+                // 強化
+                enemies.forEach(enemy => {
+                    let buffs = enemy.getBuffs(false);
+                    unit.reserveToApplyBuffs(...buffs);
+                    if (buffs.some(i => i > 0)) {
+                        this.writeDebugLog(`シーフにより${enemy.nameWithGroup} → ${unit.nameWithGroup}へ強化${buffs}を付与`);
+                    }
+                });
             }
             // ステータス解除予約
             for (let enemy of enemies) {
                 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
                 enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectToDeleteSet.add(e));
-            }
-            // 縦横3列デバフ
-            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                if (unit.isInClossWithOffset(skillOwner, 1)) {
-                    unit.reserveToApplyAllDebuff(-4);
-                }
+                enemy.reservedStatusesToDelete = [true, true, true, true];
             }
         }
     );
@@ -5551,6 +5559,14 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
                     // Nダメージ
                     atkUnit.battleContext.additionalDamage += n;
                 });
+            }
+        }
+    );
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // 縦横3列デバフ
+            if (enemyAllyUnit.isInClossWithOffset(targetUnit, 1)) {
+                targetUnit.addAllSpur(-4);
             }
         }
     );
@@ -8174,7 +8190,7 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 
 // 大共謀4
 {
-    let setSkill = (skillId, debuffFunc) => {
+    let setSkill = (skillId, statusValues=[0, 0, 0, 0]) => {
         canRallyForciblyFuncMap.set(skillId,
             function (unit) {
                 return true;
@@ -8187,8 +8203,7 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
         );
         let func = function (supporterUnit, targetUnit) {
             this.__applyRuse(supporterUnit, targetUnit, unit => {
-                // unit.applyDebuffs(0, -6, -6, 0);
-                debuffFunc(unit);
+                unit.applyDebuffs(...statusValues.map(i => i * -6));
                 unit.addStatusEffect(StatusEffectType.Discord);
                 unit.addStatusEffect(StatusEffectType.Schism);
             });
@@ -8197,14 +8212,14 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
         applySkillsAfterRallyForTargetUnitFuncMap.set(skillId, func);
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
-                enemyUnit.addSpdDefSpurs(-4);
+                enemyUnit.addSpurs(...statusValues.map(i => i * -4));
             }
         );
     };
     // 速さ守備の大共謀4
-    setSkill(PassiveB.SpdDefRuse4, u => u.applyDebuffs(0, -6, -6, 0));
+    setSkill(PassiveB.SpdDefRuse4, [0, 1, 1, 0]);
     // 攻撃速さの大共謀4
-    setSkill(PassiveB.AtkSpdRuse4, u => u.applyDebuffs(-6, -6, 0, 0));
+    setSkill(PassiveB.AtkSpdRuse4, [1, 1, 0, 0]);
 }
 
 // 密偵忍者の手裏剣
