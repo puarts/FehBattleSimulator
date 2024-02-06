@@ -2780,6 +2780,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    SunlitBundleD: 140002, // 華日の腕輪・護
     SpoilRotten: 2710, // 可愛がってあげる
     RulerOfNihility: 2655, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
@@ -4540,6 +4541,33 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 華日の腕輪・護
+{
+    let skillId = PassiveB.SunlitBundleD;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                if (targetUnit.battleContext.initiatesCombat) {
+                    enemyUnit.battleContext.isVantageActivatable = true;
+                }
+                enemyUnit.addAtkDefSpurs(-5);
+                targetUnit.battleContext.setAttackCountFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        targetUnit.battleContext.attackCount = 2;
+                        targetUnit.battleContext.counterattackCount = 2;
+                    }
+                );
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+    );
+}
+
 // 生命の業火
 {
     let setSkill = (skillId, func) => {
