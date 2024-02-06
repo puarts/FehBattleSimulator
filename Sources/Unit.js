@@ -68,6 +68,7 @@ const Hero = {
     DuoByleth: 1062,
     DuoSeidr: 1068,
     HarmonizedIgrene: 1079,
+    DuoLyon: 1086,
 };
 
 function isThiefIndex(heroIndex) {
@@ -5874,7 +5875,7 @@ class Unit extends BattleMapElement {
 
     /// 自身が指定したユニットの十字方向にいるかどうかを取得します。
     isInClossOf(unit) {
-        return this.posX == unit.posX || this.posY == unit.posY;
+        return this.posX === unit.posX || this.posY === unit.posY;
     }
 
     /// 指定したユニットの指定した距離以内に自身がいるかどうかを取得します。

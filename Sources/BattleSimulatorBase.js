@@ -1052,6 +1052,21 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoLyon:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (unit.isInClossOf(duoUnit)) {
+                        if (g_appData.gameMode !== GameMode.SummonerDuels) {
+                            unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
+                        } else {
+                            if (unit.isActionDone) {
+                                unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
+                            } else {
+                                unit.isActionDone = true;
+                            }
+                        }
+                    }
+                }
+                break;
             case Hero.HarmonizedIgrene:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Treachery);
