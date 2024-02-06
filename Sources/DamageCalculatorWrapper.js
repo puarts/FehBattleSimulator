@@ -719,6 +719,18 @@ class DamageCalculatorWrapper {
         }
 
         for (let skillId of unit.enumerateSkills()) {
+            let funcMap = canActivateSaveSkillFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    let result = func.call(this, atkUnit, unit);
+                    if (result) {
+                        return true;
+                    }
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case PassiveC.WoefulUpheaval:
                 case PassiveC.WithEveryone2:

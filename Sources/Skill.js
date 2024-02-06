@@ -3178,6 +3178,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    DarklingDragon: 150001, // 闇の樹海の竜神
     DragonMonarch: 2756, // リトスの神竜王
     FutureSighted: 2716, // 共に未来を変えて
     DeadlyMiasma: 2711, // 死の瘴気
@@ -4522,6 +4523,7 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 const applySkillEffectsPerAttackFuncMap = new Map();
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
+const canActivateSaveSkillFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4536,6 +4538,74 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 闇の樹海の竜神
+{
+    let skillId = PassiveC.DarklingDragon;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let foundAllies = false;
+            let foundPartners = false;
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                foundAllies = true;
+                break;
+            }
+            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
+                if (skillOwner.isPartner(unit)) {
+                    foundPartners = true;
+                    break;
+                }
+            }
+            if (foundAllies) {
+                skillOwner.reserveToApplyBuffs(0, 0, 6, 6);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.WarpBubble);
+            }
+            if (foundPartners) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    if (skillOwner.isPartner(unit)) {
+                        unit.reserveToApplyBuffs(0, 0, 6, 6);
+                        unit.reserveToAddStatusEffect(StatusEffectType.WarpBubble);
+                        this.writeDebugLog(`${unit.nameWithGroup}は${skillOwner.nameWithGroup}の${skillOwner.passiveCInfo.name}の効果対象`);
+                    }
+                }
+            } else {
+                let maxDef = Number.MIN_SAFE_INTEGER;
+                let units = [];
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
+                    let def = unit.getDefInPrecombat();
+                    if (def > maxDef) {
+                        maxDef = def;
+                        units = [unit];
+                    } else if (def === maxDef) {
+                        units.push(unit);
+                    }
+                }
+                for (let unit of units) {
+                    unit.reserveToApplyBuffs(0, 0, 6, 6);
+                    unit.reserveToAddStatusEffect(StatusEffectType.WarpBubble);
+                    this.writeDebugLog(`${unit.nameWithGroup}は${skillOwner.nameWithGroup}の${skillOwner.passiveCInfo.name}の効果対象`);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                if (targetUnit.battleContext.isSaviorActivated) {
+                    targetUnit.addAllSpur(4);
+                }
+            }
+        }
+    );
+    canActivateSaveSkillFuncMap.set(skillId,
+        function (atkUnit, unit) {
+            return atkUnit.isRangedWeaponType();
+        }
+    );
+}
+
 // 無垢なる愛のブレス
 {
     let skillId = Weapon.LovingBreath;

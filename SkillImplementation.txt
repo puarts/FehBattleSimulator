@@ -1306,8 +1306,20 @@ let dist = Unit.calcMoveDistance(targetUnit);
 targetUnit.dragonflower === N
 
 護り手
+護り手を発動させないタイプのスキルの場合以下のメソッドは使えない
+canActivateSaveSkillFuncMap.set(skillId,
+    function (atkUnit, unit) {
+        // 遠間
+        return atkUnit.isRangedWeaponType();
+    }
+);
+もしくは
 __canActivateSaveSkill(atkUnit, unit) {
     return true;
+}
+
+護り手が発動している時
+if (targetUnit.battleContext.isSaviorActivated) {
 }
 
 [アフリクター]
