@@ -6272,22 +6272,27 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
     );
 }
 
-// 理の守備隊形
+// 守備隊形
 {
-    let skillId = PassiveB.WeavingFighter;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.addAtkDefSpurs(-4);
-                targetUnit.battleContext.followupAttackPriorityDecrement--;
-                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+    let setSkill = (skillId, func) => {
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    func(enemyUnit);
+                    targetUnit.battleContext.followupAttackPriorityDecrement--;
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
 
-                let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
-                targetUnit.battleContext.healedHpAfterCombat += 7;
+                    let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
             }
-        }
-    );
+        );
+    }
+    // 理の守備隊形
+    setSkill(PassiveB.WeavingFighter, u => u.addAtkDefSpurs(-4));
+    // 魔の守備隊形
+    setSkill(PassiveB.CannyFighter, u => u.addAtkResSpurs(-4));
 }
 
 // 真覇天
