@@ -2347,6 +2347,7 @@ const PassiveA = {
     EarthfireBoost3: 130002, // 生命の業火大地3
 
     // 専用A
+    GrayIllusion: 130004, // 鈍色の迷夢
     ThundersFist: 2732, // 雷神の右腕
     BeyondWitchery: 2620, // 魔女を超える者
     RareTalent: 2549, // 類稀なる魔道の才
@@ -4543,6 +4544,56 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 鈍色の迷夢
+{
+    let skillId = PassiveA.GrayIllusion;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addSpursWithoutSpd(9);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.getEvalResInCombat(enemyUnit) >
+                            enemyUnit.getEvalResInCombat(targetUnit)) {
+                            targetUnit.battleContext.invalidatesCounterattack = true;
+                        }
+                    }
+                );
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                let maxSpd = Number.MIN_SAFE_INTEGER;
+                let units = [];
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 3)) {
+                    this.writeDebugLogLine(`${maxSpd}, ${units.map(u => u.nameWithGroup)}`);
+                    let spd = unit.getSpdInPrecombat();
+                    if (spd > maxSpd) {
+                        maxSpd = spd;
+                        units = [unit];
+                    } else if (spd === maxSpd) {
+                        units.push(unit);
+                    }
+                }
+                for (let unit of units) {
+                    if (g_appData.gameMode !== GameMode.SummonerDuels) {
+                        unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
+                    } else {
+                        if (unit.isActionDone) {
+                            unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
+                        } else {
+                            unit.isActionDone = true;
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 儚く優しい心の器
 {
     let skillId = Weapon.TenderVessel;
