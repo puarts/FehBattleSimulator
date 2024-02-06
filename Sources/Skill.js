@@ -1873,6 +1873,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=4pZNmNsdfro&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=93_fcGYR1ho&ab_channel=NintendoMobile
     LovingBreath: 100118, // 無垢なる愛のブレス
+    RighteousLance: 100201, // 強く気高き魂の槍
 };
 
 const Support = {
@@ -4538,6 +4539,40 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 強く気高き魂の槍
+{
+    let skillId = Weapon.RighteousLance;
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 周囲2マス以内
+            if (targetUnit.distance(allyUnit) <= 3) {
+                targetUnit.addAtkDefSpurs(4);
+            }
+        }
+    );
+    applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.limitTo(count * 4 + 6,0, 14);
+                this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により${amount}ステータスが変化。count: ${count}`);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
+    );
+}
+
 // 闇の樹海の竜神
 {
     let skillId = PassiveC.DarklingDragon;
