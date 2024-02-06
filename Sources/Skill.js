@@ -2342,6 +2342,7 @@ const PassiveA = {
     SeimeiNoDaichi3: 572,
     SeimeiNoSeisui3: 573,
     FirefloodBoost3: 2501, // 生命の業火静水3
+    EarthfireBoost3: 130002, // 生命の業火大地3
 
     // 専用A
     ThundersFist: 2732, // 雷神の右腕
@@ -4539,6 +4540,29 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 生命の業火
+{
+    let setSkill = (skillId, func) => {
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.battleContext.restHpPercentage >= 50) {
+                        func(targetUnit);
+                        let func = unit => unit.battleContext.restHpPercentage >= 50;
+                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, func)) {
+                            targetUnit.battleContext.reducesCooldownCount = true;
+                        }
+                    }
+                }
+            }
+        );
+    }
+    // 生命の業火静水3
+    setSkill(PassiveA.FirefloodBoost3, u => u.addAtkResSpurs(7));
+    // 生命の業火大地3
+    setSkill(PassiveA.EarthfireBoost3, u => u.addAtkDefSpurs(7));
+}
+
 // 強く気高き魂の槍
 {
     let skillId = Weapon.RighteousLance;
