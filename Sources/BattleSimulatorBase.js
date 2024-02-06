@@ -3862,6 +3862,9 @@ class BattleSimmulatorBase {
                 combatHtml += `×${attackCount}`;
             }
             damageHtml = `${precombatHtml}${afterBeginningOfCombatbatHtml}${combatHtml}`;
+        } else {
+            let afterBeginningOfCombatbatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
+            damageHtml = `${afterBeginningOfCombatbatHtml}`;
         }
         html += `奥${specialHtml}  攻撃: ${damageHtml}<br/>`;
         return html;
