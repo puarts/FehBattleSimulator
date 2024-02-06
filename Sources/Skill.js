@@ -1874,6 +1874,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=93_fcGYR1ho&ab_channel=NintendoMobile
     LovingBreath: 100118, // 無垢なる愛のブレス
     RighteousLance: 100201, // 強く気高き魂の槍
+    DevotedBasketPlus: 100303, // 愛の祭の花籠+
 };
 
 const Support = {
@@ -4541,6 +4542,37 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 愛の祭の花籠+
+{
+    let skillId = Weapon.DevotedBasketPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                targetUnit.addAtkSpdSpurs(amount);
+            }
+        }
+    );
+    // 戦闘開始後ダメージ
+    // 攻撃可能かを判定するためにこのタイミングになる
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let advantageous = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+            let isAdvantageous = advantageous === TriangleAdvantage.Advantageous;
+            let spdCond = targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit);
+            let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
+            let ratio = isAdvantageous || spdCond ? 0.3 : 0.15;
+            if (targetUnit.battleContext.initiatesCombat ||
+                targetUnit.battleContext.canCounterattack) {
+                let damage = Math.trunc(enemyAtk * ratio);
+                this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により戦闘開始後ダメージ+${damage}。enemy atk: ${enemyAtk}, ratio: ${ratio}`);
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += damage;
+            }
+        }
+    );
+}
+
 // 華日の腕輪・護
 {
     let skillId = PassiveB.SunlitBundleD;
@@ -6373,7 +6405,9 @@ const canActivateSaveSkillFuncMap = new Map();
                         let spdCond = targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit);
                         let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
                         let ratio = isAdvantageous || spdCond ? 0.4 : 0.2;
-                        enemyUnit.battleContext.damageAfterBeginningOfCombat += Math.trunc(enemyAtk * ratio);
+                        let damage = Math.trunc(enemyAtk * ratio);
+                        this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により戦闘開始後ダメージ+${damage}。enemy atk: ${enemyAtk}, ratio: ${ratio}`);
+                        enemyUnit.battleContext.damageAfterBeginningOfCombat += damage;
                     }
                 );
                 targetUnit.addAllSpur(5);
