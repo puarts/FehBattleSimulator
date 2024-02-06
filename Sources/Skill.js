@@ -2456,6 +2456,7 @@ const PassiveA = {
     AtkResScowl3: 2422, // 攻撃魔防の竜眼3
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
     AtkSpdScowl4: 2754, // 攻撃速さの竜眼4
+    DefResScowl4: 130001, // 守備魔防の竜眼4
 
     // 柔撃
     FlashSparrow: 2510, // 鬼神飛燕の柔撃
@@ -5893,6 +5894,7 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl3, getScowlFunc(u => u.addAtkResSpurs(6), 9));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl4, getScowlFunc(u => u.addAtkResSpurs(7), 5));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdScowl4, getScowlFunc(u => u.addAtkSpdSpurs(7), 5));
+    applySkillEffectForUnitFuncMap.set(PassiveA.DefResScowl4, getScowlFunc(u => u.addDefResSpurs(7), 5));
 }
 
 // 共に未来を変えて
