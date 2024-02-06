@@ -4646,12 +4646,12 @@ const canActivateSaveSkillFuncMap = new Map();
 
 // 生命の業火
 {
-    let setSkill = (skillId, func) => {
+    let setSkill = (skillId, spurFunc) => {
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
                     if (targetUnit.battleContext.restHpPercentage >= 50) {
-                        func(targetUnit);
+                        spurFunc(targetUnit);
                         let func = unit => unit.battleContext.restHpPercentage >= 50;
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, func)) {
                             targetUnit.battleContext.reducesCooldownCount = true;
