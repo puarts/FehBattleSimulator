@@ -1875,6 +1875,7 @@ const Weapon = {
     LovingBreath: 100118, // 無垢なる愛のブレス
     RighteousLance: 100201, // 強く気高き魂の槍
     DevotedBasketPlus: 100303, // 愛の祭の花籠+
+    TenderVessel: 100405, // 儚く優しい心の器
 };
 
 const Support = {
@@ -4542,6 +4543,47 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 儚く優しい心の器
+{
+    let skillId = Weapon.TenderVessel;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addSpursWithoutSpd(5);
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                targetUnit.addSpursWithoutSpd(amount);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+            }
+        }
+    );
+    // 戦闘開始後ダメージ
+    // 攻撃可能かを判定するためにこのタイミングになる
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let advantageous = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+                let isAdvantageous = advantageous === TriangleAdvantage.Advantageous;
+                let statusCond = targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit);
+                let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
+                let ratio = isAdvantageous || statusCond ? 0.4 : 0.2;
+                if (targetUnit.battleContext.initiatesCombat ||
+                    targetUnit.battleContext.canCounterattack) {
+                    let damage = Math.trunc(enemyAtk * ratio);
+                    this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により戦闘開始後ダメージ+${damage}。enemy atk: ${enemyAtk}, ratio: ${ratio}`);
+                    enemyUnit.battleContext.damageAfterBeginningOfCombat += damage;
+                }
+            }
+        }
+    );
+}
+
 // 愛の祭の花籠+
 {
     let skillId = Weapon.DevotedBasketPlus;
@@ -4558,16 +4600,18 @@ const canActivateSaveSkillFuncMap = new Map();
     // 攻撃可能かを判定するためにこのタイミングになる
     applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
-            let advantageous = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
-            let isAdvantageous = advantageous === TriangleAdvantage.Advantageous;
-            let spdCond = targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit);
-            let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
-            let ratio = isAdvantageous || spdCond ? 0.3 : 0.15;
-            if (targetUnit.battleContext.initiatesCombat ||
-                targetUnit.battleContext.canCounterattack) {
-                let damage = Math.trunc(enemyAtk * ratio);
-                this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により戦闘開始後ダメージ+${damage}。enemy atk: ${enemyAtk}, ratio: ${ratio}`);
-                enemyUnit.battleContext.damageAfterBeginningOfCombat += damage;
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let advantageous = DamageCalculationUtility.calcAttackerTriangleAdvantage(targetUnit, enemyUnit);
+                let isAdvantageous = advantageous === TriangleAdvantage.Advantageous;
+                let spdCond = targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit);
+                let enemyAtk = enemyUnit.getAtkInCombat(targetUnit);
+                let ratio = isAdvantageous || spdCond ? 0.3 : 0.15;
+                if (targetUnit.battleContext.initiatesCombat ||
+                    targetUnit.battleContext.canCounterattack) {
+                    let damage = Math.trunc(enemyAtk * ratio);
+                    this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により戦闘開始後ダメージ+${damage}。enemy atk: ${enemyAtk}, ratio: ${ratio}`);
+                    enemyUnit.battleContext.damageAfterBeginningOfCombat += damage;
+                }
             }
         }
     );
