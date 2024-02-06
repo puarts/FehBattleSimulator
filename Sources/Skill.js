@@ -2537,6 +2537,7 @@ const PassiveB = {
     VengefulFighter4: 2384, // 迎撃隊形4
     WaryFighter3: 600, // 守備隊形3
     WeavingFighter: 2706, // 理の守備隊形
+    CannyFighter: 140001, // 魔の守備隊形
     SpecialFighter3: 603,// 奥義隊形3
     SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
