@@ -1868,6 +1868,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=ljQ6oIZFbk0&ab_channel=NintendoMobile
     MonarchsStone: 2753, // 白き神竜王のブレス
     HeroKingSword: 2757, // 英雄王の剣
+
+    // 超英雄 (私たちはずっと)
+    // https://www.youtube.com/watch?v=4pZNmNsdfro&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=93_fcGYR1ho&ab_channel=NintendoMobile
+    LovingBreath: 100118, // 無垢なる愛のブレス
 };
 
 const Support = {
@@ -4529,6 +4534,36 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 無垢なる愛のブレス
+{
+    let skillId = Weapon.LovingBreath;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.limitTo(count * 4 + 6,0, 14);
+                this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により${amount}攻撃が変化。count: ${count}`);
+                targetUnit.atkSpur += amount;
+                enemyUnit.atkSpur -= amount;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                });
+            }
+        }
+    );
+
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+}
+
 // 紋章士マルス
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Marth);
