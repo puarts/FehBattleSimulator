@@ -3106,6 +3106,7 @@ const PassiveC = {
 
     // 奮激
     InciteAtkSpd: 2670, // 攻撃速さの奮激
+    InciteAtkRes: 150004, // 攻撃魔防の奮激
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
@@ -7666,25 +7667,30 @@ const canActivateSaveSkillFuncMap = new Map();
     );
 }
 
-// 攻撃速さの奮激
+// 奮激
 {
-    let skillId = PassiveC.InciteAtkSpd;
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
-                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
-                skillOwner.reserveToAddStatusEffect(StatusEffectType.Incited);
+    let setSkill = (skillId, statuses) => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
+                    skillOwner.reserveToApplyBuffs(...statuses.map(s => s * 6));
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.Incited);
+                }
             }
-        }
-    );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
-                targetUnit.addAtkSpdSpurs(3);
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                    targetUnit.addSpurs(...statuses.map(s => s * 3));
+                }
             }
-        }
-    );
+        );
+    };
+    // 攻撃速さの奮激
+    setSkill(PassiveC.InciteAtkSpd, [1, 1, 0, 0]);
+    // 攻撃魔防の奮激
+    setSkill(PassiveC.InciteAtkRes, [1, 0, 0, 1]);
 }
 
 // 速さ魔防の凪4
