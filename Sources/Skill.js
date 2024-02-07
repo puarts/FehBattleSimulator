@@ -4558,6 +4558,63 @@ const selectReferencingResOrDefFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// リンカの鬼金棒
+{
+    let skillId = Weapon.RinkahNoOnikanabo;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage < 100 ||
+                    enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.addAtkDefSpurs(5);
+                    targetUnit.battleContext.increaseCooldownCountForDefense = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage < 100 ||
+                    enemyUnit.battleContext.restHpPercentage >= 75 ||
+                    enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.addSpurs(5, 4, 5, 4);
+                    targetUnit.battleContext.increaseCooldownCountForBoth();
+                    targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            let status = targetUnit.getDefInCombat(enemyUnit);
+                            targetUnit.battleContext.damageReductionValueOfFirstAttacks += Math.trunc(status * 0.15);
+                        }
+                    );
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.healedHpByAttack += 7;
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                    }
+                    // ダメージ軽減分を保存
+                    targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+                        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                            if (!context.isFirstAttack(atkUnit)) return;
+                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                        }
+                    );
+                    // 攻撃ごとの固定ダメージに軽減した分を加算
+                    targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                            atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                            let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                            return addDamage;
+                        }
+                        return 0;
+                    });
+                }
+            }
+        }
+    );
+}
+
 // 穢れなき白槍
 {
     let skillId = Weapon.AirborneSpear;

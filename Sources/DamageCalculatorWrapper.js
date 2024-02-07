@@ -1441,13 +1441,6 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForAtkUnitFuncDict[Weapon.SatougashiNoAnki] = (atkUnit) => {
             atkUnit.spdSpur += 4;
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.RinkahNoOnikanabo] = (atkUnit) => {
-            if (atkUnit.battleContext.restHpPercentage < 100) {
-                atkUnit.atkSpur += 5;
-                atkUnit.defSpur += 5;
-                atkUnit.battleContext.increaseCooldownCountForDefense = true;
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.KokyousyaNoYari] = (atkUnit, defUnit) => {
             if (defUnit.battleContext.restHpPercentage >= 70) {
                 atkUnit.atkSpur += 5;
@@ -1748,11 +1741,6 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForDefUnitFuncDict[PassiveB.BeliefInLove] = (defUnit, atkUnit) => {
             atkUnit.atkSpur -= 5;
             atkUnit.defSpur -= 5;
-        };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.RinkahNoOnikanabo] = (defUnit) => {
-            defUnit.atkSpur += 5;
-            defUnit.defSpur += 5;
-            defUnit.battleContext.increaseCooldownCountForDefense = true;
         };
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantWard] = (defUnit, atkUnit) => {
             if (!isPhysicalWeaponType(atkUnit.weaponType)) {
