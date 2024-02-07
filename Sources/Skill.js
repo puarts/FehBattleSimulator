@@ -1872,10 +1872,10 @@ const Weapon = {
     // 超英雄 (私たちはずっと)
     // https://www.youtube.com/watch?v=4pZNmNsdfro&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=93_fcGYR1ho&ab_channel=NintendoMobile
-    LovingBreath: 100118, // 無垢なる愛のブレス
-    RighteousLance: 100201, // 強く気高き魂の槍
-    DevotedBasketPlus: 100303, // 愛の祭の花籠+
-    TenderVessel: 100405, // 儚く優しい心の器
+    LovingBreath: 2763, // 無垢なる愛のブレス
+    RighteousLance: 2767, // 強く気高き魂の槍
+    DevotedBasketPlus: 2770, // 愛の祭の花籠+
+    TenderVessel: 2772, // 儚く優しい心の器
 };
 
 const Support = {
@@ -2344,10 +2344,10 @@ const PassiveA = {
     SeimeiNoDaichi3: 572,
     SeimeiNoSeisui3: 573,
     FirefloodBoost3: 2501, // 生命の業火静水3
-    EarthfireBoost3: 130002, // 生命の業火大地3
+    EarthfireBoost3: 2768, // 生命の業火大地3
 
     // 専用A
-    GrayIllusion: 130004, // 鈍色の迷夢
+    GrayIllusion: 2773, // 鈍色の迷夢
     ThundersFist: 2732, // 雷神の右腕
     BeyondWitchery: 2620, // 魔女を超える者
     RareTalent: 2549, // 類稀なる魔道の才
@@ -2461,7 +2461,7 @@ const PassiveA = {
     AtkResScowl3: 2422, // 攻撃魔防の竜眼3
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
     AtkSpdScowl4: 2754, // 攻撃速さの竜眼4
-    DefResScowl4: 130001, // 守備魔防の竜眼4
+    DefResScowl4: 2765, // 守備魔防の竜眼4
 
     // 柔撃
     FlashSparrow: 2510, // 鬼神飛燕の柔撃
@@ -2542,7 +2542,7 @@ const PassiveB = {
     VengefulFighter4: 2384, // 迎撃隊形4
     WaryFighter3: 600, // 守備隊形3
     WeavingFighter: 2706, // 理の守備隊形
-    CannyFighter: 140001, // 魔の守備隊形
+    CannyFighter: 2764, // 魔の守備隊形
     SpecialFighter3: 603,// 奥義隊形3
     SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
@@ -2783,7 +2783,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
-    SunlitBundleD: 140002, // 華日の腕輪・護
+    SunlitBundleD: 2769, // 華日の腕輪・護
     SpoilRotten: 2710, // 可愛がってあげる
     RulerOfNihility: 2655, // 虚無の王
     TwinSkyWing: 2568, // 双姫の天翼
@@ -3106,7 +3106,7 @@ const PassiveC = {
 
     // 奮激
     InciteAtkSpd: 2670, // 攻撃速さの奮激
-    InciteAtkRes: 150004, // 攻撃魔防の奮激
+    InciteAtkRes: 2774, // 攻撃魔防の奮激
 
     SeiNoIbuki3: 668, // 生の息吹3
     HokoNoGogeki3: 732, // 歩行の剛撃3
@@ -3185,7 +3185,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
-    DarklingDragon: 150001, // 闇の樹海の竜神
+    DarklingDragon: 2766, // 闇の樹海の竜神
     DragonMonarch: 2756, // リトスの神竜王
     FutureSighted: 2716, // 共に未来を変えて
     DeadlyMiasma: 2711, // 死の瘴気
