@@ -154,7 +154,7 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
     }
 );
 
-周囲の敵からのデバフ効果[周囲2マスの敵は、戦闘中...]
+周囲の敵からのデバフ効果(牽制など)[周囲2マスの敵は、戦闘中...]
 updateUnitSpurFromEnemiesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
         // enemyAllyUnitからのスキルなので錬成判定に注意

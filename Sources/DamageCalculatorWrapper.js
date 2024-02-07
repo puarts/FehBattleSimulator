@@ -17255,10 +17255,6 @@ class DamageCalculatorWrapper {
                             targetUnit.spdSpur -= 4;
                         }
                         break;
-                    case Weapon.Gurgurant:
-                        targetUnit.atkSpur -= 5;
-                        targetUnit.defSpur -= 5;
-                        break;
                     case PassiveC.AtkSpdRein3:
                     case PassiveC.ASReinSnap:
                         targetUnit.atkSpur -= 4;

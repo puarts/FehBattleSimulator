@@ -4555,6 +4555,57 @@ const selectReferencingResOrDefFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// グルグラント
+{
+    let skillId = Weapon.Gurgurant;
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                if (enemyAllyUnit.distance(targetUnit) <= 2) {
+                    targetUnit.addAtkDefSpurs(-5);
+                }
+            } else {
+                if (enemyAllyUnit.distance(targetUnit) <= 4) {
+                    targetUnit.addAtkDefSpurs(-5);
+                }
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (allyUnit.distance(targetUnit) <= 4) {
+                enemyUnit.battleContext.invalidateBuffs(true, false, true, false);
+                targetUnit.battleContext.followupAttackPriorityDecrement--;
+                enemyUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        enemyUnit.addAtkDefSpurs(-5);
+                        let status = targetUnit.getDefInPrecombat();
+                        let amount = Math.trunc(status * 0.15);
+                        enemyUnit.addAtkDefSpurs(-amount);
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            return 0.3;
+                        });
+                    }
+                }
+            }
+        }
+    );
+}
+
 // こわいゆめ・神
 {
     let skillId = Support.FrightfulDreamPlus;
