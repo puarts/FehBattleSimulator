@@ -4552,6 +4552,65 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 被害妄想の弓
+{
+    let skillId = Weapon.HigaimosoNoYumi;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    let found = false;
+                    /** @type {[Unit]} */
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                    for (let unit of units) {
+                        found = true;
+                        unit.reserveTakeDamage(1);
+                    }
+                    if (found) {
+                        skillOwner.reserveTakeDamage(1);
+                        skillOwner.reserveToReduceSpecialCount(1);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.hasNegativeStatusEffect() ||
+                    !targetUnit.battleContext.isRestHpFull) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    targetUnit.battleContext.isDesperationActivatable = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.hasNegativeStatusEffect() ||
+                    !targetUnit.battleContext.isRestHpFull) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    targetUnit.battleContext.isDesperationActivatable = true;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        let reducedHp = targetUnit.maxHpWithSkills - targetUnit.restHp;
+                        let amount = MathUtil.limitTo(reducedHp * 2 + 5, 15);
+                        targetUnit.addAtkSpdSpurs(amount);
+                        targetUnit.battleContext.increaseCooldownCountForBoth();
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 愛の祭
 {
     let setSkill = (skillId, getPreCombatStatus, addSpurs, getEvalStatus, ratio) => {

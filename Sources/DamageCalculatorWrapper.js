@@ -1318,13 +1318,6 @@ class DamageCalculatorWrapper {
                             }
                         }
                         break;
-                    case Weapon.HigaimosoNoYumi:
-                        if (atkUnit.hasNegativeStatusEffect()
-                            || !atkUnit.battleContext.isRestHpFull
-                        ) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
                     case PassiveB.HodrsZeal:
                         atkUnit.battleContext.isDesperationActivatable = true;
                         break;
@@ -10253,14 +10246,6 @@ class DamageCalculatorWrapper {
                         ) {
                             targetUnit.addAllSpur(5);
                         }
-                    }
-                    break;
-                case Weapon.HigaimosoNoYumi:
-                    if (targetUnit.hasNegativeStatusEffect()
-                        || !targetUnit.battleContext.isRestHpFull
-                    ) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.spdSpur += 5;
                     }
                     break;
                 case Weapon.MaryuNoBreath:
