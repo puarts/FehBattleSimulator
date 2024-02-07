@@ -4554,6 +4554,50 @@ const selectReferencingResOrDefFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 不幸の花
+{
+    let skillId = Weapon.FlowerOfSorrow;
+
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            if (targetUnit.isInClossOf(enemyAllyUnit)) {
+                let amount = targetUnit.isWeaponRefined ? 5 : 4;
+                targetUnit.addDefResSpurs(-amount);
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.restHpPercentage >= 75 ||
+                    this.__isThereAllyIn2Spaces(enemyUnit)) {
+                    enemyUnit.addSpursWithoutDef(-4);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        enemyUnit.addSpursWithoutDef(-4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                            (attackUnit, attackTargetUnit) => {
+                                /** @type {[Unit]} */
+                                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
+                                for (let unit of units) {
+                                    unit.takeDamage(10);
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+        }
+    );
+}
+
 // リュングヘイズ
 {
     let skillId = Weapon.Lyngheior;

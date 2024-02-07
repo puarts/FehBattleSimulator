@@ -17026,16 +17026,6 @@ class DamageCalculatorWrapper {
                     }
                 }
             }
-            // 十字方向
-            if (this.__isInCloss(unit, targetUnit)) {
-                for (let skillId of unit.enumerateSkills()) {
-                    switch (skillId) {
-                        case Weapon.FlowerOfSorrow:
-                            targetUnit.addSpurs(0, 0, -4, -4);
-                            break;
-                    }
-                }
-            }
             // 縦3列以内
             if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
                 switch (unit.weapon) {
