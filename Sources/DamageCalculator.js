@@ -835,11 +835,10 @@ class DamageCalculator {
             }
 
             let specialTotalMitDefailLog = atkUnit.battleContext.refersResForSpecial ? resInCombatDetail : defInCombatDetail;
-            if (atkUnit.battleContext.refersRes != atkUnit.battleContext.refersResForSpecial) {
+            if (atkUnit.battleContext.refersRes !== atkUnit.battleContext.refersResForSpecial) {
                 if (atkUnit.battleContext.refersResForSpecial) {
                     this.writeDebugLog("奥義発動時は魔防参照")
-                }
-                else {
+                } else {
                     this.writeDebugLog("奥義発動時は守備参照");
                 }
             }

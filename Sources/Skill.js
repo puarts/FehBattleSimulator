@@ -2042,6 +2042,7 @@ const Special = {
     Fukuryu: 464, // 伏竜
     BlueFrame: 473, // ブルーフレイム
     SeidrShell: 1542, // 魔弾
+    SeidrShellPlus: 2761, // 魔弾・神
     BrutalShell: 1853, // 凶弾
     Flare: 2548, // 陽光
     NoQuarter: 2702, // 車懸
@@ -4538,6 +4539,7 @@ const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 const applySkillEffectsPerAttackFuncMap = new Map();
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 const canActivateSaveSkillFuncMap = new Map();
+const selectReferencingResOrDefFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4552,6 +4554,50 @@ const canActivateSaveSkillFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 魔弾・神
+{
+    let skillId = Special.SeidrShellPlus;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let currentTurn = this.globalBattleContext.currentTurn;
+            if (currentTurn === 1 || currentTurn === 4) {
+                skillOwner.reserveToReduceSpecialCount(3);
+            }
+        }
+    );
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            targetUnit.battleContext.specialAddDamage += 20;
+        }
+    );
+
+    selectReferencingResOrDefFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            if (this.isLogEnabled) {
+                let skillName = DebugUtil.getSkillName(atkUnit, atkUnit.specialInfo);
+                this.writeDebugLog(`${skillName}により守備魔防の低い方でダメージ計算`);
+            }
+
+            let defInCombat = defUnit.getDefInCombat(atkUnit);
+            let resInCombat = defUnit.getResInCombat(atkUnit);
+            atkUnit.battleContext.refersResForSpecial = resInCombat < defInCombat;
+            if (defInCombat === resInCombat) {
+                atkUnit.battleContext.refersResForSpecial = !atkUnit.isPhysicalAttacker();
+            } else {
+                atkUnit.battleContext.refersResForSpecial = resInCombat < defInCombat;
+            }
+        }
+    );
+}
+
 // 被害妄想の弓
 {
     let skillId = Weapon.HigaimosoNoYumi;

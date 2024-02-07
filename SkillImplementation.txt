@@ -573,13 +573,13 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
     // DefenseSpecialDict[skillId] = 0;
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    // count<N>Specials.push(skillId);
-    // inheritableCount<N>Specials.push(skillId);
+    // countNSpecials.push(skillId);
+    // inheritableCountNSpecials.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 緋炎
-            let status = targetUnit.get<Def>InCombat(enemyUnit);
+            let status = targetUnit.getXInCombat(enemyUnit);
             targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.5);
             // 黒の月光
             targetUnit.battleContext.specialSufferPercentage = 80;
