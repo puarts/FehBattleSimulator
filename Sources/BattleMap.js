@@ -2771,15 +2771,7 @@ class BattleMap {
                 if (tile.divineVein !== DivineVeinType.None) {
                     let divineString = "";
                     divineString = DivineVeinStrings[tile.divineVein];
-                    let divineColor = "";
-                    switch (tile.divineVeinGroup) {
-                        case UnitGroupType.Ally:
-                            divineColor = "#00bbff";
-                            break;
-                        case UnitGroupType.Enemy:
-                            divineColor = "#ff8800";
-                            break;
-                    }
+                    let divineColor = divineVeinColor(tile.divineVeinGroup);
                     additionalInnerText += `<span style='color:${divineColor};font-size:12px;${shadowCss};'><b>${divineString}</b></span>`;
                 }
 

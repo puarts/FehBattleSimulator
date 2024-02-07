@@ -51,6 +51,15 @@ const DivineVeinType = {
 };
 const DivineVeinStrings = ['', '護', '炎', '緑', '瘴'];
 
+function divineVeinColor(divineVeinGroup) {
+    switch (divineVeinGroup) {
+        case UnitGroupType.Ally:
+            return "#00bbff";
+        case UnitGroupType.Enemy:
+            return "#ff8800";
+    }
+}
+
 /**
  * ユニットをタイルに配置します。
  * @param  {Unit} unit
