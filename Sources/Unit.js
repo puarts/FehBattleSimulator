@@ -6033,7 +6033,6 @@ class Unit extends BattleMapElement {
                     break;
                 // 再移動(3)
                 case Weapon.AutoLofnheior:
-                case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
                 // 残り+1

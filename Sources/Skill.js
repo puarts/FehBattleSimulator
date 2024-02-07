@@ -4554,6 +4554,50 @@ const selectReferencingResOrDefFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// リュングヘイズ
+{
+    let skillId = Weapon.Lyngheior;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return g_appData.currentTurn <= 4;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 3;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.addAtkSpdSpurs(6);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.battleContext.initiatesCombat ||
+                    this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(6, 6, 4, 4);
+                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                        });
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 魔弾・神
 {
     let skillId = Special.SeidrShellPlus;

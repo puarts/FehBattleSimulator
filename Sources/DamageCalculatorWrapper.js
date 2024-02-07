@@ -7653,13 +7653,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Lyngheior] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Aureola] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                 targetUnit.atkSpur += 5;
