@@ -1877,6 +1877,9 @@ const Weapon = {
     DevotedBasketPlus: 2770, // 愛の祭の花籠+
     TenderVessel: 2772, // 儚く優しい心の器
     DevotedAxePlus: 2776, // 愛の祭の斧+
+
+    // 2024年2月 武器錬成
+    AirborneSpear: 2781, // 穢れなき白槍
 };
 
 const Support = {
@@ -4555,6 +4558,56 @@ const selectReferencingResOrDefFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 穢れなき白槍
+{
+    let skillId = Weapon.AirborneSpear;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                });
+            }
+            if (targetUnit.isWeaponSpecialRefined) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                            enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                    targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            let tSum = targetUnit.getSpdInCombat(enemyUnit) + targetUnit.getResInCombat(enemyUnit);
+                            let eSum = enemyUnit.getSpdInCombat(targetUnit) + enemyUnit.getResInCombat(targetUnit);
+                            if (tSum >= eSum - 5) {
+                                targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 2;
+                            }
+                        }
+                    );
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
+            }
+        }
+    );
+
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(defUnit)) {
+                let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+            }
+        }
+    );
+}
+
 // グルグラント
 {
     let skillId = Weapon.Gurgurant;
