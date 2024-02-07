@@ -4558,6 +4558,75 @@ const selectReferencingResOrDefFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// フェザーソード
+{
+    let skillId = Weapon.FeatherSword;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    if (targetUnit.battleContext.restHpPercentage <= 75 ||
+                        enemyUnit.weaponType === WeaponType.Sword ||
+                        enemyUnit.weaponType === WeaponType.Lance ||
+                        enemyUnit.weaponType === WeaponType.Axe ||
+                        enemyUnit.weaponType === WeaponType.ColorlessBow ||
+                        enemyUnit.moveType === MoveType.Armor) {
+                        targetUnit.battleContext.isVantageActivatable = true;
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    if (targetUnit.battleContext.restHpPercentage <= 90 ||
+                        enemyUnit.weaponType === WeaponType.Sword ||
+                        enemyUnit.weaponType === WeaponType.Lance ||
+                        enemyUnit.weaponType === WeaponType.Axe ||
+                        enemyUnit.weaponType === WeaponType.ColorlessBow ||
+                        enemyUnit.moveType === MoveType.Armor) {
+                        targetUnit.battleContext.isVantageActivatable = true;
+                    }
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                        let amount = MathUtil.limitTo(count * 3, 0, 6);
+                        targetUnit.addAtkSpdSpurs(amount);
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                    }
+                }
+            }
+        }
+    );
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return unit.isWeaponSpecialRefined;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.isWeaponSpecialRefined ? 2 : 0;
+    });
+}
+
 // リンカの鬼金棒
 {
     let skillId = Weapon.RinkahNoOnikanabo;

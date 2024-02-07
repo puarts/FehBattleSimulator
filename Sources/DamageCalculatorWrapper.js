@@ -6677,20 +6677,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesDefBuff = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.FeatherSword] = (targetUnit, enemyUnit) => {
-            if (!targetUnit.battleContext.initiatesCombat) {
-                if (targetUnit.battleContext.restHpPercentage <= 75
-                    || enemyUnit.weaponType === WeaponType.Sword
-                    || enemyUnit.weaponType === WeaponType.Lance
-                    || enemyUnit.weaponType === WeaponType.Axe
-                    || enemyUnit.weaponType === WeaponType.ColorlessBow
-                    || enemyUnit.moveType === MoveType.Armor
-                ) {
-                    targetUnit.battleContext.isVantageActivatable = true;
-
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.GenesisFalchion] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
