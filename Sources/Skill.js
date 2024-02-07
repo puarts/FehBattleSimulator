@@ -1912,6 +1912,7 @@ const Support = {
     CloyingDreams: 2585, // あまいみつのゆめ
     SweetDreamsPlus: 2636, // あまいゆめ・神
     FrightfulDream: 1537, // こわいゆめ
+    FrightfulDreamPlus: 2762, // こわいゆめ・神
     HarrowingDream: 2614, // こわいかこのゆめ
     Play: 1135, // 奏でる
     CallToFlame: 2079, // オイデ、ヒノコタチ
@@ -4554,6 +4555,25 @@ const selectReferencingResOrDefFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// こわいゆめ・神
+{
+    let skillId = Support.FrightfulDreamPlus;
+    refreshSupportSkillSet.add(skillId);
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            /** @type {[Unit]} */
+            let units = this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit);
+            for (let unit of units) {
+                if (skillOwnerUnit.isInClossOf(unit) ||
+                    targetUnit.isInClossOf(unit)) {
+                    unit.applyAllDebuff(-5);
+                    unit.addStatusEffects([StatusEffectType.Guard, StatusEffectType.Discord]);
+                }
+            }
+        }
+    );
+}
+
 // 不幸の花
 {
     let skillId = Weapon.FlowerOfSorrow;
