@@ -119,6 +119,9 @@ class DamageCalcResult {
 
         // 護り手ユニットかそうでないかを後で区別できるよう結果に戦ったユニットを記録しておく
         this.defUnit = null;
+
+        this.atkTile = null;
+        this.defTile = null;
     }
 }
 
@@ -200,6 +203,8 @@ class DamageCalculator {
         // atkUnitが受けるダメージはdefUnitが与えるダメージとして表示する
         result.atkUnitDamageAfterBeginningOfCombat = defUnit.battleContext.damageAfterBeginningOfCombat;
         result.defUnitDamageAfterBeginningOfCombat = atkUnit.battleContext.damageAfterBeginningOfCombat;
+        result.atkTile = atkUnit.placedTile;
+        result.defTile = defUnit.placedTile;
 
         for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
             func();
@@ -830,11 +835,10 @@ class DamageCalculator {
             }
 
             let specialTotalMitDefailLog = atkUnit.battleContext.refersResForSpecial ? resInCombatDetail : defInCombatDetail;
-            if (atkUnit.battleContext.refersRes != atkUnit.battleContext.refersResForSpecial) {
+            if (atkUnit.battleContext.refersRes !== atkUnit.battleContext.refersResForSpecial) {
                 if (atkUnit.battleContext.refersResForSpecial) {
                     this.writeDebugLog("奥義発動時は魔防参照")
-                }
-                else {
+                } else {
                     this.writeDebugLog("奥義発動時は守備参照");
                 }
             }

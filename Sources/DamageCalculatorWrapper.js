@@ -647,6 +647,15 @@ class DamageCalculatorWrapper {
         atkUnit.battleContext.refersResForSpecial = atkUnit.battleContext.refersRes;
         if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
             for (let skillId of atkUnit.enumerateSkills()) {
+                let funcMap = selectReferencingResOrDefFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, atkUnit, defUnit);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
                 switch (skillId) {
                     case Weapon.DeliverersBrand:
                         if (atkUnit.battleContext.restHpPercentage >= 25) {
@@ -719,6 +728,18 @@ class DamageCalculatorWrapper {
         }
 
         for (let skillId of unit.enumerateSkills()) {
+            let funcMap = canActivateSaveSkillFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    let result = func.call(this, atkUnit, unit);
+                    if (result) {
+                        return true;
+                    }
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case PassiveC.WoefulUpheaval:
                 case PassiveC.WithEveryone2:
@@ -1306,13 +1327,6 @@ class DamageCalculatorWrapper {
                             }
                         }
                         break;
-                    case Weapon.HigaimosoNoYumi:
-                        if (atkUnit.hasNegativeStatusEffect()
-                            || !atkUnit.battleContext.isRestHpFull
-                        ) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
                     case PassiveB.HodrsZeal:
                         atkUnit.battleContext.isDesperationActivatable = true;
                         break;
@@ -1426,13 +1440,6 @@ class DamageCalculatorWrapper {
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.SatougashiNoAnki] = (atkUnit) => {
             atkUnit.spdSpur += 4;
-        };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.RinkahNoOnikanabo] = (atkUnit) => {
-            if (atkUnit.battleContext.restHpPercentage < 100) {
-                atkUnit.atkSpur += 5;
-                atkUnit.defSpur += 5;
-                atkUnit.battleContext.increaseCooldownCountForDefense = true;
-            }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.KokyousyaNoYari] = (atkUnit, defUnit) => {
             if (defUnit.battleContext.restHpPercentage >= 70) {
@@ -1734,11 +1741,6 @@ class DamageCalculatorWrapper {
         self._applySkillEffectForDefUnitFuncDict[PassiveB.BeliefInLove] = (defUnit, atkUnit) => {
             atkUnit.atkSpur -= 5;
             atkUnit.defSpur -= 5;
-        };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.RinkahNoOnikanabo] = (defUnit) => {
-            defUnit.atkSpur += 5;
-            defUnit.defSpur += 5;
-            defUnit.battleContext.increaseCooldownCountForDefense = true;
         };
         self._applySkillEffectForDefUnitFuncDict[PassiveA.DistantWard] = (defUnit, atkUnit) => {
             if (!isPhysicalWeaponType(atkUnit.weaponType)) {
@@ -3101,15 +3103,6 @@ class DamageCalculatorWrapper {
                 let amount = Math.min(Math.trunc(targetUnit.restHp * 0.25), 10);
                 enemyUnit.addAtkDefSpurs(-amount);
                 targetUnit.battleContext.healedHpAfterCombat += 10;
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.addAtkResSpurs(7);
-                let func = unit => unit.battleContext.restHpPercentage >= 50;
-                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, func)) {
-                    targetUnit.battleContext.reducesCooldownCount = true;
-                }
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SparklingSun] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -6684,20 +6677,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesDefBuff = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.FeatherSword] = (targetUnit, enemyUnit) => {
-            if (!targetUnit.battleContext.initiatesCombat) {
-                if (targetUnit.battleContext.restHpPercentage <= 75
-                    || enemyUnit.weaponType === WeaponType.Sword
-                    || enemyUnit.weaponType === WeaponType.Lance
-                    || enemyUnit.weaponType === WeaponType.Axe
-                    || enemyUnit.weaponType === WeaponType.ColorlessBow
-                    || enemyUnit.moveType === MoveType.Armor
-                ) {
-                    targetUnit.battleContext.isVantageActivatable = true;
-
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.GenesisFalchion] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
@@ -7646,13 +7625,6 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += 5;
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.Lyngheior] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Aureola] = (targetUnit) => {
@@ -10250,14 +10222,6 @@ class DamageCalculatorWrapper {
                         ) {
                             targetUnit.addAllSpur(5);
                         }
-                    }
-                    break;
-                case Weapon.HigaimosoNoYumi:
-                    if (targetUnit.hasNegativeStatusEffect()
-                        || !targetUnit.battleContext.isRestHpFull
-                    ) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.spdSpur += 5;
                     }
                     break;
                 case Weapon.MaryuNoBreath:
@@ -17036,16 +17000,6 @@ class DamageCalculatorWrapper {
                     }
                 }
             }
-            // 十字方向
-            if (this.__isInCloss(unit, targetUnit)) {
-                for (let skillId of unit.enumerateSkills()) {
-                    switch (skillId) {
-                        case Weapon.FlowerOfSorrow:
-                            targetUnit.addSpurs(0, 0, -4, -4);
-                            break;
-                    }
-                }
-            }
             // 縦3列以内
             if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
                 switch (unit.weapon) {
@@ -17274,10 +17228,6 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur -= 4;
                             targetUnit.spdSpur -= 4;
                         }
-                        break;
-                    case Weapon.Gurgurant:
-                        targetUnit.atkSpur -= 5;
-                        targetUnit.defSpur -= 5;
                         break;
                     case PassiveC.AtkSpdRein3:
                     case PassiveC.ASReinSnap:

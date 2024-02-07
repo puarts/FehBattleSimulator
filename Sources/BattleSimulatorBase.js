@@ -1052,6 +1052,21 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoLyon:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
+                    if (unit.isInClossOf(duoUnit)) {
+                        if (g_appData.gameMode !== GameMode.SummonerDuels) {
+                            unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
+                        } else {
+                            if (unit.isActionDone) {
+                                unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
+                            } else {
+                                unit.isActionDone = true;
+                            }
+                        }
+                    }
+                }
+                break;
             case Hero.HarmonizedIgrene:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Treachery);
@@ -3798,7 +3813,8 @@ class BattleSimmulatorBase {
                 result.atkUnit_atk,
                 result.atkUnit_spd,
                 result.atkUnit_def,
-                result.atkUnit_res),
+                result.atkUnit_res,
+                result.atkTile),
             this.__createDamageCalcSummaryHtml(
                 result.defUnit,
                 atkUnit,
@@ -3808,7 +3824,8 @@ class BattleSimmulatorBase {
                 result.defUnit_atk,
                 result.defUnit_spd,
                 result.defUnit_def,
-                result.defUnit_res));
+                result.defUnit_res,
+                result.defTile));
     }
 
     clearDamageCalcSummary() {
@@ -3832,21 +3849,31 @@ class BattleSimmulatorBase {
      */
     __createDamageCalcSummaryHtml(unit, enemyUnit,
         preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount,
-        atk, spd, def, res) {
+        atk, spd, def, res, tile) {
         // ダメージに関するサマリー
-        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount);
+        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile);
         // ステータスやバフに関するサマリー
         html += this.__createStatusSummaryHtml(unit, atk, spd, def, res);
 
         return html;
     }
 
-    __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount) {
+    __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile) {
+        let divineHtml = "";
+        if (tile.divineVein !== DivineVeinType.None) {
+            let divineString = DivineVeinStrings[tile.divineVein];
+            let color = divineVeinColor(tile.divineVeinGroup);
+            divineHtml += `<span style='color:${color};font-weight: bold'>【</span>`;
+            divineHtml += divineString;
+            // TODO: 1ターンで終了しない天脈が実装されたら正しい数値を入れるようにする
+            divineHtml += `<span style='color: #FFFFFF;background-color:${color};border-radius: 50%;'> ${1} </span> `;
+            divineHtml += `<span style='color:${color};font-weight: bold;'>】</span>`;
+        }
         // HPリザルト
-        let restHpHtml = unit.restHp == 0 ?
+        let restHpHtml = unit.restHp === 0 ?
             `<span style='color:#ffaaaa'>${unit.restHp}</span>` :
             unit.restHp;
-        let html = `HP: ${unit.hp} → ${restHpHtml}<br/>`;
+        let html = `${divineHtml}HP: ${unit.hp} → ${restHpHtml}<br/>`;
 
         // 奥義カウント、ダメージ表示
         let specialHtml = `<span style="color: pink;">${unit.specialCount}</span>`;
@@ -3862,6 +3889,9 @@ class BattleSimmulatorBase {
                 combatHtml += `×${attackCount}`;
             }
             damageHtml = `${precombatHtml}${afterBeginningOfCombatbatHtml}${combatHtml}`;
+        } else {
+            let afterBeginningOfCombatbatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
+            damageHtml = `${afterBeginningOfCombatbatHtml}`;
         }
         html += `奥${specialHtml}  攻撃: ${damageHtml}<br/>`;
         return html;
@@ -6589,7 +6619,6 @@ class BattleSimmulatorBase {
                 case Weapon.NidavellirLots:
                 case Weapon.GrimBrokkr:
                 case Weapon.AutoLofnheior:
-                case Weapon.Lyngheior:
                     if (g_appData.currentTurn <= 4) {
                         return true;
                     }

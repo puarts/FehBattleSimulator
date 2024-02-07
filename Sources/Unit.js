@@ -68,6 +68,7 @@ const Hero = {
     DuoByleth: 1062,
     DuoSeidr: 1068,
     HarmonizedIgrene: 1079,
+    DuoLyon: 1086,
 };
 
 function isThiefIndex(heroIndex) {
@@ -255,6 +256,7 @@ const StatusEffectType = {
     ReducesDamageFromFirstAttackBy40Percent: 58, // 自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減
     ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent: 59, // 「ダメージを〇〇%軽減」を半分無効
     TimesGrip: 60, // 時の陥穽
+    AfterStartOfTurnSkillsTriggerActionEndsImmediately: 61, // ターン開始後スキル発動後、即座に行動終了
 };
 
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
@@ -315,6 +317,7 @@ NegativeStatusEffectTable[StatusEffectType.Ploy] = 0;
 NegativeStatusEffectTable[StatusEffectType.Schism] = 0;
 NegativeStatusEffectTable[StatusEffectType.NeutralizeUnitSurvivesWith1HP] = 0;
 NegativeStatusEffectTable[StatusEffectType.TimesGrip] = 0;
+NegativeStatusEffectTable[StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately] = 0;
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
 function isNegativeStatusEffect(type) {
@@ -452,6 +455,8 @@ function statusEffectTypeToIconFilePath(value) {
             return g_imageRootPath + "StatusEffect_ReduceReduceDamageByX.webp";
         case StatusEffectType.TimesGrip:
             return g_imageRootPath + "StatusEffect_TimesGrip.webp";
+        case StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately:
+            return g_imageRootPath + "StatusEffect_AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp";
         default: return "";
     }
 }
@@ -5870,7 +5875,7 @@ class Unit extends BattleMapElement {
 
     /// 自身が指定したユニットの十字方向にいるかどうかを取得します。
     isInClossOf(unit) {
-        return this.posX == unit.posX || this.posY == unit.posY;
+        return this.posX === unit.posX || this.posY === unit.posY;
     }
 
     /// 指定したユニットの指定した距離以内に自身がいるかどうかを取得します。
@@ -6028,7 +6033,6 @@ class Unit extends BattleMapElement {
                     break;
                 // 再移動(3)
                 case Weapon.AutoLofnheior:
-                case Weapon.Lyngheior:
                     moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
                 // 残り+1

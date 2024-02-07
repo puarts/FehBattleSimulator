@@ -35,9 +35,9 @@ class PostCombatSkillHander {
     // 戦闘後スキル評価時にenumerateUnitsInTheSameGroupOnMapは護られているユニットを含まないのでそのユニットを含めてマップにいるユニットを列挙する
     enumerateUnitsInTheSameGroupOnMapIncludingSavedUnit(targetUnit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsWithPredicator(x =>
-            x.groupId == targetUnit.groupId
+            x.groupId === targetUnit.groupId
             && x.ownerType !== OwnerType.TrashBox // 護られるユニットは一時的にplacedTileが外れるのでゴミ箱に送られているかで判断
-            && (withTargetUnit || x != targetUnit)
+            && (withTargetUnit || x !== targetUnit)
         );
     }
 
