@@ -5089,7 +5089,7 @@ const selectReferencingResOrDefFuncMap = new Map();
                         if (unit.isActionDone) {
                             unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
                         } else {
-                            unit.isActionDone = true;
+                            unit.endAction();
                         }
                     }
                 }
@@ -6676,7 +6676,7 @@ const selectReferencingResOrDefFuncMap = new Map();
             for (let unit of units) {
                 if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3 - 5) {
                     if (!unit.hasStatusEffect(StatusEffectType.TimesGrip)) {
-                        unit.isActionDone = true;
+                        unit.endAction();
                         // TODO: 予約が必要になれば予約を実装する
                         unit.addStatusEffect(StatusEffectType.TimesGrip);
                     }

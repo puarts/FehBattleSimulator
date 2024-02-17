@@ -422,7 +422,7 @@ class PostCombatSkillHander {
                                 minDistance = distance;
                             }
                         }
-                        units.map(unit => unit.isActionDone = true);
+                        units.map(unit => unit.endAction());
                     }
                     break;
                 case PassiveC.TimesPulse4:
