@@ -1061,7 +1061,7 @@ class BattleSimmulatorBase {
                             if (unit.isActionDone) {
                                 unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
                             } else {
-                                unit.isActionDone = true;
+                                unit.endAction();
                             }
                         }
                     }
@@ -7877,7 +7877,7 @@ class BattleSimmulatorBase {
                 if (unit.posX == px && unit.posY == py) {
                     if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
                         this.writeLogLine(unit.getNameWithGroup() + "に停止の魔法罠の効果適用");
-                        unit.isActionDone = true;
+                        unit.endAction();
                     }
                     break;
                 }

@@ -66,7 +66,7 @@ class BeginningOfTurnSkillHandler {
     applySkillsAfterBeginningOfTurn(unit) {
         if (unit.hasStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately)) {
             this.writeDebugLog(`${unit.nameWithGroup}はステータス${getStatusEffectName(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately)}により行動終了`);
-            unit.isActionDone = true;
+            unit.endAction();
         }
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillAfterBeginningOfTurn(skillId, unit);
@@ -2971,7 +2971,7 @@ class BeginningOfTurnSkillHandler {
                     }
                     for (let unit of units) {
                         if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3) {
-                            unit.isActionDone = true;
+                            unit.endAction();
                         }
                     }
                 }
