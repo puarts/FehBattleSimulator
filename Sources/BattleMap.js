@@ -2998,8 +2998,15 @@ class BattleMap {
             // 状態異常
             if (unit.hasAnyStatusEffect) {
                 cell.innerText += "<span style='position:absolute;top:0;right:0;" + shadowCss + ";pointer-events: none;'>"
-                for (let statusEffect of unit.statusEffects) {
-                    cell.innerText += "<img src='" + statusEffectTypeToIconFilePath(statusEffect) + "' style='height:11px'>";
+                // 付与されているステータスの数が7以上のときは省略表示にする
+                if (unit.statusEffects.length >= 7) {
+                    let statusCounts = `(${unit.getPositiveStatusEffects().length}, ${unit.getNegativeStatusEffects().length})`;
+                    let statusColor = "#ffffff";
+                    cell.innerText += `<span style='font-size:10px;color:${statusColor};bottom:0;left:0;${shadowCss};pointer-events: none'>${statusCounts}</span>`;
+                } else {
+                    for (let statusEffect of unit.statusEffects) {
+                        cell.innerText += `<img src='${statusEffectTypeToIconFilePath(statusEffect)}' style='height:11px' alt="${getStatusEffectName(statusEffect)}">`;
+                    }
                 }
                 cell.innerText += "</span>";
             }
