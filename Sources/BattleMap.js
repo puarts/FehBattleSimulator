@@ -2998,14 +2998,32 @@ class BattleMap {
             // 状態異常
             if (unit.hasAnyStatusEffect) {
                 cell.innerText += "<span style='position:absolute;top:0;right:0;" + shadowCss + ";pointer-events: none;'>"
+                let getStatusImgTag = e => {
+                    if (typeof e === "undefined") {
+                        return "";
+                    }
+                    return `<img src='${statusEffectTypeToIconFilePath(e)}' style='height:11px' alt="${getStatusEffectName(e)}">`;
+                };
                 // 付与されているステータスの数が7以上のときは省略表示にする
                 if (unit.statusEffects.length >= 7) {
-                    let statusCounts = `(${unit.getPositiveStatusEffects().length}, ${unit.getNegativeStatusEffects().length})`;
+                    let pes = unit.getPositiveStatusEffects();
+                    let nes = unit.getNegativeStatusEffects();
+                    let getStatusHtml = (imgTag, es) => {
+                        switch (es.length) {
+                            case 0: return "";
+                            case 1: return imgTag;
+                            default:
+                                return imgTag + es.length;
+                        }
+                    };
+                    let positiveHtml = getStatusHtml(getStatusImgTag(pes[0]), pes);
+                    let negativeHtml = getStatusHtml(getStatusImgTag(nes[0]), nes);
+                    let statusCounts = `${positiveHtml}${negativeHtml}`;
                     let statusColor = "#ffffff";
                     cell.innerText += `<span style='font-size:10px;color:${statusColor};bottom:0;left:0;${shadowCss};pointer-events: none'>${statusCounts}</span>`;
                 } else {
                     for (let statusEffect of unit.statusEffects) {
-                        cell.innerText += `<img src='${statusEffectTypeToIconFilePath(statusEffect)}' style='height:11px' alt="${getStatusEffectName(statusEffect)}">`;
+                        cell.innerText += getStatusImgTag(statusEffect);
                     }
                 }
                 cell.innerText += "</span>";
