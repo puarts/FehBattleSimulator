@@ -4598,7 +4598,32 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
-//
+// 飛竜裂空
+{
+    let skillId = PassiveB.None;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.addAtkDefSpurs(-4);
+
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    let getStatus = (tu, eu) => tu.getEvalSpdInCombat(eu) + tu.getEvalDefInCombat(eu);
+                    if (getStatus(targetUnit, enemyUnit) >=
+                        getStatus(enemyUnit, targetUnit) - 10) {
+                        let n = MathUtil.ensureMinMax(targetUnit.getDefInPrecombat() - 35, 0, 7);
+                        targetUnit.battleContext.additionalDamage += n;
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += n;
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                        enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
+                    }
+                }
+            );
+        }
+    );
+}
+
+// 可憐の斧
 {
     let skillId = Weapon.None;
     applySkillEffectForUnitFuncMap.set(skillId,

@@ -314,6 +314,9 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+敵の追撃の速さ条件+20(targetUnitから見て)
+enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
+
 [神速追撃]
 applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
     function (targetUnit, enemyUnit) {
