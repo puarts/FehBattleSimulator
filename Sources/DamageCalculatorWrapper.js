@@ -11037,6 +11037,7 @@ class DamageCalculatorWrapper {
             enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
             enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
         }
+        this.applyBonusReversals(targetUnit, enemyUnit);
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.TeacakeTowerPlus:
@@ -11880,6 +11881,21 @@ class DamageCalculatorWrapper {
                     break;
                 }
             }
+        }
+    }
+
+    applyBonusReversals(targetUnit, enemyUnit) {
+        if (targetUnit.battleContext.isAtkBonusReversal) {
+            targetUnit.atkSpur -= Math.max(targetUnit.getAtkBuffInCombat(enemyUnit), 0) * 2;
+        }
+        if (targetUnit.battleContext.isSpdBonusReversal) {
+            targetUnit.spdSpur -= Math.max(targetUnit.getSpdBuffInCombat(enemyUnit), 0) * 2;
+        }
+        if (targetUnit.battleContext.isDefBonusReversal) {
+            targetUnit.defSpur -= Math.max(targetUnit.getDefBuffInCombat(enemyUnit), 0) * 2;
+        }
+        if (targetUnit.battleContext.isResBonusReversal) {
+            targetUnit.resSpur -= Math.max(targetUnit.getResBuffInCombat(enemyUnit), 0) * 2;
         }
     }
 

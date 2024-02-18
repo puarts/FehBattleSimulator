@@ -559,6 +559,12 @@ class BattleContext {
         this.invalidatesDefBuff = false;
         this.invalidatesResBuff = false;
 
+        // 強化反転
+        this.isAtkBonusReversal = false;
+        this.isSpdBonusReversal = false;
+        this.isDefBonusReversal = false;
+        this.isResBonusReversal = false;
+
         // 神罰の杖
         this.wrathfulStaff = false;
 
@@ -906,6 +912,12 @@ class BattleContext {
         this.invalidatesDefBuff = false;
         this.invalidatesResBuff = false;
 
+        // 強化反転
+        this.isAtkBonusReversal = false;
+        this.isSpdBonusReversal = false;
+        this.isDefBonusReversal = false;
+        this.isResBonusReversal = false;
+
         // 神罰の杖
         this.wrathfulStaff = false;
 
@@ -1040,6 +1052,20 @@ class BattleContext {
         this.invalidatesSpdBuff = true;
         this.invalidatesDefBuff = true;
         this.invalidatesResBuff = true;
+    }
+
+    setAllBonusReversal() {
+        this.isAtkBonusReversal = true;
+        this.isSpdBonusReversal = true;
+        this.isDefBonusReversal = true;
+        this.isResBonusReversal = true;
+    }
+
+    setBonusReversals(atk, spd, def, res) {
+        this.isAtkBonusReversal |= atk;
+        this.isSpdBonusReversal |= spd;
+        this.isDefBonusReversal |= def;
+        this.isResBonusReversal |= res;
     }
 
     invalidateBuffs(atk, spd, def, res) {

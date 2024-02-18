@@ -399,6 +399,13 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 }
 
 強化の値の2倍だけ減少[強化反転]
+// 一括
+targetUnit.battleContext.setAllBonusReversal();
+// 個別一括
+targetUnit.battleContext.setBonusReversals(true, true, true, true);
+// 攻撃だけ
+targetUnit.battleContext.isAtkBonusReversal = false;
+もしくは
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
     enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit), 0) * 2;
