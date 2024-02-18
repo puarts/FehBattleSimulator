@@ -4455,15 +4455,38 @@ class SkillInfo {
 }
 
 class MathUtil {
-    static limitTo(value, min = null, max = null) {
+    /**
+     * 「最低min、最大max」した値を返す。
+     * @param {number} value
+     * @param {number} min
+     * @param {number} max
+     * @returns {number}
+     */
+    static ensureMinMax(value, min, max) {
         let v = value;
-        if (min !== null) {
-            v = Math.max(v, min);
-        }
-        if (max !== null) {
-            v = Math.min(v, max);
-        }
+        v = MathUtil.ensureMin(v, min);
+        v = MathUtil.ensureMax(v, max);
         return v;
+    }
+
+    /**
+     * 「最低min」した値を返す。
+     * @param {number} value
+     * @param {number} min
+     * @returns {number}
+     */
+    static ensureMin(value, min) {
+        return Math.max(value, min);
+    }
+
+    /**
+     * 「最大max」した値を返す。
+     * @param {number} value
+     * @param {number} max
+     * @returns {number}
+     */
+    static ensureMax(value, max) {
+        return Math.min(value, max);
     }
 }
 
@@ -4575,6 +4598,26 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+//
+{
+    let skillId = Weapon.None;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let amount = MathUtil.ensureMin(16 - enemyUnit.maxSpecialCount * 2, 8);
+                if (enemyUnit.special === Special.None) {
+                    amount = 8;
+                }
+                targetUnit.addSpursWithoutRes(amount);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                let ratio = enemyUnit.getEvalDefInPrecombat() >= enemyUnit.getEvalResInPrecombat() ? 0.7 : 0.3;
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+            }
+        }
+    );
+}
+
 // フェザーソード
 {
     let skillId = Weapon.FeatherSword;
@@ -4628,7 +4671,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(4);
                         let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
-                        let amount = MathUtil.limitTo(count * 3, 0, 6);
+                        let amount = MathUtil.ensureMinMax(count * 3, 0, 6);
                         targetUnit.addAtkSpdSpurs(amount);
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                     }
@@ -5002,7 +5045,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
                     if (targetUnit.battleContext.initiatesCombat ||
                         enemyUnit.battleContext.restHpPercentage >= 75) {
                         let reducedHp = targetUnit.maxHpWithSkills - targetUnit.restHp;
-                        let amount = MathUtil.limitTo(reducedHp * 2 + 5, 15);
+                        let amount = MathUtil.ensureMin(reducedHp * 2 + 5, 15);
                         targetUnit.addAtkSpdSpurs(amount);
                         targetUnit.battleContext.increaseCooldownCountForBoth();
                     }
@@ -5227,7 +5270,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
             if (enemyUnit.battleContext.initiatesCombat ||
                 enemyUnit.battleContext.restHpPercentage >= 75) {
                 let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
-                let amount = MathUtil.limitTo(count * 4 + 6,0, 14);
+                let amount = MathUtil.ensureMinMax(count * 4 + 6, 0, 14);
                 this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により${amount}ステータスが変化。count: ${count}`);
                 enemyUnit.addAtkDefSpurs(-amount);
                 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
@@ -5316,7 +5359,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
             if (enemyUnit.battleContext.initiatesCombat ||
                 enemyUnit.battleContext.restHpPercentage >= 75) {
                 let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
-                let amount = MathUtil.limitTo(count * 4 + 6,0, 14);
+                let amount = MathUtil.ensureMinMax(count * 4 + 6, 0, 14);
                 this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により${amount}攻撃が変化。count: ${count}`);
                 targetUnit.atkSpur += amount;
                 enemyUnit.atkSpur -= amount;
@@ -5498,7 +5541,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 let atk = enemyUnit.getAtkInPrecombat();
-                let amount = MathUtil.limitTo(Math.trunc(atk * 0.25) - 4, 5, 14);
+                let amount = MathUtil.ensureMinMax(Math.trunc(atk * 0.25) - 4, 5, 14);
                 targetUnit.addAllSpur(amount);
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
