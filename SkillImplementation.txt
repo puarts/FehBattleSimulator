@@ -314,6 +314,13 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+[神速追撃]
+applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+    function (targetUnit, enemyUnit) {
+        this.__applyPotent(targetUnit, enemyUnit);
+    }
+);
+
 反撃不可
 targetUnit.battleContext.invalidatesCounterattack = true;
 もしくは

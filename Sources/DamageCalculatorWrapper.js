@@ -11899,6 +11899,17 @@ class DamageCalculatorWrapper {
         }
     }
 
+    __applyPotent(targetUnit, enemyUnit, baseRatio = 0.4, evalSpd = -25) {
+        if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, evalSpd)) {
+            let potentRatio = baseRatio;
+            if (!targetUnit.battleContext.isTwiceAttackActivating() &&
+                !targetUnit.battleContext.canFollowupAttack) {
+                potentRatio = baseRatio * 2;
+            }
+            targetUnit.battleContext.potentRatios.push(potentRatio);
+        }
+    }
+
     // 最も高い強化値を返す。
     // 対象キャラ全員にパニックがかかっている場合でもマイナスは返さない（0を返す）。
     __getHighestBuffs(targetUnit, enemyUnit, units, withTargetUnit = false) {

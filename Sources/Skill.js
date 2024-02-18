@@ -5406,14 +5406,7 @@ const selectReferencingResOrDefFuncMap = new Map();
     );
     applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
-            if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, -25)) {
-                let potentRatio = 0.4;
-                if (!targetUnit.battleContext.isTwiceAttackActivating() &&
-                    !targetUnit.battleContext.canFollowupAttack) {
-                    potentRatio = 0.8;
-                }
-                targetUnit.battleContext.potentRatios.push(potentRatio);
-            }
+            this.__applyPotent(targetUnit, enemyUnit);
         }
     );
 }
