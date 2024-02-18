@@ -5247,6 +5247,8 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
     setSkill(PassiveA.FirefloodBoost3, u => u.addAtkResSpurs(7));
     // 生命の業火大地3
     setSkill(PassiveA.EarthfireBoost3, u => u.addAtkDefSpurs(7));
+    // 生命の疾風大地3
+    setSkill(PassiveA.None, u => u.addSpdDefSpurs(7));
 }
 
 // 強く気高き魂の槍
