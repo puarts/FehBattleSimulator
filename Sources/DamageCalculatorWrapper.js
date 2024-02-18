@@ -3036,7 +3036,9 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
                 // TODO: "自分と敵は"の条件がどこまでかかるのか確認する
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack = 20;
+                enemyUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
+                enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
             }
             if (targetUnit.battleContext.restHpPercentage >= 25 &&
                 targetUnit.battleContext.initiatesCombat) {
