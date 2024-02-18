@@ -3002,7 +3002,7 @@ class BattleMap {
                     if (typeof e === "undefined") {
                         return "";
                     }
-                    return `<img src='${statusEffectTypeToIconFilePath(e)}' style='height:11px' alt="${getStatusEffectName(e)}">`;
+                    return `<img src='${statusEffectTypeToIconFilePath(e)}' style='height:11px' alt="">`;
                 };
                 // 付与されているステータスの数が7以上のときは省略表示にする
                 if (unit.statusEffects.length >= 7) {
