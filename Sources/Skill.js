@@ -4478,6 +4478,22 @@ const inheritableCount2Specials = [];
 const count3Specials = [];
 const inheritableCount3Specials = [];
 
+// 補助時に奥義発動カウントを進めないスキル
+const noEffectOnSpecialCooldownChargeOnSupportSkillSet = new Set();
+{
+    let skills = [
+        Support.RescuePlus, Support.Rescue,
+        Support.ReturnPlus, Support.Return,
+        Support.NudgePlus, Support.Nudge,
+        Special.HolyPressure,
+        Special.LightsRestraint,
+        Special.HolyPanic,
+    ];
+    for (let skill of skills) {
+        noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skill);
+    }
+}
+
 // TODO: ここから下の内容を別ファイルに分ける
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
