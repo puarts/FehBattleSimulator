@@ -1887,6 +1887,7 @@ const Weapon = {
     AxeOfAdoration: 2788, // 可憐の斧
     ReversalBlade: 2782, // 強化反転の剣+
     ArcaneCharmer: 2791, // 魔器・愛らしい雪杖
+    IceboundTome: 2784, // 吹き渡る雪書
 };
 
 const Support = {
@@ -4609,6 +4610,53 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 吹き渡る雪書
+{
+    let skillId = Weapon.IceboundTome;
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            let func = u => u.isPartner(unit);
+            return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 3, 2, func);
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let found = false;
+            /** @type {[Unit]} */
+            let units = this.enumerateUnitsInTheSameGroupOnMap(skillOwner);
+            for (let unit of units) {
+                if (unit.isPartner(skillOwner)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                isRangedWeaponType(enemyUnit.weaponType)) {
+                let atk = enemyUnit.getAtkInPrecombat();
+                let amount = MathUtil.ensureMinMax(Math.trunc(atk * 0.25 - 4), 5, 14);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    let distance = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                    return 0.2 + MathUtil.ensureMax(distance, 5) * 0.1;
+                });
+                targetUnit.battleContext.healedHpByFollowupAttack += 7;
+            }
+        }
+    );
+}
+
 // 煌めく理力
 {
     let skillId = PassiveC.GlitteringAnima;

@@ -696,6 +696,9 @@ class BattleContext {
         // 自分の攻撃でダメージを与えた時のHP回復量
         this.healedHpByAttackPerAttack = 0;
 
+        // 自分の追撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
+        this.healedHpByFollowupAttack = 0;
+
         // 追撃不可を無効
         this.invalidatesInvalidationOfFollowupAttack = false;
 
@@ -968,6 +971,7 @@ class BattleContext {
         this.nullCounterDisrupt = false;
         this.healedHpByAttack = 0;
         this.healedHpByAttackPerAttack = 0;
+        this.healedHpByFollowupAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;

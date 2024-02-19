@@ -30,6 +30,7 @@ class DamageLog {
 /// ダメージ計算時に一時的に使用するコンテキストです。
 class DamageCalcContext {
     constructor() {
+        // isFollowupAttackはisPotentFollowupAttackを含む(isPotentFollowupAttackであれば常にisFollowupAttackも満たす)
         this.isCounterattack = false;
         this.isFollowupAttack = false;
         this.isPotentFollowupAttack = false;
