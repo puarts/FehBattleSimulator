@@ -3299,6 +3299,7 @@ const PassiveX = {
     DeathBlowEcho: 2616, // 響・鬼神の一撃
     AtkOathEcho: 2612, // 響・攻撃の信義
     FleetingEcho: 2663, // 響・飛燕の離撃
+    SoaringEcho: 2787, // 響・飛走の先導
 };
 
 // 隊長スキル
@@ -4613,6 +4614,24 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 響・飛走の先導
+{
+    let skillId = PassiveX.SoaringEcho;
+    enumerateTeleportTilesForAllyFuncMap.set(skillId,
+        function(targetUnit, allyUnit) {
+            // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
+            if (targetUnit.distance(allyUnit) <= 2 &&
+                targetUnit.moveType === MoveType.Infantry ||
+                targetUnit.moveType === MoveType.Flying) {
+                return this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+            } else {
+                return this.__enumerateNoTiles();
+            }
+        }
+    );
+}
+
+// 執着
 {
     let skillId = PassiveA.Obsession;
     applySkillEffectForUnitFuncMap.set(skillId,
