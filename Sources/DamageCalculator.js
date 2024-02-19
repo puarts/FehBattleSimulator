@@ -676,6 +676,10 @@ class DamageCalculator {
         let invalidatesDamageReductionExceptSpecial =
             atkUnit.battleContext.invalidatesDamageReductionExceptSpecial ||
             atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack;
+        if (context.isFollowupOrPotentFollowupAttack()) {
+            invalidatesDamageReductionExceptSpecial |=
+                atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForFollowupAttack;
+        }
         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = false;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
         for (let skillId of atkUnit.enumerateSkills()) {
@@ -1306,7 +1310,7 @@ class DamageCalculator {
             }
 
             {
-                let healHpAmount = this.__getHealAmountByAttack(atkUnit, defUnit, currentDamage);
+                let healHpAmount = this.__getHealAmountByAttack(atkUnit, defUnit, currentDamage, context);
                 if (healHpAmount > 0) {
                     if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${healHpAmount}回復`);
                     this.__heal(atkUnit, healHpAmount, defUnit);
@@ -1537,8 +1541,11 @@ class DamageCalculator {
         return true;
     }
 
-    __getHealAmountByAttack(targetUnit, defUnit, currentDamage) {
+    __getHealAmountByAttack(targetUnit, defUnit, currentDamage, context) {
         let healedHp = targetUnit.battleContext.healedHpByAttack + targetUnit.battleContext.healedHpByAttackPerAttack;
+        if (context.isFollowupOrPotentFollowupAttack()) {
+            healedHp += targetUnit.battleContext.healedHpByFollowupAttack;
+        }
         healedHp += floorNumberWithFloatError(currentDamage * targetUnit.battleContext.damageRatioToHeal);
         return healedHp;
     }

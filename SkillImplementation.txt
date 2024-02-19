@@ -955,6 +955,9 @@ targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
 // 次の攻撃
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = true;
 
+追撃時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
+targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForFollowupAttack = true;
+
 敵から攻撃を受ける際に発動する奥義発動時、自分の次の攻撃は、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(その戦闘中のみ)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
 

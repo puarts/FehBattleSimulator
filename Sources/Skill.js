@@ -2363,6 +2363,7 @@ const PassiveA = {
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
     // 専用A
+    Obsession: 2785, // 執着
     GrayIllusion: 2773, // 鈍色の迷夢
     ThundersFist: 2732, // 雷神の右腕
     BeyondWitchery: 2620, // 魔女を超える者
@@ -4610,6 +4611,27 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+{
+    let skillId = PassiveA.Obsession;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(9);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForFollowupAttack = true;
+            }
+        }
+    );
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                this.__applyPotent(targetUnit, enemyUnit);
+            }
+        }
+    );
+}
+
 // 吹き渡る雪書
 {
     let skillId = Weapon.IceboundTome;
