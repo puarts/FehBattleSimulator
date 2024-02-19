@@ -1880,6 +1880,11 @@ const Weapon = {
 
     // 2024年2月 武器錬成
     AirborneSpear: 2781, // 穢れなき白槍
+
+    // 新英雄召喚（響心アイビー＆魔器オルテンシア）
+    // https://www.youtube.com/watch?v=cFcb-uFPBns&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=hq8VlqJ3U1M&ab_channel=NintendoMobile
+    AxeOfAdoration: 2788, // 可憐の斧
 };
 
 const Support = {
@@ -2351,6 +2356,7 @@ const PassiveA = {
     SeimeiNoSeisui3: 573,
     FirefloodBoost3: 2501, // 生命の業火静水3
     EarthfireBoost3: 2768, // 生命の業火大地3
+    EarthwindBoost3: 2789, // 生命の疾風大地3
 
     // 専用A
     GrayIllusion: 2773, // 鈍色の迷夢
@@ -2761,6 +2767,7 @@ const PassiveB = {
     Tenmakoku3: 1139, // 天馬行空3
     PegasusFlight4: 2326, // 天馬行空4
     WyvernFlight3: 1529, // 飛竜行空3
+    WyvernRift: 2790, // 飛竜裂空
     KodoNoHukanGusu3: 1136, // 鼓動の封緘・偶数3
     OddPulseTie3: 1321, // 鼓動の封緘・奇数3
 
@@ -4600,7 +4607,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // 各スキルの実装
 // 飛竜裂空
 {
-    let skillId = PassiveB.None;
+    let skillId = PassiveB.WyvernRift;
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             enemyUnit.addAtkDefSpurs(-4);
@@ -4625,7 +4632,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 
 // 可憐の斧
 {
-    let skillId = Weapon.None;
+    let skillId = Weapon.AxeOfAdoration;
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -5273,7 +5280,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
     // 生命の業火大地3
     setSkill(PassiveA.EarthfireBoost3, u => u.addAtkDefSpurs(7));
     // 生命の疾風大地3
-    setSkill(PassiveA.None, u => u.addSpdDefSpurs(7));
+    setSkill(PassiveA.EarthwindBoost3, u => u.addSpdDefSpurs(7));
 }
 
 // 強く気高き魂の槍
