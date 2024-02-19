@@ -1885,6 +1885,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=cFcb-uFPBns&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=hq8VlqJ3U1M&ab_channel=NintendoMobile
     AxeOfAdoration: 2788, // 可憐の斧
+    ReversalBlade: 2782, // 強化反転の剣+
 };
 
 const Support = {
@@ -4605,6 +4606,19 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 強化反転の剣+
+{
+    let skillId = Weapon.ReversalBlade;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(4);
+                enemyUnit.battleContext.setAllBonusReversal();
+            }
+        }
+    );
+}
+
 // 飛竜裂空
 {
     let skillId = PassiveB.WyvernRift;
