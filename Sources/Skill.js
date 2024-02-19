@@ -2127,6 +2127,7 @@ const Special = {
     RequiemDance: 1800, // 鎮魂の舞
 
     // 杖奥義
+    GlitterOfLight: 2792, // 輝映の聖光
     HolyPressure: 2344, // 重圧の聖光
     LightsRestraint: 2362, // 抑制の聖光
     HolyPanic: 2437, // 恐慌の聖光
@@ -4607,6 +4608,38 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 輝映の聖光
+{
+    let skillId = Special.GlitterOfLight;
+    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let totalRes = enemyUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
+        }
+    );
+
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.isSpecialActivated) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true);
+                for (let unit of units) {
+                    unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }
+            }
+        }
+    );
+}
+
 // 魔器・愛らしい雪杖
 {
     let skillId = Weapon.ArcaneCharmer;

@@ -768,9 +768,9 @@ atkUnit.battleContext.increaseCooldownCountForAttack = true;
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
 補助スキルを使用したとき、自身の奥義発動変動量は常に0
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(Special.X);
+noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 このスキル使用時の奥義発動変動量は常に0
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(Support.X);
+noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCountFuncMap.set(skillId,
