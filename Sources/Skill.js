@@ -1886,6 +1886,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=hq8VlqJ3U1M&ab_channel=NintendoMobile
     AxeOfAdoration: 2788, // 可憐の斧
     ReversalBlade: 2782, // 強化反転の剣+
+    ArcaneCharmer: 2791, // 魔器・愛らしい雪杖
 };
 
 const Support = {
@@ -4606,6 +4607,28 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 魔器・愛らしい雪杖
+{
+    let skillId = Weapon.ArcaneCharmer;
+    applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 3) {
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.additionalDamage += 7;
+            }
+        }
+    );
+}
+
 // 強化反転の剣+
 {
     let skillId = Weapon.ReversalBlade;

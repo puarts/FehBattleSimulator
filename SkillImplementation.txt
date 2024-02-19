@@ -574,7 +574,9 @@ __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentia
 周囲Nマスの味方は戦闘後、7回復(暗闘の対象にならないスキル効果)
 applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
     function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
-        targetUnit.battleContext.healedHpAfterCombat += 7;
+        if (targetUnit.distance(allyUnit) <= N) {
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
     }
 );
 もしくは
