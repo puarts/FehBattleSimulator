@@ -2844,6 +2844,8 @@ const PassiveB = {
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdDefFarTrace3: 2105, // 速さ魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
+    // 遠影4
+    AtkResFarTrace4: 2786, // 攻撃魔防の遠影4
     SpdResFarTrace4: 2733, // 速さ魔防の遠影4
 
     // 怒涛
@@ -6428,26 +6430,31 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
     );
 }
 
-// 速さ魔防の遠影4
+// 遠影4
 {
-    let skillId = PassiveB.SpdResFarTrace4;
-    canActivateCantoFuncMap.set(skillId, function (unit) {
-        // 無条件再移動
-        return true;
-    });
-    calcMoveCountForCantoFuncMap.set(skillId, function () {
-        return this.restMoveCount === 0 ? 1 : this.restMoveCount;
-    });
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            enemyUnit.addSpdResSpurs(-4);
-        }
-    );
-    calcFixedAddDamageFuncMap.set(skillId,
-        function (atkUnit, defUnit, isPrecombat) {
-            atkUnit.battleContext.additionalDamage += 7;
-        }
-    );
+    let setSkill = (skillId, spurFunc) => {
+        canActivateCantoFuncMap.set(skillId, function (unit) {
+            // 無条件再移動
+            return true;
+        });
+        calcMoveCountForCantoFuncMap.set(skillId, function () {
+            return this.restMoveCount === 0 ? 1 : this.restMoveCount;
+        });
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                spurFunc(enemyUnit);
+            }
+        );
+        calcFixedAddDamageFuncMap.set(skillId,
+            function (atkUnit, defUnit, isPrecombat) {
+                atkUnit.battleContext.additionalDamage += 7;
+            }
+        );
+    }
+    // 攻撃魔防の遠影4
+    setSkill(PassiveB.AtkResFarTrace4, u => u.addAtkResSpurs(-4));
+    // 速さ魔防の遠影4
+    setSkill(PassiveB.SpdResFarTrace4, u => u.addSpdResSpurs(-4));
 }
 
 // 雷神の右腕
