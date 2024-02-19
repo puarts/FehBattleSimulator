@@ -3201,6 +3201,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    GlitteringAnima: 2793, // 煌めく理力
     DarklingDragon: 2766, // 闇の樹海の竜神
     DragonMonarch: 2756, // リトスの神竜王
     FutureSighted: 2716, // 共に未来を変えて
@@ -4608,6 +4609,49 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 煌めく理力
+{
+    let skillId = PassiveC.GlitteringAnima;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3, true);
+                for (let unit of units) {
+                    unit.reserveToApplyBuffs(6, 6, 0, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                    unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesPenalties);
+                }
+
+                /** @type {[Unit]} */
+                let nearestEnemies = this.__findNearestEnemies(skillOwner);
+                for (let unit of nearestEnemies) {
+                    /** @type {[Unit]} */
+                    let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3, true);
+                    for (let enemy of enemies) {
+                        enemy.reserveToApplyDebuffs(0, 0, -6, -6);
+                        enemy.reserveToAddStatusEffect(StatusEffectType.Panic);
+                        enemy.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 輝映の聖光
 {
     let skillId = Special.GlitterOfLight;
