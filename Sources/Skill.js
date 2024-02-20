@@ -1888,6 +1888,7 @@ const Weapon = {
     ReversalBlade: 2782, // 強化反転の剣+
     ArcaneCharmer: 2791, // 魔器・愛らしい雪杖
     IceboundTome: 2784, // 吹き渡る雪書
+    PenitentLance: 2794, // 救済の騎士の槍
 };
 
 const Support = {
@@ -4614,6 +4615,43 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 救済の騎士の槍
+{
+    let skillId = Weapon.PenitentLance;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3, true);
+                for (let unit of units) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                    unit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                let positiveCount = targetUnit.getPositiveStatusEffects().length;
+                let amount = MathUtil.ensureMax(positiveCount * 2 + 6, 12);
+                enemyUnit.addAtkDefSpurs(-amount);
+            }
+        }
+    );
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let positiveCount = targetUnit.getPositiveStatusEffects().length;
+            if (positiveCount >= 3) {
+                let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+            }
+        }
+    );
+}
+
 // 響・飛走の先導
 {
     let skillId = PassiveX.SoaringEcho;
