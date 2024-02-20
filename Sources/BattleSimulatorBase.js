@@ -9061,18 +9061,16 @@ class BattleSimmulatorBase {
                         this.__applyBalmSkill(supporterUnit, x => { x.applyAtkBuff(6); x.applyResBuff(6); });
                         break;
                 }
-            }
-            else if (supporterUnit.support != Support.RescuePlus
-                && supporterUnit.support != Support.Rescue
-                && supporterUnit.support != Support.ReturnPlus
-                && supporterUnit.support != Support.Return
-                && supporterUnit.support != Support.NudgePlus
-                && supporterUnit.support != Support.Nudge
-                && supporterUnit.special != Special.HolyPressure
-                && supporterUnit.special != Special.LightsRestraint
-                && supporterUnit.special != Special.HolyPanic
-            ) {
-                supporterUnit.reduceSpecialCount(1);
+            } else {
+                // 奥義カウントを進める
+                let reduceAmount = 1;
+                for (let skillId of supporterUnit.enumerateSkills()) {
+                    if (noEffectOnSpecialCooldownChargeOnSupportSkillSet.has(skillId)) {
+                        reduceAmount = 0;
+                        break;
+                    }
+                }
+                supporterUnit.reduceSpecialCount(reduceAmount);
             }
         }
 

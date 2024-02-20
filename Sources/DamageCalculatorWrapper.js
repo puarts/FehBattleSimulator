@@ -3036,7 +3036,9 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
                 // TODO: "自分と敵は"の条件がどこまでかかるのか確認する
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack = 20;
+                enemyUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
+                enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
             }
             if (targetUnit.battleContext.restHpPercentage >= 25 &&
                 targetUnit.battleContext.initiatesCombat) {
@@ -11035,6 +11037,7 @@ class DamageCalculatorWrapper {
             enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
             enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
         }
+        this.__applyBonusReversals(targetUnit, enemyUnit);
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.TeacakeTowerPlus:
@@ -11878,6 +11881,32 @@ class DamageCalculatorWrapper {
                     break;
                 }
             }
+        }
+    }
+
+    __applyBonusReversals(targetUnit, enemyUnit) {
+        if (targetUnit.battleContext.isAtkBonusReversal) {
+            targetUnit.atkSpur -= Math.max(targetUnit.getAtkBuffInCombat(enemyUnit), 0) * 2;
+        }
+        if (targetUnit.battleContext.isSpdBonusReversal) {
+            targetUnit.spdSpur -= Math.max(targetUnit.getSpdBuffInCombat(enemyUnit), 0) * 2;
+        }
+        if (targetUnit.battleContext.isDefBonusReversal) {
+            targetUnit.defSpur -= Math.max(targetUnit.getDefBuffInCombat(enemyUnit), 0) * 2;
+        }
+        if (targetUnit.battleContext.isResBonusReversal) {
+            targetUnit.resSpur -= Math.max(targetUnit.getResBuffInCombat(enemyUnit), 0) * 2;
+        }
+    }
+
+    __applyPotent(targetUnit, enemyUnit, baseRatio = 0.4, evalSpd = -25) {
+        if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, evalSpd)) {
+            let potentRatio = baseRatio;
+            if (!targetUnit.battleContext.isTwiceAttackActivating() &&
+                !targetUnit.battleContext.canFollowupAttack) {
+                potentRatio = baseRatio * 2;
+            }
+            targetUnit.battleContext.potentRatios.push(potentRatio);
         }
     }
 

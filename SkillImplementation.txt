@@ -314,6 +314,16 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+敵の追撃の速さ条件+20(targetUnitから見て)
+enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
+
+[神速追撃]
+applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+    function (targetUnit, enemyUnit) {
+        this.__applyPotent(targetUnit, enemyUnit);
+    }
+);
+
 反撃不可
 targetUnit.battleContext.invalidatesCounterattack = true;
 もしくは
@@ -399,6 +409,14 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 }
 
 強化の値の2倍だけ減少[強化反転]
+// targetUnitが相手に対して効果を発動する場合enemyUnitを指定
+// 一括
+enemyUnit.battleContext.setAllBonusReversal();
+// 個別一括
+enemyUnit.battleContext.setBonusReversals(true, true, true, true);
+// 攻撃だけ
+enemyUnit.battleContext.isAtkBonusReversal = false;
+もしくは
 __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
     enemyUnit.atkSpur -= Math.max(enemyUnit.getAtkBuffInCombat(targetUnit), 0) * 2;
     enemyUnit.spdSpur -= Math.max(enemyUnit.getSpdBuffInCombat(targetUnit), 0) * 2;
@@ -513,6 +531,9 @@ applyHealSkillForBeginningOfTurnFuncMap.set(skillId,
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByAttack += N
 
+自分の追撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
+targetUnit.battleContext.healedHpByFollowupAttack += N;
+
 戦闘後
 // こちらはthisをPostCombatSkillHandlerにしたい場合に使用する
 applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
@@ -556,7 +577,9 @@ __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentia
 周囲Nマスの味方は戦闘後、7回復(暗闘の対象にならないスキル効果)
 applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
     function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
-        targetUnit.battleContext.healedHpAfterCombat += 7;
+        if (targetUnit.distance(allyUnit) <= N) {
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+        }
     }
 );
 もしくは
@@ -747,6 +770,11 @@ atkUnit.battleContext.increaseCooldownCountForAttack = true;
 戦闘中、自身の奥義発動カウント変動量+1
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
+補助スキルを使用したとき、自身の奥義発動変動量は常に0
+noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+このスキル使用時の奥義発動変動量は常に0
+noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCountFuncMap.set(skillId,
     function () {
@@ -926,6 +954,9 @@ targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
 // 次の攻撃
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = true;
+
+追撃時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
+targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForFollowupAttack = true;
 
 敵から攻撃を受ける際に発動する奥義発動時、自分の次の攻撃は、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(その戦闘中のみ)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
@@ -1259,6 +1290,17 @@ enumerateTeleportTilesForUnitFuncMap.set(skillId,
         return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
         // 周囲4マス以内にいる敵の隣接マスのうち、自分から最も近いマスに移動可能(敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない)
         return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
+    }
+);
+// 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
+enumerateTeleportTilesForAllyFuncMap.set(skillId,
+    function(targetUnit, allyUnit) {
+        // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
+        if (targetUnit.distance(allyUnit) <= 2) {
+            return this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+        } else {
+            return this.__enumerateNoTiles();
+        }
     }
 );
 もしくは

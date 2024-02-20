@@ -559,6 +559,12 @@ class BattleContext {
         this.invalidatesDefBuff = false;
         this.invalidatesResBuff = false;
 
+        // 強化反転
+        this.isAtkBonusReversal = false;
+        this.isSpdBonusReversal = false;
+        this.isDefBonusReversal = false;
+        this.isResBonusReversal = false;
+
         // 神罰の杖
         this.wrathfulStaff = false;
 
@@ -670,6 +676,8 @@ class BattleContext {
         // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
         this.invalidatesDamageReductionExceptSpecial = false;
         this.invalidatesDamageReductionExceptSpecialForNextAttack = false;
+        // 追撃時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
+        this.invalidatesDamageReductionExceptSpecialForFollowupAttack = false;
 
         // 敵から攻撃を受ける際に発動する奥義発動時、自分の次の攻撃は、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(その戦闘中のみ)
         this.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = false;
@@ -689,6 +697,9 @@ class BattleContext {
 
         // 自分の攻撃でダメージを与えた時のHP回復量
         this.healedHpByAttackPerAttack = 0;
+
+        // 自分の追撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
+        this.healedHpByFollowupAttack = 0;
 
         // 追撃不可を無効
         this.invalidatesInvalidationOfFollowupAttack = false;
@@ -906,6 +917,12 @@ class BattleContext {
         this.invalidatesDefBuff = false;
         this.invalidatesResBuff = false;
 
+        // 強化反転
+        this.isAtkBonusReversal = false;
+        this.isSpdBonusReversal = false;
+        this.isDefBonusReversal = false;
+        this.isResBonusReversal = false;
+
         // 神罰の杖
         this.wrathfulStaff = false;
 
@@ -949,6 +966,7 @@ class BattleContext {
 
         this.invalidatesDamageReductionExceptSpecial = false;
         this.invalidatesDamageReductionExceptSpecialForNextAttack = false;
+        this.invalidatesDamageReductionExceptSpecialForFollowupAttack = false;
         this.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
@@ -956,6 +974,7 @@ class BattleContext {
         this.nullCounterDisrupt = false;
         this.healedHpByAttack = 0;
         this.healedHpByAttackPerAttack = 0;
+        this.healedHpByFollowupAttack = 0;
         this.invalidatesInvalidationOfFollowupAttack = false;
         this.invalidatesAbsoluteFollowupAttack = false;
         this.invalidatesHeal = false;
@@ -1040,6 +1059,20 @@ class BattleContext {
         this.invalidatesSpdBuff = true;
         this.invalidatesDefBuff = true;
         this.invalidatesResBuff = true;
+    }
+
+    setAllBonusReversal() {
+        this.isAtkBonusReversal = true;
+        this.isSpdBonusReversal = true;
+        this.isDefBonusReversal = true;
+        this.isResBonusReversal = true;
+    }
+
+    setBonusReversals(atk, spd, def, res) {
+        this.isAtkBonusReversal |= atk;
+        this.isSpdBonusReversal |= spd;
+        this.isDefBonusReversal |= def;
+        this.isResBonusReversal |= res;
     }
 
     invalidateBuffs(atk, spd, def, res) {

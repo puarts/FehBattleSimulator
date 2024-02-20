@@ -110,16 +110,21 @@ class DamageCalculationUtility {
         return ColorToTriangleAdvantageTable[tableIndex];
     }
 
-    /// 速さ比較で追撃可能かどうかを調べます。
+    /**
+     * 速さ比較で追撃可能かどうかを調べます。
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {number} evalValue 神速4など追撃条件判定時に補正がかかる場合に使用する。アタッカーにどれくらいの補正をかけるのかを表す(例. 神速4なら-25)。
+     */
     static examinesCanFollowupAttack(atkUnit, defUnit, evalValue=0) {
-        let totalSpdAtk = atkUnit.getSpdInCombat(defUnit);
-        let totalSpdDef = defUnit.getSpdInCombat(atkUnit);
+        let atkUnitSpd = atkUnit.getSpdInCombat(defUnit);
+        let defUnitSpd = defUnit.getSpdInCombat(atkUnit);
         // TODO: 追撃条件に必要な速さの差についてきちんと検証する
-        let d = 5 +
+        const spdDifferenceNecessaryForFollowupAttack = 5;
+        let d = spdDifferenceNecessaryForFollowupAttack +
             atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack +
-            defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack +
             evalValue;
-        return totalSpdAtk >= totalSpdDef + d;
+        return atkUnitSpd >= defUnitSpd + d;
     }
 
     /// 戦闘前奥義の回避効果によるダメージ軽減率を取得します。

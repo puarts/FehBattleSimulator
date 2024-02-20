@@ -2216,6 +2216,20 @@ class BattleMap {
             }
         }
 
+        for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+            for (let skillId of ally.enumerateSkills()) {
+                let funcMap = enumerateTeleportTilesForAllyFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        yield* func.call(this, unit, ally);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
+            }
+        }
+
         // 周囲2マス以内の味方は、自身の周囲Nマス以内に移動可能
         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
             for (let skillId of ally.enumerateSkills()) {
@@ -2324,6 +2338,9 @@ class BattleMap {
                 yield tile;
             }
         }
+    }
+
+    * __enumerateNoTiles() {
     }
 
     __canWarp(targetTile, warpUnit) {
