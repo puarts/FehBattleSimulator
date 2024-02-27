@@ -6330,13 +6330,13 @@ function isDebufferTier2(attackUnit, targetUnit) {
  * @param  {boolean} lossesInCombat
  * @return {boolean}
  */
-function isAfflictor(attackUnit, lossesInCombat) {
+function isAfflictor(attackUnit, lossesInCombat, result) {
     for (let skillId of attackUnit.enumerateSkills()) {
         let funcMap = isAfflictorFuncMap;
         if (funcMap.has(skillId)) {
             let func = funcMap.get(skillId);
             if (typeof func === "function") {
-                if (func.call(this, attackUnit, lossesInCombat)) {
+                if (func.call(this, attackUnit, lossesInCombat, result)) {
                     return true;
                 }
             } else {

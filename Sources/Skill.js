@@ -8607,6 +8607,16 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
             }
         }
     );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat, result) {
+            if (attackUnit.battleContext.restHpPercentage >= 25) {
+                if (result.atkUnit_actualTotalAttackCount > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    );
 }
 
 // 海賊の長の大斧

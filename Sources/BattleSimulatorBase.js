@@ -5548,7 +5548,8 @@ class BattleSimmulatorBase {
                 }
 
                 if (evaluatesAfflictorDraw) {
-                    if (isAfflictor(unit, result == CombatResult.Loss) && result == CombatResult.Draw) {
+                    if (isAfflictor(unit, result === CombatResult.Loss, result) &&
+                        result === CombatResult.Draw) {
                         return true;
                     }
                 }
@@ -7371,7 +7372,8 @@ class BattleSimmulatorBase {
         let couldAttackerAttack = result.atkUnit_actualTotalAttackCount > 0;
         attackEvalContext.isDebufferTier1 = couldAttackerAttack && isDebufferTier1(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);
         attackEvalContext.isDebufferTier2 = couldAttackerAttack && isDebufferTier2(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);
-        attackEvalContext.isAfflictor = couldAttackerAttack && isAfflictor(attacker, attackEvalContext.combatResult == CombatResult.Loss);
+        attackEvalContext.isAfflictor = couldAttackerAttack &&
+            isAfflictor(attacker, attackEvalContext.combatResult === CombatResult.Loss, result);
 
 
         attackEvalContext.calcAttackPriority(attacker);
