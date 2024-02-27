@@ -2465,13 +2465,6 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAtkSpdSpurs(6);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (isPrecombat) {
-                        // targetUnit.battleContext.additionalDamageOfSpecial += 100;
-                        targetUnit.battleContext.additionalDamage += 99;
-                    }
-                    // targetUnit.battleContext.additionalDamageOfSpecial += 100;
-                });
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.ArcaneEuphoria] = (targetUnit, enemyUnit, calcPotentialDamage) => {

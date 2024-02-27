@@ -5616,7 +5616,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
                 targetUnit.battleContext.reducesCooldownCount = true;
                 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 if (targetUnit.battleContext.isSaviorActivated) {
-                    targetUnit.addAllSpur(4);
+                    targetUnit.addSpursWithoutSpd(4);
                 }
             }
         }
