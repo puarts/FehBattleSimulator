@@ -937,8 +937,9 @@ class DamageCalculator {
             tmpMit = tmpMit + floorNumberWithFloatError(tmpMit * 0.3);
         }
 
-        let rangedSpecialDamage = floorNumberWithFloatError(
-            Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit) * atkUnit.battleContext.precombatSpecialDamageMult);
+        let statusDiff = Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit);
+        let rangedSpecialDamage =
+            floorNumberWithFloatError(statusDiff * atkUnit.battleContext.precombatSpecialDamageMult);
 
         let addDamage = this.__calcFixedAddDamage(atkUnit, defUnit, true);
         let specialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
@@ -951,12 +952,17 @@ class DamageCalculator {
         let currentDamage = Math.max(damage - reducedDamage - damageReduction, 0);
 
         if (this.isLogEnabled) {
+            this.writeDebugLog(`攻撃=${atkUnit.getAtkInPrecombat()}`);
             if (atkUnit.battleContext.refersRes) {
                 this.writeDebugLog(`魔防参照:魔防=${tmpMit}`);
             }
             else {
                 this.writeDebugLog(`守備参照:守備=${tmpMit}`);
             }
+            this.writeDebugLog(`攻撃-守備or魔防=${statusDiff}`);
+            this.writeDebugLog(`(攻撃-守備or魔防) * 倍率(${atkUnit.battleContext.precombatSpecialDamageMult})=${rangedSpecialDamage}`);
+            this.writeDebugLog(`追加ダメージ: ${addDamage}, 奥義発動時の追加ダメージ: ${specialAddDamage}`);
+            this.writeDebugLog(`軽減なしダメージ: ${damage} = ${rangedSpecialDamage} + ${addDamage} + ${specialAddDamage}`);
 
             if (damageReductionRatio > 0.0) {
                 this.writeDebugLog("ダメージ軽減" + damageReductionRatio * 100 + "%");
