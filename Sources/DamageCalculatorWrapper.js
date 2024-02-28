@@ -2488,6 +2488,17 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.HelsReaper] = (targetUnit, enemyUnit, calcPotentialDamage) => {
+            targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                // 1戦闘1回まで
+                if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                    return false;
+                }
+                if (!isWeaponTypeTome(atkUnit.weaponType) &&
+                    atkUnit.weaponType !== WeaponType.Staff) {
+                    return true;
+                }
+                return false;
+            });
             if (targetUnit.isWeaponRefined) {
                 // <錬成効果>
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 50) {
@@ -4611,6 +4622,18 @@ class DamageCalculatorWrapper {
                 }
                 targetUnit.atkSpur += amount;
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                    // 1戦闘1回まで
+                    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                        return false;
+                    }
+                    if (defUnit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType)) {
+                        if (defUnit.battleContext.restHpPercentage >= 25) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.BladeOfFavors] = (targetUnit, enemyUnit) => {
@@ -4988,6 +5011,14 @@ class DamageCalculatorWrapper {
             if (dist !== 0) {
                 targetUnit.addAllSpur(5);
             }
+            targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                // 1戦闘1回まで
+                if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                    return false;
+                }
+                return Unit.calcAttackerMoveDistance(defUnit, atkUnit) !== 0 &&
+                    defUnit.battleContext.restHpPercentage >= 25;
+            });
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdPreempt3] = (targetUnit, enemyUnit) => {
             enemyUnit.spdSpur -= 4;
@@ -5131,8 +5162,14 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[Weapon.MilasTestament] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.battleContext.weaponSkillCondSatisfied = true;
                 targetUnit.addSpurs(6, 6, 0, 0);
+                targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                    // 1戦闘1回まで
+                    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                        return false;
+                    }
+                    return defUnit.battleContext.restHpPercentage >= 25;
+                });
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.HeartbeatLance] = (targetUnit, enemyUnit) => {
@@ -6410,6 +6447,10 @@ class DamageCalculatorWrapper {
                 (targetUnit.battleContext.restHpPercentage >= 75 &&
                     (enemyUnit.isTome || enemyUnit.weaponType === WeaponType.Staff))) {
                 targetUnit.addAllSpur(5);
+                targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                    // 1戦闘1回まで
+                    return !defUnit.battleContext.isNonSpecialMiracleActivated;
+                });
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DriftingGracePlus] = (targetUnit) => {
@@ -6523,8 +6564,8 @@ class DamageCalculatorWrapper {
                         });
                         if (enemyUnit.battleContext.initiatesCombat &&
                             this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                            targetUnit.battleContext.canActivateMiracleFuncs.push((defUnit, atkUnit) => {
-                                if (defUnit.battleContext.isMiracleWithoutSpecialActivated) {
+                            targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                                if (defUnit.battleContext.isNonSpecialMiracleActivated) {
                                     return false;
                                 }
                                 return defUnit.battleContext.restHpPercentage > 50;
@@ -6826,7 +6867,9 @@ class DamageCalculatorWrapper {
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.EverlivingDomain] = (targetUnit) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.battleContext.inCombatMiracleHpPercentageThreshold = 75;
+                targetUnit.battleContext.canActivateNonSpecialMiracle = true;
+                let threshold = targetUnit.battleContext.nonSpecialMiracleHpPercentageThreshold;
+                targetUnit.battleContext.nonSpecialMiracleHpPercentageThreshold = Math.min(threshold, 75);
                 targetUnit.defSpur += 4;
                 targetUnit.resSpur += 4;
             }
@@ -10385,8 +10428,8 @@ class DamageCalculatorWrapper {
                             targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
                             break;
                         case Weapon.SacrificeStaff:
-                            if (g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
-                                targetUnit.battleContext.canActivateMiracleAndHeal = true;
+                            if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
+                                targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
                             }
                             break;
                         case PassiveC.SoaringGuidance: {
@@ -10509,8 +10552,9 @@ class DamageCalculatorWrapper {
                             targetUnit.battleContext.increaseCooldownCountForBoth();
                             break;
                         case PassiveC.EverlivingDomain: {
-                            let threshold = targetUnit.battleContext.inCombatMiracleHpPercentageThreshold;
-                            targetUnit.battleContext.inCombatMiracleHpPercentageThreshold = Math.min(threshold, 75);
+                            targetUnit.battleContext.canActivateNonSpecialMiracle = true;
+                            let threshold = targetUnit.battleContext.nonSpecialMiracleHpPercentageThreshold;
+                            targetUnit.battleContext.nonSpecialMiracleHpPercentageThreshold = Math.min(threshold, 75);
                             break;
                         }
                         case PassiveC.DomainOfIce:
@@ -15420,6 +15464,19 @@ class DamageCalculatorWrapper {
             // 聖神と暗黒神の冠
             let totalRes = targetUnit.getResInCombat(enemyUnit);
             targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.4);
+            targetUnit.battleContext.canActivateNonSpecialOneTimePerMapMiracleFuncs.push((defUnit, atkUnit) => {
+                let isSpecialCharged = defUnit.isSpecialCharged || atkUnit.isSpecialCharged;
+                let isSpecialActivated = defUnit.battleContext.isSpecialActivated || atkUnit.battleContext.isSpecialActivated;
+                let condA = isSpecialCharged || isSpecialActivated;
+                let condB = defUnit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType);
+                // 1回発動したかどうかはコンテキストかユニットの両方を見る必要がある
+                // ユニットが保持する値はリアルタイムに保持されずにDamageTypeがActualDamageの時に戦闘後にユニットにコピーされる
+                let isOncePerMapSpecialActivated =
+                    defUnit.isOncePerMapSpecialActivated ||
+                    defUnit.battleContext.isOncePerMapSpecialActivated;
+                let condSatisfied = condA || condB;
+                return condSatisfied && !isOncePerMapSpecialActivated;
+            });
         }
 
         this._applySpecialSkillEffectFuncDict[Special.HolyKnightAura] = (targetUnit, enemyUnit) => {
@@ -16398,12 +16455,6 @@ class DamageCalculatorWrapper {
                 case Weapon.FalchionAwakening:
                     if (targetUnit.isWeaponSpecialRefined) {
                         targetUnit.addAllSpur(4);
-                    }
-                    break;
-                case Weapon.Thirufingu:
-                    if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.defSpur += 5;
                     }
                     break;
                 case Weapon.Fensariru:

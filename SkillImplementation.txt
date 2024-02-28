@@ -1088,10 +1088,14 @@ targetUnit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(ratio);
 最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
 targetUnit.battleContext.reducedRatioForNextAttack = Math.max(0.3, targetUnit.battleContext.reducedRatioForNextAttack);
 
-ダメージをHPが1残るように軽減(祈り)
-__canActivateMiracle() {
-    return true;
-}
+ダメージをHPが1残るように軽減(奥義以外の祈り)
+targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+    // 1戦闘1回まで
+    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+        return false;
+    }
+    return defUnit.battleContext.restHpPercentage >= 50;
+});
 
 奥義以外の祈り無効
 targetUnit.battleContext.neutralizesNonSpecialMiracle = true;

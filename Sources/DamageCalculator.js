@@ -1323,45 +1323,100 @@ class DamageCalculator {
                 }
             }
 
-            // TODO: 祈り周りが複雑になってきたのでリファクタリングする
-            // 祈り+99回復は除く祈り
-            let canActivateMiracle = this.__canActivateMiracle(defUnit, atkUnit);
-            // 祈り+99回復
-            let canActivateMiracleAndHeal = this.__canActivateMiracleAndHeal(defUnit, atkUnit);
-            if (atkUnit.battleContext.neutralizesNonSpecialMiracle) {
-                if (this.isLogEnabled) {
-                    if (canActivateMiracle ||
-                        canActivateMiracleAndHeal) {
-                        let message = `スキル効果により${defUnit.nameWithGroup}の祈りを無効`;
-                        this.writeLog(message);
-                        this.writeSimpleLog(message);
-                    }
-                }
-                canActivateMiracle = false;
-                canActivateMiracleAndHeal = false;
-            }
-            if (defUnit.hasStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP)) {
-                if (this.isLogEnabled) {
-                    if (canActivateMiracle ||
-                        canActivateMiracleAndHeal) {
-                        let message = `ステータス効果により${defUnit.nameWithGroup}の祈りを無効`;
-                        this.writeLog(message);
-                        this.writeSimpleLog(message);
-                    }
-                }
-                canActivateMiracle = false;
-                canActivateMiracleAndHeal = false;
-            }
+            // 祈り処理開始
             // 奥義による祈り
             let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
-            if ((canActivateMiracle || canActivateMiracleAndHeal) &&
-                (defUnit.restHp - totalDamage > 1) &&
-                (defUnit.restHp - totalDamage - currentDamage <= 0)) {
+            // 奥義以外による祈り
+            let canActivateNonSpecialMiracle = this.__canActivateNonSpecialMiracle(defUnit, atkUnit);
+            // 奥義による祈り(1マップ1回)
+            let canActivateSpecialOneTimePerMapMiracle = this.__canActivateSpecialOneTimePerMapMiracle(defUnit, atkUnit);
+            // 奥義以外による祈り(1マップ1回)
+            let canActivateNonSpecialOneTimePerMapMiracle = this.__canActivateNonSpecialOneTimePerMapMiracle(defUnit, atkUnit);
+            // 奥義による祈り+99回復
+            let canActivateSpecialMiracleAndHeal = this.__canActivateSpecialMiracleAndHeal(defUnit, atkUnit);
+            // 奥義以外による祈り+99回復
+            let canActivateNonSpecialMiracleAndHeal = this.__canActivateNonSpecialMiracleAndHeal(defUnit, atkUnit);
+
+            // 祈りの消費優先順位
+            // 1. 奥義以外の祈り+99回復
+            // 2. 奥義以外の祈り
+            // 3. 奥義以外の祈り(1マップ1回)
+            // 4. 奥義による祈り(奥義祈り+99回復、奥義祈り、奥義祈り(1マップ1回)が同時に発動することはない)
+            // TODO: 以下を検証する
+            // 1戦闘で奥義以外の祈りの後に奥義の祈りを出すことは可能(奥義の祈りは戦闘中何回でも発動可能)
+            // 1戦闘で奥義の祈りを出した後に奥義以外の祈りは発動可能か？
+
+            // 奥義以外の祈り無効
+            let neutralizesNoneSpecialMiracle = message => {
                 if (this.isLogEnabled) {
-                    let message = `祈り効果発動、${defUnit.getNameWithGroup()}はHP1残る`;
-                    this.writeLog(message);
-                    this.writeSimpleLog(message);
+                    if (canActivateNonSpecialMiracle ||
+                        canActivateNonSpecialOneTimePerMapMiracle ||
+                        canActivateNonSpecialMiracleAndHeal) {
+                        this.writeLog(message);
+                        this.writeSimpleLog(message);
+                    }
                 }
+                canActivateNonSpecialMiracle = false;
+                canActivateNonSpecialOneTimePerMapMiracle = false;
+                canActivateNonSpecialMiracleAndHeal = false;
+            }
+            if (atkUnit.battleContext.neutralizesNonSpecialMiracle) {
+                let message = `${atkUnit.nameWithGroup}のスキル効果により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
+                neutralizesNoneSpecialMiracle(message);
+            }
+            if (defUnit.hasStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP)) {
+                let message = `ステータス効果(${name})により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
+                neutralizesNoneSpecialMiracle(message);
+            }
+
+            // 奥義/奥義以外による祈りの判定(ナンナなどの防御奥義不可はこの時点で既に考慮されている)
+            let canActivateAnyMiracles =
+                canActivateSpecialMiracle ||
+                canActivateNonSpecialMiracle ||
+                canActivateSpecialOneTimePerMapMiracle ||
+                canActivateNonSpecialOneTimePerMapMiracle ||
+                canActivateSpecialMiracleAndHeal ||
+                canActivateNonSpecialMiracleAndHeal;
+            let isRestHpGreaterOne = defUnit.restHp - totalDamage > 1;
+            let isDeadWithoutMiracle = defUnit.restHp - totalDamage - currentDamage <= 0;
+
+            // 奥義/奥義以外による祈りの判定(ナンナなどの防御奥義不可はこの時点で既に考慮されている)
+            if (canActivateAnyMiracles &&
+                isRestHpGreaterOne &&
+                isDeadWithoutMiracle) {
+                // どの祈りが発動するのか判定する
+                let logMiracle = message => {
+                    if (this.isLogEnabled) {
+                        this.writeLog(message);
+                        this.writeSimpleLog(message);
+                    }
+                }
+                if (canActivateNonSpecialMiracleAndHeal) {
+                    logMiracle(`奥義以外の祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                    defUnit.battleContext.isNonSpecialMiracleAndHealAcitivated = true;
+                } else if (canActivateNonSpecialMiracle) {
+                    logMiracle(`奥義以外の祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                    defUnit.battleContext.isNonSpecialMiracleActivated = true;
+                } else if (canActivateNonSpecialOneTimePerMapMiracle) {
+                    logMiracle(`奥義以外の祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
+                    // TODO: リファクタリング(現状使用していない)
+                    defUnit.battleContext.isNonSpecialOneTimePerMapMiracleAcitivated = true;
+                    // TODO: リファクタリング
+                    defUnit.battleContext.isOncePerMapSpecialActivated = true;
+                    // 1マップ1回でない奥義以外の祈りも発動したとみなす
+                    defUnit.battleContext.isNonSpecialMiracleActivated = true;
+                } else if (canActivateSpecialMiracleAndHeal) {
+                    logMiracle(`奥義による祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                    defUnit.battleContext.isSpecialMiracleAndHealAcitivated = true;
+                } else if (canActivateSpecialMiracle) {
+                    logMiracle(`奥義による祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                    defUnit.battleContext.isSpecialMiracleActivated = true;
+                } else if (canActivateSpecialOneTimePerMapMiracle) {
+                    logMiracle(`奥義による祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
+                    defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated = true;
+                }
+
+                // 祈りの軽減分も軽減ダメージに含める
                 // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
                 if (defUnit.battleContext.nextAttackAddReducedDamageActivated) {
                     let currentHp = defUnit.restHp - totalDamage;
@@ -1369,31 +1424,18 @@ class DamageCalculator {
                     let miracleReducedDamage = currentDamage - miracleDamage;
                     defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
                 }
+
                 totalDamage += defUnit.restHp - totalDamage - 1;
-                if (canActivateSpecialMiracle) {
-                    if (defUnit.special === Special.Miracle ||
-                        defUnit.special === Special.LifeUnending) {
-                        defUnit.battleContext.isSpecialActivated = true;
-                        this.__restoreMaxSpecialCount(defUnit);
-                    }
-                } else {
-                    defUnit.battleContext.isMiracleWithoutSpecialActivated = true;
-                    if (defUnit.special === Special.CircletOfBalance) {
-                        defUnit.battleContext.isOncePerMapSpecialActivated = true;
-                    }
+
+                let isActivatedAnySpecialMiracles =
+                    defUnit.battleContext.isSpecialMiracleActivated ||
+                    defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated ||
+                    defUnit.battleContext.isSpecialMiracleAndHealAcitivated;
+                if (isActivatedAnySpecialMiracles) {
+                    defUnit.battleContext.isSpecialActivated = true;
+                    this.__restoreMaxSpecialCount(defUnit);
                 }
-                // 闇マリアの効果
-                if (canActivateMiracleAndHeal) {
-                    defUnit.battleContext.isMiracleAndHealAcitivated = true;
-                    // 奥義以外の祈りとは重複しないのでfalseにする
-                    if (canActivateMiracle && !canActivateSpecialMiracle) {
-                        defUnit.battleContext.isMiracleAndHealAcitivated = false;
-                    }
-                    // 祈りが発動したので同じ戦闘で再度祈りが発動しないようにする
-                    defUnit.battleContext.canActivateMiracleAndHeal = false;
-                }
-            }
-            else {
+            } else {
                 totalDamage += currentDamage;
             }
 
@@ -1556,99 +1598,100 @@ class DamageCalculator {
         return healedHp;
     }
 
-    __canActivateMiracleAndHeal(unit, atkUnit) {
-        if (unit.battleContext.canActivateMiracleAndHeal) {
-            return true;
-        }
-    }
-    __canActivateMiracle(unit, atkUnit) {
-        let threshold = unit.battleContext.inCombatMiracleHpPercentageThreshold;
-        if (threshold !== Number.MAX_SAFE_INTEGER) {
-            if (unit.restHpPercentage >= threshold) {
-                return true;
-            }
-        }
-        for (let func of unit.battleContext.canActivateMiracleFuncs) {
-            if (func(unit, atkUnit)) {
-                return true;
-            }
-        }
-        for (let skillId of unit.enumerateSkills()) {
-            switch (skillId) {
-                case Weapon.YmirEverliving:
-                    if (unit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType) &&
-                        unit.battleContext.restHpPercentage >= 25 &&
-                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                        return true;
-                    }
-                    break;
-                case Special.CircletOfBalance: {
-                    let condA =
-                        (unit.isSpecialCharged || atkUnit.isSpecialCharged) ||
-                        (unit.battleContext.isSpecialActivated || atkUnit.battleContext.isSpecialActivated);
-                    let condB = unit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType);
-                    // 1回発動したかどうかはコンテキストかユニットの両方を見る必要がある
-                    // ユニットが保持する値はリアルタイムに保持されずにDamageTypeがActualDamageの時に戦闘後にユニットにコピーされる
-                    let isOncePerMapSpecialActivated =
-                        unit.isOncePerMapSpecialActivated ||
-                        unit.battleContext.isOncePerMapSpecialActivated;
-                    if ((condA || condB) && !isOncePerMapSpecialActivated) {
-                        return true;
-                    }
-                }
-                    break;
-                case Weapon.HolytideTyrfing:
-                    if (Unit.calcAttackerMoveDistance(unit, atkUnit) !== 0 &&
-                        unit.battleContext.restHpPercentage >= 25 &&
-                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                        return true;
-                    }
-                    break;
-                case Weapon.MilasTestament:
-                    if (unit.battleContext.weaponSkillCondSatisfied &&
-                        unit.battleContext.restHpPercentage >= 25 &&
-                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                        return true;
-                    }
-                    break;
-                case Weapon.BowOfTwelve:
-                    if (unit.battleContext.initiatesCombat ||
-                        (unit.battleContext.restHpPercentage >= 75 &&
-                            (atkUnit.isTome || atkUnit.weaponType === WeaponType.Staff)) &&
-                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                        return true;
-                    }
-                    break;
-                case Weapon.Thirufingu:
-                    if (unit.battleContext.restHpPercentage >= 50 &&
-                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                        return true;
-                    }
-                    break;
-                case Weapon.HelsReaper: // 祈り判定
-                    if (!isWeaponTypeTome(atkUnit.weaponType) &&
-                        atkUnit.weaponType !== WeaponType.Staff &&
-                        !unit.battleContext.isMiracleWithoutSpecialActivated) {
-                        return true;
-                    }
-                    break;
-            }
-        }
-        if (this.__canActivateSpecialMiracle(unit, atkUnit)) {
-            return true;
-        }
-        return false;
-    }
-
+    /**
+     * 奥義による祈りが発動可能か調べる。
+     * 奥義カウント、奥義発動できない状態なども考慮される。
+     * @param {Unit} unit 祈りが発動するか調べる対象
+     * @param {Unit} atkUnit
+     * @return {boolean}
+     */
     __canActivateSpecialMiracle(unit, atkUnit) {
         switch (unit.special) {
-            case Special.LifeUnending:
             case Special.Miracle:
                 if (unit.battleContext.preventedDefenderSpecial) return false;
                 if (unit.tmpSpecialCount === 0) return true;
                 break;
         }
         return false;
+    }
+
+    /**
+     * 奥義以外による祈りが発動可能か調べる。
+     * 祈り無効は考慮されない。
+     * @param {Unit} unit 祈りが発動するか調べる対象
+     * @param {Unit} atkUnit
+     * @return {boolean}
+     */
+    __canActivateNonSpecialMiracle(unit, atkUnit) {
+        if (unit.battleContext.canActivateNonSpecialMiracle) {
+            let threshold = unit.battleContext.nonSpecialMiracleHpPercentageThreshold;
+            if (threshold !== Number.MAX_SAFE_INTEGER) {
+                if (unit.battleContext.restHpPercentage >= threshold) {
+                    return true;
+                }
+            }
+        }
+        for (let func of unit.battleContext.canActivateNonSpecialMiracleFuncs) {
+            if (func(unit, atkUnit)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 奥義による1マップ1回の祈りが発動可能か調べる。
+     * 奥義カウント、奥義発動できない状態なども考慮される。
+     * @param {Unit} unit 祈りが発動するか調べる対象
+     * @param {Unit} atkUnit
+     * @return {boolean}
+     */
+    __canActivateSpecialOneTimePerMapMiracle(unit, atkUnit) {
+        return false;
+    }
+
+    /**
+     * 奥義以外による1マップ1回の祈りが発動可能か調べる。
+     * 祈り無効は考慮されない。
+     * @param {Unit} unit 祈りが発動するか調べる対象
+     * @param {Unit} atkUnit
+     * @return {boolean}
+     */
+    __canActivateNonSpecialOneTimePerMapMiracle(unit, atkUnit) {
+        for (let func of unit.battleContext.canActivateNonSpecialOneTimePerMapMiracleFuncs) {
+            if (func(unit, atkUnit)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 奥義による祈り+99回復が発動可能か調べる。
+     * 奥義カウント、奥義発動できない状態なども考慮される。
+     * @param {Unit} unit 祈りが発動するか調べる対象
+     * @param {Unit} atkUnit
+     * @return {boolean}
+     */
+    __canActivateSpecialMiracleAndHeal(unit, atkUnit) {
+        switch (unit.special) {
+            case Special.LifeUnending:
+                if (unit.battleContext.preventedDefenderSpecial) return false;
+                if (unit.tmpSpecialCount === 0) return true;
+                break;
+        }
+        return false;
+    }
+
+    /**
+     * 奥義以外による祈り+99回復が発動可能か調べる。
+     * 祈り無効は考慮されない。
+     * @param {Unit} unit 祈りが発動するか調べる対象
+     * @param {Unit} atkUnit
+     * @return {boolean}
+     */
+    __canActivateNonSpecialMiracleAndHeal(unit, atkUnit) {
+        return unit.battleContext.canActivateNonSpecialMiracleAndHeal;
     }
 
     __heal(unit, healedHp, enemyUnit) {

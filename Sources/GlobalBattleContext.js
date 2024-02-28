@@ -43,9 +43,9 @@ class GlobalBattleContext {
         this.isChaosSeason = false;
 
         // 奥義以外の祈りが発動した回数
-        this.miracleWithoutSpecialActivationCount = {};
-        this.miracleWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
-        this.miracleWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
+        this.miracleAndHealWithoutSpecialActivationCount = {};
+        this.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
+        this.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
     }
 
     moveSummonerDuelsPointAreaOffset(groupType) {

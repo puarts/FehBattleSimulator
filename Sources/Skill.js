@@ -4615,6 +4615,36 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// ティルフィング
+{
+    let skillId = Weapon.Thirufingu;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage <= 50) {
+                    targetUnit.defSpur += 4;
+                }
+            } else {
+                // <錬成効果>
+                targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                    // 1戦闘1回まで
+                    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                        return false;
+                    }
+                    return defUnit.battleContext.restHpPercentage >= 50;
+                });
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (!this.__isSolo(targetUnit)) {
+                        targetUnit.addAtkDefSpurs(5);
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 救済の騎士の槍
 {
     let skillId = Weapon.PenitentLance;

@@ -110,12 +110,19 @@ class PostCombatSkillHander {
 
         // 不治の幻煙による回復無効化
         {
-            if (atkUnit.battleContext.invalidatesHeal) {
-                defUnit.reservedHeal = Math.trunc(defUnit.reservedHeal * defUnit.battleContext.nullInvalidatesHealRatio);
-            }
-            if (defUnit.battleContext.invalidatesHeal) {
-                atkUnit.reservedHeal = Math.trunc(atkUnit.reservedHeal * atkUnit.battleContext.nullInvalidatesHealRatio);
-            }
+            let applyHealInvalidation = (targetUnit, enemyUnit) => {
+                if (targetUnit.battleContext.invalidatesHeal) {
+                    let ratio = enemyUnit.battleContext.nullInvalidatesHealRatio;
+                    let reservedHeal = Math.trunc(enemyUnit.reservedHeal * ratio);
+                    if (enemyUnit.reservedHeal > 0) {
+                        let detail = `${enemyUnit.reservedHeal} → ${reservedHeal}`;
+                        this.writeDebugLogLine(`${enemyUnit.nameWithGroup}の回復量変化(ratio: ${ratio}): ${detail}`);
+                    }
+                    enemyUnit.reservedHeal = reservedHeal;
+                }
+            };
+            applyHealInvalidation(atkUnit, defUnit);
+            applyHealInvalidation(defUnit, atkUnit);
         }
 
         // 奥義カウントやHP変動の加減値をここで確定
@@ -1267,11 +1274,8 @@ class PostCombatSkillHander {
     }
 
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
-        if (attackUnit.battleContext.isMiracleWithoutSpecialActivated ||
-            attackUnit.battleContext.isMiracleAndHealAcitivated) {
-            g_appData.globalBattleContext.miracleWithoutSpecialActivationCount[attackUnit.groupId]++;
-        }
-        if (attackUnit.battleContext.isMiracleAndHealAcitivated) {
+        if (attackUnit.battleContext.isNonSpecialMiracleAndHealAcitivated) {
+            g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
             attackUnit.reserveHeal(99);
         }
         for (let skillId of attackUnit.enumerateSkills()) {
@@ -1286,7 +1290,7 @@ class PostCombatSkillHander {
             }
             switch (skillId) {
                 case Special.LifeUnending:
-                    if (attackUnit.battleContext.isSpecialActivated) {
+                    if (attackUnit.battleContext.isSpecialMiracleAndHealAcitivated) {
                         if (!attackUnit.isOncePerMapSpecialActivated) {
                             attackUnit.isOncePerMapSpecialActivated = true;
                             attackUnit.reserveHeal(99);

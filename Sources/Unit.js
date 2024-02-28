@@ -754,7 +754,7 @@ class BattleContext {
         this.preventedDefenderSpecialPerAttack = false;
 
         // 奥義以外の祈りが発動したかどうか
-        this.isMiracleWithoutSpecialActivated = false;
+        this.isNonSpecialMiracleActivated = false;
 
         // 1マップで1回の奥義効果が発動したかどうか
         this.isOncePerMapSpecialActivated = false;
@@ -771,13 +771,38 @@ class BattleContext {
         // Bスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.passiveBSkillCondSatisfied = false;
 
-        this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
+        // 奥義以外の祈りのHP条件(canActivateNonSpecialMiracleとセットで使用する)
+        this.nonSpecialMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
 
-        // 祈り+HP99回復
-        this.canActivateMiracleAndHeal = false;
+        // 奥義以外の祈り
+        this.canActivateNonSpecialMiracle = false;
 
-        // 祈り+HP99回復が発動したかどうか
-        this.isMiracleAndHealAcitivated = false;
+        // 奥義以外の祈りが発動したかどうか
+        this.isNonSpecialMiracleActivated = false;
+
+        // 奥義による祈りが発動したかどうか
+        this.isSpecialMiracleActivated = false;
+
+        // 奥義以外の祈り(1マップ1回)
+        this.canActivateNonSpecialOneTimePerMapMiracle = false;
+
+        // 奥義以外の祈りが発動したかどうか(1マップ1回)
+        this.isNonSpecialOneTimePerMapMiracleAcitivated = false;
+
+        // 奥義以外の祈り+HP99回復
+        this.canActivateNonSpecialMiracleAndHeal = false;
+
+        // 奥義以外の祈り+HP99回復が発動したかどうか
+        this.isNonSpecialMiracleAndHealAcitivated = false;
+
+        // 奥義による祈り+HP99回復が発動したかどうか
+        this.isSpecialMiracleAndHealAcitivated = false;
+
+        // 奥義による祈りが発動したかどうか
+        this.isSpecialMiracleAcitivated = false;
+
+        // 奥義による祈りが発動したかどうか(1マップ1回)
+        this.isSpecialOneTimePerMapMiracleAcitivated = false;
 
         // 範囲奥義を発動できない
         this.cannotTriggerPrecombatSpecial = false;
@@ -826,8 +851,10 @@ class BattleContext {
         this.calcFixedAddDamageFuncs = [];
         // 戦闘中ダメージ軽減
         this.getDamageReductionRatioFuncs = [];
-        // 祈り
-        this.canActivateMiracleFuncs = [];
+        // 奥義以外の祈り
+        this.canActivateNonSpecialMiracleFuncs = [];
+        // 奥義以外の祈り(1マップ1回)
+        this.canActivateNonSpecialOneTimePerMapMiracleFuncs = [];
         // 無効スキル
         this.applyInvalidationSkillEffectFuncs = [];
         // 攻撃ごとのダメージ加算
@@ -998,15 +1025,23 @@ class BattleContext {
         this.preventedAttackerSpecial = false;
         this.preventedDefenderSpecial = false;
         this.preventedDefenderSpecialPerAttack = false;
-        this.isMiracleWithoutSpecialActivated = false;
+        this.isNonSpecialMiracleActivated = false;
         this.isOncePerMapSpecialActivated = false;
         this.weaponSkillCondSatisfied = false;
         this.specialSkillCondSatisfied = false;
         this.passiveASkillCondSatisfied = false;
         this.passiveBSkillCondSatisfied = false;
-        this.inCombatMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
-        this.canActivateMiracleAndHeal = false;
-        this.isMiracleAndHealAcitivated = false;
+        this.nonSpecialMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
+        this.canActivateNonSpecialMiracle = false;
+        this.isNonSpecialMiracleActivated = false;
+        this.isSpecialMiracleActivated = false;
+        this.canActivateNonSpecialOneTimePerMapMiracle = false;
+        this.isNonSpecialOneTimePerMapMiracleAcitivated = false;
+        this.canActivateNonSpecialMiracleAndHeal = false;
+        this.isNonSpecialMiracleAndHealAcitivated = false;
+        this.isSpecialMiracleAndHealAcitivated = false;
+        this.isSpecialMiracleAcitivated = false;
+        this.isSpecialOneTimePerMapMiracleAcitivated = false;
         this.cannotTriggerPrecombatSpecial = false;
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;
@@ -1025,7 +1060,8 @@ class BattleContext {
         this.potentOverwriteRatio = null;
         this.calcFixedAddDamageFuncs = [];
         this.getDamageReductionRatioFuncs = [];
-        this.canActivateMiracleFuncs = [];
+        this.canActivateNonSpecialMiracleFuncs = [];
+        this.canActivateNonSpecialOneTimePerMapMiracleFuncs = [];
         this.applyInvalidationSkillEffectFuncs = [];
         this.calcFixedAddDamagePerAttackFuncs = [];
         this.addReducedDamageForNextAttackFuncs = [];
