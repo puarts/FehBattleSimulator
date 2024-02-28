@@ -1097,6 +1097,9 @@ targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUni
     return defUnit.battleContext.restHpPercentage >= 50;
 });
 
+奥義以外の祈り+99回復
+targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal;
+
 奥義以外の祈り無効
 targetUnit.battleContext.neutralizesNonSpecialMiracle = true;
 
