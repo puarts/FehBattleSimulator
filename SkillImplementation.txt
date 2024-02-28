@@ -1412,6 +1412,10 @@ unit.getOrigins();
 ユーザーリストから出典の集合を得る
 Unit.getOriginSet(units);
 
+周囲3マス以内の味方の出典の種類数
+let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+let num = Unit.getOriginSet(units).size;
+
 比翼・双界英雄
 Unit.js
 const Hero = {

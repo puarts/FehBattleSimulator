@@ -2910,13 +2910,23 @@ class Unit extends BattleMapElement {
         return this.heroInfo != null && isDuo;
     }
 
+    /**
+     * 出典を返す。
+     * @return {[String]}
+     */
     getOrigins() {
         let info = this.heroInfo;
         if (info === null) return [];
         return info.origin.split('|');
     }
 
+    /**
+     * 出典の集合を返す。
+     * @param {[Unit]} units
+     * @return {Set<String>}
+     */
     static getOriginSet(units) {
+        /** @type {Set<String>} */
         let originSet = new Set();
         for (let unit of units) {
             for (let origin of unit.getOrigins()) {
