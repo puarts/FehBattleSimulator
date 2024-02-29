@@ -1889,6 +1889,11 @@ const Weapon = {
     ArcaneCharmer: 2791, // 魔器・愛らしい雪杖
     IceboundTome: 2784, // 吹き渡る雪書
     PenitentLance: 2794, // 救済の騎士の槍
+
+    // 伝承英雄 (繋和ぎし絆炎 リュール)
+    // https://www.youtube.com/watch?v=GEfevv2bL48&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=DwP2VgRxdNM&t=4s&ab_channel=NintendoMobile
+    DivineOnesArts: 2795, // 神竜王の体術
 };
 
 const Support = {
@@ -4615,6 +4620,35 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 神竜王の体術
+{
+    let skillId = Weapon.DivineOnesArts;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                let num = Unit.getOriginSet(units).size;
+                let amount = MathUtil.ensureMax(num * 3 + 4, 10);
+                enemyUnit.addAllSpur(-amount);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (isNormalAttackSpecial(enemyUnit.special)) {
+                            let diff =
+                                targetUnit.getEvalResInCombat(enemyUnit) -
+                                enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 5) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // ティルフィング
 {
     let skillId = Weapon.Thirufingu;
@@ -5856,6 +5890,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
                     atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
                 });
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                targetUnit.battleContext.reducesCooldownCount = true;
             }
         }
     );
