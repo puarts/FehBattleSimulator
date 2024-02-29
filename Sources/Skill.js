@@ -2881,6 +2881,7 @@ const PassiveB = {
     SpdResBulwark3: 2260, // 速さ魔防の防壁3
     // 防壁4
     AtkDefBulwark4: 2750, // 攻撃守備の防壁4
+    SRBulwark4: 2798, // 速さ魔防の防壁4
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3
@@ -6170,6 +6171,8 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 
     // 攻撃守備の防壁4
     setSkill(PassiveB.AtkDefBulwark4, u => u.addAtkDefSpurs(-4), true);
+    // 速さ魔防の防壁4
+    setSkill(PassiveB.SRBulwark4, u => u.addSpdResSpurs(-4), true);
 }
 
 // 三雄の双刃
