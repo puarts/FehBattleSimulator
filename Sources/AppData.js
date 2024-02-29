@@ -1614,8 +1614,8 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy]
             + ValueDelimiter + this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally]
             + ValueDelimiter + this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy]
-            + ValueDelimiter + this.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Enemy]
+            + ValueDelimiter + this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy]
             ;
     }
 
@@ -1652,8 +1652,8 @@ class AppData extends UnitManager {
         if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally] = Number(splited[i]); ++i; }
         if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Ally] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.miracleWithoutSpecialActivationCount[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = Number(splited[i]); ++i; }
+        if (splited[i] != undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {

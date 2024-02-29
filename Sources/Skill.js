@@ -1889,6 +1889,11 @@ const Weapon = {
     ArcaneCharmer: 2791, // 魔器・愛らしい雪杖
     IceboundTome: 2784, // 吹き渡る雪書
     PenitentLance: 2794, // 救済の騎士の槍
+
+    // 伝承英雄 (繋和ぎし絆炎 リュール)
+    // https://www.youtube.com/watch?v=GEfevv2bL48&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=DwP2VgRxdNM&t=4s&ab_channel=NintendoMobile
+    DivineOnesArts: 2795, // 神竜王の体術
 };
 
 const Support = {
@@ -2112,6 +2117,8 @@ const Special = {
 
     NegatingFang: 1469, // 反竜穿
     NegatingFang2: 2725, // 反竜穿・承
+
+    DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
     LodestarRush: 2758, // スターラッシュ
@@ -2364,6 +2371,7 @@ const PassiveA = {
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
     // 専用A
+    EmblemsMiracle: 2797, // 紋章の奇跡
     Obsession: 2785, // 執着
     GrayIllusion: 2773, // 鈍色の迷夢
     ThundersFist: 2732, // 雷神の右腕
@@ -2873,6 +2881,7 @@ const PassiveB = {
     SpdResBulwark3: 2260, // 速さ魔防の防壁3
     // 防壁4
     AtkDefBulwark4: 2750, // 攻撃守備の防壁4
+    SRBulwark4: 2798, // 速さ魔防の防壁4
 
     // 先制
     SpdPreempt3: 2168, // 速さの先制3
@@ -4615,6 +4624,127 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 紋章の奇跡
+{
+    let skillId = PassiveA.EmblemsMiracle;
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(9);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+            let allies = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+            if (allies.length >= 3 && enemyUnit.battleContext.initiatesCombat) {
+                if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
+                    targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
+                }
+            }
+        }
+    );
+}
+
+// 竜の咆哮
+{
+    let skillId = Special.DragonsRoar;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            let canActivateSpecial =
+                defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0;
+            let isSpecialActivated =
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated;
+            if (canActivateSpecial || isSpecialActivated) {
+                // 40%軽減
+                if (defUnit.getEvalResInCombat(atkUnit) >= atkUnit.getEvalResInCombat(defUnit) - 4) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
+// 神竜王の体術
+{
+    let skillId = Weapon.DivineOnesArts;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                let num = Unit.getOriginSet(units).size;
+                let amount = MathUtil.ensureMax(num * 3 + 4, 10);
+                enemyUnit.addAllSpur(-amount);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (isNormalAttackSpecial(enemyUnit.special)) {
+                            let diff =
+                                targetUnit.getEvalResInCombat(enemyUnit) -
+                                enemyUnit.getEvalResInCombat(targetUnit);
+                            if (diff >= 5) {
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack++;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+// ティルフィング
+{
+    let skillId = Weapon.Thirufingu;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage <= 50) {
+                    targetUnit.defSpur += 4;
+                }
+            } else {
+                // <錬成効果>
+                targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
+                    // 1戦闘1回まで
+                    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                        return false;
+                    }
+                    return defUnit.battleContext.restHpPercentage >= 50;
+                });
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (!this.__isSolo(targetUnit)) {
+                        targetUnit.addAtkDefSpurs(5);
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 救済の騎士の槍
 {
     let skillId = Weapon.PenitentLance;
@@ -5616,7 +5746,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
                 targetUnit.battleContext.reducesCooldownCount = true;
                 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 if (targetUnit.battleContext.isSaviorActivated) {
-                    targetUnit.addAllSpur(4);
+                    targetUnit.addSpursWithoutSpd(4);
                 }
             }
         }
@@ -5826,6 +5956,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
                     atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
                 });
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                targetUnit.battleContext.reducesCooldownCount = true;
             }
         }
     );
@@ -5912,11 +6043,15 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
     calcFixedAddDamageFuncMap.set(skillId,
         function (atkUnit, defUnit, isPrecombat) {
             let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
-            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+            let additionalDamage = Math.trunc(status * 0.15);
+            this.writeDebugLog(`${atkUnit.weaponInfo.name}により固定ダメージ+${additionalDamage}(atk(${status}) * 0.15)`);
+            atkUnit.battleContext.additionalDamage += additionalDamage;
             // 奥義発動時
             let ratio = 0.1 + 0.1 * atkUnit.maxSpecialCount;
             let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
-            atkUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+            let additionalDamageOfSpecial = Math.trunc(spd * ratio);
+            this.writeDebugLog(`${atkUnit.weaponInfo.name}により奥義発動時の固定ダメージ+${additionalDamageOfSpecial}(spd(${spd}) * ratio(${ratio}))`);
+            atkUnit.battleContext.additionalDamageOfSpecial += additionalDamageOfSpecial;
         }
     );
 }
@@ -6036,6 +6171,8 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 
     // 攻撃守備の防壁4
     setSkill(PassiveB.AtkDefBulwark4, u => u.addAtkDefSpurs(-4), true);
+    // 速さ魔防の防壁4
+    setSkill(PassiveB.SRBulwark4, u => u.addSpdResSpurs(-4), true);
 }
 
 // 三雄の双刃
@@ -8605,6 +8742,16 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
             } else {
                 this.isOneTimeActionActivatedForWeapon2 = true;
             }
+        }
+    );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat, result) {
+            if (attackUnit.battleContext.restHpPercentage >= 25) {
+                if (result.atkUnit_actualTotalAttackCount > 0) {
+                    return true;
+                }
+            }
+            return false;
         }
     );
 }
