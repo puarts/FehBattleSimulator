@@ -2371,6 +2371,7 @@ const PassiveA = {
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
     // 専用A
+    EmblemsMiracle: 2797, // 紋章の奇跡
     Obsession: 2785, // 執着
     GrayIllusion: 2773, // 鈍色の迷夢
     ThundersFist: 2732, // 雷神の右腕
@@ -4622,6 +4623,32 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 紋章の奇跡
+{
+    let skillId = PassiveA.EmblemsMiracle;
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.4);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(9);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+            let allies = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3));
+            if (allies.length >= 3 && enemyUnit.battleContext.initiatesCombat) {
+                if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
+                    targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
+                }
+            }
+        }
+    );
+}
+
 // 竜の咆哮
 {
     let skillId = Special.DragonsRoar;

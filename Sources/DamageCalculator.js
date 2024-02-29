@@ -1626,7 +1626,7 @@ class DamageCalculator {
         if (unit.battleContext.canActivateNonSpecialMiracle) {
             let threshold = unit.battleContext.nonSpecialMiracleHpPercentageThreshold;
             if (threshold !== Number.MAX_SAFE_INTEGER) {
-                if (unit.battleContext.restHpPercentage >= threshold) {
+                if (unit.restHpPercentage >= threshold) {
                     return true;
                 }
             }

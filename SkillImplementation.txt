@@ -1098,7 +1098,9 @@ targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUni
 });
 
 奥義以外の祈り+99回復
-targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal;
+if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
+    targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
+}
 
 奥義以外の祈り無効
 targetUnit.battleContext.neutralizesNonSpecialMiracle = true;

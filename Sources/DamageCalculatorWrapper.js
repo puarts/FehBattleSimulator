@@ -4628,7 +4628,7 @@ class DamageCalculatorWrapper {
                         return false;
                     }
                     if (defUnit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType)) {
-                        if (defUnit.battleContext.restHpPercentage >= 25) {
+                        if (defUnit.restHpPercentage >= 25) {
                             return true;
                         }
                     }
@@ -5017,7 +5017,7 @@ class DamageCalculatorWrapper {
                     return false;
                 }
                 return Unit.calcAttackerMoveDistance(defUnit, atkUnit) !== 0 &&
-                    defUnit.battleContext.restHpPercentage >= 25;
+                    defUnit.restHpPercentage >= 25;
             });
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdPreempt3] = (targetUnit, enemyUnit) => {
@@ -5168,7 +5168,7 @@ class DamageCalculatorWrapper {
                     if (defUnit.battleContext.isNonSpecialMiracleActivated) {
                         return false;
                     }
-                    return defUnit.battleContext.restHpPercentage >= 25;
+                    return defUnit.restHpPercentage >= 25;
                 });
             }
         }
@@ -6568,7 +6568,7 @@ class DamageCalculatorWrapper {
                                 if (defUnit.battleContext.isNonSpecialMiracleActivated) {
                                     return false;
                                 }
-                                return defUnit.battleContext.restHpPercentage > 50;
+                                return defUnit.restHpPercentage >= 50;
                             });
                         }
                     }
