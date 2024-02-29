@@ -2118,6 +2118,8 @@ const Special = {
     NegatingFang: 1469, // 反竜穿
     NegatingFang2: 2725, // 反竜穿・承
 
+    DragonsRoar: 2796, // 竜の咆哮
+
     // 専用奥義
     LodestarRush: 2758, // スターラッシュ
     ArmsOfTheThree: 2749, // 三雄の双刃
@@ -4620,6 +4622,42 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 竜の咆哮
+{
+    let skillId = Special.DragonsRoar;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            let canActivateSpecial =
+                defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0;
+            let isSpecialActivated =
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated;
+            if (canActivateSpecial || isSpecialActivated) {
+                // 40%軽減
+                if (defUnit.getEvalResInCombat(atkUnit) >= atkUnit.getEvalResInCombat(defUnit) - 4) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
 // 神竜王の体術
 {
     let skillId = Weapon.DivineOnesArts;
