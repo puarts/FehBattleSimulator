@@ -11542,14 +11542,6 @@ class DamageCalculatorWrapper {
                         targetUnit.atkSpur += maxBuff;
                     }
                     break;
-                case Weapon.Skinfaxi:
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.applyAtkUnity();
-                        targetUnit.applySpdUnity();
-                        targetUnit.applyDefUnity();
-                        targetUnit.applyResUnity();
-                    }
-                    break;
                 case Weapon.SparkingTome:
                     if (enemyUnit.battleContext.restHpPercentage >= 50) {
                         enemyUnit.resSpur -= 6;

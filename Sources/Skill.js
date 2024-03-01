@@ -4035,11 +4035,21 @@ function isTeleportationSkill(skillId) {
 
 /// 天駆の道の効果を持つスキルかどうか
 function hasPathfinderEffect(skillId) {
+    let funcMap = hasPathfinderEffectFuncMap;
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            if (func.call(this)) {
+                return true;
+            }
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
     switch (skillId) {
         case PassiveB.TwinSkyWing:
         case Weapon.JotnarBow:
         case Weapon.Hrimfaxi:
-        case Weapon.Skinfaxi:
         case Captain.Eminence:
             return true;
         default:
@@ -4605,6 +4615,7 @@ const canActivateSaveSkillFuncMap = new Map();
 const selectReferencingResOrDefFuncMap = new Map();
 const enumerateTeleportTilesForAllyFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
+const hasPathfinderEffectFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4619,6 +4630,46 @@ const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map(
 // }
 
 // 各スキルの実装
+{
+    let skillId = Weapon.Skinfaxi;
+    hasPathfinderEffectFuncMap.set(skillId,
+        function () {
+            return true;
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.applyAtkUnity();
+                    targetUnit.applySpdUnity();
+                    targetUnit.applyDefUnity();
+                    targetUnit.applyResUnity();
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+}
+
 // 恐慌の聖光
 {
     let skillId = Special.HolyPanic;
