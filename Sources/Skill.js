@@ -3648,9 +3648,6 @@ NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
 NormalAttackSpecialDict[Special.RighteousWind] = 0;
 NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
 NormalAttackSpecialDict[Special.DevinePulse] = 0;
-NormalAttackSpecialDict[Special.HolyPressure] = 0;
-NormalAttackSpecialDict[Special.LightsRestraint] = 0; // 抑制の聖光
-NormalAttackSpecialDict[Special.HolyPanic] = 0; // 恐慌の聖光
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
@@ -4534,9 +4531,6 @@ const noEffectOnSpecialCooldownChargeOnSupportSkillSet = new Set();
         Support.RescuePlus, Support.Rescue,
         Support.ReturnPlus, Support.Return,
         Support.NudgePlus, Support.Nudge,
-        Special.HolyPressure,
-        Special.LightsRestraint,
-        Special.HolyPanic,
     ];
     for (let skill of skills) {
         noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skill);
@@ -4610,6 +4604,7 @@ const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 const canActivateSaveSkillFuncMap = new Map();
 const selectReferencingResOrDefFuncMap = new Map();
 const enumerateTeleportTilesForAllyFuncMap = new Map();
+const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4624,6 +4619,104 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 恐慌の聖光
+{
+    let skillId = Special.HolyPanic;
+    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let totalRes = enemyUnit.getResInCombat(targetUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
+        }
+    );
+
+    applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit) {
+            if (attackUnit.battleContext.isSpecialActivated) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
+                for (let unit of units) {
+                    unit.applyDebuffs(-6, -6, 0, 0);
+                    unit.addStatusEffect(StatusEffectType.Panic);
+                }
+            }
+        }
+    );
+}
+
+// 抑制の聖光
+{
+    let skillId = Special.LightsRestraint;
+    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let totalRes = enemyUnit.getResInCombat(targetUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
+        }
+    );
+
+    applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit) {
+            if (attackUnit.battleContext.isSpecialActivated) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
+                for (let unit of units) {
+                    unit.increaseSpecialCount(1);
+                    unit.addStatusEffect(StatusEffectType.Guard);
+                }
+            }
+        }
+    );
+}
+
+// 重圧の聖光
+{
+    let skillId = Special.HolyPressure;
+    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count3Specials.push(skillId);
+    inheritableCount3Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let totalRes = enemyUnit.getResInCombat(targetUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
+        }
+    );
+
+    applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit) {
+            if (attackUnit.battleContext.isSpecialActivated) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
+                for (let unit of units) {
+                    unit.addStatusEffect(StatusEffectType.Gravity);
+                }
+            }
+        }
+    );
+}
+
 // 紋章の奇跡
 {
     let skillId = PassiveA.EmblemsMiracle;
@@ -4925,16 +5018,16 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
-            let totalRes = enemyUnit.getResInCombat(enemyUnit);
+            let totalRes = enemyUnit.getResInCombat(targetUnit);
             targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
         }
     );
 
-    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
-            if (targetUnit.battleContext.isSpecialActivated) {
+    applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit) {
+            if (attackUnit.battleContext.isSpecialActivated) {
                 /** @type {[Unit]} */
-                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true);
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
                 for (let unit of units) {
                     unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                 }

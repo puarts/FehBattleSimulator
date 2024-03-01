@@ -15439,27 +15439,6 @@ class DamageCalculatorWrapper {
             }
         };
 
-        this._applySpecialSkillEffectFuncDict[Special.HolyPressure] = (targetUnit, enemyUnit) => {
-            // 重圧の聖光
-            {
-                let totalRes = enemyUnit.getResInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
-            }
-        };
-
-        {
-            let func = (targetUnit, enemyUnit) => {
-                {
-                    let totalRes = enemyUnit.getResInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
-                }
-            };
-            // 抑制の聖光
-            this._applySpecialSkillEffectFuncDict[Special.LightsRestraint] = func;
-            // 恐慌の聖光
-            this._applySpecialSkillEffectFuncDict[Special.HolyPanic] = func;
-        }
-
         this._applySpecialSkillEffectFuncDict[Special.CircletOfBalance] = (targetUnit, enemyUnit) => {
             // 聖神と暗黒神の冠
             let totalRes = targetUnit.getResInCombat(enemyUnit);

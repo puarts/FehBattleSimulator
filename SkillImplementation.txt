@@ -1113,6 +1113,21 @@ targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUni
 もしくは
 __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {}
 
+戦闘で奥義を発動した場合、戦闘後、戦闘相手とその周囲1マスの敵に【グラビティ】を付与
+// 攻撃奥義の場合
+// 攻撃を受けた際に発動する奥義の場合はapplySkillEffectAfterCombatNeverthelessDeadForUnitFuncMapを使用する
+applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+    function (attackUnit, attackTargetUnit) {
+        if (attackUnit.battleContext.isSpecialActivated) {
+            /** @type {[Unit]} */
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
+            for (let unit of units) {
+                unit.addStatusEffect(StatusEffectType.Gravity);
+            }
+        }
+    }
+);
+
 戦闘を行なっている時[戦闘を行っていない時]
 unit.isCombatDone
 

@@ -387,29 +387,6 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
-                case Special.HolyPanic:
-                    if (targetUnit.battleContext.isSpecialActivated) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
-                            unit.applyDebuffs(-6, -6, 0, 0);
-                            unit.addStatusEffect(StatusEffectType.Panic);
-                        }
-                    }
-                    break;
-                case Special.LightsRestraint:
-                    if (targetUnit.battleContext.isSpecialActivated) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
-                            unit.increaseSpecialCount(1);
-                            unit.addStatusEffect(StatusEffectType.Guard);
-                        }
-                    }
-                    break;
-                case Special.HolyPressure:
-                    if (targetUnit.battleContext.isSpecialActivated) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                            unit.addStatusEffect(StatusEffectType.Gravity);
-                        }
-                    }
-                    break;
                 case Weapon.BrilliantStarlight:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveHeal(7);
