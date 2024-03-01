@@ -4630,6 +4630,45 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 極光のブレス
+{
+    let skillId = Weapon.AuroraBreath;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.atkSpur += 6;
+                    ++targetUnit.battleContext.followupAttackPriorityIncrement;
+                } else {
+                    targetUnit.defSpur += 6;
+                    targetUnit.resSpur += 6;
+                    --enemyUnit.battleContext.followupAttackPriorityDecrement;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+}
+
+// スキンファクシ
 {
     let skillId = Weapon.Skinfaxi;
     hasPathfinderEffectFuncMap.set(skillId,

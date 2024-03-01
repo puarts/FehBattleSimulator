@@ -7544,17 +7544,6 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 4;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.AuroraBreath] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.atkSpur += 6;
-                ++targetUnit.battleContext.followupAttackPriorityIncrement;
-            }
-            else {
-                targetUnit.defSpur += 6;
-                targetUnit.resSpur += 6;
-                --enemyUnit.battleContext.followupAttackPriorityDecrement;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.IndignantBow] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
                 targetUnit.atkSpur += 6;
