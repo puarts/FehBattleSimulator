@@ -7597,15 +7597,21 @@ const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map(
 // 守備隊形
 {
     let setSkill = (skillId, func) => {
+        applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+            function (targetUnit, enemyUnit) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+                }
+            }
+        );
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     func(enemyUnit);
                     targetUnit.battleContext.followupAttackPriorityDecrement--;
                     enemyUnit.battleContext.followupAttackPriorityDecrement--;
-
-                    let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
-                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+                    targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.4, enemyUnit);
                     targetUnit.battleContext.healedHpAfterCombat += 7;
                 }
             }
