@@ -4310,6 +4310,11 @@ class Unit extends BattleMapElement {
         this.posY = y;
     }
 
+    setFromPos(x, y) {
+        this.fromPosX = x;
+        this.fromPosY = y;
+    }
+
     getTriangleAdeptAdditionalRatio() {
         if (this.passiveA === PassiveA.Duality) {
             return 0;

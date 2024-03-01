@@ -6443,12 +6443,13 @@ class BattleSimmulatorBase {
         }
         let self = this;
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
-        let command = this.__createCommand(`${unit.id}-s-${assistTargetUnit.id}-${tile.id}`, `${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
+        let func = function () {
             if (unit.isActionDone) {
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
             }
 
+            // サウンド
             switch (unit.supportInfo.assistType) {
                 case AssistType.Refresh:
                     self.audioManager.playSoundEffectImmediately(SoundEffectId.Refresh);
@@ -6466,13 +6467,17 @@ class BattleSimmulatorBase {
                     break;
             }
             if (self.isCommandLogEnabled) {
-                self.writeLogLine(
-                    unit.getNameWithGroup() + "は"
-                    + assistTargetUnit.getNameWithGroup()
-                    + "に" + skillName + "を実行");
+                self.writeLogLine( `${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
             }
             self.applySupportSkill(unit, assistTargetUnit);
-        }, serial, commandType);
+        };
+        let command = this.__createCommand(
+            `${unit.id}-s-${assistTargetUnit.id}-${tile.id}`,
+            `${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`,
+            func,
+            serial,
+            commandType
+        );
         return command;
     }
 
@@ -8142,6 +8147,11 @@ class BattleSimmulatorBase {
         executesTrap = true,
     ) {
         if (targetUnit == null) { return false; }
+        // 途中の処理でfromが書き換わるので退避させる
+        let unitFromX = unit.fromPosX;
+        let unitFromY = unit.fromPosY;
+        let targetUnitFromX = targetUnit.fromPosX;
+        let targetUnitFromY = targetUnit.fromPosY;
         let result = movementAssistCalcFunc(unit, targetUnit, unit.placedTile);
         if (!result.success) {
             return false;
@@ -8179,6 +8189,10 @@ class BattleSimmulatorBase {
         if (movesTargetUnit) {
             moveUnit(targetUnit, result.targetUnitTileAfterAssist, false, false);
         }
+
+        // fromの値を復元する
+        unit.setFromPos(unitFromX, unitFromY);
+        targetUnit.setFromPos(targetUnitFromX, targetUnitFromY);
 
         if (applysMovementSkill) {
             this.__applyMovementAssistSkill(unit, targetUnit);

@@ -935,8 +935,6 @@ class DamageCalcData {
             // Special.ImperialAstra, // 剣皇の流星(+速さ40%)
             Special.TwinBlades, // 双刃(+魔防30%)
             Special.CircletOfBalance, // 聖神と暗黒神の冠(+魔坊40%)
-            Special.LightsRestraint, // 抑制の聖光
-            Special.HolyPanic, // 恐慌の聖光
         ].concat(count2Specials);
     }
     __getInheritableCount3Specials() {
@@ -960,7 +958,6 @@ class DamageCalcData {
             // Special.OpenTheFuture, // 開世(+守備50%)
             Special.KuroNoGekko, // 黒の月光(守備魔防-80%)
             Special.LightlessLuna, // 漆黒の月光(守備魔防-80%)
-            Special.HolyPressure, // 重圧の聖光
         ].concat(count3Specials);
     }
     __getInheritableCount4Specials() {
