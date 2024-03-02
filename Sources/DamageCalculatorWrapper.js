@@ -8020,24 +8020,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidateAllBuffs();
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.BrutalBreath] = (targetUnit) => {
-            {
-                let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, () => true);
-                let spur = 0;
-                if (count === 0) {
-                    spur = 5;
-                } else if (count === 1) {
-                    spur = 3;
-                } else if (count === 2) {
-                    spur = 1;
-                }
-                targetUnit.addAllSpur(spur);
-
-                if (count <= 1) {
-                    targetUnit.battleContext.reducesCooldownCount = true;
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.DarkScripture] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                 enemyUnit.atkSpur -= 6;

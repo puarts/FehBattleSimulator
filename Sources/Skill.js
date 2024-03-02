@@ -4629,6 +4629,50 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 獣乱のブレス
+{
+    let skillId = Weapon.BrutalBreath;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, () => true);
+                let spur = 0;
+                if (count === 0) {
+                    spur = 5;
+                } else if (count === 1) {
+                    spur = 3;
+                } else if (count === 2) {
+                    spur = 1;
+                }
+                targetUnit.addAllSpur(spur);
+
+                if (count <= 1) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+}
+
 // 打ち砕くもの
 {
     let skillId = Weapon.Uchikudakumono;
