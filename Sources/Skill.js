@@ -4650,14 +4650,7 @@ const hasPathfinderEffectFuncMap = new Map();
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
                 let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, () => true);
-                let spur = 0;
-                if (count === 0) {
-                    spur = 5;
-                } else if (count === 1) {
-                    spur = 3;
-                } else if (count === 2) {
-                    spur = 1;
-                }
+                let spur = MathUtil.ensureMin(5 - 2 * count, 0);
                 targetUnit.addAllSpur(spur);
 
                 if (count <= 1) {
