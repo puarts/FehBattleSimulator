@@ -8805,11 +8805,6 @@ class BattleSimmulatorBase {
                         targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
                     }
                     break;
-                case Weapon.Uchikudakumono:
-                    if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                    }
-                    break;
                 case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
                 case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
                 case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;

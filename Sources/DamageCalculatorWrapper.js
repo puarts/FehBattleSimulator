@@ -9192,9 +9192,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Uchikudakumono] = (targetUnit) => {
-            targetUnit.battleContext.refersMinOfDefOrRes = true;
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.FerisiaNoKorizara] = (targetUnit, enemyUnit) => {
             targetUnit.battleContext.refersMinOfDefOrRes = true;
             if (targetUnit.isWeaponSpecialRefined) {
