@@ -10206,15 +10206,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.LevinDagger:
-                    if (enemyUnit.hasNegativeStatusEffect()
-                    ) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.spdSpur += 5;
-                        targetUnit.defSpur += 5;
-                        targetUnit.resSpur += 5;
-                    }
-                    break;
                 case Weapon.VoidTome:
                     if (enemyUnit.getAtkInPrecombat() >= 50
                         || enemyUnit.hasNegativeStatusEffect()
@@ -13949,15 +13940,6 @@ class DamageCalculatorWrapper {
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage >= 70) {
                             atkUnit.battleContext.additionalDamage += 7;
-                        }
-                    }
-                    break;
-                case Weapon.LevinDagger:
-                    {
-                        if (!isPrecombat) {
-                            let value = 0;
-                            value = atkUnit.getResInCombat(defUnit);
-                            atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
                         }
                     }
                     break;
