@@ -4649,7 +4649,7 @@ const hasPathfinderEffectFuncMap = new Map();
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
-                let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, () => true);
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, () => true);
                 let spur = 0;
                 if (count === 0) {
                     spur = 5;
