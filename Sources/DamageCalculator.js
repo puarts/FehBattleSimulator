@@ -1075,6 +1075,15 @@ class DamageCalculator {
                     // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
                     defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated = null;
                 }
+
+                // チェインガード
+                for (let [unit, ratio] of defUnit.battleContext.damageReductionRatiosByChainGuard) {
+                    if (this.isLogEnabled) {
+                        this.writeDebugLog(`${unit.nameWithGroup}によるチェインガードによるダメージ軽減。ratio: [${ratio}]`);
+                    }
+                    damageReductionRatio *= 1.0 - ratio;
+                    unit.battleContext.isChainGuardActivated = true;
+                }
             }
 
             let invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack =

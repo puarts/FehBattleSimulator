@@ -514,6 +514,12 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttacks = 0; // 連撃の場合は1,2回目の攻撃(3,4回目が対象外)
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
+        /**
+         * フランなどのチェインガードによる回避効果
+         * @type {[[Unit, Number]]}
+         * */
+        this.damageReductionRatiosByChainGuard = [];
+        this.isChainGuardActivated = false;
         this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
@@ -552,6 +558,9 @@ class BattleContext {
 
         // 戦闘後回復
         this.healedHpAfterCombat = 0;
+
+        // 戦闘後ダメージ
+        this.damageAfterCombat = 0;
 
         // 強化無効
         this.invalidatesAtkBuff = false;
@@ -916,6 +925,8 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttacks = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
+        this.damageReductionRatiosByChainGuard = [];
+        this.isChainGuardActivated = false;
         this.damageReductionValueOfFollowupAttack = 0;
         this.damageReductionValueOfFirstAttacks = 0;
         this.damageReductionValueOfSpecialAttack = 0;
@@ -1007,6 +1018,7 @@ class BattleContext {
         this.invalidatesHeal = false;
         this.nullInvalidatesHealRatio = 0;
         this.healedHpAfterCombat = 0;
+        this.damageAfterCombat = 0;
         this.isAdvantageForColorless = false;
         this.additionalDamageOfSpecial = 0;
         this.rateOfAtkMinusDefForAdditionalDamage = 0;

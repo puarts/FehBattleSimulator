@@ -108,6 +108,11 @@ class PostCombatSkillHander {
         }
         this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit, result.defUnit_actualTotalAttackCount);
 
+        // BattleContextに記録された回復・ダメージの予約
+        for (let unit of this.enumerateAllUnitsOnMap()) {
+            this.__reserveHealOrDamageAfterCombatForUnit(unit);
+        }
+
         // 不治の幻煙による回復無効化
         {
             let applyHealInvalidation = (targetUnit, enemyUnit) => {
@@ -312,7 +317,6 @@ class PostCombatSkillHander {
         for (let func of targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs) {
             func(targetUnit, enemyUnit);
         }
-        targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
         for (let skillId of enemyUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveS.GoeiNoGuzo:
@@ -778,6 +782,20 @@ class PostCombatSkillHander {
             }
         }
     }
+
+    /**
+     * @param  {Unit} targetUnit
+     */
+    __reserveHealOrDamageAfterCombatForUnit(targetUnit) {
+        if (targetUnit.isAlive) {
+            targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
+            targetUnit.reserveTakeDamage(targetUnit.battleContext.damageAfterCombat);
+            if (targetUnit.battleContext.isChainGuardActivated) {
+                targetUnit.reserveTakeDamage(1);
+            }
+        }
+    }
+
     __applyAttackSkillEffectForDefenseAfterCombat(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {

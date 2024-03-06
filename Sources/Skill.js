@@ -1894,6 +1894,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=GEfevv2bL48&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=DwP2VgRxdNM&t=4s&ab_channel=NintendoMobile
     DivineOnesArts: 2795, // 神竜王の体術
+
+    // 超英雄 (安眠の地を求めて)
+    // https://www.youtube.com/watch?v=o56mxl5RIuw&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=FUV1dziOWOg&ab_channel=NintendoMobile
+    HippityHopAxe: 2801, // 春に跳ぶ白兎の斧
 };
 
 const Support = {
@@ -4629,6 +4634,67 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 春に跳ぶ白兎の斧
+{
+    let skillId = Weapon.HippityHopAxe;
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                let percentage = allyUnit.isFullHp ? allyUnit.hp : Math.trunc(allyUnit.hp / 2);
+                let ratio = MathUtil.ensureMax(percentage, 60) / 100.0;
+                targetUnit.battleContext.damageReductionRatiosByChainGuard.push([allyUnit, ratio]);
+            }
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    unit.reserveHeal(7);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            let count = 0;
+            let foundDragon = false;
+            /** @type {[Unit]} */
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+            for (let unit of units) {
+                count++;
+                foundDragon |= isWeaponTypeBreath(unit.weaponType);
+            }
+            if (count > 0) {
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                if (foundDragon) {
+                    amount = 14;
+                }
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                let ratio = MathUtil.ensureMax(targetUnit.restHp / 100.0, 0.6);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
+            }
+        }
+    );
+}
+
 // 獣乱のブレス
 {
     let skillId = Weapon.BrutalBreath;

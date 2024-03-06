@@ -947,6 +947,17 @@ __calcAttackTotalDamage(
     }
 }
 
+周囲2マス以内の味方は受けた攻撃のダメージを○%軽減(○は、戦闘開始時のスキル所持者のHPが100%なら、戦闘開始時のスキル所持者のHP、そうでない時は、スキル所持者の戦闘開始時のHP+2(端数切捨て)、最大60)(範囲奥義を除く)、かつ上記のダメージ軽減の効果が発動した場合、戦闘後、スキル所持者は1ダメージ(発動したダメージ軽減の効果が無効にされた場合でも、1ダメージを受ける)
+applySkillEffectFromAlliesFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+        if (targetUnit.distance(allyUnit) <= 2) {
+            let percentage = allyUnit.isFullHp ? allyUnit.hp : Math.trunc(allyUnit.hp / 2);
+            let ratio = MathUtil.ensureMax(percentage, 60) / 100.0;
+            targetUnit.battleContext.damageReductionRatiosByChainGuard.push([allyUnit, ratio]);
+        }
+    }
+);
+
 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を半分無効(無効にする数値は端数切捨て。例えば敵の「ダメージを45%軽減」なら半分の「22%」分を無効にし、「ダメージを23%軽減」にする))[リヴスラ, ダメージ軽減半分無効]
 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
 
