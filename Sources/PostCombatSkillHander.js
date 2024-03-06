@@ -95,8 +95,6 @@ class PostCombatSkillHander {
             }
             this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit);
         }
-        // 戦闘後のタイミング終了
-        g_appData.map.applyReservedDivineVein();
 
         if (result.atkUnit_actualTotalAttackCount > 0) {
             this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(atkUnit, defUnit);
@@ -137,6 +135,11 @@ class PostCombatSkillHander {
                 unit.applyReservedHp(true);
             }
         }
+
+        // 戦闘後のタイミング終了
+        // TODO: このタイミングで良いか検証する(アニメーションを見る限り回復・ダメージの後に天脈付与)
+        // 切り込みなどの前に天脈が付与(アニメーションではほぼ同時)
+        g_appData.map.applyReservedDivineVein();
     }
 
 
