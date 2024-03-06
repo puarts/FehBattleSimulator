@@ -2371,6 +2371,7 @@ const PassiveA = {
     SeimeiNoShippu3: 571,
     SeimeiNoDaichi3: 572,
     SeimeiNoSeisui3: 573,
+    FirestormBoost3: 2802, // 生命の業火疾風3
     FirefloodBoost3: 2501, // 生命の業火静水3
     EarthfireBoost3: 2768, // 生命の業火大地3
     EarthwindBoost3: 2789, // 生命の疾風大地3
@@ -6022,6 +6023,8 @@ const hasPathfinderEffectFuncMap = new Map();
             }
         );
     }
+    // 生命の業火疾風3
+    setSkill(PassiveA.FirestormBoost3, u => u.addAtkSpdSpurs(7));
     // 生命の業火静水3
     setSkill(PassiveA.FirefloodBoost3, u => u.addAtkResSpurs(7));
     // 生命の業火大地3
