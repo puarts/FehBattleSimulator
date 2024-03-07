@@ -1902,6 +1902,7 @@ const Weapon = {
     FlingsterSpear: 2803, // 春の出会いの槍
     DaydreamEgg: 2805, // 春に揺蕩う白夢の卵
     SkyHopperEgg: 2807, // 春風舞う天馬兎の卵
+    CarrotBowPlus: 2810, // ニンジンの弓+
 };
 
 const Support = {
@@ -4642,6 +4643,37 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// ニンジンの弓+
+{
+    let skillId = Weapon.CarrotBowPlus;
+    let func = function (skillOwner) {
+        /** @type {Generator<Unit>} */
+        let units = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let unit of units) {
+            if (unit.isInCrossWithOffset(skillOwner, 1)) {
+                if (unit.getEvalResInPrecombat() <= skillOwner.getEvalResInPrecombat() + 5) {
+                    unit.reserveToApplyDebuffs(-7, 0, -7, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                }
+            }
+        }
+    }
+    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAtkResSpurs(5);
+                if (enemyUnit.hasStatusEffect(StatusEffectType.Discord)) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+            }
+        }
+    );
+}
+
 // 十字牽制
 {
     let setSkill = (skillId, spurFunc) => {
@@ -10606,7 +10638,8 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
             let amount = this.globalBattleContext.currentTurn === 1 ? 2 : 1;
             skillOwner.reserveToReduceSpecialCount(amount);
             skillOwner.reserveTakeDamage(amount);
-        })
+        }
+    );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(

@@ -37,7 +37,14 @@ if (targetUnit.isTransformed) {}
 ターン開始時
 applySkillForBeginningOfTurnFuncMap.set(skillId,
     function (skillOwner) {
-    })
+    }
+);
+敵軍ターン開始時
+applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+    function (skillOwner) {
+    }
+);
+もしくは
 ターン開始時(通常)
 applySkillForBeginningOfTurn(skillId, skillOwner) {}
 ターン開始時(回復)
