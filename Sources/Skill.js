@@ -1901,6 +1901,7 @@ const Weapon = {
     HippityHopAxe: 2801, // 春に跳ぶ白兎の斧
     FlingsterSpear: 2803, // 春の出会いの槍
     DaydreamEgg: 2805, // 春に揺蕩う白夢の卵
+    SkyHopperEgg: 2807, // 春風舞う天馬兎の卵
 };
 
 const Support = {
@@ -4638,6 +4639,63 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 春風舞う天馬兎の卵
+{
+    let skillId = Weapon.SkyHopperEgg;
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                /** @type {Set<Unit>} */
+                let pairs = new Set();
+                /** @type {[Unit]} */
+                let allUnits = Array.from(this.enumerateUnitsInTheSameGroupOnMap(skillOwner));
+                for (let unit of allUnits) {
+                    if (unit === skillOwner ||
+                        unit.partnerHeroIndex === skillOwner.heroIndex) {
+                        continue;
+                    }
+                    if (allUnits.some(u => u.isPartner(unit))) {
+                        pairs.add(unit);
+                    }
+                }
+                /** @type {[Unit]} */
+                let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true));
+                for (let unit of units.concat(Array.from(pairs))) {
+                    unit.reserveToApplyBuffs(6, 6, 0, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Charge);
+                    unit.reserveToAddStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                /** @type {[Unit]} */
+                let units = Array.from(this.enumerateUnitsInTheSameGroupOnMap(targetUnit));
+                let count = units.filter(u => u.hasStatusEffect(StatusEffectType.Charge)).length;
+                let amount = MathUtil.ensureMax(count * 4, 8);
+                targetUnit.addAtkSpdSpurs(amount);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+            }
+        }
+    );
+}
+
 // しろいはるのゆめ
 {
     let skillId = Support.SpringsDream;
