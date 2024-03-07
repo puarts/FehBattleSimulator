@@ -1913,6 +1913,7 @@ const Support = {
     Pivot: 422, // 回り込み
 
     // 専用補助
+    SpringsDream: 2806, // しろいはるのゆめ
     FutureVision: 433, // 未来を移す瞳
     FutureVision2: 1948, // 未来を映す瞳・承
     FutureSight: 2675, // 未来を変える瞳
@@ -4637,6 +4638,33 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// しろいはるのゆめ
+{
+    let skillId = Support.SpringsDream;
+    refreshSupportSkillSet.add(skillId);
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            /** @type {[Unit]} */
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true);
+            for (let unit of units) {
+                if (unit === skillOwnerUnit) continue;
+                unit.applyAtkBuff(6);
+                unit.addStatusEffect(StatusEffectType.BonusDoubler);
+            }
+            /** @type {[Unit]} */
+            let nearestEnemies = this.__findNearestEnemies(targetUnit, 5);
+            for (let enemy of nearestEnemies) {
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemy, 2, true);
+                for (let unit of units) {
+                    unit.applyAtkDebuff(-6);
+                    unit.addStatusEffect(StatusEffectType.Panic);
+                }
+            }
+        }
+    );
+}
+
 // 春に揺蕩う白夢の卵
 {
     let skillId = Weapon.DaydreamEgg;
