@@ -1054,7 +1054,7 @@ class BattleSimmulatorBase {
         switch (duoUnit.heroIndex) {
             case Hero.DuoLyon:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
-                    if (unit.isInClossOf(duoUnit)) {
+                    if (unit.isInCrossOf(duoUnit)) {
                         if (g_appData.gameMode !== GameMode.SummonerDuels) {
                             unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
                         } else {
@@ -3943,13 +3943,13 @@ class BattleSimmulatorBase {
         return unitA.isWithinSpecifiedDistanceFrom(unitB, nearRange);
     }
 
-    __isInCloss(unitA, unitB) {
-        return unitB.isInClossOf(unitA);
+    __isInCross(unitA, unitB) {
+        return unitB.isInCrossOf(unitA);
     }
 
     // 自身を中心とした縦〇列と横〇列
-    __isInClossWithOffset(unitA, unitB, offset) {
-        return unitB.isInClossWithOffset(unitA, offset);
+    __isInCrossWithOffset(unitA, unitB, offset) {
+        return unitB.isInCrossWithOffset(unitA, offset);
     }
 
     updateCurrentUnitSpur() {
@@ -8233,8 +8233,8 @@ class BattleSimmulatorBase {
                 case Weapon.RetainersReport:
                     if (unit.isWeaponSpecialRefined) {
                         for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
-                            if (this.__isInCloss(unit, u) ||
-                                this.__isInCloss(targetUnit, u)) {
+                            if (this.__isInCross(unit, u) ||
+                                this.__isInCross(targetUnit, u)) {
                                 u.applyDebuffs(-7, 0, -7, -7);
                                 u.addStatusEffect(StatusEffectType.Guard);
                                 u.addStatusEffect(StatusEffectType.Exposure);
@@ -8551,7 +8551,7 @@ class BattleSimmulatorBase {
                     break;
                 case Weapon.EnvelopingBreath:
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-                        if (this.__isInCloss(unit, skillOwnerUnit) || this.__isInCloss(unit, targetUnit)) {
+                        if (this.__isInCross(unit, skillOwnerUnit) || this.__isInCross(unit, targetUnit)) {
                             unit.applyAtkDebuff(-7);
                             unit.applyResDebuff(-7);
                             unit.addStatusEffect(StatusEffectType.Guard);
@@ -8769,8 +8769,8 @@ class BattleSimmulatorBase {
                 case Weapon.RetainersReport:
                     if (supporterUnit.isWeaponSpecialRefined) {
                         for (let u of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
-                            if (this.__isInCloss(supporterUnit, u) ||
-                                this.__isInCloss(targetUnit, u)) {
+                            if (this.__isInCross(supporterUnit, u) ||
+                                this.__isInCross(targetUnit, u)) {
                                 u.applyDebuffs(-7, 0, -7, -7);
                                 u.addStatusEffect(StatusEffectType.Guard);
                                 u.addStatusEffect(StatusEffectType.Exposure);
@@ -8904,7 +8904,7 @@ class BattleSimmulatorBase {
 
     __applyFeint(skillOwnerUnit, debuffFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-            if (this.__isInCloss(unit, skillOwnerUnit)) {
+            if (this.__isInCross(unit, skillOwnerUnit)) {
                 debuffFunc(unit);
             }
         }
@@ -8912,7 +8912,7 @@ class BattleSimmulatorBase {
 
     __applyRuse(supporterUnit, targetUnit, debuffFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
-            if (this.__isInCloss(unit, supporterUnit) || this.__isInCloss(unit, targetUnit)) {
+            if (this.__isInCross(unit, supporterUnit) || this.__isInCross(unit, targetUnit)) {
                 debuffFunc(unit);
                 unit.addStatusEffect(StatusEffectType.Guard);
             }

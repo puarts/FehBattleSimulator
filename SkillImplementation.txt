@@ -219,12 +219,6 @@ __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
     // <バフ以外の効果>
 }
 
-周囲の敵からのバフ[牽制]
-updateUnitSpurFromEnemiesFuncMap.set(skillId,
-    function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
-    }
-);
-
 周囲3マス以内の敵は、戦闘中、<ステータス>-N
 __updateUnitSpur() {
     for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {

@@ -5683,8 +5683,8 @@ const hasPathfinderEffectFuncMap = new Map();
             /** @type {[Unit]} */
             let units = this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit);
             for (let unit of units) {
-                if (skillOwnerUnit.isInClossOf(unit) ||
-                    targetUnit.isInClossOf(unit)) {
+                if (skillOwnerUnit.isInCrossOf(unit) ||
+                    targetUnit.isInCrossOf(unit)) {
                     unit.applyAllDebuff(-5);
                     unit.addStatusEffects([StatusEffectType.Guard, StatusEffectType.Discord]);
                 }
@@ -5699,7 +5699,7 @@ const hasPathfinderEffectFuncMap = new Map();
 
     updateUnitSpurFromEnemiesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
-            if (targetUnit.isInClossOf(enemyAllyUnit)) {
+            if (targetUnit.isInCrossOf(enemyAllyUnit)) {
                 let amount = targetUnit.isWeaponRefined ? 5 : 4;
                 targetUnit.addDefResSpurs(-amount);
             }
@@ -6910,7 +6910,7 @@ const hasPathfinderEffectFuncMap = new Map();
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                        if (unit.isInClossWithOffset(skillOwner, 1)) {
+                        if (unit.isInCrossWithOffset(skillOwner, 1)) {
                             unit.reserveToApplyDebuffs(-6, 0, 0, -6);
                             unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
                         }
@@ -7255,7 +7255,7 @@ const hasPathfinderEffectFuncMap = new Map();
     updateUnitSpurFromEnemiesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             // 縦横3列デバフ
-            if (enemyAllyUnit.isInClossWithOffset(targetUnit, 1)) {
+            if (enemyAllyUnit.isInCrossWithOffset(targetUnit, 1)) {
                 targetUnit.addAllSpur(-4);
             }
         }
@@ -7559,7 +7559,7 @@ const hasPathfinderEffectFuncMap = new Map();
             let units = [];
             let distance = Number.MAX_SAFE_INTEGER;
             for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                if (!skillOwner.isInClossOf(unit)) {
+                if (!skillOwner.isInCrossOf(unit)) {
                     continue;
                 }
                 let d = skillOwner.distance(unit);
@@ -8124,7 +8124,7 @@ const hasPathfinderEffectFuncMap = new Map();
         function (skillOwner) {
             let found = false;
             for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                if (unit.isInClossWithOffset(skillOwner, 1)) {
+                if (unit.isInCrossWithOffset(skillOwner, 1)) {
                     found = true;
                     break;
                 }
@@ -8654,7 +8654,7 @@ const hasPathfinderEffectFuncMap = new Map();
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                if (skillOwner.isInClossWithOffset(unit, 1)) {
+                if (skillOwner.isInCrossWithOffset(unit, 1)) {
                     if (unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat()) {
                         unit.reserveToApplyDebuffs(0, 0, -6, -6);
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
@@ -9643,7 +9643,7 @@ const hasPathfinderEffectFuncMap = new Map();
         function (skillOwner) {
             if (skillOwner.isWeaponSpecialRefined) {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (unit.isInClossWithOffset(skillOwner, 1)) {
+                    if (unit.isInCrossWithOffset(skillOwner, 1)) {
                         unit.reserveToApplyAtkDebuff(-7);
                         unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
                     }
@@ -9955,8 +9955,8 @@ const hasPathfinderEffectFuncMap = new Map();
         supporterUnit.addStatusEffect(StatusEffectType.NullFollowUp);
         targetUnit.addStatusEffect(StatusEffectType.NullFollowUp);
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-            if (unit.isInClossOf(supporterUnit) ||
-                unit.isInClossOf(targetUnit)) {
+            if (unit.isInCrossOf(supporterUnit) ||
+                unit.isInCrossOf(targetUnit)) {
                 unit.addStatusEffect(StatusEffectType.Exposure);
             }
         }
@@ -10230,7 +10230,7 @@ const hasPathfinderEffectFuncMap = new Map();
     let skillId = PassiveC.CrossSpurSpd;
     applySkillEffectFromAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
-            if (targetUnit.isInClossOf(allyUnit)) {
+            if (targetUnit.isInCrossOf(allyUnit)) {
                 targetUnit.spdSpur += 5;
             }
         }
@@ -10260,8 +10260,8 @@ const hasPathfinderEffectFuncMap = new Map();
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit)) {
-                if (this.__isInCloss(unit, skillOwnerUnit) ||
-                    this.__isInCloss(unit, targetUnit)) {
+                if (this.__isInCross(unit, skillOwnerUnit) ||
+                    this.__isInCross(unit, targetUnit)) {
                     unit.applyBuffs(4, 4, 4, 4);
                     unit.addStatusEffect(StatusEffectType.AirOrders);
                     unit.addStatusEffect(StatusEffectType.Canto1);
@@ -10276,7 +10276,7 @@ const hasPathfinderEffectFuncMap = new Map();
     let skillId = Weapon.FlowerOfCaring;
     applySkillEffectFromAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
-            if (targetUnit.isInClossOf(allyUnit)) {
+            if (targetUnit.isInCrossOf(allyUnit)) {
                 targetUnit.addAtkSpdSpurs(5);
                 targetUnit.battleContext.healedHpAfterCombat += 5;
             }
@@ -10289,7 +10289,7 @@ const hasPathfinderEffectFuncMap = new Map();
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
                 targetUnit.battleContext.healedHpAfterCombat += 5;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                    if (unit.isInClossOf(targetUnit)) {
+                    if (unit.isInCrossOf(targetUnit)) {
                         targetUnit.addAllSpur(4);
                         break;
                     }
@@ -10332,8 +10332,8 @@ const hasPathfinderEffectFuncMap = new Map();
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-                if (this.__isInCloss(unit, skillOwnerUnit) ||
-                    this.__isInCloss(unit, targetUnit)) {
+                if (this.__isInCross(unit, skillOwnerUnit) ||
+                    this.__isInCross(unit, targetUnit)) {
                     unit.applyDebuffs(-5, -5, -5, -5);
                     unit.addStatusEffect(StatusEffectType.Guard);
                     unit.addStatusEffect(StatusEffectType.Sabotage);
@@ -10348,7 +10348,7 @@ const hasPathfinderEffectFuncMap = new Map();
     let skillId = Weapon.FlowerOfTribute;
     updateUnitSpurFromEnemiesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
-            if (enemyAllyUnit.isInClossWithOffset(targetUnit, 1)) {
+            if (enemyAllyUnit.isInCrossWithOffset(targetUnit, 1)) {
                 targetUnit.addSpdDefSpurs(-5);
                 targetUnit.battleContext.damageAfterBeginningOfCombat += 5;
                 let logMessage = `${enemyAllyUnit.nameWithGroup}のスキル(${skillId})により${targetUnit.getNameWithGroup()}に<span style="color: #ff0000">${5}</span>ダメージ`;
@@ -10425,7 +10425,7 @@ const hasPathfinderEffectFuncMap = new Map();
 {
     let generateFunc = debuffFunc => function (skillOwner) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-            if (skillOwner.isInClossWithOffset(unit, 1, 1) &&
+            if (skillOwner.isInCrossWithOffset(unit, 1, 1) &&
                 unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
                 debuffFunc(unit);
                 unit.reserveToAddStatusEffect(StatusEffectType.Ploy);

@@ -2202,10 +2202,10 @@ class DamageCalculatorWrapper {
     }
 
     /// 自身を中心とした縦〇列と横〇列にいる味方の人数を返します
-    __countAllyUnitsInClossWithOffset(targetUnit, offset) {
+    __countAllyUnitsInCrossWithOffset(targetUnit, offset) {
         let count = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, false)) {
-            if (unit.isInClossWithOffset(targetUnit, offset)) {
+            if (unit.isInCrossWithOffset(targetUnit, offset)) {
                 ++count;
             }
         }
@@ -4455,7 +4455,7 @@ class DamageCalculatorWrapper {
                 }
                 let count = 0;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-                    if (unit.isInClossWithOffset(targetUnit, 1)) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
                         count++;
                     }
                 }
@@ -6759,7 +6759,7 @@ class DamageCalculatorWrapper {
                     count = 3;
                 }
                 else {
-                    count = self.__countAllyUnitsInClossWithOffset(targetUnit, 1);
+                    count = self.__countAllyUnitsInCrossWithOffset(targetUnit, 1);
                 }
                 if (count >= 1) {
                     let debuffAmount =
@@ -10601,7 +10601,7 @@ class DamageCalculatorWrapper {
                 }
                 switch (skillId) {
                     case Weapon.ChargingHorn: // 味方に7回復効果
-                        if (allyUnit.isWeaponSpecialRefined && allyUnit.isInClossWithOffset(targetUnit, 1)) {
+                        if (allyUnit.isWeaponSpecialRefined && allyUnit.isInCrossWithOffset(targetUnit, 1)) {
                             targetUnit.battleContext.healedHpAfterCombat += 7;
                         }
                         break;
@@ -15774,13 +15774,18 @@ class DamageCalculatorWrapper {
         return unitA.isWithinSpecifiedDistanceFrom(unitB, nearRange);
     }
 
-    __isInCloss(unitA, unitB) {
-        return unitB.isInClossOf(unitA);
+    __isInCross(unitA, unitB) {
+        return unitB.isInCrossOf(unitA);
     }
 
-    // 自身を中心とした縦〇列と横〇列
-    __isInClossWithOffset(unitA, unitB, offset) {
-        return unitB.isInClossWithOffset(unitA, offset);
+    /**
+     * 自身を中心とした縦〇列と横〇列
+     * @param {Unit} unitA
+     * @param {Unit} unitB
+     * @param {number} offset 3x3の場合1
+     */
+    __isInCrossWithOffset(unitA, unitB, offset) {
+        return unitB.isInCrossWithOffset(unitA, offset);
     }
 
     __isTherePartnerInSpace3(unit) {
@@ -17375,7 +17380,7 @@ class DamageCalculatorWrapper {
                 this.__addSpurInRange1(targetUnit, unit.passiveS, calcPotentialDamage);
             }
 
-            if (this.__isInCloss(unit, targetUnit)) {
+            if (this.__isInCross(unit, targetUnit)) {
                 // 十字方向
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
@@ -17403,7 +17408,7 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (this.__isInClossWithOffset(unit, targetUnit, 1)) {
+            if (this.__isInCrossWithOffset(unit, targetUnit, 1)) {
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.ChargingHorn: // 味方にバフ

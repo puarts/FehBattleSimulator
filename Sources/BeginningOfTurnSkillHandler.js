@@ -217,7 +217,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.InspiritedSpear: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInClossWithOffset(unit, 1)) {
+                    if (skillOwner.isInCrossWithOffset(unit, 1)) {
                         found = true;
                         break;
                     }
@@ -2892,7 +2892,7 @@ class BeginningOfTurnSkillHandler {
         switch (skillId) {
             case Weapon.InspiritedSpear:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInClossWithOffset(unit, 1)) {
+                    if (skillOwner.isInCrossWithOffset(unit, 1)) {
                         unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                         if (isNormalAttackSpecial(skillOwner.special) &&
                             this.__getStatusEvalUnit(skillOwner).specialCount <= 1 &&
@@ -3239,7 +3239,7 @@ class BeginningOfTurnSkillHandler {
     }
     __applyPolySkill(skillOwnerUnit, debuffFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-            if (this.__isInCloss(skillOwnerUnit, unit)
+            if (this.__isInCross(skillOwnerUnit, unit)
                 && this.__getStatusEvalUnit(unit).getEvalResInPrecombat() < this.__getStatusEvalUnit(skillOwnerUnit).getEvalResInPrecombat()
             ) {
                 debuffFunc(unit);
@@ -3399,7 +3399,7 @@ class BeginningOfTurnSkillHandler {
 
     __applySkillToEnemiesInCross(skillOwner, conditionFunc, applySkillFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-            if (this.__isInCloss(unit, skillOwner)) {
+            if (this.__isInCross(unit, skillOwner)) {
                 if (conditionFunc(unit)) {
                     applySkillFunc(unit);
                 }
@@ -3428,8 +3428,8 @@ class BeginningOfTurnSkillHandler {
     __findNearestAllies(targetUnit, distLimit = 100) {
         return this._unitManager.findNearestAllies(targetUnit, distLimit);
     }
-    __isInCloss(unitA, unitB) {
-        return unitB.isInClossOf(unitA);
+    __isInCross(unitA, unitB) {
+        return unitB.isInCrossOf(unitA);
     }
 
     __isThereAllyIn2Spaces(targetUnit) {
