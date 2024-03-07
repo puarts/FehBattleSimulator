@@ -1900,6 +1900,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=FUV1dziOWOg&ab_channel=NintendoMobile
     HippityHopAxe: 2801, // 春に跳ぶ白兎の斧
     FlingsterSpear: 2803, // 春の出会いの槍
+    DaydreamEgg: 2805, // 春に揺蕩う白夢の卵
 };
 
 const Support = {
@@ -4636,6 +4637,36 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 春に揺蕩う白夢の卵
+{
+    let skillId = Weapon.DaydreamEgg;
+    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                if (targetUnit.hasNegativeStatusEffect()) {
+                    targetUnit.addSpursWithoutSpd(-5);
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                if (enemyUnit.hasNegativeStatusEffect()) {
+                    targetUnit.addSpursWithoutSpd(5);
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        // ステータスの20%(奥義含む。含まない場合はisPrecombatで条件わけする)
+                        if (isPrecombat) return;
+                        let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                        atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                    });
+                }
+            }
+        }
+    );
+}
+
 // 春の出会いの槍
 {
     let skillId = Weapon.FlingsterSpear;
