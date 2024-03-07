@@ -1201,8 +1201,15 @@ applySupportSkillFuncMap.set(skillId,
     }
 );
 
-// 共謀系
+// 共謀系[強制応援]
+// 応援をかける側
 canRallyForciblyFuncMap.set(skillId,
+    function (unit) {
+        return true;
+    }
+);
+// 応援をかけられた時
+canRalliedForciblyFuncMap.set(skillId,
     function (unit) {
         return true;
     }

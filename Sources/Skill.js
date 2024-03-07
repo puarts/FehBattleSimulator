@@ -1899,6 +1899,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=o56mxl5RIuw&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=FUV1dziOWOg&ab_channel=NintendoMobile
     HippityHopAxe: 2801, // 春に跳ぶ白兎の斧
+    FlingsterSpear: 2803, // 春の出会いの槍
 };
 
 const Support = {
@@ -4635,6 +4636,54 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 春の出会いの槍
+{
+    let skillId = Weapon.FlingsterSpear;
+    applySkillsAfterRallyForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            supporterUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+            supporterUnit.heal(7);
+        }
+    );
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
+            if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                supporterUnit.isActionDone = false;
+                supporterUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                if (targetUnit.hasStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack)) {
+                    targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            enemyUnit.battleContext.reducesCooldownCount = false;
+                        }
+                    );
+                    targetUnit.battleContext.setAttackCountFuncs.push(
+                        (targetUnit, enemyUnit) => {
+                            // 攻撃時
+                            targetUnit.battleContext.attackCount = 2;
+                            // 攻撃を受けた時
+                            targetUnit.battleContext.counterattackCount = 2;
+                        }
+                    );
+                }
+            }
+        }
+    );
+    canRallyForciblyFuncMap.set(skillId,
+        function (unit) {
+            return true;
+        }
+    );
+}
+
 // 春に跳ぶ白兎の斧
 {
     let skillId = Weapon.HippityHopAxe;
