@@ -1052,6 +1052,11 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedChloe:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Incited);
+                this.__applySkillEffectToSameOriginUnits(duoUnit, u => u.reduceSpecialCount(2));
+                break;
             case Hero.DuoLyon:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
                     if (unit.isInCrossOf(duoUnit)) {
