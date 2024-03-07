@@ -5962,15 +5962,21 @@ class Unit extends BattleMapElement {
     }
 
 
-    /// ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
-    /// 例えば縦3列の場合はoffset=1, 5列の場合はoffset=2。
-    isInClossWithOffset(unit, offset) {
+    /**
+     * ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
+     * 例えば縦3列の場合はoffset=1, 5列の場合はoffset=2。
+     * @param {Unit} unit
+     * @param {number} offset 3x3の場合1
+     */
+    isInCrossWithOffset(unit, offset) {
         return (unit.posX - offset <= this.posX && this.posX <= unit.posX + offset)
             || (unit.posY - offset <= this.posY && this.posY <= unit.posY + offset);
     }
 
-    /// 自身が指定したユニットの十字方向にいるかどうかを取得します。
-    isInClossOf(unit) {
+    /**
+     * 自身が指定したユニットの十字方向にいるかどうかを取得します。
+     */
+    isInCrossOf(unit) {
         return this.posX === unit.posX || this.posY === unit.posY;
     }
 
