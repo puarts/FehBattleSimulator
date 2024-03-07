@@ -826,12 +826,12 @@ class BattleContext {
         this.isRefreshActivated = false;
 
         // 暗闘
-        this.disablesSkillsFromEnemiesInCombat = false;
+        this.disablesSkillsFromEnemyAlliesInCombat = false;
         // 特定の色の味方からスキル効果が受けられない
-        this.disablesSkillsFromRedEnemiesInCombat = false;
-        this.disablesSkillsFromBlueEnemiesInCombat = false;
-        this.disablesSkillsFromGreenEnemiesInCombat = false;
-        this.disablesSkillsFromColorlessEnemiesInCombat = false;
+        this.disablesSkillsFromRedEnemyAlliesInCombat = false;
+        this.disablesSkillsFromBlueEnemyAlliesInCombat = false;
+        this.disablesSkillsFromGreenEnemyAlliesInCombat = false;
+        this.disablesSkillsFromColorlessEnemyAlliesInCombat = false;
 
         // 条件判定のための値を使い回すための値
         // 1攻撃の中で使い回す想定で1ターン1回の行動が行われたかなどの保存するべきフラグには使用しない
@@ -1058,11 +1058,11 @@ class BattleContext {
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;
         this.isRefreshActivated = false;
-        this.disablesSkillsFromEnemiesInCombat = false;
-        this.disablesSkillsFromRedEnemiesInCombat = false;
-        this.disablesSkillsFromBlueEnemiesInCombat = false;
-        this.disablesSkillsFromGreenEnemiesInCombat = false;
-        this.disablesSkillsFromColorlessEnemiesInCombat = false;
+        this.disablesSkillsFromEnemyAlliesInCombat = false;
+        this.disablesSkillsFromRedEnemyAlliesInCombat = false;
+        this.disablesSkillsFromBlueEnemyAlliesInCombat = false;
+        this.disablesSkillsFromGreenEnemyAlliesInCombat = false;
+        this.disablesSkillsFromColorlessEnemyAlliesInCombat = false;
         this.condValueMap.clear();
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;

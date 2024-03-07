@@ -3174,6 +3174,8 @@ const PassiveC = {
     // 牽制・運び手
     ASReinSnap: 2598, // 攻速牽制・運び手
     SDReinSnap: 2444, // 速守牽制・運び手
+    // 十字牽制
+    SpdResCrux: 2808, // 速さ魔防の十字牽制
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
     EvenTempest3: 1681, // 迅雷風烈・偶数3
@@ -4567,7 +4569,7 @@ const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
 const setOnetimeActionActivatedFuncMap = new Map();
 const applySkillEffectFromAlliesFuncMap = new Map();
 const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
-const updateUnitSpurFromEnemiesFuncMap = new Map();
+const updateUnitSpurFromEnemyAlliesFuncMap = new Map();
 const applyRefreshFuncMap = new Map();
 const applySkillEffectsPerCombatFuncMap = new Map();
 const initApplySpecialSkillEffectFuncMap = new Map();
@@ -4625,6 +4627,7 @@ const selectReferencingResOrDefFuncMap = new Map();
 const enumerateTeleportTilesForAllyFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 const hasPathfinderEffectFuncMap = new Map();
+const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4639,6 +4642,28 @@ const hasPathfinderEffectFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 十字牽制
+{
+    let setSkill = (skillId, spurFunc) => {
+        updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+                if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                    spurFunc(targetUnit);
+                }
+            }
+        );
+        applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+                if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                    enemyUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        );
+    }
+    // 速さ魔防の十字牽制
+    setSkill(PassiveC.SpdResCrux, u => u.addSpdResSpurs(-4));
+}
+
 // 春風舞う天馬兎の卵
 {
     let skillId = Weapon.SkyHopperEgg;
@@ -4726,11 +4751,19 @@ const hasPathfinderEffectFuncMap = new Map();
 // 春に揺蕩う白夢の卵
 {
     let skillId = Weapon.DaydreamEgg;
-    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
                 if (targetUnit.hasNegativeStatusEffect()) {
                     targetUnit.addSpursWithoutSpd(-5);
+                }
+            }
+        }
+    );
+    applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                if (targetUnit.hasNegativeStatusEffect()) {
                     targetUnit.battleContext.reducesCooldownCount = true;
                 }
             }
@@ -5743,7 +5776,7 @@ const hasPathfinderEffectFuncMap = new Map();
 // グルグラント
 {
     let skillId = Weapon.Gurgurant;
-    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             if (!targetUnit.isWeaponRefined) {
                 if (enemyAllyUnit.distance(targetUnit) <= 2) {
@@ -5757,12 +5790,14 @@ const hasPathfinderEffectFuncMap = new Map();
         }
     );
 
-    applySkillEffectFromAlliesFuncMap.set(skillId,
+    applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
-            if (allyUnit.distance(targetUnit) <= 4) {
-                enemyUnit.battleContext.invalidateBuffs(true, false, true, false);
-                targetUnit.battleContext.followupAttackPriorityDecrement--;
-                enemyUnit.battleContext.reducesCooldownCount = true;
+            if (allyUnit.isWeaponRefined) {
+                if (allyUnit.distance(targetUnit) <= 4) {
+                    enemyUnit.battleContext.invalidateBuffs(true, false, true, false);
+                    targetUnit.battleContext.followupAttackPriorityDecrement--;
+                    enemyUnit.battleContext.reducesCooldownCount = true;
+                }
             }
         }
     );
@@ -5814,7 +5849,7 @@ const hasPathfinderEffectFuncMap = new Map();
 {
     let skillId = Weapon.FlowerOfSorrow;
 
-    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             if (targetUnit.isInCrossOf(enemyAllyUnit)) {
                 let amount = targetUnit.isWeaponRefined ? 5 : 4;
@@ -7036,7 +7071,7 @@ const hasPathfinderEffectFuncMap = new Map();
             }
         }
     );
-    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             if (!enemyAllyUnit.isWeaponRefined) {
                 // <通常効果>
@@ -7369,7 +7404,7 @@ const hasPathfinderEffectFuncMap = new Map();
             }
         }
     );
-    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             // 縦横3列デバフ
             if (enemyAllyUnit.isInCrossWithOffset(targetUnit, 1)) {
@@ -10463,7 +10498,7 @@ const hasPathfinderEffectFuncMap = new Map();
 // 犠牲の花
 {
     let skillId = Weapon.FlowerOfTribute;
-    updateUnitSpurFromEnemiesFuncMap.set(skillId,
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             if (enemyAllyUnit.isInCrossWithOffset(targetUnit, 1)) {
                 targetUnit.addSpdDefSpurs(-5);

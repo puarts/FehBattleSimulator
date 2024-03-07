@@ -1111,10 +1111,10 @@ class BattleSimmulatorBase {
                 break;
             case Hero.DuoShamir:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
-                    if (this.__isInCross(unit, duoUnit, 1, 1)) {
+                    if (this.__isInRowColumn(unit, duoUnit, 1, 1)) {
                         unit.addStatusEffect(StatusEffectType.Gravity);
                     }
-                    if (this.__isInCross(unit, duoUnit, 5, 5)) {
+                    if (this.__isInRowColumn(unit, duoUnit, 5, 5)) {
                         unit.addStatusEffect(StatusEffectType.Feud);
                     }
                 }
@@ -1126,7 +1126,7 @@ class BattleSimmulatorBase {
                 break;
             case Hero.DuoMark:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
-                    if (this.__isInCross(unit, duoUnit, 3, 3)) {
+                    if (this.__isInRowColumn(unit, duoUnit, 3, 3)) {
                         unit.addStatusEffect(StatusEffectType.Isolation);
                         unit.addStatusEffect(StatusEffectType.Guard);
                         unit.increaseSpecialCount(2);
@@ -1509,8 +1509,14 @@ class BattleSimmulatorBase {
         updateAllUi();
     }
 
-    // 縦row列と横column列にいるかどうか
-    __isInCross(unitA, unitB, row, column) {
+    /**
+     * 縦row列と横column列にいるかどうかを返す
+     * @param {Unit} unitA
+     * @param {Unit} unitB
+     * @param {number} row
+     * @param {number} column
+     */
+    __isInRowColumn(unitA, unitB, row, column) {
         let rowDiff = (row - 1) / 2;
         let columnDiff = (column - 1) / 2;
         return Math.abs(unitA.posX - unitB.posX) <= columnDiff ||

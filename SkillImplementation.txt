@@ -155,7 +155,7 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
 );
 
 周囲の敵からのデバフ効果(牽制など)[周囲2マスの敵は、戦闘中...]
-updateUnitSpurFromEnemiesFuncMap.set(skillId,
+updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
         // enemyAllyUnitからのスキルなので錬成判定に注意
         if (!enemyAllyUnit.isWeaponRefined) {
@@ -172,65 +172,31 @@ updateUnitSpurFromEnemiesFuncMap.set(skillId,
     }
 );
 
-暗闘の効果を受けない周囲からのスキル効果
-applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
-    function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+周囲の敵からのスキル効果[周囲2マスの敵は、戦闘中...]
+applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+        if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+            targetUnit.battleContext.followupAttackPriorityIncrement++;
+        }
     }
 );
-
-戦闘中バフ(N)
-targetUnit.addAllSpur(N)
-targetUnit.atkSpur += N
-enemyUnit.atkSpur -= N
 
 暗闘
 __applyPreUpdateUnitSpurSkillEffects(targetUnit, enemyUnit, calcPotentialDamage) {
     // 赤への暗闘
     if (enemyUnit.color === ColorType.Red) {
-        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+        targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
     }
-    targetUnit.battleContext.disablesSkillsFromRedEnemiesInCombat = true;
-}
-
-周囲2マス以内の味方は、戦闘中、<ステ>+N
-__addSpurInRange2(targetUnit, allyUnit, calcPotentialDamage) {
-    for (let skillId of allyUnit.enumerateSkills()) {
-        if (!calcPotentialDamage) {
-            switch (skillId) {
-                case XXX.YYY:
-                    targetUnit.atkSpur += N;
-
-周囲3マス以内の味方は、戦闘中、<ステ>+N
-__updateUnitSpur(targetUnit, calcPotentialDamage, ignoresSkillEffectFromAllies, ignoreSkillEffectFromEnemies, feudSkillOwner, enemyUnit) {
-    if (this.__isNear(unit, targetUnit, 3)) {
-        // 3マス以内で発動する戦闘中バフ
-    }
-}
-
-周囲2マス以内に味方がいる時、戦闘中、自身の<ステ>+N
-__addSelfSpurIfAllyAvailableInRange2(targetUnit, skillId, calcPotentialDamage) {
-    if (!calcPotentialDamage) {
-        switch (skillId) {
-            case XXX.YYY:
-                targetUnit.atkSpur += N;
-
-周囲2マス以内の味方は、戦闘中、<バフ以外の効果>
-__applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
-    // <バフ以外の効果>
-}
-
-周囲3マス以内の敵は、戦闘中、<ステータス>-N
-__updateUnitSpur() {
-    for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-        targetUnit.xxxSpur -= N;
-    }
+    targetUnit.battleContext.disablesSkillsFromRedEnemyAlliesInCombat = true;
 }
 
 [暗闘の対象外になる周囲からのスキル効果]
+applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+    }
+);
+もしくは
 __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {}
-
-<ステータス>+N (距離に関係の無い)
-__updateUnitSpur() {}
 
 戦闘開始時、自身(敵)のHPがN%以上なら
 targetUnit.battleContext.restHpPercentage >= N
