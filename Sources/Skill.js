@@ -2836,6 +2836,7 @@ const PassiveB = {
     BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
     SunTwinWing: 1680, // 双姫の陽翼
+    SunTwinWingPlus: 2799, // 双姫の陽翼・神
     MoonTwinWing: 1732, // 双姫の月翼
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
@@ -4645,6 +4646,26 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 双姫の陽翼・神
+{
+    let skillId = PassiveB.SunTwinWingPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addSpursWithoutRes(-4);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                });
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+            }
+        }
+    );
+}
+
 // ニンジンの弓+
 {
     let skillId = Weapon.CarrotBowPlus;
