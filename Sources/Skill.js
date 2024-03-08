@@ -5108,6 +5108,12 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 // <通常効果>
             } else {
                 // <錬成効果>
+                /** @type {Generator<Unit>} */
+                let units = this.enumerateUnitsInTheSameGroupOnMap(skillOwner);
+                let partners = Array.from(units).filter(u => u.isPartner(skillOwner));
+                if (partners.length === 1) {
+                    partners[0].reserveToAddStatusEffect(StatusEffectType.Pathfinder);
+                }
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
                 }
@@ -5119,6 +5125,7 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(5);
                     targetUnit.applyAtkUnity();
                     targetUnit.applySpdUnity();
                     targetUnit.applyDefUnity();
@@ -5126,8 +5133,26 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 }
             } else {
                 // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.applyAtkUnity();
+                    targetUnit.applySpdUnity();
+                    targetUnit.applyDefUnity();
+                    targetUnit.applyResUnity();
+                }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        enemyUnit.addSpursWithoutRes(-4);
+                        enemyUnit.battleContext.setBonusReversals(true, true, true, false);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.1);
+                        });
+                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                    }
                 }
             }
         }
