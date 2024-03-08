@@ -2864,6 +2864,8 @@ const PassiveB = {
     AtkResFarTrace3: 1746, // 攻撃魔防の遠影3
     SpdDefFarTrace3: 2105, // 速さ魔防の遠影3
     SpdResFarTrace3: 1697, // 速さ魔防の遠影3
+    // 近影4
+    SDNearTrace4: 2804, // 速さ守備の近影4
     // 遠影4
     AtkResFarTrace4: 2786, // 攻撃魔防の遠影4
     SpdResFarTrace4: 2733, // 速さ魔防の遠影4
@@ -7234,15 +7236,15 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
     );
 }
 
-// 遠影4
+// 近/遠影4
 {
-    let setSkill = (skillId, spurFunc) => {
+    let setSkill = (skillId, spurFunc, minMove) => {
         canActivateCantoFuncMap.set(skillId, function (unit) {
             // 無条件再移動
             return true;
         });
         calcMoveCountForCantoFuncMap.set(skillId, function () {
-            return this.restMoveCount === 0 ? 1 : this.restMoveCount;
+            return this.restMoveCount === 0 ? minMove : this.restMoveCount;
         });
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
@@ -7255,10 +7257,15 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
             }
         );
     }
+    // 近影
+    // 速さ守備の近影4
+    setSkill(PassiveB.SDNearTrace4, u => u.addSpdDefSpurs(-4), 2);
+
+    // 遠影
     // 攻撃魔防の遠影4
-    setSkill(PassiveB.AtkResFarTrace4, u => u.addAtkResSpurs(-4));
+    setSkill(PassiveB.AtkResFarTrace4, u => u.addAtkResSpurs(-4), 1);
     // 速さ魔防の遠影4
-    setSkill(PassiveB.SpdResFarTrace4, u => u.addSpdResSpurs(-4));
+    setSkill(PassiveB.SpdResFarTrace4, u => u.addSpdResSpurs(-4), 1);
 }
 
 // 雷神の右腕
