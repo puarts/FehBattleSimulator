@@ -4646,6 +4646,57 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 光輝く翼・神
+{
+    let skillId = PassiveC.WingsOfLightPlus;
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.isMythicHero) {
+                let count = this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.isMythicHero);
+                if (count <= 3) {
+                    let amount = MathUtil.ensureMax(this.currentTurn + 3, 8);
+                    targetUnit.addAllSpur(amount);
+                    targetUnit.battleContext.applySkillEffectFromAlliesFuncs.push(
+                        (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) => {
+                            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                                return 0.3;
+                            });
+                        }
+                    );
+                }
+            }
+            if (targetUnit.isInCrossWithOffset(allyUnit, 1)) {
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            /** @type {Generator<Unit>} */
+            let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+            let found = false;
+            for (let unit of units) {
+                if (unit.isMythicHero) {
+                    found = true;
+                    break;
+                }
+                if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+}
+
 // 双姫の陽翼・神
 {
     let skillId = PassiveB.SunTwinWingPlus;

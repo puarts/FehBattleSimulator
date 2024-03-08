@@ -883,6 +883,10 @@ class BattleContext {
         this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
         // 攻撃していれば戦闘後に発生するスキル効果
         this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
+        // 周囲の味方からのスキル効果
+        this.applySkillEffectFromAlliesFuncs = [];
+        // 周囲の敵からのスキル効果[周囲2マスの敵は、戦闘中...]
+        this.applySkillEffectFromEnemyAlliesFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -1084,6 +1088,8 @@ class BattleContext {
         this.applySkillEffectAfterCombatForUnitFuncs = [];
         this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
         this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
+        this.applySkillEffectFromAlliesFuncs = [];
+        this.applySkillEffectFromEnemyAlliesFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
