@@ -746,11 +746,7 @@ noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 resetMaxSpecialCountFuncMap.set(skillId,
     function () {
         // 特殊錬成の場合奥義が発動しやすい
-        if (this.isWeaponSpecialRefined) {
-            return -1;
-        } else {
-            return 0;
-        }
+        return this.isWeaponSpecialRefined ? -1 : 0;
     }
 );
 もしくは

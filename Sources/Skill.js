@@ -5079,19 +5079,6 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // 極光のブレス
 {
     let skillId = Weapon.AuroraBreath;
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (!targetUnit.isWeaponRefined) {
@@ -5106,10 +5093,43 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 }
             } else {
                 // <錬成効果>
+                targetUnit.addSpursWithoutSpd(6);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                targetUnit.battleContext.reducesCooldownCount = true;
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addSpursWithoutSpd(4);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            let status = DamageCalculatorWrapper.__getRes(defUnit, atkUnit, isPrecombat);
+                            targetUnit.battleContext.additionalDamageOfFirstAttack += Math.trunc(status * 0.15);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                        });
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            // 魔防参照
+                            return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                        });
+                        targetUnit.battleContext.healedHpAfterCombat += 7;
+                    }
                 }
             }
+        }
+    );
+    resetMaxSpecialCountFuncMap.set(skillId,
+        function () {
+            // 特殊錬成の場合奥義が発動しやすい
+            return this.isWeaponSpecialRefined ? -1 : 0;
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (!defUnit.isWeaponSpecialRefined) {
+                return;
+            }
+            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
         }
     );
 }
