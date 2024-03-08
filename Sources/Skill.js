@@ -5167,6 +5167,16 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 // <通常効果>
             } else {
                 // <錬成効果>
+                /** @type {Generator<Unit>} */
+                let nearestEnemies = this.__findNearestEnemies(skillOwner, 5);
+                for (let nearestEnemy of nearestEnemies) {
+                    /** @type {Generator<Unit>} */
+                    let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true);
+                    for (let enemy of enemies) {
+                        enemy.reserveToApplyDebuffs(0, -7, 0, -7);
+                        enemy.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    }
+                }
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
                 }
@@ -5176,9 +5186,16 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
     calcFixedAddDamageFuncMap.set(skillId,
         function (atkUnit, defUnit, isPrecombat) {
             if (!atkUnit.isWeaponRefined) {
-                let value = 0;
-                value = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                if (defUnit.hasNegativeStatusEffect()) {
+                    let value = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                }
+            } else {
+                if (atkUnit.hasPositiveStatusEffect(defUnit) ||
+                    defUnit.hasNegativeStatusEffect()) {
+                    let value = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                }
             }
         }
     );
@@ -5191,8 +5208,21 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 }
             } else {
                 // <錬成効果>
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit) ||
+                    enemyUnit.hasNegativeStatusEffect()) {
+                    targetUnit.addAllSpur(4);
+                }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                                let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
+                                enemyUnit.addSpurs(...debuffs);
+                            }
+                        );
+                    }
                 }
             }
         }
