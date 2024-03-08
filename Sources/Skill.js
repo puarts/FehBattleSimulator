@@ -4563,6 +4563,13 @@ const noEffectOnSpecialCooldownChargeOnSupportSkillSet = new Set();
     }
 }
 
+const StatusIndex = {
+    Atk: 0,
+    Spd: 1,
+    Def: 2,
+    Res: 3,
+}
+
 // TODO: ここから下の内容を別ファイルに分ける
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
@@ -5120,8 +5127,7 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                         targetUnit.addAllSpur(4);
                         targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                             if (isPrecombat) return;
-                            let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
-                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                            this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Spd, 0.2);
                         });
                     }
                 }

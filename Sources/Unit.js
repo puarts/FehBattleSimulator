@@ -4501,8 +4501,16 @@ class Unit extends BattleMapElement {
     __getStatusInCombat(getInvalidatesFunc, getStatusWithoutBuffFunc, getBuffFunc, getInvalidateOwnDebuffFunc) {
         let statusWithoutBuff = getStatusWithoutBuffFunc();
         let buff = this.__getBuffInCombat(getInvalidatesFunc, getBuffFunc, getInvalidateOwnDebuffFunc);
-        let total = statusWithoutBuff + buff;
-        return total;
+        return statusWithoutBuff + buff;
+    }
+
+    getStatusesInCombat(enemyUnit = null) {
+        return [
+            this.getAtkInCombat(enemyUnit),
+            this.getSpdInCombat(enemyUnit),
+            this.getDefInCombat(enemyUnit),
+            this.getResInCombat(enemyUnit),
+        ];
     }
 
     getAtkInCombat(enemyUnit = null) {

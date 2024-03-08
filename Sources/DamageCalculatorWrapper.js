@@ -13045,6 +13045,11 @@ class DamageCalculatorWrapper {
         }
     }
 
+    addFixedDamageByStatus(targetUnit, enemyUnit, index, ratio = 0.2) {
+        let statuses = targetUnit.getStatusesInCombat(enemyUnit);
+        targetUnit.battleContext.additionalDamage += Math.trunc(statuses[index] * ratio);
+    }
+
     static __applyBonusDoubler(targetUnit, enemyUnit) {
         if (targetUnit.hasPanic) {
             return;

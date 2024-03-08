@@ -992,13 +992,14 @@ calcFixedAddDamageFuncMap.set(skillId,
 );
 もしくは
 // 戦闘開始後に呼ばれるので戦闘前奥義は__calcFixedAddDamageに直接実装すること
+// Nダメージ
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-    // Nダメージ
     atkUnit.battleContext.additionalDamage += N;
-    // ステータスの20%(奥義含む。含まない場合はisPrecombatで条件わけする)
-    // if (isPrecombat) return;
-    let status = DamageCalculatorWrapper.__getX(atkUnit, defUnit, isPrecombat);
-    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+});
+// 範囲奥義を除くステータス参照固定ダメージ
+targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+    if (isPrecombat) return;
+    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Spd, 0.2);
 });
 もしくは
 DamageCalculatorWrapper.js
