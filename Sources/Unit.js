@@ -69,6 +69,7 @@ const Hero = {
     DuoSeidr: 1068,
     HarmonizedIgrene: 1079,
     DuoLyon: 1086,
+    HarmonizedChloe: 1097,
 };
 
 function isThiefIndex(heroIndex) {
@@ -514,6 +515,12 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttacks = 0; // 連撃の場合は1,2回目の攻撃(3,4回目が対象外)
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
+        /**
+         * フランなどのチェインガードによる回避効果
+         * @type {[[Unit, Number]]}
+         * */
+        this.damageReductionRatiosByChainGuard = [];
+        this.isChainGuardActivated = false;
         this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
@@ -552,6 +559,9 @@ class BattleContext {
 
         // 戦闘後回復
         this.healedHpAfterCombat = 0;
+
+        // 戦闘後ダメージ
+        this.damageAfterCombat = 0;
 
         // 強化無効
         this.invalidatesAtkBuff = false;
@@ -817,12 +827,12 @@ class BattleContext {
         this.isRefreshActivated = false;
 
         // 暗闘
-        this.disablesSkillsFromEnemiesInCombat = false;
+        this.disablesSkillsFromEnemyAlliesInCombat = false;
         // 特定の色の味方からスキル効果が受けられない
-        this.disablesSkillsFromRedEnemiesInCombat = false;
-        this.disablesSkillsFromBlueEnemiesInCombat = false;
-        this.disablesSkillsFromGreenEnemiesInCombat = false;
-        this.disablesSkillsFromColorlessEnemiesInCombat = false;
+        this.disablesSkillsFromRedEnemyAlliesInCombat = false;
+        this.disablesSkillsFromBlueEnemyAlliesInCombat = false;
+        this.disablesSkillsFromGreenEnemyAlliesInCombat = false;
+        this.disablesSkillsFromColorlessEnemyAlliesInCombat = false;
 
         // 条件判定のための値を使い回すための値
         // 1攻撃の中で使い回す想定で1ターン1回の行動が行われたかなどの保存するべきフラグには使用しない
@@ -916,6 +926,8 @@ class BattleContext {
         this.damageReductionRatioOfFirstAttacks = 0;
         this.damageReductionRatioOfConsecutiveAttacks = 0;
         this.damageReductionRatioOfFollowupAttack = 0;
+        this.damageReductionRatiosByChainGuard = [];
+        this.isChainGuardActivated = false;
         this.damageReductionValueOfFollowupAttack = 0;
         this.damageReductionValueOfFirstAttacks = 0;
         this.damageReductionValueOfSpecialAttack = 0;
@@ -1007,6 +1019,7 @@ class BattleContext {
         this.invalidatesHeal = false;
         this.nullInvalidatesHealRatio = 0;
         this.healedHpAfterCombat = 0;
+        this.damageAfterCombat = 0;
         this.isAdvantageForColorless = false;
         this.additionalDamageOfSpecial = 0;
         this.rateOfAtkMinusDefForAdditionalDamage = 0;
@@ -1046,11 +1059,11 @@ class BattleContext {
         this.invalidatesDefensiveTerrainEffect = false;
         this.invalidatesSupportEffect = false;
         this.isRefreshActivated = false;
-        this.disablesSkillsFromEnemiesInCombat = false;
-        this.disablesSkillsFromRedEnemiesInCombat = false;
-        this.disablesSkillsFromBlueEnemiesInCombat = false;
-        this.disablesSkillsFromGreenEnemiesInCombat = false;
-        this.disablesSkillsFromColorlessEnemiesInCombat = false;
+        this.disablesSkillsFromEnemyAlliesInCombat = false;
+        this.disablesSkillsFromRedEnemyAlliesInCombat = false;
+        this.disablesSkillsFromBlueEnemyAlliesInCombat = false;
+        this.disablesSkillsFromGreenEnemyAlliesInCombat = false;
+        this.disablesSkillsFromColorlessEnemyAlliesInCombat = false;
         this.condValueMap.clear();
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
@@ -4310,6 +4323,11 @@ class Unit extends BattleMapElement {
         this.posY = y;
     }
 
+    setFromPos(x, y) {
+        this.fromPosX = x;
+        this.fromPosY = y;
+    }
+
     getTriangleAdeptAdditionalRatio() {
         if (this.passiveA === PassiveA.Duality) {
             return 0;
@@ -5945,15 +5963,21 @@ class Unit extends BattleMapElement {
     }
 
 
-    /// ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
-    /// 例えば縦3列の場合はoffset=1, 5列の場合はoffset=2。
-    isInClossWithOffset(unit, offset) {
+    /**
+     * ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
+     * 例えば縦3列の場合はoffset=1, 5列の場合はoffset=2。
+     * @param {Unit} unit
+     * @param {number} offset 3x3の場合1
+     */
+    isInCrossWithOffset(unit, offset) {
         return (unit.posX - offset <= this.posX && this.posX <= unit.posX + offset)
             || (unit.posY - offset <= this.posY && this.posY <= unit.posY + offset);
     }
 
-    /// 自身が指定したユニットの十字方向にいるかどうかを取得します。
-    isInClossOf(unit) {
+    /**
+     * 自身が指定したユニットの十字方向にいるかどうかを取得します。
+     */
+    isInCrossOf(unit) {
         return this.posX === unit.posX || this.posY === unit.posY;
     }
 

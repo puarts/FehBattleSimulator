@@ -178,10 +178,10 @@ describe('Test feud skills', () => {
       expect(defUnit.defWithSkills).toBe(30);
 
       // 暗闘効果が入らないこと
-      expect(atkUnit.battleContext.disablesSkillsFromEnemiesInCombat).toBe(false);
-      expect(atkUnit.battleContext.disablesSkillsFromRedEnemiesInCombat).toBe(false);
-      expect(atkUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat).toBe(false);
-      expect(atkUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromRedEnemyAlliesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromBlueEnemyAlliesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromGreenEnemyAlliesInCombat).toBe(false);
       expect(result.atkUnit_normalAttackDamage).toBe(6);
     });
 
@@ -202,10 +202,10 @@ describe('Test feud skills', () => {
       expect(defUnit.defWithSkills).toBe(30);
 
       // 赤の暗闘効果だけが入ること
-      expect(atkUnit.battleContext.disablesSkillsFromEnemiesInCombat).toBe(false);
-      expect(atkUnit.battleContext.disablesSkillsFromRedEnemiesInCombat).toBe(true);
-      expect(atkUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat).toBe(false);
-      expect(atkUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromRedEnemyAlliesInCombat).toBe(true);
+      expect(atkUnit.battleContext.disablesSkillsFromBlueEnemyAlliesInCombat).toBe(false);
+      expect(atkUnit.battleContext.disablesSkillsFromGreenEnemyAlliesInCombat).toBe(false);
 
       expect(result.atkUnit_normalAttackDamage).toBe(10);
     });

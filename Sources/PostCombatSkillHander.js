@@ -95,8 +95,6 @@ class PostCombatSkillHander {
             }
             this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit);
         }
-        // 戦闘後のタイミング終了
-        g_appData.map.applyReservedDivineVein();
 
         if (result.atkUnit_actualTotalAttackCount > 0) {
             this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(atkUnit, defUnit);
@@ -107,6 +105,11 @@ class PostCombatSkillHander {
             this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit);
         }
         this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit, result.defUnit_actualTotalAttackCount);
+
+        // BattleContextに記録された回復・ダメージの予約
+        for (let unit of this.enumerateAllUnitsOnMap()) {
+            this.__reserveHealOrDamageAfterCombatForUnit(unit);
+        }
 
         // 不治の幻煙による回復無効化
         {
@@ -132,6 +135,11 @@ class PostCombatSkillHander {
                 unit.applyReservedHp(true);
             }
         }
+
+        // 戦闘後のタイミング終了
+        // TODO: このタイミングで良いか検証する(アニメーションを見る限り回復・ダメージの後に天脈付与)
+        // 切り込みなどの前に天脈が付与(アニメーションではほぼ同時)
+        g_appData.map.applyReservedDivineVein();
     }
 
 
@@ -312,7 +320,6 @@ class PostCombatSkillHander {
         for (let func of targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs) {
             func(targetUnit, enemyUnit);
         }
-        targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
         for (let skillId of enemyUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveS.GoeiNoGuzo:
@@ -384,29 +391,6 @@ class PostCombatSkillHander {
                             if (found) {
                                 targetUnit.reserveHeal(7);
                             }
-                        }
-                    }
-                    break;
-                case Special.HolyPanic:
-                    if (targetUnit.battleContext.isSpecialActivated) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
-                            unit.applyDebuffs(-6, -6, 0, 0);
-                            unit.addStatusEffect(StatusEffectType.Panic);
-                        }
-                    }
-                    break;
-                case Special.LightsRestraint:
-                    if (targetUnit.battleContext.isSpecialActivated) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
-                            unit.increaseSpecialCount(1);
-                            unit.addStatusEffect(StatusEffectType.Guard);
-                        }
-                    }
-                    break;
-                case Special.HolyPressure:
-                    if (targetUnit.battleContext.isSpecialActivated) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                            unit.addStatusEffect(StatusEffectType.Gravity);
                         }
                     }
                     break;
@@ -801,6 +785,20 @@ class PostCombatSkillHander {
             }
         }
     }
+
+    /**
+     * @param  {Unit} targetUnit
+     */
+    __reserveHealOrDamageAfterCombatForUnit(targetUnit) {
+        if (targetUnit.isAlive) {
+            targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
+            targetUnit.reserveTakeDamage(targetUnit.battleContext.damageAfterCombat);
+            if (targetUnit.battleContext.isChainGuardActivated) {
+                targetUnit.reserveTakeDamage(1);
+            }
+        }
+    }
+
     __applyAttackSkillEffectForDefenseAfterCombat(defUnit, atkUnit) {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
@@ -913,6 +911,15 @@ class PostCombatSkillHander {
             func(attackUnit, attackTargetUnit);
         }
         for (let skillId of attackUnit.enumerateSkills()) {
+            let funcMap = applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, attackUnit, attackTargetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.Kvasir:
                     if (attackUnit.battleContext.restHpPercentage >= 25) {

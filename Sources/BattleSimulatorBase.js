@@ -1052,9 +1052,14 @@ class BattleSimmulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.HarmonizedChloe:
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Incited);
+                this.__applySkillEffectToSameOriginUnits(duoUnit, u => u.reduceSpecialCount(2));
+                break;
             case Hero.DuoLyon:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
-                    if (unit.isInClossOf(duoUnit)) {
+                    if (unit.isInCrossOf(duoUnit)) {
                         if (g_appData.gameMode !== GameMode.SummonerDuels) {
                             unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
                         } else {
@@ -1111,10 +1116,10 @@ class BattleSimmulatorBase {
                 break;
             case Hero.DuoShamir:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
-                    if (this.__isInCross(unit, duoUnit, 1, 1)) {
+                    if (this.__isInRowColumn(unit, duoUnit, 1, 1)) {
                         unit.addStatusEffect(StatusEffectType.Gravity);
                     }
-                    if (this.__isInCross(unit, duoUnit, 5, 5)) {
+                    if (this.__isInRowColumn(unit, duoUnit, 5, 5)) {
                         unit.addStatusEffect(StatusEffectType.Feud);
                     }
                 }
@@ -1126,7 +1131,7 @@ class BattleSimmulatorBase {
                 break;
             case Hero.DuoMark:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
-                    if (this.__isInCross(unit, duoUnit, 3, 3)) {
+                    if (this.__isInRowColumn(unit, duoUnit, 3, 3)) {
                         unit.addStatusEffect(StatusEffectType.Isolation);
                         unit.addStatusEffect(StatusEffectType.Guard);
                         unit.increaseSpecialCount(2);
@@ -1509,8 +1514,14 @@ class BattleSimmulatorBase {
         updateAllUi();
     }
 
-    // 縦row列と横column列にいるかどうか
-    __isInCross(unitA, unitB, row, column) {
+    /**
+     * 縦row列と横column列にいるかどうかを返す
+     * @param {Unit} unitA
+     * @param {Unit} unitB
+     * @param {number} row
+     * @param {number} column
+     */
+    __isInRowColumn(unitA, unitB, row, column) {
         let rowDiff = (row - 1) / 2;
         let columnDiff = (column - 1) / 2;
         return Math.abs(unitA.posX - unitB.posX) <= columnDiff ||
@@ -3943,13 +3954,13 @@ class BattleSimmulatorBase {
         return unitA.isWithinSpecifiedDistanceFrom(unitB, nearRange);
     }
 
-    __isInCloss(unitA, unitB) {
-        return unitB.isInClossOf(unitA);
+    __isInCross(unitA, unitB) {
+        return unitB.isInCrossOf(unitA);
     }
 
     // 自身を中心とした縦〇列と横〇列
-    __isInClossWithOffset(unitA, unitB, offset) {
-        return unitB.isInClossWithOffset(unitA, offset);
+    __isInCrossWithOffset(unitA, unitB, offset) {
+        return unitB.isInCrossWithOffset(unitA, offset);
     }
 
     updateCurrentUnitSpur() {
@@ -6443,12 +6454,13 @@ class BattleSimmulatorBase {
         }
         let self = this;
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
-        let command = this.__createCommand(`${unit.id}-s-${assistTargetUnit.id}-${tile.id}`, `${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
+        let func = function () {
             if (unit.isActionDone) {
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
             }
 
+            // サウンド
             switch (unit.supportInfo.assistType) {
                 case AssistType.Refresh:
                     self.audioManager.playSoundEffectImmediately(SoundEffectId.Refresh);
@@ -6466,13 +6478,17 @@ class BattleSimmulatorBase {
                     break;
             }
             if (self.isCommandLogEnabled) {
-                self.writeLogLine(
-                    unit.getNameWithGroup() + "は"
-                    + assistTargetUnit.getNameWithGroup()
-                    + "に" + skillName + "を実行");
+                self.writeLogLine( `${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
             }
             self.applySupportSkill(unit, assistTargetUnit);
-        }, serial, commandType);
+        };
+        let command = this.__createCommand(
+            `${unit.id}-s-${assistTargetUnit.id}-${tile.id}`,
+            `${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`,
+            func,
+            serial,
+            commandType
+        );
         return command;
     }
 
@@ -8142,6 +8158,11 @@ class BattleSimmulatorBase {
         executesTrap = true,
     ) {
         if (targetUnit == null) { return false; }
+        // 途中の処理でfromが書き換わるので退避させる
+        let unitFromX = unit.fromPosX;
+        let unitFromY = unit.fromPosY;
+        let targetUnitFromX = targetUnit.fromPosX;
+        let targetUnitFromY = targetUnit.fromPosY;
         let result = movementAssistCalcFunc(unit, targetUnit, unit.placedTile);
         if (!result.success) {
             return false;
@@ -8179,6 +8200,10 @@ class BattleSimmulatorBase {
         if (movesTargetUnit) {
             moveUnit(targetUnit, result.targetUnitTileAfterAssist, false, false);
         }
+
+        // fromの値を復元する
+        unit.setFromPos(unitFromX, unitFromY);
+        targetUnit.setFromPos(targetUnitFromX, targetUnitFromY);
 
         if (applysMovementSkill) {
             this.__applyMovementAssistSkill(unit, targetUnit);
@@ -8219,8 +8244,8 @@ class BattleSimmulatorBase {
                 case Weapon.RetainersReport:
                     if (unit.isWeaponSpecialRefined) {
                         for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
-                            if (this.__isInCloss(unit, u) ||
-                                this.__isInCloss(targetUnit, u)) {
+                            if (this.__isInCross(unit, u) ||
+                                this.__isInCross(targetUnit, u)) {
                                 u.applyDebuffs(-7, 0, -7, -7);
                                 u.addStatusEffect(StatusEffectType.Guard);
                                 u.addStatusEffect(StatusEffectType.Exposure);
@@ -8537,7 +8562,7 @@ class BattleSimmulatorBase {
                     break;
                 case Weapon.EnvelopingBreath:
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-                        if (this.__isInCloss(unit, skillOwnerUnit) || this.__isInCloss(unit, targetUnit)) {
+                        if (this.__isInCross(unit, skillOwnerUnit) || this.__isInCross(unit, targetUnit)) {
                             unit.applyAtkDebuff(-7);
                             unit.applyResDebuff(-7);
                             unit.addStatusEffect(StatusEffectType.Guard);
@@ -8755,8 +8780,8 @@ class BattleSimmulatorBase {
                 case Weapon.RetainersReport:
                     if (supporterUnit.isWeaponSpecialRefined) {
                         for (let u of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
-                            if (this.__isInCloss(supporterUnit, u) ||
-                                this.__isInCloss(targetUnit, u)) {
+                            if (this.__isInCross(supporterUnit, u) ||
+                                this.__isInCross(targetUnit, u)) {
                                 u.applyDebuffs(-7, 0, -7, -7);
                                 u.addStatusEffect(StatusEffectType.Guard);
                                 u.addStatusEffect(StatusEffectType.Exposure);
@@ -8789,11 +8814,6 @@ class BattleSimmulatorBase {
                     if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
                         targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                         targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
-                    }
-                    break;
-                case Weapon.Uchikudakumono:
-                    if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                     }
                     break;
                 case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
@@ -8895,7 +8915,7 @@ class BattleSimmulatorBase {
 
     __applyFeint(skillOwnerUnit, debuffFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-            if (this.__isInCloss(unit, skillOwnerUnit)) {
+            if (this.__isInCross(unit, skillOwnerUnit)) {
                 debuffFunc(unit);
             }
         }
@@ -8903,7 +8923,7 @@ class BattleSimmulatorBase {
 
     __applyRuse(supporterUnit, targetUnit, debuffFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
-            if (this.__isInCloss(unit, supporterUnit) || this.__isInCloss(unit, targetUnit)) {
+            if (this.__isInCross(unit, supporterUnit) || this.__isInCross(unit, targetUnit)) {
                 debuffFunc(unit);
                 unit.addStatusEffect(StatusEffectType.Guard);
             }

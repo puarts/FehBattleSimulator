@@ -459,6 +459,10 @@ class DamageCalculatorWrapper {
         self.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
         // });
 
+        // 周囲の敵からのスキル効果
+        this.__applySkillEffectFromEnemyAllies(atkUnit, defUnit, calcPotentialDamage);
+        this.__applySkillEffectFromEnemyAllies(defUnit, atkUnit, calcPotentialDamage);
+
         // 暗闘の対象外になる周囲からのスキル効果
         // 主に戦闘外の効果。味方の存在などで発動するスキルも書いて良い（ただし大抵の場合他の場所で書ける）
         self.__applySkillEffectFromAlliesExcludedFromFeud(atkUnit, defUnit, calcPotentialDamage);
@@ -2202,10 +2206,10 @@ class DamageCalculatorWrapper {
     }
 
     /// 自身を中心とした縦〇列と横〇列にいる味方の人数を返します
-    __countAllyUnitsInClossWithOffset(targetUnit, offset) {
+    __countAllyUnitsInCrossWithOffset(targetUnit, offset) {
         let count = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit, false)) {
-            if (unit.isInClossWithOffset(targetUnit, offset)) {
+            if (unit.isInCrossWithOffset(targetUnit, offset)) {
                 ++count;
             }
         }
@@ -4455,7 +4459,7 @@ class DamageCalculatorWrapper {
                 }
                 let count = 0;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-                    if (unit.isInClossWithOffset(targetUnit, 1)) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
                         count++;
                     }
                 }
@@ -6759,7 +6763,7 @@ class DamageCalculatorWrapper {
                     count = 3;
                 }
                 else {
-                    count = self.__countAllyUnitsInClossWithOffset(targetUnit, 1);
+                    count = self.__countAllyUnitsInCrossWithOffset(targetUnit, 1);
                 }
                 if (count >= 1) {
                     let debuffAmount =
@@ -7544,17 +7548,6 @@ class DamageCalculatorWrapper {
                 targetUnit.resSpur += 4;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.AuroraBreath] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.atkSpur += 6;
-                ++targetUnit.battleContext.followupAttackPriorityIncrement;
-            }
-            else {
-                targetUnit.defSpur += 6;
-                targetUnit.resSpur += 6;
-                --enemyUnit.battleContext.followupAttackPriorityDecrement;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.IndignantBow] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
                 targetUnit.atkSpur += 6;
@@ -8029,24 +8022,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.KurokiChiNoTaiken] = (targetUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 targetUnit.battleContext.invalidateAllBuffs();
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.BrutalBreath] = (targetUnit) => {
-            {
-                let count = self.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, () => true);
-                let spur = 0;
-                if (count === 0) {
-                    spur = 5;
-                } else if (count === 1) {
-                    spur = 3;
-                } else if (count === 2) {
-                    spur = 1;
-                }
-                targetUnit.addAllSpur(spur);
-
-                if (count <= 1) {
-                    targetUnit.battleContext.reducesCooldownCount = true;
-                }
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.DarkScripture] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -9203,9 +9178,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Uchikudakumono] = (targetUnit) => {
-            targetUnit.battleContext.refersMinOfDefOrRes = true;
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.FerisiaNoKorizara] = (targetUnit, enemyUnit) => {
             targetUnit.battleContext.refersMinOfDefOrRes = true;
             if (targetUnit.isWeaponSpecialRefined) {
@@ -10217,15 +10189,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.LevinDagger:
-                    if (enemyUnit.hasNegativeStatusEffect()
-                    ) {
-                        targetUnit.atkSpur += 5;
-                        targetUnit.spdSpur += 5;
-                        targetUnit.defSpur += 5;
-                        targetUnit.resSpur += 5;
-                    }
-                    break;
                 case Weapon.VoidTome:
                     if (enemyUnit.getAtkInPrecombat() >= 50
                         || enemyUnit.hasNegativeStatusEffect()
@@ -10358,7 +10321,7 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
             return;
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
@@ -10624,6 +10587,35 @@ class DamageCalculatorWrapper {
         }
     }
 
+    __applySkillEffectFromEnemyAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+            return;
+        }
+        if (enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+
+        if (calcPotentialDamage) {
+            return;
+        }
+        for (let enemyAllyUnit of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit)) {
+            if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAllyUnit)) {
+                continue
+            }
+            for (let skillId of enemyAllyUnit.enumerateSkills()) {
+                let funcMap = applySkillEffectFromEnemyAlliesFuncMap;
+                if (funcMap.has(skillId)) {
+                    let func = funcMap.get(skillId);
+                    if (typeof func === "function") {
+                        func.call(this, targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage);
+                    } else {
+                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    }
+                }
+            }
+        }
+    }
+
     __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
         if (calcPotentialDamage) {
             return;
@@ -10642,7 +10634,7 @@ class DamageCalculatorWrapper {
                 }
                 switch (skillId) {
                     case Weapon.ChargingHorn: // 味方に7回復効果
-                        if (allyUnit.isWeaponSpecialRefined && allyUnit.isInClossWithOffset(targetUnit, 1)) {
+                        if (allyUnit.isWeaponSpecialRefined && allyUnit.isInCrossWithOffset(targetUnit, 1)) {
                             targetUnit.battleContext.healedHpAfterCombat += 7;
                         }
                         break;
@@ -11540,14 +11532,6 @@ class DamageCalculatorWrapper {
                         }
 
                         targetUnit.atkSpur += maxBuff;
-                    }
-                    break;
-                case Weapon.Skinfaxi:
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.applyAtkUnity();
-                        targetUnit.applySpdUnity();
-                        targetUnit.applyDefUnity();
-                        targetUnit.applyResUnity();
                     }
                     break;
                 case Weapon.SparkingTome:
@@ -13971,15 +13955,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.LevinDagger:
-                    {
-                        if (!isPrecombat) {
-                            let value = 0;
-                            value = atkUnit.getResInCombat(defUnit);
-                            atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
-                        }
-                    }
-                    break;
                 case Weapon.SatougashiNoAnki:
                     if (atkUnit.battleContext.initiatesCombat) {
                         let value = 0;
@@ -15439,27 +15414,6 @@ class DamageCalculatorWrapper {
             }
         };
 
-        this._applySpecialSkillEffectFuncDict[Special.HolyPressure] = (targetUnit, enemyUnit) => {
-            // 重圧の聖光
-            {
-                let totalRes = enemyUnit.getResInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
-            }
-        };
-
-        {
-            let func = (targetUnit, enemyUnit) => {
-                {
-                    let totalRes = enemyUnit.getResInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
-                }
-            };
-            // 抑制の聖光
-            this._applySpecialSkillEffectFuncDict[Special.LightsRestraint] = func;
-            // 恐慌の聖光
-            this._applySpecialSkillEffectFuncDict[Special.HolyPanic] = func;
-        }
-
         this._applySpecialSkillEffectFuncDict[Special.CircletOfBalance] = (targetUnit, enemyUnit) => {
             // 聖神と暗黒神の冠
             let totalRes = targetUnit.getResInCombat(enemyUnit);
@@ -15853,13 +15807,18 @@ class DamageCalculatorWrapper {
         return unitA.isWithinSpecifiedDistanceFrom(unitB, nearRange);
     }
 
-    __isInCloss(unitA, unitB) {
-        return unitB.isInClossOf(unitA);
+    __isInCross(unitA, unitB) {
+        return unitB.isInCrossOf(unitA);
     }
 
-    // 自身を中心とした縦〇列と横〇列
-    __isInClossWithOffset(unitA, unitB, offset) {
-        return unitB.isInClossWithOffset(unitA, offset);
+    /**
+     * 自身を中心とした縦〇列と横〇列
+     * @param {Unit} unitA
+     * @param {Unit} unitB
+     * @param {number} offset 3x3の場合1
+     */
+    __isInCrossWithOffset(unitA, unitB, offset) {
+        return unitB.isInCrossWithOffset(unitA, offset);
     }
 
     __isTherePartnerInSpace3(unit) {
@@ -16331,11 +16290,11 @@ class DamageCalculatorWrapper {
             this.updateUnitSpur(unit, calcPotentialDamage);
         }
     }
+
     /**
-     * @param  {Unit} targetUnit
-     * @param  {boolean} calcPotentialDamage=false
-     * @param  {boolean} ignoresSkillEffectFromAllies=false
-     * @param  {boolean} ignoreSkillEffectFromEnemies=false
+     * @param {Unit} targetUnit
+     * @param {boolean} calcPotentialDamage=false
+     * @param {Unit} enemyUnit
      */
     updateUnitSpur(targetUnit, calcPotentialDamage = false, enemyUnit = null) {
         let self = this;
@@ -16363,7 +16322,7 @@ class DamageCalculatorWrapper {
             // 周囲の味方から受ける紋章バフ
             this.__updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit);
             // 周囲の敵から受ける紋章バフ
-            this.__updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit);
+            this.__updateUnitSpurFromEnemyAllies(targetUnit, calcPotentialDamage, enemyUnit);
         }
 
         let isAllyAvailableRange1 = false;
@@ -17045,16 +17004,16 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __updateUnitSpurFromEnemies(targetUnit, calcPotentialDamage, enemyUnit) {
-        let disablesSkillsFromEnemiesInCombat = false;
+    __updateUnitSpurFromEnemyAllies(targetUnit, calcPotentialDamage, enemyUnit) {
+        let disablesSkillsFromEnemyAlliesInCombat = false;
         if (enemyUnit) {
             if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
-                targetUnit.battleContext.disablesSkillsFromEnemiesInCombat) {
-                disablesSkillsFromEnemiesInCombat = true;
+                targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+                disablesSkillsFromEnemyAlliesInCombat = true;
             }
         }
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+            if (disablesSkillsFromEnemyAlliesInCombat && (unit !== enemyUnit)) {
                 continue;
             }
             // 特定の色か確認
@@ -17063,7 +17022,7 @@ class DamageCalculatorWrapper {
             }
 
             for (let skillId of unit.enumerateSkills()) {
-                let funcMap = updateUnitSpurFromEnemiesFuncMap;
+                let funcMap = updateUnitSpurFromEnemyAlliesFuncMap;
                 if (funcMap.has(skillId)) {
                     let func = funcMap.get(skillId);
                     if (typeof func === "function") {
@@ -17108,7 +17067,7 @@ class DamageCalculatorWrapper {
 
         // 周囲4マス
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 4)) {
-            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+            if (disablesSkillsFromEnemyAlliesInCombat && (unit !== enemyUnit)) {
                 continue;
             }
             // 特定の色か確認
@@ -17126,7 +17085,7 @@ class DamageCalculatorWrapper {
 
         // 周囲3マス
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+            if (disablesSkillsFromEnemyAlliesInCombat && (unit !== enemyUnit)) {
                 continue;
             }
             // 特定の色か確認
@@ -17232,7 +17191,7 @@ class DamageCalculatorWrapper {
 
         // 周囲2マス
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-            if (disablesSkillsFromEnemiesInCombat && (unit !== enemyUnit)) {
+            if (disablesSkillsFromEnemyAlliesInCombat && (unit !== enemyUnit)) {
                 continue;
             }
             // 特定の色か確認
@@ -17343,7 +17302,7 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
             return;
         }
-        if (enemyUnit && enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat) {
+        if (enemyUnit && enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
             return;
         }
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
@@ -17454,7 +17413,7 @@ class DamageCalculatorWrapper {
                 this.__addSpurInRange1(targetUnit, unit.passiveS, calcPotentialDamage);
             }
 
-            if (this.__isInCloss(unit, targetUnit)) {
+            if (this.__isInCross(unit, targetUnit)) {
                 // 十字方向
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
@@ -17482,7 +17441,7 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (this.__isInClossWithOffset(unit, targetUnit, 1)) {
+            if (this.__isInCrossWithOffset(unit, targetUnit, 1)) {
                 for (let skillId of unit.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.ChargingHorn: // 味方にバフ
@@ -17514,24 +17473,30 @@ class DamageCalculatorWrapper {
         this.writeDebugLog(message);
     }
 
+    /**
+     * ターゲットが敵の周囲のスキルを無効にできるかどうか
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {Unit} allyUnit
+     */
     __canDisableSkillsFrom(targetUnit, enemyUnit, allyUnit) {
         // 周囲からでなく自分のスキルの場合
         if (enemyUnit === allyUnit) {
             return false;
         }
-        if (targetUnit.battleContext.disablesSkillsFromRedEnemiesInCombat &&
+        if (targetUnit.battleContext.disablesSkillsFromRedEnemyAlliesInCombat &&
             allyUnit.color === ColorType.Red) {
             return true;
         }
-        if (targetUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat &&
+        if (targetUnit.battleContext.disablesSkillsFromBlueEnemyAlliesInCombat &&
             allyUnit.color === ColorType.Blue) {
             return true;
         }
-        if (targetUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat &&
+        if (targetUnit.battleContext.disablesSkillsFromGreenEnemyAlliesInCombat &&
             allyUnit.color === ColorType.Green) {
             return true;
         }
-        if (targetUnit.battleContext.disablesSkillsFromColorlessEnemiesInCombat &&
+        if (targetUnit.battleContext.disablesSkillsFromColorlessEnemyAlliesInCombat &&
             allyUnit.color === ColorType.Colorless) {
             return true;
         }
@@ -17545,46 +17510,46 @@ class DamageCalculatorWrapper {
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case Captain.AdroitCaptain:
-                    targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                    targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                     break;
                 case Weapon.Queensblade:
-                    targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
-                    enemyUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                    targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
+                    enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                     break;
                 case Weapon.ShikkyuMyurugure:
                     if (targetUnit.isWeaponRefined) {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) || calcPotentialDamage) {
-                            targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                            targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                         }
                     }
                     break;
                 case PassiveC.ImpenetrableDark:
                 case PassiveC.ImpenetrableVoid:
-                    targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                    targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                     break;
                 case PassiveC.RedFeud3:
                     if (enemyUnit.color === ColorType.Red) {
-                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                        targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                     }
-                    targetUnit.battleContext.disablesSkillsFromRedEnemiesInCombat = true;
+                    targetUnit.battleContext.disablesSkillsFromRedEnemyAlliesInCombat = true;
                     break;
                 case PassiveC.BlueFeud3:
                     if (enemyUnit.color === ColorType.Blue) {
-                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                        targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                     }
-                    targetUnit.battleContext.disablesSkillsFromBlueEnemiesInCombat = true;
+                    targetUnit.battleContext.disablesSkillsFromBlueEnemyAlliesInCombat = true;
                     break;
                 case PassiveC.GreenFeud3:
                     if (enemyUnit.color === ColorType.Green) {
-                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                        targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                     }
-                    targetUnit.battleContext.disablesSkillsFromGreenEnemiesInCombat = true;
+                    targetUnit.battleContext.disablesSkillsFromGreenEnemyAlliesInCombat = true;
                     break;
                 case PassiveC.CFeud3:
                     if (enemyUnit.color === ColorType.Colorless) {
-                        targetUnit.battleContext.disablesSkillsFromEnemiesInCombat = true;
+                        targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
                     }
-                    targetUnit.battleContext.disablesSkillsFromColorlessEnemiesInCombat = true;
+                    targetUnit.battleContext.disablesSkillsFromColorlessEnemyAlliesInCombat = true;
                     break;
             }
         }
