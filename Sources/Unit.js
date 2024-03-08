@@ -1822,6 +1822,10 @@ class Unit extends BattleMapElement {
         return [this.fromPosX, this.fromPosY];
     }
 
+    get statusEvalUnit() {
+        return this.snapshot !== null ? this.snapshot : this;
+    }
+
     /**
      * @param  {StatusType} statusType
      */
@@ -4224,10 +4228,7 @@ class Unit extends BattleMapElement {
     }
 
     get enemyGroupId() {
-        if (this.groupId == UnitGroupType.Ally) {
-            return UnitGroupType.Enemy;
-        }
-        return UnitGroupType.Ally;
+        return this.groupId !== UnitGroupType.Ally ? UnitGroupType.Ally : UnitGroupType.Enemy;
     }
 
     get groupId() {

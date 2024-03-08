@@ -160,6 +160,11 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
     }
 );
+もしくは
+targetUnit.battleContext.applySkillEffectFromAlliesFuncs.push(
+    (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) => {
+    }
+);
 
 周囲の敵からのデバフ効果(牽制など)[周囲2マスの敵は、戦闘中...]
 updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
@@ -182,9 +187,15 @@ updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
 周囲の敵からのスキル効果[周囲2マスの敵は、戦闘中...]
 applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+        // 絶対追撃を受ける
         if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
             targetUnit.battleContext.followupAttackPriorityIncrement++;
         }
+    }
+);
+もしくは
+targetUnit.battleContext.applySkillEffectFromEnemyAlliesFuncs.push(
+    (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) => {
     }
 );
 
@@ -450,6 +461,7 @@ let debuffTotal = enemyUnit.debuffTotal;
 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
     debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
 }
+Math.abs(debuffTotal); // 値が欲しい場合
 
 敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
@@ -458,6 +470,10 @@ targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
         enemyUnit.addSpurs(...debuffs);
     }
 );
+
+ターン開始時、敵軍内で最もXが高い敵
+let getStatusFunc = unit => { unit.statusEvalUnit.getAtkInPrecombat() };
+let units = this.__findMaxStatusUnits(unitGroup, getStatusFunc);
 
 ステータス決定後のバフ効果
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(

@@ -10145,12 +10145,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.JoyfulVows:
-                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                        targetUnit.atkSpur += 6;
-                        targetUnit.resSpur += 6;
-                    }
-                    break;
                 case Weapon.SpiritedSwordPlus:
                 case Weapon.SpiritedAxePlus:
                 case Weapon.SpiritedSpearPlus:
@@ -10358,6 +10352,9 @@ class DamageCalculatorWrapper {
                             }
                             break;
                     }
+                }
+                for (let func of targetUnit.battleContext.applySkillEffectFromAlliesFuncs) {
+                    func(targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
                 }
             }
 
@@ -10612,6 +10609,9 @@ class DamageCalculatorWrapper {
                         console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                     }
                 }
+            }
+            for (let func of targetUnit.battleContext.applySkillEffectFromEnemyAlliesFuncs) {
+                func(targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage);
             }
         }
     }
@@ -14334,11 +14334,6 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.HewnLance:
                         if (atkUnit.isWeaponSpecialRefined) {
-                            --followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.JoyfulVows:
-                        if (atkUnit.hasPositiveStatusEffect(defUnit)) {
                             --followupAttackPriority;
                         }
                         break;

@@ -3274,6 +3274,7 @@ const PassiveC = {
     InevitableDeath: 1420, // 死からは逃れられぬ
     InevitableDeathPlus: 2561, // 死からは逃れられぬ・神
     WingsOfLight: 1622, // 光輝く翼
+    WingsOfLightPlus: 2800, // 光輝く翼・神
     OrdersRestraint: 1724, // 束縛、秩序、安定
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
@@ -4646,6 +4647,77 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 幸せの誓約
+{
+    let skillId = Weapon.JoyfulVows;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    let applyFunc = index => {
+                        let getStatusFunc = unit => unit.statusEvalUnit.getStatusesInPrecombat()[index];
+                        let maxStatusUnits = this.__findMaxStatusUnits(skillOwner.enemyGroupId, getStatusFunc);
+                        for (let maxStatusUnit of maxStatusUnits) {
+                            let zeros = [0, 0, 0, 0];
+                            zeros[index] = -7;
+                            /** @type {Generator<Unit>} */
+                            let units =
+                                this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(maxStatusUnit, 2, true);
+                            for (let unit of units) {
+                                unit.reserveToApplyDebuffs(...zeros);
+                            }
+                            maxStatusUnit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                        }
+                    }
+                    for (let i = 0; i < 4; i++) {
+                        applyFunc(i);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                    targetUnit.addAtkResSpurs(6);
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit) ||
+                    enemyUnit.hasNegativeStatusEffect()) {
+                    targetUnit.addAtkResSpurs(6);
+                    let debuffTotal = enemyUnit.debuffTotal;
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                        debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
+                    }
+                    this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}により弱化の値${debuffTotal}を攻撃に追加`);
+                    targetUnit.atkSpur += Math.abs(debuffTotal);
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                }
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyIn2Spaces(targetUnit)) {
+                        targetUnit.addAtkResSpurs(5);
+                        targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 光輝く翼・神
 {
     let skillId = PassiveC.WingsOfLightPlus;
