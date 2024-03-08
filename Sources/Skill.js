@@ -5085,6 +5085,12 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 // <錬成効果>
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    let count = this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2, () => true);
+                    if (count <= 2) {
+                        skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                        skillOwner.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                    }
                 }
             }
         }
@@ -5102,8 +5108,22 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 }
             } else {
                 // <錬成効果>
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2, () => true);
+                let spur = MathUtil.ensureMin(11 - 2 * count, 4);
+                targetUnit.addAllSpur(spur);
+                targetUnit.battleContext.reducesCooldownCount = true;
+                targetUnit.battleContext.healedHpAfterCombat += 7;
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (enemyUnit.battleContext.initiatesCombat ||
+                        enemyUnit.battleContext.restHpPercentage >= 75) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                            atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+                        });
+                    }
                 }
             }
         }
