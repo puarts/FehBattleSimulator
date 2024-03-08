@@ -5113,26 +5113,21 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // 打ち砕くもの
 {
     let skillId = Weapon.Uchikudakumono;
-    applySkillsAfterRallyForSupporterFuncMap.set(skillId,
-        function (supporterUnit, targetUnit) {
-            if (!supporterUnit.isWeaponRefined) {
-                let isRangedCavalry = targetUnit.moveType === MoveType.Cavalry && targetUnit.isRangedWeaponType();
-                if (!isRangedCavalry) {
-                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
+            if (supporterUnit.isWeaponRefined) {
+                if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForWeapon = true;
                 }
             }
         }
     );
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+    applySkillsAfterRallyForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            let isRangedCavalry = targetUnit.moveType === MoveType.Cavalry && targetUnit.isRangedWeaponType();
+            if (!isRangedCavalry) {
+                targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
             }
         }
     );
@@ -5143,8 +5138,36 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
                 targetUnit.battleContext.refersMinOfDefOrRes = true;
             } else {
                 // <錬成効果>
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    if (targetUnit.battleContext.initiatesCombat ||
+                        this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                        targetUnit.addAllSpur(4);
+                        let debuffTotals = targetUnit.getDebuffTotals(true);
+                        let spurs = debuffTotals.map(s => -MathUtil.ensureMin(6 - Math.abs(s), 0));
+                        spurs[0] = 0;
+                        enemyUnit.addSpurs(...spurs);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        let debuffs = targetUnit.getDebuffTotals();
+                        debuffs[0] = 0;
+                        let isDebuffed = debuffs.some(s => s !== 0);
+                        if (isDebuffed) {
+                            targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                                if (isPrecombat) return;
+                                let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
+                                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                            });
+                        }
+                        targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                            (targetUnit, enemyUnit) => {
+                                enemyUnit.applyDebuffs(0, -6, -6, -6);
+                            }
+                        );
+                    }
                 }
             }
         }

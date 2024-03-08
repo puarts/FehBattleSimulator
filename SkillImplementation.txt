@@ -1171,8 +1171,8 @@ applySkillsAfterRallyForTargetUnitFuncMap.set(skillId,
 __applySkillsAfterRally(supporterUnit, targetUnit) {}
 
 応援を使用した時、自分を行動可能にする(1ターンに1回のみ)
-applySupportSkillFuncMap.set(skillId,
-    function (supporterUnit, targetUnit) {
+applySupportSkillForSupporterFuncMap.set(skillId,
+    function (supporterUnit, targetUnit, supportTile) {
         if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
             supporterUnit.isActionDone = false;
             supporterUnit.isOneTimeActionActivatedForWeapon = true;

@@ -2707,7 +2707,6 @@ class Unit extends BattleMapElement {
             this.getResDebuffTotal(isPrecombat),
         ];
     }
-
     isMeleeWeaponType() {
         return isMeleeWeaponType(this.weaponType);
     }
