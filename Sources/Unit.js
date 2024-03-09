@@ -2351,6 +2351,9 @@ class Unit extends BattleMapElement {
      * @param  {String} value
      */
     fromTurnWideStatusString(value) {
+        if (!value) {
+            return;
+        }
         let splited = value.split(ValueDelimiter);
         let elemCount = splited.length;
         let i = 0;
