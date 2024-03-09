@@ -247,7 +247,19 @@ class PostCombatSkillHander {
 
 
     __applyAttackSkillEffectAfterCombat(attackUnit, attackTargetUnit) {
+        for (let func of attackUnit.battleContext.applyAttackSkillEffectAfterCombatFuncs) {
+            func(attackUnit, attackTargetUnit);
+        }
         for (let skillId of attackUnit.enumerateSkills()) {
+            let funcMap = applyAttackSkillEffectAfterCombatFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, attackUnit, attackTargetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
             switch (skillId) {
                 case Weapon.KyupidNoYaPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {

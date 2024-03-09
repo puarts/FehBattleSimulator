@@ -883,6 +883,12 @@ class BattleContext {
         this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
         // 攻撃していれば戦闘後に発生するスキル効果
         this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
+        // 周囲の味方からのスキル効果
+        this.applySkillEffectFromAlliesFuncs = [];
+        // 周囲の敵からのスキル効果[周囲2マスの敵は、戦闘中...]
+        this.applySkillEffectFromEnemyAlliesFuncs = [];
+        // 攻撃を行った時、戦闘後
+        this.applyAttackSkillEffectAfterCombatFuncs = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -1084,6 +1090,9 @@ class BattleContext {
         this.applySkillEffectAfterCombatForUnitFuncs = [];
         this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
         this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
+        this.applySkillEffectFromAlliesFuncs = [];
+        this.applySkillEffectFromEnemyAlliesFuncs = [];
+        this.applyAttackSkillEffectAfterCombatFuncs = [];
     }
 
     /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
@@ -1814,6 +1823,10 @@ class Unit extends BattleMapElement {
 
     get fromPos() {
         return [this.fromPosX, this.fromPosY];
+    }
+
+    get statusEvalUnit() {
+        return this.snapshot !== null ? this.snapshot : this;
     }
 
     /**
@@ -2697,7 +2710,6 @@ class Unit extends BattleMapElement {
             this.getResDebuffTotal(isPrecombat),
         ];
     }
-
     isMeleeWeaponType() {
         return isMeleeWeaponType(this.weaponType);
     }
@@ -4218,10 +4230,7 @@ class Unit extends BattleMapElement {
     }
 
     get enemyGroupId() {
-        if (this.groupId == UnitGroupType.Ally) {
-            return UnitGroupType.Enemy;
-        }
-        return UnitGroupType.Ally;
+        return this.groupId !== UnitGroupType.Ally ? UnitGroupType.Ally : UnitGroupType.Enemy;
     }
 
     get groupId() {
@@ -4495,8 +4504,16 @@ class Unit extends BattleMapElement {
     __getStatusInCombat(getInvalidatesFunc, getStatusWithoutBuffFunc, getBuffFunc, getInvalidateOwnDebuffFunc) {
         let statusWithoutBuff = getStatusWithoutBuffFunc();
         let buff = this.__getBuffInCombat(getInvalidatesFunc, getBuffFunc, getInvalidateOwnDebuffFunc);
-        let total = statusWithoutBuff + buff;
-        return total;
+        return statusWithoutBuff + buff;
+    }
+
+    getStatusesInCombat(enemyUnit = null) {
+        return [
+            this.getAtkInCombat(enemyUnit),
+            this.getSpdInCombat(enemyUnit),
+            this.getDefInCombat(enemyUnit),
+            this.getResInCombat(enemyUnit),
+        ];
     }
 
     getAtkInCombat(enemyUnit = null) {

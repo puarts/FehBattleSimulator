@@ -160,6 +160,11 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
     }
 );
+もしくは
+targetUnit.battleContext.applySkillEffectFromAlliesFuncs.push(
+    (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) => {
+    }
+);
 
 周囲の敵からのデバフ効果(牽制など)[周囲2マスの敵は、戦闘中...]
 updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
@@ -182,9 +187,15 @@ updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
 周囲の敵からのスキル効果[周囲2マスの敵は、戦闘中...]
 applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+        // 絶対追撃を受ける
         if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
             targetUnit.battleContext.followupAttackPriorityIncrement++;
         }
+    }
+);
+もしくは
+targetUnit.battleContext.applySkillEffectFromEnemyAlliesFuncs.push(
+    (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) => {
     }
 );
 
@@ -450,14 +461,19 @@ let debuffTotal = enemyUnit.debuffTotal;
 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
     debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
 }
+Math.abs(debuffTotal); // 値が欲しい場合
 
-敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)
+敵のステータスが減少。減少値は、敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
         enemyUnit.addSpurs(...debuffs);
     }
 );
+
+ターン開始時、敵軍内で最もXが高い敵
+let getStatusFunc = unit => { unit.statusEvalUnit.getAtkInPrecombat() };
+let units = this.__findMaxStatusUnits(unitGroup, getStatusFunc);
 
 ステータス決定後のバフ効果
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
@@ -518,6 +534,19 @@ applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
     function (attackUnit, attackTargetUnit, attackCount) {
     }
 );
+
+攻撃を行った時、戦闘後、自身の奥義発動カウント+2(自身の奥義発動カウントの最大値は超えない)
+applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
+    function (attackUnit, attackTargetUnit) {
+        attackUnit.specialCount += 2;
+    }
+);
+もしくは
+targetUnit.battleContext.applyAttackSkillEffectAfterCombatFuncs.push(
+    (attackUnit, attackTargetUnit) => {
+        attackUnit.specialCount += 2;
+    }
+)
 
 戦闘後、HP N回復/Nダメージ
 targetUnit.battleContext.healedHpAfterCombat += N;
@@ -746,11 +775,7 @@ noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 resetMaxSpecialCountFuncMap.set(skillId,
     function () {
         // 特殊錬成の場合奥義が発動しやすい
-        if (this.isWeaponSpecialRefined) {
-            return -1;
-        } else {
-            return 0;
-        }
+        return this.isWeaponSpecialRefined ? -1 : 0;
     }
 );
 もしくは
@@ -980,13 +1005,14 @@ calcFixedAddDamageFuncMap.set(skillId,
 );
 もしくは
 // 戦闘開始後に呼ばれるので戦闘前奥義は__calcFixedAddDamageに直接実装すること
+// Nダメージ
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-    // Nダメージ
     atkUnit.battleContext.additionalDamage += N;
-    // ステータスの20%(奥義含む。含まない場合はisPrecombatで条件わけする)
-    // if (isPrecombat) return;
-    let status = DamageCalculatorWrapper.__getX(atkUnit, defUnit, isPrecombat);
-    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+});
+// 範囲奥義を除くステータス参照固定ダメージ
+targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+    if (isPrecombat) return;
+    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Spd, 0.2);
 });
 もしくは
 DamageCalculatorWrapper.js
@@ -1011,6 +1037,13 @@ DamageCalculator.js
 __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     fixedAddDamage += N;
 }
+
+マリア算など
+targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
+    }
+);
 
 固定ダメージ軽減
 targetUnit.battleContext.damageReductionValue += N;
@@ -1159,8 +1192,8 @@ applySkillsAfterRallyForTargetUnitFuncMap.set(skillId,
 __applySkillsAfterRally(supporterUnit, targetUnit) {}
 
 応援を使用した時、自分を行動可能にする(1ターンに1回のみ)
-applySupportSkillFuncMap.set(skillId,
-    function (supporterUnit, targetUnit) {
+applySupportSkillForSupporterFuncMap.set(skillId,
+    function (supporterUnit, targetUnit, supportTile) {
         if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
             supporterUnit.isActionDone = false;
             supporterUnit.isOneTimeActionActivatedForWeapon = true;
@@ -1397,6 +1430,10 @@ function statusEffectTypeToIconFilePath(value) {
 // 不利なステータス異常の場合はNegativeStatusEffectTableに登録すること
 // 有利な場合は不要
 function isNegativeStatusEffect(type) {}
+
+ターン開始時、不利な状態異常を解除
+unit.reserveToResetDebuffs();
+unit.reserveToClearNegativeStatusEffects();
 
 ステータス付与
 Main.js
