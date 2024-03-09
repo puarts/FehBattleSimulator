@@ -1903,6 +1903,9 @@ const Weapon = {
     DaydreamEgg: 2805, // 春に揺蕩う白夢の卵
     SkyHopperEgg: 2807, // 春風舞う天馬兎の卵
     CarrotBowPlus: 2810, // ニンジンの弓+
+
+    // 2024年3月 武器錬成
+    LuckyBow: 2811, // おまじないの弓
 };
 
 const Support = {
@@ -4640,6 +4643,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 const hasPathfinderEffectFuncMap = new Map();
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
+const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4654,6 +4658,66 @@ const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// おまじないの弓
+{
+    let skillId = Weapon.LuckyBow;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
+                        /** @type {Generator<Unit>} */
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                        for (let unit of units) {
+                            unit.reserveToResetDebuffs();
+                            unit.reserveToClearNegativeStatusEffects();
+                            unit.reserveHeal(10);
+                        }
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    targetUnit.addAllSpur(4);
+                    targetUnit.atkSpur += 7;
+                    enemyUnit.atkSpur -= 7;
+                    targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                        (targetUnit, enemyUnit, calcPotentialDamage) => {
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Atk, 0.15);
+                        }
+                    );
+                    targetUnit.battleContext.applyAttackSkillEffectAfterCombatFuncs.push(
+                        (attackUnit, attackTargetUnit) => {
+                            attackUnit.specialCount += 2;
+                        }
+                    )
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        targetUnit.addAllSpur(4);
+                        targetUnit.battleContext.followupAttackPriorityIncrement++;
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 幸せの誓約
 {
     let skillId = Weapon.JoyfulVows;

@@ -535,6 +535,19 @@ applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
     }
 );
 
+攻撃を行った時、戦闘後、自身の奥義発動カウント+2(自身の奥義発動カウントの最大値は超えない)
+applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
+    function (attackUnit, attackTargetUnit) {
+        attackUnit.specialCount += 2;
+    }
+);
+もしくは
+targetUnit.battleContext.applyAttackSkillEffectAfterCombatFuncs.push(
+    (attackUnit, attackTargetUnit) => {
+        attackUnit.specialCount += 2;
+    }
+)
+
 戦闘後、HP N回復/Nダメージ
 targetUnit.battleContext.healedHpAfterCombat += N;
 または
@@ -1025,6 +1038,13 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     fixedAddDamage += N;
 }
 
+マリア算など
+targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
+    }
+);
+
 固定ダメージ軽減
 targetUnit.battleContext.damageReductionValue += N;
 
@@ -1410,6 +1430,10 @@ function statusEffectTypeToIconFilePath(value) {
 // 不利なステータス異常の場合はNegativeStatusEffectTableに登録すること
 // 有利な場合は不要
 function isNegativeStatusEffect(type) {}
+
+ターン開始時、不利な状態異常を解除
+unit.reserveToResetDebuffs();
+unit.reserveToClearNegativeStatusEffects();
 
 ステータス付与
 Main.js

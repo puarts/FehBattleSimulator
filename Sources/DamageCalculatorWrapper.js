@@ -12075,25 +12075,6 @@ class DamageCalculatorWrapper {
             }
         }
 
-        // マリア算（アスク、ディミトリ算）
-        function mariaCalc(ratio = 0.20) {
-            applyFixedValueSkill(targetUnit.getDefInCombat(enemyUnit), ratio);
-        }
-        // クロエ算（魔防マリア算）
-        function resMariaCalc() {
-            applyFixedValueSkill(targetUnit.getResInCombat(enemyUnit));
-        }
-        // ディミトリ算（攻撃マリア算）
-        function atkMariaCalc() {
-            applyFixedValueSkill(targetUnit.getAtkInCombat(enemyUnit));
-        }
-
-        // ステータスによる固定ダメージ増加・軽減
-        function applyFixedValueSkill(status, ratio = 0.20) {
-            targetUnit.battleContext.additionalDamage += Math.trunc(status * ratio);
-            targetUnit.battleContext.damageReductionValue += Math.trunc(status * ratio);
-        }
-
         {
             for (let skillId of targetUnit.enumerateSkills()) {
                 switch (skillId) {
@@ -12114,12 +12095,12 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.FairFightBlade:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
-                            mariaCalc(0.25);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
                         }
                         break;
                     case Weapon.RadiantAureola:
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                            resMariaCalc();
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Res);
                         }
                         break;
                     case Weapon.BaraNoYari:
@@ -12193,7 +12174,7 @@ class DamageCalculatorWrapper {
                     case Weapon.KouketsuNoSensou:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                                atkMariaCalc();
+                                this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Atk);
                             }
                         }
                         break;
@@ -12241,7 +12222,7 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.DreamingSpear:
                         if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                            resMariaCalc()
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Res);
                         }
                         break;
                     case Weapon.BouryakuNoSenkyu:
@@ -12282,12 +12263,12 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.PastelPoleaxe:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
-                            mariaCalc();
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def);
                         }
                         break;
                     case Weapon.IlluminatingHorn:
                         if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                            mariaCalc();
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def);
                         }
                         break;
                     case Weapon.Tangurisuni:
@@ -12388,7 +12369,7 @@ class DamageCalculatorWrapper {
                     case Weapon.MoonGradivus:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                                mariaCalc();
+                                this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def);
                             }
                         }
                         break;
@@ -13071,6 +13052,13 @@ class DamageCalculatorWrapper {
         if (atkUnit.getEvalSpdInCombat(defUnit) > defUnit.getEvalSpdInCombat(atkUnit)) {
             atkUnit.battleContext.increaseCooldownCountForAttack = true;
         }
+    }
+
+    // ステータスによる固定ダメージ増加・軽減(マリア算など)
+    applyFixedValueSkill(targetUnit, enemyUnit, statusIndex, ratio = 0.20) {
+        let statuses = targetUnit.getStatusesInCombat(enemyUnit);
+        targetUnit.battleContext.additionalDamage += Math.trunc(statuses[statusIndex] * ratio);
+        targetUnit.battleContext.damageReductionValue += Math.trunc(statuses[statusIndex] * ratio);
     }
 
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
