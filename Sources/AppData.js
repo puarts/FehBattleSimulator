@@ -1657,6 +1657,9 @@ class AppData extends UnitManager {
     }
 
     fromTurnWideStatusString(value) {
+        if (!value) {
+            return;
+        }
         let splited = value.split(ValueDelimiter);
         let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.mapKind = Number(splited[i]); ++i; }
