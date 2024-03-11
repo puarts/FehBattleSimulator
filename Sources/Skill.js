@@ -8573,7 +8573,7 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
-            if (enemyUnit.battleContext.restHpPercentage >= 25) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addStatusEffect(StatusEffectType.Vantage);
                 targetUnit.addStatusEffect(StatusEffectType.Dodge);
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 3, true)) {
