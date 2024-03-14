@@ -1911,6 +1911,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=CWjYXGzMhOQ&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=nA5r_NQEhs0&ab_channel=NintendoMobile
     PureWingSpear: 2818, // 純白ウイングスピア
+    SunlightPlus: 2824, // サンライト+
 };
 
 const Support = {
@@ -4715,6 +4716,7 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
         );
     }
     setSkill(Weapon.SeasideParasolPlus);
+    setSkill(Weapon.SunlightPlus);
 }
 
 // 信条
