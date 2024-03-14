@@ -1906,6 +1906,11 @@ const Weapon = {
 
     // 2024年3月 武器錬成
     LuckyBow: 2811, // おまじないの弓
+
+    // 新英雄召喚（響心シーダ＆開花マリク）
+    // https://www.youtube.com/watch?v=CWjYXGzMhOQ&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=nA5r_NQEhs0&ab_channel=NintendoMobile
+    PureWingSpear: 2818, // 純白ウイングスピア
 };
 
 const Support = {
@@ -4658,6 +4663,49 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 純白ウイングスピア
+{
+    let skillId = Weapon.PureWingSpear;
+    // 重装、騎馬特効
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時、周囲2マス以内に味方がいる時、自分と周囲2マス以内の味方の攻撃、速さ＋6、「周囲2マス以内の味方の隣接マスに移動可能」を付与（1ターン）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.__isThereAllyIn2Spaces(skillOwner, 2)) {
+                /** @type {Generator<Unit>} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    unit.reserveToApplyBuffs(6, 6, 0, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、戦闘中、攻撃、速さ、守備、魔防が周囲3マス以内の味方の数✕3＋5だけ増加（最大14）、
+            // 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）（範囲奥義を除く）、
+            // 攻撃を受けた時のダメージを30%軽減（範囲奥義を除く）、かつ
+            // 戦闘中、自分の攻撃でダメージを与えた時、HPが回復回復値は、敵が重装、騎馬の時は14、そうでない時は7（与えたダメージが0でも効果は発動）
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+                let isArmorOrCavalry =
+                    enemyUnit.moveType === MoveType.Armor ||
+                    enemyUnit.moveType === MoveType.Cavalry;
+                let n = isArmorOrCavalry ? 14 : 7;
+                targetUnit.battleContext.healedHpByAttack += n;
+            }
+        }
+    );
+}
+
 // おまじないの弓
 {
     let skillId = Weapon.LuckyBow;
