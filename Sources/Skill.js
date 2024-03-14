@@ -3338,6 +3338,7 @@ const PassiveX = {
     AtkOathEcho: 2612, // 響・攻撃の信義
     FleetingEcho: 2663, // 響・飛燕の離撃
     SoaringEcho: 2787, // 響・飛走の先導
+    GuardEcho: 2822, // 響・キャンセル
 };
 
 // 隊長スキル
@@ -4666,6 +4667,24 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 響・キャンセル
+{
+    let skillId = PassiveX.GuardEcho;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        // 戦闘開始時、自身のHPが25%以上なら、戦闘中、敵の奥義発動カウント変動量－1（同系統効果複数時、最大値適用）、
+        // かつ敵から攻撃された時、最初に受けた攻撃と2回攻撃のダメージを20%軽減
+        // （最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.battleContext.reducesCooldownCount = true;
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.2, enemyUnit);
+                }
+            }
+        }
+    );
+}
+
 // 海辺の日傘+
 {
     let setSkill = skillId => {
