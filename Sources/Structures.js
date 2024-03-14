@@ -924,6 +924,9 @@ class BreakableWall extends DefenceStructureBase {
     }
 
     fromPerTurnStatusString(value) {
+        if (!value) {
+            return;
+        }
         let result = super.__fromPerTurnStatusStringImpl(value);
         let splited = result[0];
         let i = result[1];

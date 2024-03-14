@@ -2418,6 +2418,9 @@ class Unit extends BattleMapElement {
     }
 
     fromPerTurnStatusString(value) {
+        if (!value) {
+            return;
+        }
         let splited = value.split(ValueDelimiter);
         let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.ownerType = Number(splited[i]); ++i; }
