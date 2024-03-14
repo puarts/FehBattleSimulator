@@ -2707,6 +2707,7 @@ const PassiveB = {
     SealSpdDef2: 855,
     SealSpdRes1: 1466,
     SealSpdRes2: 1389, // 速さ魔防封じ2
+    SealSpdRes3: 2829, // 速さ魔防封じ3
 
     KoriNoHuin: 660, // 氷の封印
     ChillingSeal2: 1692, // 氷の封印・承
@@ -4674,6 +4675,43 @@ const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 2種類封じ3
+{
+    let setSkill = (skillId, spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 戦闘中、敵の速さ、魔防一3、
+                enemyUnit.addSpurs(...spurIndices.map(n => n * -spurAmount));
+
+                // さらに、敵の速さ、魔防がそれぞれ減少
+                // 減少値は、6一敵が受けているその能力値の弱化の値
+                // （最低値O、
+                // 敵が弱化無効の効果を発動していても減少）
+                let debuffValues = enemyUnit.getDebuffTotals(true).map(n => Math.abs(n));
+                let spurFunc = (n, i) => -n * MathUtil.ensureMin(spurMax - debuffValues[i], 0);
+                enemyUnit.addSpurs(...spurIndices.map(spurFunc));
+
+                // 敵が速さ、魔防のいずれかの弱化を受けている時、
+                // 戦闘中、敵の奥義発動カウント変動量ー1
+                // （同系統効果複数時、最大値適用）
+                let debuffTotals = enemyUnit.debuffTotals;
+                let areDebuffedSomeStatuses = spurIndices.some((n, i) => n !== 0 && debuffTotals[i] < 0);
+                if (areDebuffedSomeStatuses) {
+                    targetUnit.battleContext.reducesCooldownCount = true;
+                }
+            }
+        );
+        // 戦闘後、敵の速さ、魔防－6（敵の次回行動終了時まで）
+        applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+            function(targetUnit, enemyUnit) {
+                enemyUnit.applyDebuffs(...spurIndices.map(n => n * -debuffAmount));
+            }
+        );
+    }
+    // 速さ魔防
+    setSkill(PassiveB.SealSpdRes3, [0, 1, 0, 1]);
+}
+
 // 神聖風
 {
     let skillId = Special.SacredWind;

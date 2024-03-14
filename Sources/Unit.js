@@ -2650,6 +2650,11 @@ class Unit extends BattleMapElement {
         }
         return this.resDebuff;
     }
+
+    /**
+     * 弱化無効、パニックを考慮したデバフを返す(デバフ時に負の値)
+     * @returns {number[]}
+     */
     get debuffTotals() {
         return [
             this.atkDebuffTotal,
