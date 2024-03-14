@@ -1912,6 +1912,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=nA5r_NQEhs0&ab_channel=NintendoMobile
     PureWingSpear: 2818, // 純白ウイングスピア
     SunlightPlus: 2824, // サンライト+
+    LightburstTome: 2825, // 激雷の書
 };
 
 const Support = {
@@ -4670,6 +4671,72 @@ const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 激雷の書
+{
+    let skillId = Weapon.LightburstTome;
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // ターン開始時、自身のHPが25%以上なら、自分と周囲2マス以内の味方の攻撃、速さ、守備＋6、
+    // 「自分が移動可能な地形を平地のように移動可能」
+    // を付与（1ターン）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                /** @type {Generator<Unit>} */
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    unit.reserveToApplyBuffs(6, 6, 6, 0);
+                    unit.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                }
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上の時、かつ攻撃時に発動する奥義を装備している時、
+            // 戦闘中、自分の最初の攻撃前に奥義発動カウントー1
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                }
+                // 戦闘開始時、自身のHPが25%以上なら、戦闘中、敵の攻撃、速さ、魔防が
+                // 16一敵の奥義発動カウントの最大値x2だけ減少（最低8、敵が奥義を装備していない時も8）、
+                let amount = MathUtil.ensureMin(16 - enemyUnit.maxSpecialCount * 2, 8);
+                if (enemyUnit.special === Special.None) {
+                    amount = 8;
+                }
+                enemyUnit.addSpursWithoutDef(-amount);
+                // 自分が最初に受けた攻撃のダメージを30%軽減し、軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。
+                // 軽減値はスキルによる軽減効果も含む）、
+                // 最初に受けた攻撃のダメージを軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                // ダメージ軽減分を保存
+                targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                        if (!context.isFirstAttack(atkUnit)) return;
+                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                    }
+                );
+                // 攻撃ごとの固定ダメージに軽減した分を加算
+                targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                        let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                        return addDamage;
+                    }
+                    return 0;
+                });
+                // 戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 祝福
 {
     let setSkill = (skillId, buffFunc) => {
