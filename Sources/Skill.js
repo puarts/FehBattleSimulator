@@ -3124,6 +3124,7 @@ const PassiveC = {
 
     // 信条
     AtkSpdPledge: 2559, // 攻撃速さの信条
+    DefResPledge: 2821, // 守備魔防の信条
 
     // 開放
     AtkOpening3: 779,
@@ -4665,6 +4666,32 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 信条
+{
+    let setSkill = (skillId, spurIndices) => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                    skillOwner.reserveToApplyBuffs(...spurIndices.map(n => n * 6));
+                    skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack)
+                }
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                    targetUnit.addSpurs(...spurIndices.map(n => n * 3))
+                }
+            }
+        );
+    }
+    // 攻撃速さの信条
+    setSkill(PassiveC.AtkSpdPledge, [1, 1, 0, 0]);
+    // 守備魔防の信条
+    setSkill(PassiveC.DefResPledge, [0, 0, 1, 1]);
+}
+
 // 愛する人がいますか
 {
     let skillId = PassiveB.BelieveInLove;

@@ -281,12 +281,6 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 }
                 break;
-            case PassiveC.AtkSpdPledge:
-                if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
-                    skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack)
-                }
-                break;
             case PassiveC.TipTheScales: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
