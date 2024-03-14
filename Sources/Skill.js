@@ -2365,6 +2365,7 @@ const PassiveA = {
 
     Kyokazohuku3: 849, // 強化増幅3
     BonusDoubler4: 2592, // 強化増幅4
+    DBonusDoubler: 2819, // 遠反・強化増幅
 
     YaibaNoSession3: 1111, // 刃のセッション
     TateNoSession3: 1107, // 盾のセッション
@@ -4663,6 +4664,24 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 遠反・強化増幅
+{
+    let skillId = PassiveA.DBonusDoubler;
+    // 敵から攻撃された時、距離に関係なく反撃する戦闘中、攻撃、速さ、守備、魔防が、自分と周囲2マス以内にいる味方のうち
+    // 強化が最も高い値だけ上昇（能力値ごとに計算）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                    let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                    targetUnit.addSpurs(...amounts);
+                }
+            );
+        }
+    );
+}
+
 // 純白ウイングスピア
 {
     let skillId = Weapon.PureWingSpear;
