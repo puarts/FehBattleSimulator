@@ -2143,6 +2143,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    SacredWind: 2828, // 神聖風
     LodestarRush: 2758, // スターラッシュ
     ArmsOfTheThree: 2749, // 三雄の双刃
     TimeIsLight: 2672, // 時は光
@@ -4673,6 +4674,44 @@ const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 神聖風
+{
+    let skillId = Special.SacredWind;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count2Specials.push(skillId);
+    inheritableCount2Specials.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 速さの40%を奥義ダメージに加算
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            // 奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit) {
+            if (attackUnit.battleContext.isSpecialActivated) {
+                // 奥義を発動した戦闘後、自分と全味方のHP20回復（一つの戦闘で複数回発動時、回復効果は重複しない）
+                // （その戦闘で自分のHPが0になっても効果は発動）、
+                /** @type {[Unit]} */
+                let units = this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true);
+                for (let unit of units) {
+                    if (unit.isDead) continue;
+                    unit.heal(20);
+                }
+                // 自分に【再移動（1）】を付与（1ターン）
+                attackUnit.addStatusEffect(StatusEffectType.Canto1);
+            }
+        }
+    );
+}
+
 // 柔風エクスカリバー
 {
     let skillId = Weapon.TenderExcalibur;
