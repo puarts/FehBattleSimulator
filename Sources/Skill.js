@@ -1913,6 +1913,7 @@ const Weapon = {
     PureWingSpear: 2818, // 純白ウイングスピア
     SunlightPlus: 2824, // サンライト+
     LightburstTome: 2825, // 激雷の書
+    TenderExcalibur: 2827, // 柔風エクスカリバー
 };
 
 const Support = {
@@ -4672,6 +4673,47 @@ const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 柔風エクスカリバー
+{
+    let skillId = Weapon.TenderExcalibur;
+    // 飛行特効
+    // 奥義が発動しやすい（発動カウントー1）
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防＋5、
+                targetUnit.addAllSpur(5);
+                // さらに、攻撃、速さが、
+                // 9-HPが40%以下の味方の数だけ増加（最低0）、
+                let count = 0;
+                /** @type {Generator<Unit>} */
+                let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                for (let unit of units) {
+                    if (unit.battleContext.restHpPercentage <= 40) {
+                        count++;
+                    }
+                }
+                let amount = MathUtil.ensureMin(9 - count, 0);
+                targetUnit.addAtkSpdSpurs(amount);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                // 最初に受けた攻撃と2回攻撃のダメージを30%軽減
+                // （最初に受けた攻撃と2回攻撃：
+                // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                // 戦闘開始時、自身のHPが25%以上の時、かつ攻撃時に発動する奥義を装備している時、
+                // 戦闘中、自分の最初の攻撃前に奥義発動カウントー1、自分の最初の追撃前に奥義発動カウントー1
+                if (isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                    targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+                }
+            }
+        }
+    );
+}
+
 // 激雷の書
 {
     let skillId = Weapon.LightburstTome;
