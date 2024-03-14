@@ -420,18 +420,6 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.SeasideParasolPlus:
-                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
-                    unit.reserveToAddStatusEffect(StatusEffectType.Guard);
-                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                        for (let skillId of ally.enumerateSkills()) {
-                            if (SaveSkills.has(skillId)) {
-                                ally.reserveToAddStatusEffect(StatusEffectType.Guard);
-                            }
-                        }
-                    }
-                }
-                break;
             case Weapon.SeafoamSplitter:
                 if (this.__countAlliesWithinSpecifiedSpaces(skillOwner, 1) <= 2) {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);

@@ -3194,14 +3194,6 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.SeasideParasolPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAtkSpdSpurs(5);
-                let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
-                let amount = Math.min(count * 4, 16);
-                enemyUnit.resSpur -= amount;
-            }
-        }
         this._applySkillEffectForUnitFuncDict[PassiveB.SunlightBangle] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 if (targetUnit.battleContext.initiatesCombat) {

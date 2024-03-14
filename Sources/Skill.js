@@ -4666,6 +4666,38 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 海辺の日傘+
+{
+    let setSkill = skillId => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        for (let skillId of ally.enumerateSkills()) {
+                            if (SaveSkills.has(skillId)) {
+                                ally.reserveToAddStatusEffect(StatusEffectType.Guard);
+                            }
+                        }
+                    }
+                }
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    targetUnit.addAtkSpdSpurs(5);
+                    let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                    let amount = Math.min(count * 4, 16);
+                    enemyUnit.resSpur -= amount;
+                }
+            }
+        );
+    }
+    setSkill(Weapon.SeasideParasolPlus);
+}
+
 // 信条
 {
     let setSkill = (skillId, spurIndices) => {
