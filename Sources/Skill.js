@@ -2122,6 +2122,7 @@ const Special = {
     KindledFireBalm: 498, // 業火の祝福
     WindfireBalmPlus: 505, // 業火疾風の祝福+
     WindfireBalm: 504, // 業火疾風の祝福
+    DelugeBalm: 2830, // 疾風静水の祝福
     DelugeBalmPlus: 1507, // 疾風静水の祝福+
     EarthwindBalm: 2485, //  疾風大地の祝福
     EarthwindBalmPlus: 2484, //  疾風大地の祝福+
@@ -4654,6 +4655,7 @@ const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map(
 const hasPathfinderEffectFuncMap = new Map();
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatFuncMap = new Map();
+const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
 //     // ターン開始時スキル
@@ -4668,6 +4670,41 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 祝福
+{
+    let setSkill = (skillId, buffFunc) => {
+        applySpecialSkillEffectWhenHealingFuncMap.set(skillId,
+            function (supporterUnit, targetUnit) {
+                this.__applyBalmSkill(supporterUnit, buffFunc);
+            }
+        );
+    };
+    // 1種祝福
+    setSkill(Special.KindledFireBalm, x => x.applyBuffs(4, 0, 0, 0));
+    setSkill(Special.ShippuNoSyukuhuku, x => x.applyBuffs(0, 4, 0, 0));
+    setSkill(Special.DaichiNoSyukuhuku, x => x.applyBuffs(0, 0, 4, 0));
+    setSkill(Special.SeisuiNoSyukuhuku, x => x.applyBuffs(0, 0, 0, 4));
+
+    // 2種祝福
+    setSkill(Special.WindfireBalm, x => x.applyBuffs(4, 4, 0, 0));
+    setSkill(Special.WindfireBalmPlus, x => x.applyBuffs(6, 6, 0, 0));
+
+    // setSkill(Special.GokaDaichiNoSyukuhuku, x => x.applyBuffs(4, 0, 4, 0));
+    setSkill(Special.GokaDaichiNoSyukuhukuPlus, x => x.applyBuffs(6, 0, 6, 0));
+
+    // setSkill(Special.GokaSeisuiNoSyukuhuku, x => x.applyBuffs(4, 0, 0, 4));
+    setSkill(Special.GokaSeisuiNoSyukuhukuPlus, x => x.applyBuffs(6, 0, 0, 6));
+
+    setSkill(Special.EarthwindBalm, x => x.applyBuffs(0, 4, 4, 0));
+    setSkill(Special.EarthwindBalmPlus, x => x.applyBuffs(0, 6, 6, 0));
+
+    setSkill(Special.DelugeBalm, x => x.applyBuffs(0, 4, 0, 4));
+    setSkill(Special.DelugeBalmPlus, x => x.applyBuffs(0, 6, 0, 6));
+
+    setSkill(Special.DaichiSeisuiNoSyukuhuku, x => x.applyBuffs(0, 0, 4, 4));
+    setSkill(Special.DaichiSeisuiNoSyukuhukuPlus, x => x.applyBuffs(0, 0, 6, 6));
+}
+
 // 響・キャンセル
 {
     let skillId = PassiveX.GuardEcho;

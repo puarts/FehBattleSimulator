@@ -9032,56 +9032,28 @@ class BattleSimmulatorBase {
         }
 
         if (isActivated) {
-            if (supporterUnit.specialCount == 0) {
-                switch (supporterUnit.special) {
-                    case Special.Tensho:
-                        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(supporterUnit, false)) {
-                            if (unit == targetUnit) {
-                                continue;
-                            }
-                            unit.heal(10);
+            if (supporterUnit.specialCount === 0) {
+                for (let skillId of supporterUnit.enumerateSkills()) {
+                    let funcMap = applySpecialSkillEffectWhenHealingFuncMap;
+                    if (funcMap.has(skillId)) {
+                        let func = funcMap.get(skillId);
+                        if (typeof func === "function") {
+                            func.call(this, supporterUnit, targetUnit);
+                        } else {
+                            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                         }
-                        supporterUnit.setSpecialCountToMax();
-                        break;
-                    case Special.ShippuNoSyukuhuku:
-                        this.__applyBalmSkill(supporterUnit, x => x.applySpdBuff(4));
-                        break;
-                    case Special.DaichiNoSyukuhuku:
-                        this.__applyBalmSkill(supporterUnit, x => x.applyDefBuff(4));
-                        break;
-                    case Special.SeisuiNoSyukuhuku:
-                        this.__applyBalmSkill(supporterUnit, x => x.applyResBuff(4));
-                        break;
-                    case Special.KindledFireBalm:
-                        this.__applyBalmSkill(supporterUnit, x => x.applyAtkBuff(4));
-                        break;
-                    case Special.WindfireBalm:
-                        this.__applyBalmSkill(supporterUnit, x => { x.applyAtkBuff(4); x.applySpdBuff(4); });
-                        break;
-                    case Special.WindfireBalmPlus:
-                        this.__applyBalmSkill(supporterUnit, x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
-                        break;
-                    case Special.DelugeBalmPlus:
-                        this.__applyBalmSkill(supporterUnit, x => { x.applySpdBuff(6); x.applyResBuff(6); });
-                        break;
-                    case Special.EarthwindBalm:
-                        this.__applyBalmSkill(supporterUnit, x => x.applySpdDefBuffs(4));
-                        break;
-                    case Special.EarthwindBalmPlus:
-                        this.__applyBalmSkill(supporterUnit, x => x.applySpdDefBuffs(6));
-                        break;
-                    case Special.DaichiSeisuiNoSyukuhuku:
-                        this.__applyBalmSkill(supporterUnit, x => { x.applyDefBuff(4); x.applyResBuff(4); });
-                        break;
-                    case Special.DaichiSeisuiNoSyukuhukuPlus:
-                        this.__applyBalmSkill(supporterUnit, x => { x.applyDefBuff(6); x.applyResBuff(6); });
-                        break;
-                    case Special.GokaDaichiNoSyukuhukuPlus:
-                        this.__applyBalmSkill(supporterUnit, x => { x.applyAtkBuff(6); x.applyDefBuff(6); });
-                        break;
-                    case Special.GokaSeisuiNoSyukuhukuPlus:
-                        this.__applyBalmSkill(supporterUnit, x => { x.applyAtkBuff(6); x.applyResBuff(6); });
-                        break;
+                    }
+                    switch (skillId) {
+                        case Special.Tensho:
+                            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(supporterUnit, false)) {
+                                if (unit === targetUnit) {
+                                    continue;
+                                }
+                                unit.heal(10);
+                            }
+                            supporterUnit.setSpecialCountToMax();
+                            break;
+                    }
                 }
             } else {
                 // 奥義カウントを進める
