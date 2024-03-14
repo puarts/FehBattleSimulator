@@ -1045,7 +1045,7 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
     }
 );
 
-固定ダメージ軽減
+固定ダメージ軽減(受けるダメージ-N)
 targetUnit.battleContext.damageReductionValue += N;
 
 追撃の固定ダメージ軽減

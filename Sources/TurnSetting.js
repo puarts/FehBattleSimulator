@@ -103,6 +103,9 @@ class TurnSetting {
     }
 
     fromPerTurnStatusString(source) {
+        if (!source) {
+            return;
+        }
         let elemTexts = source.split(ElemDelimiter);
         elemTexts = elemTexts.filter(n => n);
         this.__fromString(elemTexts, (x, v) => x.fromPerTurnStatusString(v));

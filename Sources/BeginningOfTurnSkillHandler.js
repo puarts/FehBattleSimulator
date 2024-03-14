@@ -281,12 +281,6 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 }
                 break;
-            case PassiveC.AtkSpdPledge:
-                if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
-                    skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack)
-                }
-                break;
             case PassiveC.TipTheScales: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
@@ -423,18 +417,6 @@ class BeginningOfTurnSkillHandler {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
                         u.reserveToAddStatusEffect(StatusEffectType.Panic);
                         u.reserveToAddStatusEffect(StatusEffectType.Discord);
-                    }
-                }
-                break;
-            case Weapon.SeasideParasolPlus:
-                for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
-                    unit.reserveToAddStatusEffect(StatusEffectType.Guard);
-                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
-                        for (let skillId of ally.enumerateSkills()) {
-                            if (SaveSkills.has(skillId)) {
-                                ally.reserveToAddStatusEffect(StatusEffectType.Guard);
-                            }
-                        }
                     }
                 }
                 break;

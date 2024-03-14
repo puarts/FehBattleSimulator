@@ -2689,11 +2689,6 @@ class DamageCalculatorWrapper {
                 }
             );
         }
-        this._applySkillEffectForUnitFuncDict[PassiveC.AtkSpdPledge] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (this.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.addAtkSpdSpurs(3);
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Special.DragonBlast] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3, unit => unit.isPartner(targetUnit))) {
                 targetUnit.battleContext.specialSkillCondSatisfied = true;
@@ -3197,14 +3192,6 @@ class DamageCalculatorWrapper {
                 if (count > 0) {
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                 }
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.SeasideParasolPlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAtkSpdSpurs(5);
-                let count = enemyUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
-                let amount = Math.min(count * 4, 16);
-                enemyUnit.resSpur -= amount;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SunlightBangle] = (targetUnit, enemyUnit, calcPotentialDamage) => {

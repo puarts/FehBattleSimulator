@@ -1634,6 +1634,9 @@ class AppData extends UnitManager {
     }
 
     fromPerTurnStatusString(value) {
+        if (!value) {
+            return;
+        }
         let splited = value.split(ValueDelimiter);
         let i = 0;
         if (Number.isInteger(Number(splited[i]))) { this.globalBattleContext.currentPhaseType = Number(splited[i]); ++i; }
