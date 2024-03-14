@@ -2830,6 +2830,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    BelieveInLove: 2820, // 愛する人がいますか
     SunlitBundleD: 2769, // 華日の腕輪・護
     SpoilRotten: 2710, // 可愛がってあげる
     RulerOfNihility: 2655, // 虚無の王
@@ -4664,6 +4665,59 @@ const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 愛する人がいますか
+{
+    let skillId = PassiveB.BelieveInLove;
+    // 速さの差を比較するスキルの比較判定時、自身の速さ＋7として判定
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return 7;
+    })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の攻撃、速さ、守備一5、
+            enemyUnit.addSpdDefSpurs(-5);
+            // 自身の攻撃、速さ、守備、魔防が自分が受けている攻撃、速さ、守備、魔防の弱化の値の2倍だけ上昇（能力値ごとに計算）
+            // （例えば、攻撃ー7の弱化を受けていれば、 -7+14で、戦闘中、攻撃＋7となる）、
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    this.__applyDebuffReverse(targetUnit, targetUnit.passiveBInfo.name);
+                }
+            );
+            // かつ速さが敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差x5%軽減（最大50％）
+            // （巨影の範囲奥義を除く）
+            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 5, 50);
+            });
+            // 敵が重装、騎馬の時、戦闘中、受けるダメージー〇（範囲奥義を含む）、敵が重装、騎馬でない時、戦闘中、最初に受けた攻撃と2回攻撃のダメージー〇の40%
+            // （〇は、自分と周囲2マス以内にいる味方のうち強化の合計値が最も高い値）
+            // （最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）
+            targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                    let buffTotal = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                    let amount = MathUtil.ensureMin(buffTotal, 0);
+                    let moveType = enemyUnit.moveType;
+                    let isArmorOrCavalry = moveType === MoveType.Armor || moveType === MoveType.Cavalry;
+                    if (isArmorOrCavalry) {
+                        targetUnit.battleContext.damageReductionValue += amount;
+                    } else {
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += Math.trunc(amount * 0.4);
+                    }
+                }
+            );
+        }
+    );
+    // かつ速さが敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差x5%軽減（最大50％）
+    // （巨影の範囲奥義を除く）
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            // 速度回避
+            let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit, 5, 50);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+}
+
 // 遠反・強化増幅
 {
     let skillId = PassiveA.DBonusDoubler;
