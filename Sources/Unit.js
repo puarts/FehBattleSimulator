@@ -498,6 +498,7 @@ function calcArenaTotalSpScore(totalSp) {
 
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
+    #damagesAfterBeginningOfCombatNotStack = [0];
     constructor() {
         this.maxHpWithSkills = 0;
         this.hpBeforeCombat = 0;
@@ -847,6 +848,10 @@ class BattleContext {
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
         this.damageAfterBeginningOfCombat = 0;
 
+        // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+        // 他の「戦闘開始後、敵にNダメージ」の効果とは重複せず最大値適用
+        this.#damagesAfterBeginningOfCombatNotStack = [0]; // 最大値を取る時のために番兵(0)を入れる
+
         // 奥義以外の祈り無効
         this.neutralizesNonSpecialMiracle = false;
 
@@ -1074,6 +1079,7 @@ class BattleContext {
         this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
         this.damageAfterBeginningOfCombat = 0;
+        this.#damagesAfterBeginningOfCombatNotStack = [0];
         this.neutralizesNonSpecialMiracle = false;
         this.potentRatios = [];
         this.potentOverwriteRatio = null;
@@ -1202,6 +1208,18 @@ class BattleContext {
     multDamageReductionRatioOfPrecombatSpecial(ratio) {
         this.damageReductionRatioForPrecombat = BattleContext.multDamageReductionRatioForSpecial(
             this.damageReductionRatioForPrecombat, ratio);
+    }
+
+    addDamageAfterBeginningOfCombatNotStack(damage) {
+        this.#damagesAfterBeginningOfCombatNotStack.push(damage);
+    }
+
+    getDamagesAfterBeginningOfCombatNotStack() {
+        return this.#damagesAfterBeginningOfCombatNotStack.slice(1);
+    }
+
+    getMaxDamageAfterBeginningOfCombat() {
+        return Math.max(this.damageAfterBeginningOfCombat, ...this.#damagesAfterBeginningOfCombatNotStack);
     }
 
     // 自分から攻撃したかを考慮して2回攻撃可能かを判定する

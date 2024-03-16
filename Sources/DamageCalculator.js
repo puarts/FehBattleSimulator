@@ -202,8 +202,8 @@ class DamageCalculator {
         this.__activateEffectAfterBeginningOfCombat(atkUnit, defUnit);
         this.__activateEffectAfterBeginningOfCombat(defUnit, atkUnit);
         // atkUnitが受けるダメージはdefUnitが与えるダメージとして表示する
-        result.atkUnitDamageAfterBeginningOfCombat = defUnit.battleContext.damageAfterBeginningOfCombat;
-        result.defUnitDamageAfterBeginningOfCombat = atkUnit.battleContext.damageAfterBeginningOfCombat;
+        result.atkUnitDamageAfterBeginningOfCombat = defUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+        result.defUnitDamageAfterBeginningOfCombat = atkUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
         result.atkTile = atkUnit.placedTile;
         result.defTile = defUnit.placedTile;
 
@@ -229,11 +229,15 @@ class DamageCalculator {
     }
 
     __activateEffectAfterBeginningOfCombat(targetUnit, enemyUnit) {
-        if (targetUnit.battleContext.damageAfterBeginningOfCombat > 0) {
-            targetUnit.restHp -= targetUnit.battleContext.damageAfterBeginningOfCombat;
-            let logMessage = `${targetUnit.getNameWithGroup()}に合計<span style="color: #ff0000">${targetUnit.battleContext.damageAfterBeginningOfCombat}</span>の戦闘開始後ダメージ`;
+        // 戦闘開始後ダメージ
+        let damageAfterBeginningOfCombat = targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+        if (damageAfterBeginningOfCombat > 0) {
+            targetUnit.restHp -= damageAfterBeginningOfCombat;
+            let logMessage = `${targetUnit.getNameWithGroup()}に合計<span style="color: #ff0000">${damageAfterBeginningOfCombat}</span>の戦闘開始後ダメージ`;
             this.writeDebugLog(logMessage);
             this.writeSimpleLog(logMessage);
+            let debugMessage = `重複しない戦闘開始後ダメージ: [${targetUnit.battleContext.getDamagesAfterBeginningOfCombatNotStack()}]`;
+            this.writeDebugLog(debugMessage);
             if (targetUnit.restHp <= 0) {
                 targetUnit.restHp = 1;
             }
