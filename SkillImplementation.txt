@@ -712,6 +712,24 @@ __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
     atkUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
 }
 
+敵のHP減少量[1攻撃ごとに変化する可能性がある効果]
+applySkillEffectsPerCombatFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, context) {
+        // HP減少量
+        let d = targetUnit.maxHpWithSkills - targetUnit.restHp
+
+        // 陽光
+        if (targetUnit.battleContext.restHpPercentage >= 70) {
+            let res = enemyUnit.getResInCombat(targetUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.6);
+        } else {
+            let res = enemyUnit.getResInCombat(targetUnit);
+            targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.4);
+            targetUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
+        }
+    }
+);
+
 奥義による攻撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
 targetUnit.healedHpAfterAttackSpecialInCombat = N;
 
