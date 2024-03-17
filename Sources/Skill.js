@@ -1914,6 +1914,7 @@ const Weapon = {
     SunlightPlus: 2824, // サンライト+
     LightburstTome: 2825, // 激雷の書
     TenderExcalibur: 2827, // 柔風エクスカリバー
+    VultureBowPlus: 2831, // 禿鷹の弓+
 };
 
 const Support = {
@@ -4675,6 +4676,28 @@ const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 禿鷹の弓+
+{
+    let skillId = Weapon.VultureBowPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 飛行特効
+            // 周囲1マス以内に味方がいない時、
+            if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                // 戦闘中、敵の攻撃、守備-5、
+                enemyUnit.addAtkDefSpurs(-5);
+                // かつ敵が攻撃、守備の弱化を受けていれば、戦闘中、敵の攻撃、守備が弱化の値だけ減少(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7-7-5で、戦闘中、攻撃-19となる)
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                        enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 2種類封じ3
 {
     let setSkill = (skillId, spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
