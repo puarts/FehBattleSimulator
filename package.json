@@ -12,6 +12,9 @@
   },
   "author": "puarts",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.11.1"
+  },
   "bugs": {
     "url": "https://github.com/puarts/FehBattleSimulator/issues"
   },
