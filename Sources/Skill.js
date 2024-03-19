@@ -1915,6 +1915,9 @@ const Weapon = {
     LightburstTome: 2825, // 激雷の書
     TenderExcalibur: 2827, // 柔風エクスカリバー
     VultureBowPlus: 2831, // 禿鷹の弓+
+
+    // ニーズヘッグ(敵)
+    DosingFang: 2833, // 毒の葬り手の牙
 };
 
 const Support = {
@@ -4661,6 +4664,7 @@ const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map(
 const hasPathfinderEffectFuncMap = new Map();
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatFuncMap = new Map();
+/** @type {Map<String, (supporter: Unit, target: Unit) => void>} */
 const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // {
 //     let skillId = Weapon.<W>;
@@ -4676,6 +4680,59 @@ const applySpecialSkillEffectWhenHealingFuncMap = new Map();
 // }
 
 // 各スキルの実装
+// 毒の葬り手の牙
+{
+    let skillId = Weapon.DosingFang;
+    // 奥義が発動しやすい(発動カウント-1)
+    // 自軍ターン開始時、および、敵軍ターン開始時、自身を中心とした縦3列と横3列の敵の攻撃、守備-7、【混乱】を付与(敵の次回行動終了時まで)
+    let func = function (skillOwner) {
+        /** @type {Generator<Unit>} */
+        let units = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let unit of units) {
+            if (unit.isInCrossWithOffset(skillOwner, 1)) {
+                unit.reserveToApplyBuffs(-7, 0, -7, 0);
+                unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+            }
+        }
+
+    };
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘開始時、自身のHPが25%以上なら、戦闘開始後、敵に8ダメージ(他の「戦闘開始後、敵に○ダメージ」の効果とは重複せず最大値適用)(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+                enemyUnit.battleContext.addDamageAfterBeginningOfCombatNotStack(8);
+                // 戦闘開始時、自身のHPが25%以上なら、戦闘中、敵の攻撃、守備が、戦闘開始時の自分の守備の20%+6だけ減少
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.2 + 6);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // 戦闘開始時、自身のHPが25%以上なら、戦闘中、敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)、
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // ダメージ+敵の最大HPの30%(範囲奥義を除く)、
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(enemyUnit.maxHpWithSkills * 0.3);
+                });
+            }
+        }
+    );
+    // 受けるダメージ-○、
+    // かつ、敵の奥義による攻撃の時、さらに、受けるダメージ-○(○は、敵のHP減少量、最大20)(範囲奥義を除く)
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let amount = MathUtil.ensureMax(enemyUnit.maxHpWithSkills - enemyUnit.restHp , 20);
+                this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}のスキル効果により${amount}減少。敵HP: ${enemyUnit.restHp}/${enemyUnit.maxHpWithSkills}`);
+                targetUnit.battleContext.damageReductionValuePerAttack += amount;
+                targetUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack += amount;
+            }
+        }
+    );
+    // ターン開始時、竜、獣以外の味方と隣接していない場合、化身状態になる(そうでない場合、化身状態を解除)化身状態なら、攻撃+2、かつ敵から攻撃された時、距離に関係なく反撃する
+    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
+    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Armor);
+}
+
 // 禿鷹の弓+
 {
     let skillId = Weapon.VultureBowPlus;
