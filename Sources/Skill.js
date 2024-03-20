@@ -78,6 +78,7 @@ function getWeaponTypeOrder(weaponType) {
     return -1;
 }
 
+// noinspection JSUnusedGlobalSymbols
 function weaponRefinementTypeToString(type) {
     switch (type) {
         case WeaponRefinementType.None: return "-";
@@ -562,14 +563,14 @@ function isWeaponTypeBreathOrBeast(type) {
 /// 武器タイプが継承可能であるかを判定します。
 function isInheritableWeaponType(targetType, types) {
     for (let type of types) {
-        if (type == targetType) {
+        if (type === targetType) {
             return true;
         }
         switch (type) {
             case WeaponType.All:
                 return true;
             case WeaponType.ExceptStaff:
-                if (targetType != WeaponType.Staff) {
+                if (targetType !== WeaponType.Staff) {
                     return true;
                 }
                 break;
@@ -1069,7 +1070,7 @@ function getBreakerSkillTargetWeaponType(breakerSkillId) {
  */
 function __createValueDict(sourceDict) {
     let valueDict = {};
-    Object.values(sourceDict).forEach((value, index, array) => valueDict[value] = value);
+    Object.values(sourceDict).forEach(value => valueDict[value] = value);
     return valueDict;
 }
 
@@ -1108,8 +1109,8 @@ class SkillInfo {
      * @param  {Number} spd
      * @param  {Number} def
      * @param  {Number} res
-     * @param  {} effectives
-     * @param  {} invalidatedEffectives
+     * @param  effectives
+     * @param  invalidatedEffectives
      * @param  {Number} cooldownCount
      * @param  {Number} atkCount
      * @param  {Number} counteratkCount
@@ -1118,14 +1119,14 @@ class SkillInfo {
      * @param  {Number} mightRefine
      * @param  {Boolean} disableCounterattack
      * @param  {Boolean} wrathfulStaff
-     * @param  {} assistType
+     * @param  assistType
      * @param  {Boolean} isNoAdditionalImplRequired
      * @param  {Number} specialRefineHpAdd
-     * @param  {} weaponType
+     * @param  weaponType
      * @param  {Number} sp
      * @param  {Boolean} canInherit
-     * @param  {} inheritableWeaponTypes
-     * @param  {} inheritableMoveTypes
+     * @param  inheritableWeaponTypes
+     * @param  inheritableMoveTypes
      * @param  {Boolean} hasSpecialWeaponRefinement
      * @param  {Boolean} hasStatusWeaponRefinement
      * @param  {String} iconName
@@ -1195,6 +1196,7 @@ class SkillInfo {
         this.iconPath = this.__getSkillIconPath(iconName);
 
         // 英雄情報から必要に応じて設定する
+        // noinspection JSUnusedGlobalSymbols
         this.releaseDateAsNumber = 0;
     }
 
@@ -1257,7 +1259,7 @@ class SkillInfo {
             case SkillType.Special: return iconRoot + "Special.png";
         }
 
-        if (iconName == "" || iconName == null) {
+        if (iconName === "" || iconName == null) {
             return iconRoot + "None.png";
         }
 
@@ -1342,6 +1344,7 @@ const StatusIndex = {
 }
 
 // TODO: ここから下の内容を別ファイルに分ける
+// noinspection DuplicatedCode
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
 const calcMoveCountForCantoFuncMap = new Map();
@@ -1375,10 +1378,11 @@ const applySkillEffectAfterCombatForUnitFuncMap = new Map();
 const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 const updateUnitSpurFromAlliesFuncMap = new Map();
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
-const canActivateObstractToTilesIn2SpacesFuncMap = new Map();
+const canActivateObstructToTilesIn2SpacesFuncMap = new Map();
 // 切り込みなど移動スキル終了後に発動するスキル効果
 const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
 // 優先度の高い再行動スキルの評価
+// noinspection DuplicatedCode
 const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
 // thisはUnit
 const applyEndActionSkillsFuncMap = new Map();

@@ -1,3 +1,4 @@
+// noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // 毒の葬り手の牙
 {
@@ -2936,7 +2937,7 @@
                 return true;
             }
         );
-        canActivateObstractToTilesIn2SpacesFuncMap.set(skillId,
+        canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
             function (unit, moveUnit) {
                 return true;
             }
@@ -5785,7 +5786,7 @@
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
-                        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, spaces = 2, withTargetUnit = true);
+                        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
                         enemyUnit.addSpurs(...debuffs);
                     }
                 );
@@ -5890,7 +5891,7 @@
             return unit.isWeaponSpecialRefined && moveUnit.isMeleeWeaponType();
         }
     );
-    canActivateObstractToTilesIn2SpacesFuncMap.set(skillId,
+    canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
         function (unit, moveUnit) {
             return unit.isWeaponSpecialRefined && moveUnit.isRangedWeaponType();
         }
@@ -6779,7 +6780,7 @@
 {
     let generateFunc = debuffFunc => function (skillOwner) {
         for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-            if (skillOwner.isInCrossWithOffset(unit, 1, 1) &&
+            if (skillOwner.isInCrossWithOffset(unit, 1) &&
                 unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
                 debuffFunc(unit);
                 unit.reserveToAddStatusEffect(StatusEffectType.Ploy);

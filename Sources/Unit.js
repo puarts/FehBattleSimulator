@@ -3210,7 +3210,7 @@ class Unit extends BattleMapElement {
         return result;
     }
     /**
-     * @param  {StatusEffectType} statusEffectType
+     * @param  {number} statusEffectType
      */
     addStatusEffect(statusEffectType) {
         if (this.hasStatusEffect(statusEffectType)) {
@@ -3219,7 +3219,7 @@ class Unit extends BattleMapElement {
         this.statusEffects.push(statusEffectType);
     }
     /**
-     * @param  {StatusEffectType[]} statusEffects
+     * @param  {number[]} statusEffects
      */
     addStatusEffects(statusEffects) {
         for (let item of statusEffects) {
@@ -3288,7 +3288,7 @@ class Unit extends BattleMapElement {
     canActivateObstractToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canActivateObstractToTilesIn2SpacesFuncMap;
+            let funcMap = canActivateObstructToTilesIn2SpacesFuncMap;
             if (funcMap.has(skillId)) {
                 let func = funcMap.get(skillId);
                 if (typeof func === "function") {
