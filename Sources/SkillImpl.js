@@ -2468,6 +2468,8 @@
 // 闇の樹海の竜神
 {
     let skillId = PassiveC.DarklingDragon;
+    // 護り手
+    SaveSkills.add(skillId);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
