@@ -14,7 +14,6 @@
                 unit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
             }
         }
-
     };
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId, func);

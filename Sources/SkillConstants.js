@@ -3248,3 +3248,38 @@ const AssistType = {
 const EmblemHero = {
     Marth: 1082,
 };
+
+const EffectiveType = {
+    None: -1,
+
+    // 移動種
+    Armor: 0,
+    Infantry: 1,
+    Cavalry: 2,
+    Flying: 3,
+
+    // 武器種
+    Dragon: 4,
+    Beast: 5,
+    Tome: 6,
+    Sword: 7,
+    Lance: 8,
+    Axe: 9,
+    ColorlessBow: 10,
+    Staff: 11,
+    Dagger: 12,
+    Bow: 13,
+}
+
+const ColorType = {
+    Unknown: -1,
+    Red: 0,
+    Blue: 1,
+    Green: 2,
+    Colorless: 3,
+};
+
+// パフォーマンスに影響しやすくて、辞書にアクセスしたくない時に使う値型
+const NoneValue = -1;
+
+const NoneOption = {id: NoneValue, text: "なし"};

@@ -1,14 +1,6 @@
 /// @file
 /// @brief スキル情報の定義とそれに関連するクラス、関数等の定義です。
 
-const ColorType = {
-    Unknown: -1,
-    Red: 0,
-    Blue: 1,
-    Green: 2,
-    Colorless: 3,
-};
-
 const WeaponTypeAttackRangeDict = {};
 WeaponTypeAttackRangeDict[WeaponType.Sword] = 1;
 WeaponTypeAttackRangeDict[WeaponType.Lance] = 1;
@@ -95,33 +87,6 @@ function weaponRefinementTypeToString(type) {
         case WeaponRefinementType.WrathfulStaff: return "神罰の杖";
         case WeaponRefinementType.DazzlingStaff: return "幻惑の杖";
     }
-}
-
-// パフォーマンスに影響しやすくて、辞書にアクセスしたくない時に使う値型
-const NoneValue = -1;
-
-const NoneOption = { id: NoneValue, text: "なし" };
-
-const EffectiveType = {
-    None: -1,
-
-    // 移動種
-    Armor: 0,
-    Infantry: 1,
-    Cavalry: 2,
-    Flying: 3,
-
-    // 武器種
-    Dragon: 4,
-    Beast: 5,
-    Tome: 6,
-    Sword: 7,
-    Lance: 8,
-    Axe: 9,
-    ColorlessBow: 10,
-    Staff: 11,
-    Dagger: 12,
-    Bow: 13,
 }
 
 // スキルIDが被らないようにプレフィックスをつける
