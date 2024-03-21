@@ -13,6 +13,7 @@ SOURCE_FILE_NAMES=(
     Cell
     Table
     HeroInfo
+    UnitConstants
     Unit
     UnitManager
     BattleMap
