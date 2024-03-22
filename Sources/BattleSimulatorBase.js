@@ -4,25 +4,11 @@
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {
         let option = options[index];
-        if (option.id == targetOptionId) {
+        if (option.id === targetOptionId) {
             return true;
         }
     }
     return false;
-}
-
-function extractUnitAndSkillType(elemName) {
-    let unit = null;
-    let skillType = null;
-    if (elemName != null || elemName != "") {
-        let splited = elemName.split("-");
-        if (splited.length == 2) {
-            unitId = splited[0];
-            skillType = splited[1];
-            unit = g_appData.findItemById(unitId);
-        }
-    }
-    return [unit, skillType];
 }
 
 const MoveResult = {
@@ -56,7 +42,7 @@ const ModuleLoadState = {
 };
 
 /// シミュレーター本体です。
-class BattleSimmulatorBase {
+class BattleSimulatorBase {
     constructor(additionalMethods = null) {
         this.isTurnWideCommandQueueEnabled = false;
         this.disableAllLogs = false;
@@ -97,9 +83,22 @@ class BattleSimmulatorBase {
         this.skillIdToNameDict = {};
 
         let self = this;
+        this.vm = this.#create_vue(self, g_appData, additionalMethods);
 
+        let setSlotOrder = group => {
+            let order = 0;
+            for (let unit of this.enumerateUnitsInSpecifiedGroup(group)) {
+                unit.slotOrder = order;
+                ++order;
+            }
+        };
+        setSlotOrder(UnitGroupType.Ally);
+        setSlotOrder(UnitGroupType.Enemy);
+    }
+
+    #create_vue(self, appData, additionalMethods) {
         /** @type {AppData} */
-        this.data = g_appData;
+        this.data = appData;
 
         this.methods = {
             bgmEnabledChanged: function () {
@@ -110,8 +109,7 @@ class BattleSimmulatorBase {
                         self.writeDebugLogLine(`BGM番号: ${self.audioManager.currentBgmId}`);
                     }
                     self.audioManager.playBgm();
-                }
-                else {
+                } else {
                     self.vm.audioManager.isSoundEffectEnabled = false;
                     self.audioManager.pauseBgm();
                 }
@@ -121,10 +119,10 @@ class BattleSimmulatorBase {
             },
             gameModeChanged: function () {
                 // g_appData.clearReservedSkillsForAllUnits();
-                g_appData.setPropertiesForCurrentGameMode();
+                appData.setPropertiesForCurrentGameMode();
 
                 // デフォルトのマップに設定
-                switch (self.gameMode) {
+                switch (appData.gameMode) {
                     case GameMode.AetherRaid:
                         self.mapKind = MapType.Izumi;
                         break;
@@ -145,13 +143,13 @@ class BattleSimmulatorBase {
                 }
 
 
-                g_appData.updateEnemyAndAllyUnits();
-                g_appData.sortUnitsBySlotOrder();
-                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                appData.updateEnemyAndAllyUnits();
+                appData.sortUnitsBySlotOrder();
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 changeMap();
-                g_appData.clearReservedSkillsForAllUnits();
+                appData.clearReservedSkillsForAllUnits();
                 resetPlacement();
-                switch (self.gameMode) {
+                switch (appData.gameMode) {
                     case GameMode.Arena:
                         break;
                     case GameMode.ResonantBattles:
@@ -167,7 +165,7 @@ class BattleSimmulatorBase {
                 // g_appData.clearReservedSkillsForAllUnits();
                 removeBreakableWallsFromTrashbox();
                 changeMap();
-                switch (self.gameMode) {
+                switch (appData.gameMode) {
                     case GameMode.Arena:
                         resetPlacement();
                         break;
@@ -240,7 +238,7 @@ class BattleSimmulatorBase {
 
                 // let currentItem = g_appData.currentItem;
                 // for (let item of g_appData.enumerateItems()) {
-                //     if (item == currentItem) {
+                //     if (item === currentItem) {
                 //         item.isSelected = true;
                 //     }
                 //     else {
@@ -250,7 +248,7 @@ class BattleSimmulatorBase {
 
                 // let currentUnit = g_app.__getCurrentUnit();
                 // if (currentUnit != null) {
-                //     if (currentUnit.groupId == UnitGroupType.Ally) {
+                //     if (currentUnit.groupId === UnitGroupType.Ally) {
                 //         self.attackerUnitIndex = self.currentItemIndex;
                 //     }
                 //     else {
@@ -262,200 +260,280 @@ class BattleSimmulatorBase {
             },
             heroIndexChanged: function (e) {
                 let currentUnit = self.__getEditingTargetUnit();
-                if (currentUnit == null) { return; }
+                if (currentUnit == null) {
+                    return;
+                }
 
-                g_appData.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
-                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                appData.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 console.log("heroIndexChanged");
                 updateAllUi();
             },
             buffChanged: function () {
-                if (g_app == null) { return; }
-                g_appData.__showStatusToAttackerInfo();
+                if (g_app == null) {
+                    return;
+                }
+                appData.__showStatusToAttackerInfo();
                 updateAllUi();
             },
             moveCountChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 updateAllUi();
             },
             weaponChanged: function () {
                 console.log("weaponChanged");
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 unit.weaponRefinement = WeaponRefinementType.None;
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 unit.resetMaxSpecialCount();
                 self.updateAllUnitSpur();
-                g_appData.updateArenaScore(unit);
+                appData.updateArenaScore(unit);
             },
             weaponOptionChanged: function () {
                 console.log("weaponOptionChanged");
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 unit.resetMaxSpecialCount();
                 g_app.updateAllUnitSpur();
-                g_appData.updateArenaScore(unit);
+                appData.updateArenaScore(unit);
             },
             supportChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
-                g_appData.__updateUnitSkillInfo(unit);
-                g_appData.updateArenaScore(unit);
+                if (unit == null) {
+                    return;
+                }
+                appData.__updateUnitSkillInfo(unit);
+                appData.updateArenaScore(unit);
             },
             specialChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
-                g_appData.__updateUnitSkillInfo(unit);
+                if (unit == null) {
+                    return;
+                }
+                appData.__updateUnitSkillInfo(unit);
                 unit.resetMaxSpecialCount();
-                g_appData.updateArenaScore(unit);
+                appData.updateArenaScore(unit);
                 updateAllUi();
             },
             specialCountChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 updateAllUi();
             },
             hpChanged: function () {
-                if (g_app == null) { return; }
-                g_appData.__showStatusToAttackerInfo();
+                if (g_app == null) {
+                    return;
+                }
+                appData.__showStatusToAttackerInfo();
                 updateAllUi();
             },
             passiveAChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 unit.resetMaxSpecialCount();
                 g_app.updateAllUnitSpur();
-                g_appData.updateArenaScore(unit);
+                appData.updateArenaScore(unit);
             },
             passiveBChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
-                g_appData.__updateUnitSkillInfo(unit);
-                g_appData.updateArenaScore(unit);
+                if (unit == null) {
+                    return;
+                }
+                appData.__updateUnitSkillInfo(unit);
+                appData.updateArenaScore(unit);
 
                 // 救援等に変わったら移動可能範囲の更新が必要
                 updateAllUi();
             },
             passiveCChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 g_app.updateAllUnitSpur();
-                g_appData.updateArenaScore(unit);
+                appData.updateArenaScore(unit);
             },
             passiveSChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 g_app.updateAllUnitSpur();
-                g_appData.updateArenaScore(unit);
+                appData.updateArenaScore(unit);
 
                 // 曲技飛行等で移動範囲が変わる
                 updateAllUi();
             },
             passiveXChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 g_app.updateAllUnitSpur();
-                g_appData.updateArenaScore(unit);
+                appData.updateArenaScore(unit);
 
                 // 曲技飛行等で移動範囲が変わる
                 updateAllUi();
             },
             captainChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
-                g_appData.__updateStatusBySkillsAndMerges(unit);
+                if (unit == null) {
+                    return;
+                }
+                appData.__updateStatusBySkillsAndMerges(unit);
                 g_app.updateAllUnitSpur();
                 updateAllUi();
             },
             mergeChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
             dragonflowerChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
             emblemHeroMergeChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
             summonerLevelChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
             grantedBlessingChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let currentUnit = g_app.__getEditingTargetUnit();
-                if (currentUnit == null) { return; }
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_appData.updateArenaScoreOfUnit(currentUnit);
+                if (currentUnit == null) {
+                    return;
+                }
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.updateArenaScoreOfUnit(currentUnit);
 
-                for (let unit of g_appData.enumerateSelectedItems(x => x != currentUnit && x instanceof Unit)) {
-                    if (unit.grantedBlessing != currentUnit.grantedBlessing
-                        && unit.providableBlessingSeason == SeasonType.None
+                for (let unit of appData.enumerateSelectedItems(x => x !== currentUnit && x instanceof Unit)) {
+                    if (unit.grantedBlessing !== currentUnit.grantedBlessing
+                        && unit.providableBlessingSeason === SeasonType.None
                     ) {
                         unit.grantedBlessing = currentUnit.grantedBlessing;
-                        g_appData.__updateStatusBySkillsAndMerges(unit);
+                        appData.__updateStatusBySkillsAndMerges(unit);
                     }
-                    g_appData.updateArenaScoreOfUnit(unit);
+                    appData.updateArenaScoreOfUnit(unit);
                 }
-                g_appData.updateArenaScoreOfParties();
+                appData.updateArenaScoreOfParties();
                 updateAllUi();
             },
             ivChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 unit.updatePureGrowthRate();
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_appData.updateArenaScore(unit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.updateArenaScore(unit);
                 updateAllUi();
             },
             addChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 let currentUnit = self.__getCurrentUnit();
-                g_appData.__updateStatusBySkillsAndMerges(currentUnit);
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
             blessingChanged: function () {
@@ -466,45 +544,56 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             transformedChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) { return; }
-                g_appData.__updateStatusBySkillsAndMerges(unit);
+                if (unit == null) {
+                    return;
+                }
+                appData.__updateStatusBySkillsAndMerges(unit);
             },
             chaosSeasonChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 if (self.vm.globalBattleContext.isChaosSeason) {
                     self.vm.globalBattleContext.isLightSeason = false;
                     self.vm.globalBattleContext.isAstraSeason = false;
-                }
-                else {
+                } else {
                     self.vm.globalBattleContext.isLightSeason = true;
                     self.vm.globalBattleContext.isAstraSeason = false;
                 }
-                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                g_appData.resetCurrentAetherRaidDefensePreset();
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                appData.resetCurrentAetherRaidDefensePreset();
             },
             lightSeasonChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 self.vm.globalBattleContext.isAstraSeason = !self.vm.globalBattleContext.isLightSeason;
                 self.vm.globalBattleContext.setChaosSeasonFromCurrentSeasons();
-                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                g_appData.resetCurrentAetherRaidDefensePreset();
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                appData.resetCurrentAetherRaidDefensePreset();
             },
             astraSeasonChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 self.vm.globalBattleContext.isLightSeason = !self.vm.globalBattleContext.isAstraSeason;
                 self.vm.globalBattleContext.setChaosSeasonFromCurrentSeasons();
-                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                g_appData.resetCurrentAetherRaidDefensePreset();
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                appData.resetCurrentAetherRaidDefensePreset();
             },
             seasonChanged: function () {
-                if (g_app == null) { return; }
-                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                if (g_app == null) {
+                    return;
+                }
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 updateAllUi();
             },
             aetherRaidDefensePresetChanged: function () {
-                g_appData.updateAetherRaidDefensePresetDescription();
+                appData.updateAetherRaidDefensePresetDescription();
             },
             aetherRaidOffensePresetChanged: function () {
             },
@@ -514,28 +603,36 @@ class BattleSimmulatorBase {
             showDetailLogChanged: function () {
             },
             resetUnitRandom: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 g_app.resetUnitRandom();
                 updateAllUi();
             },
             healHpFull: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let unit = g_app.__getCurrentUnit();
-                if (unit == null) { return; }
+                if (unit == null) {
+                    return;
+                }
                 unit.hp = unit.maxHpWithSkills;
-                g_appData.__showStatusToAttackerInfo();
+                appData.__showStatusToAttackerInfo();
                 updateAllUi();
             },
             healHpFullForAllUnits: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 for (let unit of self.vm.units) {
                     unit.resetAllState();
                 }
-                g_appData.__showStatusToAttackerInfo();
+                appData.__showStatusToAttackerInfo();
                 updateAllUi();
             },
             debugMenuEnabledChanged: function () {
-                g_appData.applyDebugMenuVisibility();
+                appData.applyDebugMenuVisibility();
             },
             actionDoneChanged: function () {
                 updateAllUi();
@@ -547,37 +644,47 @@ class BattleSimmulatorBase {
                 updateAllUi();
             },
             isBonusCharChanged: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 let currentUnit = g_app.__getEditingTargetUnit();
-                if (currentUnit == null) { return; }
+                if (currentUnit == null) {
+                    return;
+                }
                 let value = currentUnit.isBonusChar;
-                for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit)) {
-                    if (unit.isBonusChar == value) {
+                for (let unit of appData.enumerateSelectedItems(x => x instanceof Unit)) {
+                    if (unit.isBonusChar === value) {
                         continue;
                     }
                     unit.isBonusChar = value;
                 }
-                g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
             },
             resetUnitForTesting: function () {
-                if (g_app == null) { return; }
+                if (g_app == null) {
+                    return;
+                }
                 g_app.resetUnitsForTesting();
             },
             ornamentIconChanged: function () {
-                if (g_app == null) { return; }
-                let currentItem = g_appData.currentItem;
-                if ((currentItem instanceof Ornament) == false) {
+                if (g_app == null) {
+                    return;
+                }
+                let currentItem = appData.currentItem;
+                if (!(currentItem instanceof Ornament)) {
                     return;
                 }
                 currentItem.setIconByOrnamentTypeIndex();
                 updateAllUi();
             },
             structureLevelChanged: function () {
-                if (g_app == null) { return; }
-                let currentItem = g_appData.currentItem;
+                if (g_app == null) {
+                    return;
+                }
+                let currentItem = appData.currentItem;
                 let isUpdateUnitRequired = (currentItem instanceof OfFortress) || (currentItem instanceof DefFortress);
-                for (let st of g_appData.enumerateSelectedItems(x => x != currentItem && x instanceof StructureBase)) {
-                    if (st.hasLevel && Number(st.level) != Number(currentItem.level)) {
+                for (let st of appData.enumerateSelectedItems(x => x !== currentItem && x instanceof StructureBase)) {
+                    if (st.hasLevel && Number(st.level) !== Number(currentItem.level)) {
                         st.level = Number(currentItem.level);
                     }
 
@@ -585,7 +692,7 @@ class BattleSimmulatorBase {
                 }
 
                 if (isUpdateUnitRequired) {
-                    g_appData.__updateStatusBySkillsAndMergeForAllHeroes();
+                    appData.__updateStatusBySkillsAndMergeForAllHeroes();
                 }
 
                 updateAllUi();
@@ -603,12 +710,12 @@ class BattleSimmulatorBase {
                     unit.slotOrder = slotOrder;
                     ++slotOrder;
                 }
-                g_appData.updateAetherRaidDefenseLiftLoss();
+                appData.updateAetherRaidDefenseLiftLoss();
                 updateMapUi();
             },
             unitSelected: function (event) {
                 let name = event.item.name;
-                if (name == undefined) {
+                if (name === undefined) {
                     name = event.item.classList[0];
                 }
                 g_app.selectItem(name);
@@ -643,17 +750,17 @@ class BattleSimmulatorBase {
                 if (g_app == null) {
                     return;
                 }
-                g_appData.updateExportText();
+                appData.updateExportText();
             },
             cellSizeChanged: function () {
                 self.map.cellHeight = self.map.cellWidth;
-                g_appData.updateTargetInfoTdStyle();
+                appData.updateTargetInfoTdStyle();
                 updateAllUi();
             },
             ocrSettingFileChanged: function (event) {
                 self.vm.showOcrImage = false;
                 const files = event.target.files;
-                if (files.length == 0) {
+                if (files.length === 0) {
                     return;
                 }
 
@@ -667,26 +774,12 @@ class BattleSimmulatorBase {
                 this.methods[key] = additionalMethods[key];
             }
         }
-        this.vm = new Vue({
+
+        return new Vue({
             el: "#app",
-            data: g_appData,
+            data: appData,
             methods: this.methods,
         });
-
-        {
-            let order = 0;
-            for (let unit of this.enumerateUnitsInSpecifiedGroup(UnitGroupType.Ally)) {
-                unit.slotOrder = order;
-                ++order;
-            }
-        }
-        {
-            let order = 0;
-            for (let unit of this.enumerateUnitsInSpecifiedGroup(UnitGroupType.Enemy)) {
-                unit.slotOrder = order;
-                ++order;
-            }
-        }
     }
 
     tileTypeChanged() {
@@ -703,7 +796,7 @@ class BattleSimmulatorBase {
         let maxSp = 0;
         if (maxSpSkillInfo != null) {
             maxSp = maxSpSkillInfo.sp;
-            if (maxSp == 300 && maxSpSkillInfo.weaponRefinementOptions.length > 1) {
+            if (maxSp === 300 && maxSpSkillInfo.weaponRefinementOptions.length > 1) {
                 maxSp += 50;
             }
         }
@@ -719,7 +812,7 @@ class BattleSimmulatorBase {
             }
 
             let sp = info.sp;
-            if (sp == 300 && info.weaponRefinementOptions.length > 1) {
+            if (sp === 300 && info.weaponRefinementOptions.length > 1) {
                 sp += 50;
             }
 
@@ -735,7 +828,7 @@ class BattleSimmulatorBase {
     }
     __findSpecifiedSpSkillId(sp, defaultSkillId, options, skillInfoArrays) {
         let skillInfo = this.__findSkillInfoFromArrays(skillInfoArrays, defaultSkillId);
-        if (skillInfo != null && skillInfo.sp == sp) {
+        if (skillInfo != null && skillInfo.sp === sp) {
             return defaultSkillId;
         }
 
@@ -749,7 +842,7 @@ class BattleSimmulatorBase {
                 console.error(`${option.text}(${skillId}) was not found`);
                 continue;
             }
-            if (info.sp == sp) {
+            if (info.sp === sp) {
                 return skillId;
             }
         }
@@ -797,7 +890,7 @@ class BattleSimmulatorBase {
         unit.clearReservedSkills();
         unit.weapon = this.__findMaxSpWeaponId(unit.weapon, unit.heroInfo.weaponOptions);
         let weaponInfo = this.__findWeaponInfo(unit.weapon);
-        if (weaponInfo.sp == 300 && weaponInfo.weaponRefinementOptions.length > 1) {
+        if (weaponInfo.sp === 300 && weaponInfo.weaponRefinementOptions.length > 1) {
             unit.weaponRefinement = weaponInfo.weaponRefinementOptions[1].id;
         }
         unit.support = this.__getMaxSpSkillId(unit.support, unit.heroInfo.supportOptions, [g_appData.supportInfos]);
@@ -820,14 +913,14 @@ class BattleSimmulatorBase {
         // A、Cスキルは240から300にしてもスコアが変わらない場合があるのでチェック
         {
             this.data.skillDatabase.updateUnitSkillInfo(unit);
-            if (unit.passiveC != origPassiveC) {
+            if (unit.passiveC !== origPassiveC) {
                 // スコアが変わらなければ低級スキルを設定
                 unit.passiveC = this.__examinesWhetherLowerSpSkillIsTheSameScore(unit, 240) ? this.__findSpecifiedSpSkillId(
                     240, origPassiveC, unit.heroInfo.passiveCOptions, [g_appData.passiveCInfos]) : unit.passiveC;
             }
 
             this.data.skillDatabase.updateUnitSkillInfo(unit);
-            if (unit.passiveA != origPassiveA && !this.__isDuel4Effective(unit)) {
+            if (unit.passiveA !== origPassiveA && !this.__isDuel4Effective(unit)) {
                 // スコアが変わらなければ低級スキルを設定
                 unit.passiveA = this.__examinesWhetherLowerSpSkillIsTheSameScore(unit, 240) ? this.__findSpecifiedSpSkillId(
                     240, origPassiveA, unit.heroInfo.passiveAOptions, [g_appData.passiveAInfos]) : unit.passiveA;
@@ -846,7 +939,7 @@ class BattleSimmulatorBase {
         let totalSp = currentTotalSp - (300 - lowerSkillSp);
         let currentScore = calcArenaTotalSpScore(currentTotalSp);
         let score = calcArenaTotalSpScore(totalSp);
-        return score == currentScore;
+        return score === currentScore;
     }
 
     __getMaxSpSkillId(defaultSkillId, options, skillInfoArrays) {
@@ -867,7 +960,7 @@ class BattleSimmulatorBase {
     __getMaxArenaScorePassiveA(unit) {
         if (this.__isDuel4Effective(unit)) {
             let duel4Skill = this.__findEquipableMaxDuelSkill(unit);
-            if (duel4Skill != PassiveA.None) {
+            if (duel4Skill !== PassiveA.None) {
                 unit.passiveA = duel4Skill;
                 return duel4Skill;
             }
@@ -997,7 +1090,7 @@ class BattleSimmulatorBase {
                         return true;
                     }
                 }
-                else if (origin == targetOrigin) {
+                else if (origin === targetOrigin) {
                     return true;
                 }
             }
@@ -1029,18 +1122,18 @@ class BattleSimmulatorBase {
         let highestHp = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
             if (this.__areSameOrigin(unit, targetOrigins)) {
-                if (unit != duoUnit && unit.isActionDone) {
+                if (unit !== duoUnit && unit.isActionDone) {
                     if (unit.hp > highestHp) {
                         highestHpUnits = [unit];
                         highestHp = unit.hp;
-                    } else if (unit.hp == highestHp) {
+                    } else if (unit.hp === highestHp) {
                         highestHpUnits.push(unit);
                     }
                 }
             }
         }
 
-        if (highestHpUnits.length == 1) {
+        if (highestHpUnits.length === 1) {
             for (let unit of highestHpUnits) {
                 unit.isActionDone = false;
             }
@@ -1378,13 +1471,13 @@ class BattleSimmulatorBase {
                                 highestHpUnits = [unit];
                                 heigestHp = unit.hp;
                             }
-                            else if (unit.hp == highestHp) {
+                            else if (unit.hp === highestHp) {
                                 highestHpUnits.push(unit);
                             }
                         }
                     }
 
-                    if (highestHpUnits.length == 1) {
+                    if (highestHpUnits.length === 1) {
                         for (let unit of highestHpUnits) {
                             unit.isActionDone = false;
                             unit.addStatusEffect(StatusEffectType.AirOrders);
@@ -1438,17 +1531,17 @@ class BattleSimmulatorBase {
                 break;
             case Hero.DuoEphraim:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
-                    if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Armor) {
+                    if (unit.moveType === MoveType.Infantry || unit.moveType === MoveType.Armor) {
                         unit.addStatusEffect(StatusEffectType.MobilityIncreased);
                     }
                 }
                 break;
             case Hero.ChristmasMarth:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 99, 3)) {
-                    if (unit == duoUnit) {
+                    if (unit === duoUnit) {
                         continue;
                     }
-                    if (unit.moveType == MoveType.Flying || unit.moveType == MoveType.Armor) {
+                    if (unit.moveType === MoveType.Flying || unit.moveType === MoveType.Armor) {
                         unit.applyAllBuff(3);
                         unit.addStatusEffect(StatusEffectType.BonusDoubler);
                     }
@@ -1456,7 +1549,7 @@ class BattleSimmulatorBase {
                 break;
             case Hero.NewYearAlfonse:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 3, 3)) {
-                    if (unit.moveType == MoveType.Infantry) {
+                    if (unit.moveType === MoveType.Infantry) {
                         unit.reduceSpecialCount(2);
                     }
                 }
@@ -1539,13 +1632,13 @@ class BattleSimmulatorBase {
 
     __findStructureByIconFileName(iconFileName) {
         for (let st of g_appData.defenseStructureStorage.objs) {
-            if (st.iconFileName == iconFileName) {
+            if (st.iconFileName === iconFileName) {
                 return st;
             }
         }
 
         for (let setting of OrnamentSettings) {
-            if (setting.icon == iconFileName) {
+            if (setting.icon === iconFileName) {
                 return this.__findStructure(st => st instanceof Ornament);
             }
         }
@@ -1554,7 +1647,7 @@ class BattleSimmulatorBase {
 
 
     limitArrayLengthTo2WithLargerLengthString(strArray) {
-        if (strArray.length == 2) {
+        if (strArray.length === 2) {
             return strArray;
         }
 
@@ -1577,7 +1670,7 @@ class BattleSimmulatorBase {
         let filtered = [];
         for (let i = 0; i < strArray.length; ++i) {
             for (let j = 0; j < maxIndices.length; ++j) {
-                if (maxIndices[j][0] == i) {
+                if (maxIndices[j][0] === i) {
                     filtered.push(strArray[i]);
                     break;
                 }
@@ -1627,7 +1720,7 @@ class BattleSimmulatorBase {
 
         let foundName = result[0];
         for (let skillInfo of this.__enumerateElemOfArrays(infoCandidates)) {
-            if (skillInfo.name == foundName) {
+            if (skillInfo.name === foundName) {
                 return skillInfo;
             }
         }
@@ -1636,7 +1729,7 @@ class BattleSimmulatorBase {
 
     loadImageAnalysisLibraries() {
         let self = this;
-        if (this.tesseractLoadState == ModuleLoadState.NotLoaded) {
+        if (this.tesseractLoadState === ModuleLoadState.NotLoaded) {
             self.tesseractLoadState = ModuleLoadState.Loading;
             self.writeSimpleLogLine("Tesseract の初期化開始..");
             importJs("https://unpkg.com/tesseract.js@1.0.19/dist/tesseract.min.js", x => {
@@ -1645,7 +1738,7 @@ class BattleSimmulatorBase {
             });
         }
 
-        if (this.openCvLoadState == ModuleLoadState.NotLoaded) {
+        if (this.openCvLoadState === ModuleLoadState.NotLoaded) {
             self.openCvLoadState = ModuleLoadState.Loading;
             self.writeSimpleLogLine("OpenCV の初期化開始..");
             // let jsPath = "https://docs.opencv.org/4.3.0/opencv.js";
@@ -1660,16 +1753,16 @@ class BattleSimmulatorBase {
     }
 
     async setUnitsByStatusImages(files) {
-        if (files.length == 0) {
+        if (files.length === 0) {
             this.writeErrorLine("画像ファイルを選択してください");
             return;
         }
 
-        if (this.openCvLoadState != ModuleLoadState.Loaded) {
+        if (this.openCvLoadState !== ModuleLoadState.Loaded) {
             this.writeErrorLine("OpenCV の初期化が終わっていません。少し待ってから実行してください。");
             return;
         }
-        if (this.tesseractLoadState != ModuleLoadState.Loaded) {
+        if (this.tesseractLoadState !== ModuleLoadState.Loaded) {
             this.writeErrorLine("Tesseract の初期化が終わっていません。少し待ってから実行してください。");
             return;
         }
@@ -1697,7 +1790,7 @@ class BattleSimmulatorBase {
             unit.setIvLowStat(StatusType.None, false);
             unit.level = g_appData.getResonantBattlesEnemyLevelForAdvanced();
 
-            let isHeroIndexChanged = heroIndex != null && unit.heroIndex != heroIndex;
+            let isHeroIndexChanged = heroIndex != null && unit.heroIndex !== heroIndex;
             if (heroIndex != null) {
                 g_appData.initializeByHeroInfo(unit, heroIndex, false);
                 unit.updatePureGrowthRate();
@@ -1727,7 +1820,7 @@ class BattleSimmulatorBase {
     }
 
     __setUnitForTempestTrials(unit, heroIndex) {
-        let isHeroIndexChanged = heroIndex != unit.heroIndex;
+        let isHeroIndexChanged = heroIndex !== unit.heroIndex;
         unit.merge = 0;
         unit.dragonflower = 0;
         unit.isBonusChar = false;
@@ -1748,10 +1841,10 @@ class BattleSimmulatorBase {
     __selectHeroInfoRandom(moveType, attackRange) {
         let candidates = [];
         for (let heroInfo of g_appData.heroInfos.data) {
-            if (heroInfo.moveType == moveType
-                && heroInfo.attackRange == attackRange
-                && heroInfo.howToGet == "ガチャ"
-                && heroInfo.name != "スルト"
+            if (heroInfo.moveType === moveType
+                && heroInfo.attackRange === attackRange
+                && heroInfo.howToGet === "ガチャ"
+                && heroInfo.name !== "スルト"
             ) {
                 candidates.push(heroInfo);
             }
@@ -1865,7 +1958,7 @@ class BattleSimmulatorBase {
             unit.isBonusChar = true;
         }
 
-        let heroInfos = [];
+        let heroInfos;
         switch (this.vm.mapKind) {
             case MapType.ResonantBattles_8:
                 {
@@ -2219,7 +2312,7 @@ class BattleSimmulatorBase {
             // 敵を画像認識したいことはないと思うので、敵が除外されたリストから探す
             g_appData.heroInfos.heroInfosWithoutEnemy,
             info => {
-                if (info.pureNames.length == 0) {
+                if (info.pureNames.length === 0) {
                     return 10000;
                 }
 
@@ -2242,7 +2335,7 @@ class BattleSimmulatorBase {
     __findSimilarStatusName(partialName) {
         const statusNames = ["HP", "攻撃", "速さ", "守備", "魔防"];
         for (let statusName of statusNames) {
-            if (partialName[0] == statusName[0]) {
+            if (partialName[0] === statusName[0]) {
                 return statusName;
             }
         }
@@ -2305,7 +2398,7 @@ class BattleSimmulatorBase {
         let minName = null;
         for (let name of names) {
             let diff = calcSimilarityFunc(name);
-            if (diff == 0) {
+            if (diff === 0) {
                 return [name, diff];
             }
             if (diff <= diffThreshold && diff < minDiff) {
@@ -2326,7 +2419,7 @@ class BattleSimmulatorBase {
         let minInfo = null;
         for (let info of infos) {
             let diff = calcSimilarityFunc(info);
-            if (diff == 0) {
+            if (diff === 0) {
                 return [info, diff];
             }
             if (diff <= diffThreshold && diff < minDiff) {
@@ -2584,7 +2677,7 @@ class BattleSimmulatorBase {
 
         const startTime = Date.now();
 
-        let dummyHeroIndices = [targetUnit.heroIndex];
+        // let dummyHeroIndices = [targetUnit.heroIndex];
         const enemyHeroInfos = Array.from(g_appData.heroInfos.data.filter(x => x.bookVersion > 0));
         const unitCount = enemyHeroInfos.length;
         startProgressiveProcess(unitCount,
@@ -2622,7 +2715,7 @@ class BattleSimmulatorBase {
                     self.writeDebugLogLine(`${result.heroInfo.name}: ${winRate}`);
                 }
                 const endTime = Date.now();
-                var diffSec = (endTime - startTime) * 0.001;
+                let diffSec = (endTime - startTime) * 0.001;
                 self.writeLogLine(`テスト完了(${diffSec} sec)--------------------`);
 
                 let originalDisableAllLogs = self.disableAllLogs;
@@ -2718,7 +2811,7 @@ class BattleSimmulatorBase {
     }
 
     setHero(unit, heroIndex) {
-        if (unit.heroIndex == heroIndex) {
+        if (unit.heroIndex === heroIndex) {
             return;
         }
 
@@ -2730,7 +2823,7 @@ class BattleSimmulatorBase {
             return;
         }
         g_appData.commandQueuePerAction.clear();
-        if (g_appData.currentTurn > 0 && g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
+        if (g_appData.currentTurn > 0 && g_appData.globalBattleContext.currentPhaseType === UnitGroupType.Ally) {
             g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Enemy;
             return;
         }
@@ -2762,7 +2855,7 @@ class BattleSimmulatorBase {
             return;
         }
         g_appData.commandQueuePerAction.clear();
-        if (g_appData.currentTurn > 0 && g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Enemy) {
+        if (g_appData.currentTurn > 0 && g_appData.globalBattleContext.currentPhaseType === UnitGroupType.Enemy) {
             g_appData.globalBattleContext.currentPhaseType = UnitGroupType.Ally;
             return;
         }
@@ -2791,7 +2884,7 @@ class BattleSimmulatorBase {
 
     __findNameOfSkill(skillOptions, id) {
         for (let option of skillOptions) {
-            if (option.id == id) {
+            if (option.id === id) {
                 return option.text;
             }
         }
@@ -2820,7 +2913,7 @@ class BattleSimmulatorBase {
     }
 
     setDamageCalcSummary(attacker, attackTarget, attackerInfo, attackTargetInfo) {
-        if (attacker.groupId == UnitGroupType.Ally) {
+        if (attacker.groupId === UnitGroupType.Ally) {
             this.__setAttackerUnit(attacker.id);
             this.__setAttackTargetUnit(attackTarget.id);
             this.vm.attackerInfo = attackerInfo;
@@ -2925,20 +3018,17 @@ class BattleSimmulatorBase {
     }
 
     __findAetherRaidOffensePresetSetting(index) {
-        let preset = null;
+        let preset;
         if (this.vm.globalBattleContext.isLightSeason) {
             if (index < AetherRaidOffensePresetOptions_LightSeason.length) {
                 preset = AetherRaidOffensePresetOptions_LightSeason[index];
-            }
-            else {
+            } else {
                 preset = AetherRaidOffensePresetOptions_LightSeason[AetherRaidOffensePresetOptions_LightSeason.length - 1];
             }
-        }
-        else {
+        } else {
             if (index < AetherRaidOffensePresetOptions_AstraSeason.length) {
                 preset = AetherRaidOffensePresetOptions_AstraSeason[index];
-            }
-            else {
+            } else {
                 preset = AetherRaidOffensePresetOptions_AstraSeason[AetherRaidOffensePresetOptions_AstraSeason.length - 1];
             }
         }
@@ -2982,7 +3072,7 @@ class BattleSimmulatorBase {
     }
 
     writeDebugLogLine(log) {
-        if (this.disableAllLogs || this.vm.showDetailLog == false) {
+        if (this.disableAllLogs || this.vm.showDetailLog === false) {
             return;
         }
         this.vm.damageCalcLog += "<span style='font-size:10px;color:#666666;'>" + log + '</span><br/>';
@@ -3004,13 +3094,13 @@ class BattleSimmulatorBase {
         return g_appData.enumerateUnitsWithPredicator(predicator);
     }
     enumerateUnitsOnMap(predicator = null) {
-        return g_appData.enumerateUnitsWithPredicator(x => x.isOnMap && (x == null || predicator(x)));
+        return g_appData.enumerateUnitsWithPredicator(x => x.isOnMap && predicator?.(x));
     }
 
     __findIndexOfUnit(id) {
         for (let i = 0; i < this.vm.units.length; ++i) {
             let unit = this.vm.units[i];
-            if (unit.id == id) {
+            if (unit.id === id) {
                 return i;
             }
         }
@@ -3034,7 +3124,7 @@ class BattleSimmulatorBase {
     __isPlusWeaponAvailable(weaponName) {
         let plusWeaponName = weaponName + "+";
         for (let info of g_appData.weaponInfos) {
-            if (info.name == plusWeaponName) {
+            if (info.name === plusWeaponName) {
                 return true;
             }
         }
@@ -3110,7 +3200,7 @@ class BattleSimmulatorBase {
 
     __findSkillInfoByName(skillInfos, name) {
         for (let info of skillInfos) {
-            if (info.name == name) {
+            if (info.name === name) {
                 return info;
             }
         }
@@ -3129,7 +3219,7 @@ class BattleSimmulatorBase {
     __findSkillInfoFromArrays(skillInfoArrays, id) {
         for (let skillInfos of skillInfoArrays) {
             for (let info of skillInfos) {
-                if (info.id == id) {
+                if (Number(info.id) === id) {
                     return info;
                 }
             }
@@ -3175,7 +3265,7 @@ class BattleSimmulatorBase {
 
                 info.weaponRefinementOptions.push(self.vm.weaponRefinementOptions[0]);
                 if (info.hasSpecialWeaponRefinement) {
-                    if (info.specialRefineHpAdd == 3) {
+                    if (info.specialRefineHpAdd === 3) {
                         info.weaponRefinementOptions.push({ id: WeaponRefinementType.Special_Hp3, text: "特殊、HP+3" });
                     }
                     else {
@@ -3183,7 +3273,7 @@ class BattleSimmulatorBase {
                     }
                 }
 
-                if (info.weaponType == WeaponType.Staff) {
+                if (info.weaponType === WeaponType.Staff) {
                     info.weaponRefinementOptions.push({ id: WeaponRefinementType.WrathfulStaff, text: "神罰の杖" });
                     info.weaponRefinementOptions.push({ id: WeaponRefinementType.DazzlingStaff, text: "幻惑の杖" });
                     continue;
@@ -3310,8 +3400,8 @@ class BattleSimmulatorBase {
     }
     __sortSkillOptionsAlphabetically(options) {
         options.sort(function (a, b) {
-            if (a.id == -1) { return -1; }
-            if (b.id == -1) { return 1; }
+            if (a.id === -1) { return -1; }
+            if (b.id === -1) { return 1; }
             if (a.text < b.text) { return -1; }
             if (a.text > b.text) { return 1; }
             return 0;
@@ -3322,13 +3412,11 @@ class BattleSimmulatorBase {
             if (skill < 0) {
                 continue;
             }
-            if (countFunc != null) {
-                countFunc();
-            }
+            countFunc?.();
             let skillInfo = this.__findSkillInfoFromArrays(infoLists, skill.id);
             let isImplemented = skill.id === NoneValue || (skillInfo != null && skillInfo.isImplemented());
-            if (isImplemented && countImplFunc != null) {
-                countImplFunc();
+            if (isImplemented) {
+                countImplFunc?.();
             }
             if (skillInfo != null) {
                 skill.text = skillInfo.getDisplayName();
@@ -3339,7 +3427,7 @@ class BattleSimmulatorBase {
     }
 
     __findSkillNameFromSkillOptions(skillId, options) {
-        let option = options.find(x => x.id == skillId);
+        let option = options.find(x => x.id === skillId);
         if (option == null) {
             return "不明";
         }
@@ -3366,7 +3454,7 @@ class BattleSimmulatorBase {
         this.writeLogLine(this.damageCalc.log);
 
         // 切り込みなどの移動系スキル
-        let isMoveSkillEnabled = defUnit == result.defUnit;
+        let isMoveSkillEnabled = defUnit === result.defUnit;
         if (isMoveSkillEnabled && atkUnit.isAlive) {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
         }
@@ -3515,7 +3603,7 @@ class BattleSimmulatorBase {
         {
             this.damageCalc.updateUnitSpur(atkUnit);
             this.damageCalc.updateUnitSpur(defUnit);
-            if (result.defUnit != defUnit) {
+            if (result.defUnit !== defUnit) {
                 let saverUnit = result.defUnit;
                 this.damageCalc.updateUnitSpur(saverUnit);
             }
@@ -3565,7 +3653,7 @@ class BattleSimmulatorBase {
             }
         }
 
-        if (this.data.gameMode == GameMode.SummonerDuels) {
+        if (this.data.gameMode === GameMode.SummonerDuels) {
             this.data.globalBattleContext.addSummonerDuelsKoScore(atkUnit, defUnit);
         }
 
@@ -3611,7 +3699,7 @@ class BattleSimmulatorBase {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
-     * @param  {DamageType} damageType=DamageType.EstimatedDamage
+     * @param  {number} damageType=DamageType.EstimatedDamage
      * @returns {DamageCalcResult}
      */
     calcDamageTemporary(
@@ -3624,7 +3712,7 @@ class BattleSimmulatorBase {
         let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, damageType, this.data.gameMode);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);
-        if (result.defUnit != defUnit) {
+        if (result.defUnit !== defUnit) {
             let saverUnit = result.defUnit;
             this.damageCalc.updateUnitSpur(saverUnit, false);
         }
@@ -3640,7 +3728,7 @@ class BattleSimmulatorBase {
     }
 
     __canDebuff2PointsOfDefOrRes(attackUnit, targetUnit) {
-        let unit = new Unit("", "", UnitGroupType.Ally, 0, "", 1);
+        let unit = new Unit("", "", UnitGroupType.Ally, 0, "");
         unit.defDebuff = targetUnit.defDebuff;
         unit.resDebuff = targetUnit.resDebuff;
 
@@ -3731,15 +3819,11 @@ class BattleSimmulatorBase {
     }
 
     get isOddTurn() {
-        return g_appData.currentTurn % 2 == 1;
+        return g_appData.currentTurn % 2 === 1;
     }
 
     __isSolo(unit) {
-        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1)) {
-            return false;
-        }
-
-        return true;
+        return !this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1).next().done;
     }
 
     enumerateUnitsWithinSpecifiedRange(posX, posY, unitGroup, rangeHorLength, rangeVerLength) {
@@ -3798,7 +3882,7 @@ class BattleSimmulatorBase {
         }
     }
     /**
-     * @param  {Number} groupId
+     * @param  {number} groupId
      * @returns {Unit[]}
      */
     enumerateUnitsInSpecifiedGroup(groupId) {
@@ -3851,12 +3935,14 @@ class BattleSimmulatorBase {
      * @param  {Unit} unit
      * @param  {Unit} enemyUnit
      * @param  {Number} preCombatDamage
+     * @param damageAfterBeginningOfCombat
      * @param  {Number} damage
      * @param  {Number} attackCount
      * @param  {Number} atk
      * @param  {Number} spd
      * @param  {Number} def
      * @param  {Number} res
+     * @param tile
      */
     __createDamageCalcSummaryHtml(unit, enemyUnit,
         preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount,
@@ -3888,10 +3974,10 @@ class BattleSimmulatorBase {
 
         // 奥義カウント、ダメージ表示
         let specialHtml = `<span style="color: pink;">${unit.specialCount}</span>`;
-        let damageHtml = "ー";
+        let damageHtml;
         if (attackCount > 0) {
             let precombatHtml = preCombatDamage > 0 ? `${preCombatDamage}+` : "";
-            let afterBeginningOfCombatbatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
+            let afterBeginningOfCombatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
             // 特効は緑表示にする
             let combatHtml = unit.battleContext.isEffectiveToOpponent ?
                 `<span style='color:#00FF00'>${damage}</span>` :
@@ -3899,10 +3985,10 @@ class BattleSimmulatorBase {
             if (attackCount > 1) {
                 combatHtml += `×${attackCount}`;
             }
-            damageHtml = `${precombatHtml}${afterBeginningOfCombatbatHtml}${combatHtml}`;
+            damageHtml = `${precombatHtml}${afterBeginningOfCombatHtml}${combatHtml}`;
         } else {
-            let afterBeginningOfCombatbatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
-            damageHtml = `${afterBeginningOfCombatbatHtml}`;
+            let afterBeginningOfCombatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
+            damageHtml = `${afterBeginningOfCombatHtml}ー`;
         }
         html += `奥${specialHtml}  攻撃: ${damageHtml}<br/>`;
         return html;
@@ -4053,7 +4139,7 @@ class BattleSimmulatorBase {
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
 
-        if (targetUnits.length == 0) {
+        if (targetUnits.length === 0) {
             return;
         }
 
@@ -4063,7 +4149,7 @@ class BattleSimmulatorBase {
         this.__initializeAllUnitsOnMapPerTurn(this.enumerateAllyUnitsOnMap());
         this.__initializeTilesPerTurn(this.map._tiles, group);
 
-        if (this.data.gameMode != GameMode.SummonerDuels) {
+        if (this.data.gameMode !== GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
                 // TODO: 正しい挙動か確認する
                 unit.endAction();
@@ -4081,7 +4167,7 @@ class BattleSimmulatorBase {
 
         this.__applySkillsForBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits);
 
-        if (this.data.gameMode == GameMode.SummonerDuels) {
+        if (this.data.gameMode === GameMode.SummonerDuels) {
             this.data.globalBattleContext.initializeSummonerDuelsTurnContext(
                 this.__getCaptainSkill(UnitGroupType.Ally),
                 this.__getCaptainSkill(UnitGroupType.Enemy)
@@ -4127,26 +4213,26 @@ class BattleSimmulatorBase {
 
             // 比翼や双界スキル発動カウントリセット
             unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
-            if (unit.heroIndex == Hero.YoungPalla
-                || unit.heroIndex == Hero.DuoSigurd
-                || unit.heroIndex == Hero.DuoEirika
-                || unit.heroIndex == Hero.DuoSothis
-                || unit.heroIndex == Hero.DuoYmir
+            if (unit.heroIndex === Hero.YoungPalla
+                || unit.heroIndex === Hero.DuoSigurd
+                || unit.heroIndex === Hero.DuoEirika
+                || unit.heroIndex === Hero.DuoSothis
+                || unit.heroIndex === Hero.DuoYmir
             ) {
                 if (this.isOddTurn) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
                 }
             }
-            else if (unit.heroIndex == Hero.SummerMia
-                || unit.heroIndex == Hero.SummerByleth
-                || unit.heroIndex == Hero.PirateVeronica
-                || unit.heroIndex == Hero.DuoHilda
-                || unit.heroIndex == Hero.DuoNina
-                || unit.heroIndex == Hero.DuoAskr
-                || unit.heroIndex == Hero.HarmonizedTiki
-                || unit.heroIndex == Hero.DuoKagero
+            else if (unit.heroIndex === Hero.SummerMia
+                || unit.heroIndex === Hero.SummerByleth
+                || unit.heroIndex === Hero.PirateVeronica
+                || unit.heroIndex === Hero.DuoHilda
+                || unit.heroIndex === Hero.DuoNina
+                || unit.heroIndex === Hero.DuoAskr
+                || unit.heroIndex === Hero.HarmonizedTiki
+                || unit.heroIndex === Hero.DuoKagero
             ) {
-                if (this.data.currentTurn % 3 == 1) {
+                if (this.data.currentTurn % 3 === 1) {
                     unit.duoOrHarmonizedSkillActivationCount = 0;
                 }
             }
@@ -4279,9 +4365,9 @@ class BattleSimmulatorBase {
         }
 
         let staffUserOrSacrificeUserPriority = 0;
-        if (unit.weaponType == WeaponType.Staff ||
-            unit.support == Support.Sacrifice ||
-            unit.support == Support.MaidensSolace) {
+        if (unit.weaponType === WeaponType.Staff ||
+            unit.support === Support.Sacrifice ||
+            unit.support === Support.MaidensSolace) {
             staffUserOrSacrificeUserPriority = 1;
         }
 
@@ -4330,7 +4416,7 @@ class BattleSimmulatorBase {
     }
 
     simulateBeginningOfEnemyTurn() {
-        if (g_appData.currentTurn == this.vm.maxTurn) {
+        if (g_appData.currentTurn === this.vm.maxTurn) {
             return;
         }
 
@@ -4354,7 +4440,7 @@ class BattleSimmulatorBase {
             let expansionEnemyUnit = g_appData.getEnemyExpansionUnitOnMap();
             if (expansionEnemyUnit != null) {
                 // todo: 敵が7体編成じゃない場合、正しく判定できてない
-                if (self.countEnemyUnitsOnMap() == g_appData.enemyUnits.length) {
+                if (self.countEnemyUnitsOnMap() === g_appData.enemyUnits.length) {
                     expansionEnemyUnit.endAction();
                 }
             }
@@ -4370,14 +4456,14 @@ class BattleSimmulatorBase {
     }
 
     simulateBeginningOfAllyTurn() {
-        if (g_appData.currentTurn == this.vm.maxTurn) {
+        if (g_appData.currentTurn === this.vm.maxTurn) {
             return;
         }
         let self = this;
         this.__enqueueCommand("自ターン開始", function () {
             self.vm.globalBattleContext.currentPhaseType = UnitGroupType.Ally;
             ++g_appData.globalBattleContext.currentTurn;
-            if (g_appData.currentTurn == 1) {
+            if (g_appData.currentTurn === 1) {
                 // 戦闘開始
                 self.vm.isEnemyActionTriggered = false;
                 for (let unit of g_appData.units) {
@@ -4446,7 +4532,7 @@ class BattleSimmulatorBase {
     }
 
     __placeUnitToPlaceableSafeTilesNextToThreatenedTilesImpl(units, allUnisPlacedFunc) {
-        if (units.length == 0) {
+        if (units.length === 0) {
             allUnisPlacedFunc();
             return;
         }
@@ -4544,7 +4630,7 @@ class BattleSimmulatorBase {
         let contexts = [];
         for (let unit of units) {
             let dist = tile.calculateDistance(unit.placedTile);
-            let context = new Object();
+            let context = {};
             context.unit = unit;
             context.dist = dist;
             contexts.push(context);
@@ -4566,7 +4652,7 @@ class BattleSimmulatorBase {
         let originalEnemySpecialCount = enemyUnit.specialCount;
 
         this.clearDurabilityTestLog();
-        let tableHtml = "<table border='1'>";
+        let tableHtml = "<!--suppress HtmlDeprecatedAttribute --><table border='1'>";
         tableHtml += "<tr><th>守備/魔防</th><th>ダメージ概要</th><th>合計ダメージ</th></tr>";
         for (let i = 0; i < 12; ++i) {
             let mit = 10 + i * 5;
@@ -4657,6 +4743,7 @@ class BattleSimmulatorBase {
      * @param  {Unit} enemyUnit
      * @param  {Boolean} equipsAllDistCounterIfImpossible=false
      * @param  {Number} reducedSpecialCount=0
+     * @param  {number} overrideDragonflower
      */
     __durabilityTest_initUnit(
         targetUnit, heroInfo, enemyUnit, equipsAllDistCounterIfImpossible = false, reducedSpecialCount = 0, overrideDragonflower = -1
@@ -4680,14 +4767,14 @@ class BattleSimmulatorBase {
             targetUnit.setMoveCountFromMoveType();
             targetUnit.isResplendent = targetUnit.heroInfo.isResplendent;
             targetUnit.weaponRefinement = WeaponRefinementType.Special;
-            if (targetUnit.special == Special.None) {
+            if (targetUnit.special === Special.None) {
                 targetUnit.special = this.vm.durabilityTestDefaultSpecial;
             }
 
             g_appData.__updateUnitSkillInfo(targetUnit);
             let weaponRefinement = WeaponRefinementType.Special;
             if (targetUnit.weaponInfo != null
-                && targetUnit.weaponInfo.specialRefineHpAdd == 3
+                && targetUnit.weaponInfo.specialRefineHpAdd === 3
             ) {
                 weaponRefinement = WeaponRefinementType.Special_Hp3;
             }
@@ -4695,7 +4782,7 @@ class BattleSimmulatorBase {
 
             if (equipsAllDistCounterIfImpossible) {
                 // 全距離反撃できない場合に遠距離反撃、近距離反撃を装備する
-                if (targetUnit.attackRange != enemyUnit.attackRange
+                if (targetUnit.attackRange !== enemyUnit.attackRange
                     && !targetUnit.canCounterAttackToAllDistance()
                 ) {
                     if (targetUnit.isMeleeWeaponType()) {
@@ -4818,18 +4905,19 @@ class BattleSimmulatorBase {
 
             using_(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
                 for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
-                    let combatResult = this.calcDamageTemporary(attackerUnit, deffenceUnit, null,
-                        this.vm.durabilityTestCalcPotentialDamage ? DamageType.PotentialDamage : DamageType.CombatDamage);
+                    let damageType = this.vm.durabilityTestCalcPotentialDamage ?
+                        DamageType.PotentialDamage : DamageType.ActualDamage;
+                    this.calcDamageTemporary(attackerUnit, deffenceUnit, null, damageType);
                     targetUnit.hp = targetUnit.restHp;
                     targetUnit.specialCount = targetUnit.tmpSpecialCount;
-                    if (enemyUnit.restHp == 0) {
+                    if (enemyUnit.restHp === 0) {
                         ++tmpWinCount;
                     }
                 }
             });
 
             let combatResultText = "";
-            if (targetUnit.restHp == 0) {
+            if (targetUnit.restHp === 0) {
                 combatResultText = "敗北";
                 ++loseCount;
                 loseEnemies.push(heroInfo);
@@ -4838,7 +4926,7 @@ class BattleSimmulatorBase {
                     this.writeLogLine(log + this.damageCalc.log);
                 }
             }
-            else if (tmpWinCount == this.vm.durabilityTestBattleCount) {
+            else if (tmpWinCount === this.vm.durabilityTestBattleCount) {
                 combatResultText = "勝利";
                 ++winCount;
                 winEnemies.push(heroInfo);
@@ -4870,7 +4958,7 @@ class BattleSimmulatorBase {
             enemyUnit.passiveSInfo = originalEnemySacredSealInfo;
         }
 
-        let result = new Object();
+        let result = {};
         result.winCount = winCount;
         result.drawCount = drawCount;
         result.loseCount = loseCount;
@@ -4882,8 +4970,8 @@ class BattleSimmulatorBase {
 
     setOneVsOneForDurabilityTest() {
         for (let unit of this.enumerateAllUnitsOnMap()) {
-            if (unit.id == g_appData.durabilityTestAllyUnitId
-                || unit.id == g_appData.durabilityTestEnemyUnitId
+            if (unit.id === g_appData.durabilityTestAllyUnitId
+                || unit.id === g_appData.durabilityTestEnemyUnitId
             ) {
                 continue;
             }
@@ -4902,7 +4990,7 @@ class BattleSimmulatorBase {
         let pureScore = winCount * winScore + drawCount * drawScore;
         let percentageScore = Math.floor(pureScore / (totalCount * winScore) * 1000) * 0.1;
         let percentageScoreText = String(percentageScore);
-        percentageScoreText = percentageScoreText.substr(0, 4);
+        percentageScoreText = percentageScoreText.slice(0, 4);
         return percentageScoreText;
     }
 
@@ -4996,7 +5084,7 @@ class BattleSimmulatorBase {
         this.tempSerializedTurn = exportPerTurnSettingAsString();
 
         let currentTurn = g_appData.currentTurn;
-        if (g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
+        if (g_appData.globalBattleContext.currentPhaseType === UnitGroupType.Ally) {
             this.simulateBeginningOfEnemyTurn();
         }
         this.isTurnWideCommandQueueEnabled = true;
@@ -5010,7 +5098,7 @@ class BattleSimmulatorBase {
 
         g_appData.currentTurn = currentTurn;
         importPerTurnSetting(this.tempSerializedTurn);
-        if (g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
+        if (g_appData.globalBattleContext.currentPhaseType === UnitGroupType.Ally) {
             this.simulateBeginningOfEnemyTurn();
         }
 
@@ -5021,7 +5109,7 @@ class BattleSimmulatorBase {
         tile.resetOverriddenCell();
         g_appData.currentTurn = currentTurn;
         importPerTurnSetting(this.tempSerializedTurn);
-        if (g_appData.globalBattleContext.currentPhaseType == UnitGroupType.Ally) {
+        if (g_appData.globalBattleContext.currentPhaseType === UnitGroupType.Ally) {
             this.simulateBeginningOfEnemyTurn();
         }
 
@@ -5038,7 +5126,7 @@ class BattleSimmulatorBase {
 
         let aliveEnemyCount = this.__countAliveUnits(UnitGroupType.Enemy);
         let aliveAllyCount = this.__countAliveUnits(UnitGroupType.Ally);
-        if (aliveAllyCount == origAliveAllyCount) {
+        if (aliveAllyCount === origAliveAllyCount) {
             tile.overrideCell("<span style='font-size:8px;color:#0000FF'>敵数" + aliveEnemyCount + "</span>", "3px", "#0000FF");
         }
         else {
@@ -5103,26 +5191,26 @@ class BattleSimmulatorBase {
     __simulateAllyActionCustomized() {
         let targetGroup = UnitGroupType.Ally;
         let enemyGroup = UnitGroupType.Enemy;
-        if (g_appData.globalBattleContext.currentPhaseType == enemyGroup) {
+        if (g_appData.globalBattleContext.currentPhaseType === enemyGroup) {
             return false;
         }
 
         let actionableUnits = this.__getActionableUnits(targetGroup);
         let allyUnits = this.__getUnits(unit =>
             unit.isOnMap
-            && unit.groupId == targetGroup);
+            && unit.groupId === targetGroup);
         let enemyUnits = this.__getUnits(unit =>
             unit.isOnMap
-            && unit.groupId == enemyGroup);
+            && unit.groupId === enemyGroup);
         let assistTargetableUnits = this.__getUnits(unit =>
             unit.isOnMap
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
-            && unit.groupId == targetGroup);
+            && unit.groupId === targetGroup);
         let assistableUnits = this.__getUnits(unit =>
-            unit.groupId == targetGroup
+            unit.groupId === targetGroup
             && unit.isOnMap
             && !unit.isActionDone
-            && unit.support != Support.None
+            && unit.support !== Support.None
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
         );
 
@@ -5140,6 +5228,7 @@ class BattleSimmulatorBase {
         }
 
         this.writeLogLine("■移動の計算------------");
+        // noinspection RedundantIfStatementJS
         if (this.simulateMovement(actionableUnits, enemyUnits, allyUnits)) {
             return false;
         }
@@ -5150,26 +5239,26 @@ class BattleSimmulatorBase {
     __simulateAllyAction() {
         let targetGroup = UnitGroupType.Ally;
         let enemyGroup = UnitGroupType.Enemy;
-        if (g_appData.globalBattleContext.currentPhaseType == enemyGroup) {
+        if (g_appData.globalBattleContext.currentPhaseType === enemyGroup) {
             return false;
         }
 
         let actionableUnits = this.__getActionableUnits(targetGroup);
         let allyUnits = this.__getUnits(unit =>
             unit.isOnMap
-            && unit.groupId == targetGroup);
+            && unit.groupId === targetGroup);
         let enemyUnits = this.__getUnits(unit =>
             unit.isOnMap
-            && unit.groupId == enemyGroup);
+            && unit.groupId === enemyGroup);
         let assistTargetableUnits = this.__getUnits(unit =>
             unit.isOnMap
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
-            && unit.groupId == targetGroup);
+            && unit.groupId === targetGroup);
         let assistableUnits = this.__getUnits(unit =>
-            unit.groupId == targetGroup
+            unit.groupId === targetGroup
             && unit.isOnMap
             && !unit.isActionDone
-            && unit.support != Support.None
+            && unit.support !== Support.None
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
         );
 
@@ -5192,6 +5281,7 @@ class BattleSimmulatorBase {
         }
 
         this.writeLogLine("■移動の計算------------");
+        // noinspection RedundantIfStatementJS
         if (this.simulateMovement(actionableUnits, enemyUnits, allyUnits)) {
             return false;
         }
@@ -5202,26 +5292,26 @@ class BattleSimmulatorBase {
     __simulateEnemyAction() {
         let targetGroup = UnitGroupType.Enemy;
         let enemyGroup = UnitGroupType.Ally;
-        if (g_appData.globalBattleContext.currentPhaseType == enemyGroup) {
+        if (g_appData.globalBattleContext.currentPhaseType === enemyGroup) {
             return false;
         }
 
         let actionableUnits = this.__getActionableUnits(targetGroup);
         let allyUnits = this.__getUnits(unit =>
             unit.isOnMap
-            && unit.groupId == targetGroup);
+            && unit.groupId === targetGroup);
         let enemyUnits = this.__getUnits(unit =>
             unit.isOnMap
-            && unit.groupId == enemyGroup);
+            && unit.groupId === enemyGroup);
         let assistTargetableUnits = this.__getUnits(unit =>
             unit.isOnMap
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
-            && unit.groupId == targetGroup);
+            && unit.groupId === targetGroup);
         let assistableUnits = this.__getUnits(unit =>
-            unit.groupId == targetGroup
+            unit.groupId === targetGroup
             && unit.isOnMap
             && !unit.isActionDone
-            && unit.support != Support.None
+            && unit.support !== Support.None
             && !unit.hasStatusEffect(StatusEffectType.Isolation)
         );
 
@@ -5252,6 +5342,7 @@ class BattleSimmulatorBase {
         }
 
         this.writeLogLine("■移動の計算------------");
+        // noinspection RedundantIfStatementJS
         if (this.simulateMovement(triggeredActionableUnits, enemyUnits, allyUnits)) {
             return false;
         }
@@ -5306,7 +5397,7 @@ class BattleSimmulatorBase {
             if (assistUnit.actionContext.isBlocker && assistUnit.hasMovementAssist()) {
                 this.writeLogLine(assistUnit.getNameWithGroup() + "が" + bestTargetToAssist.getNameWithGroup() + "をボディブロッキング可能か評価");
                 for (let allyUnit of allyUnits) {
-                    if (!allyUnit.hasWeapon || allyUnit.attackRange != 1) {
+                    if (!allyUnit.hasWeapon || allyUnit.attackRange !== 1) {
                         // 近接アタッカーのみが対象
                         continue;
                     }
@@ -5399,8 +5490,7 @@ class BattleSimmulatorBase {
     }
 
     __updateDistanceFromClosestEnemy(unit) {
-        let dist = unit.placedTile.calculateDistanceToClosestEnemyTile(unit);
-        unit.distanceFromClosestEnemy = dist;
+        unit.distanceFromClosestEnemy = unit.placedTile.calculateDistanceToClosestEnemyTile(unit);
     }
 
     __prepareActionContextForAssist(allyUnits, enemyUnits, triggersAction = true) {
@@ -5424,7 +5514,7 @@ class BattleSimmulatorBase {
                     + ", hasThreatenedByEnemyStatus=" + unit.actionContext.hasThreatenedByEnemyStatus
                 );
 
-                if (triggersAction && unit.groupId == UnitGroupType.Enemy) {
+                if (triggersAction && unit.groupId === UnitGroupType.Enemy) {
                     if (!g_appData.examinesEnemyActionTriggered(unit)) {
                         let isTriggered = this.__examinesCanTriggerAction(unit);
                         unit.isEnemyActionTriggered = isTriggered;
@@ -5447,7 +5537,7 @@ class BattleSimmulatorBase {
         // 敵ユニットを無視した移動範囲内に敵がいたら、敵は動き出す
         for (let tile of g_appData.map.enumerateMovableTiles(unit, true)) {
             if (tile.placedUnit != null
-                && tile.placedUnit.groupId != unit.groupId
+                && tile.placedUnit.groupId !== unit.groupId
             ) {
                 return true;
             }
@@ -5501,7 +5591,7 @@ class BattleSimmulatorBase {
     }
 
     __examinesIsUnitThreatenedByEnemy(unit, enemyUnits) {
-        if (unit.groupId == UnitGroupType.Enemy) {
+        if (unit.groupId === UnitGroupType.Enemy) {
             return unit.placedTile.isThreatenedByAlly;
         } else {
             return unit.placedTile.isThreatenedByEnemy;
@@ -5518,11 +5608,9 @@ class BattleSimmulatorBase {
 
     __examinesUnitThreatensEnemy(unit, enemyUnits) {
         this.__setAttackableUnitInfo(unit, enemyUnits);
-        if (unit.actionContext.attackableUnitInfos.length > 0) {
-            return true;
-        }
-        return false;
+        return unit.actionContext.attackableUnitInfos.length > 0;
     }
+
     /**
      * @param  {Unit} unit
      * @param  {Unit[]} enemyUnits
@@ -5542,7 +5630,7 @@ class BattleSimmulatorBase {
                 this.__updateCombatResultOfAttackableTargetInfo(attackableUnitInfo, unit, tile);
                 let combatResult = attackableUnitInfo.combatResultDetails[tile.id];
                 let result = attackableUnitInfo.combatResults[tile.id];
-                if (result == CombatResult.Win) {
+                if (result === CombatResult.Win) {
                     this.writeDebugLogLine(unit.getNameWithGroup() + "は戦闘に勝利するので補助資格なし");
                     return true;
                 }
@@ -5580,8 +5668,8 @@ class BattleSimmulatorBase {
                     && targetUnit.actionContext.hasThreatensEnemyStatus
                     && unit.canRallyTo(targetUnit, 2);
             case AssistType.Heal:
-                if (unit.support == Support.Sacrifice ||
-                    unit.support == Support.MaidensSolace) {
+                if (unit.support === Support.Sacrifice ||
+                    unit.support === Support.MaidensSolace) {
                     let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
                     let targetEnemyThreat = targetUnit.placedTile.getEnemyThreatFor(targetUnit.groupId);
                     if (assisterEnemyThreat > targetEnemyThreat) {
@@ -5605,7 +5693,7 @@ class BattleSimmulatorBase {
                         return false;
                     }
 
-                    let result = this.__getUserLossHpAndTargetHaelHpForDonorHeal(unit, targetUnit);
+                    let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(unit, targetUnit);
                     if (!result.success || result.targetHealHp < result.userLossHp) {
                         return false;
                     }
@@ -5660,12 +5748,12 @@ class BattleSimmulatorBase {
                 if (targetUnit.canHeal()) {
                     return true;
                 }
-                if (unit.support == Support.RescuePlus
-                    || unit.support == Support.Rescue
-                    || unit.support == Support.ReturnPlus
-                    || unit.support == Support.Return
-                    || unit.support == Support.NudgePlus
-                    || unit.support == Support.Nudge
+                if (unit.support === Support.RescuePlus
+                    || unit.support === Support.Rescue
+                    || unit.support === Support.ReturnPlus
+                    || unit.support === Support.Return
+                    || unit.support === Support.NudgePlus
+                    || unit.support === Support.Nudge
                 ) {
                     return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
                 }
@@ -5702,11 +5790,8 @@ class BattleSimmulatorBase {
                         return false;
                     }
 
-                    let result = this.__getUserLossHpAndTargetHaelHpForDonorHeal(unit, targetUnit);
-                    if (!result.success || result.targetHealHp < result.userLossHp) {
-                        return false;
-                    }
-                    return true;
+                    let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(unit, targetUnit);
+                    return result.success && result.targetHealHp >= result.userLossHp;
                 }
             default:
                 this.writeErrorLine("戦闘後補助が未実装のスキル: " + unit.supportInfo.name);
@@ -5714,7 +5799,7 @@ class BattleSimmulatorBase {
         }
     }
 
-    __getUserLossHpAndTargetHaelHpForDonorHeal(unit, targetUnit) {
+    __getUserLossHpAndTargetHealHpForDonorHeal(unit, targetUnit) {
         let userLossHp = 0;
         let targetHealHp = 0;
         switch (unit.support) {
@@ -5747,9 +5832,9 @@ class BattleSimmulatorBase {
             case AssistType.Refresh:
                 return true;
             case AssistType.Heal:
-                if (unit.support == Support.Sacrifice ||
-                    unit.support == Support.MaidensSolace) {
-                    if (unit.hp == 1) {
+                if (unit.support === Support.Sacrifice ||
+                    unit.support === Support.MaidensSolace) {
+                    if (unit.hp === 1) {
                         return false;
                     }
                 }
@@ -5761,12 +5846,8 @@ class BattleSimmulatorBase {
             case AssistType.Move:
                 return true;
             case AssistType.DonorHeal:
-                if (!g_appData.examinesEnemyActionTriggered(unit)) {
-                    // 発動しないっぽい
-                    return false;
-                }
-
-                return true;
+                // 発動しないっぽい
+                return g_appData.examinesEnemyActionTriggered(unit);
             default:
                 return false;
         }
@@ -5783,46 +5864,33 @@ class BattleSimmulatorBase {
         // todo: ちゃんと実装する
         switch (unit.supportInfo.assistType) {
             case AssistType.Refresh:
-                if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits)) { return false; }
-                return true;
+                return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits);
             case AssistType.Rally:
-                if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, false, true)) { return false; }
-                return true;
+                return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, false, true);
             case AssistType.Heal:
                 {
-                    if (unit.support == Support.Sacrifice ||
-                        unit.support == Support.MaidensSolace) {
-                        if (unit.hp == 1) {
+                    if (unit.support === Support.Sacrifice ||
+                        unit.support === Support.MaidensSolace) {
+                        if (unit.hp === 1) {
                             return false;
                         }
                     }
-
-                    let ignores5DamageDealt = unit.support != (Support.Sacrifice || Support.MaidensSolace);
-                    if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt)) { return false; }
-                    return true;
+                    let ignores5DamageDealt = unit.support !== (Support.Sacrifice || Support.MaidensSolace);
+                    return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt);
                 }
             case AssistType.Restore:
                 {
                     if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, true)) {
                         return false;
                     }
-                    if (!this.__isThereAllyThreatensEnemyStatus(unit)) {
-                        return false;
-                    }
-                    return true;
+                    return this.__isThereAllyThreatensEnemyStatus(unit);
                 }
             case AssistType.DonorHeal:
                 {
                     if (!g_appData.examinesEnemyActionTriggered(unit)) {
-                        // 発動しないっぽい
                         return false;
                     }
-
-                    if (unit.weapon != Weapon.None) {
-                        return false;
-                    }
-
-                    return true;
+                    return unit.weapon === Weapon.None;
                 }
             default:
                 return false;
@@ -5843,7 +5911,7 @@ class BattleSimmulatorBase {
         let maxPriorityValue = -100000;
         let chaseTarget = null;
         for (let unit of targetUnits) {
-            if (unit == evalUnit) { continue; }
+            if (unit === evalUnit) { continue; }
             if (!unit.isOnMap) {
                 continue;
             }
@@ -5872,7 +5940,7 @@ class BattleSimmulatorBase {
     __updateMovementOrders(targetUnits) {
         for (let unit of targetUnits) {
             let hasSupportPriority = 0;
-            if (unit.support == Support.None) {
+            if (unit.support === Support.None) {
                 hasSupportPriority = 1;
             }
             let attackRangePriority = 0;
@@ -5883,9 +5951,9 @@ class BattleSimmulatorBase {
             }
             // let distanceToClosestEnemy = unit.placedTile.calculateDistanceToClosestEnemyTile(unit);
             let distanceToClosestEnemy = unit.distanceFromClosestEnemy;
-            if (distanceToClosestEnemy == CanNotReachTile) { distanceToClosestEnemy = 100000; }
+            if (distanceToClosestEnemy === CanNotReachTile) { distanceToClosestEnemy = 100000; }
 
-            if (this.vm.gameMode == GameMode.ResonantBattles && unit.groupId == UnitGroupType.Enemy && isThief(unit)) {
+            if (this.vm.gameMode === GameMode.ResonantBattles && unit.groupId === UnitGroupType.Enemy && isThief(unit)) {
                 // 盗賊は自軍から遠い順に動くので反転
                 distanceToClosestEnemy *= -1;
             }
@@ -5918,7 +5986,7 @@ class BattleSimmulatorBase {
         let slotOrderDependentIndices = this.__getSlotOrderDependentIndices(targetUnits, x => x.actionContext.movePriority);
         for (let i = 0; i < targetUnits.length; ++i) {
             let unit = targetUnits[i];
-            if (unit.groupId == UnitGroupType.Enemy) {
+            if (unit.groupId === UnitGroupType.Enemy) {
                 if (slotOrderDependentIndices.includes(i)) {
                     this.writeWarningLine(`${unit.getNameWithGroup()}の移動順はスロット順で変わる可能性があります。`);
                 }
@@ -5930,7 +5998,7 @@ class BattleSimmulatorBase {
     __updateChaseTargetTilesForSpecifiedTile(targetTile) {
         let allUnitsOnMap = Array.from(this.enumerateAllUnitsOnMap());
         this.__updateChaseTargetTiles(allUnitsOnMap, currentChaseTargetTile => {
-            return targetTile == currentChaseTargetTile;
+            return targetTile === currentChaseTargetTile;
         });
     }
 
@@ -5948,9 +6016,7 @@ class BattleSimmulatorBase {
         let self = this;
         using_(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
             for (let evalUnit of targetUnits) {
-                if (evaluatesTileFunc != null
-                    && !evaluatesTileFunc(evalUnit.chaseTargetTile)
-                ) {
+                if (evaluatesTileFunc != null && !evaluatesTileFunc?.(evalUnit.chaseTargetTile)) {
                     continue;
                 }
                 self.__updateChaseTargetTile(evalUnit, enemyUnits, allyUnits);
@@ -5963,15 +6029,15 @@ class BattleSimmulatorBase {
             return;
         }
 
-        if (this.vm.gameMode == GameMode.ResonantBattles && evalUnit.groupId == UnitGroupType.Enemy) {
+        if (this.vm.gameMode === GameMode.ResonantBattles && evalUnit.groupId === UnitGroupType.Enemy) {
             if (isThief(evalUnit)) {
                 // 双界の盗賊の追跡対象計算
                 let minDist = CanNotReachTile;
                 let minTargetTile = null;
-                for (let tile of g_appData.map.enumerateTiles(tile => tile.posY == 0 && tile.isUnitPlacableForUnit(evalUnit))) {
+                for (let tile of g_appData.map.enumerateTiles(tile => tile.posY === 0 && tile.isUnitPlacableForUnit(evalUnit))) {
                     // todo: 下には移動できない制限があるっぽい？
                     let dist = tile.calculateUnitMovementCountToThisTile(evalUnit, null, -1, false);
-                    if (dist == CanNotReachTile) {
+                    if (dist === CanNotReachTile) {
                         continue;
                     }
 
@@ -5979,7 +6045,7 @@ class BattleSimmulatorBase {
                         minDist = dist;
                         minTargetTile = tile;
                     }
-                    else if (dist == minDist) {
+                    else if (dist === minDist) {
                         // 距離が同じ場合はタイル優先度っぽい
                         if (minTargetTile.tilePriority < tile.tilePriority) {
                             minTargetTile = tile;
@@ -6092,14 +6158,14 @@ class BattleSimmulatorBase {
             this.writeDebugLogLine(`追跡対象マス=(${chaseTargetTile.posX},${chaseTargetTile.posY})`);
 
             let movableTiles = this.__getMovableTiles(unit);
-            if (movableTiles.length == 0) {
+            if (movableTiles.length === 0) {
                 this.writeDebugLogLine(unit.getNameWithGroup() + "が移動可能なマスはなし");
                 continue;
             }
 
             let pivotTiles = [];
             let pivotContexts = [];
-            if (unit.support == Support.Pivot) {
+            if (unit.support === Support.Pivot) {
                 this.writeDebugLogLine("回り込みの評価");
                 // 回り込みの場合は回り込みで移動できるマスも列挙
                 this.__setBestAssistTiles(unit, (targetUnit, tile) => {
@@ -6118,7 +6184,7 @@ class BattleSimmulatorBase {
 
                         if (!pivotTiles.includes(pivotResult.assistUnitTileAfterAssist)) {
                             pivotTiles.push(pivotResult.assistUnitTileAfterAssist);
-                            let context = new Object();
+                            let context = {};
                             context.targetUnit = info.targetUnit;
                             context.tile = tile;
                             context.assistUnitTileAfterAssist = pivotResult.assistUnitTileAfterAssist;
@@ -6130,12 +6196,12 @@ class BattleSimmulatorBase {
 
             let targetTileContexts = this.__createTargetTileContexts(unit, movableTiles, pivotTiles);
             let targetTileContextsWithoutPivot = targetTileContexts;
-            if (unit.support == Support.Pivot) {
+            if (unit.support === Support.Pivot) {
                 // 壁破壊計算では回り込みなしの最適タイルが必要
                 targetTileContextsWithoutPivot = this.__createTargetTileContexts(unit, movableTiles, []);
             }
 
-            if (targetTileContexts.length == 0) {
+            if (targetTileContexts.length === 0) {
                 this.writeDebugLogLine(unit.getNameWithGroup() + "が対象に向かうために移動可能なマスはなし");
                 continue;
             }
@@ -6185,7 +6251,7 @@ class BattleSimmulatorBase {
                 // 回り込み
                 let pivotContext = null;
                 for (let context of pivotContexts) {
-                    if (context.assistUnitTileAfterAssist == bestTileToMove) {
+                    if (context.assistUnitTileAfterAssist === bestTileToMove) {
                         pivotContext = context;
                         break;
                     }
@@ -6193,7 +6259,7 @@ class BattleSimmulatorBase {
 
                 this.__enqueueSupportCommand(unit, pivotContext.tile, pivotContext.targetUnit);
             }
-            else if (bestTileToMove == unit.placedTile) {
+            else if (bestTileToMove === unit.placedTile) {
                 this.writeDebugLogLine(unit.getNameWithGroup() + "の最適な移動マスは現在のマスなので移動しない");
                 continue;
             }
@@ -6229,7 +6295,7 @@ class BattleSimmulatorBase {
 
         // 同時に複数ユニットが再移動可能になるシチュエーションはあり得ないので1人のみ処理
         let movableTiles = this.__getMovableTiles(targetUnit);
-        if (movableTiles.length == 0) {
+        if (movableTiles.length === 0) {
             this.__enqueueMoveCommand(unit, unit.placedTile, true);
             return true;
         }
@@ -6274,7 +6340,7 @@ class BattleSimmulatorBase {
         for (let tile of g_appData.map.getNearestMovableTiles(
             unit, chaseTargetTile, pivotTiles, false, movableTiles, ignoresUnits, tileUnit => {
                 if (isThief(unit)) {
-                    if (tileUnit.passiveS == PassiveS.GoeiNoGuzo && unit.isOnInitPos()) {
+                    if (tileUnit.passiveS === PassiveS.GoeiNoGuzo && unit.isOnInitPos()) {
                         // シーフは護衛が初期値にいるとき、障害物と扱ってるっぽい挙動を観測
                         return false;
                     }
@@ -6294,7 +6360,7 @@ class BattleSimmulatorBase {
         let chaseTargetTile = chaseTarget.placedTile;
         {
             if (!chaseTargetTile.isMovableTileForUnit(unit)
-                || chaseTargetTile.calculateUnitMovementCountToThisTile(unit, unit.placedTile) == CanNotReachTile
+                || chaseTargetTile.calculateUnitMovementCountToThisTile(unit, unit.placedTile) === CanNotReachTile
             ) {
                 // たどり着けない場合は攻撃可能なマスを追跡対象のマスにする
                 let minDist = CanNotReachTile;
@@ -6304,7 +6370,7 @@ class BattleSimmulatorBase {
                         minDist = dist;
                         chaseTargetTile = tile;
                     }
-                    else if (dist == minDist) {
+                    else if (dist === minDist) {
                         if (tile.tilePriority > chaseTargetTile.tilePriority) {
                             chaseTargetTile = tile;
                         }
@@ -6439,11 +6505,8 @@ class BattleSimmulatorBase {
             return commands;
         }
 
-        let commandType = CommandType.Normal;
         commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
-        commandType = CommandType.End;
-
-        commands.push(this.__createSupportCommand(unit, tile, assistTargetUnit, commandType));
+        commands.push(this.__createSupportCommand(unit, tile, assistTargetUnit, CommandType.End));
         return commands;
     }
 
@@ -6482,23 +6545,19 @@ class BattleSimmulatorBase {
             }
             self.applySupportSkill(unit, assistTargetUnit);
         };
-        let command = this.__createCommand(
+        return this.__createCommand(
             `${unit.id}-s-${assistTargetUnit.id}-${tile.id}`,
             `${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`,
             func,
             serial,
             commandType
         );
-        return command;
     }
 
     __createBreakStructureCommands(unit, moveTile, obj) {
         let commands = [];
-        let commandType = CommandType.Normal;
         commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
-        commandType = CommandType.End;
-
-        commands.push(this.__createBreakStructureCommand(unit, moveTile, obj, commandType));
+        commands.push(this.__createBreakStructureCommand(unit, moveTile, obj, CommandType.End));
         return commands;
     }
 
@@ -6509,33 +6568,36 @@ class BattleSimmulatorBase {
                 this.__convertStructurePerTurnStatusToSerial(obj);
         }
         let self = this;
-        let command = this.__createCommand(`${unit.id}-b-${obj.id}-${moveTile.id}`,
-            obj.name + `破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
-            function () {
-                if (unit.isActionDone) {
-                    // 移動時にトラップ発動した場合は行動終了している
-                    // その場合でも天脈は発動する
-                    unit.applyEndActionSkills();
-                    return;
-                }
+        let func = function () {
+            if (unit.isActionDone) {
+                // 移動時にトラップ発動した場合は行動終了している
+                // その場合でも天脈は発動する
+                unit.applyEndActionSkills();
+                return;
+            }
 
-                self.audioManager.playSoundEffectImmediately(SoundEffectId.Break);
-                if (self.isCommandLogEnabled) {
-                    g_app.writeLogLine(unit.getNameWithGroup() + "はオブジェクトを破壊");
-                }
-                if (obj instanceof BreakableWall) {
-                    obj.break();
-                    if (obj.isBroken) {
-                        moveStructureToTrashBox(obj);
-                    }
-                }
-                else {
+            self.audioManager.playSoundEffectImmediately(SoundEffectId.Break);
+            if (self.isCommandLogEnabled) {
+                g_app.writeLogLine(unit.getNameWithGroup() + "はオブジェクトを破壊");
+            }
+            if (obj instanceof BreakableWall) {
+                obj.break();
+                if (obj.isBroken) {
                     moveStructureToTrashBox(obj);
                 }
+            } else {
+                moveStructureToTrashBox(obj);
+            }
 
-                self.__endUnitActionOrActivateCanto(unit);
-            }, serial, commandType);
-        return command;
+            self.__endUnitActionOrActivateCanto(unit);
+        };
+        return this.__createCommand(
+            `${unit.id}-b-${obj.id}-${moveTile.id}`,
+            obj.name + `破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
+            func,
+            serial,
+            commandType
+        );
     }
 
     __activateCantoIfPossible(unit) {
@@ -6712,66 +6774,65 @@ class BattleSimmulatorBase {
     __createMoveCommand(unit, tileToMove, endAction = false, commandType = CommandType.Normal, enableSoundEffect = false) {
         // 移動
         let self = this;
-        let metaData = new Object();
+        let metaData = {};
         metaData.tileToMove = tileToMove;
         metaData.unit = unit;
         let serial = null;
         if (this.vm.isCommandUndoable) {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
-        let command = this.__createCommand(
+        let func = function () {
+            if (enableSoundEffect) {
+                self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
+            }
+
+            // 再移動で参照する残り移動量を更新
+            if (!unit.isCantoActivated()) {
+                let moveDist = tileToMove.calculateUnitMovementCountToThisTile(
+                    unit,
+                    unit.placedTile,
+                    unit.moveCount,
+                    false);
+
+                // ワープは0扱い
+                let isWarp = moveDist === CanNotReachTile;
+                unit.restMoveCount = isWarp ? 0 : unit.moveCount - moveDist;
+            }
+
+            if (unit.placedTile !== tileToMove) {
+                if (self.vm.gameMode === GameMode.ResonantBattles
+                    && unit.groupId === UnitGroupType.Enemy && isThief(unit) && tileToMove.posY === 0
+                ) {
+                    // 双界のシーフが出口に辿り着いた
+                    if (self.isCommandLogEnabled) {
+                        self.writeLogLine(unit.getNameWithGroup() + "は出口に到着");
+                    }
+                    moveUnitToTrashBox(unit);
+                } else {
+                    if (self.isCommandLogEnabled) {
+                        self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
+                    }
+                    moveUnit(unit, tileToMove, unit.groupId === UnitGroupType.Ally);
+                }
+
+                self.updateAllUnitSpur();
+            }
+
+            if (!unit.isActionDone && endAction) {
+                self.endUnitActionAndGainPhaseIfPossible(unit);
+                unit.deactivateCanto();
+                unit.applyEndActionSkills();
+            }
+            self.__updateDistanceFromClosestEnemy(unit);
+        };
+        return this.__createCommand(
             `${unit.id}-m-${tileToMove.id}`,
             `移動(${unit.getNameWithGroup()} [${tileToMove.posX},${tileToMove.posY}])`,
-            function () {
-                if (enableSoundEffect) {
-                    self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
-                }
-
-                // 再移動で参照する残り移動量を更新
-                if (!unit.isCantoActivated()) {
-                    let moveDist = tileToMove.calculateUnitMovementCountToThisTile(
-                        unit,
-                        unit.placedTile,
-                        unit.moveCount,
-                        false);
-
-                    // ワープは0扱い
-                    let isWarp = moveDist == CanNotReachTile;
-                    unit.restMoveCount = isWarp ? 0 : unit.moveCount - moveDist;
-                }
-
-                if (unit.placedTile != tileToMove) {
-                    if (self.vm.gameMode == GameMode.ResonantBattles
-                        && unit.groupId == UnitGroupType.Enemy && isThief(unit) && tileToMove.posY == 0
-                    ) {
-                        // 双界のシーフが出口に辿り着いた
-                        if (self.isCommandLogEnabled) {
-                            self.writeLogLine(unit.getNameWithGroup() + "は出口に到着");
-                        }
-                        moveUnitToTrashBox(unit);
-                    }
-                    else {
-                        if (self.isCommandLogEnabled) {
-                            self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
-                        }
-                        moveUnit(unit, tileToMove, unit.groupId == UnitGroupType.Ally);
-                    }
-
-                    self.updateAllUnitSpur();
-                }
-
-                if (!unit.isActionDone && endAction) {
-                    self.endUnitActionAndGainPhaseIfPossible(unit);
-                    unit.deactivateCanto();
-                    unit.applyEndActionSkills();
-                }
-                self.__updateDistanceFromClosestEnemy(unit);
-            },
+            func,
             serial,
             commandType,
             metaData
         );
-        return command;
     }
 
     __enqueueMoveCommand(unit, tileToMove, endAction = false, commandType = CommandType.Normal, enableSoundEffect = false) {
@@ -6785,32 +6846,32 @@ class BattleSimmulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let self = this;
-        let command = this.__createCommand(
-            `${attackerUnit.id}-a-${targetUnit.id}-${tile.id}`,
-            `攻撃(${attackerUnit.getNameWithGroup()}→${targetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`, function () {
-                if (attackerUnit.isActionDone) {
-                    // 移動時にトラップ発動した場合は行動終了している
-                    return;
-                }
+        let func = function () {
+            if (attackerUnit.isActionDone) {
+                // 移動時にトラップ発動した場合は行動終了している
+                return;
+            }
 
-                if (attackerUnit.weaponInfo.attackCount == 2) {
-                    self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
-                }
-                else {
-                    self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
-                }
-                self.updateDamageCalculation(attackerUnit, targetUnit, tile);
-            }, serial, commandType);
-        return command;
+            if (attackerUnit.weaponInfo.attackCount === 2) {
+                self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
+            } else {
+                self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
+            }
+            self.updateDamageCalculation(attackerUnit, targetUnit, tile);
+        };
+        return this.__createCommand(
+            `${attackerUnit.id}-a-${targetUnit.id}-${tile.id}`,
+            `攻撃(${attackerUnit.getNameWithGroup()}→${targetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`,
+            func,
+            serial,
+            commandType
+        );
     }
 
     __createAttackCommands(attackerUnit, targetUnit, tile) {
         let commands = [];
-        let commandType = CommandType.Normal;
         commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
-        commandType = CommandType.End;
-
-        commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, commandType));
+        commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, CommandType.End));
         return commands;
     }
 
@@ -6906,7 +6967,7 @@ class BattleSimmulatorBase {
     }
 
     __executeAllCommands(queue, intervalMilliseconds) {
-        if (intervalMilliseconds == 0) {
+        if (intervalMilliseconds === 0) {
             while (queue.length > 0) {
                 queue.execute();
             }
@@ -6922,7 +6983,7 @@ class BattleSimmulatorBase {
                 null,
                 intervalMilliseconds,
                 function () {
-                    return queue.length == 0;
+                    return queue.length === 0;
                 }
             );
         }
@@ -6939,7 +7000,7 @@ class BattleSimmulatorBase {
 
         this.writeDebugLogLine(unit.getNameWithGroup() + "が破壊可能なブロックを評価..");
         let blockTiles = this.__getBreakableStructureTiles(unit.groupId);
-        if (blockTiles.length == 0) {
+        if (blockTiles.length === 0) {
             this.writeDebugLogLine("破壊可能なブロックがマップ上に存在しない");
             return null;
         }
@@ -6952,7 +7013,7 @@ class BattleSimmulatorBase {
             // ブロックから追跡対象への距離が未定義、または最適なタイルから追跡対象への距離より近い場合のみ候補
             let distOfBlockToTarget = chaseTargetTile.calculateUnitMovementCountToThisTile(unit, blockTile);
             this.writeDebugLogLine(`${blockTile.positionToString()} to ${chaseTargetTile.positionToString()}: distOfBlockToTarget=${distOfBlockToTarget}`);
-            if (distOfBlockToTarget == CanNotReachTile || distOfBlockToTarget < distOfBestTileToTarget) {
+            if (distOfBlockToTarget === CanNotReachTile || distOfBlockToTarget < distOfBestTileToTarget) {
                 let context = new TilePriorityContext(blockTile, unit);
                 for (let tile of g_appData.map.enumerateAttackableTiles(unit, blockTile)) {
                     if (!movabableTiles.includes(tile)) {
@@ -6971,7 +7032,7 @@ class BattleSimmulatorBase {
                             blockTileContexts = [context];
                             minDist = distOfBestTileToBlock;
                         }
-                        else if (distOfBestTileToBlock == minDist) {
+                        else if (distOfBestTileToBlock === minDist) {
                             blockTileContexts.push(context);
                         }
                     }
@@ -6979,7 +7040,7 @@ class BattleSimmulatorBase {
             }
         }
 
-        if (blockTileContexts.length == 0) {
+        if (blockTileContexts.length === 0) {
             this.writeDebugLogLine(unit.getNameWithGroup() + "が移動可能なタイルはなし");
             return null;
         }
@@ -7072,7 +7133,7 @@ class BattleSimmulatorBase {
     }
 
     __setBestTileToAttack(unit, ignoreTileFunc = null) {
-        if (unit.actionContext.attackableUnitInfos.length == 0) {
+        if (unit.actionContext.attackableUnitInfos.length === 0) {
             return;
         }
 
@@ -7111,18 +7172,18 @@ class BattleSimmulatorBase {
             if (unit.placedTile == null) {
                 continue;
             }
-            if (unit.isWeaponEquipped == false) {
+            if (unit.isWeaponEquipped === false) {
                 continue;
             }
 
             // 攻撃可能なユニットを列挙
             this.writeLogLine(unit.getNameWithGroup() + "の攻撃可能なユニットを列挙--------");
             this.__setAttackableUnitInfoAndBestTileToAttack(unit, allyUnits);
-            if (unit.actionContext.attackableUnitInfos.length == 0) {
+            if (unit.actionContext.attackableUnitInfos.length === 0) {
                 continue;
             }
 
-            if (unit.groupId == UnitGroupType.Enemy) {
+            if (unit.groupId === UnitGroupType.Enemy) {
                 if (!g_appData.examinesEnemyActionTriggered(unit)) {
                     this.vm.isEnemyActionTriggered = true;
                     unit.isEnemyActionTriggered = true;
@@ -7138,7 +7199,7 @@ class BattleSimmulatorBase {
             let target = unit.actionContext.bestTargetToAttack;
             let targetInfo = null;
             for (let info of attackTargetInfos) {
-                if (info.target == target) {
+                if (info.target === target) {
                     targetInfo = info;
                     break;
                 }
@@ -7174,20 +7235,19 @@ class BattleSimmulatorBase {
             x => x.target.actionContext.bestAttacker.actionContext.attackEvalContexts[x.target].attackPriority);
 
         let isActionActivated = false;
-        for (let i = 0; i < attackTargetInfos.length; ++i) {
-            let targetInfo = attackTargetInfos[i];
+        if (attackTargetInfos.length > 0) {
+            let targetInfo = attackTargetInfos[0];
             let target = targetInfo.target;
             let bestAttacker = target.actionContext.bestAttacker;
             let attackableUnitInfo = bestAttacker.actionContext.findAttackableUnitInfo(target);
             let tile = attackableUnitInfo.bestTileToAttack;
 
-            if (slotOrderDependentIndices.includes(i)) {
+            if (slotOrderDependentIndices.includes(0)) {
                 this.writeWarningLine(`${bestAttacker.getNameWithGroup()}の攻撃順はスロット順で変わる可能性があります。`);
             }
 
             this.__enqueueAttackCommand(bestAttacker, target, tile);
             isActionActivated = true;
-            break;
         }
 
         return isActionActivated;
@@ -7196,17 +7256,16 @@ class BattleSimmulatorBase {
     __evaluateBestTileToAttack(
         attacker, targetInfo, ignoreTileFunc = null
     ) {
-        if (targetInfo.tiles.length == 0) {
+        if (targetInfo.tiles.length === 0) {
             return null;
         }
 
         let tilePriorities = [];
         for (let tile of targetInfo.tiles) {
-            if (ignoreTileFunc != null && ignoreTileFunc(tile)) {
+            if (ignoreTileFunc != null && ignoreTileFunc?.(tile)) {
                 continue;
             }
 
-            let target = targetInfo.targetUnit;
             this.__updateCombatResultOfAttackableTargetInfo(targetInfo, attacker, tile);
 
             let context = new TilePriorityContext(tile, attacker);
@@ -7217,10 +7276,10 @@ class BattleSimmulatorBase {
             tilePriorities.push(context);
         }
 
-        if (tilePriorities.length == 0) {
+        if (tilePriorities.length === 0) {
             return null;
         }
-        if (tilePriorities.length == 1) {
+        if (tilePriorities.length === 1) {
             return tilePriorities[0].tile;
         }
 
@@ -7271,9 +7330,9 @@ class BattleSimmulatorBase {
      * @return {CombatResult}
      */
     __getCombatResult(attacker, target) {
-        if (target.restHp == 0) {
+        if (target.restHp === 0) {
             return CombatResult.Win;
-        } else if (attacker.restHp == 0) {
+        } else if (attacker.restHp === 0) {
             return CombatResult.Loss;
         } else {
             return CombatResult.Draw;
@@ -7321,7 +7380,7 @@ class BattleSimmulatorBase {
     }
 
     __evaluateBestAttacker(target, attackers, attackableUnitInfos) {
-        if (attackers.length == 1) {
+        if (attackers.length === 1) {
             return attackers[0];
         }
 
@@ -7402,7 +7461,7 @@ class BattleSimmulatorBase {
         for (let unitAndTile of assistUnit.enumerateActuallyAssistableUnitAndTiles()) {
             let unit = unitAndTile[0];
             let tile = unitAndTile[1];
-            if (acceptTileFunc != null && !acceptTileFunc(tile)) {
+            if (acceptTileFunc != null && !acceptTileFunc?.(tile)) {
                 continue;
             }
             // this.writeDebugLogLine(tile.positionToString() + "から補助可能な敵がいるか評価");
@@ -7424,7 +7483,7 @@ class BattleSimmulatorBase {
 
     __setBestAssistTiles(assistUnit, isAssistableUnitFunc, acceptTileFunc = null) {
         this.__createAssistableUnitInfos(assistUnit, isAssistableUnitFunc, acceptTileFunc);
-        if (assistUnit.actionContext.assistableUnitInfos.length == 0) {
+        if (assistUnit.actionContext.assistableUnitInfos.length === 0) {
             return;
         }
 
@@ -7443,7 +7502,7 @@ class BattleSimmulatorBase {
             tileEvalContexts.push(context);
         }
 
-        if (tileEvalContexts.length == 0) {
+        if (tileEvalContexts.length === 0) {
             return null;
         }
 
@@ -7476,7 +7535,7 @@ class BattleSimmulatorBase {
 
     __isTargetUnitInfoAlreadyAdded(infos, targetUnit) {
         for (let info of infos) {
-            if (info.targetUnit == targetUnit) {
+            if (info.targetUnit === targetUnit) {
                 return true;
             }
         }
@@ -7500,7 +7559,7 @@ class BattleSimmulatorBase {
                     let intendedTargetCandidateInfos = [];
                     for (let unitInfo of assistUnit.actionContext.assistableUnitInfos) {
                         for (let candidateUnit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unitInfo.targetUnit, 2, true)) {
-                            if (candidateUnit == assistUnit) {
+                            if (candidateUnit === assistUnit) {
                                 continue;
                             }
                             if (this.__isTargetUnitInfoAlreadyAdded(intendedTargetCandidateInfos, candidateUnit)) {
@@ -7515,7 +7574,7 @@ class BattleSimmulatorBase {
                             intendedTargetCandidateInfos.push(info);
                         }
                     }
-                    if (intendedTargetCandidateInfos.length == 0) {
+                    if (intendedTargetCandidateInfos.length === 0) {
                         return;
                     }
 
@@ -7525,21 +7584,21 @@ class BattleSimmulatorBase {
                     let eligibleTargets = [];
                     let otherEligibleTargets = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupOnMap(assistUnit, false)) {
-                        if (unit == assistUnit) {
+                        if (unit === assistUnit) {
                             continue;
                         }
                         if (!isAssistableUnitFunc(unit, null)) {
                             continue;
                         }
                         eligibleTargets.push(unit);
-                        if (unit != intendedTargetInfo.targetUnit) {
+                        if (unit !== intendedTargetInfo.targetUnit) {
                             otherEligibleTargets.push(unit);
                         }
                     }
 
                     let unitsWithin2SpacesOfIntendedTarget = [];
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(intendedTargetInfo.targetUnit, 2, true)) {
-                        if (unit == assistUnit) {
+                        if (unit === assistUnit) {
                             continue;
                         }
                         unitsWithin2SpacesOfIntendedTarget.push(unit);
@@ -7556,7 +7615,7 @@ class BattleSimmulatorBase {
                         return a.slotOrder - b.slotOrder;
                     });
                     let lowestSlotUnit = intendedTargetAndOtherEligibleTargets[0];
-                    let isIntendedTargetLowestSlot = lowestSlotUnit == intendedTargetInfo.targetUnit;
+                    let isIntendedTargetLowestSlot = lowestSlotUnit === intendedTargetInfo.targetUnit;
 
                     for (let targetInfo of assistUnit.actionContext.assistableUnitInfos) {
                         if (!unitsWithin2SpacesOfIntendedTarget.includes(targetInfo.targetUnit)) {
@@ -7569,7 +7628,7 @@ class BattleSimmulatorBase {
                             targetInfo.targetUnit, 2, x => otherEligibleTargets.includes(x));
 
                         let lowestSlotIntendedTargetPriority = 0;
-                        targetInfo.isIntendedAndLowestSlot = targetInfo.targetUnit == intendedTargetInfo.targetUnit && !isIntendedTargetLowestSlot;
+                        targetInfo.isIntendedAndLowestSlot = targetInfo.targetUnit === intendedTargetInfo.targetUnit && !isIntendedTargetLowestSlot;
                         if (targetInfo.isIntendedAndLowestSlot) {
                             lowestSlotIntendedTargetPriority = 1;
                         }
@@ -7614,7 +7673,7 @@ class BattleSimmulatorBase {
             default:
                 {
                     this.__setBestAssistTiles(assistUnit, isAssistableUnitFunc, acceptTileFunc);
-                    if (assistUnit.actionContext.assistableUnitInfos.length == 0) {
+                    if (assistUnit.actionContext.assistableUnitInfos.length === 0) {
                         return;
                     }
 
@@ -7659,10 +7718,10 @@ class BattleSimmulatorBase {
             this.writeWarningLine(`${assistUnit.getNameWithGroup()}の最適な補助対象はスロット順で変わる可能性があります。`);
         }
 
-        let bestTargetUnitInfo = assistableUnitInfos[0];
-        return bestTargetUnitInfo;
+        return assistableUnitInfos[0];
     }
 
+    // noinspection JSUnusedGlobalSymbols
     __countEnemiesWithinSpecifiedSpaces(targetUnit, spaces, predicator) {
         return g_appData.countEnemiesWithinSpecifiedSpaces(targetUnit, spaces, predicator);
     }
@@ -7674,7 +7733,7 @@ class BattleSimmulatorBase {
     __setAttackableUnitInfo(unit, targetableUnits, acceptTileFunc = null) {
         unit.actionContext.attackableUnitInfos = [];
         for (let tile of g_appData.map.enumerateMovableTiles(unit, false, false)) {
-            if (acceptTileFunc != null && !acceptTileFunc(tile)) {
+            if (acceptTileFunc != null && !acceptTileFunc?.(tile)) {
                 continue;
             }
 
@@ -7682,7 +7741,7 @@ class BattleSimmulatorBase {
             for (let targetableUnit of targetableUnits) {
                 let dist = calcDistance(tile.posX, tile.posY, targetableUnit.posX, targetableUnit.posY);
                 // this.writeDebugLogLine("- " + tile.positionToString() + "から" + targetableUnit.getNameWithGroup() + "への距離=" + dist);
-                if (dist != unit.attackRange) {
+                if (dist !== unit.attackRange) {
                     continue;
                 }
 
@@ -7694,7 +7753,7 @@ class BattleSimmulatorBase {
                     unit.actionContext.attackableUnitInfos.push(info);
                 }
 
-                if (tile == unit.placedTile || tile.isUnitPlacable()) {
+                if (tile === unit.placedTile || tile.isUnitPlacable()) {
                     info.tiles.push(tile);
                 }
             }
@@ -7729,12 +7788,12 @@ class BattleSimmulatorBase {
                         this.executeStructure(st, appliesDamage);
                     }
                     else if (st instanceof OfCatapult) {
-                        if (g_appData.currentTurn == 1) {
+                        if (g_appData.currentTurn === 1) {
                             this.executeStructure(st, appliesDamage);
                         }
                     }
                     else if (st instanceof OfBoltTower) {
-                        if (g_appData.currentTurn == 3) {
+                        if (g_appData.currentTurn === 3) {
                             this.executeStructure(st, appliesDamage);
                         }
                     }
@@ -7756,12 +7815,12 @@ class BattleSimmulatorBase {
                         this.executeStructure(st, appliesDamage);
                     }
                     else if (st instanceof DefCatapult) {
-                        if (g_appData.currentTurn == 1) {
+                        if (g_appData.currentTurn === 1) {
                             this.executeStructure(st, appliesDamage);
                         }
                     }
                     else if (st instanceof DefBoltTower) {
-                        if (g_appData.currentTurn == 3) {
+                        if (g_appData.currentTurn === 3) {
                             this.executeStructure(st, appliesDamage);
                         }
                     }
@@ -7892,7 +7951,7 @@ class BattleSimmulatorBase {
         }
         else if (structure instanceof HexTrap) {
             for (let unit of g_appData.enumerateUnitsInSpecifiedGroupOnMap(UnitGroupType.Ally)) {
-                if (unit.posX == px && unit.posY == py) {
+                if (unit.posX === px && unit.posY === py) {
                     if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
                         this.writeLogLine(unit.getNameWithGroup() + "に停止の魔法罠の効果適用");
                         unit.endAction();
@@ -7952,7 +8011,7 @@ class BattleSimmulatorBase {
         else if (structure instanceof OfCatapult) {
             for (let st of this.__enumerateDefenseStructuresOnMap()) {
                 if (this.__canBreakByCatapult(st)
-                    && structure.posX == st.posX
+                    && structure.posX === st.posX
                     && Number(st.level) <= Number(structure.level)) {
                     moveStructureToTrashBox(st);
                 }
@@ -7961,7 +8020,7 @@ class BattleSimmulatorBase {
         else if (structure instanceof DefCatapult) {
             for (let st of this.__enumerateOffenceStructuresOnMap()) {
                 if (this.__canBreakByCatapult(st)
-                    && structure.posX == st.posX
+                    && structure.posX === st.posX
                     && Number(st.level) <= Number(structure.level)) {
                     moveStructureToTrashBox(st);
                 }
@@ -7991,12 +8050,12 @@ class BattleSimmulatorBase {
         let px = structure.posX;
         let py = structure.posY;
         for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, groupType, 3, 99)) {
-            if (unit.moveType == moveType) { unit.reserveToApplyAllDebuff(-(Number(structure.level) + 1)); }
+            if (unit.moveType === moveType) { unit.reserveToApplyAllDebuff(-(Number(structure.level) + 1)); }
         }
     }
     executeCurrentStructure() {
         let structure = g_appData.currentStructure;
-        if (g_appData.map.isObjAvailable(structure) == false) {
+        if (g_appData.map.isObjAvailable(structure) === false) {
             return;
         }
 
@@ -8039,7 +8098,7 @@ class BattleSimmulatorBase {
     }
 
     __findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnit = null) {
-        return g_appData.findMaxStatusUnits(unitGroup, getStatusFunc, x => x == exceptUnit);
+        return g_appData.findMaxStatusUnits(unitGroup, getStatusFunc, x => x === exceptUnit);
     }
 
     __findTileAfterShove(unit, targetUnit, assistTile) {
@@ -8077,7 +8136,7 @@ class BattleSimmulatorBase {
                 continue;
             }
 
-            if (moveTile != unit.placedTile && !tile.isUnitPlacableForUnit(targetUnit)) {
+            if (moveTile !== unit.placedTile && !tile.isUnitPlacableForUnit(targetUnit)) {
                 continue;
             }
 
@@ -8114,7 +8173,7 @@ class BattleSimmulatorBase {
         if (moveTile == null) {
             return new MovementAssistResult(false, null, null);
         }
-        if (moveTile != unit.placedTile && !moveTile.isUnitPlacable()) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable()) {
             return new MovementAssistResult(false, null, null);
         }
         return new MovementAssistResult(true, moveTile, targetUnit.placedTile);
@@ -8135,7 +8194,7 @@ class BattleSimmulatorBase {
             return new MovementAssistResult(false, null, null);
         }
 
-        if (moveTile != unit.placedTile && !moveTile.isUnitPlacable()) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable()) {
             return new MovementAssistResult(false, null, null);
         }
 
@@ -8220,11 +8279,6 @@ class BattleSimmulatorBase {
 
     __applyDebuffToEnemiesWithin2Spaces(targetUnit, debuffFunc) {
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-            debuffFunc(unit);
-        }
-    }
-    __applyDebuffToEnemiesWithin4Spaces(targetUnit, debuffFunc) {
-        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 4)) {
             debuffFunc(unit);
         }
     }
@@ -8432,7 +8486,7 @@ class BattleSimmulatorBase {
             if (funcMap.has(skillId)) {
                 let func = funcMap.get(skillId);
                 if (typeof func === "function") {
-                    let result = func.call(this, skillOwnerUnit, targetUnit);
+                    func.call(this, skillOwnerUnit, targetUnit);
                 } else {
                     console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                 }
@@ -8465,7 +8519,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case Support.Play:
-                    if (skillOwnerUnit.weapon == Weapon.HyosyoNoBreath) {
+                    if (skillOwnerUnit.weapon === Weapon.HyosyoNoBreath) {
                         for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
                             unit.applyAllDebuff(-4);
                         }
@@ -8473,13 +8527,13 @@ class BattleSimmulatorBase {
                     break;
                 case Support.GrayWaves:
                     {
-                        if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                        if ((targetUnit.moveType === MoveType.Infantry || targetUnit.moveType === MoveType.Flying)) {
                             targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                         }
                     }
                     break;
                 case Support.GrayWaves2: {
-                    if ((targetUnit.moveType == MoveType.Infantry || targetUnit.moveType == MoveType.Flying)) {
+                    if ((targetUnit.moveType === MoveType.Infantry || targetUnit.moveType === MoveType.Flying)) {
                         targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                     }
                     targetUnit.addStatusEffect(StatusEffectType.NullPanic);
@@ -8631,7 +8685,7 @@ class BattleSimmulatorBase {
         }
 
         // 大地の舞い等の後に実行する必要がある
-        if (skillOwnerUnit.weapon == Weapon.SeireiNoHogu) {
+        if (skillOwnerUnit.weapon === Weapon.SeireiNoHogu) {
             let buffs = [
                 Number(targetUnit.atkBuff),
                 Number(targetUnit.spdBuff),
@@ -8725,7 +8779,7 @@ class BattleSimmulatorBase {
                 break;
             default:
                 this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
-                return -1;
+                return null;
         }
         return result;
     }
@@ -8811,7 +8865,7 @@ class BattleSimmulatorBase {
                     }
                     break;
                 case Weapon.DamiellBow:
-                    if (!(targetUnit.moveType == MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
+                    if (!(targetUnit.moveType === MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
                         targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
                         targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
                     }
@@ -8934,7 +8988,7 @@ class BattleSimmulatorBase {
         let success = false;
         let supportId = supporterUnit.support;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-            if (unit == supporterUnit) {
+            if (unit === supporterUnit) {
                 continue;
             }
 
@@ -8984,7 +9038,7 @@ class BattleSimmulatorBase {
 
         if (targetUnit.canHeal()) {
             let healAmount = calcHealAmount(supporterUnit, targetUnit);
-            if (supporterUnit.specialCount == 0) {
+            if (supporterUnit.specialCount === 0) {
                 switch (supporterUnit.special) {
                     case Special.Chiyu:
                         healAmount += 10;
@@ -9279,7 +9333,7 @@ class BattleSimmulatorBase {
 
         switch (supporterUnit.supportInfo.assistType) {
             case AssistType.Refresh:
-                return canRefereshTo(targetUnit);
+                return canRefreshTo(targetUnit);
             case AssistType.Rally:
                 return supporterUnit.canRallyForcibly() ||
                     supporterUnit.canRallyTo(targetUnit, 1) ||
@@ -9299,7 +9353,7 @@ class BattleSimmulatorBase {
                     || (targetUnit.currentDamage >= 1);
             case AssistType.DonorHeal:
                 {
-                    let result = this.__getUserLossHpAndTargetHaelHpForDonorHeal(supporterUnit, targetUnit);
+                    let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(supporterUnit, targetUnit);
                     if (!result.success) return false;
                     return result.targetHealHp > 0;
                 }
@@ -9366,15 +9420,15 @@ class BattleSimmulatorBase {
             case AssistType.Refresh:
                 return this.__applyRefresh(supporterUnit, targetUnit);
             case AssistType.Heal:
-                if (supporterUnit.support == Support.Sacrifice ||
-                    supporterUnit.support == Support.MaidensSolace) {
+                if (supporterUnit.support === Support.Sacrifice ||
+                    supporterUnit.support === Support.MaidensSolace) {
                     let healAmount = Math.min(targetUnit.currentDamage, supporterUnit.hp - 1);
                     if (healAmount > 0) {
                         targetUnit.heal(healAmount);
                         supporterUnit.takeDamage(healAmount, true);
                         this.writeSimpleLogLine(`${targetUnit.getNameWithGroup()}は${healAmount}回復`);
                     }
-                    if (supporterUnit.support == Support.MaidensSolace) {
+                    if (supporterUnit.support === Support.MaidensSolace) {
                         targetUnit.clearNegativeStatusEffects();
                     }
                     return healAmount > 0 || this.__executeHarshCommand(targetUnit);
@@ -9416,7 +9470,7 @@ class BattleSimmulatorBase {
                     case Support.GoldSerpent:
                         return this.__applyGoldSerpent(supporterUnit, targetUnit);
                     default:
-                        if (this.__applyRally(supporterUnit, targetUnit)) { return true; } return false;
+                        return this.__applyRally(supporterUnit, targetUnit);
                 }
             case AssistType.Move:
                 return this.__applyMovementAssist(supporterUnit, targetUnit,
@@ -9455,7 +9509,7 @@ class BattleSimmulatorBase {
             return false;
         }
 
-        if (supporterUnit.hp == targetUnit.hp) {
+        if (supporterUnit.hp === targetUnit.hp) {
             return false;
         }
 
@@ -9465,9 +9519,9 @@ class BattleSimmulatorBase {
             return false;
         }
 
-        if (supporterUnit.hp > targetUnit.hp
-            && targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)
-        ) {
+        // noinspection RedundantIfStatementJS
+        if (targetUnit.hp < supporterUnit.hp
+            && targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)) {
             return false;
         }
 
@@ -9504,7 +9558,7 @@ class BattleSimmulatorBase {
     }
 
     __goToNextPhaseIfPossible(groupId) {
-        if (groupId == UnitGroupType.Ally) {
+        if (groupId === UnitGroupType.Ally) {
             if (!this.__isThereActionableAllyUnit()) {
                 // 味方全員の行動が終了したので敵ターンへ
                 this.simulateBeginningOfEnemyTurn();
@@ -9560,7 +9614,7 @@ class BattleSimmulatorBase {
         if (item.isSelected) {
             item.isSelected = false;
             let selectedItems = g_appData.getSelectedItems();
-            if (selectedItems.length == 0) {
+            if (selectedItems.length === 0) {
                 this.selectItem(-1, true);
             }
             else {
@@ -9766,7 +9820,7 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
 
     let obj = tile.obj;
 
-    if (unit.groupId == UnitGroupType.Ally && obj instanceof TrapBase) {
+    if (unit.groupId === UnitGroupType.Ally && obj instanceof TrapBase) {
         // トラップ床発動
         if (obj.isExecutable) {
             let trapCondSatisfied = false;
@@ -9774,8 +9828,8 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
                 case HeavyTrap:
                 case BoltTrap:
                     trapCondSatisfied =
-                        unit.passiveB != PassiveB.Wanakaijo3 &&
-                        unit.passiveB != PassiveB.DisarmTrap4;
+                        unit.passiveB !== PassiveB.Wanakaijo3 &&
+                        unit.passiveB !== PassiveB.DisarmTrap4;
                     break;
                 case HexTrap:
                     trapCondSatisfied = unit.hp <= obj.level * 5 + 35 - (unit.passiveB === PassiveB.DisarmTrap4 ? 10 : 0);
@@ -9808,9 +9862,7 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
 function moveToDefault(target) {
     if (target instanceof BreakableWall) {
         // todo: 面倒でなければマップ種類別の初期値に戻す
-        return;
-    }
-    else if (target instanceof OffenceStructureBase) {
+    } else if (target instanceof OffenceStructureBase) {
         if (target.isRequired) {
             for (let x = 0; x < 6; ++x) {
                 let tile = g_appData.map.getTile(x, 7);
@@ -9823,9 +9875,7 @@ function moveToDefault(target) {
         else {
             moveStructureToOffenceStorage(target);
         }
-        return;
-    }
-    else if (target instanceof DefenceStructureBase) {
+    } else if (target instanceof DefenceStructureBase) {
         if (target.isRequired) {
             for (let x = 0; x < 6; ++x) {
                 let tile = g_appData.map.getTile(x, 0);
@@ -9838,11 +9888,8 @@ function moveToDefault(target) {
         else {
             moveStructureToDefenceStorage(target);
         }
-        return;
-    }
-    else if (target instanceof Unit) {
+    } else if (target instanceof Unit) {
         moveUnitToEmptyTileOfMap(target);
-        return;
     }
 }
 
@@ -9893,7 +9940,7 @@ function updateMapUi() {
     if (isSummonerDuelsMap(g_appData.map._type)) {
         // 得点エリアを表示
         let scale = 4 / 10;
-        let verticalPercent = 100 * (1 / 2 + g_appData.globalBattleContext.summonerDuelsPointAreaOffset * 1 / 6);
+        let verticalPercent = 100 * (1 / 2 + g_appData.globalBattleContext.summonerDuelsPointAreaOffset / 6);
         let bgImageInfo = new BackgroundImageInfo(
             g_summonerDuelsMapRoot + "SummonerDuels_PointArea.png",
             `50% ${verticalPercent.toFixed()}%`,
@@ -9911,7 +9958,7 @@ function updateMapUi() {
     }
 
     let tableElem = table.updateTableElement();
-    if (mapArea.childElementCount == 0) {
+    if (mapArea.childElementCount === 0) {
         mapArea.appendChild(tableElem);
     }
     syncSelectedTileColor();
@@ -10000,13 +10047,13 @@ function resetPlacementOfUnits() {
     {
         let posX = 0;
         let posY = 1;
-        if (g_appData.gameMode == GameMode.PawnsOfLoki) {
+        if (g_appData.gameMode === GameMode.PawnsOfLoki) {
             posY = 0;
         }
         for (let unit of g_app.enumerateEnemyUnits()) {
             moveUnitToMap(unit, posX, posY);
             ++posX;
-            if (posX == g_app.map.width) {
+            if (posX === g_app.map.width) {
                 posX = 0;
                 ++posY;
             }
@@ -10017,7 +10064,7 @@ function resetPlacementOfUnits() {
         let posX = 0;
         let posY = g_app.map.height - 2;
         let maxCount = 100;
-        if (g_appData.gameMode == GameMode.PawnsOfLoki) {
+        if (g_appData.gameMode === GameMode.PawnsOfLoki) {
             posY = g_app.map.height - 1;
             maxCount = 8;
         }
@@ -10030,7 +10077,7 @@ function resetPlacementOfUnits() {
             else {
                 moveUnitToMap(unit, posX, posY);
                 ++posX;
-                if (posX == g_app.map.width) {
+                if (posX === g_app.map.width) {
                     posX = 0;
                     --posY;
                 }
@@ -10112,12 +10159,12 @@ function loadSettings() {
     console.log("loading..");
     console.log("current cookie:" + document.cookie);
     g_appData.settings.loadSettings();
-    if (g_appData.gameMode == GameMode.ResonantBattles) {
+    if (g_appData.gameMode === GameMode.ResonantBattles) {
         g_app.__setUnitsForResonantBattles();
     }
     g_app.updateAllUnitSpur();
 
-    let turnText = g_appData.currentTurn == 0 ? "戦闘開始前" : "ターン" + g_appData.currentTurn;
+    let turnText = g_appData.currentTurn === 0 ? "戦闘開始前" : "ターン" + g_appData.currentTurn;
     g_app.writeSimpleLogLine(turnText + "の設定を読み込みました。");
     g_appData.commandQueuePerAction.clear();
     __updateChaseTargetTilesForAllUnits();
@@ -10181,13 +10228,9 @@ function importSettingsFromString(
     console.log("loadsAllySettings = " + loadsAllySettings);
     console.log("loadsEnemySettings = " + loadsEnemySettings);
 
-    let decompressed = "";
-    if (compressMode == null) {
-        decompressed = g_appData.decompressSettingAutomatically(inputText);
-    }
-    else {
-        decompressed = g_appData.decompressSettingByCompressMode(inputText, compressMode);
-    }
+    let decompressed = compressMode == null ?
+        g_appData.decompressSettingAutomatically(inputText) :
+        g_appData.decompressSettingByCompressMode(inputText, compressMode);
     console.log(`decompressed: ${decompressed}`);
     let settings = decompressed.split(';');
     let dict = {};
@@ -10201,8 +10244,7 @@ function importSettingsFromString(
             id = turnSetting.serialId;
         }
 
-        let value = setting.substring(idAndValue[0].length + 1).trim();
-        dict[id] = value;
+        dict[id] = setting.substring(idAndValue[0].length + 1).trim();
     }
     loadSettingsFromDict(
         dict,

@@ -2,7 +2,7 @@
 /// @brief シミュレーターのメインコードです。
 
 /// シミュレーター本体です。
-class SummonerDuelsSimulator extends BattleSimmulatorBase {
+class SummonerDuelsSimulator extends BattleSimulatorBase {
     constructor() {
         super();
     }

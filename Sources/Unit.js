@@ -1361,7 +1361,9 @@ class ActionContext {
 
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
-    constructor(id = "", name = "", unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry, icon = "") {
+    constructor(id = "", name = "",
+                unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry,
+                icon = "") {
         super();
         // Unitはマップ上で作るので利便性のために初期値0にしておく
         this.setPos(0, 0);
@@ -6314,6 +6316,6 @@ function isAfflictor(attackUnit, lossesInCombat, result) {
     return false;
 }
 
-function canRefereshTo(targetUnit) {
+function canRefreshTo(targetUnit) {
     return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
 }

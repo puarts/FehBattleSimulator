@@ -1,6 +1,6 @@
 
 
-class UnitBuilderMain extends BattleSimmulatorBase {
+class UnitBuilderMain extends BattleSimulatorBase {
     constructor() {
         super({
             unitSelected: (event) => {

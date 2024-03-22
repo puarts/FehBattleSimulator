@@ -3,7 +3,7 @@
 
 
 /// シミュレーター本体です。
-class AetherRaidSimulator extends BattleSimmulatorBase {
+class AetherRaidSimulator extends BattleSimulatorBase {
     constructor() {
         super();
     }
