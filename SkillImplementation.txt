@@ -1470,7 +1470,7 @@ function statusEffectTypeToIconFilePath(value) {
     return g_imageRootPath + "XXX.png";
 }
 /// ステータス効果が不利なステータス効果であるかどうかを判定
-// 不利なステータス異常の場合はNegativeStatusEffectTableに登録すること
+// 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
 // 有利な場合は不要
 function isNegativeStatusEffect(type) {}
 

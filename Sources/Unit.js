@@ -3,30 +3,9 @@
  * @brief Unit クラスやそれに関連する関数や変数定義です。
  */
 
-function isThiefIndex(heroIndex) {
-    return heroIndex === Hero.Thief
-        || heroIndex === Hero.RedThief
-        || heroIndex === Hero.BlueThief
-        || heroIndex === Hero.GreenThief;
-}
-
 function isThief(unit) {
     return isThiefIndex(unit.heroIndex);
 }
-
-function statusTypeToString(type) {
-    switch (type) {
-        case StatusType.Hp: return "HP";
-        case StatusType.Atk: return "攻撃";
-        case StatusType.Spd: return "速さ";
-        case StatusType.Def: return "守備";
-        case StatusType.Res: return "魔防";
-        case StatusType.None:
-        default:
-            return "-";
-    }
-}
-
 
 // HTML側で使用
 // noinspection JSUnusedGlobalSymbols
@@ -59,18 +38,6 @@ function nameToStatusType(statusName) {
     }
 }
 
-function summonerLevelToString(level) {
-    switch (level) {
-        case SummonerLevel.C: return "C";
-        case SummonerLevel.B: return "B";
-        case SummonerLevel.A: return "A";
-        case SummonerLevel.S: return "S";
-        case SummonerLevel.None:
-        default:
-            return "-";
-    }
-}
-
 /// シーズンが光、闇、天、理のいずれかであるかを判定します。
 function isMythicSeasonType(season) {
     switch (season) {
@@ -87,216 +54,6 @@ function isMythicSeasonType(season) {
 /// シーズンが火、地、水、風のいずれかであるかを判定します。
 function isLegendarySeasonType(season) {
     return season !== SeasonType.None && !isMythicSeasonType(season);
-}
-
-function moveTypeToString(moveType) {
-    switch (moveType) {
-        case MoveType.Infantry: return "歩行";
-        case MoveType.Flying: return "飛行";
-        case MoveType.Cavalry: return "騎馬";
-        case MoveType.Armor: return "重装";
-        default: return "不明";
-    }
-}
-
-function colorTypeToString(colorType) {
-    switch (colorType) {
-        case ColorType.Red: return "赤";
-        case ColorType.Blue: return "青";
-        case ColorType.Green: return "緑";
-        case ColorType.Colorless: return "無";
-        default: return "不明";
-    }
-}
-
-const NegativeStatusEffectTable = {};
-NegativeStatusEffectTable[StatusEffectType.Panic] = 0;
-NegativeStatusEffectTable[StatusEffectType.Gravity] = 0;
-NegativeStatusEffectTable[StatusEffectType.CounterattacksDisrupted] = 0;
-NegativeStatusEffectTable[StatusEffectType.TriangleAdept] = 0;
-NegativeStatusEffectTable[StatusEffectType.Guard] = 0;
-NegativeStatusEffectTable[StatusEffectType.Isolation] = 0;
-NegativeStatusEffectTable[StatusEffectType.DeepWounds] = 0;
-NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
-NegativeStatusEffectTable[StatusEffectType.FalseStart] = 0;
-NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
-NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
-NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
-NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
-NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
-NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
-NegativeStatusEffectTable[StatusEffectType.Ploy] = 0;
-NegativeStatusEffectTable[StatusEffectType.Schism] = 0;
-NegativeStatusEffectTable[StatusEffectType.NeutralizeUnitSurvivesWith1HP] = 0;
-NegativeStatusEffectTable[StatusEffectType.TimesGrip] = 0;
-NegativeStatusEffectTable[StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately] = 0;
-
-/// ステータス効果が不利なステータス効果であるかどうかを判定します。
-function isNegativeStatusEffect(type) {
-    return type in NegativeStatusEffectTable;
-}
-
-/// ステータス効果が有利なステータス効果であるかどうかを判定します。
-function isPositiveStatusEffect(type) {
-    return !isNegativeStatusEffect(type);
-}
-
-function statusEffectTypeToIconFilePath(value) {
-    // ステータスアイコン一覧
-    // https://feheroes.fandom.com/wiki/Category:Status_effect_icons
-    // ステータス
-    // https://feheroes.fandom.com/wiki/Status_effects
-    switch (value) {
-        case StatusEffectType.Panic:
-            return g_imageRootPath + "StatusEffect_Panic.png";
-        case StatusEffectType.Gravity:
-            return g_imageRootPath + "StatusEffect_MobilityDecreased.png";
-        case StatusEffectType.MobilityIncreased:
-            return g_imageRootPath + "StatusEffect_MobilityIncreased.png";
-        case StatusEffectType.EffectiveAgainstDragons:
-            return g_imageRootPath + "StatusEffect_EffectiveAgainstDragons.png";
-        case StatusEffectType.Isolation:
-            return g_imageRootPath + "StatusEffect_Isolation.png";
-        case StatusEffectType.AirOrders:
-            return g_imageRootPath + "StatusEffect_AirOrders.png";
-        case StatusEffectType.Guard:
-            return g_imageRootPath + "StatusEffect_Guard.png";
-        case StatusEffectType.BonusDoubler:
-            return g_imageRootPath + "StatusEffect_BonusDoubler.png";
-        case StatusEffectType.CounterattacksDisrupted:
-            return g_imageRootPath + "StatusEffect_CounterattacksDisrupted.png";
-        case StatusEffectType.ShieldArmor:
-            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstArmored.png";
-        case StatusEffectType.ShieldDragon:
-            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstDragon.png";
-        case StatusEffectType.TotalPenaltyDamage:
-            return g_imageRootPath + "StatusEffect_Dominance.png";
-        case StatusEffectType.ResonantBlades:
-            return g_imageRootPath + "StatusEffect_ResonanceBlades.png";
-        case StatusEffectType.Desperation:
-            return g_imageRootPath + "StatusEffect_Desperation.png";
-        case StatusEffectType.ResonantShield:
-            return g_imageRootPath + "StatusEffect_ResonanceShields.png";
-        case StatusEffectType.Vantage:
-            return g_imageRootPath + "StatusEffect_Vantage.png";
-        case StatusEffectType.DeepWounds:
-            return g_imageRootPath + "StatusEffect_DeepWounds.png";
-        case StatusEffectType.FallenStar:
-            return g_imageRootPath + "StatusEffect_FallenStar.png";
-        case StatusEffectType.FollowUpAttackPlus:
-            return g_imageRootPath + "StatusEffect_GuaranteedFollowUps.png";
-        case StatusEffectType.FollowUpAttackMinus:
-            return g_imageRootPath + "StatusEffect_FoeCannotFollowUp.png";
-        case StatusEffectType.ShieldFlying:
-            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstFlying.png";
-        case StatusEffectType.Dodge:
-            return g_imageRootPath + "StatusEffect_Dodge.png";
-        case StatusEffectType.TriangleAttack:
-            return g_imageRootPath + "StatusEffect_TriangleAttack.png";
-        case StatusEffectType.NullPanic:
-            return g_imageRootPath + "StatusEffect_NullPanic.png";
-        case StatusEffectType.Stall:
-            return g_imageRootPath + "StatusEffect_Stall.png";
-        case StatusEffectType.TriangleAdept:
-            return g_imageRootPath + "StatusEffect_TriangleAdept.png";
-        case StatusEffectType.CancelAffinity:
-            return g_imageRootPath + "StatusEffect_CancelAffinity.png";
-        case StatusEffectType.NullFollowUp:
-            return g_imageRootPath + "StatusEffect_NullFollowUp.png";
-        case StatusEffectType.Pathfinder:
-            return g_imageRootPath + "StatusEffect_Pathfinder.png";
-        case StatusEffectType.FalseStart:
-            return g_imageRootPath + "StatusEffect_FalseStart.png";
-        case StatusEffectType.NeutralizesFoesBonusesDuringCombat:
-            return g_imageRootPath + "StatusEffect_NeutralizeFoeBonuses.png";
-        case StatusEffectType.GrandStrategy:
-            return g_imageRootPath + "StatusEffect_GrandStrategy.png";
-        case StatusEffectType.CantoControl:
-            return g_imageRootPath + "StatusEffect_CantoControl.png";
-        case StatusEffectType.EnGarde:
-            return g_imageRootPath + "StatusEffect_EnGarde.webp";
-        case StatusEffectType.SpecialCooldownChargePlusOnePerAttack:
-            return g_imageRootPath + "StatusEffect_AccelerateSpecial.webp";
-        case StatusEffectType.Treachery:
-            return g_imageRootPath + "StatusEffect_Treachery.webp";
-        case StatusEffectType.WarpBubble:
-            return g_imageRootPath + "StatusEffect_WarpBubble.webp";
-        case StatusEffectType.Charge:
-            return g_imageRootPath + "StatusEffect_Charge.webp";
-        case StatusEffectType.Exposure:
-            return g_imageRootPath + "StatusEffect_Exposure.webp";
-        case StatusEffectType.Canto1:
-            return g_imageRootPath + "StatusEffect_Canto1.webp";
-        case StatusEffectType.FoePenaltyDoubler:
-            return g_imageRootPath + "StatusEffect_FoePenaltyDoubler.webp";
-        case StatusEffectType.Undefended:
-            return g_imageRootPath + "StatusEffect_Undefended.webp";
-        case StatusEffectType.Feud:
-            return g_imageRootPath + "StatusEffect_Feud.webp";
-        case StatusEffectType.DualStrike:
-            return g_imageRootPath + "StatusEffect_DualStrike.webp";
-        case StatusEffectType.UnitCannotBeSlowedByTerrain:
-            return g_imageRootPath + "StatusEffect_UnitCannotBeSlowedByTerrain.webp";
-        case StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent:
-            return g_imageRootPath + "StatusEffect_ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp";
-        case StatusEffectType.NeutralizesPenalties:
-            return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
-        case StatusEffectType.RallySpectrum:
-            return g_imageRootPath + "StatusEffect_RallySpectrum.webp";
-        case StatusEffectType.Hexblade:
-            return g_imageRootPath + "StatusEffect_Hexblade.webp";
-        case StatusEffectType.Sabotage:
-            return g_imageRootPath + "StatusEffect_Sabotage.webp";
-        case StatusEffectType.Discord:
-            return g_imageRootPath + "StatusEffect_Discord.webp";
-        case StatusEffectType.AssignDecoy:
-            return g_imageRootPath + "StatusEffect_AssignDecoy.webp";
-        case StatusEffectType.DeepStar:
-            return g_imageRootPath + "StatusEffect_DeepStar.png";
-        case StatusEffectType.Ploy:
-            return g_imageRootPath + "StatusEffect_Ploy.webp";
-        case StatusEffectType.Schism:
-            return g_imageRootPath + "StatusEffect_Schism.png";
-        case StatusEffectType.NeutralizeUnitSurvivesWith1HP:
-            return g_imageRootPath + "StatusEffect_NeutralizeUnitSurvivesWith1HP.webp";
-        case StatusEffectType.TimesGate:
-            return g_imageRootPath + "StatusEffect_TimesGate.webp";
-        case StatusEffectType.ReducesDamageFromFirstAttackBy40Percent:
-            return g_imageRootPath + "StatusEffect_ReduceFirstAttackDamage.webp";
-        case StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent:
-            return g_imageRootPath + "StatusEffect_ReduceReduceDamageByX.webp";
-        case StatusEffectType.TimesGrip:
-            return g_imageRootPath + "StatusEffect_TimesGrip.webp";
-        case StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately:
-            return g_imageRootPath + "StatusEffect_AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp";
-        default: return "";
-    }
-}
-
-function getStatusEffectName(effect) {
-    for (let name in StatusEffectType) {
-        if (StatusEffectType[name] === effect) {
-            return name;
-        }
-    }
-    return "";
-}
-
-function combatResultToString(result) {
-    switch (result) {
-        case CombatResult.Win: return "Win";
-        case CombatResult.Draw: return "Draw";
-        case CombatResult.Loss: return "Loss";
-        default: return "Unknown";
-    }
-}
-
-function groupIdToString(groupId) {
-    switch (groupId) {
-        case UnitGroupType.Ally: return "味方";
-        case UnitGroupType.Enemy: return "敵";
-        default: return "";
-    }
 }
 
 function calcArenaBaseStatusScore(baseStatusTotal) {
@@ -653,7 +410,7 @@ class BattleContext {
         this.disablesSkillsFromColorlessEnemyAlliesInCombat = false;
 
         // 条件判定のための値を使い回すための値
-        // 1攻撃の中で使い回す想定で1ターン1回の行動が行われたかなどの保存するべきフラグには使用しない
+        // 1攻撃の中で使い回す想定で1ターン1回の行動が行われたかなどを保存するべきフラグには使用しない
         this.condValueMap = new Map();
 
         // 追撃の速さ条件

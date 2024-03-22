@@ -3283,3 +3283,18 @@ const ColorType = {
 const NoneValue = -1;
 
 const NoneOption = {id: NoneValue, text: "なし"};
+
+///
+/// Functions
+///
+
+const colorToStrMap = new Map([
+    [ColorType.Red, "赤"],
+    [ColorType.Blue, "青"],
+    [ColorType.Green, "緑"],
+    [ColorType.Colorless, "無"],
+]);
+
+function colorTypeToString(colorType) {
+    return colorToStrMap.get(colorType) || "不明";
+}
