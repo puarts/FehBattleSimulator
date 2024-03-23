@@ -6,27 +6,27 @@
 /// 英雄情報です。ユニットの初期化に使用します。
 class HeroInfo {
     constructor(name, icon, moveType, weaponType, attackRange,
-        hp, atk, spd, def, res,
-        hpLv1, atkLv1, spdLv1, defLv1, resLv1,
-        hpVar, atkVar, spdVar, defVar, resVar,
-        weapon, support, special, passiveA, passiveB, passiveC, passiveX,
-        seasonType,
-        blessingType,
-        epithet,
-        pureNames,
-        duelScore,
-        weapons,
-        supports,
-        id,
-        resplendent,
-        origin,
-        howToGet,
-        releaseDate,
-        specials,
-        passiveAs,
-        passiveBs,
-        passiveCs,
-        passiveXs = [],
+                hp, atk, spd, def, res,
+                hpLv1, atkLv1, spdLv1, defLv1, resLv1,
+                hpVar, atkVar, spdVar, defVar, resVar,
+                weapon, support, special, passiveA, passiveB, passiveC, passiveX,
+                seasonType,
+                blessingType,
+                epithet,
+                pureNames,
+                duelScore,
+                weapons,
+                supports,
+                id,
+                resplendent,
+                origin,
+                howToGet,
+                releaseDate,
+                specials,
+                passiveAs,
+                passiveBs,
+                passiveCs,
+                passiveXs = [],
     ) {
         this.id = id;
         this.seasonType = seasonType;
@@ -184,6 +184,7 @@ class HeroInfo {
             Number(this.def) +
             Number(this.res);
     }
+
     // noinspection JSUnusedGlobalSymbols
     getStatusTotalOfLv1() {
         return Number(this.hpLv1) +
@@ -232,18 +233,22 @@ class HeroInfo {
     getIconImgTagWithAnchor(size) {
         return `<a href='${this.detailPageUrl}' title='${this.name}' target='_blank'><img id='${this.id}' src='${this.iconUrl}' width='${size}px' alt='${this.name} ' /></a>`;
     }
+
     /**
      * @returns {string}
      */
     get name() {
         return this._name;
     }
+
     get icon() {
         return this._icon;
     }
+
     get attackRange() {
         return this._attackRange;
     }
+
     get moveType() {
         return this._moveType;
     }
@@ -265,8 +270,7 @@ class HeroInfo {
                 if (releaseDate < 20190220) {
                     // 第2世代と第3世代が境界
                     return 5 * (i + 1);
-                }
-                else {
+                } else {
                     return 5 * i;
                 }
             case MoveType.Flying:
@@ -280,8 +284,7 @@ class HeroInfo {
     getPureGrowthRate(growthAmountOfStar5, statusName) {
         try {
             return getGrowthRateOfStar5(growthAmountOfStar5);
-        }
-        catch (e) {
+        } catch (e) {
             console.error(`${this.name} ${statusName}: ` + e.message, e.name);
 
             // ステータスが判明してないキャラの実装時にテストしやすいよう適当な値を返しておく
@@ -312,47 +315,76 @@ class HeroInfo {
 
     getHpLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.hpLv1;
-            case UnitRarity.Star4: return this.hpLv1ForStar4;
-            case UnitRarity.Star3: return this.hpLv1ForStar3;
-            case UnitRarity.Star2: return this.hpLv1ForStar2;
-            case UnitRarity.Star1: return this.hpLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.hpLv1;
+            case UnitRarity.Star4:
+                return this.hpLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.hpLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.hpLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.hpLv1ForStar1;
         }
     }
+
     getAtkLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.atkLv1;
-            case UnitRarity.Star4: return this.atkLv1ForStar4;
-            case UnitRarity.Star3: return this.atkLv1ForStar3;
-            case UnitRarity.Star2: return this.atkLv1ForStar2;
-            case UnitRarity.Star1: return this.atkLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.atkLv1;
+            case UnitRarity.Star4:
+                return this.atkLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.atkLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.atkLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.atkLv1ForStar1;
         }
     }
+
     getSpdLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.spdLv1;
-            case UnitRarity.Star4: return this.spdLv1ForStar4;
-            case UnitRarity.Star3: return this.spdLv1ForStar3;
-            case UnitRarity.Star2: return this.spdLv1ForStar2;
-            case UnitRarity.Star1: return this.spdLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.spdLv1;
+            case UnitRarity.Star4:
+                return this.spdLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.spdLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.spdLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.spdLv1ForStar1;
         }
     }
+
     getDefLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.defLv1;
-            case UnitRarity.Star4: return this.defLv1ForStar4;
-            case UnitRarity.Star3: return this.defLv1ForStar3;
-            case UnitRarity.Star2: return this.defLv1ForStar2;
-            case UnitRarity.Star1: return this.defLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.defLv1;
+            case UnitRarity.Star4:
+                return this.defLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.defLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.defLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.defLv1ForStar1;
         }
     }
+
     getResLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.resLv1;
-            case UnitRarity.Star4: return this.resLv1ForStar4;
-            case UnitRarity.Star3: return this.resLv1ForStar3;
-            case UnitRarity.Star2: return this.resLv1ForStar2;
-            case UnitRarity.Star1: return this.resLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.resLv1;
+            case UnitRarity.Star4:
+                return this.resLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.resLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.resLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.resLv1ForStar1;
         }
     }
 
@@ -416,24 +448,28 @@ class HeroInfo {
     registerSupportOptions(infos) {
         this.__registerInheritableSkills(this.supportOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
     registerSpecialOptions(infos) {
         this.__registerInheritableSkills(this.specialOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
     registerPassiveAOptions(infos) {
         this.__registerInheritableSkills(this.passiveAOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
     registerPassiveBOptions(infos) {
         this.__registerInheritableSkills(this.passiveBOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
@@ -467,7 +503,7 @@ class HeroInfo {
         for (let infos of allInfos) {
             for (let info of infos) {
                 if (canInheritFunc(info)) {
-                    options.push({ id: info.id, text: info.getDisplayName() });
+                    options.push({id: info.id, text: info.getDisplayName()});
                 }
             }
         }
@@ -504,10 +540,10 @@ class HeroInfo {
         this.hpLv1ForStar1 = this.hpLv1ForStar2;
 
         let statusList = [
-            { type: StatusType.Atk, value: this.atkLv1 },
-            { type: StatusType.Spd, value: this.spdLv1 },
-            { type: StatusType.Def, value: this.defLv1 },
-            { type: StatusType.Res, value: this.resLv1 },
+            {type: StatusType.Atk, value: this.atkLv1},
+            {type: StatusType.Spd, value: this.spdLv1},
+            {type: StatusType.Def, value: this.defLv1},
+            {type: StatusType.Res, value: this.resLv1},
         ];
 
         statusList.sort((a, b) => {
