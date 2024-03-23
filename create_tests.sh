@@ -12,6 +12,7 @@ SOURCE_FILE_NAMES=(
     Structures
     Cell
     Table
+    HeroInfoConstants
     HeroInfo
     UnitConstants
     Unit
