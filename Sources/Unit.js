@@ -5813,18 +5813,8 @@ class Unit extends BattleMapElement {
 
     __hasSaveSkills() {
         for (let skillId of this.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveC.WoefulUpheaval:
-                case PassiveC.WithEveryone2:
-                case PassiveC.AsFarSave3:
-                case PassiveC.AdFarSave3:
-                case PassiveC.ArFarSave3:
-                case PassiveC.DrFarSave3:
-                case PassiveC.AsNearSave3:
-                case PassiveC.ArNearSave3:
-                case PassiveC.AdNearSave3:
-                case PassiveC.DrNearSave3:
-                    return true;
+            if (SaveSkills.has(skillId)) {
+                return true;
             }
         }
         return false;
