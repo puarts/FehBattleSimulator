@@ -491,15 +491,6 @@ class BattleContext {
         this.invalidatesOwnResDebuff = res;
     }
 
-    // ダメージ軽減無効(シャールヴィなど)
-    static calcDamageReductionRatio(damageReductionRatio, atkUnit) {
-        let reducedRatio = damageReductionRatio;
-        for (let ratio of atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial) {
-            reducedRatio -= Math.trunc(reducedRatio * 100 * ratio) * 0.01;
-        }
-        return reducedRatio;
-    }
-
     // ダメージ軽減積
     static multDamageReductionRatio(sourceRatio, ratio, atkUnit) {
         return 1 - (1 - sourceRatio) * (1 - ratio);
@@ -555,11 +546,7 @@ class BattleContext {
 
     // 自分から攻撃したかを考慮して2回攻撃可能かを判定する
     isTwiceAttackActivating() {
-        if (this.initiatesCombat) {
-            return this.attackCount === 2;
-        } else {
-            return this.counterattackCount === 2;
-        }
+        return this.initiatesCombat ? this.attackCount === 2 : this.counterattackCount === 2;
     }
 
     canPotentFollowupAttack() {
