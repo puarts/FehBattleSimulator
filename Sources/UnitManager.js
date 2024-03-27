@@ -67,14 +67,20 @@ class UnitManager {
         return this.enumerateUnitsWithPredicator(x => x.isOnMap);
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     enumerateUnitsInTheSameGroupOnMap(targetUnit, withTargetUnit = false) {
         return this.enumerateUnitsWithPredicator(x =>
-            x.groupId == targetUnit.groupId
+            x.groupId === targetUnit.groupId
             && x.isOnMap
-            && (withTargetUnit || x != targetUnit)
+            && (withTargetUnit || x !== targetUnit)
         );
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     * enumerateUnitsInDifferentGroupOnMap(targetUnit) {
         for (let unit of this.enumerateUnitsInDifferentGroup(targetUnit)) {
             if (unit.isOnMap) {
@@ -93,14 +99,20 @@ class UnitManager {
         });
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         let targetGroup = targetUnit.getEnemyGroupId();
         return this.enumerateUnitsWithinSpecifiedSpaces(targetUnit.posX, targetUnit.posY, targetGroup, spaces);
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(targetUnit.posX, targetUnit.posY, targetUnit.groupId, spaces)) {
-            if (withTargetUnit || unit != targetUnit) {
+            if (withTargetUnit || unit !== targetUnit) {
                 yield unit;
             }
         }

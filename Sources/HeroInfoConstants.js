@@ -238,3 +238,73 @@ function getAssetStatus(growthValue) {
             return 3;
     }
 }
+
+// noinspection JSUnusedGlobalSymbols
+/**
+ * @params {number} type
+ * @returns {String}
+ */
+// HTML側で使用
+function statusTypeToShortString(type) {
+    switch (type) {
+        case StatusType.Hp:
+            return "HP";
+        case StatusType.Atk:
+            return "攻";
+        case StatusType.Spd:
+            return "速";
+        case StatusType.Def:
+            return "守";
+        case StatusType.Res:
+            return "魔";
+        case StatusType.None:
+        default:
+            return "-";
+    }
+}
+
+/**
+ * @param {String} statusName
+ * @returns {number}
+ */
+function nameToStatusType(statusName) {
+    if (statusName === "HP") {
+        return StatusType.Hp;
+    } else if (statusName === "攻撃") {
+        return StatusType.Atk;
+    } else if (statusName === "速さ") {
+        return StatusType.Spd;
+    } else if (statusName === "守備") {
+        return StatusType.Def;
+    } else if (statusName === "魔防") {
+        return StatusType.Res;
+    } else {
+        return StatusType.None;
+    }
+}
+
+/**
+ * シーズンが光、闇、天、理のいずれかであるかを判定します。
+ * @param {number} season
+ * @returns {boolean}
+ */
+function isMythicSeasonType(season) {
+    switch (season) {
+        case SeasonType.Light:
+        case SeasonType.Dark:
+        case SeasonType.Astra:
+        case SeasonType.Anima:
+            return true;
+        default:
+            return false;
+    }
+}
+
+/**
+ * シーズンが火、地、水、風のいずれかであるかを判定します。
+ * @param {number} season
+ * @returns {boolean}
+ */
+function isLegendarySeasonType(season) {
+    return season !== SeasonType.None && !isMythicSeasonType(season);
+}

@@ -6481,7 +6481,7 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.MaritaNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
-                if (calcPotentialDamage || targetUnit.battleContext.isSolo) {
+                if (calcPotentialDamage || this.__isSolo(targetUnit)) {
                     targetUnit.addAllSpur(4);
                     targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
@@ -12025,12 +12025,9 @@ class DamageCalculatorWrapper {
     }
 
     __isSolo(unit) {
-        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1)) {
-            return false;
-        }
-
-        return true;
+        return this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 1).next().done;
     }
+
     /**
      * @param  {Unit} targetUnit
      * @param  {Unit} enemyUnit
@@ -12759,7 +12756,7 @@ class DamageCalculatorWrapper {
                     case Weapon.VultureBlade:
                     case Weapon.VultureLancePlus:
                     case Weapon.VultureLance:
-                        if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
+                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -12767,7 +12764,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.PlegianBowPlus:
-                        if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
+                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -12775,7 +12772,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.FellFlambeau:
-                        if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
+                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.spdSpur -= 5;
                             enemyUnit.defSpur -= 5;
@@ -12787,7 +12784,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.PlegianTorchPlus:
-                        if (targetUnit.battleContext.isSolo || calcPotentialDamage) {
+                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.resSpur -= 5;
                             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -14377,8 +14374,8 @@ class DamageCalculatorWrapper {
     }
 
     canCounterAttack(atkUnit, defUnit) {
-        return DamageCalculatorWrapper.__examinesCanCounterattackBasically(atkUnit, defUnit)
-            && !this.__canDisableCounterAttack(atkUnit, defUnit);
+        return this.__examinesCanCounterattackBasically(atkUnit, defUnit) &&
+            !this.__canDisableCounterAttack(atkUnit, defUnit);
     }
 
     // 反撃不可ならばtrueを反撃不可を無効にするならfalseを返す
@@ -14535,7 +14532,7 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.SurvivalistBow:
-                    if (atkUnit.battleContext.isSolo && defUnit.battleContext.restHpPercentage >= 80) {
+                    if (this.__isSolo(atkUnit) && defUnit.battleContext.restHpPercentage >= 80) {
                         return true;
                     }
                     break;
@@ -14600,7 +14597,7 @@ class DamageCalculatorWrapper {
         return false;
     }
 
-    static __examinesCanCounterattackBasically(atkUnit, defUnit) {
+    __examinesCanCounterattackBasically(atkUnit, defUnit) {
         if (!defUnit.hasWeapon) {
             return false;
         }
@@ -14652,7 +14649,7 @@ class DamageCalculatorWrapper {
                         }
                         break;
                     case Weapon.DoubleBow:
-                        if (defUnit.battleContext.isSolo) {
+                        if (this.__isSolo(defUnit)) {
                             return true;
                         }
                         break;
@@ -15711,7 +15708,7 @@ class DamageCalculatorWrapper {
      * @param  {Unit} targetUnit
      * @param  {Number} spaces
      * @param  {Boolean} withTargetUnit=false
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
@@ -15719,7 +15716,7 @@ class DamageCalculatorWrapper {
     /**
      * @param  {Unit} targetUnit
      * @param  {Number} spaces
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces) {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
@@ -15727,7 +15724,7 @@ class DamageCalculatorWrapper {
     /**
      * @param  {Unit} unit
      * @param  {Boolean} withTargetUnit=false
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
@@ -15736,7 +15733,7 @@ class DamageCalculatorWrapper {
     /**
      * @param  {Unit} unit
      * @param  {Boolean} withTargetUnit=false
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
         return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);

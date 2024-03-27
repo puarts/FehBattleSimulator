@@ -15,6 +15,7 @@ SOURCE_FILE_NAMES=(
     HeroInfoConstants
     HeroInfo
     UnitConstants
+    BattleContext
     Unit
     UnitManager
     BattleMap
