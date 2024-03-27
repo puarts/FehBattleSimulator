@@ -4,13 +4,18 @@ SOURCE_FILE_NAMES=(
     GlobalDefinitions
     Utilities
     Logger
+    SkillConstants
     Skill
+    SkillImpl
     BattleMapElement
     Tile
     Structures
     Cell
     Table
+    HeroInfoConstants
     HeroInfo
+    UnitConstants
+    BattleContext
     Unit
     UnitManager
     BattleMap

@@ -80,11 +80,11 @@ function initVueComponents() {
     function extractUnitAndSkillType(elemName) {
         let unit = null;
         let skillType = null;
-        if (elemName != null || elemName != "") {
-            let splited = elemName.split("-");
-            if (splited.length == 2) {
-                unitId = splited[0];
-                skillType = splited[1];
+        if (elemName != null || elemName !== "") {
+            let split = elemName.split("-");
+            if (split.length === 2) {
+                let unitId = split[0];
+                skillType = split[1];
                 unit = g_appData.findItemById(unitId);
             }
         }

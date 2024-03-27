@@ -202,8 +202,8 @@ class DamageCalculator {
         this.__activateEffectAfterBeginningOfCombat(atkUnit, defUnit);
         this.__activateEffectAfterBeginningOfCombat(defUnit, atkUnit);
         // atkUnitが受けるダメージはdefUnitが与えるダメージとして表示する
-        result.atkUnitDamageAfterBeginningOfCombat = defUnit.battleContext.damageAfterBeginningOfCombat;
-        result.defUnitDamageAfterBeginningOfCombat = atkUnit.battleContext.damageAfterBeginningOfCombat;
+        result.atkUnitDamageAfterBeginningOfCombat = defUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+        result.defUnitDamageAfterBeginningOfCombat = atkUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
         result.atkTile = atkUnit.placedTile;
         result.defTile = defUnit.placedTile;
 
@@ -229,11 +229,15 @@ class DamageCalculator {
     }
 
     __activateEffectAfterBeginningOfCombat(targetUnit, enemyUnit) {
-        if (targetUnit.battleContext.damageAfterBeginningOfCombat > 0) {
-            targetUnit.restHp -= targetUnit.battleContext.damageAfterBeginningOfCombat;
-            let logMessage = `${targetUnit.getNameWithGroup()}に合計<span style="color: #ff0000">${targetUnit.battleContext.damageAfterBeginningOfCombat}</span>の戦闘開始後ダメージ`;
+        // 戦闘開始後ダメージ
+        let damageAfterBeginningOfCombat = targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+        if (damageAfterBeginningOfCombat > 0) {
+            targetUnit.restHp -= damageAfterBeginningOfCombat;
+            let logMessage = `${targetUnit.getNameWithGroup()}に合計<span style="color: #ff0000">${damageAfterBeginningOfCombat}</span>の戦闘開始後ダメージ`;
             this.writeDebugLog(logMessage);
             this.writeSimpleLog(logMessage);
+            let debugMessage = `重複しない戦闘開始後ダメージ: [${targetUnit.battleContext.getDamagesAfterBeginningOfCombatNotStack()}]`;
+            this.writeDebugLog(debugMessage);
             if (targetUnit.restHp <= 0) {
                 targetUnit.restHp = 1;
             }
@@ -1252,6 +1256,7 @@ class DamageCalculator {
 
             damageReductionRatio = 1.0 - damageReductionRatio;
             damageReductionValue += defUnit.battleContext.damageReductionValue;
+            damageReductionValue += defUnit.battleContext.damageReductionValuePerAttack;
             if (context.isFollowupOrPotentFollowupAttack()) {
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfFollowupAttack;
             } else {
@@ -1284,6 +1289,7 @@ class DamageCalculator {
                 }
                 // 奥義発動
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
+                damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack;
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog(`奥義によるダメージ${currentDamage}`);
                 let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
@@ -1487,12 +1493,16 @@ class DamageCalculator {
     }
 
     __initContextPerAttack(unit) {
-        unit.battleContext.additionalDamagePerAttack = 0;
-        unit.battleContext.healedHpByAttackPerAttack = 0;
-        unit.battleContext.preventedDefenderSpecialPerAttack = false;
-        unit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
-        unit.battleContext.maxHpRatioToHealBySpecialPerAttack = 0;
-        unit.battleContext.specialCountReductionBeforeFirstAttackPerAttack = 0;
+        /** @type {BattleContext} */
+        let context = unit.battleContext;
+        context.additionalDamagePerAttack = 0;
+        context.healedHpByAttackPerAttack = 0;
+        context.preventedDefenderSpecialPerAttack = false;
+        context.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
+        context.maxHpRatioToHealBySpecialPerAttack = 0;
+        context.specialCountReductionBeforeFirstAttackPerAttack = 0;
+        context.damageReductionValuePerAttack = 0;
+        context.damageReductionValueOfSpecialAttackPerAttack = 0;
     }
 
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
@@ -1729,6 +1739,9 @@ class DamageCalculator {
         let currentDamage = Math.max(damage - reducedDamage, 0);
         if (damageReductionRatio > 0.0) {
             if (this.isLogEnabled) this.writeDebugLog("ダメージ軽減率" + floorNumberWithFloatError(damageReductionRatio * 100) + "%");
+            if (this.isLogEnabled) this.writeDebugLog("固定ダメージ軽減値-" + damageReductionValue);
+            if (this.isLogEnabled) this.writeDebugLog("ダメージ変化:" + damage + "→" + currentDamage);
+        } else if (damageReductionValue > 0) {
             if (this.isLogEnabled) this.writeDebugLog("固定ダメージ軽減値-" + damageReductionValue);
             if (this.isLogEnabled) this.writeDebugLog("ダメージ変化:" + damage + "→" + currentDamage);
         }

@@ -3,7 +3,7 @@
 
 
 /// シミュレーター本体です。
-class ArenaSimulator extends BattleSimmulatorBase {
+class ArenaSimulator extends BattleSimulatorBase {
     constructor() {
         super();
     }

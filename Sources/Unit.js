@@ -3,489 +3,8 @@
  * @brief Unit クラスやそれに関連する関数や変数定義です。
  */
 
-
-
-
-const Hero = {
-    HaloweenHector: 432,
-    DuoEphraim: 443,
-    ChristmasMarth: 462,
-    NewYearAlfonse: 468,
-    ValentineAlm: 484,
-    SpringIdunn: 500,
-    YoungPalla: 511,
-    BridalMicaiah: 522,
-    Mila: 524,
-    SummerMia: 534,
-    Thief: 547,
-    RedThief: 548,
-    BlueThief: 549,
-    GreenThief: 550,
-    SummerByleth: 540,
-    PirateVeronica: 555,
-    DuoSigurd: 566,
-    HaloweenTiki: 577,
-    DuoLyn: 588,
-    DuoAltina: 609,
-    DuoPeony: 615,
-    PlegianDorothea: 625,
-    DuoLif: 631,
-    HarmonizedMyrrh: 648,
-    DuoEirika: 659,
-    HarmonizedCatria: 670,
-    DuoHilda: 682,
-    HarmonizedCaeda: 688,
-    DuoHinoka: 700,
-    HarmonizedLeif: 711,
-    DuoSothis: 723,
-    DuoCorrin: 735,
-    HarmonizedLysithea: 754,
-    DuoDagr: 760,
-    HarmonizedAzura: 770,
-    DuoChrom: 776,
-    HarmonizedSonya: 787,
-    DuoIke: 798,
-    HarmonizedRoy: 816,
-    HarmonizedEdelgard: 830,
-    DuoThorr: 836,
-    DuoNina: 847,
-    HarmonizedTana: 860,
-    DuoDuma: 873,
-    DuoLaegijarn: 887,
-    HarmonizedCordelia: 908,
-    DuoAskr: 914,
-    HarmonizedLinde: 919,
-    DuoElise: 932,
-    HarmonizedKarla: 944,
-    DuoMark: 955,
-    HarmonizedTiki: 971,
-    DuoShamir: 984,
-    DuoYmir: 990,
-    HarmonizedAyra: 1005,
-    DuoKagero: 1016,
-    HarmonizedAnna: 1029,
-    DuoSanaki: 1042,
-    DuoByleth: 1062,
-    DuoSeidr: 1068,
-    HarmonizedIgrene: 1079,
-    DuoLyon: 1086,
-    HarmonizedChloe: 1097,
-};
-
-function isThiefIndex(heroIndex) {
-    return heroIndex == Hero.Thief
-        || heroIndex == Hero.RedThief
-        || heroIndex == Hero.BlueThief
-        || heroIndex == Hero.GreenThief;
-}
-
 function isThief(unit) {
     return isThiefIndex(unit.heroIndex);
-}
-
-
-const IvStateOptions = [
-    { id: StatusType.None, text: "なし" },
-    { id: StatusType.Hp, text: "HP" },
-    { id: StatusType.Atk, text: "攻撃" },
-    { id: StatusType.Spd, text: "速さ" },
-    { id: StatusType.Def, text: "守備" },
-    { id: StatusType.Res, text: "魔防" },
-];
-
-function statusTypeToString(type) {
-    switch (type) {
-        case StatusType.Hp: return "HP";
-        case StatusType.Atk: return "攻撃";
-        case StatusType.Spd: return "速さ";
-        case StatusType.Def: return "守備";
-        case StatusType.Res: return "魔防";
-        case StatusType.None:
-        default:
-            return "-";
-    }
-}
-
-function statusTypeToShortString(type) {
-    switch (type) {
-        case StatusType.Hp: return "HP";
-        case StatusType.Atk: return "攻";
-        case StatusType.Spd: return "速";
-        case StatusType.Def: return "守";
-        case StatusType.Res: return "魔";
-        case StatusType.None:
-        default:
-            return "-";
-    }
-}
-
-function nameToStatusType(statusName) {
-    if (statusName == "HP") {
-        return StatusType.Hp;
-    } else if (statusName == "攻撃") {
-        return StatusType.Atk;
-    } else if (statusName == "速さ") {
-        return StatusType.Spd;
-    } else if (statusName == "守備") {
-        return StatusType.Def;
-    } else if (statusName == "魔防") {
-        return StatusType.Res;
-    } else {
-        return StatusType.None;
-    }
-}
-
-
-const UnitGroupType = {
-    Ally: 0,
-    Enemy: 1,
-};
-
-const SummonerLevel =
-{
-    None: -1,
-    C: 0,
-    B: 1,
-    A: 2,
-    S: 3,
-};
-
-function summonerLevelToString(level) {
-    switch (level) {
-        case SummonerLevel.C: return "C";
-        case SummonerLevel.B: return "B";
-        case SummonerLevel.A: return "A";
-        case SummonerLevel.S: return "S";
-        case SummonerLevel.None:
-        default:
-            return "-";
-    }
-}
-
-const SummonerLevelOptions = [
-    { id: SummonerLevel.None, text: "なし" },
-    { id: SummonerLevel.C, text: "C" },
-    { id: SummonerLevel.B, text: "B" },
-    { id: SummonerLevel.A, text: "A" },
-    { id: SummonerLevel.S, text: "S" },
-];
-
-const PartnerLevel =
-{
-    None: -1,
-    C: 0,
-    B: 1,
-    A: 2,
-    S: 3,
-};
-
-
-
-const CombatResult = {
-    Win: 2,
-    Draw: 1,
-    Loss: 0,
-};
-
-const PerTurnStatusType = {
-    None: -1,
-    Pass: 0,
-    ThreatensEnemy: 1,
-    ThreatenedByEnemy: 2,
-};
-
-const StatusEffectType = {
-    None: -1,
-    Panic: 0, // 強化反転
-    Gravity: 1, // 移動制限
-    MobilityIncreased: 2, // 移動値加算
-    CounterattacksDisrupted: 3, // 反撃不可付与
-    TriangleAdept: 4, // 激化付与
-    Guard: 5, // キャンセル
-    AirOrders: 6, // 曲技付与(周囲2マスの味方の隣接マスに移動可能, UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces)
-    EffectiveAgainstDragons: 7, // 竜特効付与
-    Isolation: 8, // 補助不可
-    BonusDoubler: 9, // 強化増幅
-    ShieldArmor: 10, // 重装特効無効
-    TotalPenaltyDamage: 11, // 敵弱化ダメージ+(Dominance)
-    ResonantBlades: 12, // 双界効果・刃
-    Desperation: 13, // 攻め立て
-    ResonantShield: 14, // 双界効果・盾
-    Vantage: 15, // 待ち伏せ
-    DeepWounds: 16, // 回復不可
-    FallenStar: 17, // 落星
-    ShieldFlying: 18, // 飛行特効無効
-    FollowUpAttackMinus: 19, // 追撃不可
-    Dodge: 20, // 回避
-    TriangleAttack: 21, // トライアングルアタック
-    FollowUpAttackPlus: 22, // 自分から攻撃した時、絶対追撃
-    NullPanic: 23, // 見切り・パニック
-    Stall: 24, // 空転
-    CancelAffinity: 25, // 相性相殺
-    NullFollowUp: 26, // 見切り・追撃
-    Pathfinder: 27, // 天駆の道
-    FalseStart: 28, // ターン開始スキル不可
-    NeutralizesFoesBonusesDuringCombat: 29, // 敵の強化の+を無効
-    GrandStrategy: 30, // 神軍師の策
-    CantoControl: 31, // 再移動制限
-    EnGarde: 32, // 戦闘外ダメージ無効
-    SpecialCooldownChargePlusOnePerAttack: 33, // 戦闘中、奥義発動カウント変動量+1
-    Treachery: 34, // 強化ダメージ+
-    WarpBubble: 35, // 敵ワープ抑制
-    Charge: 36, // 突撃
-    Exposure: 37, // 弱点露呈
-    ShieldDragon: 38, // 竜特効
-    Canto1: 39, // 再移動(1)
-    FoePenaltyDoubler: 40, // 敵弱化増幅
-    Undefended: 41, // 護られ不可
-    Feud: 42, // 暗闘
-    DualStrike: 43, // デュアルアタック
-    UnitCannotBeSlowedByTerrain: 44, // 自身が移動可能な地形を平地のように移動可能
-    ReduceDamageFromAreaOfEffectSpecialsBy80Percent: 45, // 受けた範囲奥義のダメージを80%軽減
-    NeutralizesPenalties: 46, // 弱化を無効
-    Hexblade: 47, // 魔刃
-    Sabotage: 48, // 混乱
-    Discord: 49, // 不和
-    AssignDecoy: 50, // 囮指名
-    RallySpectrum: 51, // 七色の叫び
-    DeepStar: 52, // 真落星
-    Ploy: 53, // 謀策
-    Schism: 54, // 連携阻害
-    NeutralizeUnitSurvivesWith1HP: 55, // 奥義以外の祈り無効
-    TimesGate: 56, // 時の門
-    Incited: 57, // 奮激
-    ReducesDamageFromFirstAttackBy40Percent: 58, // 自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減
-    ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent: 59, // 「ダメージを〇〇%軽減」を半分無効
-    TimesGrip: 60, // 時の陥穽
-    AfterStartOfTurnSkillsTriggerActionEndsImmediately: 61, // ターン開始後スキル発動後、即座に行動終了
-};
-
-/// シーズンが光、闇、天、理のいずれかであるかを判定します。
-function isMythicSeasonType(season) {
-    switch (season) {
-        case SeasonType.Light:
-        case SeasonType.Dark:
-        case SeasonType.Astra:
-        case SeasonType.Anima:
-            return true;
-        default:
-            return false;
-    }
-}
-
-/// シーズンが火、地、水、風のいずれかであるかを判定します。
-function isLegendarySeasonType(season) {
-    return season != SeasonType.None && !isMythicSeasonType(season);
-}
-
-function moveTypeToString(moveType) {
-    switch (moveType) {
-        case MoveType.Infantry: return "歩行";
-        case MoveType.Flying: return "飛行";
-        case MoveType.Cavalry: return "騎馬";
-        case MoveType.Armor: return "重装";
-        default: return "不明";
-    }
-}
-
-function colorTypeToString(colorType) {
-    switch (colorType) {
-        case ColorType.Red: return "赤";
-        case ColorType.Blue: return "青";
-        case ColorType.Green: return "緑";
-        case ColorType.Colorless: return "無";
-        default: return "不明";
-    }
-}
-
-const NegativeStatusEffectTable = {};
-NegativeStatusEffectTable[StatusEffectType.Panic] = 0;
-NegativeStatusEffectTable[StatusEffectType.Gravity] = 0;
-NegativeStatusEffectTable[StatusEffectType.CounterattacksDisrupted] = 0;
-NegativeStatusEffectTable[StatusEffectType.TriangleAdept] = 0;
-NegativeStatusEffectTable[StatusEffectType.Guard] = 0;
-NegativeStatusEffectTable[StatusEffectType.Isolation] = 0;
-NegativeStatusEffectTable[StatusEffectType.DeepWounds] = 0;
-NegativeStatusEffectTable[StatusEffectType.Stall] = 0;
-NegativeStatusEffectTable[StatusEffectType.FalseStart] = 0;
-NegativeStatusEffectTable[StatusEffectType.CantoControl] = 0;
-NegativeStatusEffectTable[StatusEffectType.Exposure] = 0;
-NegativeStatusEffectTable[StatusEffectType.Undefended] = 0;
-NegativeStatusEffectTable[StatusEffectType.Feud] = 0;
-NegativeStatusEffectTable[StatusEffectType.Sabotage] = 0;
-NegativeStatusEffectTable[StatusEffectType.Discord] = 0;
-NegativeStatusEffectTable[StatusEffectType.Ploy] = 0;
-NegativeStatusEffectTable[StatusEffectType.Schism] = 0;
-NegativeStatusEffectTable[StatusEffectType.NeutralizeUnitSurvivesWith1HP] = 0;
-NegativeStatusEffectTable[StatusEffectType.TimesGrip] = 0;
-NegativeStatusEffectTable[StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately] = 0;
-
-/// ステータス効果が不利なステータス効果であるかどうかを判定します。
-function isNegativeStatusEffect(type) {
-    return type in NegativeStatusEffectTable;
-}
-
-/// ステータス効果が有利なステータス効果であるかどうかを判定します。
-function isPositiveStatusEffect(type) {
-    return !isNegativeStatusEffect(type);
-}
-
-function statusEffectTypeToIconFilePath(value) {
-    // ステータスアイコン一覧
-    // https://feheroes.fandom.com/wiki/Category:Status_effect_icons
-    // ステータス
-    // https://feheroes.fandom.com/wiki/Status_effects
-    switch (value) {
-        case StatusEffectType.Panic:
-            return g_imageRootPath + "StatusEffect_Panic.png";
-        case StatusEffectType.Gravity:
-            return g_imageRootPath + "StatusEffect_MobilityDecreased.png";
-        case StatusEffectType.MobilityIncreased:
-            return g_imageRootPath + "StatusEffect_MobilityIncreased.png";
-        case StatusEffectType.EffectiveAgainstDragons:
-            return g_imageRootPath + "StatusEffect_EffectiveAgainstDragons.png";
-        case StatusEffectType.Isolation:
-            return g_imageRootPath + "StatusEffect_Isolation.png";
-        case StatusEffectType.AirOrders:
-            return g_imageRootPath + "StatusEffect_AirOrders.png";
-        case StatusEffectType.Guard:
-            return g_imageRootPath + "StatusEffect_Guard.png";
-        case StatusEffectType.BonusDoubler:
-            return g_imageRootPath + "StatusEffect_BonusDoubler.png";
-        case StatusEffectType.CounterattacksDisrupted:
-            return g_imageRootPath + "StatusEffect_CounterattacksDisrupted.png";
-        case StatusEffectType.ShieldArmor:
-            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstArmored.png";
-        case StatusEffectType.ShieldDragon:
-            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstDragon.png";
-        case StatusEffectType.TotalPenaltyDamage:
-            return g_imageRootPath + "StatusEffect_Dominance.png";
-        case StatusEffectType.ResonantBlades:
-            return g_imageRootPath + "StatusEffect_ResonanceBlades.png";
-        case StatusEffectType.Desperation:
-            return g_imageRootPath + "StatusEffect_Desperation.png";
-        case StatusEffectType.ResonantShield:
-            return g_imageRootPath + "StatusEffect_ResonanceShields.png";
-        case StatusEffectType.Vantage:
-            return g_imageRootPath + "StatusEffect_Vantage.png";
-        case StatusEffectType.DeepWounds:
-            return g_imageRootPath + "StatusEffect_DeepWounds.png";
-        case StatusEffectType.FallenStar:
-            return g_imageRootPath + "StatusEffect_FallenStar.png";
-        case StatusEffectType.FollowUpAttackPlus:
-            return g_imageRootPath + "StatusEffect_GuaranteedFollowUps.png";
-        case StatusEffectType.FollowUpAttackMinus:
-            return g_imageRootPath + "StatusEffect_FoeCannotFollowUp.png";
-        case StatusEffectType.ShieldFlying:
-            return g_imageRootPath + "StatusEffect_NeutralizeEffectiveAgainstFlying.png";
-        case StatusEffectType.Dodge:
-            return g_imageRootPath + "StatusEffect_Dodge.png";
-        case StatusEffectType.TriangleAttack:
-            return g_imageRootPath + "StatusEffect_TriangleAttack.png";
-        case StatusEffectType.NullPanic:
-            return g_imageRootPath + "StatusEffect_NullPanic.png";
-        case StatusEffectType.Stall:
-            return g_imageRootPath + "StatusEffect_Stall.png";
-        case StatusEffectType.TriangleAdept:
-            return g_imageRootPath + "StatusEffect_TriangleAdept.png";
-        case StatusEffectType.CancelAffinity:
-            return g_imageRootPath + "StatusEffect_CancelAffinity.png";
-        case StatusEffectType.NullFollowUp:
-            return g_imageRootPath + "StatusEffect_NullFollowUp.png";
-        case StatusEffectType.Pathfinder:
-            return g_imageRootPath + "StatusEffect_Pathfinder.png";
-        case StatusEffectType.FalseStart:
-            return g_imageRootPath + "StatusEffect_FalseStart.png";
-        case StatusEffectType.NeutralizesFoesBonusesDuringCombat:
-            return g_imageRootPath + "StatusEffect_NeutralizeFoeBonuses.png";
-        case StatusEffectType.GrandStrategy:
-            return g_imageRootPath + "StatusEffect_GrandStrategy.png";
-        case StatusEffectType.CantoControl:
-            return g_imageRootPath + "StatusEffect_CantoControl.png";
-        case StatusEffectType.EnGarde:
-            return g_imageRootPath + "StatusEffect_EnGarde.webp";
-        case StatusEffectType.SpecialCooldownChargePlusOnePerAttack:
-            return g_imageRootPath + "StatusEffect_AccelerateSpecial.webp";
-        case StatusEffectType.Treachery:
-            return g_imageRootPath + "StatusEffect_Treachery.webp";
-        case StatusEffectType.WarpBubble:
-            return g_imageRootPath + "StatusEffect_WarpBubble.webp";
-        case StatusEffectType.Charge:
-            return g_imageRootPath + "StatusEffect_Charge.webp";
-        case StatusEffectType.Exposure:
-            return g_imageRootPath + "StatusEffect_Exposure.webp";
-        case StatusEffectType.Canto1:
-            return g_imageRootPath + "StatusEffect_Canto1.webp";
-        case StatusEffectType.FoePenaltyDoubler:
-            return g_imageRootPath + "StatusEffect_FoePenaltyDoubler.webp";
-        case StatusEffectType.Undefended:
-            return g_imageRootPath + "StatusEffect_Undefended.webp";
-        case StatusEffectType.Feud:
-            return g_imageRootPath + "StatusEffect_Feud.webp";
-        case StatusEffectType.DualStrike:
-            return g_imageRootPath + "StatusEffect_DualStrike.webp";
-        case StatusEffectType.UnitCannotBeSlowedByTerrain:
-            return g_imageRootPath + "StatusEffect_UnitCannotBeSlowedByTerrain.webp";
-        case StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent:
-            return g_imageRootPath + "StatusEffect_ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp";
-        case StatusEffectType.NeutralizesPenalties:
-            return g_imageRootPath + "StatusEffect_NeutralizesPenalties.webp";
-        case StatusEffectType.RallySpectrum:
-            return g_imageRootPath + "StatusEffect_RallySpectrum.webp";
-        case StatusEffectType.Hexblade:
-            return g_imageRootPath + "StatusEffect_Hexblade.webp";
-        case StatusEffectType.Sabotage:
-            return g_imageRootPath + "StatusEffect_Sabotage.webp";
-        case StatusEffectType.Discord:
-            return g_imageRootPath + "StatusEffect_Discord.webp";
-        case StatusEffectType.AssignDecoy:
-            return g_imageRootPath + "StatusEffect_AssignDecoy.webp";
-        case StatusEffectType.DeepStar:
-            return g_imageRootPath + "StatusEffect_DeepStar.png";
-        case StatusEffectType.Ploy:
-            return g_imageRootPath + "StatusEffect_Ploy.webp";
-        case StatusEffectType.Schism:
-            return g_imageRootPath + "StatusEffect_Schism.png";
-        case StatusEffectType.NeutralizeUnitSurvivesWith1HP:
-            return g_imageRootPath + "StatusEffect_NeutralizeUnitSurvivesWith1HP.webp";
-        case StatusEffectType.TimesGate:
-            return g_imageRootPath + "StatusEffect_TimesGate.webp";
-        case StatusEffectType.ReducesDamageFromFirstAttackBy40Percent:
-            return g_imageRootPath + "StatusEffect_ReduceFirstAttackDamage.webp";
-        case StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent:
-            return g_imageRootPath + "StatusEffect_ReduceReduceDamageByX.webp";
-        case StatusEffectType.TimesGrip:
-            return g_imageRootPath + "StatusEffect_TimesGrip.webp";
-        case StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately:
-            return g_imageRootPath + "StatusEffect_AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp";
-        default: return "";
-    }
-}
-
-function getStatusEffectName(effect) {
-    for (let name in StatusEffectType) {
-        if (StatusEffectType[name] === effect) {
-            return name;
-        }
-    }
-    return "";
-}
-
-function combatResultToString(result) {
-    switch (result) {
-        case CombatResult.Win: return "Win";
-        case CombatResult.Draw: return "Draw";
-        case CombatResult.Loss: return "Loss";
-        default: return "Unknown";
-    }
-}
-
-function groupIdToString(groupId) {
-    switch (groupId) {
-        case UnitGroupType.Ally: return "味方";
-        case UnitGroupType.Enemy: return "敵";
-        default: return "";
-    }
 }
 
 function calcArenaBaseStatusScore(baseStatusTotal) {
@@ -494,728 +13,6 @@ function calcArenaBaseStatusScore(baseStatusTotal) {
 
 function calcArenaTotalSpScore(totalSp) {
     return Math.floor(totalSp / 100);
-}
-
-/// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
-class BattleContext {
-    constructor() {
-        this.maxHpWithSkills = 0;
-        this.hpBeforeCombat = 0;
-        this.restHp = 0;
-        this.specialCount = 0;
-        this.canFollowupAttack = false;
-        this.canCounterattack = false;
-        this.isVantageActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
-        this.isVantageActivated = false; // 待ち伏せが実際に発動するか(敵の戦闘順入替スキルを加味した有効無効)
-        this.isDesperationActivatable = false; // 攻め立てが発動条件を満たすか
-        this.isDesperationActivated = false; // 攻め立てが実際に発動するか(これはisDesperationActivatableから設定されるので直接設定しない)
-        this.isDefDesperationActivatable = false; // 受け攻め立ての発動条件を満たすか
-        this.isDefDesperationActivated = false; // 最後の聖戦のように攻め立て受け側バージョン
-        this.damageReductionRatioOfFirstAttack = 0; // 最初の1撃だけ
-        this.damageReductionRatioOfFirstAttacks = 0; // 連撃の場合は1,2回目の攻撃(3,4回目が対象外)
-        this.damageReductionRatioOfConsecutiveAttacks = 0;
-        this.damageReductionRatioOfFollowupAttack = 0;
-        /**
-         * フランなどのチェインガードによる回避効果
-         * @type {[[Unit, Number]]}
-         * */
-        this.damageReductionRatiosByChainGuard = [];
-        this.isChainGuardActivated = false;
-        this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
-        this.isEffectiveToOpponent = false;
-        this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
-        this.attackCount = 1;
-        this.counterattackCount = 1;
-        this.canCounterattackToAllDistance = false;
-        // 奥義発動カウント変動量
-        this.cooldownCountForAttack = 1;
-        this.cooldownCountForDefense = 1;
-
-        // 戦闘中に奥義が発動されたかどうか
-        this.isSpecialActivated = false;
-        this.specialActivatedCount = 0;
-
-        // 自身の奥義発動カウント変動量を+1
-        this.increaseCooldownCountForAttack = false;
-        this.increaseCooldownCountForDefense = false;
-
-        // 敵の奥義発動カウント変動量を-1
-        this.reducesCooldownCount = false;
-
-        // 自身の発動カウント変動量-1を無効
-        this.invalidatesReduceCooldownCount = false;
-
-        // 敵の発動カウント変動量+1を無効
-        this.invalidatesIncreaseCooldownCount = false;
-
-        // 守備魔防の低い方を参照を無効化
-        this.invalidatesReferenceLowerMit = false;
-
-        // 回復を無効化
-        this.invalidatesHeal = false;
-
-        // [回復不可]を無効にする割合
-        this.nullInvalidatesHealRatio = 0;
-
-        // 戦闘後回復
-        this.healedHpAfterCombat = 0;
-
-        // 戦闘後ダメージ
-        this.damageAfterCombat = 0;
-
-        // 強化無効
-        this.invalidatesAtkBuff = false;
-        this.invalidatesSpdBuff = false;
-        this.invalidatesDefBuff = false;
-        this.invalidatesResBuff = false;
-
-        // 強化反転
-        this.isAtkBonusReversal = false;
-        this.isSpdBonusReversal = false;
-        this.isDefBonusReversal = false;
-        this.isResBonusReversal = false;
-
-        // 神罰の杖
-        this.wrathfulStaff = false;
-
-        // 戦闘中自身の弱化を無効化
-        this.invalidatesOwnAtkDebuff = false;
-        this.invalidatesOwnSpdDebuff = false;
-        this.invalidatesOwnDefDebuff = false;
-        this.invalidatesOwnResDebuff = false;
-
-        // 守備魔防の低い方でダメージ計算
-        this.refersMinOfDefOrRes = false;
-
-        // true なら戦闘時に守備、falseなら魔防を参照します。
-        this.refersRes = false;
-
-        // true なら奥義発動時に守備、falseなら魔防を参照します。
-        this.refersResForSpecial = false;
-
-        // 氷の聖鏡発動時などの軽減ダメージ保持用
-        this.reducedDamageForNextAttack = 0;
-
-        // 差し違え4などの軽減前ダメージの参照割合の保持用(最大値適用)
-        this.reducedRatioForNextAttack = 0;
-
-        // 差し違え4などの軽減前ダメージの割合加算
-        this.additionalDamageOfNextAttackByDamageRatio = 0;
-
-        // 次の自分の攻撃のダメージ加算
-        this.additionalDamageOfNextAttack = 0;
-
-        // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生するか
-        this.nextAttackEffectAfterSpecialActivated = false;
-
-        // 自分の次の攻撃のダメージに軽減をプラスする効果が発動するか
-        this.nextAttackAddReducedDamageActivated = false;
-
-        // 自分から攻撃したか
-        this.initiatesCombat = false;
-
-        // 追撃優先度
-        this.followupAttackPriorityIncrement = 0;
-        this.followupAttackPriorityDecrement = 0;
-
-        // 戦闘前の範囲奥義で有効になるダメージ軽減率
-        this.damageReductionRatioForPrecombat = 0;
-        // 戦闘前の範囲奥義のダメージ軽減
-        this.damageReductionForPrecombat = 0;
-
-        // 戦闘中常に有効になるダメージ軽減率
-        // @NOTE: ダメージ軽減無効を考慮する必要があるので基本this.multDamageReductionRatioメソッドで値を設定する
-        this.damageReductionRatio = 0;
-
-        // 防御系奥義によるダメージ軽減率
-        this.damageReductionRatioBySpecial = 0;
-
-        // 防御系でない奥義によるダメージ軽減率
-        this.damageReductionRatiosByNonDefenderSpecial = [];
-
-        // 次の敵の攻撃ダメージ軽減(奥義による軽減)
-        this.damageReductionRatiosBySpecialOfNextAttack = [];
-
-        // 奥義による攻撃でダメージを与えた時、次の敵の攻撃ダメージ軽減
-        this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
-
-        // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
-        this.damageReductionRatiosWhenCondSatisfied = [];
-
-        // 護り手が発動しているかどうか
-        this.isSaviorActivated = false;
-
-        // 最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
-        this.specialCountReductionBeforeFirstAttack = 0;
-
-        // 最初の追撃前の奥義発動カウント減少値(減少値を正の値で保持する)
-        this.specialCountReductionBeforeFollowupAttack = 0;
-
-        // 攻撃ごとに変化する可能性がある最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
-        this.specialCountReductionBeforeFirstAttackPerAttack = 0;
-
-        // 最初の攻撃前の奥義発動カウント増加値
-        this.specialCountIncreaseBeforeFirstAttack = 0;
-
-        // 攻撃時の追加ダメージ
-        this.additionalDamage = 0;
-
-        // 最初の攻撃の追加ダメージ
-        this.additionalDamageOfFirstAttack = 0;
-
-        // 奥義発動時の追加ダメージ
-        this.additionalDamageOfSpecial = 0;
-
-        // 攻撃ごとに変化する可能性がある追加ダメージ
-        this.additionalDamagePerAttack = 0;
-
-        // 固定ダメージ軽減
-        this.damageReductionValue = 0;
-
-        // 追撃の固定ダメージ軽減
-        this.damageReductionValueOfFollowupAttack = 0;
-
-        // 最初に受けた攻撃の固定ダメージ軽減(2回攻撃は最初の連撃どちらも対象)
-        // 最初に受けた攻撃と2回攻撃のダメージ-N(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃)
-        // Nの符号に注意。Nは自然数（ダメージ-5ならN=5）
-        this.damageReductionValueOfFirstAttacks = 0;
-
-        // 敵の奥義による攻撃のダメージ-N(範囲奥義を除く)
-        this.damageReductionValueOfSpecialAttack = 0;
-
-        // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
-        this.invalidatesDamageReductionExceptSpecial = false;
-        this.invalidatesDamageReductionExceptSpecialForNextAttack = false;
-        // 追撃時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
-        this.invalidatesDamageReductionExceptSpecialForFollowupAttack = false;
-
-        // 敵から攻撃を受ける際に発動する奥義発動時、自分の次の攻撃は、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(その戦闘中のみ)
-        this.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = false;
-
-        // 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(奥義発動時)
-        this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
-        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
-
-        // 敵は反撃不可
-        this.invalidatesCounterattack = false;
-
-        // 反撃不可を無効
-        this.nullCounterDisrupt = false;
-
-        // 自分の攻撃でダメージを与えた時のHP回復量
-        this.healedHpByAttack = 0;
-
-        // 自分の攻撃でダメージを与えた時のHP回復量
-        this.healedHpByAttackPerAttack = 0;
-
-        // 自分の追撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
-        this.healedHpByFollowupAttack = 0;
-
-        // 追撃不可を無効
-        this.invalidatesInvalidationOfFollowupAttack = false;
-
-        // 絶対追撃を無効
-        this.invalidatesAbsoluteFollowupAttack = false;
-
-        // 無属性に対して有利
-        this.isAdvantageForColorless = false;
-
-        // ダメージ加算する「攻撃-守備」の割合
-        this.rateOfAtkMinusDefForAdditionalDamage = 0;
-
-        // 奥義発動時の「敵の守備、魔防-〇%扱い」のパーセンテージ
-        this.specialSufferPercentage = 0;
-
-        // 奥義発動時の「与えるダメージ〇倍」の倍率
-        this.specialMultDamage = 1;
-
-        // 奥義発動時の「奥義ダメージに加算」の加算ダメージ
-        this.specialAddDamage = 0;
-
-        // 奥義発動時の「与えたダメージの〇%自分を回復」のパーセンテージ(1.0が100%)
-        this.specialDamageRatioToHeal = 0;
-
-        // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
-        this.maxHpRatioToHealBySpecial = 0;
-
-        // 奥義発動時の「自分の最大HPの〇%回復」のパーセンテージ
-        this.maxHpRatioToHealBySpecialPerAttack = 0;
-
-        // 奥義による攻撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
-        this.healedHpAfterAttackSpecialInCombat = 0;
-
-        // 与えたダメージの〇%自分を回復
-        this.damageRatioToHeal = 0;
-
-        // 範囲奥義のダメージ倍率
-        this.precombatSpecialDamageMult = 0;
-
-        // 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合
-        this.selfDamageDealtRateToAddSpecialDamage = 0;
-
-        // 防御床にいるかどうか
-        this.isOnDefensiveTile = false;
-
-        // 戦闘中の「攻撃奥義」が発動できないかどうか
-        this.preventedAttackerSpecial = false;
-
-        // 「敵から攻撃を受ける際に発動する奥義」が発動できないかどうか
-        this.preventedDefenderSpecial = false;
-        this.preventedDefenderSpecialPerAttack = false;
-
-        // 奥義以外の祈りが発動したかどうか
-        this.isNonSpecialMiracleActivated = false;
-
-        // 1マップで1回の奥義効果が発動したかどうか
-        this.isOncePerMapSpecialActivated = false;
-
-        // 武器スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
-        this.weaponSkillCondSatisfied = false;
-
-        // 奥義スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
-        this.specialSkillCondSatisfied = false;
-
-        // Aスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
-        this.passiveASkillCondSatisfied = false;
-
-        // Bスキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
-        this.passiveBSkillCondSatisfied = false;
-
-        // 奥義以外の祈りのHP条件(canActivateNonSpecialMiracleとセットで使用する)
-        this.nonSpecialMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
-
-        // 奥義以外の祈り
-        this.canActivateNonSpecialMiracle = false;
-
-        // 奥義以外の祈りが発動したかどうか
-        this.isNonSpecialMiracleActivated = false;
-
-        // 奥義による祈りが発動したかどうか
-        this.isSpecialMiracleActivated = false;
-
-        // 奥義以外の祈り(1マップ1回)
-        this.canActivateNonSpecialOneTimePerMapMiracle = false;
-
-        // 奥義以外の祈りが発動したかどうか(1マップ1回)
-        this.isNonSpecialOneTimePerMapMiracleAcitivated = false;
-
-        // 奥義以外の祈り+HP99回復
-        this.canActivateNonSpecialMiracleAndHeal = false;
-
-        // 奥義以外の祈り+HP99回復が発動したかどうか
-        this.isNonSpecialMiracleAndHealAcitivated = false;
-
-        // 奥義による祈り+HP99回復が発動したかどうか
-        this.isSpecialMiracleAndHealAcitivated = false;
-
-        // 奥義による祈りが発動したかどうか
-        this.isSpecialMiracleAcitivated = false;
-
-        // 奥義による祈りが発動したかどうか(1マップ1回)
-        this.isSpecialOneTimePerMapMiracleAcitivated = false;
-
-        // 範囲奥義を発動できない
-        this.cannotTriggerPrecombatSpecial = false;
-
-        // 防御地形の効果を無効
-        this.invalidatesDefensiveTerrainEffect = false;
-
-        // 支援効果を無効
-        this.invalidatesSupportEffect = false;
-
-        // 歌う・踊るを使用したどうか
-        this.isRefreshActivated = false;
-
-        // 暗闘
-        this.disablesSkillsFromEnemyAlliesInCombat = false;
-        // 特定の色の味方からスキル効果が受けられない
-        this.disablesSkillsFromRedEnemyAlliesInCombat = false;
-        this.disablesSkillsFromBlueEnemyAlliesInCombat = false;
-        this.disablesSkillsFromGreenEnemyAlliesInCombat = false;
-        this.disablesSkillsFromColorlessEnemyAlliesInCombat = false;
-
-        // 条件判定のための値を使い回すための値
-        // 1攻撃の中で使い回す想定で1ターン1回の行動が行われたかなどの保存するべきフラグには使用しない
-        this.condValueMap = new Map();
-
-        // 追撃の速さ条件
-        this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
-
-        // ターン開始時付与不利な状態異常を無効化
-        this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
-
-        // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
-        this.damageAfterBeginningOfCombat = 0;
-
-        // 奥義以外の祈り無効
-        this.neutralizesNonSpecialMiracle = false;
-
-        // 神速追撃
-        this.potentRatios = [];
-
-        // 神速追撃上書き
-        this.potentOverwriteRatio = null;
-
-        // フック関数
-        // 固定ダメージ
-        this.calcFixedAddDamageFuncs = [];
-        // 戦闘中ダメージ軽減
-        this.getDamageReductionRatioFuncs = [];
-        // 奥義以外の祈り
-        this.canActivateNonSpecialMiracleFuncs = [];
-        // 奥義以外の祈り(1マップ1回)
-        this.canActivateNonSpecialOneTimePerMapMiracleFuncs = [];
-        // 無効スキル
-        this.applyInvalidationSkillEffectFuncs = [];
-        // 攻撃ごとのダメージ加算
-        this.calcFixedAddDamagePerAttackFuncs = [];
-        // 軽減分のダメージを次の攻撃に加算
-        this.addReducedDamageForNextAttackFuncs = [];
-        // ステータス決定後の戦闘中バフ
-        this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
-        // ステータス決定後のスキル効果
-        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
-        // 2回攻撃
-        this.setAttackCountFuncs = [];
-        // 戦闘後
-        this.applySkillEffectAfterCombatForUnitFuncs = [];
-        // ステータスに関連するスキル効果
-        this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
-        // 攻撃していれば戦闘後に発生するスキル効果
-        this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
-        // 周囲の味方からのスキル効果
-        this.applySkillEffectFromAlliesFuncs = [];
-        // 周囲の敵からのスキル効果[周囲2マスの敵は、戦闘中...]
-        this.applySkillEffectFromEnemyAlliesFuncs = [];
-        // 攻撃を行った時、戦闘後
-        this.applyAttackSkillEffectAfterCombatFuncs = [];
-    }
-
-    invalidateFollowupAttackSkills() {
-        this.invalidatesAbsoluteFollowupAttack = true;
-        this.invalidatesInvalidationOfFollowupAttack = true;
-    }
-
-    invalidateCooldownCountSkills() {
-        this.invalidatesIncreaseCooldownCount = true;
-        this.invalidatesReduceCooldownCount = true;
-    }
-
-    increaseCooldownCountForBoth() {
-        this.increaseCooldownCountForAttack = true;
-        this.increaseCooldownCountForDefense = true;
-    }
-
-    clearPrecombatState() {
-        // 戦闘前奥義と戦闘中の両方で参照する設定だけ戦闘前奥義発動後に再評価が必要なのでクリアする
-        this.damageReductionRatio = 0;
-        this.additionalDamage = 0;
-        this.additionalDamageOfSpecial = 0;
-        this.damageReductionValue = 0;
-    }
-
-    clear() {
-        this.clearPrecombatState();
-        this.maxHpWithSkills = 0;
-        this.hpBeforeCombat = 0;
-        this.restHp = 0;
-        this.specialCount = 0;
-        this.canFollowupAttack = false;
-        this.canCounterattack = false;
-        this.isVantageActivatable = false;
-        this.isVantageActivated = false; // 待ち伏せ
-        this.isDesperationActivatable = false;
-        this.isDesperationActivated = false; // 攻め立て
-        this.isDefDesperationActivatable = false;
-        this.isDefDesperationActivated = false;
-        this.damageReductionRatioOfFirstAttack = 0;
-        this.damageReductionRatioOfFirstAttacks = 0;
-        this.damageReductionRatioOfConsecutiveAttacks = 0;
-        this.damageReductionRatioOfFollowupAttack = 0;
-        this.damageReductionRatiosByChainGuard = [];
-        this.isChainGuardActivated = false;
-        this.damageReductionValueOfFollowupAttack = 0;
-        this.damageReductionValueOfFirstAttacks = 0;
-        this.damageReductionValueOfSpecialAttack = 0;
-        this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
-        this.isEffectiveToOpponent = false;
-        this.attackCount = 1;
-        this.counterattackCount = 1;
-        this.canCounterattackToAllDistance = false;
-        // 奥義発動カウント
-        this.cooldownCountForAttack = 1;
-        this.cooldownCountForDefense = 1;
-
-        this.isSpecialActivated = false;
-        this.specialActivatedCount = 0;
-
-        this.increaseCooldownCountForAttack = false;
-        this.increaseCooldownCountForDefense = false;
-        this.reducesCooldownCount = false;
-
-        // 守備魔防の低い方を参照を無効化
-        this.invalidatesReferenceLowerMit = false;
-
-        // 強化無効
-        this.invalidatesAtkBuff = false;
-        this.invalidatesSpdBuff = false;
-        this.invalidatesDefBuff = false;
-        this.invalidatesResBuff = false;
-
-        // 強化反転
-        this.isAtkBonusReversal = false;
-        this.isSpdBonusReversal = false;
-        this.isDefBonusReversal = false;
-        this.isResBonusReversal = false;
-
-        // 神罰の杖
-        this.wrathfulStaff = false;
-
-        this.invalidatesOwnAtkDebuff = false;
-        this.invalidatesOwnSpdDebuff = false;
-        this.invalidatesOwnDefDebuff = false;
-        this.invalidatesOwnResDebuff = false;
-
-        this.refersMinOfDefOrRes = false;
-        this.refersRes = false;
-        this.refersResForSpecial = false;
-        this.reducedDamageForNextAttack = 0;
-        this.reducedRatioForNextAttack = 0;
-        this.additionalDamageOfNextAttackByDamageRatio = 0;
-        this.additionalDamageOfNextAttack = 0;
-        this.damageReductionRatiosBySpecialOfNextAttack = [];
-        this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
-        this.damageReductionRatiosWhenCondSatisfied = [];
-        this.nextAttackEffectAfterSpecialActivated = false;
-
-        // 自身の発動カウント変動量-1を無効
-        this.invalidatesReduceCooldownCount = false;
-
-        // 敵の発動カウント変動量+1を無効
-        this.invalidatesIncreaseCooldownCount = false;
-
-        this.initiatesCombat = false;
-        this.followupAttackPriorityIncrement = 0;
-        this.followupAttackPriorityDecrement = 0;
-
-        this.damageReductionRatioForPrecombat = 0;
-        this.damageReductionForPrecombat = 0;
-
-        this.isSaviorActivated = false;
-
-        this.specialCountReductionBeforeFirstAttack = 0;
-        this.specialCountReductionBeforeFollowupAttack = 0;
-        this.specialCountReductionBeforeFirstAttackPerAttack = 0;
-        this.specialCountIncreaseBeforeFirstAttack = 0;
-        this.additionalDamageOfFirstAttack = 0;
-
-        this.invalidatesDamageReductionExceptSpecial = false;
-        this.invalidatesDamageReductionExceptSpecialForNextAttack = false;
-        this.invalidatesDamageReductionExceptSpecialForFollowupAttack = false;
-        this.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = false;
-        this.invalidatesDamageReductionExceptSpecialOnSpecialActivation = false;
-        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
-        this.invalidatesCounterattack = false;
-        this.nullCounterDisrupt = false;
-        this.healedHpByAttack = 0;
-        this.healedHpByAttackPerAttack = 0;
-        this.healedHpByFollowupAttack = 0;
-        this.invalidatesInvalidationOfFollowupAttack = false;
-        this.invalidatesAbsoluteFollowupAttack = false;
-        this.invalidatesHeal = false;
-        this.nullInvalidatesHealRatio = 0;
-        this.healedHpAfterCombat = 0;
-        this.damageAfterCombat = 0;
-        this.isAdvantageForColorless = false;
-        this.additionalDamageOfSpecial = 0;
-        this.rateOfAtkMinusDefForAdditionalDamage = 0;
-        this.specialSufferPercentage = 0;
-        this.specialMultDamage = 1;
-        this.specialAddDamage = 0;
-        this.specialDamageRatioToHeal = 0;
-        this.maxHpRatioToHealBySpecial = 0;
-        this.maxHpRatioToHealBySpecialPerAttack = 0;
-        this.healedHpAfterAttackSpecialInCombat = 0;
-        this.damageRatioToHeal = 0;
-        this.selfDamageDealtRateToAddSpecialDamage = 0;
-        this.damageReductionRatioBySpecial = 0;
-        this.damageReductionRatiosByNonDefenderSpecial = [];
-        this.isOnDefensiveTile = false;
-        this.preventedAttackerSpecial = false;
-        this.preventedDefenderSpecial = false;
-        this.preventedDefenderSpecialPerAttack = false;
-        this.isNonSpecialMiracleActivated = false;
-        this.isOncePerMapSpecialActivated = false;
-        this.weaponSkillCondSatisfied = false;
-        this.specialSkillCondSatisfied = false;
-        this.passiveASkillCondSatisfied = false;
-        this.passiveBSkillCondSatisfied = false;
-        this.nonSpecialMiracleHpPercentageThreshold = Number.MAX_SAFE_INTEGER;
-        this.canActivateNonSpecialMiracle = false;
-        this.isNonSpecialMiracleActivated = false;
-        this.isSpecialMiracleActivated = false;
-        this.canActivateNonSpecialOneTimePerMapMiracle = false;
-        this.isNonSpecialOneTimePerMapMiracleAcitivated = false;
-        this.canActivateNonSpecialMiracleAndHeal = false;
-        this.isNonSpecialMiracleAndHealAcitivated = false;
-        this.isSpecialMiracleAndHealAcitivated = false;
-        this.isSpecialMiracleAcitivated = false;
-        this.isSpecialOneTimePerMapMiracleAcitivated = false;
-        this.cannotTriggerPrecombatSpecial = false;
-        this.invalidatesDefensiveTerrainEffect = false;
-        this.invalidatesSupportEffect = false;
-        this.isRefreshActivated = false;
-        this.disablesSkillsFromEnemyAlliesInCombat = false;
-        this.disablesSkillsFromRedEnemyAlliesInCombat = false;
-        this.disablesSkillsFromBlueEnemyAlliesInCombat = false;
-        this.disablesSkillsFromGreenEnemyAlliesInCombat = false;
-        this.disablesSkillsFromColorlessEnemyAlliesInCombat = false;
-        this.condValueMap.clear();
-        this.additionalSpdDifferenceNecessaryForFollowupAttack = 0;
-        this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
-        this.damageAfterBeginningOfCombat = 0;
-        this.neutralizesNonSpecialMiracle = false;
-        this.potentRatios = [];
-        this.potentOverwriteRatio = null;
-        this.calcFixedAddDamageFuncs = [];
-        this.getDamageReductionRatioFuncs = [];
-        this.canActivateNonSpecialMiracleFuncs = [];
-        this.canActivateNonSpecialOneTimePerMapMiracleFuncs = [];
-        this.applyInvalidationSkillEffectFuncs = [];
-        this.calcFixedAddDamagePerAttackFuncs = [];
-        this.addReducedDamageForNextAttackFuncs = [];
-        this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
-        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
-        this.setAttackCountFuncs = [];
-        this.applySkillEffectAfterCombatForUnitFuncs = [];
-        this.applySkillEffectRelatedToEnemyStatusEffectsFuncs = [];
-        this.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs = [];
-        this.applySkillEffectFromAlliesFuncs = [];
-        this.applySkillEffectFromEnemyAlliesFuncs = [];
-        this.applyAttackSkillEffectAfterCombatFuncs = [];
-    }
-
-    /// 周囲1マスに味方がいないならtrue、そうでなければfalseを返します。
-    get isSolo() {
-        return !this.isThereAllyOnAdjacentTiles;
-    }
-
-    /// 戦闘のダメージ計算時の残りHPです。
-    get restHpPercentage() {
-        if (this.restHp == this.maxHpWithSkills) {
-            return 100;
-        }
-        return 100 * this.restHp / this.maxHpWithSkills;
-    }
-
-    get isRestHpFull() {
-        return this.restHp == this.maxHpWithSkills;
-    }
-
-    invalidateAllBuffs() {
-        this.invalidatesAtkBuff = true;
-        this.invalidatesSpdBuff = true;
-        this.invalidatesDefBuff = true;
-        this.invalidatesResBuff = true;
-    }
-
-    setAllBonusReversal() {
-        this.isAtkBonusReversal = true;
-        this.isSpdBonusReversal = true;
-        this.isDefBonusReversal = true;
-        this.isResBonusReversal = true;
-    }
-
-    setBonusReversals(atk, spd, def, res) {
-        this.isAtkBonusReversal |= atk;
-        this.isSpdBonusReversal |= spd;
-        this.isDefBonusReversal |= def;
-        this.isResBonusReversal |= res;
-    }
-
-    invalidateBuffs(atk, spd, def, res) {
-        this.invalidatesAtkBuff = atk;
-        this.invalidatesSpdBuff = spd;
-        this.invalidatesDefBuff = def;
-        this.invalidatesResBuff = res;
-    }
-
-    invalidateAllOwnDebuffs() {
-        this.invalidatesOwnAtkDebuff = true;
-        this.invalidatesOwnSpdDebuff = true;
-        this.invalidatesOwnDefDebuff = true;
-        this.invalidatesOwnResDebuff = true;
-    }
-
-    invalidateDebuffs(atk, spd, def, res) {
-        this.invalidatesOwnAtkDebuff = atk;
-        this.invalidatesOwnSpdDebuff = spd;
-        this.invalidatesOwnDefDebuff = def;
-        this.invalidatesOwnResDebuff = res;
-    }
-
-    // ダメージ軽減無効(シャールヴィなど)
-    static calcDamageReductionRatio(damageReductionRatio, atkUnit) {
-        let reducedRatio = damageReductionRatio;
-        for (let ratio of atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial) {
-            reducedRatio -= Math.trunc(reducedRatio * 100 * ratio) * 0.01;
-        }
-        return reducedRatio;
-    }
-
-    // ダメージ軽減積
-    static multDamageReductionRatio(sourceRatio, ratio, atkUnit) {
-        return 1 - (1 - sourceRatio) * (1 - ratio);
-    }
-
-    // 奥義のダメージ軽減積
-    static multDamageReductionRatioForSpecial(sourceRatio, ratio) {
-        return 1 - (1 - sourceRatio) * (1 - ratio);
-    }
-
-    // ダメージ軽減積
-    multDamageReductionRatio(ratio, atkUnit) {
-        this.damageReductionRatio = BattleContext.multDamageReductionRatio(this.damageReductionRatio, ratio, atkUnit);
-    }
-
-    // 最初の攻撃のダメージ軽減積
-    multDamageReductionRatioOfFirstAttack(ratio, atkUnit) {
-        this.damageReductionRatioOfFirstAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttack, ratio, atkUnit);
-    }
-
-    // 最初の攻撃のダメージ軽減積
-    multDamageReductionRatioOfFirstAttacks(ratio, atkUnit) {
-        this.damageReductionRatioOfFirstAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttacks, ratio, atkUnit);
-    }
-
-    // 連撃のダメージ軽減積
-    multDamageReductionRatioOfConsecutiveAttacks(ratio, atkUnit) {
-        this.damageReductionRatioOfConsecutiveAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfConsecutiveAttacks, ratio, atkUnit);
-    }
-
-    // 追撃のダメージ軽減積
-    multDamageReductionRatioOfFollowupAttack(ratio, atkUnit) {
-        this.damageReductionRatioOfFollowupAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFollowupAttack, ratio, atkUnit);
-    }
-
-    // 範囲奥義のダメージ軽減積
-    multDamageReductionRatioOfPrecombatSpecial(ratio) {
-        this.damageReductionRatioForPrecombat = BattleContext.multDamageReductionRatioForSpecial(
-            this.damageReductionRatioForPrecombat, ratio);
-    }
-
-    // 自分から攻撃したかを考慮して2回攻撃可能かを判定する
-    isTwiceAttackActivating() {
-        if (this.initiatesCombat) {
-            return this.attackCount === 2;
-        } else {
-            return this.counterattackCount === 2;
-        }
-    }
-
-    canPotentFollowupAttack() {
-        return this.potentRatios.length > 0;
-    }
 }
 
 /// 攻撃可能なユニット情報です。
@@ -1366,16 +163,16 @@ class AssistableUnitInfo {
 
     __calcRestoreTargetPriority(assistUnit) {
         this.amountHealed = calcHealAmount(assistUnit, this.targetUnit);
-        let nagativeEffectPriority = 0;
+        let negativeEffectPriority = 0;
         let amountHealedPriority = 0;
         let visibleStatTotalPriority = 0;
         if (!this.targetUnit.hasNegativeStatusEffect()) {
-            nagativeEffectPriority = 1;
+            negativeEffectPriority = 1;
             amountHealedPriority = this.amountHealed;
             visibleStatTotalPriority = this.visibleStatTotal;
         }
 
-        return nagativeEffectPriority * 1000000
+        return negativeEffectPriority * 1000000
             + amountHealedPriority * 10000
             + visibleStatTotalPriority * 10
             + this.targetUnit.slotOrder;
@@ -1418,9 +215,10 @@ class AssistableUnitInfo {
             + this.visibleStatTotal * 10
             + this.slotOrder;
     }
+
     __calcRallyTargetPriority(assistUnit, isPrecombat) {
         this.hasStatAndNonstatDebuff = 0;
-        if (assistUnit.support == Support.HarshCommandPlus) {
+        if (assistUnit.support === Support.HarshCommandPlus) {
             // 一喝+は弱化と状態異常の両方が付与されてるユニットが最優先
             if (this.targetUnit.hasStatDebuff() && this.targetUnit.hasNonstatDebuff()) {
                 this.hasStatAndNonstatDebuff = 1;
@@ -1432,8 +230,7 @@ class AssistableUnitInfo {
             if (!isRallyUp(assistUnit.support)) {
                 this.amountOfStatsActuallyBuffed = calcBuffAmount(assistUnit, this.targetUnit);
             }
-        }
-        else {
+        } else {
             this.amountOfStatsActuallyBuffed = calcBuffAmount(assistUnit, this.targetUnit);
         }
 
@@ -1465,7 +262,7 @@ class ActionContext {
         /** @type {Unit} */
         this.bestTargetToAttack = null;
 
-        /** @type  {Object.<Unit, AttackEvaluationContext} */
+        /** @type  {Object.<Unit, AttackEvaluationContext>} */
         this.attackEvalContexts = {}; // key=target unit, value=AttackEvaluationContext
 
         /** @type {Unit} */
@@ -1496,17 +293,19 @@ class ActionContext {
 
         this.movePriority = 0;
     }
+
     findAssistableUnitInfo(unit) {
         for (let info of this.assistableUnitInfos) {
-            if (info.targetUnit == unit) {
+            if (info.targetUnit === unit) {
                 return info;
             }
         }
         return null;
     }
+
     findAttackableUnitInfo(unit) {
         for (let info of this.attackableUnitInfos) {
-            if (info.targetUnit == unit) {
+            if (info.targetUnit === unit) {
                 return info;
             }
         }
@@ -1514,18 +313,19 @@ class ActionContext {
     }
 
     removeAttackableUnitInfosWhereBestTileIsEmpty() {
-        let result = this.attackableUnitInfos.filter(function (item) {
-            return item.bestTileToAttack != null;
-        });
-        this.attackableUnitInfos = result;
+        this.attackableUnitInfos = this.attackableUnitInfos.filter(
+            function (item) {
+                return item.bestTileToAttack != null;
+            }
+        );
     }
 }
 
-const NotReserved = -2;
-
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
-    constructor(id = "", name = "", unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry, icon = "") {
+    constructor(id = "", name = "",
+                unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry,
+                icon = "") {
         super();
         // Unitはマップ上で作るので利便性のために初期値0にしておく
         this.setPos(0, 0);
@@ -1591,13 +391,13 @@ class Unit extends BattleMapElement {
         this.resIncrement = 0;
         this.resDecrement = 0;
 
-        /** @type {StatusType} */
+        /** @type {number} */
         this.ivHighStat = StatusType.None;
 
-        /** @type {StatusType} */
+        /** @type {number} */
         this.ivLowStat = StatusType.None;
 
-        /** @type {StatusType} 開花得意の対象 */
+        /** @type {number} 開花得意の対象 */
         this.ascendedAsset = StatusType.None;
 
         this.restHp = 1; // ダメージ計算で使うHP
@@ -1625,10 +425,30 @@ class Unit extends BattleMapElement {
         this._maxHpWithSkills = 0;
         this.hpAdd = 0;
         this.hpMult = 1.0;
-        this._atkBuff = 0; this._atkDebuff = 0; this.atkSpur = 0; this.atkAdd = 0; this.atkMult = 1.0; this.atkWithSkills = 0;
-        this._spdBuff = 0; this._spdDebuff = 0; this.spdSpur = 0; this.spdAdd = 0; this.spdMult = 1.0; this.spdWithSkills = 0;
-        this._defBuff = 0; this._defDebuff = 0; this.defSpur = 0; this.defAdd = 0; this.defMult = 1.0; this.defWithSkills = 0;
-        this._resBuff = 0; this._resDebuff = 0; this.resSpur = 0; this.resAdd = 0; this.resMult = 1.0; this.resWithSkills = 0;
+        this._atkBuff = 0;
+        this._atkDebuff = 0;
+        this.atkSpur = 0;
+        this.atkAdd = 0;
+        this.atkMult = 1.0;
+        this.atkWithSkills = 0;
+        this._spdBuff = 0;
+        this._spdDebuff = 0;
+        this.spdSpur = 0;
+        this.spdAdd = 0;
+        this.spdMult = 1.0;
+        this.spdWithSkills = 0;
+        this._defBuff = 0;
+        this._defDebuff = 0;
+        this.defSpur = 0;
+        this.defAdd = 0;
+        this.defMult = 1.0;
+        this.defWithSkills = 0;
+        this._resBuff = 0;
+        this._resDebuff = 0;
+        this.resSpur = 0;
+        this.resAdd = 0;
+        this.resMult = 1.0;
+        this.resWithSkills = 0;
         this.weapon = -1;
         this.support = -1;
         this.special = -1;
@@ -1647,10 +467,16 @@ class Unit extends BattleMapElement {
         this.resGrowthRate = 0.0;
         this.defGrowthRate = 0.0;
 
+        // TODO: 何に使用しているのか調べる
+        // noinspection JSUnusedGlobalSymbols
         this.hpAppliedGrowthRate = 0.0;
+        // noinspection JSUnusedGlobalSymbols
         this.atkAppliedGrowthRate = 0.0;
+        // noinspection JSUnusedGlobalSymbols
         this.spdAppliedGrowthRate = 0.0;
+        // noinspection JSUnusedGlobalSymbols
         this.resAppliedGrowthRate = 0.0;
+        // noinspection JSUnusedGlobalSymbols
         this.defAppliedGrowthRate = 0.0;
 
         this.isActionDone = false;
@@ -1661,6 +487,8 @@ class Unit extends BattleMapElement {
         this.isBonusChar = false;
 
         this.statusEffects = [];
+        // TODO: 何に使用しているか調べる
+        // noinspection JSUnusedGlobalSymbols
         this.bonuses = [];
 
         this.perTurnStatuses = [];
@@ -1818,7 +646,7 @@ class Unit extends BattleMapElement {
      * @returns {boolean}
      */
     get isCaptain() {
-        return this.slotOrder == 0;
+        return this.slotOrder === 0;
     }
 
     get fromPos() {
@@ -1830,16 +658,17 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * @param  {StatusType} statusType
+     * @param  {number} statusType
      */
     isAsset(statusType) {
-        return this.ivHighStat == statusType || (this.ascendedAsset == statusType && (this.merge > 0 || this.ivLowStat != statusType));
+        return this.ivHighStat === statusType || (this.ascendedAsset === statusType && (this.merge > 0 || this.ivLowStat !== statusType));
     }
+
     /**
-     * @param  {StatusType} statusType
+     * @param  {number} statusType
      */
     isFlaw(statusType) {
-        return this.ivLowStat == statusType && this.merge == 0 && this.ascendedAsset != statusType;
+        return this.ivLowStat === statusType && this.merge === 0 && this.ascendedAsset !== statusType;
     }
 
     __updateNameWithGroup() {
@@ -1875,11 +704,7 @@ class Unit extends BattleMapElement {
     }
 
     canActivateCanto() {
-        if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
-            return false;
-        }
-
-        return true;
+        return !(!this.isActionDone || this.isCantoActivatedInCurrentTurn);
     }
 
     /// 再移動が発動可能なら発動します。
@@ -1930,7 +755,7 @@ class Unit extends BattleMapElement {
     }
 
     chaseTargetTileToString() {
-        if (this.chaseTargetTile == null) {
+        if (this.chaseTargetTile === null) {
             return "null";
         }
         return this.chaseTargetTile.positionToString();
@@ -1943,7 +768,6 @@ class Unit extends BattleMapElement {
     __calcGrowthValue(growthRate) {
         return calcGrowthValue(growthRate, this.rarity, this.level);
     }
-
 
 
     clearReservedSkills() {
@@ -1980,86 +804,101 @@ class Unit extends BattleMapElement {
     }
 
     hasReservedWeapon() {
-        return this.reservedWeapon != NotReserved;
+        return this.reservedWeapon !== NotReserved;
     }
+
     restoreReservedWeapon() {
-        if (this.reservedWeapon != NotReserved) {
+        if (this.reservedWeapon !== NotReserved) {
             this.weapon = this.reservedWeapon;
             this.reservedWeapon = NotReserved;
             return true;
         }
         return false;
     }
+
     hasReservedSupport() {
-        return this.reservedSupport != NotReserved;
+        return this.reservedSupport !== NotReserved;
     }
+
     restoreReservedSupport() {
-        if (this.reservedSupport != NotReserved) {
+        if (this.reservedSupport !== NotReserved) {
             this.support = this.reservedSupport;
             this.reservedSupport = NotReserved;
             return true;
         }
     }
+
     hasReservedSpecial() {
-        return this.reservedSpecial != NotReserved;
+        return this.reservedSpecial !== NotReserved;
     }
+
     restoreReservedSpecial() {
-        if (this.reservedSpecial != NotReserved) {
+        if (this.reservedSpecial !== NotReserved) {
             this.special = this.reservedSpecial;
             this.reservedSpecial = NotReserved;
             return true;
         }
         return false;
     }
+
     hasReservedPassiveA() {
-        return this.reservedPassiveA != NotReserved;
+        return this.reservedPassiveA !== NotReserved;
     }
+
     restoreReservedPassiveA() {
-        if (this.reservedPassiveA != NotReserved) {
+        if (this.reservedPassiveA !== NotReserved) {
             this.passiveA = this.reservedPassiveA;
             this.reservedPassiveA = NotReserved;
             return true;
         }
         return false;
     }
+
     hasReservedPassiveB() {
-        return this.reservedPassiveB != NotReserved;
+        return this.reservedPassiveB !== NotReserved;
     }
+
     restoreReservedPassiveB() {
-        if (this.reservedPassiveB != NotReserved) {
+        if (this.reservedPassiveB !== NotReserved) {
             this.passiveB = this.reservedPassiveB;
             this.reservedPassiveB = NotReserved;
             return true;
         }
         return false;
     }
+
     hasReservedPassiveC() {
-        return this.reservedPassiveC != NotReserved;
+        return this.reservedPassiveC !== NotReserved;
     }
+
     restoreReservedPassiveC() {
-        if (this.reservedPassiveC != NotReserved) {
+        if (this.reservedPassiveC !== NotReserved) {
             this.passiveC = this.reservedPassiveC;
             this.reservedPassiveC = NotReserved;
             return true;
         }
         return false;
     }
+
     hasReservedPassiveS() {
-        return this.reservedPassiveS != NotReserved;
+        return this.reservedPassiveS !== NotReserved;
     }
+
     restoreReservedPassiveS() {
-        if (this.reservedPassiveS != NotReserved) {
+        if (this.reservedPassiveS !== NotReserved) {
             this.passiveS = this.reservedPassiveS;
             this.reservedPassiveS = NotReserved;
             return true;
         }
         return false;
     }
+
     hasReservedPassiveX() {
-        return this.reservedPassiveX != NotReserved;
+        return this.reservedPassiveX !== NotReserved;
     }
+
     restoreReservedPassiveX() {
-        if (this.reservedPassiveX != NotReserved) {
+        if (this.reservedPassiveX !== NotReserved) {
             this.passiveX = this.reservedPassiveX;
             this.reservedPassiveX = NotReserved;
             return true;
@@ -2068,9 +907,9 @@ class Unit extends BattleMapElement {
     }
 
     /// 攻撃可能なユニットを列挙します。
-    *enumerateAttackableUnits() {
+    * enumerateAttackableUnits() {
         for (let tile of this.attackableTiles) {
-            if (tile.placedUnit != null && tile.placedUnit.groupId != this.groupId) {
+            if (tile.placedUnit != null && tile.placedUnit.groupId !== this.groupId) {
                 yield tile.placedUnit;
             }
         }
@@ -2079,24 +918,31 @@ class Unit extends BattleMapElement {
     get atkBuff() {
         return Number(this._atkBuff);
     }
+
     set atkBuff(value) {
         this._atkBuff = Number(value);
     }
+
     get spdBuff() {
         return Number(this._spdBuff);
     }
+
     set spdBuff(value) {
         this._spdBuff = Number(value);
     }
+
     get defBuff() {
         return Number(this._defBuff);
     }
+
     set defBuff(value) {
         this._defBuff = Number(value);
     }
+
     get resBuff() {
         return Number(this._resBuff);
     }
+
     set resBuff(value) {
         this._resBuff = Number(value);
     }
@@ -2104,12 +950,15 @@ class Unit extends BattleMapElement {
     getAtkBuff() {
         return this.isPanicEnabled ? 0 : this.atkBuff;
     }
+
     getSpdBuff() {
         return this.isPanicEnabled ? 0 : this.spdBuff;
     }
+
     getDefBuff() {
         return this.isPanicEnabled ? 0 : this.defBuff;
     }
+
     getResBuff() {
         return this.isPanicEnabled ? 0 : this.resBuff;
     }
@@ -2117,24 +966,31 @@ class Unit extends BattleMapElement {
     get atkDebuff() {
         return Number(this._atkDebuff);
     }
+
     set atkDebuff(value) {
         this._atkDebuff = Number(value);
     }
+
     get spdDebuff() {
         return Number(this._spdDebuff);
     }
+
     set spdDebuff(value) {
         this._spdDebuff = Number(value);
     }
+
     get defDebuff() {
         return Number(this._defDebuff);
     }
+
     set defDebuff(value) {
         this._defDebuff = Number(value);
     }
+
     get resDebuff() {
         return Number(this._resDebuff);
     }
+
     set resDebuff(value) {
         this._resDebuff = Number(value);
     }
@@ -2219,6 +1075,7 @@ class Unit extends BattleMapElement {
     addBlessingEffect(blessingEffect) {
         this.blessingEffects.push(blessingEffect);
     }
+
     __syncBlessingEffects() {
         this.__clearBlessings();
         if (this.blessingEffects.length > 0) {
@@ -2357,54 +1214,198 @@ class Unit extends BattleMapElement {
         let splited = value.split(ValueDelimiter);
         let elemCount = splited.length;
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.heroIndex = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.weapon = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.support = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.special = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveA = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveB = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveC = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveS = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing1 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing2 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing3 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.merge = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.dragonflower = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroMerge = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.ivHighStat = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.ivLowStat = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.summonerLevel = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.isBonusChar = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.weaponRefinement = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.partnerHeroIndex = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroIndex = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.partnerLevel = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.slotOrder = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing4 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.hpAdd = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.atkAdd = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.spdAdd = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.defAdd = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.resAdd = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing5 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.grantedBlessing = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.isResplendent = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.level = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.rarity = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.initPosX = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.initPosY = Number(splited[i]); ++i; }
-        if (Number.isFinite(Number(splited[i]))) { this.hpMult = Number(splited[i]); ++i; }
-        if (Number.isFinite(Number(splited[i]))) { this.atkMult = Number(splited[i]); ++i; }
-        if (Number.isFinite(Number(splited[i]))) { this.spdMult = Number(splited[i]); ++i; }
-        if (Number.isFinite(Number(splited[i]))) { this.defMult = Number(splited[i]); ++i; }
-        if (Number.isFinite(Number(splited[i]))) { this.resMult = Number(splited[i]); ++i; }
-        if (Number.isFinite(Number(splited[i]))) { this.defGrowthRate = Number(splited[i]); ++i; }
-        if (Number.isFinite(Number(splited[i]))) { this.resGrowthRate = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing6 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.ascendedAsset = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.captain = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveX = Number(splited[i]); ++i; }
-        if (i < elemCount) { this.__setPairUpUnitFromCompressedUri(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.heroIndex = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.weapon = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.support = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.special = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveA = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveB = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveC = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveS = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing1 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing2 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing3 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.merge = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.dragonflower = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.emblemHeroMerge = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.ivHighStat = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.ivLowStat = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.summonerLevel = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.isBonusChar = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.weaponRefinement = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.partnerHeroIndex = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.emblemHeroIndex = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.partnerLevel = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.slotOrder = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing4 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.hpAdd = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.atkAdd = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.spdAdd = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.defAdd = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.resAdd = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing5 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.grantedBlessing = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.isResplendent = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.level = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.rarity = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.initPosX = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.initPosY = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isFinite(Number(splited[i]))) {
+            this.hpMult = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isFinite(Number(splited[i]))) {
+            this.atkMult = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isFinite(Number(splited[i]))) {
+            this.spdMult = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isFinite(Number(splited[i]))) {
+            this.defMult = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isFinite(Number(splited[i]))) {
+            this.resMult = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isFinite(Number(splited[i]))) {
+            this.defGrowthRate = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isFinite(Number(splited[i]))) {
+            this.resGrowthRate = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing6 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.ascendedAsset = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.captain = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveX = Number(splited[i]);
+            ++i;
+        }
+        if (i < elemCount) {
+            this.__setPairUpUnitFromCompressedUri(splited[i]);
+            ++i;
+        }
     }
 
     __setPairUpUnitFromCompressedUri(settingText) {
@@ -2423,50 +1424,182 @@ class Unit extends BattleMapElement {
         }
         let splited = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.ownerType = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posX = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posY = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.isActionDone = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.hp = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.atkBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.spdBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.defBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.resBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.atkDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.spdDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.defDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.resDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this._moveCount = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.specialCount = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.setStatusEffectsFromString(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isTransformed = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForSpecial = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isDuoOrHarmonicSkillActivatedInThisTurn = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.duoOrHarmonizedSkillActivationCount = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForSupport = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForPassiveB = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.moveCountAtBeginningOfTurn = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForWeapon = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForWeapon2 = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isEnemyActionTriggered = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForShieldEffect = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.setPerTurnStatusesFromString(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.distanceFromClosestEnemy = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.movementOrder = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.moveCountForCanto = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isOneTimeActionActivatedForDeepStar = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.restMoveCount = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isAttackDone = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.isCantoActivating = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.fromPosX = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.fromPosY = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isCombatDone = intToBool(Number(splited[i])); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.restWeaponSkillAvailableTurn = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.restSupportSkillAvailableTurn = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.restPassiveBSkillAvailableTurn = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.ownerType = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.posX = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.posY = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.isActionDone = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.hp = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.atkBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.spdBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.defBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.resBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.atkDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.spdDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.defDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.resDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this._moveCount = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.specialCount = Number(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.setStatusEffectsFromString(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isTransformed = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForSpecial = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isDuoOrHarmonicSkillActivatedInThisTurn = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.duoOrHarmonizedSkillActivationCount = Number(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForSupport = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForPassiveB = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.moveCountAtBeginningOfTurn = Number(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForWeapon = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForWeapon2 = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isEnemyActionTriggered = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForShieldEffect = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.setPerTurnStatusesFromString(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.distanceFromClosestEnemy = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.movementOrder = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.moveCountForCanto = Number(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOneTimeActionActivatedForDeepStar = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.restMoveCount = Number(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isOncePerMapSpecialActivated = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isAttackDone = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isCantoActivating = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.fromPosX = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.fromPosY = Number(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isCombatDone = intToBool(Number(splited[i]));
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.restWeaponSkillAvailableTurn = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.restSupportSkillAvailableTurn = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.restPassiveBSkillAvailableTurn = Number(splited[i]);
+            ++i;
+        }
     }
 
 
@@ -2525,53 +1658,192 @@ class Unit extends BattleMapElement {
         let splited = value.split(ValueDelimiter);
 
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.ownerType = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posX = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posY = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.heroIndex = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.weapon = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.support = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.special = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveA = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveB = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveC = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveS = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing1 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing2 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.blessing3 = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.merge = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.dragonflower = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroMerge = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.ivHighStat = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.ivLowStat = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.summonerLevel = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.isBonusChar = toBoolean(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.weaponRefinement = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.isActionDone = toBoolean(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.hp = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.atkBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.spdBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.defBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.resBuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.atkDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.spdDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.defDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.resDebuff = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this._moveCount = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.specialCount = Number(splited[i]); ++i; }
-        this.setStatusEffectsFromString(splited[i]); ++i;
-        if (Number.isInteger(Number(splited[i]))) { this.partnerHeroIndex = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.emblemHeroIndex = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.partnerLevel = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isTransformed = toBoolean(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.slotOrder = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.isResplendent = toBoolean(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.moveCountAtBeginningOfTurn = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.level = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.rarity = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.initPosX = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.initPosY = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.passiveX = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.ownerType = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.posX = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.posY = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.heroIndex = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.weapon = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.support = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.special = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveA = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveB = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveC = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveS = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing1 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing2 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.blessing3 = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.merge = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.dragonflower = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.emblemHeroMerge = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.ivHighStat = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.ivLowStat = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.summonerLevel = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.isBonusChar = toBoolean(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.weaponRefinement = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.isActionDone = toBoolean(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.hp = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.atkBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.spdBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.defBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.resBuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.atkDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.spdDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.defDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.resDebuff = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this._moveCount = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.specialCount = Number(splited[i]);
+            ++i;
+        }
+        this.setStatusEffectsFromString(splited[i]);
+        ++i;
+        if (Number.isInteger(Number(splited[i]))) {
+            this.partnerHeroIndex = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.emblemHeroIndex = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.partnerLevel = Number(splited[i]);
+            ++i;
+        }
+        if (splited[i] !== undefined) {
+            this.isTransformed = toBoolean(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.slotOrder = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.isResplendent = toBoolean(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.moveCountAtBeginningOfTurn = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.level = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.rarity = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.initPosX = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.initPosY = Number(splited[i]);
+            ++i;
+        }
+        if (Number.isInteger(Number(splited[i]))) {
+            this.passiveX = Number(splited[i]);
+            ++i;
+        }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -2599,7 +1871,7 @@ class Unit extends BattleMapElement {
     }
 
     get isLegendaryHero() {
-        return this.providableBlessingSeason != SeasonType.None
+        return this.providableBlessingSeason !== SeasonType.None
             && !isMythicSeasonType(this.providableBlessingSeason);
     }
 
@@ -2609,8 +1881,8 @@ class Unit extends BattleMapElement {
 
     /// 防衛神階かどうかを取得します。
     get isDefenseMythicHero() {
-        return this.providableBlessingSeason == SeasonType.Anima
-            || this.providableBlessingSeason == SeasonType.Dark;
+        return this.providableBlessingSeason === SeasonType.Anima
+            || this.providableBlessingSeason === SeasonType.Dark;
     }
 
     get atkDebuffTotal() {
@@ -2623,6 +1895,7 @@ class Unit extends BattleMapElement {
         }
         return this.atkDebuff;
     }
+
     get spdDebuffTotal() {
         if (this.battleContext.invalidatesOwnSpdDebuff) {
             return 0;
@@ -2633,6 +1906,7 @@ class Unit extends BattleMapElement {
         }
         return this.spdDebuff;
     }
+
     get defDebuffTotal() {
         if (this.battleContext.invalidatesOwnDefDebuff) {
             return 0;
@@ -2643,6 +1917,7 @@ class Unit extends BattleMapElement {
         }
         return this.defDebuff;
     }
+
     get resDebuffTotal() {
         if (this.battleContext.invalidatesOwnResDebuff) {
             return 0;
@@ -2666,6 +1941,7 @@ class Unit extends BattleMapElement {
             this.resDebuffTotal,
         ];
     }
+
     getAtkDebuffTotal(isPrecombat = false) {
         if (this.battleContext.invalidatesOwnAtkDebuff && !isPrecombat) {
             return 0;
@@ -2676,6 +1952,7 @@ class Unit extends BattleMapElement {
         }
         return this.atkDebuff;
     }
+
     getSpdDebuffTotal(isPrecombat = false) {
         if (this.battleContext.invalidatesOwnSpdDebuff && !isPrecombat) {
             return 0;
@@ -2686,6 +1963,7 @@ class Unit extends BattleMapElement {
         }
         return this.spdDebuff;
     }
+
     getDefDebuffTotal(isPrecombat = false) {
         if (this.battleContext.invalidatesOwnDefDebuff && !isPrecombat) {
             return 0;
@@ -2696,6 +1974,7 @@ class Unit extends BattleMapElement {
         }
         return this.defDebuff;
     }
+
     getResDebuffTotal(isPrecombat = false) {
         if (this.battleContext.invalidatesOwnResDebuff && !isPrecombat) {
             return 0;
@@ -2713,6 +1992,7 @@ class Unit extends BattleMapElement {
             this.getDefDebuffTotal(isPrecombat) +
             this.getResDebuffTotal(isPrecombat);
     }
+
     getDebuffTotals(isPrecombat = false) {
         return [
             this.getAtkDebuffTotal(isPrecombat),
@@ -2721,6 +2001,7 @@ class Unit extends BattleMapElement {
             this.getResDebuffTotal(isPrecombat),
         ];
     }
+
     isMeleeWeaponType() {
         return isMeleeWeaponType(this.weaponType);
     }
@@ -2730,14 +2011,14 @@ class Unit extends BattleMapElement {
     }
 
     addBlessing() {
-        if (this.blessingCount == 5) {
+        if (this.blessingCount === 5) {
             return;
         }
         ++this.blessingCount;
     }
 
     removeBlessing() {
-        if (this.blessingCount == 1) {
+        if (this.blessingCount === 1) {
             return;
         }
         --this.blessingCount;
@@ -2804,7 +2085,7 @@ class Unit extends BattleMapElement {
     }
 
     perTurnStatusesToString() {
-        if (this.perTurnStatuses.length == 0) {
+        if (this.perTurnStatuses.length === 0) {
             return String(PerTurnStatusType.None);
         }
         let result = "";
@@ -2813,27 +2094,31 @@ class Unit extends BattleMapElement {
         }
         return result.substring(0, result.length - 1);
     }
+
     setPerTurnStatusesFromString(value) {
         this.perTurnStatuses = [];
-        if (value == null || value == undefined) {
+        if (value == null) {
             return;
         }
-        if (Number(value) == PerTurnStatusType.None) {
+        if (Number(value) === PerTurnStatusType.None) {
             return;
         }
-        for (let splited of value.split(ArrayValueElemDelimiter)) {
-            if (splited == "") { continue; }
-            let status = Number(splited);
+        for (let valueStr of value.split(ArrayValueElemDelimiter)) {
+            if (valueStr === "") {
+                continue;
+            }
+            let status = Number(valueStr);
             if (Number.isInteger(status)) {
                 this.addPerTurnStatus(status);
             }
         }
     }
+
     /**
      * 状態変化の表示用の文字列を取得します。
      */
     statusEffectsToDisplayString() {
-        if (this.statusEffects.length == 0) {
+        if (this.statusEffects.length === 0) {
             return "なし";
         }
         let result = "";
@@ -2842,11 +2127,12 @@ class Unit extends BattleMapElement {
         }
         return result.substring(0, result.length - 1);
     }
+
     /**
      * 状態変化のシリアライズ用の文字列を取得します。
      */
     statusEffectsToString() {
-        if (this.statusEffects.length == 0) {
+        if (this.statusEffects.length === 0) {
             return String(StatusEffectType.None);
         }
         let result = "";
@@ -2855,22 +2141,26 @@ class Unit extends BattleMapElement {
         }
         return result.substring(0, result.length - 1);
     }
+
     setStatusEffectsFromString(value) {
         this.statusEffects = [];
-        if (value == null || value == undefined) {
+        if (value == null) {
             return;
         }
-        if (Number(value) == StatusEffectType.None) {
+        if (Number(value) === StatusEffectType.None) {
             return;
         }
-        for (let splited of value.split(ArrayValueElemDelimiter)) {
-            if (splited == "") { continue; }
-            let statusEffect = Number(splited);
+        for (let valueStr of value.split(ArrayValueElemDelimiter)) {
+            if (valueStr === "") {
+                continue;
+            }
+            let statusEffect = Number(valueStr);
             if (Number.isInteger(statusEffect)) {
                 this.addStatusEffect(statusEffect);
             }
         }
     }
+
     addAllSpur(amount) {
         let amountNum = Number(amount);
         this.atkSpur += amountNum;
@@ -2878,56 +2168,68 @@ class Unit extends BattleMapElement {
         this.defSpur += amountNum;
         this.resSpur += amountNum;
     }
+
     addSpurs(atk, spd, def, res) {
         this.atkSpur += atk;
         this.spdSpur += spd;
         this.defSpur += def;
         this.resSpur += res;
     }
+
     addAtkSpdSpurs(atk, spd = atk) {
         this.atkSpur += atk;
         this.spdSpur += spd;
     }
+
     addAtkDefSpurs(atk, def = atk) {
         this.atkSpur += atk;
         this.defSpur += def;
     }
+
     addAtkResSpurs(atk, res = atk) {
         this.atkSpur += atk;
         this.resSpur += res;
     }
+
     addSpdDefSpurs(spd, def = spd) {
         this.spdSpur += spd;
         this.defSpur += def;
     }
+
     addSpdResSpurs(spd, res = spd) {
         this.spdSpur += spd;
         this.resSpur += res;
     }
+
     addDefResSpurs(def, res = def) {
         this.defSpur += def;
         this.resSpur += res;
     }
+
     addSpursWithoutAtk(spd, def = spd, res = spd) {
         this.spdSpur += spd;
         this.defSpur += def;
         this.resSpur += res;
     }
+
     addSpursWithoutSpd(atk, def = atk, res = atk) {
         this.atkSpur += atk;
         this.defSpur += def;
         this.resSpur += res;
     }
+
     addSpursWithoutDef(atk, spd = atk, res = atk) {
         this.atkSpur += atk;
         this.spdSpur += spd;
         this.resSpur += res;
     }
+
     addSpursWithoutRes(atk, spd = atk, def = atk) {
         this.atkSpur += atk;
         this.spdSpur += spd;
         this.defSpur += def;
     }
+
     getSpurs() {
         return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];
     }
@@ -2935,9 +2237,9 @@ class Unit extends BattleMapElement {
     get isHarmonicHero() {
         return this.heroInfo != null
             && (
-                this.heroIndex == Hero.SummerMia
-                || this.heroIndex == Hero.PirateVeronica
-                || this.heroIndex == Hero.HaloweenTiki
+                this.heroIndex === Hero.SummerMia
+                || this.heroIndex === Hero.PirateVeronica
+                || this.heroIndex === Hero.HaloweenTiki
             );
     }
 
@@ -2977,15 +2279,15 @@ class Unit extends BattleMapElement {
     }
 
     get hasWeapon() {
-        return this.weapon != Weapon.None;
+        return this.weapon !== Weapon.None;
     }
 
     get hasSpecial() {
-        return this.special != Special.None;
+        return this.special !== Special.None;
     }
 
     get isSpecialCharged() {
-        return this.hasSpecial && this.specialCount == 0;
+        return this.hasSpecial && this.specialCount === 0;
     }
 
     isAdvantageForColorless() {
@@ -3029,7 +2331,7 @@ class Unit extends BattleMapElement {
         return [this.atkBuff, this.spdBuff, this.defBuff, this.resBuff];
     }
 
-    getBuffs(considerPanic=true) {
+    getBuffs(considerPanic = true) {
         if (considerPanic) {
             return this.buffs;
         }
@@ -3043,7 +2345,7 @@ class Unit extends BattleMapElement {
     isWeaponEffectiveAgainst(type) {
         if (this.weaponInfo != null) {
             for (let effective of this.weaponInfo.effectives) {
-                if (effective == type) {
+                if (effective === type) {
                     return true;
                 }
             }
@@ -3056,7 +2358,7 @@ class Unit extends BattleMapElement {
             return true;
         }
 
-        if (type == EffectiveType.Dragon) {
+        if (type === EffectiveType.Dragon) {
             if (this.hasStatusEffect(StatusEffectType.EffectiveAgainstDragons)) {
                 return true;
             }
@@ -3072,7 +2374,7 @@ class Unit extends BattleMapElement {
     }
 
     reserveToAddStatusEffect(statusEffect) {
-        if (this.reservedStatusEffects.some(x => x == statusEffect)) {
+        if (this.reservedStatusEffects.some(x => x === statusEffect)) {
             return;
         }
         this.reservedStatusEffects.push(statusEffect);
@@ -3149,12 +2451,10 @@ class Unit extends BattleMapElement {
                 return true;
             }
         } else {
-            let hasBuff =
-                this.atkBuff > 0 ||
+            return this.atkBuff > 0 ||
                 this.spdBuff > 0 ||
                 this.defBuff > 0 ||
                 this.resBuff > 0;
-            return hasBuff;
         }
 
         return false;
@@ -3183,8 +2483,9 @@ class Unit extends BattleMapElement {
         }
         return result;
     }
+
     /**
-     * @param  {StatusEffectType} statusEffectType
+     * @param  {number} statusEffectType
      */
     addStatusEffect(statusEffectType) {
         if (this.hasStatusEffect(statusEffectType)) {
@@ -3192,8 +2493,9 @@ class Unit extends BattleMapElement {
         }
         this.statusEffects.push(statusEffectType);
     }
+
     /**
-     * @param  {StatusEffectType[]} statusEffects
+     * @param  {number[]} statusEffects
      */
     addStatusEffects(statusEffects) {
         for (let item of statusEffects) {
@@ -3222,7 +2524,7 @@ class Unit extends BattleMapElement {
 
     hasPerTurnStatus(value) {
         for (let elem of this.perTurnStatuses) {
-            if (elem == value) {
+            if (elem === value) {
                 return true;
             }
         }
@@ -3240,7 +2542,7 @@ class Unit extends BattleMapElement {
 
     isNextTo(unit) {
         let dist = Math.abs(this.posX - unit.posX) + Math.abs(this.posY - unit.posY);
-        return dist == 1;
+        return dist === 1;
     }
 
     getActualAttackRange(attackTargetUnit) {
@@ -3248,21 +2550,20 @@ class Unit extends BattleMapElement {
             return 0;
         }
 
-        let dist = calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
-        return dist;
+        return calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
     }
 
     /// すり抜けを発動可能ならtrue、そうでなければfalseを返します。
     canActivatePass() {
-        return (this.passiveB == PassiveB.Surinuke3 && this.hpPercentage >= 25)
-            || (this.weapon == Weapon.FujinYumi && !this.isWeaponRefined && this.hpPercentage >= 50);
+        return (this.passiveB === PassiveB.Surinuke3 && this.hpPercentage >= 25)
+            || (this.weapon === Weapon.FujinYumi && !this.isWeaponRefined && this.hpPercentage >= 50);
     }
 
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstractToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canActivateObstractToTilesIn2SpacesFuncMap;
+            let funcMap = canActivateObstructToTilesIn2SpacesFuncMap;
             if (funcMap.has(skillId)) {
                 let func = funcMap.get(skillId);
                 if (typeof func === "function") {
@@ -3332,12 +2633,10 @@ class Unit extends BattleMapElement {
         if (this.isPanicEnabled) {
             return false;
         }
-        let isBuffed =
-            this.getAtkBuffInCombat(enemyUnit) > 0 ||
+        return this.getAtkBuffInCombat(enemyUnit) > 0 ||
             this.getSpdBuffInCombat(enemyUnit) > 0 ||
             this.getDefBuffInCombat(enemyUnit) > 0 ||
             this.getResBuffInCombat(enemyUnit) > 0;
-        return isBuffed;
     }
 
     get isDebuffed() {
@@ -3348,7 +2647,7 @@ class Unit extends BattleMapElement {
     }
 
     get isSpecialCountMax() {
-        return this.specialCount == this.maxSpecialCount;
+        return this.specialCount === this.maxSpecialCount;
     }
 
     setSpecialCountToMax() {
@@ -3370,12 +2669,7 @@ class Unit extends BattleMapElement {
         this.initPosY = this.posY;
         this.fromPosX = this.posX;
         this.fromPosY = this.posY;
-        if (this.groupId == UnitGroupType.Enemy) {
-            this.isEnemyActionTriggered = false;
-        }
-        else {
-            this.isEnemyActionTriggered = true;
-        }
+        this.isEnemyActionTriggered = this.groupId !== UnitGroupType.Enemy;
     }
 
     resetSpurs() {
@@ -3399,24 +2693,28 @@ class Unit extends BattleMapElement {
         this.snapshot.battleContext.invalidatesDefBuff = this.battleContext.invalidatesDefBuff;
         this.snapshot.battleContext.invalidatesResBuff = this.battleContext.invalidatesResBuff;
     }
+
     /**
      * @param  {Unit} enemyUnit
      */
     getAtkIncrementInCombat(enemyUnit) {
         return this.getAtkInCombat(enemyUnit) - this.getAtkInPrecombat();
     }
+
     /**
      * @param  {Unit} enemyUnit
      */
     getSpdIncrementInCombat(enemyUnit) {
         return this.getSpdInCombat(enemyUnit) - this.getSpdInPrecombat();
     }
+
     /**
      * @param  {Unit} enemyUnit
      */
     getDefIncrementInCombat(enemyUnit) {
         return this.getDefInCombat(enemyUnit) - this.getDefInPrecombat();
     }
+
     /**
      * @param  {Unit} enemyUnit
      */
@@ -3495,7 +2793,7 @@ class Unit extends BattleMapElement {
     }
 
     isOnInitPos() {
-        return this.posX == this.initPosX && this.posY == this.initPosY;
+        return this.posX === this.initPosX && this.posY === this.initPosY;
     }
 
     beginAction() {
@@ -3596,8 +2894,7 @@ class Unit extends BattleMapElement {
             if (value > maxValue) {
                 maxStatuses = [StatusType.Spd];
                 maxValue = value;
-            }
-            else if (value == maxValue) {
+            } else if (value === maxValue) {
                 maxStatuses.push(StatusType.Spd);
             }
         }
@@ -3606,8 +2903,7 @@ class Unit extends BattleMapElement {
             if (value > maxValue) {
                 maxStatuses = [StatusType.Def];
                 maxValue = value;
-            }
-            else if (value == maxValue) {
+            } else if (value === maxValue) {
                 maxStatuses.push(StatusType.Def);
             }
         }
@@ -3615,9 +2911,9 @@ class Unit extends BattleMapElement {
             let value = unit.getResInPrecombat();
             if (value > maxValue) {
                 maxStatuses = [StatusType.Res];
+                // noinspection JSUnusedAssignment
                 maxValue = value;
-            }
-            else if (value == maxValue) {
+            } else if (value === maxValue) {
                 maxStatuses.push(StatusType.Res);
             }
         }
@@ -3783,8 +3079,7 @@ class Unit extends BattleMapElement {
     modifySpecialCount() {
         if (this.specialCount > Number(this.maxSpecialCount)) {
             this.specialCount = Number(this.maxSpecialCount);
-        }
-        else if (Number(this.specialCount) < 0) {
+        } else if (Number(this.specialCount) < 0) {
             this.specialCount = 0;
         }
     }
@@ -3795,12 +3090,14 @@ class Unit extends BattleMapElement {
             this.specialCount = Number(this.maxSpecialCount);
         }
     }
+
     reduceSpecialCount(amount) {
         this.specialCount = Number(this.specialCount) - amount;
         if (Number(this.specialCount) < 0) {
             this.specialCount = 0;
         }
     }
+
     reduceSpecialCountToZero() {
         this.specialCount = 0;
     }
@@ -3880,6 +3177,7 @@ class Unit extends BattleMapElement {
         this.statusEffects = [...this.currentStatusEffectSet];
         this.reservedStatusEffects = [];
     }
+
     /**
      * @param  {Boolean} leavesOneHp
      */
@@ -3904,12 +3202,10 @@ class Unit extends BattleMapElement {
     modifyHp(leavesOneHp = false) {
         if (this.hp > this.maxHpWithSkills) {
             this.hp = this.maxHpWithSkills;
-        }
-        else if (this.hp <= 0) {
+        } else if (this.hp <= 0) {
             if (leavesOneHp) {
                 this.hp = 1;
-            }
-            else {
+            } else {
                 this.hp = 0;
             }
         }
@@ -3953,7 +3249,7 @@ class Unit extends BattleMapElement {
     }
 
     get isDead() {
-        return this.hp == 0;
+        return this.hp === 0;
     }
 
     get serialId() {
@@ -3962,39 +3258,45 @@ class Unit extends BattleMapElement {
 
     get hasRefreshAssist() {
         return this.supportInfo != null
-            && this.supportInfo.assistType == AssistType.Refresh;
+            && this.supportInfo.assistType === AssistType.Refresh;
     }
+
     get hasHealAssist() {
         return this.supportInfo != null
-            && this.supportInfo.assistType == AssistType.Heal;
+            && this.supportInfo.assistType === AssistType.Heal;
     }
+
     get hasDonorHealAssist() {
         return this.supportInfo != null
-            && this.supportInfo.assistType == AssistType.DonorHeal;
+            && this.supportInfo.assistType === AssistType.DonorHeal;
     }
+
     get hasRestoreAssist() {
         return this.supportInfo != null
-            && this.supportInfo.assistType == AssistType.Restore;
+            && this.supportInfo.assistType === AssistType.Restore;
     }
+
     get hasRallyAssist() {
         return this.supportInfo != null
-            && this.supportInfo.assistType == AssistType.Rally;
+            && this.supportInfo.assistType === AssistType.Rally;
     }
+
     get hasMoveAssist() {
         return this.supportInfo != null
-            && this.supportInfo.assistType == AssistType.Move;
+            && this.supportInfo.assistType === AssistType.Move;
     }
 
     get isWeaponEquipped() {
-        return this.weapon != Weapon.None;
+        return this.weapon !== Weapon.None;
     }
 
     get isWeaponSpecialRefined() {
-        return this.weaponRefinement == WeaponRefinementType.Special
-            || this.weaponRefinement == WeaponRefinementType.Special_Hp3;
+        return this.weaponRefinement === WeaponRefinementType.Special
+            || this.weaponRefinement === WeaponRefinementType.Special_Hp3;
     }
+
     get isWeaponRefined() {
-        return this.weaponRefinement != WeaponRefinementType.None;
+        return this.weaponRefinement !== WeaponRefinementType.None;
     }
 
     get maxDragonflower() {
@@ -4027,9 +3329,11 @@ class Unit extends BattleMapElement {
         }
         return 100 * this.hp / this.maxHpWithSkills;
     }
+
     get isRestHpFull() {
         return this.restHp >= this.maxHpWithSkills;
     }
+
     get hasPanic() {
         return this.hasStatusEffect(StatusEffectType.Panic);
     }
@@ -4042,7 +3346,7 @@ class Unit extends BattleMapElement {
         this.dragonflower = Math.min(value, this.maxDragonflower);
     }
 
-    maximizeMergeAndDragonflower(includeEmblemHeroMerge=false) {
+    maximizeMergeAndDragonflower(includeEmblemHeroMerge = false) {
         this.merge = 10;
         this.dragonflower = this.maxDragonflower;
         if (includeEmblemHeroMerge) {
@@ -4165,7 +3469,7 @@ class Unit extends BattleMapElement {
     }
 
     get isFullHp() {
-        return this.hp == this.maxHpWithSkills;
+        return this.hp === this.maxHpWithSkills;
     }
 
     set maxHp(value) {
@@ -4226,6 +3530,7 @@ class Unit extends BattleMapElement {
         }
         return this.heroInfo.iconUrl;
     }
+
     /**
      * @returns {Number}
      */
@@ -4234,7 +3539,7 @@ class Unit extends BattleMapElement {
             return 0;
         }
 
-        if (this.weapon == Weapon.None) {
+        if (this.weapon === Weapon.None) {
             return 0;
         }
         return getAttackRangeOfWeaponType(this.weaponType);
@@ -4247,9 +3552,11 @@ class Unit extends BattleMapElement {
     get groupId() {
         return this._groupId;
     }
+
     get moveType() {
         return this._moveType;
     }
+
     set moveType(value) {
         this._moveType = value;
     }
@@ -4260,6 +3567,7 @@ class Unit extends BattleMapElement {
     get placedTile() {
         return this._placedTile;
     }
+
     /**
      * @param  {Tile} value
      */
@@ -4275,6 +3583,7 @@ class Unit extends BattleMapElement {
             targetUnit.atkSpur += -debuff * 2;
         }
     }
+
     applySpdUnity() {
         let targetUnit = this;
         targetUnit.spdSpur += 5;
@@ -4283,6 +3592,7 @@ class Unit extends BattleMapElement {
             targetUnit.spdSpur += -debuff * 2;
         }
     }
+
     applyDefUnity() {
         let targetUnit = this;
         targetUnit.defSpur += 5;
@@ -4291,6 +3601,7 @@ class Unit extends BattleMapElement {
             targetUnit.defSpur += -debuff * 2;
         }
     }
+
     applyResUnity() {
         let targetUnit = this;
         targetUnit.resSpur += 5;
@@ -4307,6 +3618,7 @@ class Unit extends BattleMapElement {
         }
         return this.weaponInfo.name;
     }
+
     /// 装備中のAスキル名を取得します。
     getPassiveAName() {
         if (this.passiveAInfo == null) {
@@ -4314,6 +3626,7 @@ class Unit extends BattleMapElement {
         }
         return this.passiveAInfo.name;
     }
+
     /// 装備中の聖印名を取得します。
     getPassiveSName() {
         if (this.passiveSInfo == null) {
@@ -4321,6 +3634,7 @@ class Unit extends BattleMapElement {
         }
         return this.passiveSInfo.name;
     }
+
     /// 装備中の聖印名を取得します。
     getPassiveXName() {
         if (this.passiveXInfo == null) {
@@ -4394,24 +3708,27 @@ class Unit extends BattleMapElement {
     getSpdInPrecombatWithoutDebuff() {
         return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply();
     }
+
     getSpdInPrecombat() {
         return Math.min(99, this.getSpdInPrecombatWithoutDebuff() + Number(this.spdDebuff));
     }
+
     getEvalAtkInCombat(enemyUnit = null) {
-        let val = this.getAtkInCombat(enemyUnit) + this.__getEvalAtkAdd();
-        return val;
+        return this.getAtkInCombat(enemyUnit) + this.__getEvalAtkAdd();
     }
+
     getEvalSpdInCombat(enemyUnit = null) {
-        let val = this.getSpdInCombat(enemyUnit) + this.__getEvalSpdAdd();
-        return val;
+        return this.getSpdInCombat(enemyUnit) + this.__getEvalSpdAdd();
     }
+
     getEvalSpdInPrecombat() {
-        let val = this.getSpdInPrecombat() + this.__getEvalSpdAdd();
-        return val;
+        return this.getSpdInPrecombat() + this.__getEvalSpdAdd();
     }
+
     __getEvalAtkAdd() {
         return 0;
     }
+
     __getEvalSpdAdd() {
         return getEvalSpdAdd(this);
     }
@@ -4419,6 +3736,7 @@ class Unit extends BattleMapElement {
     getAtkInPrecombatWithoutDebuff() {
         return Number(this.atkWithSkills) + Number(this.atkBuff) * this.__getBuffMultiply();
     }
+
     getAtkInPrecombat() {
         return Math.min(99, this.getAtkInPrecombatWithoutDebuff() + Number(this.atkDebuff));
     }
@@ -4440,8 +3758,7 @@ class Unit extends BattleMapElement {
             if (buffMult < 0) {
                 buff = getBuffFunc() * buffMult;
             }
-        }
-        else {
+        } else {
             buff = getBuffFunc() * buffMult;
         }
 
@@ -4462,6 +3779,7 @@ class Unit extends BattleMapElement {
             () => this.battleContext.invalidatesOwnAtkDebuff
         );
     }
+
     getSpdBuffInCombat(enemyUnit) {
         let invalidates = enemyUnit !== null &&
             enemyUnit.battleContext.invalidatesSpdBuff ||
@@ -4472,6 +3790,7 @@ class Unit extends BattleMapElement {
             () => this.battleContext.invalidatesOwnSpdDebuff
         );
     }
+
     getResBuffInCombat(enemyUnit) {
         let invalidates = enemyUnit !== null &&
             enemyUnit.battleContext.invalidatesResBuff ||
@@ -4482,6 +3801,7 @@ class Unit extends BattleMapElement {
             () => this.battleContext.invalidatesOwnResDebuff
         );
     }
+
     getDefBuffInCombat(enemyUnit) {
         let invalidates = enemyUnit !== null &&
             enemyUnit.battleContext.invalidatesDefBuff ||
@@ -4538,6 +3858,7 @@ class Unit extends BattleMapElement {
             () => this.battleContext.invalidatesOwnAtkDebuff
         );
     }
+
     getSpdInCombat(enemyUnit = null) {
         let invalidates = enemyUnit !== null &&
             (enemyUnit.battleContext.invalidatesSpdBuff ||
@@ -4549,6 +3870,7 @@ class Unit extends BattleMapElement {
             () => this.battleContext.invalidatesOwnSpdDebuff
         );
     }
+
     getDefInCombat(enemyUnit = null) {
         let invalidates = enemyUnit !== null &&
             (enemyUnit.battleContext.invalidatesDefBuff ||
@@ -4572,16 +3894,20 @@ class Unit extends BattleMapElement {
             () => this.battleContext.invalidatesOwnResDebuff
         );
     }
+
     // マイナス値を返す
     getAtkDebuffInCombat() {
         return this.battleContext.invalidatesOwnAtkDebuff ? 0 : Number(this.atkDebuff);
     }
+
     getSpdDebuffInCombat() {
         return this.battleContext.invalidatesOwnSpdDebuff ? 0 : Number(this.spdDebuff);
     }
+
     getDefDebuffInCombat() {
         return this.battleContext.invalidatesOwnDefDebuff ? 0 : Number(this.defDebuff);
     }
+
     getResDebuffInCombat() {
         return this.battleContext.invalidatesOwnResDebuff ? 0 : Number(this.resDebuff);
     }
@@ -4589,12 +3915,15 @@ class Unit extends BattleMapElement {
     __getAtkInCombatWithoutBuff() {
         return (Number(this.atkWithSkills) + this.getAtkDebuffInCombat() + Number(this.atkSpur));
     }
+
     __getSpdInCombatWithoutBuff() {
         return (Number(this.spdWithSkills) + this.getSpdDebuffInCombat() + Number(this.spdSpur));
     }
+
     __getDefInCombatWithoutBuff() {
         return (Number(this.defWithSkills) + this.getDefDebuffInCombat() + Number(this.defSpur));
     }
+
     __getResInCombatWithoutBuff() {
         return (Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur));
     }
@@ -4602,9 +3931,9 @@ class Unit extends BattleMapElement {
     getEvalDefInPrecombat() {
         return this.getDefInPrecombat() + this.__getEvalDefAdd();
     }
+
     getEvalDefInCombat(enemyUnit = null) {
-        let val = this.getDefInCombat(enemyUnit) + this.__getEvalDefAdd();
-        return val;
+        return this.getDefInCombat(enemyUnit) + this.__getEvalDefAdd();
     }
 
     getDefInPrecombatWithoutDebuff() {
@@ -4612,31 +3941,36 @@ class Unit extends BattleMapElement {
         let mitBuff = Number(this.defBuff) * this.__getBuffMultiply();
         return mit + mitBuff;
     }
+
     getDefInPrecombat() {
         return Math.min(99, this.getDefInPrecombatWithoutDebuff() + Number(this.defDebuff));
     }
+
     getResInPrecombatWithoutDebuff() {
         let mit = Number(this.resWithSkills);
         let mitBuff = Number(this.resBuff) * this.__getBuffMultiply();
         return mit + mitBuff;
     }
+
     getResInPrecombat() {
         return Math.min(99, this.getResInPrecombatWithoutDebuff() + Number(this.resDebuff));
     }
+
     getEvalResInCombat(enemyUnit = null) {
-        let val = this.getResInCombat(enemyUnit) + this.__getEvalResAdd();
-        return val;
+        return this.getResInCombat(enemyUnit) + this.__getEvalResAdd();
     }
+
     getEvalResInPrecombat() {
-        let val = this.getResInPrecombat() + this.__getEvalResAdd();
-        return val;
+        return this.getResInPrecombat() + this.__getEvalResAdd();
     }
+
     __getEvalDefAdd() {
         switch (this.passiveS) {
             default:
                 return 0;
         }
     }
+
     __getEvalResAdd() {
         let value = getEvalResAdd(this.passiveS);
         if (value) {
@@ -4646,22 +3980,22 @@ class Unit extends BattleMapElement {
     }
 
     hasSkill(skillId) {
-        return this.weapon == skillId
-            || this.support == skillId
-            || this.special == skillId
-            || this.passiveA == skillId
-            || this.passiveB == skillId
-            || this.passiveC == skillId
-            || this.passiveS == skillId
-            || this.passiveX == skillId;
+        return this.weapon === skillId
+            || this.support === skillId
+            || this.special === skillId
+            || this.passiveA === skillId
+            || this.passiveB === skillId
+            || this.passiveC === skillId
+            || this.passiveS === skillId
+            || this.passiveX === skillId;
     }
 
     hasPassiveSkill(skillId) {
-        return this.passiveA == skillId
-            || this.passiveB == skillId
-            || this.passiveC == skillId
-            || this.passiveS == skillId
-            || this.passiveX == skillId;
+        return this.passiveA === skillId
+            || this.passiveB === skillId
+            || this.passiveC === skillId
+            || this.passiveS === skillId
+            || this.passiveX === skillId;
     }
 
     isPhysicalAttacker() {
@@ -4670,17 +4004,45 @@ class Unit extends BattleMapElement {
 
     updateStatusByWeaponRefinement() {
         switch (this.weaponRefinement) {
-            case WeaponRefinementType.None: break;
-            case WeaponRefinementType.Special_Hp3: this._maxHpWithSkills += 3; break;
-            case WeaponRefinementType.Hp5_Atk2: this._maxHpWithSkills += 5; this.atkWithSkills += 2; break;
-            case WeaponRefinementType.Hp5_Spd3: this._maxHpWithSkills += 5; this.spdWithSkills += 3; break;
-            case WeaponRefinementType.Hp5_Def4: this._maxHpWithSkills += 5; this.defWithSkills += 4; break;
-            case WeaponRefinementType.Hp5_Res4: this._maxHpWithSkills += 5; this.resWithSkills += 4; break;
-            case WeaponRefinementType.Hp2_Atk1: this._maxHpWithSkills += 2; this.atkWithSkills += 1; break;
-            case WeaponRefinementType.Hp2_Spd2: this._maxHpWithSkills += 2; this.spdWithSkills += 2; break;
-            case WeaponRefinementType.Hp2_Def3: this._maxHpWithSkills += 2; this.defWithSkills += 3; break;
-            case WeaponRefinementType.Hp2_Res3: this._maxHpWithSkills += 2; this.resWithSkills += 3; break;
-            default: break;
+            case WeaponRefinementType.None:
+                break;
+            case WeaponRefinementType.Special_Hp3:
+                this._maxHpWithSkills += 3;
+                break;
+            case WeaponRefinementType.Hp5_Atk2:
+                this._maxHpWithSkills += 5;
+                this.atkWithSkills += 2;
+                break;
+            case WeaponRefinementType.Hp5_Spd3:
+                this._maxHpWithSkills += 5;
+                this.spdWithSkills += 3;
+                break;
+            case WeaponRefinementType.Hp5_Def4:
+                this._maxHpWithSkills += 5;
+                this.defWithSkills += 4;
+                break;
+            case WeaponRefinementType.Hp5_Res4:
+                this._maxHpWithSkills += 5;
+                this.resWithSkills += 4;
+                break;
+            case WeaponRefinementType.Hp2_Atk1:
+                this._maxHpWithSkills += 2;
+                this.atkWithSkills += 1;
+                break;
+            case WeaponRefinementType.Hp2_Spd2:
+                this._maxHpWithSkills += 2;
+                this.spdWithSkills += 2;
+                break;
+            case WeaponRefinementType.Hp2_Def3:
+                this._maxHpWithSkills += 2;
+                this.defWithSkills += 3;
+                break;
+            case WeaponRefinementType.Hp2_Res3:
+                this._maxHpWithSkills += 2;
+                this.resWithSkills += 3;
+                break;
+            default:
+                break;
         }
     }
 
@@ -4729,28 +4091,56 @@ class Unit extends BattleMapElement {
 
     __updateStatusByBlessing(blessing) {
         switch (blessing) {
-            case BlessingType.Hp5_Atk3: this._maxHpWithSkills += 5; this.atkWithSkills += 3; break;
-            case BlessingType.Hp5_Spd4: this._maxHpWithSkills += 5; this.spdWithSkills += 4; break;
-            case BlessingType.Hp5_Def5: this._maxHpWithSkills += 5; this.defWithSkills += 5; break;
-            case BlessingType.Hp5_Res5: this._maxHpWithSkills += 5; this.resWithSkills += 5; break;
-            case BlessingType.Hp3_Atk2: this._maxHpWithSkills += 3; this.atkWithSkills += 2; break;
-            case BlessingType.Hp3_Spd3: this._maxHpWithSkills += 3; this.spdWithSkills += 3; break;
-            case BlessingType.Hp3_Def4: this._maxHpWithSkills += 3; this.defWithSkills += 4; break;
-            case BlessingType.Hp3_Res4: this._maxHpWithSkills += 3; this.resWithSkills += 4; break;
-            case BlessingType.Hp3: this._maxHpWithSkills += 3; break;
-            default: break;
+            case BlessingType.Hp5_Atk3:
+                this._maxHpWithSkills += 5;
+                this.atkWithSkills += 3;
+                break;
+            case BlessingType.Hp5_Spd4:
+                this._maxHpWithSkills += 5;
+                this.spdWithSkills += 4;
+                break;
+            case BlessingType.Hp5_Def5:
+                this._maxHpWithSkills += 5;
+                this.defWithSkills += 5;
+                break;
+            case BlessingType.Hp5_Res5:
+                this._maxHpWithSkills += 5;
+                this.resWithSkills += 5;
+                break;
+            case BlessingType.Hp3_Atk2:
+                this._maxHpWithSkills += 3;
+                this.atkWithSkills += 2;
+                break;
+            case BlessingType.Hp3_Spd3:
+                this._maxHpWithSkills += 3;
+                this.spdWithSkills += 3;
+                break;
+            case BlessingType.Hp3_Def4:
+                this._maxHpWithSkills += 3;
+                this.defWithSkills += 4;
+                break;
+            case BlessingType.Hp3_Res4:
+                this._maxHpWithSkills += 3;
+                this.resWithSkills += 4;
+                break;
+            case BlessingType.Hp3:
+                this._maxHpWithSkills += 3;
+                break;
+            default:
+                break;
         }
     }
 
     setIvHighStat(value, updatesPureGrowthRate = true) {
-        if (this.ivHighStat == value) {
+        if (this.ivHighStat === value) {
             return;
         }
         this.ivHighStat = value;
         this.updateBaseStatus(updatesPureGrowthRate);
     }
+
     setIvLowStat(value, updatesPureGrowthRate = true) {
-        if (this.ivLowStat == value) {
+        if (this.ivLowStat === value) {
             return;
         }
         this.ivLowStat = value;
@@ -4768,31 +4158,64 @@ class Unit extends BattleMapElement {
         let defLv1IvChange = 0;
         let resLv1IvChange = 0;
         switch (this.ivHighStat) {
-            case StatusType.None: break;
-            case StatusType.Hp: hpLv1IvChange = 1; break;
-            case StatusType.Atk: atkLv1IvChange = 1; break;
-            case StatusType.Spd: spdLv1IvChange = 1; break;
-            case StatusType.Def: defLv1IvChange = 1; break;
-            case StatusType.Res: resLv1IvChange = 1; break;
+            case StatusType.None:
+                break;
+            case StatusType.Hp:
+                hpLv1IvChange = 1;
+                break;
+            case StatusType.Atk:
+                atkLv1IvChange = 1;
+                break;
+            case StatusType.Spd:
+                spdLv1IvChange = 1;
+                break;
+            case StatusType.Def:
+                defLv1IvChange = 1;
+                break;
+            case StatusType.Res:
+                resLv1IvChange = 1;
+                break;
         }
 
         switch (this.ascendedAsset) {
-            case StatusType.None: break;
-            case StatusType.Hp: hpLv1IvChange = 1; break;
-            case StatusType.Atk: atkLv1IvChange = 1; break;
-            case StatusType.Spd: spdLv1IvChange = 1; break;
-            case StatusType.Def: defLv1IvChange = 1; break;
-            case StatusType.Res: resLv1IvChange = 1; break;
+            case StatusType.None:
+                break;
+            case StatusType.Hp:
+                hpLv1IvChange = 1;
+                break;
+            case StatusType.Atk:
+                atkLv1IvChange = 1;
+                break;
+            case StatusType.Spd:
+                spdLv1IvChange = 1;
+                break;
+            case StatusType.Def:
+                defLv1IvChange = 1;
+                break;
+            case StatusType.Res:
+                resLv1IvChange = 1;
+                break;
         }
 
-        if (this.merge == 0) {
+        if (this.merge === 0) {
             switch (this.ivLowStat) {
-                case StatusType.None: break;
-                case StatusType.Hp: hpLv1IvChange = -1; break;
-                case StatusType.Atk: atkLv1IvChange = -1; break;
-                case StatusType.Spd: spdLv1IvChange = -1; break;
-                case StatusType.Def: defLv1IvChange = -1; break;
-                case StatusType.Res: resLv1IvChange = -1; break;
+                case StatusType.None:
+                    break;
+                case StatusType.Hp:
+                    hpLv1IvChange = -1;
+                    break;
+                case StatusType.Atk:
+                    atkLv1IvChange = -1;
+                    break;
+                case StatusType.Spd:
+                    spdLv1IvChange = -1;
+                    break;
+                case StatusType.Def:
+                    defLv1IvChange = -1;
+                    break;
+                case StatusType.Res:
+                    resLv1IvChange = -1;
+                    break;
             }
         }
 
@@ -4830,7 +4253,7 @@ class Unit extends BattleMapElement {
                 growthRate += 0.05;
                 break;
             case IvType.Flaw:
-                if (this.merge == 0) {
+                if (this.merge === 0) {
                     valueLv1 -= 1;
                     growthRate -= 0.05;
                 }
@@ -4849,33 +4272,66 @@ class Unit extends BattleMapElement {
         this.resGrowthRate = this.heroInfo.resGrowthRate;
 
         switch (this.ivHighStat) {
-            case StatusType.None: break;
-            case StatusType.Hp: this.hpGrowthRate += 0.05; break;
-            case StatusType.Atk: this.atkGrowthRate += 0.05; break;
-            case StatusType.Spd: this.spdGrowthRate += 0.05; break;
-            case StatusType.Def: this.defGrowthRate += 0.05; break;
-            case StatusType.Res: this.resGrowthRate += 0.05; break;
+            case StatusType.None:
+                break;
+            case StatusType.Hp:
+                this.hpGrowthRate += 0.05;
+                break;
+            case StatusType.Atk:
+                this.atkGrowthRate += 0.05;
+                break;
+            case StatusType.Spd:
+                this.spdGrowthRate += 0.05;
+                break;
+            case StatusType.Def:
+                this.defGrowthRate += 0.05;
+                break;
+            case StatusType.Res:
+                this.resGrowthRate += 0.05;
+                break;
         }
 
         {
             switch (this.ascendedAsset) {
-                case StatusType.None: break;
-                case StatusType.Hp: this.hpGrowthRate += 0.05; break;
-                case StatusType.Atk: this.atkGrowthRate += 0.05; break;
-                case StatusType.Spd: this.spdGrowthRate += 0.05; break;
-                case StatusType.Def: this.defGrowthRate += 0.05; break;
-                case StatusType.Res: this.resGrowthRate += 0.05; break;
+                case StatusType.None:
+                    break;
+                case StatusType.Hp:
+                    this.hpGrowthRate += 0.05;
+                    break;
+                case StatusType.Atk:
+                    this.atkGrowthRate += 0.05;
+                    break;
+                case StatusType.Spd:
+                    this.spdGrowthRate += 0.05;
+                    break;
+                case StatusType.Def:
+                    this.defGrowthRate += 0.05;
+                    break;
+                case StatusType.Res:
+                    this.resGrowthRate += 0.05;
+                    break;
             }
         }
 
-        if (this.merge == 0) {
+        if (this.merge === 0) {
             switch (this.ivLowStat) {
-                case StatusType.None: break;
-                case StatusType.Hp: this.hpGrowthRate -= 0.05; break;
-                case StatusType.Atk: this.atkGrowthRate -= 0.05; break;
-                case StatusType.Spd: this.spdGrowthRate -= 0.05; break;
-                case StatusType.Def: this.defGrowthRate -= 0.05; break;
-                case StatusType.Res: this.resGrowthRate -= 0.05; break;
+                case StatusType.None:
+                    break;
+                case StatusType.Hp:
+                    this.hpGrowthRate -= 0.05;
+                    break;
+                case StatusType.Atk:
+                    this.atkGrowthRate -= 0.05;
+                    break;
+                case StatusType.Spd:
+                    this.spdGrowthRate -= 0.05;
+                    break;
+                case StatusType.Def:
+                    this.defGrowthRate -= 0.05;
+                    break;
+                case StatusType.Res:
+                    this.resGrowthRate -= 0.05;
+                    break;
             }
         }
     }
@@ -4911,17 +4367,17 @@ class Unit extends BattleMapElement {
     /**
      * 限界突破と神竜の花によるステータス加算を計算する。
      * 限界突破にはエンゲージされた紋章士の凸数も含む
-     * @param  {StatusType} ivHighStat
-     * @param  {StatusType} ivLowStat
-     * @param  {StatusType} ascendedAsset
-     * @param  {Number} merge
-     * @param  {Number} dragonflower
-     * @param  {Number} emblemHeroMerge
-     * @param  {Number} hpLv1
-     * @param  {Number} atkLv1
-     * @param  {Number} spdLv1
-     * @param  {Number} defLv1
-     * @param  {Number} resLv1
+     * @param  {number} ivHighStat
+     * @param  {number} ivLowStat
+     * @param  {number} ascendedAsset
+     * @param  {number} merge
+     * @param  {number} dragonflower
+     * @param  {number} emblemHeroMerge
+     * @param  {number} hpLv1
+     * @param  {number} atkLv1
+     * @param  {number} spdLv1
+     * @param  {number} defLv1
+     * @param  {number} resLv1
      */
     static calcStatusAddValuesByMergeAndDragonFlower(
         ivHighStat, ivLowStat, ascendedAsset,
@@ -4938,12 +4394,23 @@ class Unit extends BattleMapElement {
         let defLv1IvChange = 0;
         let resLv1IvChange = 0;
         switch (ivHighStat) {
-            case StatusType.None: break;
-            case StatusType.Hp: hpLv1IvChange = 1; break;
-            case StatusType.Atk: atkLv1IvChange = 1; break;
-            case StatusType.Spd: spdLv1IvChange = 1; break;
-            case StatusType.Def: defLv1IvChange = 1; break;
-            case StatusType.Res: resLv1IvChange = 1; break;
+            case StatusType.None:
+                break;
+            case StatusType.Hp:
+                hpLv1IvChange = 1;
+                break;
+            case StatusType.Atk:
+                atkLv1IvChange = 1;
+                break;
+            case StatusType.Spd:
+                spdLv1IvChange = 1;
+                break;
+            case StatusType.Def:
+                defLv1IvChange = 1;
+                break;
+            case StatusType.Res:
+                resLv1IvChange = 1;
+                break;
         }
 
         // 開花得意は順序に影響しない
@@ -4957,12 +4424,23 @@ class Unit extends BattleMapElement {
         // }
 
         switch (ivLowStat) {
-            case StatusType.None: break;
-            case StatusType.Hp: hpLv1IvChange = -1; break;
-            case StatusType.Atk: atkLv1IvChange = -1; break;
-            case StatusType.Spd: spdLv1IvChange = -1; break;
-            case StatusType.Def: defLv1IvChange = -1; break;
-            case StatusType.Res: resLv1IvChange = -1; break;
+            case StatusType.None:
+                break;
+            case StatusType.Hp:
+                hpLv1IvChange = -1;
+                break;
+            case StatusType.Atk:
+                atkLv1IvChange = -1;
+                break;
+            case StatusType.Spd:
+                spdLv1IvChange = -1;
+                break;
+            case StatusType.Def:
+                defLv1IvChange = -1;
+                break;
+            case StatusType.Res:
+                resLv1IvChange = -1;
+                break;
         }
 
         const addValues = [0, 0, 0, 0, 0];
@@ -4970,11 +4448,11 @@ class Unit extends BattleMapElement {
         // 限界突破によるステータス上昇
         if (merge > 0 || dragonflower > 0 || emblemHeroMerge) {
             const statusList = [
-                { type: StatusType.Hp, value: hpLv1 + hpLv1IvChange },
-                { type: StatusType.Atk, value: atkLv1 + atkLv1IvChange },
-                { type: StatusType.Spd, value: spdLv1 + spdLv1IvChange },
-                { type: StatusType.Def, value: defLv1 + defLv1IvChange },
-                { type: StatusType.Res, value: resLv1 + resLv1IvChange },
+                {type: StatusType.Hp, value: hpLv1 + hpLv1IvChange},
+                {type: StatusType.Atk, value: atkLv1 + atkLv1IvChange},
+                {type: StatusType.Spd, value: spdLv1 + spdLv1IvChange},
+                {type: StatusType.Def, value: defLv1 + defLv1IvChange},
+                {type: StatusType.Res, value: resLv1 + resLv1IvChange},
             ];
             statusList.sort((a, b) => {
                 return b.value - a.value;
@@ -4982,15 +4460,25 @@ class Unit extends BattleMapElement {
             const updateStatus = (statItr) => {
                 let statIndex = statItr % 5;
                 switch (statusList[statIndex].type) {
-                    case StatusType.Hp: addValues[0] += 1; break;
-                    case StatusType.Atk: addValues[1] += 1; break;
-                    case StatusType.Spd: addValues[2] += 1; break;
-                    case StatusType.Def: addValues[3] += 1; break;
-                    case StatusType.Res: addValues[4] += 1; break;
+                    case StatusType.Hp:
+                        addValues[0] += 1;
+                        break;
+                    case StatusType.Atk:
+                        addValues[1] += 1;
+                        break;
+                    case StatusType.Spd:
+                        addValues[2] += 1;
+                        break;
+                    case StatusType.Def:
+                        addValues[3] += 1;
+                        break;
+                    case StatusType.Res:
+                        addValues[4] += 1;
+                        break;
                 }
             };
 
-            if (merge > 0 && ivHighStat == StatusType.None) {
+            if (merge > 0 && ivHighStat === StatusType.None) {
                 // 基準値で限界突破済みの場合
                 let updatedCount = 0;
                 let statIndex = 0;
@@ -4999,11 +4487,21 @@ class Unit extends BattleMapElement {
                     if (targetStatus !== ascendedAsset) {
                         // 開花得意は基準値の上昇ステータスから除外
                         switch (targetStatus) {
-                            case StatusType.Hp: addValues[0] += 1; break;
-                            case StatusType.Atk: addValues[1] += 1; break;
-                            case StatusType.Spd: addValues[2] += 1; break;
-                            case StatusType.Def: addValues[3] += 1; break;
-                            case StatusType.Res: addValues[4] += 1; break;
+                            case StatusType.Hp:
+                                addValues[0] += 1;
+                                break;
+                            case StatusType.Atk:
+                                addValues[1] += 1;
+                                break;
+                            case StatusType.Spd:
+                                addValues[2] += 1;
+                                break;
+                            case StatusType.Def:
+                                addValues[3] += 1;
+                                break;
+                            case StatusType.Res:
+                                addValues[4] += 1;
+                                break;
                         }
                         ++updatedCount;
                     }
@@ -5041,7 +4539,7 @@ class Unit extends BattleMapElement {
         return this.currentDamage >= requiredHealAmount;
     }
 
-    *enumerateSkillInfos() {
+    * enumerateSkillInfos() {
         if (this.weaponInfo != null) {
             yield this.weaponInfo;
         }
@@ -5071,25 +4569,55 @@ class Unit extends BattleMapElement {
         }
     }
 
-    *enumerateSkills() {
-        if (this.weapon != NoneValue) { yield this.weapon; }
-        if (this.support != NoneValue) { yield this.support; }
-        if (this.special != NoneValue) { yield this.special; }
-        if (this.passiveA != NoneValue) { yield this.passiveA; }
-        if (this.passiveB != NoneValue) { yield this.passiveB; }
-        if (this.passiveC != NoneValue) { yield this.passiveC; }
-        if (this.passiveS != NoneValue) { yield this.passiveS; }
-        if (this.passiveX != NoneValue) { yield this.passiveX; }
-        if (this.isCaptain && this.captain != NoneValue) { yield this.captain; }
-        if (this.emblemHeroIndex > 0) { yield getEmblemHeroSkillId(this.emblemHeroIndex); }
+    * enumerateSkills() {
+        if (this.weapon !== NoneValue) {
+            yield this.weapon;
+        }
+        if (this.support !== NoneValue) {
+            yield this.support;
+        }
+        if (this.special !== NoneValue) {
+            yield this.special;
+        }
+        if (this.passiveA !== NoneValue) {
+            yield this.passiveA;
+        }
+        if (this.passiveB !== NoneValue) {
+            yield this.passiveB;
+        }
+        if (this.passiveC !== NoneValue) {
+            yield this.passiveC;
+        }
+        if (this.passiveS !== NoneValue) {
+            yield this.passiveS;
+        }
+        if (this.passiveX !== NoneValue) {
+            yield this.passiveX;
+        }
+        if (this.isCaptain && this.captain !== NoneValue) {
+            yield this.captain;
+        }
+        if (this.emblemHeroIndex > 0) {
+            yield getEmblemHeroSkillId(this.emblemHeroIndex);
+        }
     }
 
-    *enumeratePassiveSkills() {
-        if (this.passiveA != NoneValue) { yield this.passiveA; }
-        if (this.passiveB != NoneValue) { yield this.passiveB; }
-        if (this.passiveC != NoneValue) { yield this.passiveC; }
-        if (this.passiveS != NoneValue) { yield this.passiveS; }
-        if (this.passiveX != NoneValue) { yield this.passiveX; }
+    * enumeratePassiveSkills() {
+        if (this.passiveA !== NoneValue) {
+            yield this.passiveA;
+        }
+        if (this.passiveB !== NoneValue) {
+            yield this.passiveB;
+        }
+        if (this.passiveC !== NoneValue) {
+            yield this.passiveC;
+        }
+        if (this.passiveS !== NoneValue) {
+            yield this.passiveS;
+        }
+        if (this.passiveX !== NoneValue) {
+            yield this.passiveX;
+        }
     }
 
     hasDagger7Effect() {
@@ -5102,20 +4630,23 @@ class Unit extends BattleMapElement {
                     && !this.hasDagger5Effect()
                     && !this.hasDagger4Effect()
                     && !this.hasDagger3Effect()
-                    && this.weapon != Weapon.PoisonDaggerPlus
-                    && this.weapon != Weapon.PoisonDagger
-                    && this.weapon != Weapon.DeathlyDagger
+                    && this.weapon !== Weapon.PoisonDaggerPlus
+                    && this.weapon !== Weapon.PoisonDagger
+                    && this.weapon !== Weapon.DeathlyDagger
                     && isWeaponTypeDagger(this.weaponType);
         }
     }
+
     hasDagger6Effect() {
         switch (this.weapon) {
             case Weapon.ShienNoAnkiPlus:
             case Weapon.MitteiNoAnki:
                 return true;
-            default: return false;
+            default:
+                return false;
         }
     }
+
     hasDagger5Effect() {
         switch (this.weapon) {
             case Weapon.GinNoAnki:
@@ -5128,23 +4659,28 @@ class Unit extends BattleMapElement {
             case Weapon.Kagamimochi:
             case Weapon.ButosaiNoSensu:
                 return true;
-            default: return false;
+            default:
+                return false;
         }
     }
+
     hasDagger4Effect() {
         switch (this.weapon) {
             case Weapon.ShienNoAnki:
                 return true;
-            default: return false;
+            default:
+                return false;
         }
     }
+
     hasDagger3Effect() {
         switch (this.weapon) {
             case Weapon.TetsuNoAnki:
             case Weapon.DouNoAnki:
             case Weapon.RogueDagger:
                 return true;
-            default: return false;
+            default:
+                return false;
         }
     }
 
@@ -5172,9 +4708,10 @@ class Unit extends BattleMapElement {
             + Number(this.defGrowthRate)
             + Number(this.resGrowthRate);
     }
+
     /**
-     * @param  {SeasonType} majorSeason=SeasonType.None
-     * @param  {SeasonType} minorSeason=SeasonType.None
+     * @param  {number} majorSeason=SeasonType.None
+     * @param  {number} minorSeason=SeasonType.None
      */
     updateArenaScore(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
         if (this.heroIndex < 0) {
@@ -5211,10 +4748,9 @@ class Unit extends BattleMapElement {
      */
     __getArenaMerges(majorSeason = SeasonType.None, minorSeason = SeasonType.None) {
         let merge = Number(this.merge);
-        if (majorSeason != SeasonType.None && this.providableBlessingSeason == majorSeason) {
+        if (majorSeason !== SeasonType.None && this.providableBlessingSeason === majorSeason) {
             merge += 10;
-        }
-        else if (minorSeason != SeasonType.None && this.providableBlessingSeason == minorSeason) {
+        } else if (minorSeason !== SeasonType.None && this.providableBlessingSeason === minorSeason) {
             merge += 5;
         }
         return merge;
@@ -5253,7 +4789,7 @@ class Unit extends BattleMapElement {
         let weaponSp = 0;
         if (this.weaponInfo != null) {
             weaponSp = this.weaponInfo.sp;
-            if (weaponSp == 300 && this.isWeaponRefined) {
+            if (weaponSp === 300 && this.isWeaponRefined) {
                 weaponSp += 50;
             }
         }
@@ -5282,7 +4818,7 @@ class Unit extends BattleMapElement {
      */
     setToMaxScoreAsset() {
         let origMerge = this.merge;
-        if (this.merge == 0) {
+        if (this.merge === 0) {
             // 限界突破していない場合は査定計算のために一時的に限界突破
             this.merge = 1;
         }
@@ -5300,13 +4836,13 @@ class Unit extends BattleMapElement {
         ];
 
         // すべての個性で評価して現在より大きい査定になるものがあればそれに設定
-        for (let asset of assetStatuses.filter(x => x != defaultAsset)) {
+        for (let asset of assetStatuses.filter(x => x !== defaultAsset)) {
             this.ivHighStat = asset;
             this.ivLowStat = StatusType.None; // 不得意は関係ないので None にしておく
             let score = this.calcArenaBaseStatusScore();
             if (score > defaultScore) {
                 // 適当な不得意を設定
-                this.ivLowStat = assetStatuses.find(x => x != this.ivHighStat);
+                this.ivLowStat = assetStatuses.find(x => x !== this.ivHighStat);
                 break;
             }
             this.ivHighStat = defaultAsset;
@@ -5322,8 +4858,7 @@ class Unit extends BattleMapElement {
         }
 
         let rating = this.__getArenaRating();
-        let score = calcArenaBaseStatusScore(rating);
-        return score;
+        return calcArenaBaseStatusScore(rating);
     }
 
     /**
@@ -5335,7 +4870,7 @@ class Unit extends BattleMapElement {
         let spd = this.__calcStatusLvN(this.heroInfo.spdLv1, this.heroInfo.spd, this.__getIvType(StatusType.Spd));
         let def = this.__calcStatusLvN(this.heroInfo.defLv1, this.heroInfo.def, this.__getIvType(StatusType.Def));
         let res = this.__calcStatusLvN(this.heroInfo.resLv1, this.heroInfo.res, this.__getIvType(StatusType.Res));
-        let addValue = this.ivHighStat == StatusType.None && this.ivLowStat == StatusType.None && this.merge > 0 ? 3 : 0;
+        let addValue = this.ivHighStat === StatusType.None && this.ivLowStat === StatusType.None && this.merge > 0 ? 3 : 0;
         let rating = hp + atk + spd + def + res + addValue;
 
         if (rating < this.heroInfo.duelScore) {
@@ -5343,8 +4878,7 @@ class Unit extends BattleMapElement {
         }
         if (rating < 170 && this.__hasDuel3Skill()) {
             rating = 170;
-        }
-        else if (this.__hasDuel4Skill()) {
+        } else if (this.__hasDuel4Skill()) {
             let duel4Rating = this.getDuel4Rating();
             if (rating < duel4Rating) {
                 rating = duel4Rating;
@@ -5357,16 +4891,15 @@ class Unit extends BattleMapElement {
     getDuel4Rating() {
         if (this.isMythicHero || this.isLegendaryHero) {
             return 175;
-        }
-        else {
+        } else {
             return 180;
         }
     }
 
     __getIvType(statusType, includesAscendedAsset = false) {
-        return this.ivHighStat == statusType ?
-            IvType.Asset : this.ivLowStat == statusType ?
-                IvType.Flaw : includesAscendedAsset && this.ascendedAsset == statusType ? IvType.Asset : IvType.None;
+        return this.ivHighStat === statusType ?
+            IvType.Asset : this.ivLowStat === statusType ?
+                IvType.Flaw : includesAscendedAsset && this.ascendedAsset === statusType ? IvType.Asset : IvType.None;
     }
 
     __calcArenaScore(rating, totalSp, rebirthCount, rarity = 5) {
@@ -5418,11 +4951,11 @@ class Unit extends BattleMapElement {
             return false;
         }
 
-        return this.supportInfo.assistType == AssistType.Move;
+        return this.supportInfo.assistType === AssistType.Move;
     }
 
     setGrantedBlessingIfPossible(value) {
-        if (this.providableBlessingSeason != SeasonType.None) {
+        if (this.providableBlessingSeason !== SeasonType.None) {
             this.grantedBlessing = value;
         }
     }
@@ -5460,14 +4993,14 @@ class Unit extends BattleMapElement {
      * @param  {HeroInfo} heroInfo
      */
     initByHeroInfo(heroInfo) {
-        let isHeroInfoChanged = this.heroInfo != heroInfo;
+        let isHeroInfoChanged = this.heroInfo !== heroInfo;
         if (!isHeroInfoChanged) {
             return;
         }
 
         this.heroInfo = heroInfo;
         this.providableBlessingSeason = heroInfo.seasonType;
-        if (this.providableBlessingSeason != SeasonType.None) {
+        if (this.providableBlessingSeason !== SeasonType.None) {
             this.grantedBlessing = SeasonType.None;
         }
 
@@ -5481,9 +5014,9 @@ class Unit extends BattleMapElement {
         this.spd = heroInfo.spd;
         this.def = heroInfo.def;
         this.res = heroInfo.res;
-        if (heroInfo.atk == 0) {
+        if (heroInfo.atk === 0) {
             // まだDBにステータスが定義されていないので適当に割り当て
-            if (heroInfo.hp == 0) {
+            if (heroInfo.hp === 0) {
                 this.maxHp = 40;
             }
             this.atk = 40;
@@ -5578,7 +5111,7 @@ class Unit extends BattleMapElement {
                 }
                 break;
             case Weapon.Yatonokami:
-                if (this.weaponRefinement != WeaponRefinementType.None) {
+                if (this.weaponRefinement !== WeaponRefinementType.None) {
                     this.atkWithSkills += 2;
                     this.spdWithSkills += 2;
                     this.defWithSkills += 2;
@@ -5637,7 +5170,7 @@ class Unit extends BattleMapElement {
     /// ステータスにスキルの加算値を加算します。
     updateStatusBySkillsExceptWeapon() {
         for (let skillInfo of this.enumerateSkillInfos()) {
-            if (skillInfo == this.weaponInfo) {
+            if (skillInfo === this.weaponInfo) {
                 continue;
             }
 
@@ -5650,10 +5183,10 @@ class Unit extends BattleMapElement {
     }
 
     updateStatusByWeapon() {
-        if (this.weapon != Weapon.None) {
+        if (this.weapon !== Weapon.None) {
             let weaponInfo = this.weaponInfo;
             if (weaponInfo != null) {
-                if (this.weaponRefinement != WeaponRefinementType.None) {
+                if (this.weaponRefinement !== WeaponRefinementType.None) {
                     this.atkWithSkills += weaponInfo.mightRefine;
                 } else {
                     this.atkWithSkills += weaponInfo.might;
@@ -5679,7 +5212,7 @@ class Unit extends BattleMapElement {
     }
 
     resetMaxSpecialCount() {
-        if (this.special == Special.None) {
+        if (this.special === Special.None) {
             this.maxSpecialCount = 0;
             this.specialCount = 0;
             return;
@@ -5761,10 +5294,19 @@ class Unit extends BattleMapElement {
         if (!targetUnit.isDebuffed) {
             return false;
         }
-        if (targetUnit.atkDebuff < 0 && -targetUnit.atkDebuff > (targetUnit.atkBuff)) { return true; }
-        if (targetUnit.spdDebuff < 0 && -targetUnit.spdDebuff > (targetUnit.spdBuff)) { return true; }
-        if (targetUnit.defDebuff < 0 && -targetUnit.defDebuff > (targetUnit.defBuff)) { return true; }
-        if (targetUnit.resDebuff < 0 && -targetUnit.resDebuff > (targetUnit.resBuff)) { return true; }
+        if (targetUnit.atkDebuff < 0 && -targetUnit.atkDebuff > (targetUnit.atkBuff)) {
+            return true;
+        }
+        if (targetUnit.spdDebuff < 0 && -targetUnit.spdDebuff > (targetUnit.spdBuff)) {
+            return true;
+        }
+        if (targetUnit.defDebuff < 0 && -targetUnit.defDebuff > (targetUnit.defBuff)) {
+            return true;
+        }
+        // noinspection RedundantIfStatementJS
+        if (targetUnit.resDebuff < 0 && -targetUnit.resDebuff > (targetUnit.resBuff)) {
+            return true;
+        }
         return false;
     }
 
@@ -5780,20 +5322,29 @@ class Unit extends BattleMapElement {
             case Support.HarshCommand:
                 return this.__canExecuteHarshCommand(targetUnit);
             default:
-                if ((getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff) >= buffAmountThreshold) { return true; }
-                if ((getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff) >= buffAmountThreshold) { return true; }
-                if ((getDefBuffAmount(assistUnit.support) - targetUnit.defBuff) >= buffAmountThreshold) { return true; }
-                if ((getResBuffAmount(assistUnit.support) - targetUnit.resBuff) >= buffAmountThreshold) { return true; }
+                if ((getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff) >= buffAmountThreshold) {
+                    return true;
+                }
+                if ((getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff) >= buffAmountThreshold) {
+                    return true;
+                }
+                if ((getDefBuffAmount(assistUnit.support) - targetUnit.defBuff) >= buffAmountThreshold) {
+                    return true;
+                }
+                // noinspection RedundantIfStatementJS
+                if ((getResBuffAmount(assistUnit.support) - targetUnit.resBuff) >= buffAmountThreshold) {
+                    return true;
+                }
                 return false;
         }
     }
 
     /// 実際に補助可能なユニットとタイルを列挙します。
-    *enumerateActuallyAssistableUnitAndTiles() {
+    * enumerateActuallyAssistableUnitAndTiles() {
         for (let unit of this.enumerateAssistableUnits()) {
             for (let tile of this.enumerateMovableTiles(false)) {
                 let dist = tile.calculateDistanceToUnit(unit);
-                if (dist == this.assistRange) {
+                if (dist === this.assistRange) {
                     yield [unit, tile];
                 }
             }
@@ -5801,11 +5352,11 @@ class Unit extends BattleMapElement {
     }
 
     /// 実際に破壊可能な配置物とタイルを列挙します。
-    *enumerateActuallyBreakableStructureAndTiles() {
+    * enumerateActuallyBreakableStructureAndTiles() {
         for (let structure of this.enumerateBreakableStructures()) {
             for (let tile of this.enumerateMovableTiles(false)) {
                 let dist = tile.calculateDistance(structure.placedTile);
-                if (dist == this.attackRange) {
+                if (dist === this.attackRange) {
                     yield [structure, tile];
                 }
             }
@@ -5813,11 +5364,11 @@ class Unit extends BattleMapElement {
     }
 
     /// 実際に攻撃可能なユニットとタイルを列挙します。
-    *enumerateActuallyAttackableUnitAndTiles() {
+    * enumerateActuallyAttackableUnitAndTiles() {
         for (let unit of this.enumerateAttackableUnits()) {
             for (let tile of this.enumerateMovableTiles(false)) {
                 let dist = tile.calculateDistanceToUnit(unit);
-                if (dist == this.attackRange) {
+                if (dist === this.attackRange) {
                     yield [unit, tile];
                 }
             }
@@ -5825,11 +5376,11 @@ class Unit extends BattleMapElement {
     }
 
     /// 補助可能なユニットを列挙します。
-    *enumerateAssistableUnits() {
+    * enumerateAssistableUnits() {
         for (let tile of this.assistableTiles) {
             let unit = tile.placedUnit;
             if (unit === this) continue;
-            if (unit != null && unit.groupId == this.groupId) {
+            if (unit != null && unit.groupId === this.groupId) {
                 if (unit.hasStatusEffect(StatusEffectType.Isolation)) {
                     continue;
                 }
@@ -5840,7 +5391,7 @@ class Unit extends BattleMapElement {
     }
 
     /// 攻撃可能な壊せる壁や施設を列挙します。
-    *enumerateBreakableStructures() {
+    * enumerateBreakableStructures() {
         for (let tile of this.attackableTiles) {
             if (tile.obj != null && this.canBreak(tile.obj)) {
                 yield tile.obj;
@@ -5849,9 +5400,9 @@ class Unit extends BattleMapElement {
     }
 
     /// 移動可能なマスを列挙します。
-    *enumerateMovableTiles(ignoresTileUnitPlaced = true) {
+    * enumerateMovableTiles(ignoresTileUnitPlaced = true) {
         for (let tile of this.movableTiles) {
-            if (ignoresTileUnitPlaced || (tile.placedUnit == null || tile.placedUnit == this)) {
+            if (ignoresTileUnitPlaced || (tile.placedUnit == null || tile.placedUnit === this)) {
                 yield tile;
             }
         }
@@ -5862,8 +5413,8 @@ class Unit extends BattleMapElement {
         return structure instanceof BreakableWall
             || (structure.isBreakable
                 && (
-                    (this.groupId == UnitGroupType.Ally && structure instanceof DefenceStructureBase)
-                    || (this.groupId == UnitGroupType.Enemy && structure instanceof OffenceStructureBase)
+                    (this.groupId === UnitGroupType.Ally && structure instanceof DefenceStructureBase)
+                    || (this.groupId === UnitGroupType.Enemy && structure instanceof OffenceStructureBase)
                 ));
     }
 
@@ -5874,7 +5425,7 @@ class Unit extends BattleMapElement {
 
     /// 補助スキルを所持していればtrue、そうでなければfalseを返します。
     get hasSupport() {
-        return this.support != Support.None;
+        return this.support !== Support.None;
     }
 
     /// 天駆の道の効果を持つか
@@ -5897,8 +5448,10 @@ class Unit extends BattleMapElement {
 
     getEnemyGroupId() {
         switch (this.groupId) {
-            case UnitGroupType.Ally: return UnitGroupType.Enemy;
-            case UnitGroupType.Enemy: return UnitGroupType.Ally;
+            case UnitGroupType.Ally:
+                return UnitGroupType.Enemy;
+            case UnitGroupType.Enemy:
+                return UnitGroupType.Ally;
             default:
                 throw new Error("Invalid groupId");
         }
@@ -5928,14 +5481,12 @@ class Unit extends BattleMapElement {
             if (this.hasStatusEffect(StatusEffectType.ShieldFlying)) {
                 return true;
             }
-        }
-        else if (effective == EffectiveType.Armor
+        } else if (effective === EffectiveType.Armor
         ) {
             if (this.hasStatusEffect(StatusEffectType.ShieldArmor)) {
                 return true;
             }
-        }
-        else if (effective == EffectiveType.Dragon
+        } else if (effective === EffectiveType.Dragon
         ) {
             if (this.hasStatusEffect(StatusEffectType.ShieldDragon)) {
                 return true;
@@ -5950,7 +5501,7 @@ class Unit extends BattleMapElement {
 
         switch (this.weapon) {
             case Weapon.Marute:
-                if (this.isWeaponRefined && effective == EffectiveType.Armor) {
+                if (this.isWeaponRefined && effective === EffectiveType.Armor) {
                     return true;
                 }
                 break;
@@ -5981,13 +5532,9 @@ class Unit extends BattleMapElement {
         let passiveBInfo = atkUnit.passiveBInfo;
 
         // 神罰の杖
-        if ((atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
+        return (atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
             || (passiveBInfo != null && passiveBInfo.wrathfulStaff)
-            || (atkUnit.weaponRefinement == WeaponRefinementType.WrathfulStaff)
-        ) {
-            return true;
-        }
-        return false;
+            || (atkUnit.weaponRefinement === WeaponRefinementType.WrathfulStaff);
     }
 
 
@@ -6047,7 +5594,7 @@ class Unit extends BattleMapElement {
                 case Weapon.CaltropDaggerPlus:
                     return true;
                 case PassiveS.HardyBearing1:
-                    if (restHpPercentage == 100) {
+                    if (restHpPercentage === 100) {
                         return true;
                     }
                     break;
@@ -6232,18 +5779,8 @@ class Unit extends BattleMapElement {
 
     __hasSaveSkills() {
         for (let skillId of this.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveC.WoefulUpheaval:
-                case PassiveC.WithEveryone2:
-                case PassiveC.AsFarSave3:
-                case PassiveC.AdFarSave3:
-                case PassiveC.ArFarSave3:
-                case PassiveC.DrFarSave3:
-                case PassiveC.AsNearSave3:
-                case PassiveC.ArNearSave3:
-                case PassiveC.AdNearSave3:
-                case PassiveC.DrNearSave3:
-                    return true;
+            if (SaveSkills.has(skillId)) {
+                return true;
             }
         }
         return false;
@@ -6255,8 +5792,7 @@ class Unit extends BattleMapElement {
         if (unit.fromPosX === -1 || unit.fromPosY === -1) {
             return 0;
         }
-        let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
-        return dist;
+        return Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
     }
 
     // 移動した距離を返す(移動前と移動後のマスの距離)
@@ -6264,8 +5800,7 @@ class Unit extends BattleMapElement {
         if (unit.fromPosX === -1 || unit.fromPosY === -1) {
             return 0;
         }
-        let dist = Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
-        return dist;
+        return Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
     }
 }
 
@@ -6273,35 +5808,40 @@ class Unit extends BattleMapElement {
 function calcBuffAmount(assistUnit, targetUnit) {
     let totalBuffAmount = 0;
     switch (assistUnit.support) {
-        case Support.HarshCommand:
-            {
-                if (!targetUnit.isPanicEnabled) {
-                    totalBuffAmount += targetUnit.atkDebuff;
-                    totalBuffAmount += targetUnit.spdDebuff;
-                    totalBuffAmount += targetUnit.defDebuff;
-                    totalBuffAmount += targetUnit.resDebuff;
-                }
-            }
-            break;
-        case Support.HarshCommandPlus:
-            {
+        case Support.HarshCommand: {
+            if (!targetUnit.isPanicEnabled) {
                 totalBuffAmount += targetUnit.atkDebuff;
                 totalBuffAmount += targetUnit.spdDebuff;
                 totalBuffAmount += targetUnit.defDebuff;
                 totalBuffAmount += targetUnit.resDebuff;
             }
+        }
             break;
-        default:
-            {
-                let buffAmount = getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff;
-                if (buffAmount > 0) { totalBuffAmount += buffAmount; }
-                buffAmount = getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff;
-                if (buffAmount > 0) { totalBuffAmount += buffAmount; }
-                buffAmount = getDefBuffAmount(assistUnit.support) - targetUnit.defBuff;
-                if (buffAmount > 0) { totalBuffAmount += buffAmount; }
-                buffAmount = getResBuffAmount(assistUnit.support) - targetUnit.resBuff;
-                if (buffAmount > 0) { totalBuffAmount += buffAmount; }
+        case Support.HarshCommandPlus: {
+            totalBuffAmount += targetUnit.atkDebuff;
+            totalBuffAmount += targetUnit.spdDebuff;
+            totalBuffAmount += targetUnit.defDebuff;
+            totalBuffAmount += targetUnit.resDebuff;
+        }
+            break;
+        default: {
+            let buffAmount = getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff;
+            if (buffAmount > 0) {
+                totalBuffAmount += buffAmount;
             }
+            buffAmount = getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff;
+            if (buffAmount > 0) {
+                totalBuffAmount += buffAmount;
+            }
+            buffAmount = getDefBuffAmount(assistUnit.support) - targetUnit.defBuff;
+            if (buffAmount > 0) {
+                totalBuffAmount += buffAmount;
+            }
+            buffAmount = getResBuffAmount(assistUnit.support) - targetUnit.resBuff;
+            if (buffAmount > 0) {
+                totalBuffAmount += buffAmount;
+            }
+        }
             break;
     }
     return totalBuffAmount;
@@ -6333,28 +5873,30 @@ function calcHealAmount(assistUnit, targetUnit) {
             break;
         case Support.MartyrPlus:
             healAmount = assistUnit.currentDamage + Math.floor(assistUnit.getAtkInPrecombat() * 0.5);
-            if (healAmount < 7) { healAmount += 7; }
-            break;
-        case Support.Rehabilitate:
-            {
-                let halfHp = Math.floor(targetUnit.maxHpWithSkills * 0.5);
-                if (targetUnit.hp <= halfHp) {
-                    healAmount += (halfHp - targetUnit.hp) * 2;
-                }
+            if (healAmount < 7) {
                 healAmount += 7;
             }
             break;
-        case Support.RehabilitatePlus:
-            {
-                healAmount += Math.floor(assistUnit.getAtkInPrecombat() * 0.5) - 10;
-                if (healAmount < 7) { healAmount = 7; }
+        case Support.Rehabilitate: {
+            let halfHp = Math.floor(targetUnit.maxHpWithSkills * 0.5);
+            if (targetUnit.hp <= halfHp) {
+                healAmount += (halfHp - targetUnit.hp) * 2;
+            }
+            healAmount += 7;
+        }
+            break;
+        case Support.RehabilitatePlus: {
+            healAmount += Math.floor(assistUnit.getAtkInPrecombat() * 0.5) - 10;
+            if (healAmount < 7) {
+                healAmount = 7;
+            }
 
-                let halfHp = Math.floor(targetUnit.maxHpWithSkills * 0.5);
-                if (targetUnit.hp <= halfHp) {
-                    healAmount += (halfHp - targetUnit.hp) * 2;
-                }
-                healAmount += 7;
+            let halfHp = Math.floor(targetUnit.maxHpWithSkills * 0.5);
+            if (targetUnit.hp <= halfHp) {
+                healAmount += (halfHp - targetUnit.hp) * 2;
             }
+            healAmount += 7;
+        }
             break;
         case Support.PhysicPlus:
         case Support.RestorePlus:
@@ -6362,7 +5904,9 @@ function calcHealAmount(assistUnit, targetUnit) {
         case Support.ReturnPlus:
         case Support.NudgePlus:
             healAmount = Math.floor(assistUnit.getAtkInPrecombat() * 0.5);
-            if (healAmount < 8) { healAmount = 8; }
+            if (healAmount < 8) {
+                healAmount = 8;
+            }
             break;
         case Support.Restore:
         case Support.Rescue:
@@ -6372,7 +5916,9 @@ function calcHealAmount(assistUnit, targetUnit) {
             break;
         case Support.RecoverPlus:
             healAmount = Math.floor(assistUnit.getAtkInPrecombat() * 0.5) + 10;
-            if (healAmount < 15) { healAmount = 15; }
+            if (healAmount < 15) {
+                healAmount = 15;
+            }
             break;
         default:
             return 0;
@@ -6385,7 +5931,7 @@ function calcHealAmount(assistUnit, targetUnit) {
 
 /// Tier 1 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier1(attackUnit, targetUnit) {
-    return attackUnit.weapon == Weapon.Hlidskjalf;
+    return attackUnit.weapon === Weapon.Hlidskjalf;
 }
 
 /// Tier 2 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
@@ -6394,13 +5940,13 @@ function isDebufferTier2(attackUnit, targetUnit) {
         switch (skillId) {
             case Weapon.RogueDagger:
             case Weapon.RogueDaggerPlus:
-                if (attackUnit.weaponRefinement == WeaponRefinementType.None) {
+                if (attackUnit.weaponRefinement === WeaponRefinementType.None) {
                     return true;
                 }
                 break;
             case Weapon.PoisonDagger:
             case Weapon.PoisonDaggerPlus:
-                if (targetUnit.moveType == MoveType.Infantry) {
+                if (targetUnit.moveType === MoveType.Infantry) {
                     return true;
                 }
                 break;
@@ -6426,6 +5972,7 @@ function isDebufferTier2(attackUnit, targetUnit) {
  * ユニットがアフリクターであるかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartH
  * @param  {Unit} attackUnit
  * @param  {boolean} lossesInCombat
+ * @param result
  * @return {boolean}
  */
 function isAfflictor(attackUnit, lossesInCombat, result) {
@@ -6463,7 +6010,6 @@ function isAfflictor(attackUnit, lossesInCombat, result) {
             case Weapon.Candlelight:
             case Weapon.CandlelightPlus:
             case Weapon.DotingStaff:
-            case Weapon.Merankory:
             case Weapon.MerankoryPlus:
             case Weapon.CandyStaff:
             case Weapon.CandyStaffPlus:
@@ -6494,6 +6040,6 @@ function isAfflictor(attackUnit, lossesInCombat, result) {
     return false;
 }
 
-function canRefereshTo(targetUnit) {
+function canRefreshTo(targetUnit) {
     return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
 }

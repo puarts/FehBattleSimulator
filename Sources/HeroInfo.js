@@ -3,255 +3,30 @@
  * @brief HeroInfo クラスやそれに関連する関数や変数定義です。
  */
 
-const UnitRarity = {
-    Star1: 1,
-    Star2: 2,
-    Star3: 3,
-    Star4: 4,
-    Star5: 5,
-};
-
-const StatusType = {
-    None: -1,
-    Hp: 0,
-    Atk: 1,
-    Spd: 2,
-    Def: 3,
-    Res: 4,
-};
-
-const MoveType = {
-    Infantry: 0,
-    Flying: 1,
-    Cavalry: 2,
-    Armor: 3,
-};
-
-const SeasonType = {
-    None: -1,
-    Light: 0,
-    Dark: 1,
-    Astra: 2,
-    Anima: 3,
-    Fire: 4,
-    Water: 5,
-    Wind: 6,
-    Earth: 7,
-    Chaos: 8,
-};
-
-/**
- * @param  {SeasonType} seasonType
- */
-function getSeasonTypeName(seasonType) {
-    for (const [key, value] of Object.entries(SeasonType)) {
-        if (value == seasonType) {
-            return key;
-        }
-    }
-    throw new Error(`invalid seasonType ${seasonType}`);
-}
-
-/**
- * @param  {SeasonType} seasonType
- */
-function isLegendarySeason(seasonType) {
-    switch (seasonType) {
-        case SeasonType.Fire:
-        case SeasonType.Earth:
-        case SeasonType.Water:
-        case SeasonType.Wind:
-            return true;
-        default:
-            return false;
-    }
-}
-
-const IvType = {
-    None: 0,
-    Asset: 1, // 得意
-    Flaw: 2, // 不得意
-}
-
-const BookVersions = {};
-
-const BlessingType =
-{
-    None: -1,
-    Hp5_Atk3: 0,
-    Hp5_Spd4: 1,
-    Hp5_Def5: 2,
-    Hp5_Res5: 3,
-    Hp3_Atk2: 4,
-    Hp3_Spd3: 5,
-    Hp3_Def4: 6,
-    Hp3_Res4: 7,
-    Hp3: 8,
-};
-
-const BlessingTypeOptions = [
-    { id: BlessingType.None, text: "なし" },
-    { id: BlessingType.Hp5_Atk3, text: "HP+5 攻撃+3" },
-    { id: BlessingType.Hp5_Spd4, text: "HP+5 速さ+4" },
-    { id: BlessingType.Hp5_Def5, text: "HP+5 守備+5" },
-    { id: BlessingType.Hp5_Res5, text: "HP+5 魔防+5" },
-    { id: BlessingType.Hp3_Atk2, text: "HP+3 攻撃+2" },
-    { id: BlessingType.Hp3_Spd3, text: "HP+3 速さ+3" },
-    { id: BlessingType.Hp3_Def4, text: "HP+3 守備+4" },
-    { id: BlessingType.Hp3_Res4, text: "HP+3 魔防+4" },
-    { id: BlessingType.Hp3, text: "HP+3" },
-];
-
-const GrowthRateOfStar5 = {};
-GrowthRateOfStar5[8] = 0.2;
-GrowthRateOfStar5[10] = 0.25;
-GrowthRateOfStar5[13] = 0.30;
-GrowthRateOfStar5[15] = 0.35;
-GrowthRateOfStar5[17] = 0.40;
-GrowthRateOfStar5[19] = 0.45;
-GrowthRateOfStar5[22] = 0.50;
-GrowthRateOfStar5[24] = 0.55;
-GrowthRateOfStar5[26] = 0.60;
-GrowthRateOfStar5[28] = 0.65;
-GrowthRateOfStar5[30] = 0.70;
-GrowthRateOfStar5[33] = 0.75;
-GrowthRateOfStar5[35] = 0.80;
-GrowthRateOfStar5[37] = 0.85;
-GrowthRateOfStar5[39] = 0.90;
-
-/// ☆5の成長量から純粋成長率を計算します。
-function getGrowthRateOfStar5(growthAmount) {
-    let growthRate = GrowthRateOfStar5[growthAmount];
-    if (growthRate) {
-        return growthRate;
-    }
-
-    // throw new Error("Invalid growth amount " + growthAmount);
-    return 0;
-}
-
-function calcAppliedGrowthRate(growthRate, rarity) {
-    // let rate = growthRate * (0.79 + (0.07 * this.rarity));
-    let rate = Math.floor(100 * growthRate * (0.79 + (0.07 * rarity))) * 0.01;
-    return rate;
-}
-
-const AppliedGrowthRateCoef = {};
-AppliedGrowthRateCoef[5] = (0.79 + (0.07 * 5)) * 100;
-AppliedGrowthRateCoef[4] = (0.79 + (0.07 * 4)) * 100;
-AppliedGrowthRateCoef[3] = (0.79 + (0.07 * 3)) * 100;
-AppliedGrowthRateCoef[2] = (0.79 + (0.07 * 2)) * 100;
-AppliedGrowthRateCoef[1] = (0.79 + (0.07 * 1)) * 100;
-/**
- * @param  {Number} growthRate
- * @param  {Number} rarity
- */
-function calcAppliedGrowthRate_Optimized(growthRate, rarity) {
-    // let rate = growthRate * (0.79 + (0.07 * this.rarity));
-    let rate = Math.floor(growthRate * AppliedGrowthRateCoef[rarity]) * 0.01;
-    return rate;
-}
-/**
- * @param  {Number} growthRate
- * @param  {Number} rarity
- * @param  {Number} level
- */
-function calcGrowthValue(growthRate, rarity, level) {
-    let rate = calcAppliedGrowthRate_Optimized(growthRate, rarity);
-    return Math.floor((level - 1) * rate);
-}
-/**
- * @param  {Number} statusLv1
- * @param  {Number} growthRate
- * @param  {Number} rarity
- * @param  {Number} level
- */
-function calcStatusLvN(statusLv1, growthRate, rarity, level) {
-    return statusLv1 + calcGrowthValue(growthRate, rarity, level);
-}
-
-const StatusRankTable = [];
-StatusRankTable[StatusType.Hp] = 4;
-StatusRankTable[StatusType.Atk] = 3;
-StatusRankTable[StatusType.Spd] = 2;
-StatusRankTable[StatusType.Def] = 1;
-StatusRankTable[StatusType.Res] = 0;
-
-/// 値が同じ場合の優先度を取得します。
-function __getStatusRankValue(statusType) {
-    return StatusRankTable[statusType];
-}
-
-/// 純粋成長率(%)から★5成長値を取得します。
-function getGrowthAmountOfStar5FromPureGrowthRate(growthRateAsPercentage) {
-    switch (growthRateAsPercentage) {
-        case 20: return 8;
-        case 25: return 10;
-        case 30: return 13;
-        case 35: return 15;
-        case 40: return 17;
-        case 45: return 19;
-        case 50: return 22;
-        case 55: return 24;
-        case 60: return 26;
-        case 65: return 28;
-        case 70: return 30;
-        case 75: return 33;
-        case 80: return 35;
-        case 85: return 37;
-        case 90: return 39;
-        default: return -1;
-    }
-}
-
-// 成長値から苦手ステータスのLv40の変動値を取得します。
-function getFlowStatus(growthValue) {
-    switch (growthValue) {
-        case 1:
-        case 5:
-        case 10:
-            return -4;
-        default:
-            return -3;
-    }
-}
-
-/// 成長値から得意ステータスのLv40の変動値を取得します。
-function getAssetStatus(growthValue) {
-    switch (growthValue) {
-        case 2:
-        case 6:
-        case 11:
-            return 4;
-        default:
-            return 3;
-    }
-}
-
 /// 英雄情報です。ユニットの初期化に使用します。
 class HeroInfo {
     constructor(name, icon, moveType, weaponType, attackRange,
-        hp, atk, spd, def, res,
-        hpLv1, atkLv1, spdLv1, defLv1, resLv1,
-        hpVar, atkVar, spdVar, defVar, resVar,
-        weapon, support, special, passiveA, passiveB, passiveC, passiveX,
-        seasonType,
-        blessingType,
-        epithet,
-        pureNames,
-        duelScore,
-        weapons,
-        supports,
-        id,
-        resplendent,
-        origin,
-        howToGet,
-        releaseDate,
-        specials,
-        passiveAs,
-        passiveBs,
-        passiveCs,
-        passiveXs = [],
+                hp, atk, spd, def, res,
+                hpLv1, atkLv1, spdLv1, defLv1, resLv1,
+                hpVar, atkVar, spdVar, defVar, resVar,
+                weapon, support, special, passiveA, passiveB, passiveC, passiveX,
+                seasonType,
+                blessingType,
+                epithet,
+                pureNames,
+                duelScore,
+                weapons,
+                supports,
+                id,
+                resplendent,
+                origin,
+                howToGet,
+                releaseDate,
+                specials,
+                passiveAs,
+                passiveBs,
+                passiveCs,
+                passiveXs = [],
     ) {
         this.id = id;
         this.seasonType = seasonType;
@@ -332,19 +107,28 @@ class HeroInfo {
         this.passiveXs = passiveXs;
         this.isResplendent = resplendent;
         this.origin = origin;
-        this.origins = origin?.split("|").filter(x => x != '') ?? [];
+        this.origins = origin?.split("|").filter(x => x !== '') ?? [];
         this.howToGet = howToGet;
+        // noinspection JSUnusedGlobalSymbols
         this.releaseDate = releaseDate;
         this.releaseDateAsNumber = Number(releaseDate.replace(/-/g, ""));
 
         // 偶像スキルシミュレーター用
+        // noinspection JSUnusedGlobalSymbols
         this.weaponOptionsForHallOfForms = [];
+        // noinspection JSUnusedGlobalSymbols
         this.supportOptionsForHallOfForms = [];
+        // noinspection JSUnusedGlobalSymbols
         this.specialOptionsForHallOfForms = [];
+        // noinspection JSUnusedGlobalSymbols
         this.passiveAOptionsForHallOfForms = [];
+        // noinspection JSUnusedGlobalSymbols
         this.passiveBOptionsForHallOfForms = [];
+        // noinspection JSUnusedGlobalSymbols
         this.passiveCOptionsForHallOfForms = [];
+        // noinspection JSUnusedGlobalSymbols
         this.passiveSOptionsForHallOfForms = [];
+        // noinspection JSUnusedGlobalSymbols
         this.passiveXOptionsForHallOfForms = [];
 
         this.__updateLv1Statuses();
@@ -358,7 +142,7 @@ class HeroInfo {
         this.defGrowthValue = this.def - this.defLv1;
         this.resGrowthValue = this.res - this.resLv1;
 
-        if (this.atkGrowthValue == 0) {
+        if (this.atkGrowthValue === 0) {
             // ステータス未入力
             this.hpGrowthValue = 35;
             this.atkGrowthValue = 35;
@@ -387,6 +171,7 @@ class HeroInfo {
         return this.hp + this.atk + this.spd + this.def + this.res;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     get totalGrowthValue() {
         return this.hpGrowthValue + this.atkGrowthValue + this.spdGrowthValue + this.defGrowthValue +
             this.resGrowthValue;
@@ -399,6 +184,8 @@ class HeroInfo {
             Number(this.def) +
             Number(this.res);
     }
+
+    // noinspection JSUnusedGlobalSymbols
     getStatusTotalOfLv1() {
         return Number(this.hpLv1) +
             Number(this.atkLv1) +
@@ -416,22 +203,23 @@ class HeroInfo {
         return false;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     hasSkillInInitialSkill(skillId) {
         for (let id of this.weapons) {
-            if (id == skillId) {
+            if (String(id) === String(skillId)) {
                 return true;
             }
         }
         for (let id of this.supports) {
-            if (id == skillId) {
+            if (String(id) === String(skillId)) {
                 return true;
             }
         }
-        return this.special == skillId
-            || this.passiveA == skillId
-            || this.passiveB == skillId
-            || this.passiveC == skillId
-            || this.passiveX == skillId;
+        return this.special === skillId
+            || this.passiveA === skillId
+            || this.passiveB === skillId
+            || this.passiveC === skillId
+            || this.passiveX === skillId;
     }
 
     get detailPageUrl() {
@@ -442,24 +230,25 @@ class HeroInfo {
         return g_heroIconRootPath + this.icon;
     }
 
-    getIconImgTag(size) {
-        return `<img id='${this.id}' src='${this.iconUrl}' width='${size}px' />`;
-    }
     getIconImgTagWithAnchor(size) {
         return `<a href='${this.detailPageUrl}' title='${this.name}' target='_blank'><img id='${this.id}' src='${this.iconUrl}' width='${size}px' alt='${this.name} ' /></a>`;
     }
+
     /**
      * @returns {string}
      */
     get name() {
         return this._name;
     }
+
     get icon() {
         return this._icon;
     }
+
     get attackRange() {
         return this._attackRange;
     }
+
     get moveType() {
         return this._moveType;
     }
@@ -481,8 +270,7 @@ class HeroInfo {
                 if (releaseDate < 20190220) {
                     // 第2世代と第3世代が境界
                     return 5 * (i + 1);
-                }
-                else {
+                } else {
                     return 5 * i;
                 }
             case MoveType.Flying:
@@ -496,8 +284,7 @@ class HeroInfo {
     getPureGrowthRate(growthAmountOfStar5, statusName) {
         try {
             return getGrowthRateOfStar5(growthAmountOfStar5);
-        }
-        catch (e) {
+        } catch (e) {
             console.error(`${this.name} ${statusName}: ` + e.message, e.name);
 
             // ステータスが判明してないキャラの実装時にテストしやすいよう適当な値を返しておく
@@ -509,6 +296,7 @@ class HeroInfo {
         return getGrowthRateOfStar5(this.hpGrowthValue);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     calcHpOfSpecifiedLevel(level, rarity = 5, ivType = IvType.None) {
         let growthRate = this.getHpGrowthRate();
         switch (ivType) {
@@ -527,47 +315,76 @@ class HeroInfo {
 
     getHpLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.hpLv1;
-            case UnitRarity.Star4: return this.hpLv1ForStar4;
-            case UnitRarity.Star3: return this.hpLv1ForStar3;
-            case UnitRarity.Star2: return this.hpLv1ForStar2;
-            case UnitRarity.Star1: return this.hpLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.hpLv1;
+            case UnitRarity.Star4:
+                return this.hpLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.hpLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.hpLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.hpLv1ForStar1;
         }
     }
+
     getAtkLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.atkLv1;
-            case UnitRarity.Star4: return this.atkLv1ForStar4;
-            case UnitRarity.Star3: return this.atkLv1ForStar3;
-            case UnitRarity.Star2: return this.atkLv1ForStar2;
-            case UnitRarity.Star1: return this.atkLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.atkLv1;
+            case UnitRarity.Star4:
+                return this.atkLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.atkLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.atkLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.atkLv1ForStar1;
         }
     }
+
     getSpdLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.spdLv1;
-            case UnitRarity.Star4: return this.spdLv1ForStar4;
-            case UnitRarity.Star3: return this.spdLv1ForStar3;
-            case UnitRarity.Star2: return this.spdLv1ForStar2;
-            case UnitRarity.Star1: return this.spdLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.spdLv1;
+            case UnitRarity.Star4:
+                return this.spdLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.spdLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.spdLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.spdLv1ForStar1;
         }
     }
+
     getDefLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.defLv1;
-            case UnitRarity.Star4: return this.defLv1ForStar4;
-            case UnitRarity.Star3: return this.defLv1ForStar3;
-            case UnitRarity.Star2: return this.defLv1ForStar2;
-            case UnitRarity.Star1: return this.defLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.defLv1;
+            case UnitRarity.Star4:
+                return this.defLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.defLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.defLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.defLv1ForStar1;
         }
     }
+
     getResLv1(rarity) {
         switch (rarity) {
-            case UnitRarity.Star5: return this.resLv1;
-            case UnitRarity.Star4: return this.resLv1ForStar4;
-            case UnitRarity.Star3: return this.resLv1ForStar3;
-            case UnitRarity.Star2: return this.resLv1ForStar2;
-            case UnitRarity.Star1: return this.resLv1ForStar1;
+            case UnitRarity.Star5:
+                return this.resLv1;
+            case UnitRarity.Star4:
+                return this.resLv1ForStar4;
+            case UnitRarity.Star3:
+                return this.resLv1ForStar3;
+            case UnitRarity.Star2:
+                return this.resLv1ForStar2;
+            case UnitRarity.Star1:
+                return this.resLv1ForStar1;
         }
     }
 
@@ -595,7 +412,7 @@ class HeroInfo {
         }
 
         if (skillInfo.type === SkillType.Weapon) {
-            return this.weaponType == weaponTypeToString(skillInfo.weaponType)
+            return this.weaponType === weaponTypeToString(skillInfo.weaponType)
                 || (this.weaponType.includes("暗器") > 0 && isWeaponTypeDagger(skillInfo.weaponType))
                 || (this.weaponType.includes("弓") > 0 && isWeaponTypeBow(skillInfo.weaponType))
                 || (this.weaponType.includes("竜") > 0 && isWeaponTypeBreath(skillInfo.weaponType))
@@ -631,24 +448,28 @@ class HeroInfo {
     registerSupportOptions(infos) {
         this.__registerInheritableSkills(this.supportOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
     registerSpecialOptions(infos) {
         this.__registerInheritableSkills(this.specialOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
     registerPassiveAOptions(infos) {
         this.__registerInheritableSkills(this.passiveAOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
     registerPassiveBOptions(infos) {
         this.__registerInheritableSkills(this.passiveBOptions, [infos], x => this.canEquipSkill(x));
     }
+
     /**
      * @param  {SkillInfo[]} infos
      */
@@ -657,12 +478,15 @@ class HeroInfo {
     }
 
     /**
-     * @param  {SkillInfo[]} infos
+     * @param passiveAInfos
+     * @param passiveBInfos
+     * @param passiveCInfos
+     * @param passiveSInfos
      */
     registerPassiveSOptions(passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos) {
         this.__registerInheritableSkills(this.passiveSOptions,
             [passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos],
-            x => (x.isSacredSealAvailable || x.type == SkillType.PassiveS) && this.canEquipSkill(x));
+            x => (x.isSacredSealAvailable || x.type === SkillType.PassiveS) && this.canEquipSkill(x));
     }
 
     registerPassiveXOptions(infos) {
@@ -672,20 +496,21 @@ class HeroInfo {
     /**
      * @param  {Object[]} options
      * @param  {SkillInfo[][]} allInfos
+     * @param canInheritFunc
      */
     __registerInheritableSkills(options, allInfos, canInheritFunc) {
         options.push(NoneOption);
         for (let infos of allInfos) {
             for (let info of infos) {
                 if (canInheritFunc(info)) {
-                    options.push({ id: info.id, text: info.getDisplayName() });
+                    options.push({id: info.id, text: info.getDisplayName()});
                 }
             }
         }
     }
 
     __getBookVersion() {
-        if (this.epithet == "" || this.name.includes('敵')) {
+        if (this.epithet === "" || this.name.includes('敵')) {
             return -1;
         }
 
@@ -715,10 +540,10 @@ class HeroInfo {
         this.hpLv1ForStar1 = this.hpLv1ForStar2;
 
         let statusList = [
-            { type: StatusType.Atk, value: this.atkLv1 },
-            { type: StatusType.Spd, value: this.spdLv1 },
-            { type: StatusType.Def, value: this.defLv1 },
-            { type: StatusType.Res, value: this.resLv1 },
+            {type: StatusType.Atk, value: this.atkLv1},
+            {type: StatusType.Spd, value: this.spdLv1},
+            {type: StatusType.Def, value: this.defLv1},
+            {type: StatusType.Res, value: this.resLv1},
         ];
 
         statusList.sort((a, b) => {
@@ -728,7 +553,7 @@ class HeroInfo {
         });
 
         let lowerStatuses = [statusList[2], statusList[3]];
-        let heigherStatuses = [statusList[0], statusList[1]];
+        let higherStatuses = [statusList[0], statusList[1]];
 
         for (let status of lowerStatuses) {
             switch (status.type) {
@@ -758,7 +583,7 @@ class HeroInfo {
                     break;
             }
         }
-        for (let status of heigherStatuses) {
+        for (let status of higherStatuses) {
             switch (status.type) {
                 case StatusType.Atk:
                     this.atkLv1ForStar4 = this.atkLv1;
