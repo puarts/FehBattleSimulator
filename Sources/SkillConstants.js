@@ -1798,7 +1798,7 @@ const Weapon = {
     // 紋章士英雄「蒼炎の紋章士 アイク」
     // https://www.youtube.com/watch?v=87T3lhxU78I&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=YNOIY95CX_Q&ab_channel=NintendoMobile
-    EmblemRagnell: 100100, // 蒼炎の勇者の剣
+    EmblemRagnell: 2834, // 蒼炎の勇者の剣
 };
 
 const Support = {
@@ -2018,7 +2018,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
-    GreatAether: 120001, // 覇克・天空
+    GreatAether: 2835, // 覇克・天空
     SacredWind: 2828, // 神聖風
     LodestarRush: 2758, // スターラッシュ
     ArmsOfTheThree: 2749, // 三雄の双刃
@@ -2817,7 +2817,7 @@ const PassiveB = {
     Potent4: 2759, // 神速4
 
     // 不動4
-    LaguzFriend: 140001, // 不動4
+    LaguzFriend: 2836, // 不動4
 };
 
 const PassiveC = {
