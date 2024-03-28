@@ -1793,6 +1793,12 @@ const Weapon = {
 
     // ニーズヘッグ(敵)
     DosingFang: 2833, // 毒の葬り手の牙
+
+    // 2024年3月 紋章士
+    // 紋章士英雄「蒼炎の紋章士 アイク」
+    // https://www.youtube.com/watch?v=87T3lhxU78I&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=YNOIY95CX_Q&ab_channel=NintendoMobile
+    EmblemRagnell: 100100, // 蒼炎の勇者の剣
 };
 
 const Support = {

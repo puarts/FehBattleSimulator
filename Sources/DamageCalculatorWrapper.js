@@ -14942,6 +14942,11 @@ class DamageCalculatorWrapper {
         }
     }
 
+    /**
+     * 神速追撃を行うスキル
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     */
     __applyPotentSkillEffect(targetUnit, enemyUnit) {
         for (let skillId of targetUnit.enumerateSkills()) {
             let funcMap = applyPotentSkillEffectFuncMap;

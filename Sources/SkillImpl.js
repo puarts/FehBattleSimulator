@@ -1,5 +1,33 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 蒼炎の勇者の剣
+{
+    let skillId = Weapon.EmblemRagnell;
+    // 奥義が発動しやすい（発動カウントー1）
+    // 敵から攻撃された時、距離に関係なく反撃する
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、自身の攻撃＋●、敵の攻撃一〇、
+                // ●は、戦闘開始時の敵の攻撃の25%-2（最大16、最低6）、
+                let atk = enemyUnit.getAtkInPrecombat();
+                let amount = MathUtil.ensureMinMax(Math.trunc(atk * 0.25) - 2, 6, 16);
+                targetUnit.atkSpur += amount;
+                enemyUnit.atkSpur -= amount;
+                // 自身の弱化を無効、自身の反撃不可を無効、自身の奥義発動カウント変動量ーを無効
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                targetUnit.battleContext.nullCounterDisrupt = true;
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 毒の葬り手の牙
 {
     let skillId = Weapon.DosingFang;
