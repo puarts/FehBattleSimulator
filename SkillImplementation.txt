@@ -1523,6 +1523,14 @@ Main.js
 再使用
 __initializeUnitsPerTurn(targetUnits) {}
 
+紋章士
+EmblemHeroに登録(idではなくindexで登録)
+通常スキルと同様に実装
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Marth);
+    ...
+}
+
 ターン毎のインポート、エクスポート設定
 fromPerTurnStatusString(value) {}
 perTurnStatusToString() {}

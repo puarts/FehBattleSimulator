@@ -1,5 +1,26 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 紋章士アイク
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Ike);
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 「自分または敵が奥義発動可能状態の時」、「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
+            // 2条件のいずれかを満たした時、
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                // かつ、敵が射程2の時、
+                if (isRangedWeaponType(atkUnit.weaponType)) {
+                    // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
 // 不動4
 {
     let skillId = PassiveB.LaguzFriend;
@@ -2724,7 +2745,6 @@
 // 紋章士マルス
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Marth);
-    console.log(`skillId: ${skillId}`);
     resetMaxSpecialCountFuncMap.set(skillId,
         function () {
             return -1;

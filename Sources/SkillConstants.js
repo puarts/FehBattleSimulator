@@ -3257,6 +3257,7 @@ const AssistType = {
 // 紋章士
 const EmblemHero = {
     Marth: 1082,
+    Ike: 1105,
 };
 
 const EffectiveType = {
