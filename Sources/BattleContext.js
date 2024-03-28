@@ -168,6 +168,9 @@ class BattleContext {
         // 最初の攻撃前の奥義発動カウント増加値
         this.specialCountIncreaseBeforeFirstAttack = 0;
 
+        // 敵の最初の攻撃前の奥義発動カウント減少値
+        this.specialCountReductionBeforeFirstAttackByEnemy = 0;
+
         // 攻撃時の追加ダメージ
         this.additionalDamage = 0;
 

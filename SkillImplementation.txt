@@ -840,6 +840,9 @@ targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += N;
 敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)[竜眼]
 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 
+敵の最初の攻撃前に自分の奥義発動カウント-N(Nは自然数)
+targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
+
 奥義ダメージ+N
 __init__applySpecialSkillEffect() {
     targetUnit.battleContext.specialAddDamage = N;
@@ -1070,10 +1073,17 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     fixedAddDamage += N;
 }
 
-マリア算など
+マリア算など[ステータス参照の固定ダメージ軽減、固定ダメージ]
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
+    }
+);
+
+自分が受けるダメージー守備か魔防の高い方の20％（範囲奥義を除く）
+targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this.applyDamageReductionByOwnStatus(targetUnit, enemyUnit, [false, false, true, true]);
     }
 );
 

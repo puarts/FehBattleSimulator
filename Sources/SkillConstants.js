@@ -2815,6 +2815,9 @@ const PassiveB = {
 
     // 神速
     Potent4: 2759, // 神速4
+
+    // 不動4
+    LaguzFriend: 140001, // 不動4
 };
 
 const PassiveC = {

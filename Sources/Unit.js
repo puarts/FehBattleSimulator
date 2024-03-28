@@ -3838,6 +3838,10 @@ class Unit extends BattleMapElement {
         return statusWithoutBuff + buff;
     }
 
+    /**
+     * @param {Unit} enemyUnit
+     * @returns {number[]}
+     */
     getStatusesInCombat(enemyUnit = null) {
         return [
             this.getAtkInCombat(enemyUnit),

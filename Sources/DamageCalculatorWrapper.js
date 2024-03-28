@@ -13036,6 +13036,29 @@ class DamageCalculatorWrapper {
         targetUnit.battleContext.damageReductionValue += Math.trunc(statuses[statusIndex] * ratio);
     }
 
+    /**
+     * ステータス参照による固定ダメージ軽減
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean[]} statusFlags (ex) 守備: [false, false, true, false], 守備と魔防の高い方: [false, false, true, true]
+     * @param {number} ratio=0.2
+     */
+    applyDamageReductionByOwnStatus(targetUnit, enemyUnit, statusFlags, ratio = 0.20) {
+        let status = this.getHigherStatus(targetUnit, enemyUnit, statusFlags);
+        targetUnit.battleContext.damageReductionValue += Math.trunc(status * ratio);
+    }
+
+    /**
+     * 最も高いステータスを取得
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean[]} statusFlags (ex) 最も高いステータス: [true, true, true, true], 守備と魔防の高い方: [false, false, true, true]
+     */
+    getHigherStatus(targetUnit, enemyUnit, statusFlags) {
+        let statuses = targetUnit.getStatusesInCombat(enemyUnit);
+        return Math.max(...statuses.map((s, i) => statusFlags[i] ? s : 0));
+    }
+
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
             case Weapon.DreamHorn:

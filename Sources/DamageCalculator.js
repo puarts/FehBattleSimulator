@@ -629,16 +629,25 @@ class DamageCalculator {
         this.__applySkillEffectsPerCombat(defUnit, atkUnit, context);
         // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
         if (context.isFirstAttack(atkUnit)) {
-            let totalCount =
+            // atkUnitの奥義カウント変動
+            let atkCount =
                 atkUnit.tmpSpecialCount
                 - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
                 - atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack
                 + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
-            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
+            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
             ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
             ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
             ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
-            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
+            atkUnit.tmpSpecialCount = MathUtil.ensureMinMax(atkCount, 0, atkUnit.maxSpecialCount);
+
+            // defUnitの奥義カウント変動
+            let defCount =
+                defUnit.tmpSpecialCount
+                - defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy;
+            this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の攻撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
+            ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy}`);
+            defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
         }
         // 最初の追撃前の効果
         if (context.isFirstFollowupAttack()) {

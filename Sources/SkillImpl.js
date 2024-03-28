@@ -1,5 +1,63 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 不動4
+{
+    let skillId = PassiveB.LaguzFriend;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の攻撃－5
+            enemyUnit.atkSpur -= 5;
+            // 自身の奥義発動カウント最大値が3以上の攻撃時に発動する奥義装備時、
+            // または、敵から攻撃を受ける際に発動する奥義装備時、
+            let attackSpecialCond = isNormalAttackSpecial(targetUnit.special) && targetUnit.maxSpecialCount >= 3;
+            let defenseSpecialCond = isDefenseSpecial(targetUnit.special);
+            if (attackSpecialCond || defenseSpecialCond) {
+                // - 戦闘中、自分の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）（範囲奥義を除く）、
+                enemyUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // - 自分が受けるダメージー守備か魔防の高い方の20％（範囲奥義を除く）、
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        this.applyDamageReductionByOwnStatus(targetUnit, enemyUnit, [false, false, true, true]);
+                    }
+                );
+                // - 敵の最初の攻撃前に自分の奥義発動カウントー2
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += 2;
+            }
+            // 戦闘中、自身の奥義発動カウント最大値が3以上の攻撃時に発動する奥義発動時、
+            if (attackSpecialCond) {
+                // - ダメージ＋守備か魔防の高い方の20％（範囲奥義を除く）、
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let status = this.getHigherStatus(targetUnit, enemyUnit, [false, false, true, true]);
+                        targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.2);
+                    }
+                );
+                // - 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+            // 戦闘中、敵から攻撃を受ける際に発動する奥義発動時、
+            if (defenseSpecialCond) {
+                // - 自分の次の攻撃は、
+                //     - 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（その戦闘中のみ）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
+            }
+        }
+    );
+
+    addSpecialDamageAfterDefenderSpecialActivatedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // - 自分の次の攻撃は、
+            //     - ダメージ＋守備か魔防の高い方の20％、
+            if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
+                atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+                let status = this.getHigherStatus(atkUnit, defUnit, [false, false, true, true]);
+                return floorNumberWithFloatError(status * 0.2);
+            }
+            return 0;
+        }
+    );
+}
+
 // 覇克・天空
 {
     let skillId = Special.GreatAether;
