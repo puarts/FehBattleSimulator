@@ -1544,7 +1544,7 @@
         function (targetUnit, enemyUnit) {
             let positiveCount = targetUnit.getPositiveStatusEffects().length;
             if (positiveCount >= 3) {
-                let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
+                let ratio = enemyUnit.battleContext.canFollowupAttackIncludingPotent() ? 0.8 : 0.4;
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
             }
         }
@@ -1581,7 +1581,7 @@
             }
         }
     );
-    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+    applyPotentSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 this.__applyPotent(targetUnit, enemyUnit);
@@ -2648,7 +2648,7 @@
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
         }
     );
-    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+    applyPotentSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             this.__applyPotent(targetUnit, enemyUnit);
         }
@@ -4289,7 +4289,7 @@
         applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
             function (targetUnit, enemyUnit) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    let ratio = enemyUnit.battleContext.canFollowupAttack ? 0.8 : 0.4;
+                    let ratio = enemyUnit.battleContext.canFollowupAttackIncludingPotent() ? 0.8 : 0.4;
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, enemyUnit);
                 }
             }

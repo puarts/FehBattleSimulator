@@ -11,7 +11,7 @@ class BattleContext {
         this.hpBeforeCombat = 0;
         this.restHp = 0;
         this.specialCount = 0;
-        this.canFollowupAttack = false;
+        this.canFollowupAttackWithoutPotent = false;
         this.canCounterattack = false;
         this.isVantageActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
         this.isVantageActivated = false; // 待ち伏せが実際に発動するか(敵の戦闘順入替スキルを加味した有効無効)
@@ -551,5 +551,9 @@ class BattleContext {
 
     canPotentFollowupAttack() {
         return this.potentRatios.length > 0;
+    }
+
+    canFollowupAttackIncludingPotent() {
+        return this.canFollowupAttackWithoutPotent || this.canPotentFollowupAttack();
     }
 }

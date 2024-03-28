@@ -395,7 +395,7 @@ class DamageCalculator {
     }
 
     __followupAttack(atkUnit, defUnit, result, context) {
-        if (atkUnit.battleContext.canFollowupAttack) {
+        if (atkUnit.battleContext.canFollowupAttackWithoutPotent) {
             context.isCounterattack = false;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = false;
@@ -444,7 +444,8 @@ class DamageCalculator {
     }
 
     __followupCounterattack(atkUnit, defUnit, result, context) {
-        if (defUnit.battleContext.canCounterattack && defUnit.battleContext.canFollowupAttack) {
+        if (defUnit.battleContext.canCounterattack &&
+            defUnit.battleContext.canFollowupAttackWithoutPotent) {
             context.isCounterattack = true;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = false;

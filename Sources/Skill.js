@@ -1372,6 +1372,7 @@ const calcFixedAddDamageFuncMap = new Map();
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 const applyMovementSkillAfterCombatFuncMap = new Map();
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
+const applyPotentSkillEffectFuncMap = new Map();
 const applySkillEffectsPerAttackFuncMap = new Map();
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 const canActivateSaveSkillFuncMap = new Map();

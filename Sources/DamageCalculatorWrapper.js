@@ -521,44 +521,42 @@ class DamageCalculatorWrapper {
         // self.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
 
         // 追撃可能か判定
-        atkUnit.battleContext.canFollowupAttack = self.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
+        atkUnit.battleContext.canFollowupAttackWithoutPotent = self.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
         if (defUnit.battleContext.canCounterattack) {
-            defUnit.battleContext.canFollowupAttack = self.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
+            defUnit.battleContext.canFollowupAttackWithoutPotent = self.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
         }
 
         // 防御系奥義発動時のダメージ軽減率設定
         self.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
         self.__applyDamageReductionRatioBySpecial(defUnit, atkUnit);
 
+        // 神速
+        // 他の追撃可能かどうかを条件とするスキルは神速も追撃と見なすのでそれより前に神速判定をしなければならない
+        // 神速自体も追撃可能かどうかを条件とするので追撃判定の後に効果を適用しなければならない
+        self.__applyPotentSkillEffect(atkUnit, defUnit);
+        self.__applyPotentSkillEffect(defUnit, atkUnit);
+
         // 追撃可能かどうかが条件として必要なスキル効果の適用
-        {
-            self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
-            self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
-        }
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
 
         // 効果を無効化するスキル
-        {
-            self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
-            self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
-        }
+        self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
+        self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
 
         // 奥義
-        {
-            self.__applySpecialSkillEffect(atkUnit, defUnit);
-            self.__applySpecialSkillEffect(defUnit, atkUnit);
-        }
+        self.__applySpecialSkillEffect(atkUnit, defUnit);
+        self.__applySpecialSkillEffect(defUnit, atkUnit);
 
         // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
         self.__setSkillEffetToContext(atkUnit, defUnit);
         // });
 
-        {
-            // 守備、魔防のどちらを参照するか決定
-            atkUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
-            defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
-            self.__selectReferencingResOrDef(atkUnit, defUnit);
-            self.__selectReferencingResOrDef(defUnit, atkUnit);
-        }
+        // 守備、魔防のどちらを参照するか決定
+        atkUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
+        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
+        self.__selectReferencingResOrDef(atkUnit, defUnit);
+        self.__selectReferencingResOrDef(defUnit, atkUnit);
 
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
@@ -11911,7 +11909,7 @@ class DamageCalculatorWrapper {
         if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, evalSpd)) {
             let potentRatio = baseRatio;
             if (!targetUnit.battleContext.isTwiceAttackActivating() &&
-                !targetUnit.battleContext.canFollowupAttack) {
+                !targetUnit.battleContext.canFollowupAttackWithoutPotent) {
                 potentRatio = baseRatio * 2;
             }
             targetUnit.battleContext.potentRatios.push(potentRatio);
@@ -14118,8 +14116,7 @@ class DamageCalculatorWrapper {
         let result = DamageCalculationUtility.examinesCanFollowupAttack(atkUnit, defUnit);
         if (result) {
             if (this.isLogEnabled) this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");
-        }
-        else {
+        } else {
             if (this.isLogEnabled) this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
         }
         return result;
@@ -14201,15 +14198,9 @@ class DamageCalculatorWrapper {
             // 絶対追撃発動
             if (this.isLogEnabled) this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
             return true;
-        }
-        else {
+        } else {
             // 速さ勝負
-            if (this.__examinesCanFollowupAttack(atkUnit, defUnit)) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return this.__examinesCanFollowupAttack(atkUnit, defUnit);
         }
     }
 
@@ -14951,6 +14942,20 @@ class DamageCalculatorWrapper {
         }
     }
 
+    __applyPotentSkillEffect(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applyPotentSkillEffectFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
+    }
+
     /// 追撃可能かどうかが条件として必要なスキル効果の適用
     __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit) {
         for (let skillId of targetUnit.enumerateSkills()) {
@@ -14966,7 +14971,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case Weapon.VengefulLance:
                     if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1) &&
-                        !targetUnit.battleContext.canFollowupAttack) {
+                        !targetUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
                     }
                     break;
@@ -15602,7 +15607,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case Weapon.SparklingSun:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                        if (enemyUnit.battleContext.canFollowupAttack) {
+                        if (enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
                         }
                     }
@@ -15610,14 +15615,14 @@ class DamageCalculatorWrapper {
                 case Weapon.MagetsuNoSaiki:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.isOddTurn || enemyUnit.battleContext.restHpPercentage < 100) {
-                            let percentage = enemyUnit.battleContext.canFollowupAttack ? 60 : 30;
+                            let percentage = enemyUnit.battleContext.canFollowupAttackIncludingPotent() ? 60 : 30;
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
                         }
                     }
                     break;
                 case Weapon.StarlightStone:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                        if (enemyUnit.battleContext.canFollowupAttack) {
+                        if (enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
                         }
                     }
@@ -15625,7 +15630,7 @@ class DamageCalculatorWrapper {
                 case Weapon.MaryuNoBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                            if (enemyUnit.battleContext.canFollowupAttack) {
+                            if (enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.70, enemyUnit);
                             }
                         }
@@ -15634,7 +15639,7 @@ class DamageCalculatorWrapper {
                 case Weapon.SeaSearLance:
                 case Weapon.LoyalistAxe:
                     if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) &&
-                        enemyUnit.battleContext.canFollowupAttack) {
+                        enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
                     }
                     break;
@@ -15648,7 +15653,8 @@ class DamageCalculatorWrapper {
                 case Weapon.CourtlyMaskPlus:
                 case Weapon.CourtlyBowPlus:
                 case Weapon.CourtlyCandlePlus:
-                    if (targetUnit.battleContext.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
+                    if (targetUnit.battleContext.restHpPercentage >= 50 &&
+                        enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
                     }
                     break;
