@@ -150,6 +150,9 @@ class BattleContext {
         // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
         this.damageReductionRatiosWhenCondSatisfied = [];
 
+        // 戦闘中に変化する可能性のある奥義扱いのダメージ軽減
+        this.damageReductionRatiosBySpecialPerAttack = [];
+
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
 
@@ -245,6 +248,9 @@ class BattleContext {
 
         // 奥義発動時の「奥義ダメージに加算」の加算ダメージ
         this.specialAddDamage = 0;
+
+        // 攻撃のたびに変化する可能性のある奥義発動時の「奥義ダメージに加算」の加算ダメージ
+        this.specialAddDamagePerAttack = 0;
 
         // 奥義発動時の「与えたダメージの〇%自分を回復」のパーセンテージ(1.0が100%)
         this.specialDamageRatioToHeal = 0;
@@ -555,5 +561,9 @@ class BattleContext {
 
     canFollowupAttackIncludingPotent() {
         return this.canFollowupAttackWithoutPotent || this.canPotentFollowupAttack();
+    }
+
+    getTotalSpecialAddDamage() {
+        return this.specialAddDamage + this.specialAddDamagePerAttack;
     }
 }

@@ -257,6 +257,8 @@ __setAttackCount(targetUnit, enemyUnit) {
 追撃可能なら自分の攻撃の直後に追撃を行う(攻め立て)
 __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
     atkUnit.battleContext.isDesperationActivatable = true;
+    // 受け時の攻め立て
+    atkUnit.battleContext.isDefDesperationActivatable = true;
 }
 
 敵が追撃可能なら、最初に受けた攻撃のダメージをN%軽減

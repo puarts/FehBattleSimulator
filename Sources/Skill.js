@@ -73,19 +73,32 @@ function getWeaponTypeOrder(weaponType) {
 // noinspection JSUnusedGlobalSymbols
 function weaponRefinementTypeToString(type) {
     switch (type) {
-        case WeaponRefinementType.None: return "-";
-        case WeaponRefinementType.Hp5_Atk2: return "HP+5 攻撃+2";
-        case WeaponRefinementType.Hp5_Spd3: return "HP+5 速さ+3";
-        case WeaponRefinementType.Hp5_Def4: return "HP+5 守備+4";
-        case WeaponRefinementType.Hp5_Res4: return "HP+5 魔防+4";
-        case WeaponRefinementType.Hp2_Atk1: return "HP+2 攻撃+1";
-        case WeaponRefinementType.Hp2_Spd2: return "HP+2 速さ+2";
-        case WeaponRefinementType.Hp2_Def3: return "HP+2 守備+3";
-        case WeaponRefinementType.Hp2_Res3: return "HP+2 魔防+3";
-        case WeaponRefinementType.Special_Hp3: return "HP+3 特殊";
-        case WeaponRefinementType.Special: return "特殊";
-        case WeaponRefinementType.WrathfulStaff: return "神罰の杖";
-        case WeaponRefinementType.DazzlingStaff: return "幻惑の杖";
+        case WeaponRefinementType.None:
+            return "-";
+        case WeaponRefinementType.Hp5_Atk2:
+            return "HP+5 攻撃+2";
+        case WeaponRefinementType.Hp5_Spd3:
+            return "HP+5 速さ+3";
+        case WeaponRefinementType.Hp5_Def4:
+            return "HP+5 守備+4";
+        case WeaponRefinementType.Hp5_Res4:
+            return "HP+5 魔防+4";
+        case WeaponRefinementType.Hp2_Atk1:
+            return "HP+2 攻撃+1";
+        case WeaponRefinementType.Hp2_Spd2:
+            return "HP+2 速さ+2";
+        case WeaponRefinementType.Hp2_Def3:
+            return "HP+2 守備+3";
+        case WeaponRefinementType.Hp2_Res3:
+            return "HP+2 魔防+3";
+        case WeaponRefinementType.Special_Hp3:
+            return "HP+3 特殊";
+        case WeaponRefinementType.Special:
+            return "特殊";
+        case WeaponRefinementType.WrathfulStaff:
+            return "神罰の杖";
+        case WeaponRefinementType.DazzlingStaff:
+            return "幻惑の杖";
     }
 }
 
@@ -155,7 +168,8 @@ function getAssistRange(support) {
             return 2;
         case Support.FoulPlay:
             return 3;
-        default: return 1;
+        default:
+            return 1;
     }
 }
 
@@ -179,75 +193,107 @@ function isRallyUp(support) {
 /// 応援スキルの攻撃の強化量を取得します。
 function getAtkBuffAmount(support) {
     switch (support) {
-        case Support.RallyAttack: return 4;
-        case Support.RallyUpAtk: return 4;
-        case Support.RallyUpAtkPlus: return 6;
-        case Support.RallyAtkSpd: return 3;
-        case Support.RallyAtkDef: return 3;
-        case Support.RallyAtkRes: return 3;
+        case Support.RallyAttack:
+            return 4;
+        case Support.RallyUpAtk:
+            return 4;
+        case Support.RallyUpAtkPlus:
+            return 6;
+        case Support.RallyAtkSpd:
+            return 3;
+        case Support.RallyAtkDef:
+            return 3;
+        case Support.RallyAtkRes:
+            return 3;
         case Support.RallyAtkSpdPlus:
         case Support.RallyAtkDefPlus:
         case Support.RallyAtkResPlus:
             return 6;
         case Support.GoldSerpent:
             return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
-        default: return 0;
+        default:
+            return 0;
     }
 }
+
 /// 応援スキルの速さの強化量を取得します。
 function getSpdBuffAmount(support) {
     switch (support) {
-        case Support.RallySpeed: return 4;
-        case Support.RallyUpSpd: return 4;
-        case Support.RallyUpSpdPlus: return 6;
-        case Support.RallyAtkSpd: return 3;
-        case Support.RallySpdDef: return 3;
-        case Support.RallySpdRes: return 3;
+        case Support.RallySpeed:
+            return 4;
+        case Support.RallyUpSpd:
+            return 4;
+        case Support.RallyUpSpdPlus:
+            return 6;
+        case Support.RallyAtkSpd:
+            return 3;
+        case Support.RallySpdDef:
+            return 3;
+        case Support.RallySpdRes:
+            return 3;
         case Support.RallySpdResPlus:
         case Support.RallySpdDefPlus:
         case Support.RallyAtkSpdPlus:
             return 6;
         case Support.GoldSerpent:
             return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
-        default: return 0;
+        default:
+            return 0;
     }
 }
+
 /// 応援スキルの守備の強化量を取得します。
 function getDefBuffAmount(support) {
     switch (support) {
-        case Support.RallyUpDef: return 4;
-        case Support.RallyUpDefPlus: return 6;
-        case Support.RallyDefense: return 4;
-        case Support.RallySpdDef: return 3;
-        case Support.RallyAtkDef: return 3;
-        case Support.RallyDefRes: return 3;
+        case Support.RallyUpDef:
+            return 4;
+        case Support.RallyUpDefPlus:
+            return 6;
+        case Support.RallyDefense:
+            return 4;
+        case Support.RallySpdDef:
+            return 3;
+        case Support.RallyAtkDef:
+            return 3;
+        case Support.RallyDefRes:
+            return 3;
         case Support.RallyAtkDefPlus:
         case Support.RallySpdDefPlus:
         case Support.RallyDefResPlus:
             return 6;
         case Support.GoldSerpent:
             return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
-        default: return 0;
+        default:
+            return 0;
     }
 }
+
 /// 応援スキルの魔防の強化量を取得します。
 function getResBuffAmount(support) {
     switch (support) {
-        case Support.RallyUpRes: return 4;
-        case Support.RallyUpResPlus: return 6;
-        case Support.RallyResistance: return 4;
-        case Support.RallyDefRes: return 3;
-        case Support.RallySpdRes: return 3;
-        case Support.RallyAtkRes: return 3;
+        case Support.RallyUpRes:
+            return 4;
+        case Support.RallyUpResPlus:
+            return 6;
+        case Support.RallyResistance:
+            return 4;
+        case Support.RallyDefRes:
+            return 3;
+        case Support.RallySpdRes:
+            return 3;
+        case Support.RallyAtkRes:
+            return 3;
         case Support.RallySpdResPlus:
         case Support.RallyDefResPlus:
         case Support.RallyAtkResPlus:
             return 6;
         case Support.GoldSerpent:
             return Math.min(g_appData.globalBattleContext.currentTurn * 2, 8);
-        default: return 0;
+        default:
+            return 0;
     }
 }
+
 /// 回復系の補助スキルの戦闘前補助実行可能な回復量を取得します。
 /// https://vervefeh.github.io/FEH-AI/charts.html#chartF
 function getPrecombatHealThreshold(support) {
@@ -410,6 +456,7 @@ function isNormalAttackSpecial(special) {
 
 /// 再行動補助スキルかどうかを判定します。
 const refreshSupportSkillSet = new Set();
+
 function isRefreshSupportSkill(skillId) {
     if (refreshSupportSkillSet.has(skillId)) {
         return true;
@@ -594,36 +641,61 @@ WeaponTypeToColorType[WeaponType.ColorlessBreath] = ColorType.Colorless;
 WeaponTypeToColorType[WeaponType.ColorlessBeast] = ColorType.Colorless;
 WeaponTypeToColorType[WeaponType.ColorlessBow] = ColorType.Colorless;
 WeaponTypeToColorType[WeaponType.ColorlessDagger] = ColorType.Colorless;
+
 function getColorFromWeaponType(weaponType) {
     return WeaponTypeToColorType[weaponType];
 }
 
 function stringToWeaponType(input) {
     switch (input) {
-        case "剣": return WeaponType.Sword;
-        case "槍": return WeaponType.Lance;
-        case "斧": return WeaponType.Axe;
-        case "無魔": return WeaponType.ColorlessTome;
-        case "赤魔": return WeaponType.RedTome;
-        case "青魔": return WeaponType.BlueTome;
-        case "緑魔": return WeaponType.GreenTome;
-        case "赤竜": return WeaponType.RedBreath;
-        case "青竜": return WeaponType.BlueBreath;
-        case "緑竜": return WeaponType.GreenBreath;
-        case "無竜": return WeaponType.ColorlessBreath;
-        case "杖": return WeaponType.Staff;
-        case "暗器": return WeaponType.ColorlessDagger;
-        case "赤暗器": return WeaponType.RedDagger;
-        case "青暗器": return WeaponType.BlueDagger;
-        case "緑暗器": return WeaponType.GreenDagger;
-        case "弓": return WeaponType.ColorlessBow;
-        case "赤弓": return WeaponType.RedBow;
-        case "青弓": return WeaponType.BlueBow;
-        case "緑弓": return WeaponType.GreenBow;
-        case "赤獣": return WeaponType.RedBeast;
-        case "青獣": return WeaponType.BlueBeast;
-        case "緑獣": return WeaponType.GreenBeast;
-        case "獣": return WeaponType.ColorlessBeast;
+        case "剣":
+            return WeaponType.Sword;
+        case "槍":
+            return WeaponType.Lance;
+        case "斧":
+            return WeaponType.Axe;
+        case "無魔":
+            return WeaponType.ColorlessTome;
+        case "赤魔":
+            return WeaponType.RedTome;
+        case "青魔":
+            return WeaponType.BlueTome;
+        case "緑魔":
+            return WeaponType.GreenTome;
+        case "赤竜":
+            return WeaponType.RedBreath;
+        case "青竜":
+            return WeaponType.BlueBreath;
+        case "緑竜":
+            return WeaponType.GreenBreath;
+        case "無竜":
+            return WeaponType.ColorlessBreath;
+        case "杖":
+            return WeaponType.Staff;
+        case "暗器":
+            return WeaponType.ColorlessDagger;
+        case "赤暗器":
+            return WeaponType.RedDagger;
+        case "青暗器":
+            return WeaponType.BlueDagger;
+        case "緑暗器":
+            return WeaponType.GreenDagger;
+        case "弓":
+            return WeaponType.ColorlessBow;
+        case "赤弓":
+            return WeaponType.RedBow;
+        case "青弓":
+            return WeaponType.BlueBow;
+        case "緑弓":
+            return WeaponType.GreenBow;
+        case "赤獣":
+            return WeaponType.RedBeast;
+        case "青獣":
+            return WeaponType.BlueBeast;
+        case "緑獣":
+            return WeaponType.GreenBeast;
+        case "獣":
+            return WeaponType.ColorlessBeast;
         default:
             return WeaponType.None;
     }
@@ -631,32 +703,58 @@ function stringToWeaponType(input) {
 
 function weaponTypeToString(weaponType) {
     switch (weaponType) {
-        case WeaponType.Sword: return "剣";
-        case WeaponType.ColorlessTome: return "無魔";
-        case WeaponType.RedTome: return "赤魔";
-        case WeaponType.RedBreath: return "赤竜";
-        case WeaponType.RedBeast: return "赤獣";
-        case WeaponType.RedBow: return "赤弓";
-        case WeaponType.RedDagger: return "赤暗器";
-        case WeaponType.Lance: return "槍";
-        case WeaponType.BlueTome: return "青魔";
-        case WeaponType.BlueBreath: return "青竜";
-        case WeaponType.BlueBeast: return "青獣";
-        case WeaponType.BlueBow: return "青弓";
-        case WeaponType.BlueDagger: return "青暗器";
-        case WeaponType.Axe: return "斧";
-        case WeaponType.GreenTome: return "緑魔";
-        case WeaponType.GreenBreath: return "緑竜";
-        case WeaponType.GreenBeast: return "緑獣";
-        case WeaponType.GreenBow: return "緑弓";
-        case WeaponType.GreenDagger: return "緑暗器";
-        case WeaponType.Staff: return "杖";
-        case WeaponType.ColorlessBreath: return "竜";
-        case WeaponType.ColorlessBeast: return "獣";
-        case WeaponType.ColorlessBow: return "弓";
-        case WeaponType.ColorlessDagger: return "暗器";
-        case WeaponType.Breath: return "竜石";
-        case WeaponType.Beast: return "獣";
+        case WeaponType.Sword:
+            return "剣";
+        case WeaponType.ColorlessTome:
+            return "無魔";
+        case WeaponType.RedTome:
+            return "赤魔";
+        case WeaponType.RedBreath:
+            return "赤竜";
+        case WeaponType.RedBeast:
+            return "赤獣";
+        case WeaponType.RedBow:
+            return "赤弓";
+        case WeaponType.RedDagger:
+            return "赤暗器";
+        case WeaponType.Lance:
+            return "槍";
+        case WeaponType.BlueTome:
+            return "青魔";
+        case WeaponType.BlueBreath:
+            return "青竜";
+        case WeaponType.BlueBeast:
+            return "青獣";
+        case WeaponType.BlueBow:
+            return "青弓";
+        case WeaponType.BlueDagger:
+            return "青暗器";
+        case WeaponType.Axe:
+            return "斧";
+        case WeaponType.GreenTome:
+            return "緑魔";
+        case WeaponType.GreenBreath:
+            return "緑竜";
+        case WeaponType.GreenBeast:
+            return "緑獣";
+        case WeaponType.GreenBow:
+            return "緑弓";
+        case WeaponType.GreenDagger:
+            return "緑暗器";
+        case WeaponType.Staff:
+            return "杖";
+        case WeaponType.ColorlessBreath:
+            return "竜";
+        case WeaponType.ColorlessBeast:
+            return "獣";
+        case WeaponType.ColorlessBow:
+            return "弓";
+        case WeaponType.ColorlessDagger:
+            return "暗器";
+        case WeaponType.Breath:
+            return "竜石";
+        case WeaponType.Beast:
+            return "獣";
         default:
             return "不明";
     }
@@ -781,6 +879,7 @@ TeleportationSkillDict[PassiveC.SoaringGuidance] = 0;
 TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
 TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
 TeleportationSkillDict[Weapon.SilentPower] = 0;
+
 /// テレポート効果を持つスキルであるかどうかを判定します。
 function isTeleportationSkill(skillId) {
     return skillId in TeleportationSkillDict;
@@ -840,6 +939,7 @@ TriangleAdeptDict[Weapon.YoheidanNoSenfu] = 0;
 function isTriangleAdeptSkill(skillId) {
     return skillId in TriangleAdeptDict;
 }
+
 const EvalSpdAddDict = {};
 EvalSpdAddDict[PassiveB.BindingNecklacePlus] = 7;
 EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
@@ -1098,28 +1198,28 @@ class SkillInfo {
      * @param  {SkillType} skillType
      */
     constructor(id, name, might, specialCount, hp, atk, spd, def, res,
-        effectives,
-        invalidatedEffectives,
-        cooldownCount,
-        atkCount,
-        counteratkCount,
-        canCounterattackToAllDistance,
-        isSacredSealAvailable,
-        mightRefine,
-        disableCounterattack,
-        wrathfulStaff,
-        assistType,
-        isNoAdditionalImplRequired,
-        specialRefineHpAdd,
-        weaponType,
-        sp,
-        canInherit,
-        inheritableWeaponTypes,
-        inheritableMoveTypes,
-        hasSpecialWeaponRefinement,
-        hasStatusWeaponRefinement,
-        iconName,
-        skillType
+                effectives,
+                invalidatedEffectives,
+                cooldownCount,
+                atkCount,
+                counteratkCount,
+                canCounterattackToAllDistance,
+                isSacredSealAvailable,
+                mightRefine,
+                disableCounterattack,
+                wrathfulStaff,
+                assistType,
+                isNoAdditionalImplRequired,
+                specialRefineHpAdd,
+                weaponType,
+                sp,
+                canInherit,
+                inheritableWeaponTypes,
+                inheritableMoveTypes,
+                hasSpecialWeaponRefinement,
+                hasStatusWeaponRefinement,
+                iconName,
+                skillType
     ) {
         this.id = id;
         this.detailPageUrl = g_siteRootPath + "?fehskill=" + id;
@@ -1187,8 +1287,7 @@ class SkillInfo {
     getDisplayName() {
         if (this.isImplemented()) {
             return this.name;
-        }
-        else {
+        } else {
             return "×" + this.name;
         }
     }
@@ -1202,15 +1301,24 @@ class SkillInfo {
             return true;
         }
         switch (this.type) {
-            case SkillType.Weapon: return this.id in WeaponValueDict;
-            case SkillType.Support: return this.id in SupportValueDict;
-            case SkillType.Special: return this.id in SpecialValueDict;
-            case SkillType.PassiveA: return this.id in PassiveAValueDict;
-            case SkillType.PassiveB: return this.id in PassiveBValueDict;
-            case SkillType.PassiveC: return this.id in PassiveCValueDict;
-            case SkillType.PassiveS: return this.id in PassiveSValueDict;
-            case SkillType.PassiveX: return this.id in PassiveXValueDict;
-            case SkillType.Captain: return this.id in CaptainValueDict;
+            case SkillType.Weapon:
+                return this.id in WeaponValueDict;
+            case SkillType.Support:
+                return this.id in SupportValueDict;
+            case SkillType.Special:
+                return this.id in SpecialValueDict;
+            case SkillType.PassiveA:
+                return this.id in PassiveAValueDict;
+            case SkillType.PassiveB:
+                return this.id in PassiveBValueDict;
+            case SkillType.PassiveC:
+                return this.id in PassiveCValueDict;
+            case SkillType.PassiveS:
+                return this.id in PassiveSValueDict;
+            case SkillType.PassiveX:
+                return this.id in PassiveXValueDict;
+            case SkillType.Captain:
+                return this.id in CaptainValueDict;
             default:
                 throw new Error("Invalid skill type");
         }
@@ -1219,9 +1327,12 @@ class SkillInfo {
     __getSkillIconPath(iconName) {
         const iconRoot = g_skillIconRootPath;
         switch (this.type) {
-            case SkillType.Weapon: return iconRoot + "Weapon.png";
-            case SkillType.Support: return iconRoot + "Support.png";
-            case SkillType.Special: return iconRoot + "Special.png";
+            case SkillType.Weapon:
+                return iconRoot + "Weapon.png";
+            case SkillType.Support:
+                return iconRoot + "Support.png";
+            case SkillType.Special:
+                return iconRoot + "Special.png";
         }
 
         if (iconName === "" || iconName == null) {
@@ -1229,12 +1340,18 @@ class SkillInfo {
         }
 
         switch (this.type) {
-            case SkillType.PassiveA: return iconRoot + "PassiveA/" + iconName;
-            case SkillType.PassiveB: return iconRoot + "PassiveB/" + iconName;
-            case SkillType.PassiveC: return iconRoot + "PassiveC/" + iconName;
-            case SkillType.PassiveS: return iconRoot + "SacredSeal/" + iconName;
-            case SkillType.PassiveX: return iconRoot + "Attuned/" + iconName;
-            case SkillType.Captain: return iconRoot + "Captain/" + iconName;
+            case SkillType.PassiveA:
+                return iconRoot + "PassiveA/" + iconName;
+            case SkillType.PassiveB:
+                return iconRoot + "PassiveB/" + iconName;
+            case SkillType.PassiveC:
+                return iconRoot + "PassiveC/" + iconName;
+            case SkillType.PassiveS:
+                return iconRoot + "SacredSeal/" + iconName;
+            case SkillType.PassiveX:
+                return iconRoot + "Attuned/" + iconName;
+            case SkillType.Captain:
+                return iconRoot + "Captain/" + iconName;
             default:
                 return "";
         }
@@ -1287,6 +1404,8 @@ const count2Specials = [];
 const inheritableCount2Specials = [];
 const count3Specials = [];
 const inheritableCount3Specials = [];
+const count4Specials = [];
+const inheritableCount4Specials = [];
 
 // 補助時に奥義発動カウントを進めないスキル
 const noEffectOnSpecialCooldownChargeOnSupportSkillSet = new Set();
@@ -1309,7 +1428,10 @@ const StatusIndex = {
 }
 
 // TODO: ここから下の内容を別ファイルに分ける
+// FuncMap
 // noinspection DuplicatedCode
+/** @type {Map<String, (target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
+const applySpecialDamageReductionPerAttackFuncMap = new Map();
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
 const calcMoveCountForCantoFuncMap = new Map();

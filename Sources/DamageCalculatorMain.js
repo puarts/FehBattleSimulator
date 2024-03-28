@@ -967,13 +967,13 @@ class DamageCalcData {
             Special.DragonFang, // 竜穿(+攻撃50%)
             Special.Astra, // 流星(2.5倍)
             Special.Lethality, // 滅殺(守備魔防-75%)
-        ];
+        ].concat(inheritableCount4Specials);
     }
 
     __getCount4Specials() {
         return [
             Special.Lethality, // 滅殺
-        ];
+        ].concat(count4Specials);
     }
 
     __writeLog(message) {

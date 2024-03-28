@@ -39,6 +39,15 @@ class DamageCalcContext {
         this.damageType = DamageType.ActualDamage;
     }
 
+    /**
+     * 引数のユニットが攻撃したログを取得。
+     * @params {Unit} attackUnit
+     * @returns {DamageLog[]}
+     */
+    getAttackLogs(attackUnit) {
+        return this.damageHistory.filter(log => log.attackUnit === attackUnit);
+    }
+
     isFirstAttack(atkUnit) {
         for (let log of this.damageHistory) {
             if (log.attackUnit === atkUnit) {
@@ -50,7 +59,8 @@ class DamageCalcContext {
     }
 
     isConsecutiveAttack(atkUnit) {
-        return this.damageHistory[this.damageHistory.length - 1].attackUnit === atkUnit;
+        let lastLog = this.damageHistory[this.damageHistory.length - 1];
+        return lastLog ? lastLog.attackUnit === atkUnit : false;
     }
 
     isFollowupOrPotentFollowupAttack() {
@@ -146,6 +156,7 @@ class DamageCalculator {
     get log() {
         return this._logger.log;
     }
+
     get simpleLog() {
         return this._logger.simpleLog;
     }
@@ -163,6 +174,7 @@ class DamageCalculator {
     writeLog(log) {
         this._logger.writeLog(log);
     }
+
     writeDebugLog(log) {
         this._logger.writeDebugLog(log);
     }
@@ -250,7 +262,7 @@ class DamageCalculator {
      * @param  {DamageCalcResult} result
      * @param  {DamageCalcContext} context
      */
-    *__enumerateCombatFuncs(atkUnit, defUnit, result, context) {
+    * __enumerateCombatFuncs(atkUnit, defUnit, result, context) {
         let self = this;
         if (defUnit.battleContext.isVantageActivated) {
             let message = `${defUnit.nameWithGroup}の待ち伏せが発動`;
@@ -437,8 +449,7 @@ class DamageCalculator {
                 if (this.isLogEnabled) this.writeLog(atkUnit.getNameWithGroup() + "は戦闘不能");
                 return result;
             }
-        }
-        else {
+        } else {
             if (this.isLogEnabled) this.writeLog(defUnit.getNameWithGroup() + "は反撃不可");
         }
     }
@@ -533,8 +544,7 @@ class DamageCalculator {
         if (isPrecombat) {
             atk = atkUnit.getAtkInPrecombat();
             value = defUnit.getDefInPrecombat();
-        }
-        else {
+        } else {
             atk = atkUnit.getAtkInCombat(defUnit);
             value = defUnit.getDefInCombat(atkUnit);
         }
@@ -549,8 +559,7 @@ class DamageCalculator {
         let diff = 0;
         if (isPrecombat) {
             diff = getPrecombatFunc(atkUnit) - getPrecombatFunc(defUnit);
-        }
-        else {
+        } else {
             diff = getCombatFunc(atkUnit, defUnit) - getCombatFunc(defUnit, atkUnit);
         }
         if (diff > 0) {
@@ -562,12 +571,15 @@ class DamageCalculator {
         }
         return 0;
     }
+
     __getAtkInCombatDetail(unit, enemyUnit) {
         return `攻撃${unit.atkWithSkills}、強化${unit.getAtkBuffInCombat(enemyUnit)}、弱化${unit.getAtkDebuffInCombat()}、戦闘中強化${Number(unit.atkSpur)}`;
     }
+
     __getDefInCombatDetail(unit, enemyUnit) {
         return `守備${unit.defWithSkills}、強化${unit.getDefBuffInCombat(enemyUnit)}、弱化${unit.getDefDebuffInCombat()}、戦闘中強化${unit.defSpur}`;
     }
+
     __getResInCombatDetail(unit, enemyUnit) {
         return `魔防${unit.resWithSkills}、強化${unit.getResBuffInCombat(enemyUnit)}、弱化${unit.getResDebuffInCombat()}、戦闘中強化${unit.resSpur}`;
     }
@@ -647,7 +659,7 @@ class DamageCalculator {
             atkCountPerOneAttack = 1;
         }
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
-        let specialAddDamage = atkUnit.battleContext.specialAddDamage;
+        let specialAddDamage = atkUnit.battleContext.getTotalSpecialAddDamage();
 
         let mitHp = defUnit.restHp;
         let defInCombat = defUnit.getDefInCombat(atkUnit);
@@ -839,8 +851,7 @@ class DamageCalculator {
             let totalMitDefailLog = atkUnit.battleContext.refersRes ? resInCombatDetail : defInCombatDetail;
             if (atkUnit.battleContext.refersRes) {
                 this.writeDebugLog("通常攻撃時は魔防参照")
-            }
-            else {
+            } else {
                 this.writeDebugLog("通常攻撃時は守備参照");
             }
 
@@ -935,7 +946,7 @@ class DamageCalculator {
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
-    */
+     */
     calcPrecombatSpecialDamage(atkUnit, defUnit) {
         let tmpMit = atkUnit.battleContext.refersRes ? defUnit.getResInPrecombat() : defUnit.getDefInPrecombat();
         if (defUnit.battleContext.isOnDefensiveTile) {
@@ -960,8 +971,7 @@ class DamageCalculator {
             this.writeDebugLog(`攻撃=${atkUnit.getAtkInPrecombat()}`);
             if (atkUnit.battleContext.refersRes) {
                 this.writeDebugLog(`魔防参照:魔防=${tmpMit}`);
-            }
-            else {
+            } else {
                 this.writeDebugLog(`守備参照:守備=${tmpMit}`);
             }
             this.writeDebugLog(`攻撃-守備or魔防=${statusDiff}`);
@@ -1010,6 +1020,16 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {DamageCalcContext} context
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {number} attackCount
+     * @param {number} normalDamage
+     * @param {number} specialDamage
+     * @param {boolean} invalidatesDamageReductionExceptSpecialOnSpecialActivation
+     * @param {boolean} invalidatesDamageReductionExceptSpecial
+     */
     __calcAttackTotalDamage(
         context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
         invalidatesDamageReductionExceptSpecialOnSpecialActivation,
@@ -1122,6 +1142,9 @@ class DamageCalculator {
                 damageReductionRatio = 1.0;
             }
 
+            // 攻撃ごとに変化する可能性がある奥義によるダメージ軽減
+            this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
+
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
             if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
                 for (let skillId of defUnit.enumerateSkills()) {
@@ -1177,6 +1200,9 @@ class DamageCalculator {
                     }
                 }
             }
+
+            // 攻撃ごとに変化する可能性のある奥義扱いのダメージ軽減
+            damageReductionRatio = this.#applyDamageReductionRatiosBySpecialPerAttack(defUnit, damageReductionRatio);
 
             // 防御系奥義によるダメージ軽減
             let isDefenderSpecialActivated = false;
@@ -1320,8 +1346,7 @@ class DamageCalculator {
 
                     this.__heal(atkUnit, healedHp, defUnit);
                 }
-            }
-            else {
+            } else {
                 // 通常攻撃
                 currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, normalDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
                 if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ${currentDamage}`);
@@ -1468,6 +1493,45 @@ class DamageCalculator {
         return totalDamage;
     }
 
+    #applyDamageReductionRatiosBySpecialPerAttack(defUnit, damageReductionRatio) {
+        let reductionRatios = defUnit.battleContext.damageReductionRatiosBySpecialPerAttack;
+        let logMessage = "攻撃のたびに変化する可能性がある奥義扱いのダメージ軽減。";
+        return this.#applyDamageReductionRatios(damageReductionRatio, reductionRatios, logMessage);
+    }
+
+    #applyDamageReductionRatios(damageReductionRatio, reductionRatios, logMessage = '') {
+        if (reductionRatios.length <= 0) {
+            return damageReductionRatio;
+        }
+        this.writeDebugLog(`${logMessage} ratios: [${reductionRatios}]`);
+        for (let ratio of reductionRatios) {
+            let oldRatio = damageReductionRatio;
+            damageReductionRatio *= 1.0 - ratio;
+            this.writeDebugLog(`ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+        }
+        return damageReductionRatio;
+    }
+
+    /**
+     * 戦闘ごとに変化する可能性がある奥義扱いのダメージ軽減
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {DamageCalcContext} context
+     */
+    #applySpecialDamageReductionPerAttack(targetUnit, enemyUnit, context) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applySpecialDamageReductionPerAttackFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit, context);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
+    }
+
     applySkillEffectAfterSpecialActivated(targetUnit, enemyUnit, context) {
         for (let skillId of targetUnit.enumerateSkills()) {
             let funcMap = applySkillEffectAfterSpecialActivatedFuncMap;
@@ -1504,6 +1568,8 @@ class DamageCalculator {
         context.specialCountReductionBeforeFirstAttackPerAttack = 0;
         context.damageReductionValuePerAttack = 0;
         context.damageReductionValueOfSpecialAttackPerAttack = 0;
+        context.specialAddDamagePerAttack = 0;
+        context.damageReductionRatiosBySpecialPerAttack = [];
     }
 
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {

@@ -1,5 +1,75 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 覇克・天空
+{
+    let skillId = Special.GreatAether;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NormalAttackSpecialDict[skillId] = 0;
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    count4Specials.push(skillId);
+    inheritableCount4Specials.push(skillId);
+
+    applySkillEffectsPerCombatFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, context) {
+            // 攻撃の（40+敵がこの戦闘中に攻撃した回数x10）％を奥義ダメージに加算
+            let count = context.getAttackLogs(enemyUnit).length;
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            let specialAddDamage = Math.trunc(status * (0.4 + count * 0.1));
+            targetUnit.battleContext.specialAddDamage = specialAddDamage;
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}によりダメージを${specialAddDamage}追加。status: ${status}, atk count: ${count}`);
+        }
+    );
+
+    applySpecialDamageReductionPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, context) {
+            // 戦闘中、攻撃を受けた時のダメージを（40-現在の奥義発動カウントx10）％軽減、
+            // ただし、連続して攻撃を受けた時の2回目以降のダメージは（70ー現在の奥義発動カウントx10）％軽減
+            let basePercentage = context.isConsecutiveAttack(enemyUnit) ? 70 : 40;
+            let percentage = basePercentage - targetUnit.tmpSpecialCount * 10;
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}により${percentage}%軽減, base percentage: ${basePercentage}, count: ${targetUnit.tmpSpecialCount}`);
+            targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(percentage / 100.0);
+        }
+    );
+
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 戦闘で奥義を発動した場合、戦闘後、
+            if (targetUnit.battleContext.isSpecialActivated) {
+                // 自身を中心とした縦3列と横3列にいる敵に
+                /** @type {Generator<Unit>} */
+                let units = this.enumerateUnitsInDifferentGroupOnMap(targetUnit);
+                let count = 0;
+                for (let unit of units) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                        count++;
+                        // 5ダメージ、
+                        unit.reserveTakeDamage(5);
+                        // 奥義発動カウント＋1（奥義発動カウントの最大値は超えない）、
+                        unit.reserveToIncreaseSpecialCount(1);
+                    }
+                }
+                // 自分は、HPが回復
+                // 回復値は、自身を中心とした縦3列と横3列にいる敵の数x5＋10（上限：自身の最大HPの50％）
+                let maxAmount = Math.trunc(targetUnit.maxHpWithSkills * 0.5);
+                let amount = MathUtil.ensureMax(count * 5 + 10, maxAmount);
+                targetUnit.reserveHeal(amount);
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、敵は先制攻撃
+            if (targetUnit.battleContext.initiatesCombat) {
+                enemyUnit.battleContext.isVantageActivatable = true;
+            }
+            // 敵が追撃可能なら、敵の攻撃の直後に敵が追撃を行う
+            enemyUnit.battleContext.isDefDesperationActivatable = true;
+        }
+    );
+}
+
 // 蒼炎の勇者の剣
 {
     let skillId = Weapon.EmblemRagnell;
@@ -68,7 +138,7 @@
     applySkillEffectsPerAttackFuncMap.set(skillId,
         function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
-                let amount = MathUtil.ensureMax(enemyUnit.maxHpWithSkills - enemyUnit.restHp , 20);
+                let amount = MathUtil.ensureMax(enemyUnit.maxHpWithSkills - enemyUnit.restHp, 20);
                 this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.weaponInfo.name}のスキル効果により${amount}減少。敵HP: ${enemyUnit.restHp}/${enemyUnit.maxHpWithSkills}`);
                 targetUnit.battleContext.damageReductionValuePerAttack += amount;
                 targetUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack += amount;
@@ -130,7 +200,7 @@
         );
         // 戦闘後、敵の速さ、魔防－6（敵の次回行動終了時まで）
         applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-            function(targetUnit, enemyUnit) {
+            function (targetUnit, enemyUnit) {
                 enemyUnit.applyDebuffs(...spurIndices.map(n => n * -debuffAmount));
             }
         );
@@ -1583,7 +1653,7 @@
 {
     let skillId = PassiveX.SoaringEcho;
     enumerateTeleportTilesForAllyFuncMap.set(skillId,
-        function(targetUnit, allyUnit) {
+        function (targetUnit, allyUnit) {
             // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
             if (targetUnit.distance(allyUnit) <= 2 &&
                 targetUnit.moveType === MoveType.Infantry ||
@@ -2333,7 +2403,7 @@
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.initiatesCombat) {
                 let maxSpd = Number.MIN_SAFE_INTEGER;
                 let units = [];
@@ -2953,7 +3023,7 @@
 
 // 防壁
 {
-    let generateFunc = (func, isBulwalk4=false) => function (targetUnit, enemyUnit, calcPotentialDamage) {
+    let generateFunc = (func, isBulwalk4 = false) => function (targetUnit, enemyUnit, calcPotentialDamage) {
         func(enemyUnit);
         if (isBulwalk4) {
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
@@ -5109,7 +5179,7 @@
                 let amount = Math.max(Math.min(Math.trunc(atk * 0.25) - 4, 14), 5);
                 targetUnit.addAllSpur(amount);
                 targetUnit.battleContext.reducesCooldownCount = true;
-                targetUnit.battleContext.iisThereAllyInSpecifiedSpacesnvalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
                 if (isDefenseSpecial(targetUnit.special)) {
                     targetUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
                 }
@@ -6293,7 +6363,7 @@
 
 // 大共謀4
 {
-    let setSkill = (skillId, statusValues=[0, 0, 0, 0]) => {
+    let setSkill = (skillId, statusValues = [0, 0, 0, 0]) => {
         canRallyForciblyFuncMap.set(skillId,
             function (unit) {
                 return true;

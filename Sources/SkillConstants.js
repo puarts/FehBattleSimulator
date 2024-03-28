@@ -2018,6 +2018,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    GreatAether: 120001, // 覇克・天空
     SacredWind: 2828, // 神聖風
     LodestarRush: 2758, // スターラッシュ
     ArmsOfTheThree: 2749, // 三雄の双刃
