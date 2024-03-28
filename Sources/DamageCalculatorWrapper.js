@@ -521,44 +521,42 @@ class DamageCalculatorWrapper {
         // self.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
 
         // 追撃可能か判定
-        atkUnit.battleContext.canFollowupAttack = self.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
+        atkUnit.battleContext.canFollowupAttackWithoutPotent = self.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
         if (defUnit.battleContext.canCounterattack) {
-            defUnit.battleContext.canFollowupAttack = self.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
+            defUnit.battleContext.canFollowupAttackWithoutPotent = self.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
         }
 
         // 防御系奥義発動時のダメージ軽減率設定
         self.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
         self.__applyDamageReductionRatioBySpecial(defUnit, atkUnit);
 
+        // 神速
+        // 他の追撃可能かどうかを条件とするスキルは神速も追撃と見なすのでそれより前に神速判定をしなければならない
+        // 神速自体も追撃可能かどうかを条件とするので追撃判定の後に効果を適用しなければならない
+        self.__applyPotentSkillEffect(atkUnit, defUnit);
+        self.__applyPotentSkillEffect(defUnit, atkUnit);
+
         // 追撃可能かどうかが条件として必要なスキル効果の適用
-        {
-            self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
-            self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
-        }
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
 
         // 効果を無効化するスキル
-        {
-            self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
-            self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
-        }
+        self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
+        self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
 
         // 奥義
-        {
-            self.__applySpecialSkillEffect(atkUnit, defUnit);
-            self.__applySpecialSkillEffect(defUnit, atkUnit);
-        }
+        self.__applySpecialSkillEffect(atkUnit, defUnit);
+        self.__applySpecialSkillEffect(defUnit, atkUnit);
 
         // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
         self.__setSkillEffetToContext(atkUnit, defUnit);
         // });
 
-        {
-            // 守備、魔防のどちらを参照するか決定
-            atkUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
-            defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
-            self.__selectReferencingResOrDef(atkUnit, defUnit);
-            self.__selectReferencingResOrDef(defUnit, atkUnit);
-        }
+        // 守備、魔防のどちらを参照するか決定
+        atkUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
+        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
+        self.__selectReferencingResOrDef(atkUnit, defUnit);
+        self.__selectReferencingResOrDef(defUnit, atkUnit);
 
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
@@ -1209,180 +1207,173 @@ class DamageCalculatorWrapper {
      * @param  {Unit} defUnit
      */
     __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
-        {
-            // defUnitのスキル効果
-            for (let skillId of defUnit.enumerateSkills()) {
-                switch (skillId) {
-                    case PassiveA.GiftOfMagic:
-                        if (isRangedWeaponType(atkUnit.weaponType) && atkUnit.battleContext.initiatesCombat) {
-                            // 敵に攻め立て強制
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case Weapon.Urvan:
-                        if (defUnit.isWeaponSpecialRefined) {
-                            // 敵に攻め立て強制
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case PassiveB.HolyWarsEnd:
-                        if (defUnit.battleContext.restHpPercentage >= 50) {
-                            defUnit.battleContext.isDefDesperationActivatable = true;
-                        }
-                        break;
-                }
+        // defUnitのスキル効果
+        for (let skillId of defUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveA.GiftOfMagic:
+                    if (isRangedWeaponType(atkUnit.weaponType) && atkUnit.battleContext.initiatesCombat) {
+                        // 敵に攻め立て強制
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case Weapon.Urvan:
+                    if (defUnit.isWeaponSpecialRefined) {
+                        // 敵に攻め立て強制
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case PassiveB.HolyWarsEnd:
+                    if (defUnit.battleContext.restHpPercentage >= 50) {
+                        defUnit.battleContext.isDefDesperationActivatable = true;
+                    }
+                    break;
             }
         }
 
-        {
-            // atkUnitのスキル効果
-            for (let skillId of atkUnit.enumerateSkills()) {
-                switch (skillId) {
-                    case PassiveB.AerialManeuvers:
-                        if (atkUnit.battleContext.restHpPercentage >= 50 &&
-                            defUnit.battleContext.restHpPercentage >= 50) {
-                            if (atkUnit.battleContext.initiatesCombat) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
-                        }
-                        break;
-                    case Weapon.ArcaneDarkbow:
-                        if (atkUnit.battleContext.restHpPercentage >= 25) {
-                            if (atkUnit.battleContext.initiatesCombat) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
-                        }
-                        break;
-                    case Weapon.KeenCoyoteBow:
-                        if (atkUnit.battleContext.restHpPercentage >= 25) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case Weapon.NewDawn:
-                    case Weapon.Thunderbrand:
-                        if (defUnit.battleContext.restHpPercentage >= 50) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case Weapon.TalreganAxe:
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                        break;
-                    case Weapon.DarkSpikesT:
-                        if (atkUnit.battleContext.restHpPercentage <= 99) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case Weapon.Forusethi:
-                        if (atkUnit.isWeaponRefined) {
-                            if (atkUnit.battleContext.restHpPercentage >= 25) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
-                        }
-                        else {
-                            if (atkUnit.battleContext.restHpPercentage >= 50) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
-                        }
-                        break;
-                    case Weapon.YonkaiNoSaiki: {
-                        let threshold = atkUnit.isWeaponRefined ? 25 : 50;
-                        if (atkUnit.battleContext.restHpPercentage >= threshold) {
+        // atkUnitのスキル効果
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.AerialManeuvers:
+                    if (atkUnit.battleContext.restHpPercentage >= 50 &&
+                        defUnit.battleContext.restHpPercentage >= 50) {
+                        if (atkUnit.battleContext.initiatesCombat) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
                     }
-                        break;
-                    case Weapon.AnkokuNoKen:
-                        if (!atkUnit.isWeaponRefined) {
-                            if (atkUnit.battleContext.restHpPercentage >= 50) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
-                        } else {
-                            if (atkUnit.battleContext.restHpPercentage >= 25) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
+                    break;
+                case Weapon.ArcaneDarkbow:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        if (atkUnit.battleContext.initiatesCombat) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                        break;
-                    case Weapon.SoulCaty:
-                        if (atkUnit.isWeaponSpecialRefined) {
-                            if (atkUnit.battleContext.restHpPercentage <= 75) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
+                    }
+                    break;
+                case Weapon.KeenCoyoteBow:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case Weapon.NewDawn:
+                case Weapon.Thunderbrand:
+                    if (defUnit.battleContext.restHpPercentage >= 50) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case Weapon.TalreganAxe:
+                    atkUnit.battleContext.isDesperationActivatable = true;
+                    break;
+                case Weapon.DarkSpikesT:
+                    if (atkUnit.battleContext.restHpPercentage <= 99) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case Weapon.Forusethi:
+                    if (atkUnit.isWeaponRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                        else {
-                            if (atkUnit.battleContext.restHpPercentage <= 50) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
+                    } else {
+                        if (atkUnit.battleContext.restHpPercentage >= 50) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                        break;
-                    case Weapon.Hitode:
-                    case Weapon.HitodePlus:
-                    case Weapon.NangokuJuice:
-                    case Weapon.NangokuJuicePlus:
-                    case Weapon.SakanaNoYumi:
-                    case Weapon.SakanaNoYumiPlus:
+                    }
+                    break;
+                case Weapon.YonkaiNoSaiki: {
+                    let threshold = atkUnit.isWeaponRefined ? 25 : 50;
+                    if (atkUnit.battleContext.restHpPercentage >= threshold) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                }
+                    break;
+                case Weapon.AnkokuNoKen:
+                    if (!atkUnit.isWeaponRefined) {
+                        if (atkUnit.battleContext.restHpPercentage >= 50) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                    } else {
+                        if (atkUnit.battleContext.restHpPercentage >= 25) {
+                            atkUnit.battleContext.isDesperationActivatable = true;
+                        }
+                    }
+                    break;
+                case Weapon.SoulCaty:
+                    if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage <= 75) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                        break;
-                    case Weapon.IhoNoHIken:
-                        if (atkUnit.isWeaponSpecialRefined) {
-                            if (atkUnit.battleContext.restHpPercentage <= 75) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
-                        }
-                        break;
-                    case PassiveB.HodrsZeal:
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                        break;
-                    case PassiveB.YngviAscendant:
-                        atkUnit.battleContext.isDesperationActivatable = true;
-                        break;
-                    case PassiveB.Frenzy3:
+                    } else {
                         if (atkUnit.battleContext.restHpPercentage <= 50) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                        break;
-                    case PassiveB.KyusyuTaikei3:
-                        atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                        if (atkUnit.battleContext.restHpPercentage <= 80) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case PassiveB.DiveBomb3:
-                        if (atkUnit.battleContext.restHpPercentage >= 80 && defUnit.battleContext.restHpPercentage >= 80) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case PassiveB.KillingIntent:
-                    case PassiveB.KillingIntentPlus:
-                        {
-                            if (defUnit.battleContext.restHpPercentage < 100 || defUnit.hasNegativeStatusEffect()) {
-                                atkUnit.battleContext.isDesperationActivatable = true;
-                            }
-                        }
-                        break;
-                    case PassiveB.SphiasSoul:
-                    case PassiveB.Desperation3: // 攻め立て3
+                    }
+                    break;
+                case Weapon.Hitode:
+                case Weapon.HitodePlus:
+                case Weapon.NangokuJuice:
+                case Weapon.NangokuJuicePlus:
+                case Weapon.SakanaNoYumi:
+                case Weapon.SakanaNoYumiPlus:
+                    if (atkUnit.battleContext.restHpPercentage <= 75) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case Weapon.IhoNoHIken:
+                    if (atkUnit.isWeaponSpecialRefined) {
                         if (atkUnit.battleContext.restHpPercentage <= 75) {
                             atkUnit.battleContext.isDesperationActivatable = true;
                         }
-                        break;
-                    case PassiveB.Desperation4: // 攻め立て4
-                        if (atkUnit.battleContext.restHpPercentage <= 99 ||
-                            Unit.calcMoveDistance(atkUnit) >= 2) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case PassiveB.FlowDesperation:
-                        if (atkUnit.battleContext.restHpPercentage <= 75 ||
-                            Unit.calcMoveDistance(atkUnit) >= 2) {
-                            atkUnit.battleContext.isDesperationActivatable = true;
-                        }
-                        break;
-                    case PassiveB.SoulOfZofia2:
+                    }
+                    break;
+                case PassiveB.HodrsZeal:
+                    atkUnit.battleContext.isDesperationActivatable = true;
+                    break;
+                case PassiveB.YngviAscendant:
+                    atkUnit.battleContext.isDesperationActivatable = true;
+                    break;
+                case PassiveB.Frenzy3:
+                    if (atkUnit.battleContext.restHpPercentage <= 50) {
                         atkUnit.battleContext.isDesperationActivatable = true;
-                        break;
+                    }
+                    break;
+                case PassiveB.KyusyuTaikei3:
+                    atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    if (atkUnit.battleContext.restHpPercentage <= 80) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case PassiveB.DiveBomb3:
+                    if (atkUnit.battleContext.restHpPercentage >= 80 && defUnit.battleContext.restHpPercentage >= 80) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case PassiveB.KillingIntent:
+                case PassiveB.KillingIntentPlus: {
+                    if (defUnit.battleContext.restHpPercentage < 100 || defUnit.hasNegativeStatusEffect()) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
                 }
+                    break;
+                case PassiveB.SphiasSoul:
+                case PassiveB.Desperation3: // 攻め立て3
+                    if (atkUnit.battleContext.restHpPercentage <= 75) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case PassiveB.Desperation4: // 攻め立て4
+                    if (atkUnit.battleContext.restHpPercentage <= 99 ||
+                        Unit.calcMoveDistance(atkUnit) >= 2) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case PassiveB.FlowDesperation:
+                    if (atkUnit.battleContext.restHpPercentage <= 75 ||
+                        Unit.calcMoveDistance(atkUnit) >= 2) {
+                        atkUnit.battleContext.isDesperationActivatable = true;
+                    }
+                    break;
+                case PassiveB.SoulOfZofia2:
+                    atkUnit.battleContext.isDesperationActivatable = true;
+                    break;
             }
         }
     }
@@ -11911,7 +11902,7 @@ class DamageCalculatorWrapper {
         if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, evalSpd)) {
             let potentRatio = baseRatio;
             if (!targetUnit.battleContext.isTwiceAttackActivating() &&
-                !targetUnit.battleContext.canFollowupAttack) {
+                !targetUnit.battleContext.canFollowupAttackWithoutPotent) {
                 potentRatio = baseRatio * 2;
             }
             targetUnit.battleContext.potentRatios.push(potentRatio);
@@ -13045,6 +13036,29 @@ class DamageCalculatorWrapper {
         targetUnit.battleContext.damageReductionValue += Math.trunc(statuses[statusIndex] * ratio);
     }
 
+    /**
+     * ステータス参照による固定ダメージ軽減
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean[]} statusFlags (ex) 守備: [false, false, true, false], 守備と魔防の高い方: [false, false, true, true]
+     * @param {number} ratio=0.2
+     */
+    applyDamageReductionByOwnStatus(targetUnit, enemyUnit, statusFlags, ratio = 0.20) {
+        let status = this.getHigherStatus(targetUnit, enemyUnit, statusFlags);
+        targetUnit.battleContext.damageReductionValue += Math.trunc(status * ratio);
+    }
+
+    /**
+     * 最も高いステータスを取得
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean[]} statusFlags (ex) 最も高いステータス: [true, true, true, true], 守備と魔防の高い方: [false, false, true, true]
+     */
+    getHigherStatus(targetUnit, enemyUnit, statusFlags) {
+        let statuses = targetUnit.getStatusesInCombat(enemyUnit);
+        return Math.max(...statuses.map((s, i) => statusFlags[i] ? s : 0));
+    }
+
     __getDamageReductionRatio(skillId, atkUnit, defUnit) {
         switch (skillId) {
             case Weapon.DreamHorn:
@@ -14118,8 +14132,7 @@ class DamageCalculatorWrapper {
         let result = DamageCalculationUtility.examinesCanFollowupAttack(atkUnit, defUnit);
         if (result) {
             if (this.isLogEnabled) this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");
-        }
-        else {
+        } else {
             if (this.isLogEnabled) this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが足りないので追撃不可");
         }
         return result;
@@ -14201,15 +14214,9 @@ class DamageCalculatorWrapper {
             // 絶対追撃発動
             if (this.isLogEnabled) this.__writeDamageCalcDebugLog(atkUnit.getNameWithGroup() + "はスキル効果により絶対追撃");
             return true;
-        }
-        else {
+        } else {
             // 速さ勝負
-            if (this.__examinesCanFollowupAttack(atkUnit, defUnit)) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return this.__examinesCanFollowupAttack(atkUnit, defUnit);
         }
     }
 
@@ -14951,6 +14958,25 @@ class DamageCalculatorWrapper {
         }
     }
 
+    /**
+     * 神速追撃を行うスキル
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     */
+    __applyPotentSkillEffect(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            let funcMap = applyPotentSkillEffectFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    func.call(this, targetUnit, enemyUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
+    }
+
     /// 追撃可能かどうかが条件として必要なスキル効果の適用
     __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit) {
         for (let skillId of targetUnit.enumerateSkills()) {
@@ -14966,7 +14992,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case Weapon.VengefulLance:
                     if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1) &&
-                        !targetUnit.battleContext.canFollowupAttack) {
+                        !targetUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
                     }
                     break;
@@ -15602,7 +15628,7 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case Weapon.SparklingSun:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                        if (enemyUnit.battleContext.canFollowupAttack) {
+                        if (enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
                         }
                     }
@@ -15610,14 +15636,14 @@ class DamageCalculatorWrapper {
                 case Weapon.MagetsuNoSaiki:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (this.isOddTurn || enemyUnit.battleContext.restHpPercentage < 100) {
-                            let percentage = enemyUnit.battleContext.canFollowupAttack ? 60 : 30;
+                            let percentage = enemyUnit.battleContext.canFollowupAttackIncludingPotent() ? 60 : 30;
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(percentage / 100.0, enemyUnit);
                         }
                     }
                     break;
                 case Weapon.StarlightStone:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                        if (enemyUnit.battleContext.canFollowupAttack) {
+                        if (enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                             targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(75 / 100.0, enemyUnit);
                         }
                     }
@@ -15625,7 +15651,7 @@ class DamageCalculatorWrapper {
                 case Weapon.MaryuNoBreath:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                            if (enemyUnit.battleContext.canFollowupAttack) {
+                            if (enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.70, enemyUnit);
                             }
                         }
@@ -15634,7 +15660,7 @@ class DamageCalculatorWrapper {
                 case Weapon.SeaSearLance:
                 case Weapon.LoyalistAxe:
                     if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) &&
-                        enemyUnit.battleContext.canFollowupAttack) {
+                        enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
                     }
                     break;
@@ -15648,7 +15674,8 @@ class DamageCalculatorWrapper {
                 case Weapon.CourtlyMaskPlus:
                 case Weapon.CourtlyBowPlus:
                 case Weapon.CourtlyCandlePlus:
-                    if (targetUnit.battleContext.restHpPercentage >= 50 && enemyUnit.battleContext.canFollowupAttack) {
+                    if (targetUnit.battleContext.restHpPercentage >= 50 &&
+                        enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
                     }
                     break;

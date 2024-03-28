@@ -257,6 +257,8 @@ __setAttackCount(targetUnit, enemyUnit) {
 追撃可能なら自分の攻撃の直後に追撃を行う(攻め立て)
 __applyChangingAttackPrioritySkillEffects(atkUnit, defUnit) {
     atkUnit.battleContext.isDesperationActivatable = true;
+    // 受け時の攻め立て
+    atkUnit.battleContext.isDefDesperationActivatable = true;
 }
 
 敵が追撃可能なら、最初に受けた攻撃のダメージをN%軽減
@@ -296,7 +298,7 @@ targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
 
 [神速追撃]
-applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+applyPotentSkillEffectFuncMap.set(skillId,
     function (targetUnit, enemyUnit) {
         this.__applyPotent(targetUnit, enemyUnit);
     }
@@ -838,6 +840,9 @@ targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += N;
 敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)[竜眼]
 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 
+敵の最初の攻撃前に自分の奥義発動カウント-N(Nは自然数)
+targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
+
 奥義ダメージ+N
 __init__applySpecialSkillEffect() {
     targetUnit.battleContext.specialAddDamage = N;
@@ -1068,10 +1073,17 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
     fixedAddDamage += N;
 }
 
-マリア算など
+マリア算など[ステータス参照の固定ダメージ軽減、固定ダメージ]
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
+    }
+);
+
+自分が受けるダメージー守備か魔防の高い方の20％（範囲奥義を除く）
+targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+    (targetUnit, enemyUnit, calcPotentialDamage) => {
+        this.applyDamageReductionByOwnStatus(targetUnit, enemyUnit, [false, false, true, true]);
     }
 );
 
@@ -1510,6 +1522,14 @@ Main.js
     }
 再使用
 __initializeUnitsPerTurn(targetUnits) {}
+
+紋章士
+EmblemHeroに登録(idではなくindexで登録)
+通常スキルと同様に実装
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Marth);
+    ...
+}
 
 ターン毎のインポート、エクスポート設定
 fromPerTurnStatusString(value) {}

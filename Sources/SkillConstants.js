@@ -1793,6 +1793,12 @@ const Weapon = {
 
     // ニーズヘッグ(敵)
     DosingFang: 2833, // 毒の葬り手の牙
+
+    // 2024年3月 紋章士
+    // 紋章士英雄「蒼炎の紋章士 アイク」
+    // https://www.youtube.com/watch?v=87T3lhxU78I&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=YNOIY95CX_Q&ab_channel=NintendoMobile
+    EmblemRagnell: 2834, // 蒼炎の勇者の剣
 };
 
 const Support = {
@@ -2012,6 +2018,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    GreatAether: 2835, // 覇克・天空
     SacredWind: 2828, // 神聖風
     LodestarRush: 2758, // スターラッシュ
     ArmsOfTheThree: 2749, // 三雄の双刃
@@ -2808,6 +2815,9 @@ const PassiveB = {
 
     // 神速
     Potent4: 2759, // 神速4
+
+    // 不動4
+    LaguzFriend: 2836, // 不動4
 };
 
 const PassiveC = {
@@ -3247,6 +3257,7 @@ const AssistType = {
 // 紋章士
 const EmblemHero = {
     Marth: 1082,
+    Ike: 1105,
 };
 
 const EffectiveType = {
