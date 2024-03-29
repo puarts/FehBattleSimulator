@@ -125,7 +125,7 @@
                         // 5ダメージ、
                         unit.reserveTakeDamage(5);
                         // 奥義発動カウント＋1（奥義発動カウントの最大値は超えない）、
-                        unit.reserveToIncreaseSpecialCount(1);
+                        unit.increaseSpecialCount(1);
                     }
                 }
                 // 自分は、HPが回復
