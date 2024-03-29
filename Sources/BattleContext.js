@@ -11,7 +11,7 @@ class BattleContext {
         this.hpBeforeCombat = 0;
         this.restHp = 0;
         this.specialCount = 0;
-        this.canFollowupAttack = false;
+        this.canFollowupAttackWithoutPotent = false;
         this.canCounterattack = false;
         this.isVantageActivatable = false; // 待ち伏せが発動可能か(敵の戦闘順入替スキル無関係の有効無効)
         this.isVantageActivated = false; // 待ち伏せが実際に発動するか(敵の戦闘順入替スキルを加味した有効無効)
@@ -150,6 +150,9 @@ class BattleContext {
         // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
         this.damageReductionRatiosWhenCondSatisfied = [];
 
+        // 戦闘中に変化する可能性のある奥義扱いのダメージ軽減
+        this.damageReductionRatiosBySpecialPerAttack = [];
+
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
 
@@ -164,6 +167,9 @@ class BattleContext {
 
         // 最初の攻撃前の奥義発動カウント増加値
         this.specialCountIncreaseBeforeFirstAttack = 0;
+
+        // 敵の最初の攻撃前の奥義発動カウント減少値
+        this.specialCountReductionBeforeFirstAttackByEnemy = 0;
 
         // 攻撃時の追加ダメージ
         this.additionalDamage = 0;
@@ -245,6 +251,9 @@ class BattleContext {
 
         // 奥義発動時の「奥義ダメージに加算」の加算ダメージ
         this.specialAddDamage = 0;
+
+        // 攻撃のたびに変化する可能性のある奥義発動時の「奥義ダメージに加算」の加算ダメージ
+        this.specialAddDamagePerAttack = 0;
 
         // 奥義発動時の「与えたダメージの〇%自分を回復」のパーセンテージ(1.0が100%)
         this.specialDamageRatioToHeal = 0;
@@ -551,5 +560,13 @@ class BattleContext {
 
     canPotentFollowupAttack() {
         return this.potentRatios.length > 0;
+    }
+
+    canFollowupAttackIncludingPotent() {
+        return this.canFollowupAttackWithoutPotent || this.canPotentFollowupAttack();
+    }
+
+    getTotalSpecialAddDamage() {
+        return this.specialAddDamage + this.specialAddDamagePerAttack;
     }
 }
