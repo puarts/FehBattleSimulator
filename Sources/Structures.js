@@ -136,23 +136,23 @@ class StructureBase extends BattleMapElement {
         this.__fromPerTurnStatusStringImpl(value);
     }
     __fromPerTurnStatusStringImpl(value) {
-        if (value == undefined) {
+        if (value == null) {
             console.trace("undefined な値が入力されました");
             return [[], 0];
         }
 
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.ownerType = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posX = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posY = Number(splited[i]); ++i; }
-        return [splited, i];
+        if (Number.isInteger(Number(values[i]))) { this.ownerType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
+        return [values, i];
     }
 
     fromTurnWideStatusString(value) {
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.level = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.level = Number(values[i]); ++i; }
     }
 
     toString() {
@@ -163,12 +163,12 @@ class StructureBase extends BattleMapElement {
     }
 
     fromString(value) {
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.ownerType = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posX = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.posY = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.level = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ownerType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.level = Number(values[i]); ++i; }
     }
 }
 

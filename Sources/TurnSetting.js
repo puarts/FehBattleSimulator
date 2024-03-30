@@ -127,10 +127,10 @@ class TurnSetting {
         this._deserializedStructures = []
         for (let i = 0; i < elemTexts.length; ++i) {
             let elemText = elemTexts[i];
-            let splited = elemText.split(NameValueDelimiter);
-            let serialId = splited[0];
-            let value = splited[1];
-            if (serialId == "map") {
+            let elems = elemText.split(NameValueDelimiter);
+            let serialId = elems[0];
+            let value = elems[1];
+            if (serialId === "map") {
                 if (this._app != null) {
                     fromStringFunc(this._app, value);
                 }

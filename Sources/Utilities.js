@@ -528,19 +528,11 @@ function calcDistance(ax, ay, bx, by) {
 }
 
 function boolToInt(value) {
-    if (value) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return value ? 1 : 0;
 }
 
 function intToBool(value) {
-    if (value == 0) {
-        return false;
-    } else {
-        return true;
-    }
+    return value !== 0;
 }
 
 function calcSimilarity(s1, s2) {

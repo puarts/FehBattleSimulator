@@ -187,7 +187,7 @@ class DamageCalculator {
      * ダメージ計算を行います。
      * @param  {Unit} atkUnit 攻撃をするユニットです。
      * @param  {Unit} defUnit 攻撃を受けるユニットです。
-     * @param  {DamageType} 潜在ダメージ計算かどうかを指定します。
+     * @param  {DamageType} damageType 潜在ダメージ計算かどうかを指定します。
      */
     calcCombatResult(atkUnit, defUnit, damageType) {
         // 初期化
@@ -221,9 +221,8 @@ class DamageCalculator {
 
         for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
             func();
-            if (damageType == DamageType.ActualDamage
-                && this.__isAnyoneDead(atkUnit, defUnit)
-            ) {
+            if (damageType === DamageType.ActualDamage &&
+                this.__isAnyoneDead(atkUnit, defUnit)) {
                 break;
             }
         }
@@ -638,11 +637,11 @@ class DamageCalculator {
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 
-        let atkCountPerAttack = atkUnit.battleContext.getAttackCount(context.isCounterattack);
+        let atkCountPerCombat = atkUnit.battleContext.getAttackCount(context.isCounterattack);
         // 神速追撃の場合は2回攻撃は発動しない
         if (context.isPotentFollowupAttack) {
-            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerAttack} → ${1}`);
-            atkCountPerAttack = 1;
+            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerCombat} → ${1}`);
+            atkCountPerCombat = 1;
         }
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.getTotalSpecialAddDamage();
@@ -729,7 +728,7 @@ class DamageCalculator {
             context,
             atkUnit,
             defUnit,
-            atkCountPerAttack,
+            atkCountPerCombat,
             damage,
             specialDamage,
             invalidatesDamageReductionExceptSpecialOnSpecialActivation,
@@ -776,7 +775,7 @@ class DamageCalculator {
             }
             this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
             this.writeDebugLog(
-                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerAttack}`);
+                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerCombat}`);
             this.writeDebugLog(`合計ダメージ:${totalDamage}`);
         }
 
@@ -792,7 +791,7 @@ class DamageCalculator {
             }
         }
 
-        return new OneAttackResult(damage, specialAddDamage, atkCountPerAttack);
+        return new OneAttackResult(damage, specialAddDamage, atkCountPerCombat);
     }
 
     /**

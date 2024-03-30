@@ -5,12 +5,12 @@ FEH(ファイアーエムブレムヒーローズ)の飛空城、闘技場、戦
 
 ## スキル実装の追加方法
 ### スキルの実装手順
-1. 追加スキルが SampleSkilInfos.js 内に存在しない場合、https://fire-emblem.fun/?pid=1469 のソースに定義されている weaponInfos 等の変数を SampleSkilInfos.js や SampleHeroInfos.js にコピーする
+1. 追加スキルが SampleSkillInfos.js 内に存在しない場合、https://fire-emblem.fun/?pid=1469 のソースに定義されている weaponInfos 等の変数を SampleSkillInfos.js や SampleHeroInfos.js にコピーする
     - https://fire-emblem.fun/?pid=1469 にも存在しない場合はデータベースに登録されていないので puarts にデータベース登録を依頼する
-1. Skill.js内に定義されている辞書 Weapon、Support、Special、PassiveA、PassiveB、PassiveC、PassiveS のうち、適切な辞書に追加スキルのIDを追加する
+2. Skill.js内に定義されている辞書 Weapon、Support、Special、PassiveA、PassiveB、PassiveC、PassiveS のうち、適切な辞書に追加スキルのIDを追加する
     - スキルIDはシミュレーターを起動してデバッグモードを有効にすると、スキル選択ボックスの隣に表示される
     - これらの辞書に登録すると未実装スキル名の先頭に付与される×印が消える
-1. 「スキル実装箇所のヒント」の項目を参考に、Main.js、DamageCalculator.js、Map.jsの中の必要な個所に追加スキルの実装を行う
+3. 「スキル実装箇所のヒント」の項目を参考に、Main.js、DamageCalculator.js、Map.jsの中の必要な個所に追加スキルの実装を行う
 
 ### スキル実装箇所のヒント
 

@@ -172,16 +172,16 @@ class Tile extends BattleMapElement {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.divineVein = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.divineVeinGroup = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.divineVein = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.divineVeinGroup = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this._type = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this._type = Number(values[i]); ++i; }
     }
 
     get serialId() {

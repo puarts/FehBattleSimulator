@@ -81,13 +81,13 @@ function copyUrl() {
 
 function importUrl(url) {
     console.log("url:" + url);
-    if (url == "" || url == null) {
+    if (url === "" || url == null) {
         loadSettings();
         return;
     }
     console.log(url);
     let splited = url.split("s=");
-    if (splited.length != 2) {
+    if (splited.length !== 2) {
         console.log(`invalid url "${url}"`);
         loadSettings();
         return;

@@ -1211,200 +1211,58 @@ class Unit extends BattleMapElement {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
-        let elemCount = splited.length;
+        let values = value.split(ValueDelimiter);
+        let elemCount = values.length;
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.heroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weapon = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.support = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.special = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveA = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveB = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveC = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveS = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing1 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing2 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing3 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.merge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.dragonflower = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroMerge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivHighStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivLowStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.summonerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isBonusChar = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weaponRefinement = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.slotOrder = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing4 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.hpAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing5 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.grantedBlessing = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isResplendent = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.level = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.rarity = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.hpMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.atkMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.spdMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.defMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.resMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.defGrowthRate = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.resGrowthRate = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing6 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ascendedAsset = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.captain = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveX = Number(splited[i]);
-            ++i;
-        }
+        if (Number.isInteger(Number(values[i]))) { this.heroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weapon = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.support = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.special = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveA = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveB = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveC = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveS = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing1 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing2 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing3 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.merge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.dragonflower = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroMerge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivHighStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivLowStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.summonerLevel = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isBonusChar = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weaponRefinement = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.partnerHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.partnerLevel = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.slotOrder = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing4 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.hpAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing5 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.grantedBlessing = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isResplendent = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.level = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.rarity = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosY = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.hpMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.atkMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.spdMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.defMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.resMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.defGrowthRate = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.resGrowthRate = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing6 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ascendedAsset = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.captain = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
         if (i < elemCount) {
-            this.__setPairUpUnitFromCompressedUri(splited[i]);
-            ++i;
+            this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
     }
 
@@ -1422,184 +1280,52 @@ class Unit extends BattleMapElement {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ownerType = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isActionDone = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.hp = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this._moveCount = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.specialCount = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.setStatusEffectsFromString(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isTransformed = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForSpecial = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isDuoOrHarmonicSkillActivatedInThisTurn = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.duoOrHarmonizedSkillActivationCount = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForSupport = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForPassiveB = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.moveCountAtBeginningOfTurn = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForWeapon = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForWeapon2 = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isEnemyActionTriggered = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForShieldEffect = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.setPerTurnStatusesFromString(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.distanceFromClosestEnemy = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.movementOrder = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.moveCountForCanto = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForDeepStar = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restMoveCount = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOncePerMapSpecialActivated = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isAttackDone = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isCantoActivating = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.fromPosX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.fromPosY = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isCombatDone = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restWeaponSkillAvailableTurn = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restSupportSkillAvailableTurn = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restPassiveBSkillAvailableTurn = Number(splited[i]);
-            ++i;
-        }
+        if (Number.isInteger(Number(values[i]))) { this.ownerType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isActionDone = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.hp = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this._moveCount = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.specialCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.setStatusEffectsFromString(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isTransformed = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForSpecial = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isDuoOrHarmonicSkillActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.duoOrHarmonizedSkillActivationCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForSupport = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForPassiveB = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.moveCountAtBeginningOfTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForWeapon = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForWeapon2 = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isEnemyActionTriggered = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForShieldEffect = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.setPerTurnStatusesFromString(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.distanceFromClosestEnemy = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.movementOrder = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.moveCountForCanto = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForDeepStar = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restMoveCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isAttackDone = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isCantoActivating = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.fromPosX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.fromPosY = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isCombatDone = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restWeaponSkillAvailableTurn = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restSupportSkillAvailableTurn = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restPassiveBSkillAvailableTurn = Number(values[i]); ++i; }
     }
 
 
@@ -1655,195 +1381,59 @@ class Unit extends BattleMapElement {
     }
 
     fromString(value) {
-        let splited = value.split(ValueDelimiter);
+        if (!value) {
+            return;
+        }
+        let values = value.split(ValueDelimiter);
 
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ownerType = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.heroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weapon = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.support = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.special = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveA = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveB = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveC = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveS = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing1 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing2 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing3 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.merge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.dragonflower = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroMerge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivHighStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivLowStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.summonerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isBonusChar = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weaponRefinement = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isActionDone = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.hp = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this._moveCount = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.specialCount = Number(splited[i]);
-            ++i;
-        }
-        this.setStatusEffectsFromString(splited[i]);
-        ++i;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isTransformed = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.slotOrder = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isResplendent = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.moveCountAtBeginningOfTurn = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.level = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.rarity = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveX = Number(splited[i]);
-            ++i;
-        }
+        if (Number.isInteger(Number(values[i]))) { this.ownerType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.heroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weapon = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.support = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.special = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveA = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveB = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveC = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveS = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing1 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing2 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing3 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.merge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.dragonflower = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroMerge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivHighStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivLowStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.summonerLevel = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isBonusChar = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weaponRefinement = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isActionDone = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.hp = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this._moveCount = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.specialCount = Number(values[i]); ++i; }
+        this.setStatusEffectsFromString(values[i]); ++i;
+        if (Number.isInteger(Number(values[i]))) { this.partnerHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.partnerLevel = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isTransformed = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.slotOrder = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isResplendent = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.moveCountAtBeginningOfTurn = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.level = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.rarity = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -3028,12 +2618,7 @@ class Unit extends BattleMapElement {
 
     applyReservedSpecialCount() {
         this.specialCount += this.reservedSpecialCount;
-        if (this.specialCount >= this.maxSpecialCount) {
-            this.specialCount = this.maxSpecialCount;
-        }
-        if (this.specialCount < 0) {
-            this.specialCount = 0;
-        }
+        this.specialCount = MathUtil.ensureMinMax(this.specialCount, 0, this.maxSpecialCount);
         this.reservedSpecialCount = 0;
     }
 
@@ -3077,25 +2662,15 @@ class Unit extends BattleMapElement {
     }
 
     modifySpecialCount() {
-        if (this.specialCount > Number(this.maxSpecialCount)) {
-            this.specialCount = Number(this.maxSpecialCount);
-        } else if (Number(this.specialCount) < 0) {
-            this.specialCount = 0;
-        }
+        this.specialCount = MathUtil.ensureMinMax(this.specialCount, 0, Number(this.maxSpecialCount));
     }
 
     increaseSpecialCount(amount) {
-        this.specialCount = Number(this.specialCount) + amount;
-        if (this.specialCount > Number(this.maxSpecialCount)) {
-            this.specialCount = Number(this.maxSpecialCount);
-        }
+        this.specialCount = MathUtil.ensureMax(Number(this.specialCount) + amount, Number(this.maxSpecialCount));
     }
 
     reduceSpecialCount(amount) {
-        this.specialCount = Number(this.specialCount) - amount;
-        if (Number(this.specialCount) < 0) {
-            this.specialCount = 0;
-        }
+        this.specialCount = MathUtil.ensureMin(Number(this.specialCount) - amount, 0);
     }
 
     reduceSpecialCountToZero() {
@@ -3200,30 +2775,14 @@ class Unit extends BattleMapElement {
     }
 
     modifyHp(leavesOneHp = false) {
-        if (this.hp > this.maxHpWithSkills) {
-            this.hp = this.maxHpWithSkills;
-        } else if (this.hp <= 0) {
-            if (leavesOneHp) {
-                this.hp = 1;
-            } else {
-                this.hp = 0;
-            }
-        }
+        this.hp = MathUtil.ensureMinMax(this.hp, leavesOneHp ? 1 : 0, this.maxHpWithSkills);
     }
 
     takeDamage(damageAmount, leavesOneHp = false) {
         if (this.isDead) {
             return;
         }
-        let hp = this.hp - damageAmount;
-        if (hp < 1) {
-            if (leavesOneHp) {
-                hp = 1;
-            } else {
-                hp = 0;
-            }
-        }
-        this.hp = hp;
+        this.hp = MathUtil.ensureMin(this.hp - damageAmount, leavesOneHp ? 1 : 0);
     }
 
     healFull() {
@@ -3613,34 +3172,22 @@ class Unit extends BattleMapElement {
 
     /// 装備中の武器名を取得します。
     getWeaponName() {
-        if (this.weaponInfo == null) {
-            return "‐";
-        }
-        return this.weaponInfo.name;
+        return this.weaponInfo == null ? "‐" : this.weaponInfo.name;
     }
 
     /// 装備中のAスキル名を取得します。
     getPassiveAName() {
-        if (this.passiveAInfo == null) {
-            return "‐";
-        }
-        return this.passiveAInfo.name;
+        return this.passiveAInfo == null ? "‐" : this.passiveAInfo.name;
     }
 
     /// 装備中の聖印名を取得します。
     getPassiveSName() {
-        if (this.passiveSInfo == null) {
-            return "‐";
-        }
-        return this.passiveSInfo.name;
+        return this.passiveSInfo == null ? "‐" : this.passiveSInfo.name;
     }
 
     /// 装備中の聖印名を取得します。
     getPassiveXName() {
-        if (this.passiveXInfo == null) {
-            return "‐";
-        }
-        return this.passiveXInfo.name;
+        return this.passiveXInfo == null ? "‐" : this.passiveXInfo.name;
     }
 
     getVisibleStatusTotal() {
@@ -3695,10 +3242,8 @@ class Unit extends BattleMapElement {
     }
 
     __getBuffMultiply() {
-        if (!this.canNullPanic() && this.hasPanic) {
-            return -1;
-        }
-        return 1;
+        let isPanic = this.hasPanic && !this.canNullPanic();
+        return isPanic ? -1 : 1;
     }
 
     canNullPanic() {

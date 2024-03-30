@@ -1565,14 +1565,14 @@ class AppData extends UnitManager {
 
     setBattleItemsFromString(value) {
         this.resonantBattleItems = [];
-        if (value == null || value == undefined) {
+        if (value == null) {
             return;
         }
-        if (Number(value) == ItemType.None) {
+        if (Number(value) === ItemType.None) {
             return;
         }
         for (let splited of value.split(ArrayValueElemDelimiter)) {
-            if (splited == "") { continue; }
+            if (splited === "") { continue; }
             let item = Number(splited);
             if (Number.isInteger(item)) {
                 this.resonantBattleItems.push(item);
@@ -1637,49 +1637,49 @@ class AppData extends UnitManager {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.globalBattleContext.currentPhaseType = Number(splited[i]); ++i; }
-        this.isEnemyActionTriggered = intToBool(Number(splited[i])); ++i;
-        if (Number.isInteger(Number(splited[i]))) { this.currentTurn = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.setBattleItemsFromString(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.isCombatOccuredInCurrentTurn = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.isAllyPhaseEnded = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.isEnemyPhaseEnded = intToBool(Number(splited[i])); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsPointAreaOffset = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Ally] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = Number(splited[i]); ++i; }
-        if (splited[i] != undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.globalBattleContext.currentPhaseType = Number(values[i]); ++i; }
+        this.isEnemyActionTriggered = intToBool(Number(values[i])); ++i;
+        if (Number.isInteger(Number(values[i]))) { this.currentTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.setBattleItemsFromString(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isCombatOccuredInCurrentTurn = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.isAllyPhaseEnded = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.isEnemyPhaseEnded = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsPointAreaOffset = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.mapKind = Number(splited[i]); ++i; }
-        this.globalBattleContext.isLightSeason = intToBool(Number(splited[i])); ++i;
-        this.globalBattleContext.isAstraSeason = intToBool(Number(splited[i])); ++i;
-        this.globalBattleContext.isFireSeason = intToBool(Number(splited[i])); ++i;
-        this.globalBattleContext.isWaterSeason = intToBool(Number(splited[i])); ++i;
-        this.globalBattleContext.isWindSeason = intToBool(Number(splited[i])); ++i;
-        this.globalBattleContext.isEarthSeason = intToBool(Number(splited[i])); ++i;
-        if (Number.isInteger(Number(splited[i]))) { this.settingCompressMode = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) {
-            let newValue = Number(splited[i]);
+        if (Number.isInteger(Number(values[i]))) { this.mapKind = Number(values[i]); ++i; }
+        this.globalBattleContext.isLightSeason = intToBool(Number(values[i])); ++i;
+        this.globalBattleContext.isAstraSeason = intToBool(Number(values[i])); ++i;
+        this.globalBattleContext.isFireSeason = intToBool(Number(values[i])); ++i;
+        this.globalBattleContext.isWaterSeason = intToBool(Number(values[i])); ++i;
+        this.globalBattleContext.isWindSeason = intToBool(Number(values[i])); ++i;
+        this.globalBattleContext.isEarthSeason = intToBool(Number(values[i])); ++i;
+        if (Number.isInteger(Number(values[i]))) { this.settingCompressMode = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) {
+            let newValue = Number(values[i]);
             this.setGameMode(newValue);
 
             ++i;
         }
-        if (Number.isInteger(Number(splited[i]))) { this.resonantBattleInterval = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resonantBattleInterval = Number(values[i]); ++i; }
 
         this.globalBattleContext.setChaosSeasonFromCurrentSeasons();
     }
