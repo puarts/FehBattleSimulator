@@ -49,7 +49,7 @@
                 // - ダメージ＋守備か魔防の高い方の20％（範囲奥義を除く）、
                 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
-                        let status = this.getHigherStatus(targetUnit, enemyUnit, [false, false, true, true]);
+                        let status = targetUnit.getHighestStatusInCombat(enemyUnit, [false, false, true, true]);
                         targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.2));
                     }
                 );
@@ -65,13 +65,20 @@
         }
     );
 
+    // 奥義発動後、自分の次の攻撃のスキル効果を発動
+    activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
+        }
+    );
+
     addSpecialDamageAfterDefenderSpecialActivatedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             // - 自分の次の攻撃は、
             //     - ダメージ＋守備か魔防の高い方の20％、
             if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
                 atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
-                let status = this.getHigherStatus(atkUnit, defUnit, [false, false, true, true]);
+                let status = atkUnit.getHighestStatusInCombat(defUnit, [false, false, true, true]);
                 return floorNumberWithFloatError(status * 0.2);
             }
             return 0;

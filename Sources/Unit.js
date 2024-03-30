@@ -3851,6 +3851,16 @@ class Unit extends BattleMapElement {
         ];
     }
 
+    /**
+     * 最も高いステータスを取得
+     * @param {Unit} enemyUnit
+     * @param {boolean[]} statusFlags (ex) 最も高いステータス: [true, true, true, true], 守備と魔防の高い方: [false, false, true, true]
+     */
+    getHighestStatusInCombat(enemyUnit = null, statusFlags) {
+        let statuses = this.getStatusesInCombat(enemyUnit);
+        return Math.max(...statuses.map((s, i) => statusFlags[i] ? s : 0));
+    }
+
     getAtkInCombat(enemyUnit = null) {
         let invalidates = enemyUnit !== null &&
             (enemyUnit.battleContext.invalidatesAtkBuff ||

@@ -1483,6 +1483,7 @@ const resetMaxSpecialCountFuncMap = new Map();
 const isAfflictorFuncMap = new Map();
 const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
 const applyDamageReductionRatioBySpecialFuncMap = new Map();
+// TODO: リファクタリングする
 const activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap = new Map();
 const addSpecialDamageAfterDefenderSpecialActivatedFuncMap = new Map();
 const applySkillEffectAfterSpecialActivatedFuncMap = new Map();

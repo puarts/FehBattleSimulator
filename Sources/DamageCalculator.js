@@ -534,7 +534,11 @@ class DamageCalculator {
 
         fixedAddDamage += atkUnit.battleContext.additionalDamage;
         fixedAddDamage += this.__getAtkMinusDefAdditionalDamage(
-            atkUnit, defUnit, atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage, isPrecombat);
+            atkUnit,
+            defUnit,
+            atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage,
+            isPrecombat
+        );
         return fixedAddDamage;
     }
 
