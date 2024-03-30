@@ -144,6 +144,7 @@
                 enemyUnit.battleContext.isVantageActivatable = true;
             }
             // 敵が追撃可能なら、敵の攻撃の直後に敵が追撃を行う
+            enemyUnit.battleContext.isDesperationActivatable = true;
             enemyUnit.battleContext.isDefDesperationActivatable = true;
         }
     );
