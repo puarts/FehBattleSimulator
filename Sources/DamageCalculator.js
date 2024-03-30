@@ -625,8 +625,10 @@ class DamageCalculator {
         }
 
         this.__calcAndSetCooldownCount(atkUnit, defUnit);
+
         this.__applySkillEffectsPerCombat(atkUnit, defUnit, context);
         this.__applySkillEffectsPerCombat(defUnit, atkUnit, context);
+
         // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
         this.#applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context);
 
@@ -678,49 +680,7 @@ class DamageCalculator {
         }
         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = false;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
-        for (let skillId of atkUnit.enumerateSkills()) {
-            let funcMap = addSpecialDamageAfterDefenderSpecialActivatedFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    fixedAddDamage += func.call(this, atkUnit, defUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
-        }
-        switch (atkUnit.special) {
-            case Special.IceMirror:
-                // 通常ダメージに加算
-                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
-                }
-                break;
-            case Special.IceMirror2:
-                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
-                    fixedAddDamage += floorNumberWithFloatError(atkUnit.getResInCombat(defUnit) * 0.4);
-                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
-                }
-                break;
-            case Special.FrostbiteMirror:
-                // 通常ダメージに加算
-                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
-                }
-                break;
-            case Special.NegatingFang:
-                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
-                    fixedAddDamage += floorNumberWithFloatError(atkUnit.getAtkInCombat(defUnit) * 0.3);
-                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
-                }
-                break;
-            default:
-                break;
-        }
+        fixedAddDamage = this.#updateFixedAddDamage(fixedAddDamage, atkUnit, defUnit);
 
         let mitAdvRatio = 0.0;
         if (defUnit.battleContext.isOnDefensiveTile) {
@@ -787,7 +747,7 @@ class DamageCalculator {
                 this.writeDebugLog("通常攻撃時は守備参照");
             }
 
-            let specialTotalMitDeailLog = atkUnit.battleContext.refersResForSpecial ? resInCombatDetail : defInCombatDetail;
+            let specialTotalMitDetailLog = atkUnit.battleContext.refersResForSpecial ? resInCombatDetail : defInCombatDetail;
             if (atkUnit.battleContext.refersRes !== atkUnit.battleContext.refersResForSpecial) {
                 if (atkUnit.battleContext.refersResForSpecial) {
                     this.writeDebugLog("奥義発動時は魔防参照")
@@ -808,7 +768,7 @@ class DamageCalculator {
             this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
             this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDetailLog})`);
             if (totalMit !== specialTotalMit) {
-                this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDeailLog})`);
+                this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDetailLog})`);
             }
             this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
             this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
@@ -834,6 +794,58 @@ class DamageCalculator {
         }
 
         return new OneAttackResult(damage, specialAddDamage, atkCountPerAttack);
+    }
+
+    /**
+     * @param {number} fixedAddDamage
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     */
+    #updateFixedAddDamage(fixedAddDamage, atkUnit, defUnit) {
+        for (let skillId of atkUnit.enumerateSkills()) {
+            let funcMap = addSpecialDamageAfterDefenderSpecialActivatedFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    fixedAddDamage += func.call(this, atkUnit, defUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
+        }
+        switch (atkUnit.special) {
+            case Special.IceMirror:
+                // 通常ダメージに加算
+                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                }
+                break;
+            case Special.IceMirror2:
+                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
+                    fixedAddDamage += floorNumberWithFloatError(atkUnit.getResInCombat(defUnit) * 0.4);
+                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+                }
+                break;
+            case Special.FrostbiteMirror:
+                // 通常ダメージに加算
+                if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                    fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
+                    atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                    atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                }
+                break;
+            case Special.NegatingFang:
+                if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
+                    fixedAddDamage += floorNumberWithFloatError(atkUnit.getAtkInCombat(defUnit) * 0.3);
+                    atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+                }
+                break;
+            default:
+                break;
+        }
+        return fixedAddDamage;
     }
 
     /**
