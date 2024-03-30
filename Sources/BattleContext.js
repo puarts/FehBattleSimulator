@@ -420,6 +420,19 @@ class BattleContext {
         this.applyAttackSkillEffectAfterCombatFuncs = [];
     }
 
+    initContextPerAttack() {
+        this.additionalDamagePerAttack = 0;
+        this.healedHpByAttackPerAttack = 0;
+        this.preventedDefenderSpecialPerAttack = false;
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
+        this.maxHpRatioToHealBySpecialPerAttack = 0;
+        this.specialCountReductionBeforeFirstAttackPerAttack = 0;
+        this.damageReductionValuePerAttack = 0;
+        this.damageReductionValueOfSpecialAttackPerAttack = 0;
+        this.#specialAddDamagePerAttack = 0;
+        this.damageReductionRatiosBySpecialPerAttack = [];
+    }
+
     invalidateFollowupAttackSkills() {
         this.invalidatesAbsoluteFollowupAttack = true;
         this.invalidatesInvalidationOfFollowupAttack = true;

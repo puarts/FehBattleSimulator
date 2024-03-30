@@ -1066,8 +1066,8 @@ class DamageCalculator {
                 return totalDamage;
             }
 
-            this.__initContextPerAttack(atkUnit);
-            this.__initContextPerAttack(defUnit);
+            atkUnit.battleContext.initContextPerAttack();
+            defUnit.battleContext.initContextPerAttack();
             // 攻撃奥義発動可能状態で実際に奥義が発動できる
             let canActivateAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0 &&
                 !atkUnit.battleContext.preventedAttackerSpecial;
@@ -1564,21 +1564,6 @@ class DamageCalculator {
                     break;
             }
         }
-    }
-
-    __initContextPerAttack(unit) {
-        /** @type {BattleContext} */
-        let context = unit.battleContext;
-        context.additionalDamagePerAttack = 0;
-        context.healedHpByAttackPerAttack = 0;
-        context.preventedDefenderSpecialPerAttack = false;
-        context.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
-        context.maxHpRatioToHealBySpecialPerAttack = 0;
-        context.specialCountReductionBeforeFirstAttackPerAttack = 0;
-        context.damageReductionValuePerAttack = 0;
-        context.damageReductionValueOfSpecialAttackPerAttack = 0;
-        context.specialAddDamagePerAttack = 0;
-        context.damageReductionRatiosBySpecialPerAttack = [];
     }
 
     __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
