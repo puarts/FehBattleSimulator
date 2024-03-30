@@ -507,8 +507,9 @@ class Unit extends BattleMapElement {
         /** @type {SkillInfo} */
         this.captainInfo = null;
 
-        this.partnerHeroIndex = 0;
-        this.emblemHeroIndex = 0;
+        // indexが0の英雄が存在するので-1で初期化する
+        this.partnerHeroIndex = -1;
+        this.emblemHeroIndex = -1;
         this.partnerLevel = PartnerLevel.None; // 支援レベル
 
         this.isTransformed = false; // 化身
