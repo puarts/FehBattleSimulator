@@ -15317,7 +15317,7 @@ class DamageCalculatorWrapper {
             {
                 // 月光閃
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.2);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.2));
                 targetUnit.battleContext.specialSufferPercentage = 20;
             }
         };
@@ -15326,7 +15326,7 @@ class DamageCalculatorWrapper {
             {
                 // 月光閃・承
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.2);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.2));
                 targetUnit.battleContext.specialSufferPercentage = 20;
                 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
             }
@@ -15354,21 +15354,21 @@ class DamageCalculatorWrapper {
             // 神竜破
             {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.5);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.5));
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.ArmoredFloe] = (targetUnit, enemyUnit) => {
             // 重装の聖氷
             {
                 let totalRes = targetUnit.getResInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.4);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.4));
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.ArmoredBeacon] = (targetUnit, enemyUnit) => {
             // 重装の聖炎
             {
                 let totalDef = targetUnit.getDefInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalDef * 0.4);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalDef * 0.4));
             }
         };
 
@@ -15377,7 +15377,7 @@ class DamageCalculatorWrapper {
                 // 緋炎
                 {
                     let totalDef = targetUnit.getDefInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage += Math.trunc(totalDef * 0.5);
+                    targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalDef * 0.5));
                 }
             };
             this._applySpecialSkillEffectFuncDict[Special.Hotarubi] = func;
@@ -15388,7 +15388,7 @@ class DamageCalculatorWrapper {
             // 華炎
             {
                 let totalDef = targetUnit.getDefInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalDef * 0.8);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalDef * 0.8));
             }
         };
 
@@ -15397,7 +15397,7 @@ class DamageCalculatorWrapper {
                 // 氷蒼
                 {
                     let totalRes = targetUnit.getResInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.5);
+                    targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.5));
                 }
             };
             this._applySpecialSkillEffectFuncDict[Special.Hyouten] = func;
@@ -15408,14 +15408,14 @@ class DamageCalculatorWrapper {
             // 氷華
             {
                 let totalRes = targetUnit.getResInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.8);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.8));
             }
         };
 
         this._applySpecialSkillEffectFuncDict[Special.CircletOfBalance] = (targetUnit, enemyUnit) => {
             // 聖神と暗黒神の冠
             let totalRes = targetUnit.getResInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.4);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.4));
             targetUnit.battleContext.canActivateNonSpecialOneTimePerMapMiracleFuncs.push((defUnit, atkUnit) => {
                 let isSpecialCharged = defUnit.isSpecialCharged || atkUnit.isSpecialCharged;
                 let isSpecialActivated = defUnit.battleContext.isSpecialActivated || atkUnit.battleContext.isSpecialActivated;
@@ -15435,14 +15435,14 @@ class DamageCalculatorWrapper {
             // グランベルの聖騎士
             {
                 let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalAtk * 0.25);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalAtk * 0.25));
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.ChivalricAura] = (targetUnit, enemyUnit) => {
             // グランベルの騎士道
             {
                 let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalAtk * 0.25);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalAtk * 0.25));
             }
         };
 
@@ -15451,7 +15451,7 @@ class DamageCalculatorWrapper {
                 // 竜裂
                 {
                     let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage += Math.trunc(totalAtk * 0.3);
+                    targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalAtk * 0.3));
                 }
             };
             this._applySpecialSkillEffectFuncDict[Special.Fukuryu] = func;
@@ -15462,28 +15462,28 @@ class DamageCalculatorWrapper {
             {
                 // 竜穿
                 let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalAtk * 0.5);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalAtk * 0.5));
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.Enclosure] = (targetUnit, enemyUnit) => {
             {
                 // 閉界
                 let totalAtk = targetUnit.getAtkInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalAtk * 0.25);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalAtk * 0.25));
                 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.ShiningEmblem] = (targetUnit, enemyUnit) => {
             {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.35);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.35));
             }
         };
         {
             let func = (targetUnit, enemyUnit) => {
                 {
                     let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.3);
+                    targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.3));
                 }
             };
             this._applySpecialSkillEffectFuncDict[Special.HonoNoMonsyo] = func;
@@ -15494,14 +15494,14 @@ class DamageCalculatorWrapper {
             // 聖風
             {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.3);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.3));
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.Sirius] = (targetUnit, enemyUnit) => {
             // 天狼
             {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.3);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.3));
                 targetUnit.battleContext.specialDamageRatioToHeal = 0.3;
             }
         };
@@ -15509,7 +15509,7 @@ class DamageCalculatorWrapper {
             // 天狼+
             {
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.35);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.35));
                 targetUnit.battleContext.specialDamageRatioToHeal = 0.35;
             }
         };
@@ -15517,24 +15517,24 @@ class DamageCalculatorWrapper {
             // 双刃
             {
                 let totalRes = targetUnit.getResInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.4);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.4));
                 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.RupturedSky] = (targetUnit, enemyUnit) => {
             if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
-                targetUnit.battleContext.specialAddDamage += Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.4);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.4));
             }
             else {
-                targetUnit.battleContext.specialAddDamage += Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.2);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(enemyUnit.getAtkInCombat(targetUnit) * 0.2));
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.SublimeHeaven] = (targetUnit, enemyUnit) => {
             if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
-                targetUnit.battleContext.specialAddDamage += Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.5);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.5));
             }
             else {
-                targetUnit.battleContext.specialAddDamage += Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.25);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.25));
             }
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         };
@@ -15543,19 +15543,19 @@ class DamageCalculatorWrapper {
             {
                 // 天刻の拍動
                 let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.25);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.25));
             }
         }
 
         this._applySpecialSkillEffectFuncDict[Special.VitalAstra] = (targetUnit, enemyUnit) => {
             let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.3);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.3));
         };
         {
             let func = (targetUnit, enemyUnit) => {
                 {
                     let totalSpd = targetUnit.getSpdInCombat(enemyUnit);
-                    targetUnit.battleContext.specialAddDamage += Math.trunc(totalSpd * 0.4);
+                    targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalSpd * 0.4));
                 }
             };
             this._applySpecialSkillEffectFuncDict[Special.RegnalAstra] = func;
@@ -15566,21 +15566,21 @@ class DamageCalculatorWrapper {
         this._applySpecialSkillEffectFuncDict[Special.OpenTheFuture] = (targetUnit, enemyUnit) => {
             {
                 let totalDef = targetUnit.getDefInCombat(enemyUnit);
-                targetUnit.battleContext.specialAddDamage += Math.trunc(totalDef * 0.5);
+                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalDef * 0.5));
                 targetUnit.battleContext.specialDamageRatioToHeal = 0.25;
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.BlueFrame] = (targetUnit) => {
-            targetUnit.battleContext.specialAddDamage += 10;
+            targetUnit.battleContext.addSpecialAddDamage(10);
             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                targetUnit.battleContext.specialAddDamage += 15;
+                targetUnit.battleContext.addSpecialAddDamage(15);
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.BrutalShell] = (targetUnit) => {
             targetUnit.battleContext.specialSufferPercentage = 50;
         }
         this._applySpecialSkillEffectFuncDict[Special.SeidrShell] = (targetUnit) => {
-            targetUnit.battleContext.specialAddDamage += 15;
+            targetUnit.battleContext.addSpecialAddDamage(15);
         };
     }
 
