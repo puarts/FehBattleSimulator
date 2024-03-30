@@ -122,6 +122,7 @@ class AssistableUnitInfo {
         this.targetUnit = targetUnit;
         this.assistableTiles = [];
 
+        // noinspection JSUnusedGlobalSymbols
         this.hasThreatenedByEnemyStatus = targetUnit.actionContext.hasThreatenedByEnemyStatus;
         this.hasThreatensEnemyStatus = targetUnit.actionContext.hasThreatensEnemyStatus;
         this.amountOfStatsActuallyBuffed = 0;
@@ -138,7 +139,7 @@ class AssistableUnitInfo {
         this.rallyUpTargetPriority = 0;
 
         this.bestTileToAssist = null;
-        this.hasStatAndNonstatDebuff = 0;
+        this.hasStatAndNonStatDebuff = 0;
     }
 
     calcAssistTargetPriority(assistUnit, isPrecombat = true) {
@@ -217,11 +218,11 @@ class AssistableUnitInfo {
     }
 
     __calcRallyTargetPriority(assistUnit, isPrecombat) {
-        this.hasStatAndNonstatDebuff = 0;
+        this.hasStatAndNonStatDebuff = 0;
         if (assistUnit.support === Support.HarshCommandPlus) {
             // 一喝+は弱化と状態異常の両方が付与されてるユニットが最優先
-            if (this.targetUnit.hasStatDebuff() && this.targetUnit.hasNonstatDebuff()) {
-                this.hasStatAndNonstatDebuff = 1;
+            if (this.targetUnit.hasStatDebuff() && this.targetUnit.hasNonStatDebuff()) {
+                this.hasStatAndNonStatDebuff = 1;
             }
         }
 
@@ -234,7 +235,7 @@ class AssistableUnitInfo {
             this.amountOfStatsActuallyBuffed = calcBuffAmount(assistUnit, this.targetUnit);
         }
 
-        return this.hasStatAndNonstatDebuff * 1000000
+        return this.hasStatAndNonStatDebuff * 1000000
             + this.amountOfStatsActuallyBuffed * 300000
             - this.distanceFromClosestEnemy * 3000
             + this.visibleStatTotal * 10
@@ -247,6 +248,7 @@ class ActionContext {
     constructor() {
         // 補助のコンテキスト
         this.assistPriority = 0;
+        /** @type {AssistableUnitInfo[]} */
         this.assistableUnitInfos = [];
         this.hasThreatenedByEnemyStatus = false;
         this.hasThreatensEnemyStatus = false;
@@ -324,8 +326,7 @@ class ActionContext {
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
     constructor(id = "", name = "",
-                unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry,
-                icon = "") {
+                unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
         // Unitはマップ上で作るので利便性のために初期値0にしておく
         this.setPos(0, 0);
@@ -458,6 +459,8 @@ class Unit extends BattleMapElement {
         this.passiveS = -1;
         this.passiveX = -1;
         this.captain = -1;
+        // TODO: 削除
+        // noinspection JSUnusedGlobalSymbols
         this.deffensiveTile = false; // 防御床
         this.setMoveCountFromMoveType();
 
@@ -537,9 +540,6 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
 
-        // バックアップ
-        this.tilesMapForDivineVein = new Map();
-
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
         this.isOncePerMapSpecialActivated = false;
 
@@ -566,6 +566,8 @@ class Unit extends BattleMapElement {
          **/
         this.isPairUpUnit = false;
 
+        // TODO: 削除
+        // noinspection JSUnusedGlobalSymbols
         this.blessingCount = 2;
 
         // 査定計算用
@@ -581,6 +583,7 @@ class Unit extends BattleMapElement {
         this.passiveBSp = 0;
         this.passiveCSp = 0;
         this.passiveSSp = 0;
+        // noinspection JSUnusedGlobalSymbols
         this.passiveXSp = 0;
 
         // 攻撃可能なタイル
@@ -610,10 +613,12 @@ class Unit extends BattleMapElement {
         this.isCantoActivating = false; // 再移動中かどうか
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
+        // noinspection JSUnusedGlobalSymbols
         this.originalMerge = 0;
+        // noinspection JSUnusedGlobalSymbols
         this.originalDragonflower = 0;
 
-        this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
+        this.warFundsCost = 0; // ロキの盤上遊戯で購入に必要な軍資金
 
         this.originalTile = null; // 護り手のように一時的に移動する際に元の位置を記録しておく用
 
@@ -648,10 +653,6 @@ class Unit extends BattleMapElement {
      */
     get isCaptain() {
         return this.slotOrder === 0;
-    }
-
-    get fromPos() {
-        return [this.fromPosX, this.fromPosY];
     }
 
     get statusEvalUnit() {
@@ -1104,6 +1105,7 @@ class Unit extends BattleMapElement {
         if (this.hasPairUpUnit) {
             // ValueDelimiter の入れ子は対応していないのでURIに圧縮してしまう
             const pairUpUnitSetting = this.pairUpUnit.turnWideStatusToString();
+            // noinspection JSUnresolvedReference
             compressedPairUpUnitSetting = LZString.compressToEncodedURIComponent(pairUpUnitSetting);
         }
         return this.heroIndex
@@ -1215,6 +1217,7 @@ class Unit extends BattleMapElement {
         let values = value.split(ValueDelimiter);
         let elemCount = values.length;
         let i = 0;
+        // TODO: リファクタリング
         if (Number.isInteger(Number(values[i]))) { this.heroIndex = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.weapon = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.support = Number(values[i]); ++i; }
@@ -1273,6 +1276,7 @@ class Unit extends BattleMapElement {
             return;
         }
 
+        // noinspection JSUnresolvedReference
         let decompressed = LZString.decompressFromEncodedURIComponent(settingText);
         this.pairUpUnit.fromTurnWideStatusString(decompressed);
     }
@@ -1601,20 +1605,6 @@ class Unit extends BattleMapElement {
         return isRangedWeaponType(this.weaponType);
     }
 
-    addBlessing() {
-        if (this.blessingCount === 5) {
-            return;
-        }
-        ++this.blessingCount;
-    }
-
-    removeBlessing() {
-        if (this.blessingCount === 1) {
-            return;
-        }
-        --this.blessingCount;
-    }
-
     /**
      * @returns {Unit}
      */
@@ -1899,6 +1889,7 @@ class Unit extends BattleMapElement {
             + this.getResDebuffInCombat();
     }
 
+    // noinspection JSUnusedGlobalSymbols
     getDebuffsInCombat() {
         return [
             this.getAtkDebuffInCombat(),
@@ -1915,6 +1906,9 @@ class Unit extends BattleMapElement {
         return this.atkBuff + this.spdBuff + this.defBuff + this.resBuff;
     }
 
+    /**
+     * @returns {[number, number, number, number]}
+     */
     get buffs() {
         if (this.isPanicEnabled) {
             return [-this.atkBuff, -this.spdBuff, -this.defBuff, -this.resBuff];
@@ -1922,6 +1916,9 @@ class Unit extends BattleMapElement {
         return [this.atkBuff, this.spdBuff, this.defBuff, this.resBuff];
     }
 
+    /**
+     * @returns {[number, number, number, number]}
+     */
     getBuffs(considerPanic = true) {
         if (considerPanic) {
             return this.buffs;
@@ -2001,7 +1998,7 @@ class Unit extends BattleMapElement {
     }
 
     // 弱化以外の状態異常が付与されているか
-    hasNonstatDebuff() {
+    hasNonStatDebuff() {
         for (let effect of this.statusEffects) {
             if (isNegativeStatusEffect(effect)) {
                 return true;
@@ -2012,53 +2009,26 @@ class Unit extends BattleMapElement {
 
     // 弱化が付与されているか
     hasStatDebuff() {
-        if ((!this.battleContext.invalidatesOwnAtkDebuff && this.atkDebuff < 0)
-            || (!this.battleContext.invalidatesOwnSpdDebuff && this.spdDebuff < 0)
-            || (!this.battleContext.invalidatesOwnResDebuff && this.resDebuff < 0)
-            || (!this.battleContext.invalidatesOwnDefDebuff && this.defDebuff < 0)
-        ) {
-            return true;
-        }
+        let debuffs = this.getDebuffs();
+        let invalidations = this.battleContext.getDebuffInvalidations();
+        return invalidations.some((invalidates, i) => debuffs[i] < 0 && !invalidates);
     }
 
     // 状態異常が付与されているか
     hasNegativeStatusEffect() {
-        return this.hasNonstatDebuff() || this.hasStatDebuff();
+        return this.hasNonStatDebuff() || this.hasStatDebuff();
     }
 
     hasPositiveStatusEffect(enemyUnit = null) {
-        for (let effect of this.statusEffects) {
-            if (isPositiveStatusEffect(effect)) {
-                return true;
-            }
+        if (this.statusEffects.some(e => isPositiveStatusEffect(e))) {
+            return true;
         }
-
-        if (enemyUnit != null) {
-            if ((!enemyUnit.battleContext.invalidatesAtkBuff && this.atkBuff > 0)
-                || (!enemyUnit.battleContext.invalidatesSpdBuff && this.spdBuff > 0)
-                || (!enemyUnit.battleContext.invalidatesResBuff && this.resBuff > 0)
-                || (!enemyUnit.battleContext.invalidatesDefBuff && this.defBuff > 0)
-            ) {
-                return true;
-            }
-        } else {
-            return this.atkBuff > 0 ||
-                this.spdBuff > 0 ||
-                this.defBuff > 0 ||
-                this.resBuff > 0;
-        }
-
-        return false;
+        let buffs = enemyUnit == null ? this.buffs : this.getBuffsInCombat(enemyUnit);
+        return buffs.some(buff => buff > 0);
     }
 
     __getPositiveStatusEffects(statusEffects) {
-        let result = [];
-        for (let effect of statusEffects) {
-            if (isPositiveStatusEffect(effect)) {
-                result.push(effect);
-            }
-        }
-        return result;
+        return statusEffects.filter(e => isPositiveStatusEffect(e));
     }
 
     getPositiveStatusEffects() {
@@ -2066,13 +2036,7 @@ class Unit extends BattleMapElement {
     }
 
     getNegativeStatusEffects() {
-        let result = [];
-        for (let effect of this.statusEffects) {
-            if (isNegativeStatusEffect(effect)) {
-                result.push(effect);
-            }
-        }
-        return result;
+        return this.statusEffects.filter(e => isNegativeStatusEffect(e));
     }
 
     /**
@@ -2151,7 +2115,7 @@ class Unit extends BattleMapElement {
     }
 
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
-    canActivateObstractToTilesIn2Spaces(moveUnit) {
+    canActivateObstructToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
             let funcMap = canActivateObstructToTilesIn2SpacesFuncMap;
@@ -2178,7 +2142,7 @@ class Unit extends BattleMapElement {
     }
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
-    canActivateObstractToAdjacentTiles(moveUnit) {
+    canActivateObstructToAdjacentTiles(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
             let funcMap = canActivateObstructToAdjacentTilesFuncMap;
@@ -2210,24 +2174,12 @@ class Unit extends BattleMapElement {
     }
 
     get isBuffed() {
-        if (this.isPanicEnabled) {
-            return false;
-        }
-        return this.atkBuff > 0 ||
-            this.spdBuff > 0 ||
-            this.defBuff > 0 ||
-            this.resBuff > 0;
+        return this.isPanicEnabled ? false : this.getBuffs(false).some(b => b > 0);
     }
 
     // 強化無効を考慮
     isBuffedInCombat(enemyUnit) {
-        if (this.isPanicEnabled) {
-            return false;
-        }
-        return this.getAtkBuffInCombat(enemyUnit) > 0 ||
-            this.getSpdBuffInCombat(enemyUnit) > 0 ||
-            this.getDefBuffInCombat(enemyUnit) > 0 ||
-            this.getResBuffInCombat(enemyUnit) > 0;
+        return this.isPanicEnabled ? false : this.getBuffsInCombat(enemyUnit).some(b => b > 0);
     }
 
     get isDebuffed() {
@@ -2235,6 +2187,18 @@ class Unit extends BattleMapElement {
             this.spdDebuff < 0 ||
             this.defDebuff < 0 ||
             this.resDebuff < 0;
+    }
+
+    /**
+     * @returns {[number, number, number, number]}
+     */
+    getDebuffs() {
+        return [
+            this.atkDebuff,
+            this.spdDebuff,
+            this.defDebuff,
+            this.resDebuff,
+        ];
     }
 
     get isSpecialCountMax() {
@@ -2284,35 +2248,6 @@ class Unit extends BattleMapElement {
         this.snapshot.battleContext.invalidatesDefBuff = this.battleContext.invalidatesDefBuff;
         this.snapshot.battleContext.invalidatesResBuff = this.battleContext.invalidatesResBuff;
     }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getAtkIncrementInCombat(enemyUnit) {
-        return this.getAtkInCombat(enemyUnit) - this.getAtkInPrecombat();
-    }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getSpdIncrementInCombat(enemyUnit) {
-        return this.getSpdInCombat(enemyUnit) - this.getSpdInPrecombat();
-    }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getDefIncrementInCombat(enemyUnit) {
-        return this.getDefInCombat(enemyUnit) - this.getDefInPrecombat();
-    }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getResIncrementInCombat(enemyUnit) {
-        return this.getResInCombat(enemyUnit) - this.getResInPrecombat();
-    }
-
 
     resetBuffs() {
         this.atkBuff = 0;
@@ -2480,32 +2415,17 @@ class Unit extends BattleMapElement {
         let maxStatuses = [StatusType.Atk];
         let unit = this;
         let maxValue = unit.getAtkInPrecombat() - 15; // 攻撃は-15して比較
-        {
-            let value = unit.getSpdInPrecombat();
+        let statuses = [
+            [unit.getSpdInPrecombat(), StatusType.Spd],
+            [unit.getDefInPrecombat(), StatusType.Def],
+            [unit.getResInPrecombat(), StatusType.Res],
+        ];
+        for (let [value, type] of statuses) {
             if (value > maxValue) {
-                maxStatuses = [StatusType.Spd];
+                maxStatuses = [type];
                 maxValue = value;
             } else if (value === maxValue) {
-                maxStatuses.push(StatusType.Spd);
-            }
-        }
-        {
-            let value = unit.getDefInPrecombat();
-            if (value > maxValue) {
-                maxStatuses = [StatusType.Def];
-                maxValue = value;
-            } else if (value === maxValue) {
-                maxStatuses.push(StatusType.Def);
-            }
-        }
-        {
-            let value = unit.getResInPrecombat();
-            if (value > maxValue) {
-                maxStatuses = [StatusType.Res];
-                // noinspection JSUnusedAssignment
-                maxValue = value;
-            } else if (value === maxValue) {
-                maxStatuses.push(StatusType.Res);
+                maxStatuses.push(type);
             }
         }
         return maxStatuses;
@@ -2574,7 +2494,7 @@ class Unit extends BattleMapElement {
 
     applyDefResBuffs(def, res = def) {
         this.applyDefBuff(def);
-        this.applyResBuff(def);
+        this.applyResBuff(res);
     }
 
     reserveToApplyAtkDebuff(amount) {
@@ -2703,11 +2623,7 @@ class Unit extends BattleMapElement {
 
     applyReservedBuffs() {
         this.applyBuffs(this.reservedAtkBuff, this.reservedSpdBuff, this.reservedDefBuff, this.reservedResBuff);
-
-        this.reservedAtkBuff = 0;
-        this.reservedSpdBuff = 0;
-        this.reservedDefBuff = 0;
-        this.reservedResBuff = 0;
+        this.resetReservedBuffs();
     }
 
     resetReservedBuffs() {
@@ -2723,10 +2639,7 @@ class Unit extends BattleMapElement {
         this.defDebuff = this.reservedDefDebuff;
         this.resDebuff = this.reservedResDebuff;
 
-        this.reservedAtkDebuff = 0;
-        this.reservedSpdDebuff = 0;
-        this.reservedDefDebuff = 0;
-        this.reservedResDebuff = 0;
+        this.resetReservedDebuffs();
     }
 
     resetReservedDebuffs() {
@@ -3172,21 +3085,25 @@ class Unit extends BattleMapElement {
     }
 
     /// 装備中の武器名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getWeaponName() {
         return this.weaponInfo == null ? "‐" : this.weaponInfo.name;
     }
 
     /// 装備中のAスキル名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getPassiveAName() {
         return this.passiveAInfo == null ? "‐" : this.passiveAInfo.name;
     }
 
     /// 装備中の聖印名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getPassiveSName() {
         return this.passiveSInfo == null ? "‐" : this.passiveSInfo.name;
     }
 
     /// 装備中の聖印名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getPassiveXName() {
         return this.passiveXInfo == null ? "‐" : this.passiveXInfo.name;
     }
@@ -3316,7 +3233,8 @@ class Unit extends BattleMapElement {
     }
 
     getAtkBuffInCombat(enemyUnit) {
-        let invalidates = enemyUnit !== null &&
+        let invalidates =
+            enemyUnit !== null &&
             enemyUnit.battleContext.invalidatesAtkBuff ||
             enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
         return this.__getBuffInCombat(
@@ -3359,6 +3277,9 @@ class Unit extends BattleMapElement {
         );
     }
 
+    /**
+     * @returns {[number, number, number, number]}
+     */
     getBuffsInCombat(enemyUnit) {
         return [
             this.getAtkBuffInCombat(enemyUnit),
@@ -3539,6 +3460,7 @@ class Unit extends BattleMapElement {
         return 0;
     }
 
+    // TODO: 削除する
     hasSkill(skillId) {
         return this.weapon === skillId
             || this.support === skillId
@@ -3897,11 +3819,13 @@ class Unit extends BattleMapElement {
     }
 
     /// 入力した成長率に対して、得意ステータスの上昇値を取得します。
+    // noinspection JSUnusedGlobalSymbols
     calcAssetStatusIncrement(growthRate) {
         return this.__calcGrowthValue(growthRate + 0.05) - this.__calcGrowthValue(growthRate) + 1;
     }
 
     /// 入力した成長率に対して、不得意ステータスの減少値を取得します。
+    // noinspection JSUnusedGlobalSymbols
     calcFlowStatusDecrement(growthRate) {
         return this.__calcGrowthValue(growthRate - 0.05) - this.__calcGrowthValue(growthRate) - 1;
     }
@@ -4260,15 +4184,6 @@ class Unit extends BattleMapElement {
         return this.passiveAInfo.isDuel4();
     }
 
-
-    get totalPureGrowthRate() {
-        return Number(this.hpGrowthRate)
-            + Number(this.atkGrowthRate)
-            + Number(this.spdGrowthRate)
-            + Number(this.defGrowthRate)
-            + Number(this.resGrowthRate);
-    }
-
     /**
      * @param  {number} majorSeason=SeasonType.None
      * @param  {number} minorSeason=SeasonType.None
@@ -4367,10 +4282,6 @@ class Unit extends BattleMapElement {
         totalSp += this.passiveSInfo != null ? this.passiveSInfo.sp : 0;
         totalSp += this.passiveXInfo != null ? this.passiveXInfo.sp : 0;
         return totalSp;
-    }
-
-    calcArenaTotalSpScore() {
-        return calcArenaTotalSpScore(this.getTotalSp());
     }
 
     /**
@@ -4838,6 +4749,7 @@ class Unit extends BattleMapElement {
     }
 
     /// テレポート系スキルを所持していたり、状態が付与されていて、テレポートが可能な状態かどうかを判定します。
+    // noinspection JSUnusedGlobalSymbols
     canTeleport() {
         if (this.hasStatusEffect(StatusEffectType.AirOrders)) {
             return true;
@@ -5085,18 +4997,6 @@ class Unit extends BattleMapElement {
         }
         return false;
     }
-
-    /// 神罰の杖を発動可能か調べます。
-    canActivateWrathfulStaff() {
-        let atkWeaponInfo = atkUnit.weaponInfo;
-        let passiveBInfo = atkUnit.passiveBInfo;
-
-        // 神罰の杖
-        return (atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
-            || (passiveBInfo != null && passiveBInfo.wrathfulStaff)
-            || (atkUnit.weaponRefinement === WeaponRefinementType.WrathfulStaff);
-    }
-
 
     /**
      * ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
@@ -5490,6 +5390,7 @@ function calcHealAmount(assistUnit, targetUnit) {
 }
 
 /// Tier 1 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
+// noinspection JSUnusedLocalSymbols
 function isDebufferTier1(attackUnit, targetUnit) {
     return attackUnit.weapon === Weapon.Hlidskjalf;
 }

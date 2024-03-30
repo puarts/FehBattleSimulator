@@ -2368,13 +2368,12 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.BonusDoubler4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             let hasPositiveStatusEffect = targetUnit.hasPositiveStatusEffect(enemyUnit);
-            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                if (hasPositiveStatusEffect) {
-                    break;
-                }
-                if (unit.hasPositiveStatusEffect()) {
-                    hasPositiveStatusEffect = true;
-                    break;
+            if (!hasPositiveStatusEffect) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
+                    if (unit.hasPositiveStatusEffect()) {
+                        hasPositiveStatusEffect = true;
+                        break;
+                    }
                 }
             }
             if (hasPositiveStatusEffect) {
@@ -6079,7 +6078,7 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.AncientRagnell] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect()) {
+            if (targetUnit.battleContext.restHpPercentage >= 50 || targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.defSpur -= 6;
             }
@@ -7781,13 +7780,13 @@ class DamageCalculatorWrapper {
                 ++targetUnit.battleContext.followupAttackPriorityIncrement;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Garumu] = (targetUnit) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.Garumu] = (targetUnit, enemyUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     targetUnit.addAllSpur(5);
                     targetUnit.battleContext.healedHpByAttack += 7;
                 }
-                if (targetUnit.hasPositiveStatusEffect()) {
+                if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                 }
             }
@@ -14737,7 +14736,7 @@ class DamageCalculatorWrapper {
 
                     case Weapon.Garumu:
                         if (atkUnit.isWeaponRefined) {
-                            if (atkUnit.hasPositiveStatusEffect()) {
+                            if (atkUnit.hasPositiveStatusEffect(defUnit)) {
                                 ++followupAttackPriority;
                             }
                         }

@@ -715,7 +715,7 @@ class Tile extends BattleMapElement {
 
         if (!ignoresUnits) {
             if (!unit.canActivatePass()) {
-                if (this._placedUnit != null && unit.groupId != this._placedUnit.groupId) {
+                if (this._placedUnit != null && unit.groupId !== this._placedUnit.groupId) {
                     // 敵ユニットだったらオブジェクトと同じ扱い
                     return CanNotReachTile;
                 }
@@ -724,7 +724,7 @@ class Tile extends BattleMapElement {
                 // 隣接マスに進軍阻止持ちがいるか確認
                 for (let tile1Space of this.neighbors) {
                     if (tile1Space.isEnemyUnitAvailable(unit)
-                        && tile1Space.placedUnit.canActivateObstractToAdjacentTiles(unit)
+                        && tile1Space.placedUnit.canActivateObstructToAdjacentTiles(unit)
                     ) {
                         if (weight === CanNotReachTile || this.obj instanceof Wall) {
                             return CanNotReachTile;
@@ -735,7 +735,7 @@ class Tile extends BattleMapElement {
                     // 2マス以内に進軍阻止持ちがいるか確認
                     for (let tile2Spaces of tile1Space.neighbors) {
                         if (tile2Spaces.isEnemyUnitAvailable(unit)
-                            && tile2Spaces.placedUnit.canActivateObstractToTilesIn2Spaces(unit)
+                            && tile2Spaces.placedUnit.canActivateObstructToTilesIn2Spaces(unit)
                         ) {
                             if (weight === CanNotReachTile || this.obj instanceof Wall) {
                                 return CanNotReachTile;

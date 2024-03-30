@@ -3728,7 +3728,7 @@ class BattleSimulatorBase {
     }
 
     __canDebuff2PointsOfDefOrRes(attackUnit, targetUnit) {
-        let unit = new Unit("", "", UnitGroupType.Ally, 0, "");
+        let unit = new Unit("", "", UnitGroupType.Ally, 0);
         unit.defDebuff = targetUnit.defDebuff;
         unit.resDebuff = targetUnit.resDebuff;
 
@@ -5493,6 +5493,11 @@ class BattleSimulatorBase {
         unit.distanceFromClosestEnemy = unit.placedTile.calculateDistanceToClosestEnemyTile(unit);
     }
 
+    /**
+     * @param {Unit[]|Generator<Unit>} allyUnits
+     * @param {Unit[]|Generator<Unit>} enemyUnits
+     * @param {boolean} triggersAction
+     */
     __prepareActionContextForAssist(allyUnits, enemyUnits, triggersAction = true) {
         using_(new ScopedStopwatch(time => this.writeDebugLogLine("行動計算コンテキストの初期化: " + time + " ms")), () => {
             for (let unit of allyUnits) {
@@ -7685,6 +7690,11 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @param {Unit} assistUnit
+     * @param {AssistableUnitInfo[]|Generator<AssistableUnitInfo>} assistableUnitInfos
+     * @param {boolean} isPrecombat
+     */
     __selectBestAssistTarget(assistUnit, assistableUnitInfos, isPrecombat) {
         // 補助対象を選択
         this.writeDebugLogLine("最適な補助対象を選択");
@@ -7703,7 +7713,7 @@ class BattleSimulatorBase {
             this.writeDebugLogLine(order + ": " + info.targetUnit.getNameWithGroup()
                 + ", assistTargetPriority=" + info.assistTargetPriority
                 + ", hasThreatensEnemyStatus=" + info.hasThreatensEnemyStatus
-                + ", hasStatAndNonstatDebuff=" + info.hasStatAndNonstatDebuff
+                + ", hasStatAndNonStatDebuff=" + info.hasStatAndNonStatDebuff
                 + ", amountOfStatsActuallyBuffed=" + info.amountOfStatsActuallyBuffed
                 + ", amountHealed=" + info.amountHealed
                 + ", isTeleportationRequired=" + info.isTeleportationRequired

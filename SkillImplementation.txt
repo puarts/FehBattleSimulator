@@ -1342,7 +1342,7 @@ canActivateObstructToAdjacentTilesFuncMap.set(skillId,
 );
 
 進軍阻止(2マス)
-canActivateObstractToTilesIn2SpacesFuncMap.set(skillId,
+canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
     function (unit, moveUnit) {
         return true;
     }

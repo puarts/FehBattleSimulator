@@ -501,6 +501,18 @@ class BattleContext {
         this.invalidatesResBuff = res;
     }
 
+    /**
+     * @returns {[boolean, boolean, boolean, boolean]}
+     */
+    getBuffInvalidations() {
+        return [
+            this.invalidatesAtkBuff,
+            this.invalidatesSpdBuff,
+            this.invalidatesDefBuff,
+            this.invalidatesResBuff,
+        ];
+    }
+
     invalidateAllOwnDebuffs() {
         this.invalidatesOwnAtkDebuff = true;
         this.invalidatesOwnSpdDebuff = true;
@@ -508,11 +520,29 @@ class BattleContext {
         this.invalidatesOwnResDebuff = true;
     }
 
+    /**
+     * @param {boolean} atk
+     * @param {boolean} spd
+     * @param {boolean} def
+     * @param {boolean} res
+     */
     invalidateDebuffs(atk, spd, def, res) {
         this.invalidatesOwnAtkDebuff = atk;
         this.invalidatesOwnSpdDebuff = spd;
         this.invalidatesOwnDefDebuff = def;
         this.invalidatesOwnResDebuff = res;
+    }
+
+    /**
+     * @returns {[boolean, boolean, boolean, boolean]}
+     */
+    getDebuffInvalidations() {
+        return [
+            this.invalidatesOwnAtkDebuff,
+            this.invalidatesOwnSpdDebuff,
+            this.invalidatesOwnDefDebuff,
+            this.invalidatesOwnResDebuff,
+        ];
     }
 
     // ダメージ軽減積

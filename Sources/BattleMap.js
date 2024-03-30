@@ -2499,7 +2499,7 @@ class BattleMap {
                 doneTiles.push(tile);
 
                 let targetTile = attackTargetUnit.placedTile;
-                if (targetTile.posX == tile.posX && targetTile.posY == tile.posY) {
+                if (targetTile.posX === tile.posX && targetTile.posY === tile.posY) {
                     return true;
                 }
             }

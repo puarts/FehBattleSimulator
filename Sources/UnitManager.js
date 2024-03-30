@@ -270,7 +270,7 @@ class UnitManager {
     }
 
     __createDefaultUnit(id, unitGroupType) {
-        return new Unit(id, "", unitGroupType, MoveType.Infantry, "");
+        return new Unit(id, "", unitGroupType, MoveType.Infantry);
     }
 
     findNearestEnemies(targetUnit, distLimit = 100) {
