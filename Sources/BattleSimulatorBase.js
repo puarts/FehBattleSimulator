@@ -3052,7 +3052,7 @@ class BattleSimulatorBase {
     }
 
     writeWarningLine(log) {
-        let warnning = "<span style='font-size:14px;color:blue'>" + log + '</span><br/>';
+        let warnning = "<span style='font-size:10px;color:#d05000'>" + log + '</span><br/>';
         this.vm.damageCalcLog += warnning;
         this.writeSimpleLogLine(warnning);
     }

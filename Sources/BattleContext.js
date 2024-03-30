@@ -592,4 +592,38 @@ class BattleContext {
     getTotalSpecialAddDamage() {
         return this.#specialAddDamage + this.#specialAddDamagePerAttack;
     }
+
+    getSpecialCountChangeAmountBeforeFirstAttack() {
+        let increase = this.specialCountIncreaseBeforeFirstAttack;
+        let reduction =
+            this.specialCountReductionBeforeFirstAttack +
+            this.specialCountReductionBeforeFirstAttackPerAttack;
+        return increase - reduction;
+    }
+
+    getSpecialCountChangeAmountBeforeFirstAttackByEnemy() {
+        let increase = 0;
+        let reduction = this.specialCountReductionBeforeFirstAttackByEnemy;
+        return increase - reduction;
+    }
+
+    getSpecialCountReductionBeforeFollowupAttack() {
+        let increase = 0;
+        let reduction = this.specialCountReductionBeforeFollowupAttack;
+        return increase - reduction;
+    }
+
+    isChangedSpecialCountBeforeFirstAttack() {
+        return this.specialCountIncreaseBeforeFirstAttack !== 0 ||
+            this.specialCountReductionBeforeFirstAttack !== 0 ||
+            this.specialCountReductionBeforeFirstAttackPerAttack !== 0;
+    }
+
+    isChangedSpecialCountBeforeFirstAttackByEnemy() {
+        return this.specialCountReductionBeforeFirstAttackByEnemy !== 0;
+    }
+
+    isChangedSpecialCountBeforeFollowupAttack() {
+        return this.specialCountReductionBeforeFollowupAttack !== 0;
+    }
 }

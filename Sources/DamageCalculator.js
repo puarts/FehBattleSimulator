@@ -273,7 +273,7 @@ class DamageCalculator {
             yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
             if (defUnit.battleContext.isDefDesperationActivated) {
-                let message = `${defUnit.nameWithGroup}の受けの攻め立てが発動`;
+                let message = `追撃可能なら${defUnit.nameWithGroup}の受けの攻め立てが発動`;
                 this.writeDebugLog(message);
                 this.writeSimpleLog(message);
 
@@ -296,7 +296,7 @@ class DamageCalculator {
                 yield () => self.__attack(atkUnit, defUnit, result, context);
 
                 if (atkUnit.battleContext.isDesperationActivated) {
-                    let message = `${atkUnit.nameWithGroup}の攻め立てが発動`;
+                    let message = `追撃可能なら${atkUnit.nameWithGroup}の攻め立てが発動`;
                     this.writeDebugLog(message);
                     this.writeSimpleLog(message);
 
@@ -330,7 +330,7 @@ class DamageCalculator {
             yield () => self.__attack(atkUnit, defUnit, result, context);
 
             if (atkUnit.battleContext.isDesperationActivated) { // 攻め立て
-                let message = `${atkUnit.nameWithGroup}の攻め立てが発動`;
+                let message = `追撃可能なら${atkUnit.nameWithGroup}の攻め立てが発動`;
                 this.writeDebugLog(message);
                 this.writeSimpleLog(message);
 
@@ -353,7 +353,7 @@ class DamageCalculator {
                 yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
                 if (defUnit.battleContext.isDefDesperationActivated) {
-                    let message = `${defUnit.nameWithGroup}の受けの攻め立てが発動`;
+                    let message = `追撃可能なら${defUnit.nameWithGroup}の受けの攻め立てが発動`;
                     this.writeDebugLog(message);
                     this.writeSimpleLog(message);
 
@@ -630,32 +630,33 @@ class DamageCalculator {
         // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
         if (context.isFirstAttack(atkUnit)) {
             // atkUnitの奥義カウント変動
-            let atkCount =
-                atkUnit.tmpSpecialCount
-                - atkUnit.battleContext.specialCountReductionBeforeFirstAttack
-                - atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack
-                + atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack;
-            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
-            ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
-            ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
-            ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
+            let atkCount = atkUnit.tmpSpecialCount +
+                atkUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttack();
+            if (atkUnit.battleContext.isChangedSpecialCountBeforeFirstAttack()) {
+                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
+                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
+                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
+                                    ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
+            }
             atkUnit.tmpSpecialCount = MathUtil.ensureMinMax(atkCount, 0, atkUnit.maxSpecialCount);
 
             // defUnitの奥義カウント変動
-            let defCount =
-                defUnit.tmpSpecialCount
-                - defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy;
-            this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の攻撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
-            ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy}`);
+            let defCount = defUnit.tmpSpecialCount +
+                defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttackByEnemy();
+            if (defUnit.battleContext.isChangedSpecialCountBeforeFirstAttackByEnemy()) {
+                this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の攻撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
+                                    ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy}`);
+            }
             defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
         }
         // 最初の追撃前の効果
         if (context.isFirstFollowupAttack()) {
-            let totalCount =
-                atkUnit.tmpSpecialCount
-                - atkUnit.battleContext.specialCountReductionBeforeFollowupAttack;
-            this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
-            ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack}`);
+            let totalCount = atkUnit.tmpSpecialCount
+                + atkUnit.battleContext.getSpecialCountReductionBeforeFollowupAttack();
+            if (atkUnit.battleContext.isChangedSpecialCountBeforeFollowupAttack()) {
+                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
+                                    ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack}`);
+            }
             atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
         }
 
