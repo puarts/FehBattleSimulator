@@ -4502,8 +4502,8 @@ class Unit extends BattleMapElement {
         this.passiveA = heroInfo.passiveA;
         this.passiveB = heroInfo.passiveB;
         this.passiveC = heroInfo.passiveC;
-        // this.passiveS = PassiveS.None;
-        // this.passiveX = PassiveX.None;
+        // this.passiveS = heroInfo.passiveS;
+        this.passiveX = heroInfo.passiveX;
     }
 
     hasMovementAssist() {
