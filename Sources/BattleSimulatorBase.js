@@ -163,7 +163,7 @@ class BattleSimulatorBase {
             },
             mapChanged: function () {
                 // g_appData.clearReservedSkillsForAllUnits();
-                removeBreakableWallsFromTrashbox();
+                removeBreakableWallsFromTrashBox();
                 changeMap();
                 switch (appData.gameMode) {
                     case GameMode.Arena:
@@ -1083,9 +1083,9 @@ class BattleSimulatorBase {
     __areSameOrigin(unit, targetOrigins) {
         let origins = unit.heroInfo.origin.split('|');
         for (let origin of origins) {
-            let isMonsyoNoNazo = origin.indexOf("紋章の謎") >= 0;
+            let includesEmblem = origin.indexOf("紋章の謎") >= 0;
             for (let targetOrigin of targetOrigins) {
-                if (isMonsyoNoNazo) {
+                if (includesEmblem) {
                     if (targetOrigin.indexOf("紋章の謎") >= 0) {
                         return true;
                     }
@@ -1464,12 +1464,12 @@ class BattleSimulatorBase {
             case Hero.DuoPeony:
                 {
                     let highestHpUnits = [];
-                    let heigestHp = 0;
+                    let highestHp = 0;
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 1, false)) {
                         if (unit.isActionDone) {
-                            if (unit.hp > heigestHp) {
+                            if (unit.hp > highestHp) {
                                 highestHpUnits = [unit];
-                                heigestHp = unit.hp;
+                                highestHp = unit.hp;
                             }
                             else if (unit.hp === highestHp) {
                                 highestHpUnits.push(unit);
@@ -1732,6 +1732,7 @@ class BattleSimulatorBase {
         if (this.tesseractLoadState === ModuleLoadState.NotLoaded) {
             self.tesseractLoadState = ModuleLoadState.Loading;
             self.writeSimpleLogLine("Tesseract の初期化開始..");
+            // noinspection SpellCheckingInspection
             importJs("https://unpkg.com/tesseract.js@1.0.19/dist/tesseract.min.js", x => {
                 self.tesseractLoadState = ModuleLoadState.Loaded;
                 self.writeSimpleLogLine("Tesseract の初期化完了");
@@ -3052,9 +3053,9 @@ class BattleSimulatorBase {
     }
 
     writeWarningLine(log) {
-        let warnning = "<span style='font-size:10px;color:#d05000'>" + log + '</span><br/>';
-        this.vm.damageCalcLog += warnning;
-        this.writeSimpleLogLine(warnning);
+        let warning = "<span style='font-size:10px;color:#d05000'>" + log + '</span><br/>';
+        this.vm.damageCalcLog += warning;
+        this.writeSimpleLogLine(warning);
     }
 
     writeLog(log) {
@@ -4340,7 +4341,7 @@ class BattleSimulatorBase {
         return priority;
     }
 
-    __calcAssistPriorityForPostcombat(unit) {
+    __calcAssistPriorityForPostCombat(unit) {
         let assistTypePriority = 0;
         if ((!unit.isWeaponEquipped && unit.hasRefreshAssist)
             || (!unit.isWeaponEquipped && unit.hasHealAssist)
@@ -4898,16 +4899,16 @@ class BattleSimulatorBase {
 
             let tmpWinCount = 0;
             let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
-            let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
+            let defenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
 
             let log = `${attackerUnit.getNameWithGroup()}の状態変化: ${attackerUnit.statusEffectsToDisplayString()}<br/>`;
-            log += `${deffenceUnit.getNameWithGroup()}の状態変化: ${deffenceUnit.statusEffectsToDisplayString()}<br/>`;
+            log += `${defenceUnit.getNameWithGroup()}の状態変化: ${defenceUnit.statusEffectsToDisplayString()}<br/>`;
 
             using_(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
                 for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
                     let damageType = this.vm.durabilityTestCalcPotentialDamage ?
                         DamageType.PotentialDamage : DamageType.ActualDamage;
-                    this.calcDamageTemporary(attackerUnit, deffenceUnit, null, damageType);
+                    this.calcDamageTemporary(attackerUnit, defenceUnit, null, damageType);
                     targetUnit.hp = targetUnit.restHp;
                     targetUnit.specialCount = targetUnit.tmpSpecialCount;
                     if (enemyUnit.restHp === 0) {
@@ -5223,7 +5224,7 @@ class BattleSimulatorBase {
             return false;
         }
         this.writeLogLine("■戦闘後補助の計算------------");
-        if (this.simulatePostcombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
+        if (this.simulatePostCombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5276,7 +5277,7 @@ class BattleSimulatorBase {
             return false;
         }
         this.writeLogLine("■戦闘後補助の計算------------");
-        if (this.simulatePostcombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
+        if (this.simulatePostCombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5330,7 +5331,7 @@ class BattleSimulatorBase {
         }
 
         this.writeLogLine("■戦闘後補助の計算------------");
-        if (this.simulatePostcombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
+        if (this.simulatePostCombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5350,7 +5351,7 @@ class BattleSimulatorBase {
         return true;
     }
 
-    simulatePostcombatAssist(assistEnemyUnits, enemyUnits, allyUnits) {
+    simulatePostCombatAssist(assistEnemyUnits, enemyUnits, allyUnits) {
         // コンテキスト初期化
         this.__prepareActionContextForAssist(enemyUnits, allyUnits, false);
         for (let unit of assistEnemyUnits) {
@@ -5361,7 +5362,7 @@ class BattleSimulatorBase {
 
         // 補助優先度を計算
         for (let unit of assistEnemyUnits) {
-            unit.actionContext.assistPriority = this.__calcAssistPriorityForPostcombat(unit);
+            unit.actionContext.assistPriority = this.__calcAssistPriorityForPostCombat(unit);
         }
 
         assistEnemyUnits.sort(function (a, b) {
@@ -5374,13 +5375,13 @@ class BattleSimulatorBase {
         for (let i = 0; i < assistEnemyUnits.length; ++i) {
             let assistUnit = assistEnemyUnits[i];
             this.writeLogLine(assistUnit.getNameWithGroup() + "の補助資格を評価-----");
-            if (!this.__canActivatePostcombatAssist(assistUnit, allyUnits)) {
+            if (!this.__canActivatePostCombatAssist(assistUnit, allyUnits)) {
                 this.writeLogLine(assistUnit.getNameWithGroup() + "は補助資格なし");
                 continue;
             }
 
             // 補助を実行可能な味方を取得
-            this.__setBestTargetAndTiles(assistUnit, false, (targetUnit, tile) => this.__canBeActivatedPostcombatAssist(assistUnit, targetUnit, tile));
+            this.__setBestTargetAndTiles(assistUnit, false, (targetUnit, tile) => this.__canBeActivatedPostCombatAssist(assistUnit, targetUnit, tile));
             if (assistUnit.actionContext.bestTargetToAssist == null) {
                 this.writeLogLine(assistUnit.getNameWithGroup() + "の補助可能な味方がいない");
                 continue;
@@ -5435,8 +5436,8 @@ class BattleSimulatorBase {
             }
 
             if (blockableTiles.length > 0) {
-                let bodyblockTile = this.__selectBestTileToAssistFromTiles(blockableTiles, assistUnit);
-                this.__enqueueMoveCommand(assistUnit, bodyblockTile, true);
+                let bodyBlockTile = this.__selectBestTileToAssistFromTiles(blockableTiles, assistUnit);
+                this.__enqueueMoveCommand(assistUnit, bodyBlockTile, true);
             }
             else {
                 let bestTileToAssist = assistUnit.actionContext.bestTileToAssist;
@@ -5623,7 +5624,7 @@ class BattleSimulatorBase {
      * @param  {boolean} evaluatesAfflictorDraw=false
      * @return {boolean}
      */
-    __evalulateIs5DamageDealtOrWin(
+    __evaluateIs5DamageDealtOrWin(
         unit, enemyUnits, ignores5DamageDealt = false,
         evaluatesAfflictorDraw = false
     ) {
@@ -5726,7 +5727,7 @@ class BattleSimulatorBase {
         }
     }
 
-    __canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile) {
+    __canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile) {
         // 双界だと行動制限が解除されていないと使用しないっぽい
         if (!g_appData.examinesEnemyActionTriggered(unit)) {
             return false;
@@ -5745,7 +5746,7 @@ class BattleSimulatorBase {
             && canBeMovedIntoLessEnemyThreat;
     }
 
-    __canBeActivatedPostcombatAssist(unit, targetUnit, tile) {
+    __canBeActivatedPostCombatAssist(unit, targetUnit, tile) {
         switch (unit.supportInfo.assistType) {
             case AssistType.Refresh:
                 return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
@@ -5760,7 +5761,7 @@ class BattleSimulatorBase {
                     || unit.support === Support.NudgePlus
                     || unit.support === Support.Nudge
                 ) {
-                    return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
+                    return this.__canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile);
                 }
                 return false;
             case AssistType.Restore:
@@ -5783,7 +5784,7 @@ class BattleSimulatorBase {
                         && canBeBuffedAtLeast2;
                 }
             case AssistType.Move:
-                return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
+                return this.__canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile);
             case AssistType.DonorHeal:
                 {
                     // 双界だと行動制限が解除されていないと使用しないっぽい
@@ -5831,7 +5832,7 @@ class BattleSimulatorBase {
         return { success: true, userLossHp: userLossHp, targetHealHp: targetHealHp };
     }
 
-    __canActivatePostcombatAssist(unit, enemyUnits) {
+    __canActivatePostCombatAssist(unit, enemyUnits) {
         // todo: ちゃんと実装する
         switch (unit.supportInfo.assistType) {
             case AssistType.Refresh:
@@ -5869,9 +5870,9 @@ class BattleSimulatorBase {
         // todo: ちゃんと実装する
         switch (unit.supportInfo.assistType) {
             case AssistType.Refresh:
-                return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits);
+                return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits);
             case AssistType.Rally:
-                return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, false, true);
+                return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, false, true);
             case AssistType.Heal:
                 {
                     if (unit.support === Support.Sacrifice ||
@@ -5881,11 +5882,11 @@ class BattleSimulatorBase {
                         }
                     }
                     let ignores5DamageDealt = unit.support !== (Support.Sacrifice || Support.MaidensSolace);
-                    return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt);
+                    return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt);
                 }
             case AssistType.Restore:
                 {
-                    if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, true)) {
+                    if (this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, true)) {
                         return false;
                     }
                     return this.__isThereAllyThreatensEnemyStatus(unit);
@@ -6095,15 +6096,15 @@ class BattleSimulatorBase {
                         }
 
                         let potentialDamageDealt = combatResult.atkUnit_normalAttackDamage * combatResult.atkUnit_totalAttackCount;
-                        let chacePriorityValue = potentialDamageDealt - 5 * turnRange;
+                        let chasePriorityValue = potentialDamageDealt - 5 * turnRange;
                         let priorityValue =
-                            chacePriorityValue * 10 +
+                            chasePriorityValue * 10 +
                             allyUnit.slotOrder;
                         this.writeDebugLogLine(`- 優先度=${priorityValue}(ターン距離=${turnRange}`
                             + `, 通常攻撃ダメージ=${combatResult.atkUnit_normalAttackDamage}`
                             + `, 攻撃回数=${combatResult.atkUnit_totalAttackCount}`
                             + `, 潜在ダメージ=${potentialDamageDealt}`
-                            + `, 追跡優先度=${chacePriorityValue}`
+                            + `, 追跡優先度=${chasePriorityValue}`
                             + `, slotOrder=${allyUnit.slotOrder})`
                         );
                         if (priorityValue > maxPriorityValue) {
@@ -6262,7 +6263,7 @@ class BattleSimulatorBase {
                     }
                 }
 
-                this.__enqueueSupportCommand(unit, pivotContext.tile, pivotContext.targetUnit);
+                this.__enqueueSupportCommand(unit, pivotContext?.tile, pivotContext?.targetUnit);
             }
             else if (bestTileToMove === unit.placedTile) {
                 this.writeDebugLogLine(unit.getNameWithGroup() + "の最適な移動マスは現在のマスなので移動しない");
@@ -6998,7 +6999,7 @@ class BattleSimulatorBase {
         return Array.from(this.map.enumerateBreakableStructureTiles(groupId));
     }
 
-    __findBestTileToBreakBlock(unit, bestTileToMove, movabableTiles) {
+    __findBestTileToBreakBlock(unit, bestTileToMove, movableTiles) {
         if (!unit.hasWeapon) {
             return null;
         }
@@ -7021,7 +7022,7 @@ class BattleSimulatorBase {
             if (distOfBlockToTarget === CanNotReachTile || distOfBlockToTarget < distOfBestTileToTarget) {
                 let context = new TilePriorityContext(blockTile, unit);
                 for (let tile of g_appData.map.enumerateAttackableTiles(unit, blockTile)) {
-                    if (!movabableTiles.includes(tile)) {
+                    if (!movableTiles.includes(tile)) {
                         continue;
                     }
 
@@ -7367,7 +7368,7 @@ class BattleSimulatorBase {
             let target = targetInfo.targetUnit;
             let context = attacker.actionContext.attackEvalContexts[target];
             this.writeDebugLogLine(order + ": " + target.getNameWithGroup()
-                + ", attackTargetPriorty=" + context.attackTargetPriorty
+                + ", attackTargetPriority=" + context.attackTargetPriorty
                 + ", isDebufferTier1=" + context.isDebufferTier1
                 + ", isDebufferTier2=" + context.isDebufferTier2
                 + ", combatResult=" + combatResultToString(context.combatResult)
@@ -7411,7 +7412,7 @@ class BattleSimulatorBase {
         for (let attacker of attackers) {
             let context = attacker.actionContext.attackEvalContexts[target];
             this.writeDebugLogLine(order + ": " + attacker.getNameWithGroup()
-                + ", attackTargetPriorty=" + context.attackTargetPriorty
+                + ", attackTargetPriority=" + context.attackTargetPriorty
                 + ", combatResult=" + combatResultToString(context.combatResult)
                 + ", isDebufferTier1=" + context.isDebufferTier1
                 + ", isDebufferTier2=" + context.isDebufferTier2
@@ -8214,7 +8215,7 @@ class BattleSimulatorBase {
      * @param  {Unit} unit
      * @param  {Unit} targetUnit
      * @param  {Function} movementAssistCalcFunc
-     * @param  {Boolean} applysMovementSkill=true
+     * @param  {Boolean} applesMovementSkill=true
      * @param  {Boolean} movesTargetUnit=true
      * @param  {Boolean} executesTrap=true
      */
@@ -8222,7 +8223,7 @@ class BattleSimulatorBase {
         unit,
         targetUnit,
         movementAssistCalcFunc,
-        applysMovementSkill = true,
+        applesMovementSkill = true,
         movesTargetUnit = true,
         executesTrap = true,
     ) {
@@ -8274,7 +8275,7 @@ class BattleSimulatorBase {
         unit.setFromPos(unitFromX, unitFromY);
         targetUnit.setFromPos(targetUnitFromX, targetUnitFromY);
 
-        if (applysMovementSkill) {
+        if (applesMovementSkill) {
             this.__applyMovementAssistSkill(unit, targetUnit);
             this.__applyMovementAssistSkill(targetUnit, unit);
         }
@@ -9989,7 +9990,7 @@ function changeMap() {
     updateMap();
 }
 
-function removeBreakableWallsFromTrashbox() {
+function removeBreakableWallsFromTrashBox() {
     for (let structure of g_appData.map.enumerateBreakableWalls()) {
         moveStructureToEmptyTileOfMap(structure);
     }
