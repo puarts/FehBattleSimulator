@@ -1,6 +1,12 @@
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
+    // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+    // 他の「戦闘開始後、敵にNダメージ」の効果とは重複せず最大値適用
     #damagesAfterBeginningOfCombatNotStack = [0];
+    // 奥義発動時の「奥義ダメージに加算」の加算ダメージ
+    #specialAddDamage = 0;
+    // 攻撃のたびに変化する可能性のある奥義発動時の「奥義ダメージに加算」の加算ダメージ
+    #specialAddDamagePerAttack = 0;
 
     constructor() {
         this.initContext();
@@ -249,11 +255,9 @@ class BattleContext {
         // 奥義発動時の「与えるダメージ〇倍」の倍率
         this.specialMultDamage = 1;
 
-        // 奥義発動時の「奥義ダメージに加算」の加算ダメージ
-        this.specialAddDamage = 0;
+        this.#specialAddDamage = 0;
 
-        // 攻撃のたびに変化する可能性のある奥義発動時の「奥義ダメージに加算」の加算ダメージ
-        this.specialAddDamagePerAttack = 0;
+        this.#specialAddDamagePerAttack = 0;
 
         // 奥義発動時の「与えたダメージの〇%自分を回復」のパーセンテージ(1.0が100%)
         this.specialDamageRatioToHeal = 0;
@@ -370,8 +374,6 @@ class BattleContext {
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
         this.damageAfterBeginningOfCombat = 0;
 
-        // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
-        // 他の「戦闘開始後、敵にNダメージ」の効果とは重複せず最大値適用
         this.#damagesAfterBeginningOfCombatNotStack = [0]; // 最大値を取る時のために番兵(0)を入れる
 
         // 奥義以外の祈り無効
@@ -416,6 +418,19 @@ class BattleContext {
         this.applySkillEffectFromEnemyAlliesFuncs = [];
         // 攻撃を行った時、戦闘後
         this.applyAttackSkillEffectAfterCombatFuncs = [];
+    }
+
+    initContextPerAttack() {
+        this.additionalDamagePerAttack = 0;
+        this.healedHpByAttackPerAttack = 0;
+        this.preventedDefenderSpecialPerAttack = false;
+        this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
+        this.maxHpRatioToHealBySpecialPerAttack = 0;
+        this.specialCountReductionBeforeFirstAttackPerAttack = 0;
+        this.damageReductionValuePerAttack = 0;
+        this.damageReductionValueOfSpecialAttackPerAttack = 0;
+        this.#specialAddDamagePerAttack = 0;
+        this.damageReductionRatiosBySpecialPerAttack = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -566,7 +581,53 @@ class BattleContext {
         return this.canFollowupAttackWithoutPotent || this.canPotentFollowupAttack();
     }
 
+    addSpecialAddDamage(damage) {
+        this.#specialAddDamage += damage;
+    }
+
+    addSpecialAddDamagePerAttack(damage) {
+        this.#specialAddDamagePerAttack += damage;
+    }
+
     getTotalSpecialAddDamage() {
-        return this.specialAddDamage + this.specialAddDamagePerAttack;
+        return this.#specialAddDamage + this.#specialAddDamagePerAttack;
+    }
+
+    getSpecialCountChangeAmountBeforeFirstAttack() {
+        let increase = this.specialCountIncreaseBeforeFirstAttack;
+        let reduction =
+            this.specialCountReductionBeforeFirstAttack +
+            this.specialCountReductionBeforeFirstAttackPerAttack;
+        return increase - reduction;
+    }
+
+    getSpecialCountChangeAmountBeforeFirstAttackByEnemy() {
+        let increase = 0;
+        let reduction = this.specialCountReductionBeforeFirstAttackByEnemy;
+        return increase - reduction;
+    }
+
+    getSpecialCountReductionBeforeFollowupAttack() {
+        let increase = 0;
+        let reduction = this.specialCountReductionBeforeFollowupAttack;
+        return increase - reduction;
+    }
+
+    isChangedSpecialCountBeforeFirstAttack() {
+        return this.specialCountIncreaseBeforeFirstAttack !== 0 ||
+            this.specialCountReductionBeforeFirstAttack !== 0 ||
+            this.specialCountReductionBeforeFirstAttackPerAttack !== 0;
+    }
+
+    isChangedSpecialCountBeforeFirstAttackByEnemy() {
+        return this.specialCountReductionBeforeFirstAttackByEnemy !== 0;
+    }
+
+    isChangedSpecialCountBeforeFollowupAttack() {
+        return this.specialCountReductionBeforeFollowupAttack !== 0;
+    }
+
+    getAttackCount(isCounterAttack) {
+        return isCounterAttack ? this.counterattackCount : this.attackCount;
     }
 }

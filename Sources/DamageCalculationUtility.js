@@ -62,7 +62,12 @@ class DamageCalculationUtility {
         if (defUnit.resDebuffTotal < 0) { atkUnit.atkSpur += -defUnit.resDebuffTotal; }
     }
 
-    /// 相性有利不利を判定して返します。
+    /**
+     * 相性有利不利を判定して返します。
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @returns {number} TriangleAdvantage
+     */
     static calcAttackerTriangleAdvantage(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
