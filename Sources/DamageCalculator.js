@@ -628,45 +628,15 @@ class DamageCalculator {
         this.__applySkillEffectsPerCombat(atkUnit, defUnit, context);
         this.__applySkillEffectsPerCombat(defUnit, atkUnit, context);
         // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
-        if (context.isFirstAttack(atkUnit)) {
-            // atkUnitの奥義カウント変動
-            let atkCount = atkUnit.tmpSpecialCount +
-                atkUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttack();
-            if (atkUnit.battleContext.isChangedSpecialCountBeforeFirstAttack()) {
-                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
-                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
-                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
-                                    ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
-            }
-            atkUnit.tmpSpecialCount = MathUtil.ensureMinMax(atkCount, 0, atkUnit.maxSpecialCount);
-
-            // defUnitの奥義カウント変動
-            let defCount = defUnit.tmpSpecialCount +
-                defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttackByEnemy();
-            if (defUnit.battleContext.isChangedSpecialCountBeforeFirstAttackByEnemy()) {
-                this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の攻撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
-                                    ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy}`);
-            }
-            defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
-        }
-        // 最初の追撃前の効果
-        if (context.isFirstFollowupAttack()) {
-            let totalCount = atkUnit.tmpSpecialCount
-                + atkUnit.battleContext.getSpecialCountReductionBeforeFollowupAttack();
-            if (atkUnit.battleContext.isChangedSpecialCountBeforeFollowupAttack()) {
-                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
-                                    ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack}`);
-            }
-            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
-        }
+        this.#applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context);
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 
-        let atkCountPerOneAttack = context.isCounterattack ? atkUnit.battleContext.counterattackCount : atkUnit.battleContext.attackCount;
+        let atkCountPerAttack = atkUnit.battleContext.getAttackCount(context.isCounterattack);
         // 神速追撃の場合は2回攻撃は発動しない
         if (context.isPotentFollowupAttack) {
-            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerOneAttack} → ${1}`);
-            atkCountPerOneAttack = 1;
+            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerAttack} → ${1}`);
+            atkCountPerAttack = 1;
         }
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.getTotalSpecialAddDamage();
@@ -697,7 +667,6 @@ class DamageCalculator {
                     break;
             }
         }
-
 
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         let invalidatesDamageReductionExceptSpecial =
@@ -753,54 +722,6 @@ class DamageCalculator {
                 break;
         }
 
-        let attackAdvRatio = 0;
-        {
-            let attackTriangleAdv = DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit);
-            let triangleAdeptRate = 0;
-            let triangleMult = 0;
-            switch (attackTriangleAdv) {
-                case TriangleAdvantage.Advantageous:
-                    triangleAdeptRate = 0.2;
-                    triangleMult = 1;
-                    break;
-                case TriangleAdvantage.Disadvantageous:
-                    triangleAdeptRate = 0.2;
-                    triangleMult = -1;
-                    break;
-                case TriangleAdvantage.None:
-                default:
-                    break;
-            }
-
-            // 相性激化
-            let atkAdditionalRatio = atkUnit.getTriangleAdeptAdditionalRatio();
-            let defAdditionalRatio = defUnit.getTriangleAdeptAdditionalRatio();
-            // 相性相殺: 自分のスキルによる相性激化を無効
-            if (atkUnit.neutralizesSelfTriangleAdvantage()) {
-                atkAdditionalRatio = 0;
-            }
-            if (defUnit.neutralizesSelfTriangleAdvantage()) {
-                defAdditionalRatio = 0;
-            }
-            let additionalRatio = Math.max(atkAdditionalRatio, defAdditionalRatio);
-            // @TODO: 相性相殺1,2の実装
-            // 相性相殺3: 相性不利の時、相手の相性激化を反転
-            if (attackTriangleAdv === TriangleAdvantage.Disadvantageous) {
-                if (atkUnit.reversesTriangleAdvantage()) {
-                    // 自分が相性不利で自分が相性相殺3を持っている時反転する
-                    additionalRatio = -defAdditionalRatio;
-                }
-            } else if (attackTriangleAdv === TriangleAdvantage.Advantageous) {
-                if (defUnit.reversesTriangleAdvantage()) {
-                    // 相手が相性不利で相手が相性相殺3を持っている時反転する
-                    additionalRatio = -atkAdditionalRatio;
-                }
-            }
-            let triangleReviseRate = triangleAdeptRate + additionalRatio;
-            attackAdvRatio = triangleMult * triangleReviseRate;
-
-        }
-
         let mitAdvRatio = 0.0;
         if (defUnit.battleContext.isOnDefensiveTile) {
             mitAdvRatio = 0.3;
@@ -818,6 +739,7 @@ class DamageCalculator {
             finalAtk = floorNumberWithFloatError(finalAtk * 1.5);
         }
 
+        let attackAdvRatio = this.#getAttackAdvRatio(atkUnit, defUnit);
         let addAdjustAtk = truncNumberWithFloatError(finalAtk * attackAdvRatio);
         finalAtk = finalAtk + addAdjustAtk;
 
@@ -848,7 +770,7 @@ class DamageCalculator {
             context,
             atkUnit,
             defUnit,
-            atkCountPerOneAttack,
+            atkCountPerAttack,
             damage,
             specialDamage,
             invalidatesDamageReductionExceptSpecialOnSpecialActivation,
@@ -858,14 +780,14 @@ class DamageCalculator {
         if (this.isLogEnabled) {
             let resInCombatDetail = this.__getResInCombatDetail(defUnit, atkUnit);
             let defInCombatDetail = this.__getDefInCombatDetail(defUnit, atkUnit);
-            let totalMitDefailLog = atkUnit.battleContext.refersRes ? resInCombatDetail : defInCombatDetail;
+            let totalMitDetailLog = atkUnit.battleContext.refersRes ? resInCombatDetail : defInCombatDetail;
             if (atkUnit.battleContext.refersRes) {
                 this.writeDebugLog("通常攻撃時は魔防参照")
             } else {
                 this.writeDebugLog("通常攻撃時は守備参照");
             }
 
-            let specialTotalMitDefailLog = atkUnit.battleContext.refersResForSpecial ? resInCombatDetail : defInCombatDetail;
+            let specialTotalMitDeailLog = atkUnit.battleContext.refersResForSpecial ? resInCombatDetail : defInCombatDetail;
             if (atkUnit.battleContext.refersRes !== atkUnit.battleContext.refersResForSpecial) {
                 if (atkUnit.battleContext.refersResForSpecial) {
                     this.writeDebugLog("奥義発動時は魔防参照")
@@ -884,9 +806,9 @@ class DamageCalculator {
                 this.writeDebugLog("特効補正値: 1.5");
             }
             this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
-            this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDefailLog})`);
-            if (totalMit != specialTotalMit) {
-                this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDefailLog})`);
+            this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDetailLog})`);
+            if (totalMit !== specialTotalMit) {
+                this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDeailLog})`);
             }
             this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
             this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
@@ -895,14 +817,13 @@ class DamageCalculator {
             }
             this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
             this.writeDebugLog(
-                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerOneAttack}`);
+                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerAttack}`);
             this.writeDebugLog(`合計ダメージ:${totalDamage}`);
         }
 
         if (!this.__isDead(atkUnit)) {
             // 攻撃側が倒されていたらダメージを反映しない(潜在ダメージ計算のためにダメージ計算は必要)
-            let restHp = Math.max(0, mitHp - totalDamage);
-            defUnit.restHp = restHp;
+            defUnit.restHp = Math.max(0, mitHp - totalDamage);
             if (this.isLogEnabled) {
                 this.writeLog(defUnit.getNameWithGroup() + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
                 this.writeLog(atkUnit.getNameWithGroup() + "の残りHP " + atkUnit.restHp + "/" + atkUnit.maxHpWithSkills);
@@ -912,7 +833,97 @@ class DamageCalculator {
             }
         }
 
-        return new OneAttackResult(damage, specialAddDamage, atkCountPerOneAttack);
+        return new OneAttackResult(damage, specialAddDamage, atkCountPerAttack);
+    }
+
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     */
+    #getAttackAdvRatio(atkUnit, defUnit) {
+        let attackTriangleAdv = DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit);
+        let triangleAdeptRate = 0;
+        let triangleMult = 0;
+        switch (attackTriangleAdv) {
+            case TriangleAdvantage.Advantageous:
+                triangleAdeptRate = 0.2;
+                triangleMult = 1;
+                break;
+            case TriangleAdvantage.Disadvantageous:
+                triangleAdeptRate = 0.2;
+                triangleMult = -1;
+                break;
+            case TriangleAdvantage.None:
+            default:
+                break;
+        }
+
+        // 相性激化
+        let atkAdditionalRatio = atkUnit.getTriangleAdeptAdditionalRatio();
+        let defAdditionalRatio = defUnit.getTriangleAdeptAdditionalRatio();
+        // 相性相殺: 自分のスキルによる相性激化を無効
+        if (atkUnit.neutralizesSelfTriangleAdvantage()) {
+            atkAdditionalRatio = 0;
+        }
+        if (defUnit.neutralizesSelfTriangleAdvantage()) {
+            defAdditionalRatio = 0;
+        }
+        let additionalRatio = Math.max(atkAdditionalRatio, defAdditionalRatio);
+        // @TODO: 相性相殺1,2の実装
+        // 相性相殺3: 相性不利の時、相手の相性激化を反転
+        if (attackTriangleAdv === TriangleAdvantage.Disadvantageous) {
+            if (atkUnit.reversesTriangleAdvantage()) {
+                // 自分が相性不利で自分が相性相殺3を持っている時反転する
+                additionalRatio = -defAdditionalRatio;
+            }
+        } else if (attackTriangleAdv === TriangleAdvantage.Advantageous) {
+            if (defUnit.reversesTriangleAdvantage()) {
+                // 相手が相性不利で相手が相性相殺3を持っている時反転する
+                additionalRatio = -atkAdditionalRatio;
+            }
+        }
+        let triangleReviseRate = triangleAdeptRate + additionalRatio;
+        return triangleMult * triangleReviseRate;
+    }
+
+    /**
+     * 攻撃前の奥義カウント変動を適用
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcContext} context
+     */
+    #applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context) {
+        if (context.isFirstAttack(atkUnit)) {
+            // atkUnitの奥義カウント変動
+            let atkCount = atkUnit.tmpSpecialCount +
+                atkUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttack();
+            if (atkUnit.battleContext.isChangedSpecialCountBeforeFirstAttack()) {
+                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
+                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
+                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
+                                    ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
+            }
+            atkUnit.tmpSpecialCount = MathUtil.ensureMinMax(atkCount, 0, atkUnit.maxSpecialCount);
+
+            // defUnitの奥義カウント変動
+            let defCount = defUnit.tmpSpecialCount +
+                defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttackByEnemy();
+            if (defUnit.battleContext.isChangedSpecialCountBeforeFirstAttackByEnemy()) {
+                this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の攻撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
+                                    ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy}`);
+            }
+            defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
+        }
+        // 最初の追撃前の効果
+        if (context.isFirstFollowupAttack()) {
+            let totalCount = atkUnit.tmpSpecialCount
+                + atkUnit.battleContext.getSpecialCountReductionBeforeFollowupAttack();
+            if (atkUnit.battleContext.isChangedSpecialCountBeforeFollowupAttack()) {
+                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
+                                    ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack}`);
+            }
+            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
+        }
     }
 
     getUnitColorLog(unit) {

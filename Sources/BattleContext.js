@@ -626,4 +626,8 @@ class BattleContext {
     isChangedSpecialCountBeforeFollowupAttack() {
         return this.specialCountReductionBeforeFollowupAttack !== 0;
     }
+
+    getAttackCount(isCounterAttack) {
+        return isCounterAttack ? this.counterattackCount : this.attackCount;
+    }
 }
