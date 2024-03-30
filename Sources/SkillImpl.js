@@ -50,7 +50,7 @@
                 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
                         let status = this.getHigherStatus(targetUnit, enemyUnit, [false, false, true, true]);
-                        targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.2);
+                        targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.2);
                     }
                 );
                 // - 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
@@ -95,7 +95,7 @@
             let count = context.getAttackLogs(enemyUnit).length;
             let status = targetUnit.getAtkInCombat(enemyUnit);
             let specialAddDamage = Math.trunc(status * (0.4 + count * 0.1));
-            targetUnit.battleContext.specialAddDamage = specialAddDamage;
+            targetUnit.battleContext.specialAddDamagePerAttack += specialAddDamage;
             this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}によりダメージを${specialAddDamage}追加。status: ${status}, atk count: ${count}`);
         }
     );
@@ -125,7 +125,7 @@
                         // 5ダメージ、
                         unit.reserveTakeDamage(5);
                         // 奥義発動カウント＋1（奥義発動カウントの最大値は超えない）、
-                        unit.reserveToIncreaseSpecialCount(1);
+                        unit.increaseSpecialCount(1);
                     }
                 }
                 // 自分は、HPが回復
@@ -144,6 +144,7 @@
                 enemyUnit.battleContext.isVantageActivatable = true;
             }
             // 敵が追撃可能なら、敵の攻撃の直後に敵が追撃を行う
+            enemyUnit.battleContext.isDesperationActivatable = true;
             enemyUnit.battleContext.isDefDesperationActivatable = true;
         }
     );
@@ -302,7 +303,7 @@
         function (targetUnit, enemyUnit) {
             // 速さの40%を奥義ダメージに加算
             let status = targetUnit.getSpdInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.4);
             // 奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         }
@@ -1487,7 +1488,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.25);
         }
     );
 
@@ -1520,7 +1521,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.25);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.25);
         }
     );
 
@@ -1553,7 +1554,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.45);
         }
     );
 
@@ -1609,7 +1610,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getResInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.4);
         }
     );
 
@@ -1873,7 +1874,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(totalRes * 0.45);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(totalRes * 0.45);
         }
     );
 
@@ -2772,7 +2773,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getSpdInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.4);
         }
     );
 
@@ -3141,7 +3142,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getResInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.4);
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         }
     );
@@ -4502,7 +4503,7 @@
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getAtkInCombat(enemyUnit);
             let ratio = isWeaponTypeBreath(enemyUnit.weaponType) ? 0.5 : 0.25;
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * ratio);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * ratio);
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         }
     );
@@ -4607,7 +4608,7 @@
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getAtkInCombat(enemyUnit);
             let ratio = enemyUnit.moveType === MoveType.Armor ? 0.4 : 0.3;
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * ratio);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * ratio);
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         }
     );
@@ -4725,7 +4726,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getDefInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.4);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.4);
         }
     );
 
@@ -5498,7 +5499,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getSpdInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.45);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.45);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -5622,7 +5623,7 @@
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = enemyUnit.getAtkInCombat(targetUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.6);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.6);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -6718,10 +6719,10 @@
         function (targetUnit, enemyUnit, context) {
             if (targetUnit.battleContext.restHpPercentage >= 70) {
                 let res = enemyUnit.getResInCombat(targetUnit);
-                targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.6);
+                targetUnit.battleContext.specialAddDamage += Math.trunc(res * 0.6);
             } else {
                 let res = enemyUnit.getResInCombat(targetUnit);
-                targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.4);
+                targetUnit.battleContext.specialAddDamage += Math.trunc(res * 0.4);
                 targetUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
             }
         }

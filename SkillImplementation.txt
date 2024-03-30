@@ -610,7 +610,7 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
         function (targetUnit, enemyUnit) {
             // 緋炎
             let status = targetUnit.getXInCombat(enemyUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(status * 0.5);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(status * 0.5);
             // 黒の月光
             targetUnit.battleContext.specialSufferPercentage = 80;
         }
@@ -732,10 +732,10 @@ applySkillEffectsPerCombatFuncMap.set(skillId,
         // 陽光
         if (targetUnit.battleContext.restHpPercentage >= 70) {
             let res = enemyUnit.getResInCombat(targetUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.6);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(res * 0.6);
         } else {
             let res = enemyUnit.getResInCombat(targetUnit);
-            targetUnit.battleContext.specialAddDamage = Math.trunc(res * 0.4);
+            targetUnit.battleContext.specialAddDamage += Math.trunc(res * 0.4);
             targetUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
         }
     }
@@ -845,7 +845,7 @@ targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
 
 奥義ダメージ+N
 __init__applySpecialSkillEffect() {
-    targetUnit.battleContext.specialAddDamage = N;
+    targetUnit.battleContext.specialAddDamage += N;
 }
 
 敵から攻撃を受ける際に発動する奥義を装備していたら
