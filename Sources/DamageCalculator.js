@@ -655,11 +655,7 @@ class DamageCalculator {
         let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
-        fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttack;
-        atkUnit.battleContext.additionalDamageOfNextAttack = 0;
-        if (context.isFirstAttack(atkUnit)) {
-            fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
-        }
+        fixedAddDamage = this.#updateFixedAddDamagePerAttack(fixedAddDamage, atkUnit, defUnit, context);
 
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
 
@@ -684,7 +680,6 @@ class DamageCalculator {
         }
         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = false;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
-        fixedAddDamage = this.#updateFixedAddDamage(fixedAddDamage, atkUnit, defUnit);
 
         let mitAdvRatio = 0.0;
         if (defUnit.battleContext.isOnDefensiveTile) {
@@ -804,8 +799,14 @@ class DamageCalculator {
      * @param {number} fixedAddDamage
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
+     * @param {DamageCalcContext} context
      */
-    #updateFixedAddDamage(fixedAddDamage, atkUnit, defUnit) {
+    #updateFixedAddDamagePerAttack(fixedAddDamage, atkUnit, defUnit, context) {
+        fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttack;
+        atkUnit.battleContext.additionalDamageOfNextAttack = 0;
+        if (context.isFirstAttack(atkUnit)) {
+            fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
+        }
         for (let skillId of atkUnit.enumerateSkills()) {
             let funcMap = addSpecialDamageAfterDefenderSpecialActivatedFuncMap;
             if (funcMap.has(skillId)) {
@@ -1823,6 +1824,15 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {Unit} defUnit
+     * @param {Unit} atkUnit
+     * @param {number} damage
+     * @param {number} damageReductionRatio
+     * @param {number|string} damageReductionValue
+     * @param {boolean} activatesDefenderSpecial
+     * @param {DamageCalcContext} context
+     */
     __calcUnitAttackDamage(defUnit, atkUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context) {
         let reducedDamage = floorNumberWithFloatError(damage * damageReductionRatio) + damageReductionValue;
         let currentDamage = Math.max(damage - reducedDamage, 0);
