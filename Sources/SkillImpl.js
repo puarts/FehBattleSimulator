@@ -882,7 +882,8 @@
         let units = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
         for (let unit of units) {
             if (unit.isInCrossWithOffset(skillOwner, 1)) {
-                if (unit.getEvalResInPrecombat() <= skillOwner.getEvalResInPrecombat() + 5) {
+                if (unit.statusEvalUnit.getEvalResInPrecombat() <=
+                    skillOwner.statusEvalUnit.getEvalResInPrecombat() + 5) {
                     unit.reserveToApplyDebuffs(-7, 0, -7, 0);
                     unit.reserveToAddStatusEffect(StatusEffectType.Discord);
                 }
@@ -5193,9 +5194,12 @@
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-            for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+            /** @type {Unit[] | Generator<Unit>} */
+            let units = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+            for (let unit of units) {
                 if (skillOwner.isInCrossWithOffset(unit, 1)) {
-                    if (unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat()) {
+                    if (unit.statusEvalUnit.getEvalResInPrecombat() <
+                        skillOwner.statusEvalUnit.getEvalResInPrecombat()) {
                         unit.reserveToApplyDebuffs(0, 0, -6, -6);
                         unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                         unit.reserveToAddStatusEffect(StatusEffectType.Discord);
@@ -6964,9 +6968,12 @@
 // 2種謀策3
 {
     let generateFunc = debuffFunc => function (skillOwner) {
-        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+        /** @type {Unit[] | Generator<Unit>} */
+        let units = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let unit of units) {
             if (skillOwner.isInCrossWithOffset(unit, 1) &&
-                unit.getEvalResInPrecombat() < skillOwner.getEvalResInPrecombat() + 5) {
+                unit.statusEvalUnit.getEvalResInPrecombat() <
+                skillOwner.statusEvalUnit.getEvalResInPrecombat() + 5) {
                 debuffFunc(unit);
                 unit.reserveToAddStatusEffect(StatusEffectType.Ploy);
                 unit.reserveToAddStatusEffect(StatusEffectType.Exposure);

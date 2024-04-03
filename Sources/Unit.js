@@ -1968,6 +1968,29 @@ class Unit extends BattleMapElement {
         this.reservedStatusEffects.push(statusEffect);
     }
 
+    reserveToApplyAtkBuff(value) {
+        this.reservedAtkBuff = Math.max(this.reservedAtkBuff, value);
+    }
+
+    reserveToApplySpdBuff(value) {
+        this.reservedSpdBuff = Math.max(this.reservedSpdBuff, value);
+    }
+
+    reserveToApplyDefBuff(value) {
+        this.reservedDefBuff = Math.max(this.reservedDefBuff, value);
+    }
+
+    reserveToApplyResBuff(value) {
+        this.reservedResBuff = Math.max(this.reservedResBuff, value);
+    }
+
+    reserveToApplyAllBuffs(value) {
+        this.reserveToApplyAtkBuff(value);
+        this.reserveToApplySpdBuff(value);
+        this.reserveToApplyDefBuff(value);
+        this.reserveToApplyResBuff(value);
+    }
+
     reserveToClearNegativeStatusEffects() {
         this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectToDeleteSet.add(e));
     }
