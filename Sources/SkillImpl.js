@@ -1,5 +1,61 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ダニエルの錬弓
+{
+    let skillId = Weapon.DanielMadeBow;
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // 周囲2マス以内
+                if (targetUnit.distance(allyUnit) <= 2) {
+                    targetUnit.atkSpur += 5;
+                }
+            }
+        }
+    );
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // enemyAllyUnitからのスキルなので錬成判定に注意
+            if (!enemyAllyUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.distance(enemyAllyUnit) <= 2) {
+                    targetUnit.atkSpur -= 5;
+                }
+            } else {
+                // <錬成効果>
+                if (enemyAllyUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+}
+
 // 暗黒の聖書
 {
     let skillId = Weapon.DarkScripture;
@@ -889,7 +945,7 @@
 {
     let skillId = PassiveC.WingsOfLightPlus;
     updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.isMythicHero) {
                 let count = this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.isMythicHero);
                 if (count <= 3) {
@@ -1184,7 +1240,7 @@
 {
     let skillId = Weapon.HippityHopAxe;
     updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.distance(allyUnit) <= 2) {
                 targetUnit.addAllSpur(4);
             }
@@ -2702,7 +2758,7 @@
 {
     let skillId = Weapon.RighteousLance;
     updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             // 周囲2マス以内
             if (targetUnit.distance(allyUnit) <= 3) {
                 targetUnit.addAtkDefSpurs(4);
@@ -2951,7 +3007,7 @@
     );
 
     updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             if (Math.abs(allyUnit.posX - targetUnit.posX) <= 2 &&
                 Math.abs(allyUnit.posY - targetUnit.posY) <= 2) {
                 targetUnit.addAllSpur(4);
@@ -6199,7 +6255,7 @@
         }
     );
     updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             if (!allyUnit.isWeaponSpecialRefined) {
                 return;
             }
@@ -6301,7 +6357,7 @@
 {
     let skillId = Weapon.FlowerOfPlenty;
     updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             // 5×3マス以内にいる場合
             if (Math.abs(allyUnit.posX - targetUnit.posX) <= 1 &&
                 Math.abs(allyUnit.posY - targetUnit.posY) <= 2) {

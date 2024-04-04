@@ -16009,10 +16009,6 @@ class DamageCalculatorWrapper {
                 targetUnit.atkSpur += 4;
                 targetUnit.spdSpur += 4;
                 break;
-            case Weapon.DanielMadeBow:
-                targetUnit.atkSpur += 5;
-                break;
-
             case Weapon.Geirusukeguru:
                 if (targetUnit.isPhysicalAttacker()) {
                     targetUnit.atkSpur += 3;
@@ -16979,6 +16975,11 @@ class DamageCalculatorWrapper {
         }
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {Unit} enemyUnit
+     */
     __updateUnitSpurFromEnemyAllies(targetUnit, calcPotentialDamage, enemyUnit) {
         let disablesSkillsFromEnemyAlliesInCombat = false;
         if (enemyUnit) {
@@ -16987,41 +16988,42 @@ class DamageCalculatorWrapper {
                 disablesSkillsFromEnemyAlliesInCombat = true;
             }
         }
-        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-            if (disablesSkillsFromEnemyAlliesInCombat && (unit !== enemyUnit)) {
+        // enemyAllyにはenemyUnitも含まれる
+        for (let enemyAlly of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+            if (disablesSkillsFromEnemyAlliesInCombat && (enemyAlly !== enemyUnit)) {
                 continue;
             }
             // 特定の色か確認
-            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAlly)) {
                 continue;
             }
 
-            for (let skillId of unit.enumerateSkills()) {
+            for (let skillId of enemyAlly.enumerateSkills()) {
                 let funcMap = updateUnitSpurFromEnemyAlliesFuncMap;
                 if (funcMap.has(skillId)) {
                     let func = funcMap.get(skillId);
                     if (typeof func === "function") {
-                        func.call(this, targetUnit, enemyUnit, unit, calcPotentialDamage);
+                        func.call(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
                     } else {
                         console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                     }
                 }
             }
             // 縦3列以内
-            if (Math.abs(targetUnit.posX - unit.posX) <= 1) {
-                switch (unit.weapon) {
+            if (Math.abs(targetUnit.posX - enemyAlly.posX) <= 1) {
+                switch (enemyAlly.weapon) {
                     case Weapon.FlowerOfEase:
                         if (targetUnit.hasNegativeStatusEffect()) {
-                            let amount = unit.isWeaponRefined ? 4 : 3;
+                            let amount = enemyAlly.isWeaponRefined ? 4 : 3;
                             targetUnit.addSpurs(-amount, 0, -amount, -amount);
                         }
                         break;
                 }
             }
             // 縦3列と横3列
-            if (Math.abs(targetUnit.posX - unit.posX) <= 1 ||
-                Math.abs(targetUnit.posY - unit.posY) <= 1) {
-                for (let skillId of unit.enumerateSkills()) {
+            if (Math.abs(targetUnit.posX - enemyAlly.posX) <= 1 ||
+                Math.abs(targetUnit.posY - enemyAlly.posY) <= 1) {
+                for (let skillId of enemyAlly.enumerateSkills()) {
                     switch (skillId) {
                         case PassiveC.RallyingCry:
                             if (targetUnit.moveType === MoveType.Infantry ||
@@ -17196,9 +17198,6 @@ class DamageCalculatorWrapper {
                             targetUnit.defSpur -= 5;
                         }
                         break;
-                    case Weapon.DanielMadeBow:
-                        targetUnit.atkSpur -= 5;
-                        break;
                     case Weapon.ObsessiveCurse:
                         targetUnit.spdSpur -= 5;
                         targetUnit.resSpur -= 5;
@@ -17280,18 +17279,18 @@ class DamageCalculatorWrapper {
         if (enemyUnit && enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
             return;
         }
-        for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+        for (let ally of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
             // 特定の色か確認
-            if (enemyUnit && this.__canDisableSkillsFrom(enemyUnit, targetUnit, unit)) {
+            if (enemyUnit && this.__canDisableSkillsFrom(enemyUnit, targetUnit, ally)) {
                 continue;
             }
             // 距離に関係ないもの
-            for (let skillId of unit.enumerateSkills()) {
+            for (let skillId of ally.enumerateSkills()) {
                 let funcMap = updateUnitSpurFromAlliesFuncMap;
                 if (funcMap.has(skillId)) {
                     let func = funcMap.get(skillId);
                     if (typeof func === "function") {
-                        func.call(this, targetUnit, unit, calcPotentialDamage, enemyUnit);
+                        func.call(this, targetUnit, ally, enemyUnit, calcPotentialDamage);
                     } else {
                         console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                     }
@@ -17313,12 +17312,12 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (Math.abs(unit.posX - targetUnit.posX) <= 3 && Math.abs(unit.posY - targetUnit.posY) <= 3) {
+            if (Math.abs(ally.posX - targetUnit.posX) <= 3 && Math.abs(ally.posY - targetUnit.posY) <= 3) {
                 // 7×7マス以内にいる場合
-                for (let skillId of unit.enumerateSkills()) {
+                for (let skillId of ally.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DaichiBoshiNoBreath: {
-                            let amount = unit.isWeaponRefined ? 4 : 2;
+                            let amount = ally.isWeaponRefined ? 4 : 2;
                             targetUnit.addAllSpur(amount);
                         }
                             break;
@@ -17326,12 +17325,12 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (this.__isNear(unit, targetUnit, 4)) {
+            if (this.__isNear(ally, targetUnit, 4)) {
                 // 4マス以内で発動する戦闘中バフ
-                for (let skillId of unit.enumerateSkills()) {
+                for (let skillId of ally.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DivineBreath:
-                            if (unit.isWeaponRefined) {
+                            if (ally.isWeaponRefined) {
                                 if (isWeaponTypeBreath(targetUnit.weaponType) ||
                                     targetUnit.hasEffective(EffectiveType.Dragon)) {
                                     targetUnit.addAllSpur(3);
@@ -17342,12 +17341,12 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (this.__isNear(unit, targetUnit, 3)) {
+            if (this.__isNear(ally, targetUnit, 3)) {
                 // 3マス以内で発動する戦闘中バフ
-                for (let skillId of unit.enumerateSkills()) {
+                for (let skillId of ally.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.JunaruSenekoNoTsumekiba:
-                            if (unit.isWeaponRefined) {
+                            if (ally.isWeaponRefined) {
                                 targetUnit.addSpurs(4, 4, 0, 0);
                             }
                             break;
@@ -17355,13 +17354,13 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur += 4;
                             break;
                         case Weapon.Hlidskjalf:
-                            if (unit.isWeaponSpecialRefined) {
+                            if (ally.isWeaponSpecialRefined) {
                                 targetUnit.atkSpur += 3;
                                 targetUnit.spdSpur += 3;
                             }
                             break;
                         case Weapon.GaeBolg:
-                            if (unit.isWeaponSpecialRefined) {
+                            if (ally.isWeaponSpecialRefined) {
                                 if (targetUnit.weaponType === WeaponType.Sword ||
                                     targetUnit.weaponType === WeaponType.Lance ||
                                     targetUnit.weaponType === WeaponType.Axe ||
@@ -17376,27 +17375,27 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (this.__isNear(unit, targetUnit, 2)) {
+            if (this.__isNear(ally, targetUnit, 2)) {
                 // 2マス以内で発動する戦闘中バフ
-                // this.writeDebugLogLine(unit.getNameWithGroup() + "の2マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
-                this.__addSpurInRange2(targetUnit, unit, calcPotentialDamage);
+                // this.writeDebugLogLine(ally.getNameWithGroup() + "の2マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
+                this.__addSpurInRange2(targetUnit, ally, calcPotentialDamage);
             }
 
-            if (this.__isNear(unit, targetUnit, 1)) {
+            if (this.__isNear(ally, targetUnit, 1)) {
                 // 1マス以内で発動する戦闘中バフ
-                this.__addSpurInRange1(targetUnit, unit.passiveC, calcPotentialDamage);
-                this.__addSpurInRange1(targetUnit, unit.passiveS, calcPotentialDamage);
+                this.__addSpurInRange1(targetUnit, ally.passiveC, calcPotentialDamage);
+                this.__addSpurInRange1(targetUnit, ally.passiveS, calcPotentialDamage);
             }
 
-            if (this.__isInCross(unit, targetUnit)) {
+            if (this.__isInCross(ally, targetUnit)) {
                 // 十字方向
-                for (let skillId of unit.enumerateSkills()) {
+                for (let skillId of ally.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.BondOfTheAlfar:
                             targetUnit.atkSpur += 6;
                             break;
                         case Weapon.FlowerOfJoy:
-                            if (!unit.isWeaponRefined) {
+                            if (!ally.isWeaponRefined) {
                                 // <通常効果>
                                 targetUnit.atkSpur += 3;
                                 targetUnit.spdSpur += 3;
@@ -17416,12 +17415,12 @@ class DamageCalculatorWrapper {
                 }
             }
 
-            if (this.__isInCrossWithOffset(unit, targetUnit, 1)) {
-                for (let skillId of unit.enumerateSkills()) {
+            if (this.__isInCrossWithOffset(ally, targetUnit, 1)) {
+                for (let skillId of ally.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.ChargingHorn: // 味方にバフ
                             targetUnit.addAtkSpdSpurs(5);
-                            if (unit.isWeaponSpecialRefined) {
+                            if (ally.isWeaponSpecialRefined) {
                                 targetUnit.addDefResSpurs(5);
                             }
                             break;

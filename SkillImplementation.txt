@@ -137,7 +137,7 @@ if (this.__isSolo(targetUnit) || calcPotentialDamage) {}
 周囲Nマス以内にいる、最も近い敵
 for (let unit of this.__findNearestEnemies(<unit>, <N>)) {}
 
-周囲からのバフ[周囲XXの味方は, YY以内の味方は]
+周囲からのバフ(紋章効果など)[周囲XXの味方は, YY以内の味方は]
 updateUnitSpurFromAlliesFuncMap.set(skillId,
     function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
         // 周囲2マス以内
