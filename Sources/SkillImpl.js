@@ -1,5 +1,42 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ハデスΩ
+{
+    let skillId = Weapon.HadesuOmega;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.addAtkSpdSpurs(4);
+                    if (targetUnit.hasSpecial &&
+                        targetUnit.statusEvalUnit.specialCount === 0) {
+                        targetUnit.atkSpur += 6;
+                    }
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+}
+
 // 狼花嫁の牙
 {
     let skillId = Weapon.BridesFang;

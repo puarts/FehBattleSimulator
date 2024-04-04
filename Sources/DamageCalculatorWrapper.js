@@ -1442,13 +1442,6 @@ class DamageCalculatorWrapper {
                 atkUnit.resSpur += 5;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.HadesuOmega] = (atkUnit) => {
-            atkUnit.atkSpur += 4;
-            atkUnit.spdSpur += 4;
-            if (atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0) {
-                atkUnit.atkSpur += 6;
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.KinranNoSyo] = (atkUnit) => {
             atkUnit.atkSpur += 6;
         };
