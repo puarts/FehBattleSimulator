@@ -1429,13 +1429,15 @@ const StatusIndex = {
 // TODO: ここから下の内容を別ファイルに分ける
 // FuncMap
 // noinspection DuplicatedCode
-/** @type {Map<String, (target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySpecialDamageReductionPerAttackFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
 const calcMoveCountForCantoFuncMap = new Map();
 const evalSpdAddFuncMap = new Map();
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
+/** @type {Map<number|string, (this:BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applySkillForBeginningOfTurnFuncMap = new Map();
 const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
 const setOnetimeActionActivatedFuncMap = new Map();

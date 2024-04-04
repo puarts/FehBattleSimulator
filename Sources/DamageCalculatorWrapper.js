@@ -8001,12 +8001,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidateAllBuffs();
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.DarkScripture] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.resSpur -= 6;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Aymr] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
@@ -14718,11 +14712,6 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.SkyPirateClaw:
                         if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)) {
-                            ++followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.DarkScripture:
-                        if (!defUnit.hasEffective(EffectiveType.Dragon)) {
                             ++followupAttackPriority;
                         }
                         break;

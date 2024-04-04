@@ -1941,6 +1941,10 @@ class Unit extends BattleMapElement {
         return false;
     }
 
+    /**
+     * @param {number} type - EffectiveType
+     * @return {boolean}
+     */
     hasEffective(type) {
         if (this.isWeaponEffectiveAgainst(type)) {
             return true;

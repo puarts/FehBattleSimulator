@@ -1,5 +1,42 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 暗黒の聖書
+{
+    let skillId = Weapon.DarkScripture;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (calcPotentialDamage ||
+                    !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                    enemyUnit.addAtkResSpurs(-6);
+                }
+                if (!enemyUnit.hasEffective(EffectiveType.Dragon)) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+}
+
 // 星竜のブレス
 {
     let skillId = Weapon.AstralBreath;
