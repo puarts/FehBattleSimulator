@@ -2152,13 +2152,6 @@ class BattleMap {
                         }
                     }
                     break;
-                case Weapon.AstralBreath:
-                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                        if (unit.partnerHeroIndex == ally.heroIndex) {
-                            yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
-                        }
-                    }
-                    break;
                 case Weapon.Noatun: {
                     let threshold = 50;
                     if (!unit.isWeaponRefined) {

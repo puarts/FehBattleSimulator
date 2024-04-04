@@ -15808,11 +15808,15 @@ class DamageCalculatorWrapper {
         return unitB.isInCrossWithOffset(unitA, offset);
     }
 
+    /**
+     * @param {Unit} unit
+     * @returns {boolean}
+     */
     __isTherePartnerInSpace3(unit) {
-        return this.__isThereAnyAllyUnit(unit,
-            x => unit.calculateDistanceToUnit(x) <= 3
-                && unit.partnerHeroIndex === x.heroIndex);
+        let isPartnerWithinThreeSpaces = ally => unit.calculateDistanceToUnit(ally) <= 3 && unit.isPartner(ally);
+        return this.__isThereAnyAllyUnit(unit, isPartnerWithinThreeSpaces);
     }
+
     /**
      * @param  {Unit} targetUnit
      * @param  {Unit} allyUnit
@@ -16758,11 +16762,6 @@ class DamageCalculatorWrapper {
             if (!calcPotentialDamage) {
                 for (let skillId of targetUnit.enumerateSkills()) {
                     switch (skillId) {
-                        case Weapon.AstralBreath:
-                            if (this.__isTherePartnerInSpace3(targetUnit)) {
-                                targetUnit.addAllSpur(5);
-                            }
-                            break;
                         case Weapon.Rigarublade:
                             if (targetUnit.isWeaponSpecialRefined) {
                                 if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2,

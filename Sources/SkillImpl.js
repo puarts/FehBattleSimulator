@@ -1,5 +1,50 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 星竜のブレス
+{
+    let skillId = Weapon.AstralBreath;
+    TeleportationSkillDict[skillId] = 0;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (!calcPotentialDamage && this.__isTherePartnerInSpace3(targetUnit)) {
+                    targetUnit.addAllSpur(5);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function* (unit) {
+            if (!unit.isWeaponRefined) {
+                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                    if (ally.isPartner(unit)) {
+                        yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
+                    }
+                }
+            }
+        }
+    );
+}
+
 // 紋章士アイク
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Ike);
