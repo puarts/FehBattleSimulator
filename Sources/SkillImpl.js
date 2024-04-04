@@ -1,5 +1,49 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 狼花嫁の牙
+{
+    let skillId = Weapon.BridesFang;
+    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
+    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Infantry);
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (!skillOwner.isWeaponRefined) {
+                // <通常効果>
+            } else {
+                // <錬成効果>
+                if (skillOwner.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isWeaponRefined) {
+                // <通常効果>
+                if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                    enemyUnit.addSpursWithoutRes(-5);
+                }
+            } else {
+                // <錬成効果>
+                if (targetUnit.isWeaponSpecialRefined) {
+                    // <特殊錬成効果>
+                }
+            }
+        }
+    );
+    applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit) {
+            if (!attackUnit.weaponRefinement) {
+                if (attackUnit.battleContext.isSpecialActivated) {
+                    attackUnit.specialCount -= 1;
+                }
+            }
+        }
+    );
+}
+
 // ダニエルの錬弓
 {
     let skillId = Weapon.DanielMadeBow;

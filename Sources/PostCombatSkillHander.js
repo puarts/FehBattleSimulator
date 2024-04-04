@@ -267,11 +267,6 @@ class PostCombatSkillHander {
                         unit.applyResBuff(2);
                     }
                     break;
-                case Weapon.BridesFang:
-                    if (attackUnit.battleContext.isSpecialActivated) {
-                        attackUnit.specialCount -= 1;
-                    }
-                    break;
                 case Weapon.SpendthriftBowPlus:
                     attackUnit.specialCount += 2;
                     break;

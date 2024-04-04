@@ -7969,13 +7969,6 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += 5;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.BridesFang] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                enemyUnit.atkSpur -= 5;
-                enemyUnit.spdSpur -= 5;
-                enemyUnit.defSpur -= 5;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.JukishiNoJuso] = (targetUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 50) {

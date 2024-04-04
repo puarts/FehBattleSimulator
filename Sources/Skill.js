@@ -1026,7 +1026,6 @@ WeaponTypesAddAtk2AfterTransform[Weapon.JinroOuNoTsumekiba] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.OkamijoouNoKiba] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.ShirasagiNoTsubasa] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SeijuNoKeshinHiko] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.BridesFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.GroomsWings] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SkyPirateClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.TwinCrestPower] = 0;
@@ -1068,7 +1067,6 @@ const BeastCommonSkillMap =
 
             // 旧世代歩行
             [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
-            [Weapon.BridesFang, BeastCommonSkillType.Infantry],
             [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
 
             // 次世代騎馬
@@ -1508,6 +1506,7 @@ const enumerateTeleportTilesForAllyFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 const hasPathfinderEffectFuncMap = new Map();
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, attackTarget: Unit) => void>} */
 const applyAttackSkillEffectAfterCombatFuncMap = new Map();
-/** @type {Map<String, (supporter: Unit, target: Unit) => void>} */
+/** @type {Map<number|string, (supporter: Unit, target: Unit) => void>} */
 const applySpecialSkillEffectWhenHealingFuncMap = new Map();
