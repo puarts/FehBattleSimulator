@@ -1,98 +1,140 @@
 /// @file
 /// @brief ユーティリティークラス、関数等の定義です。
 
+/**
+ * @template T
+ */
 class TreeNode {
+    /**
+     * @param {T} item
+     */
     constructor(item) {
+        /** @type {T} */
         this.item = item;
+        /** @type {TreeNode[]} */
         this.branches = [];
     }
 }
 
-/// スタックを表すコンテナクラスです。
+/**
+ * スタックを表すコンテナクラスです。
+ * @template T
+ */
 class Stack {
+    /** @type {T[]} */
+    #array = [];
+    #maxLength = 0;
+
     constructor(maxLength) {
-        this._maxLength = maxLength;
-        this._array = [];
+        this.#maxLength = maxLength;
+        this.#array = [];
     }
 
     get length() {
-        return this._array.length;
+        return this.#array.length;
     }
 
+    /**
+     * @param {T} value
+     */
     push(value) {
-        if (this._array.length == this._maxLength) {
-            this._array.shift();
+        if (this.#array.length === this.#maxLength) {
+            this.#array.shift();
         }
-        this._array.push(value);
+        this.#array.push(value);
     }
 
+    /**
+     * @returns {T | undefined}
+     */
     pop() {
-        return this._array.pop();
+        return this.#array.pop();
     }
 
     clear() {
-        this._array = [];
+        this.#array = [];
     }
 
     get data() {
-        return this._array;
+        return this.#array;
     }
 }
 
-/// キューを表すコンテナクラスです。
+/**
+ * キューを表すコンテナクラスです。
+ * @template T
+ */
 class Queue {
+    /** @type {T[]} */
+    #array = [];
+    #maxLength = 0;
+
     constructor(maxLength) {
-        this._maxLength = maxLength;
-        this._array = [];
+        this.#maxLength = maxLength;
+        this.#array = [];
     }
 
+    /**
+     * @param {T} value
+     */
     enqueue(value) {
-        if (this._array.length == this._maxLength) {
-            this._array.shift();
+        if (this.#array.length === this.#maxLength) {
+            this.#array.shift();
         }
-        this._array.push(value);
+        this.#array.push(value);
     }
 
+    /**
+     * @returns {T | null}
+     */
     dequeue() {
-        if (this._array.length > 0) {
-            return this._array.shift();
-        }
-        return null;
+        return !this.isEmpty() ? this.#array.shift() : null;
     }
 
+    /**
+     * @returns {T | null}
+     */
     pop() {
-        if (this._array.length > 0) {
-            return this._array.pop();
-        }
-        return null;
+        return !this.isEmpty() ? this.#array.pop() : null;
     }
 
     clear() {
-        this._array = [];
+        this.#array = [];
     }
 
+    /**
+     * @returns {T | null}
+     */
     get topValue() {
-        if (this.length == 0) {
-            return null;
-        }
-        return this._array[0];
+        return this.isEmpty() ? null : this.#array[0];
     }
 
+    /**
+     * @returns {T | null}
+     */
     get lastValue() {
-        if (this.length == 0) {
-            return null;
-        }
-
-        return this._array[this._array.length - 1];
+        return this.isEmpty() ? null : this.#array[this.#array.length - 1];
     }
 
-
+    /**
+     * @returns {number}
+     */
     get length() {
-        return this._array.length;
+        return this.#array.length;
     }
 
+    /**
+     * @returns {T[]}
+     */
     get data() {
-        return this._array;
+        return this.#array;
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    isEmpty() {
+        return this.length === 0;
     }
 }
 
@@ -125,7 +167,7 @@ class CookieWriter {
         }
         else {
             // console.log("read:" + document.cookie);
-            if (document.cookie != "") {
+            if (document.cookie !== "") {
                 let settings = document.cookie.split(';');
                 for (let settingIndex = 0; settingIndex < settings.length; ++settingIndex) {
                     let elemText = settings[settingIndex];
@@ -135,11 +177,10 @@ class CookieWriter {
                         continue;
                     }
                     let settingName = keyValue[0].trim();
-                    if (settingName != name) {
+                    if (settingName !== name) {
                         continue;
                     }
-                    let settingValue = elemText.substring(keyValue[0].length + 1).trim();
-                    return settingValue;
+                    return elemText.substring(keyValue[0].length + 1).trim();
                 }
             }
         }
@@ -526,19 +567,15 @@ function toBoolean(text) {
 function calcDistance(ax, ay, bx, by) {
     return Math.abs(ax - bx) + Math.abs(ay - by);
 }
-
 function boolToInt(value) {
     return value ? 1 : 0;
 }
-
 function intToBool(value) {
     return value !== 0;
 }
-
 function calcSimilarity(s1, s2) {
     return levenshtein(adjustChars(s1), adjustChars(s2));
 }
-
 function adjustChars(s1) {
     // 日本語で区別が難しい単語は同じ単語とみなして類似度を計算する
     const replaceChars = {
@@ -1069,4 +1106,85 @@ function getKeyByValue(dict, value) {
         }
     }
     return null;
+}
+
+class IterUtil {
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @param {(i: T) => number} valueFunc
+     * @returns {T[]}
+     */
+    static maxElements(iterable, valueFunc) {
+        let maxValue = Number.MIN_SAFE_INTEGER;
+        let maxElements = [];
+        for (let e of iterable) {
+            let value = valueFunc(e);
+            if (value > maxValue) {
+                maxValue = value;
+                maxElements = [e];
+            } else if (value === maxValue) {
+                maxElements.push(e);
+            }
+        }
+        return maxElements;
+    }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @param {(i: T) => number} valueFunc
+     * @returns {T[]}
+     */
+    static minElements(iterable, valueFunc) {
+        return this.maxElements(iterable, e => -valueFunc(e));
+    }
+}
+
+class GeneratorUtil {
+
+    /**
+     * @template T
+     * @param {...Generator<T>} generators
+     * @returns Generator<T>
+     */
+    static* combine(...generators) {
+        for (let gen of generators) {
+            yield* gen;
+        }
+    }
+
+    /**
+     * @param {...Generator} generators
+     * @returns {Generator<Array>}
+     */
+    static* zip(...generators) {
+        while (true) {
+            // noinspection JSMismatchedCollectionQueryUpdate
+            let values = [];
+            for (let generator of generators) {
+                let result = generator.next();
+                if (result.done) {
+                    break;
+                }
+                values.push(result.value);
+            }
+            yield values;
+        }
+    }
+
+    /**
+     * @template T
+     * @param {Generator<T>} generator
+     * @param {(i: T) => boolean} pred
+     * @returns {Generator<T>}
+     */
+    static* filter(generator, pred) {
+        for (const value of generator) {
+            if (pred(value)) {
+                yield value;
+            }
+        }
+    }
 }

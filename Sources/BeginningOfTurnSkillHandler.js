@@ -1507,6 +1507,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.KiaStaff: {
                 let candidates = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 4, false));
                 let negativeStatusCandidates = candidates.filter(unit => unit.hasNegativeStatusEffect());
+                /** @type {Unit[]} */
                 let targets = (negativeStatusCandidates.length === 0 ? candidates : negativeStatusCandidates)
                     .reduce((a, c) => {
                         if (a.length === 0) return [c];
@@ -2276,12 +2277,12 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case PassiveB.SDrink:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveS.OgiNoKodou:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     this.writeDebugLog(skillOwner.getNameWithGroup() + "の奥義の鼓動により奥義発動カウント-1");
                     skillOwner.reserveToReduceSpecialCount(1);
                 }
@@ -2826,7 +2827,7 @@ class BeginningOfTurnSkillHandler {
                     unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplySpdDebuff(-5); }); break;
             case PassiveC.ArmorMarch3:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
-                    if (unit.moveType == MoveType.Armor) {
+                    if (unit.moveType === MoveType.Armor) {
                         this.writeLog(unit.getNameWithGroup() + "は重装の行軍により移動値+1");
                         unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                         this.writeLog(skillOwner.getNameWithGroup() + "は重装の行軍により移動値+1");
@@ -2934,30 +2935,12 @@ class BeginningOfTurnSkillHandler {
         switch (skillId) {
             case PassiveC.FutureFocused:
                 if (this.isOddTurn) {
-                    let units = [];
-                    let distance = Number.MAX_SAFE_INTEGER;
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                        let inCross =
-                            skillOwner.posX === unit.posX ||
-                            skillOwner.posY === unit.posY;
-                        if (!inCross) {
-                            continue;
-                        }
-                        let d = skillOwner.distance(unit);
-                        if (d > distance) {
-                            continue;
-                        } else if (d === distance) {
-                            units.push(unit);
-                        } else {
-                            units = [unit]
-                            distance = d;
-                        }
-                    }
-                    for (let unit of units) {
-                        if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3) {
-                            unit.endAction();
-                        }
-                    }
+                    let enemyUnits = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+                    let unitsInCross = GeneratorUtil.filter(enemyUnits, u => skillOwner.isInCrossOf(u));
+                    /** @type {Unit[]} */
+                    let nearestUnits= IterUtil.minElements(unitsInCross, u => skillOwner.distance(u));
+                    let lowerRes = u => skillOwner.isHigherResInPrecombat(u, u.distance(skillOwner) * 3);
+                    nearestUnits.filter(lowerRes).forEach(u => u.endAction());
                 }
                 break;
         }
@@ -3279,7 +3262,7 @@ class BeginningOfTurnSkillHandler {
         }
     }
     __applyWaveSkill(skillOwnerUnit, divisionTwoRemainder, applyBuffFunc) {
-        if ((this.globalBattleContext.currentTurn % 2) == divisionTwoRemainder) {
+        if ((this.globalBattleContext.currentTurn % 2) === divisionTwoRemainder) {
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 1, true)) {
                 applyBuffFunc(unit);
             }
@@ -3403,8 +3386,11 @@ class BeginningOfTurnSkillHandler {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
 
-    enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
-        return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);
+    /**
+     * @returns {Generator<Unit>}
+     */
+    enumerateUnitsInDifferentGroupOnMap(unit) {
+        return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
     }
 
     enumerateUnitsWithinSpecifiedRange(posX, posY, unitGroup, rangeHorLength, rangeVerLength) {

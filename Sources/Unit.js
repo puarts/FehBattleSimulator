@@ -3468,6 +3468,16 @@ class Unit extends BattleMapElement {
         return this.getResInPrecombat() + this.__getEvalResAdd();
     }
 
+    /**
+     * 魔防がn以上高いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherResInPrecombat(enemyUnit, n = 0) {
+        return this.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat() + n;
+    }
+
     __getEvalDefAdd() {
         switch (this.passiveS) {
             default:
