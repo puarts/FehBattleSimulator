@@ -235,7 +235,7 @@ class OriginalAi {
                         }
                         return false;
                     }
-                    else if (targetUnit.supportInfo.assistType == AssistType.Refresh) {
+                    else if (targetUnit.supportInfo.assistType === AssistType.Refresh) {
                         let result = self.__findTileAfterSmite(assistUnit, targetUnit, tile);
                         if (!result.success) {
                             return false;
@@ -246,18 +246,13 @@ class OriginalAi {
                         }
 
                         // 行動済みのアタッカーを再行動できるか
-                        let actionedAttackers = [];
-                        for (let unit of self.enumerateAllUnitsOnMap(x =>
-                            x.groupId == targetGroup
+                        let actionedAttackers = self.enumerateAllUnitsOnMap(x =>
+                            x.groupId === targetGroup
                             && x.isActionDone
-                            && x.supportInfo.assistType != AssistType.Refresh
-                            && x.support != Support.Smite)
-                        ) {
-                            actionedAttackers.push(unit);
-                        }
-
+                            && x.supportInfo.assistType !== AssistType.Refresh
+                            // TODO: AIを確認
+                            && x.support !== Support.Smite);
                         for (let attacker of actionedAttackers) {
-
                             let dist = attacker.placedTile.calculateUnitMovementCountToThisTile(
                                 targetUnit, result.targetUnitTileAfterAssist);
                             if (dist - 1 <= targetUnit.moveCount) {
@@ -298,16 +293,18 @@ class OriginalAi {
 
     __origAi_getRefreshers(targetGroup) {
         let self = g_app;
-        let assisters = [];
-        for (let unit of self.enumerateAllUnitsOnMap(x =>
-            x.groupId == targetGroup
+        /** @type {Unit[]} */
+        let assisterArray = [];
+        /** @type {Generator<Unit>} */
+        let assisters = self.enumerateAllUnitsOnMap(x =>
+            x.groupId === targetGroup
             && !x.isActionDone
-            && x.supportInfo.assistType == AssistType.Refresh)
-        ) {
+            && x.supportInfo.assistType === AssistType.Refresh);
+        for (let unit of assisters) {
             unit.actionContext.clear();
-            assisters.push(unit);
+            assisterArray.push(unit);
         }
-        return assisters;
+        return assisterArray;
     }
 
     __origAi_simulateRefreshAction(targetGroup) {
@@ -317,40 +314,39 @@ class OriginalAi {
             unit.actionContext.clear();
         }
 
-        for (let unit of assisters) {
+        for (let assistUnit of assisters) {
             self.__setBestTargetAndTiles(
-                unit,
+                assistUnit,
                 true,
-                (targetUnit, tile) => self.__canBeActivatedPrecombatAssist(unit, targetUnit, tile),
+                (targetUnit, tile) => self.__canBeActivatedPrecombatAssist(assistUnit, targetUnit, tile),
                 tile => !(tile.obj instanceof TrapBase)
             );
-            if (unit.actionContext.bestTargetToAssist == null) {
-                self.writeDebugLogLine(unit.getNameWithGroup() + "の補助可能な味方がいない");
+            if (assistUnit.actionContext.bestTargetToAssist == null) {
+                self.writeDebugLogLine(assistUnit.getNameWithGroup() + "の補助可能な味方がいない");
                 continue;
             }
 
-            let bestTargetToAssist = unit.actionContext.bestTargetToAssist;
-            let bestTileToAssist = unit.actionContext.bestTileToAssist;
+            let bestTargetToAssist = assistUnit.actionContext.bestTargetToAssist;
+            let bestTileToAssist = assistUnit.actionContext.bestTileToAssist;
 
-            self.__enqueueSupportCommand(unit, bestTileToAssist, bestTargetToAssist);
+            self.__enqueueSupportCommand(assistUnit, bestTileToAssist, bestTargetToAssist);
             return true;
         }
 
         return false;
     }
 
+    /**
+     * @returns {Unit[]}
+     */
     __origAi_getAttackers(targetGroup) {
         let self = g_app;
-        let attackers = [];
-        for (let unit of self.enumerateAllUnitsOnMap(x =>
-            x.groupId == targetGroup
-            && !x.isActionDone
-            && x.supportInfo.assistType != AssistType.Refresh
-            && x.support != Support.Smite)
-        ) {
-            attackers.push(unit);
-        }
-        return attackers;
+        let isAttacker = x =>
+            x.groupId === targetGroup &&
+            !x.isActionDone &&
+            x.supportInfo.assistType !== AssistType.Refresh &&
+            x.support !== Support.Smite;
+        return Array.from(self.enumerateAllUnitsOnMap(isAttacker));
     }
 
     __origAi_simulateAttackerAction(targetGroup, enemyUnits) {

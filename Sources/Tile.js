@@ -883,13 +883,13 @@ class TilePriorityContext {
 
         let defensiveTileWeight = 0;
         if (this.isDefensiveTile) { defensiveTileWeight = 1; }
-        if (assistUnit.support == Support.Pivot) {
+        if (assistUnit.support === Support.Pivot) {
             this.priorityToAssist =
                 defensiveTileWeight * 10000000
                 - this.enemyThreat * 1000000
                 + this.tilePriority;
         }
-        else if (assistUnit.supportInfo.assistType == AssistType.Move) {
+        else if (assistUnit.supportInfo.assistType === AssistType.Move) {
             let teleportationRequirementWeight = 0;
             let requiredMovementCount = this.requiredMovementCount;
             if (this.isTeleportationRequired) {

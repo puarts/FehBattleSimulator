@@ -1423,7 +1423,7 @@ class AppData extends UnitManager {
     }
 
     get isSupportActivationDisabled() {
-        return this.globalBattleContext.currentTurn == 0;
+        return this.globalBattleContext.currentTurn === 0;
     }
 
     get maxTurn() {

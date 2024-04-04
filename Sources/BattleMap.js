@@ -1495,9 +1495,10 @@ class BattleMap {
         }
         return text;
     }
+
     /**
      * @param  {Function} predicatorFunc=null
-     * @returns {Tile[]}
+     * @returns {Generator<Tile>}
      */
     *enumerateTiles(predicatorFunc = null) {
         for (let tile of this._tiles) {
@@ -1506,15 +1507,16 @@ class BattleMap {
             }
         }
     }
+
     /**
-     * @returns {Tile[]}
+     * @returns {Generator<Tile>}
      */
     enumerateSelectedTiles() {
         return this.enumerateTiles(x => x.isSelected);
     }
 
     /**
-     * @returns {Tile[]}
+     * @returns {Generator<Tile>}
      */
     *enumerateTilesInSpecifiedDistanceFrom(targetTile, targetDistance) {
         for (let y = 0; y < this._height; ++y) {
@@ -1522,7 +1524,7 @@ class BattleMap {
                 let index = y * this._width + x;
                 let tile = this._tiles[index];
                 let distance = tile.calculateDistance(targetTile);
-                if (distance == targetDistance) {
+                if (distance === targetDistance) {
                     yield tile;
                 }
             }
@@ -1677,12 +1679,12 @@ class BattleMap {
     }
 
     moveUnit(unit, x, y) {
-        if ((unit.posX == x) && (unit.posY == y)) {
+        if (unit.posX === x && unit.posY === y) {
             return;
         }
-
         this.moveUnitForcibly(unit, x, y);
     }
+
     removeUnit(unit) {
         let currentTile = this.findTileUnitPlaced(unit.id);
         if (currentTile != null) {

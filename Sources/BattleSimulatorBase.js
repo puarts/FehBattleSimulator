@@ -2783,9 +2783,10 @@ class BattleSimulatorBase {
             yield unit;
         }
     }
+
     /**
      * @param  {Function} predicator=null
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     * enumerateAllUnitsOnMap(predicator = null) {
         for (let unit of this.vm.units) {
@@ -5568,27 +5569,27 @@ class BattleSimulatorBase {
 
         let isActionActivated = false;
         for (let i = 0; i < assistableUnits.length; ++i) {
-            let unit = assistableUnits[i];
-            this.writeDebugLogLine(unit.getNameWithGroup() + "の補助資格を評価");
-            if (!this.__canActivatePrecombatAssist(unit, allyUnits)) {
-                this.writeDebugLogLine(unit.getNameWithGroup() + "は補助資格なし");
+            let assistableUnit = assistableUnits[i];
+            this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "の補助資格を評価");
+            if (!this.__canActivatePrecombatAssist(assistableUnit, allyUnits)) {
+                this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "は補助資格なし");
                 continue;
             }
 
-            this.__setBestTargetAndTiles(unit, true, (targetUnit, tile) => this.__canBeActivatedPrecombatAssist(unit, targetUnit, tile));
-            if (unit.actionContext.bestTargetToAssist == null) {
-                this.writeDebugLogLine(unit.getNameWithGroup() + "の補助可能な味方がいない");
+            this.__setBestTargetAndTiles(assistableUnit, true, (targetUnit, tile) => this.__canBeActivatedPrecombatAssist(assistableUnit, targetUnit, tile));
+            if (assistableUnit.actionContext.bestTargetToAssist == null) {
+                this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "の補助可能な味方がいない");
                 continue;
             }
 
             if (slotOrderDependentIndices.includes(i)) {
-                this.writeWarningLine(`${unit.getNameWithGroup()}の補助行動順はスロット順で変わる可能性があります。`);
+                this.writeWarningLine(`${assistableUnit.getNameWithGroup()}の補助行動順はスロット順で変わる可能性があります。`);
             }
 
-            let bestTargetToAssist = unit.actionContext.bestTargetToAssist;
-            let bestTileToAssist = unit.actionContext.bestTileToAssist;
+            let bestTargetToAssist = assistableUnit.actionContext.bestTargetToAssist;
+            let bestTileToAssist = assistableUnit.actionContext.bestTileToAssist;
 
-            this.__enqueueSupportCommand(unit, bestTileToAssist, bestTargetToAssist);
+            this.__enqueueSupportCommand(assistableUnit, bestTileToAssist, bestTargetToAssist);
             isActionActivated = true;
             break;
         }
@@ -5663,29 +5664,39 @@ class BattleSimulatorBase {
 
         return false;
     }
-    __canBeActivatedPrecombatAssist(unit, targetUnit, tile) {
+
+    /**
+     * @param {Unit} assistUnit
+     * @param {Unit} targetUnit
+     * @param {Tile} tile
+     */
+    __canBeActivatedPrecombatAssist(assistUnit, targetUnit, tile) {
         // 補助を実行可能な味方を取得
-        switch (unit.supportInfo.assistType) {
+        let assistType = assistUnit.supportInfo.assistType;
+        if (isRallySupportSkill(assistUnit.support)) {
+            assistType = AssistType.Rally;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
             case AssistType.Rally:
                 // todo: ちゃんと実装する
                 return !targetUnit.isActionDone
                     && targetUnit.actionContext.hasThreatensEnemyStatus
-                    && unit.canRallyTo(targetUnit, 2);
+                    && assistUnit.canRallyTo(targetUnit, 2);
             case AssistType.Heal:
-                if (unit.support === Support.Sacrifice ||
-                    unit.support === Support.MaidensSolace) {
-                    let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
+                if (assistUnit.support === Support.Sacrifice ||
+                    assistUnit.support === Support.MaidensSolace) {
+                    let assisterEnemyThreat = assistUnit.placedTile.getEnemyThreatFor(assistUnit.groupId);
                     let targetEnemyThreat = targetUnit.placedTile.getEnemyThreatFor(targetUnit.groupId);
                     if (assisterEnemyThreat > targetEnemyThreat) {
                         return false;
                     }
                 }
-                return (targetUnit.canHeal(getPrecombatHealThreshold(unit.support)));
+                return (targetUnit.canHeal(getPrecombatHealThreshold(assistUnit.support)));
             case AssistType.Restore:
                 return targetUnit.hasNegativeStatusEffect()
-                    || (targetUnit.canHeal(getPrecombatHealThreshold(unit.support)));
+                    || (targetUnit.canHeal(getPrecombatHealThreshold(assistUnit.support)));
             case AssistType.DonorHeal:
                 {
                     if (targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)
@@ -5693,18 +5704,18 @@ class BattleSimulatorBase {
                         return false;
                     }
 
-                    let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
+                    let assisterEnemyThreat = assistUnit.placedTile.getEnemyThreatFor(assistUnit.groupId);
                     let targetEnemyThreat = targetUnit.placedTile.getEnemyThreatFor(targetUnit.groupId);
                     if (assisterEnemyThreat > targetEnemyThreat) {
                         return false;
                     }
 
-                    let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(unit, targetUnit);
+                    let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(assistUnit, targetUnit);
                     if (!result.success || result.targetHealHp < result.userLossHp) {
                         return false;
                     }
 
-                    switch (unit.support) {
+                    switch (assistUnit.support) {
                         case Support.ArdentSacrifice:
                             if (result.targetHealHp < 10) {
                                 return false;
@@ -5722,7 +5733,7 @@ class BattleSimulatorBase {
                     return true;
                 }
             default:
-                this.writeErrorLine("戦闘前補助が未実装のスキル: " + unit.supportInfo.name);
+                this.writeErrorLine("戦闘前補助が未実装のスキル: " + assistUnit.supportInfo.name);
                 return false;
         }
     }
@@ -5747,7 +5758,11 @@ class BattleSimulatorBase {
     }
 
     __canBeActivatedPostCombatAssist(unit, targetUnit, tile) {
-        switch (unit.supportInfo.assistType) {
+        let assistType = unit.supportInfo.assistType;
+        if (isRallySupportSkill(unit.support)) {
+            assistType = AssistType.Rally;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
             case AssistType.Heal:
@@ -5834,7 +5849,11 @@ class BattleSimulatorBase {
 
     __canActivatePostCombatAssist(unit, enemyUnits) {
         // todo: ちゃんと実装する
-        switch (unit.supportInfo.assistType) {
+        let assistType = unit.supportInfo.assistType;
+        if (isRallySupportSkill(unit.support)) {
+            assistType = AssistType.Rally;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 return true;
             case AssistType.Heal:
@@ -5868,7 +5887,11 @@ class BattleSimulatorBase {
         }
 
         // todo: ちゃんと実装する
-        switch (unit.supportInfo.assistType) {
+        let assistType = unit.supportInfo.assistType;
+        if (isRallySupportSkill(unit.support)) {
+            assistType = AssistType.Rally;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits);
             case AssistType.Rally:
@@ -9342,7 +9365,11 @@ class BattleSimulatorBase {
             return false;
         }
 
-        switch (supporterUnit.supportInfo.assistType) {
+        let assistType = supporterUnit.supportInfo.assistType;
+        if (isRallySupportSkill(supporterUnit.support)) {
+            assistType = AssistType.Rally;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 return canRefreshTo(targetUnit);
             case AssistType.Rally:
@@ -9427,7 +9454,11 @@ class BattleSimulatorBase {
     }
 
     __applySupportSkill(supporterUnit, targetUnit) {
-        switch (supporterUnit.supportInfo.assistType) {
+        let assistType = supporterUnit.supportInfo.assistType;
+        if (isRallySupportSkill(supporterUnit.support)) {
+            assistType = AssistType.Rally;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 return this.__applyRefresh(supporterUnit, targetUnit);
             case AssistType.Heal:

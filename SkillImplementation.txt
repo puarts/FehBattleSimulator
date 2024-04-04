@@ -1256,6 +1256,17 @@ applySupportSkillForSupporterFuncMap.set(skillId,
     }
 );
 
+「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+// 補助の場合
+this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+if (supporterUnit.restSupportSkillAvailableTurn === 0) {
+    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
+    supporterUnit.restSupportSkillAvailableTurn = 3;
+    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+} else {
+    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
+}
+
 // 共謀系[強制応援]
 // 応援をかける側
 canRallyForciblyFuncMap.set(skillId,

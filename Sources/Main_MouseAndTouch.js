@@ -21,6 +21,7 @@ class DoubleClickChecker {
 
 const g_keyboardManager = new KeyboardManager();
 let g_draggingElemId = "";
+/** @type {Queue<Tile>} */
 let g_dragoverTileHistory = new Queue(10);
 
 let g_doubleClickChecker = new DoubleClickChecker();
@@ -218,7 +219,7 @@ function findBestActionTile(targetTile, spaces) {
     for (let i = g_dragoverTileHistory.length - 1; i >= 0; --i) {
         let tile = g_dragoverTileHistory.data[i];
         let distance = tile.calculateDistance(targetTile);
-        if (distance == spaces) {
+        if (distance === spaces) {
             return tile;
         }
     }
@@ -300,17 +301,14 @@ function getBestActionTile(unit, targetTile, spaces) {
     let moveTile = findBestActionTile(targetTile, spaces);
     if (moveTile == null) {
         // マウスオーバーした座標から決められなかった場合はユニットから一番近い攻撃可能なタイル
+        let tiles = g_appData.map.enumerateTilesInSpecifiedDistanceFrom(targetTile, spaces);
+        let isNotAnotherUnit = tile => !(tile.placedUnit != null && tile.placedUnit !== unit);
+        let distFunc = t => t.calculateDistanceToUnit(unit);
+        /** @type {Tile} */
+        moveTile = IterUtil.minElement(GeneratorUtil.filter(tiles, isNotAnotherUnit), distFunc);
         let minDist = unit.moveCount + 1;
-        for (let tile of g_appData.map.enumerateTilesInSpecifiedDistanceFrom(targetTile, spaces)) {
-            let distance = tile.calculateDistanceToUnit(unit);
-            if (tile.placedUnit != null && tile.placedUnit != unit) {
-                continue;
-            }
-
-            if (distance < minDist) {
-                minDist = distance;
-                moveTile = tile;
-            }
+        if (moveTile !== null && moveTile.calculateDistanceToUnit(unit) >= minDist) {
+            moveTile = null;
         }
     }
 
@@ -371,56 +369,56 @@ function dropToUnitImpl(unit, dropTargetId) {
 
     if (isMapTileId(dropTargetId)) {
         // テーブルのセルにドロップされた
-        let xy = g_appData.map.getPosFromCellId(dropTargetId);
-        let x = Number(xy[0]);
-        let y = Number(xy[1]);
-
+        let [x, y] = g_appData.map.getPosFromCellId(dropTargetId);
         let targetTile = g_appData.map.getTile(x, y);
-
-        if (targetTile == unit.placedTile) {
+        if (targetTile === unit.placedTile) {
             return;
         }
 
         let unitPlacedOnTargetTile = targetTile.placedUnit;
         let isActioned = false;
-        if (!g_appData.isSupportActivationDisabled && unitPlacedOnTargetTile != null && unit.groupId != unitPlacedOnTargetTile.groupId) {
+        let isDifferentGroup = unitPlacedOnTargetTile != null && unit.groupId !== unitPlacedOnTargetTile.groupId;
+        let isSupportEnabled = !g_appData.isSupportActivationDisabled;
+        if (isSupportEnabled && isDifferentGroup) {
             g_app.writeSimpleLogLine("attack!");
             // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
-            let tile = getBestActionTile(unit, targetTile, unit.attackRange);
-            if (tile != null) {
-                g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, tile);
+            let bestTile = getBestActionTile(unit, targetTile, unit.attackRange);
+            if (bestTile != null) {
+                g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, bestTile);
                 g_appData.isEnemyActionTriggered = true;
                 unit.isEnemyActionTriggered = true;
                 isActioned = true;
             }
-        }
-        else if (unitPlacedOnTargetTile != null) {
+        } else if (unitPlacedOnTargetTile != null) {
             // ドロップ先が味方なら補助スキル発動
             if (g_appData.isSupportActivationDisabled) {
-                // 入替え
+                // 0ターン(配置変更)であれば入替え
                 g_appData.map.moveUnit(unit, x, y);
                 isActioned = true;
-            }
-            else {
+            } else {
                 let supportRange = getAssistRange(unit.support);
-                let tile = getBestActionTile(unit, targetTile, supportRange);
-                if (tile != null) {
+                let bestTile = getBestActionTile(unit, targetTile, supportRange);
+                if (bestTile != null) {
                     if (unit.supportInfo != null) {
-                        let canApplyAssist =
-                            unit.supportInfo.assistType != AssistType.Rally ||
-                            (unit.supportInfo.assistType == AssistType.Rally
-                                && (unit.canRallyForcibly() ||
-                                    unit.canRallyTo(unitPlacedOnTargetTile, 1) ||
-                                    unitPlacedOnTargetTile.canRalliedForcibly()));
+                        let assistType = unit.supportInfo.assistType;
+                        if (isRallySupportSkill(unit.support)) {
+                            assistType = AssistType.Rally;
+                        }
+                        let isNotRally = assistType !== AssistType.Rally;
+                        let isRally = assistType === AssistType.Rally;
+                        let canRally =
+                            unit.canRallyForcibly() ||
+                            unit.canRallyTo(unitPlacedOnTargetTile, 1) ||
+                            unitPlacedOnTargetTile.canRalliedForcibly();
+                        let canApplyAssist = isNotRally || (isRally && canRally);
                         if (canApplyAssist) {
-                            g_app.__enqueueSupportCommand(unit, tile, unitPlacedOnTargetTile);
+                            g_app.__enqueueSupportCommand(unit, bestTile, unitPlacedOnTargetTile);
                             isActioned = true;
                         }
                     }
                 }
             }
-        }
-        else {
+        } else {
             if (targetTile.obj != null) {
                 let obj = targetTile.obj;
                 if (examinesCanBreak(unit, obj)) {
@@ -430,23 +428,20 @@ function dropToUnitImpl(unit, dropTargetId) {
                         g_app.__enqueueBreakStructureCommand(unit, tile, obj);
                         isActioned = true;
                     }
-                }
-                else if (obj instanceof TrapBase) {
+                } else if (obj instanceof TrapBase) {
                     g_app.__enqueueMoveCommand(unit, targetTile, true);
                     isActioned = true;
                 }
-            }
-            else {
+            } else {
                 // 移動
-                if (!g_appData.isSupportActivationDisabled) {
-                    if (targetTile != unit.placedTile) {
+                if (isSupportEnabled) {
+                    if (targetTile !== unit.placedTile) {
                         g_app.__enqueueMoveCommand(unit, targetTile, true, CommandType.Normal, true);
                         isActioned = true;
                     }
-                }
-                else {
+                } else {
                     let moveResult = moveUnit(unit, targetTile, true);
-                    isActioned = moveResult != MoveResult.Failure;
+                    isActioned = moveResult !== MoveResult.Failure;
                 }
             }
         }
@@ -455,8 +450,7 @@ function dropToUnitImpl(unit, dropTargetId) {
         if (isActioned) {
             // g_app.deselectItem();
         }
-    }
-    else if (dropTargetId == "trashArea") {
+    } else if (dropTargetId === "trashArea") {
         moveUnitToTrashBox(unit);
     }
 

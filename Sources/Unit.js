@@ -143,7 +143,11 @@ class AssistableUnitInfo {
     }
 
     calcAssistTargetPriority(assistUnit, isPrecombat = true) {
-        switch (assistUnit.supportInfo.assistType) {
+        let assistType = assistUnit.supportInfo.assistType;
+        if (isRallySupportSkill(assistUnit.support)) {
+            assistType = AssistType.Rally;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 this.assistTargetPriority = this.__calcRefreshTargetPriority();
                 break;
@@ -497,15 +501,22 @@ class Unit extends BattleMapElement {
         this.perTurnStatuses = [];
         this.distanceFromClosestEnemy = -1;
 
+        /** @type {SkillInfo} */
         this.weaponInfo = null;
+        /** @type {SkillInfo} */
         this.supportInfo = null;
+        /** @type {SkillInfo} */
         this.specialInfo = null;
 
         /** @type {SkillInfo} */
         this.passiveAInfo = null;
+        /** @type {SkillInfo} */
         this.passiveBInfo = null;
+        /** @type {SkillInfo} */
         this.passiveCInfo = null;
+        /** @type {SkillInfo} */
         this.passiveSInfo = null;
+        /** @type {SkillInfo} */
         this.passiveXInfo = null;
         /** @type {SkillInfo} */
         this.captainInfo = null;
@@ -2762,21 +2773,33 @@ class Unit extends BattleMapElement {
     }
 
     get hasHealAssist() {
+        if (isRallySupportSkill(this.support)) {
+            return false;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.Heal;
     }
 
     get hasDonorHealAssist() {
+        if (isRallySupportSkill(this.support)) {
+            return false;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.DonorHeal;
     }
 
     get hasRestoreAssist() {
+        if (isRallySupportSkill(this.support)) {
+            return false;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.Restore;
     }
 
     get hasRallyAssist() {
+        if (isRallySupportSkill(this.support)) {
+            return true;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.Rally;
     }
@@ -4819,7 +4842,10 @@ class Unit extends BattleMapElement {
         return false;
     }
 
-    /// 応援や一喝を実行可能かどうかを返します。
+    /**
+     * 応援や一喝を実行可能かどうかを返します。
+     * @returns {boolean}
+     */
     canRallyTo(targetUnit, buffAmountThreshold) {
         let assistUnit = this;
         switch (assistUnit.support) {

@@ -44,6 +44,10 @@ class PostCombatSkillHander {
     enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
         return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);
     }
+
+    /**
+     * @returns {Generator<Unit>}
+     */
     enumerateAllUnitsOnMap() {
         return this._unitManager.enumerateAllUnitsOnMap();
     }

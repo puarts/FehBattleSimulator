@@ -456,6 +456,7 @@ function isNormalAttackSpecial(special) {
 
 /// 再行動補助スキルかどうかを判定します。
 const refreshSupportSkillSet = new Set();
+const rallySupportSkillSet = new Set();
 
 function isRefreshSupportSkill(skillId) {
     if (refreshSupportSkillSet.has(skillId)) {
@@ -480,6 +481,10 @@ function isRefreshSupportSkill(skillId) {
         default:
             return false;
     }
+}
+
+function isRallySupportSkill(skillId) {
+    return rallySupportSkillSet.has(skillId);
 }
 
 const BowWeaponTypeTable = {}
