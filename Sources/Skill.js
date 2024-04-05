@@ -1467,6 +1467,7 @@ const canRallyForciblyFuncMap = new Map();
 const canRalliedForciblyFuncMap = new Map();
 /** @type {Map<number|string, (u: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectAfterCombatForUnitFuncMap = new Map();
 const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, ally: Unit, enemy: Unit, potentialDamage: boolean) => void>} */

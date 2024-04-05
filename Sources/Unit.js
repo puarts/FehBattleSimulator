@@ -491,6 +491,9 @@ class Unit extends BattleMapElement {
         this.isAttackDone = false;
         // このターン戦闘を行なったか
         this.isCombatDone = false;
+        // このターン補助を行ったか
+        this.isSupportDone = false;
+
         this.isBonusChar = false;
 
         this.statusEffects = [];

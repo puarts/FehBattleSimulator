@@ -4214,30 +4214,8 @@ class BattleSimulatorBase {
             // console.log(unit.getNameWithGroup() + ": moveCount=" + unit.moveCount);
 
             // 比翼や双界スキル発動カウントリセット
-            unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
-            if (unit.heroIndex === Hero.YoungPalla
-                || unit.heroIndex === Hero.DuoSigurd
-                || unit.heroIndex === Hero.DuoEirika
-                || unit.heroIndex === Hero.DuoSothis
-                || unit.heroIndex === Hero.DuoYmir
-            ) {
-                if (this.isOddTurn) {
-                    unit.duoOrHarmonizedSkillActivationCount = 0;
-                }
-            }
-            else if (unit.heroIndex === Hero.SummerMia
-                || unit.heroIndex === Hero.SummerByleth
-                || unit.heroIndex === Hero.PirateVeronica
-                || unit.heroIndex === Hero.DuoHilda
-                || unit.heroIndex === Hero.DuoNina
-                || unit.heroIndex === Hero.DuoAskr
-                || unit.heroIndex === Hero.HarmonizedTiki
-                || unit.heroIndex === Hero.DuoKagero
-            ) {
-                if (this.data.currentTurn % 3 === 1) {
-                    unit.duoOrHarmonizedSkillActivationCount = 0;
-                }
-            }
+            this.#resetDuoOrHarmonizedSkill(unit);
+
             // "「その後」以降の効果は、その効果が発動後3ターンの間発動しない"処理
             if (unit.restSupportSkillAvailableTurn >= 1) {
                 unit.restSupportSkillAvailableTurn--;
@@ -4248,9 +4226,34 @@ class BattleSimulatorBase {
         }
     }
 
+    #resetDuoOrHarmonizedSkill(unit) {
+        unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
+        if (unit.heroIndex === Hero.YoungPalla ||
+            unit.heroIndex === Hero.DuoSigurd ||
+            unit.heroIndex === Hero.DuoEirika ||
+            unit.heroIndex === Hero.DuoSothis ||
+            unit.heroIndex === Hero.DuoYmir) {
+            if (this.isOddTurn) {
+                unit.duoOrHarmonizedSkillActivationCount = 0;
+            }
+        } else if (unit.heroIndex === Hero.SummerMia ||
+            unit.heroIndex === Hero.SummerByleth ||
+            unit.heroIndex === Hero.PirateVeronica ||
+            unit.heroIndex === Hero.DuoHilda ||
+            unit.heroIndex === Hero.DuoNina ||
+            unit.heroIndex === Hero.DuoAskr ||
+            unit.heroIndex === Hero.HarmonizedTiki ||
+            unit.heroIndex === Hero.DuoKagero) {
+            if (this.data.currentTurn % 3 === 1) {
+                unit.duoOrHarmonizedSkillActivationCount = 0;
+            }
+        }
+    }
+
     __initializeAllUnitsOnMapPerTurn(units) {
         for (let unit of units) {
             unit.isCombatDone = false;
+            unit.isSupportDone = false;
         }
     }
 
@@ -9179,6 +9182,7 @@ class BattleSimulatorBase {
             if (supporterUnit.supportInfo.assistType === AssistType.Refresh) {
                 supporterUnit.battleContext.isRefreshActivated = true;
             }
+            supporterUnit.isSupportDone = true;
             if (!supporterUnit.isActionDone) {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
@@ -9605,8 +9609,7 @@ class BattleSimulatorBase {
                 // 味方全員の行動が終了したので敵ターンへ
                 this.simulateBeginningOfEnemyTurn();
             }
-        }
-        else {
+        } else {
             if (!this.__isThereActionableEnemyUnit()) {
                 // 敵全員の行動が終了したので自ターンへ
                 this.simulateBeginningOfAllyTurn();

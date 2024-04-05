@@ -1511,6 +1511,15 @@ tile.reserveDivineVein(DivineVeinType.Green, unit.groupId);
 予約された天脈を付与
 g_appData.map.applyReservedDivineVein();
 
+[炎撃による天脈]
+applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+    function (targetUnit, enemyUnit) {
+        if (targetUnit.battleContext.initiatesCombat) {
+            this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
+        }
+    }
+);
+
 出典の配列を返す
 unit.getOrigins();
 
