@@ -751,7 +751,7 @@ targetUnit.battleContext.invalidatesHeal= true;
 unit.addStatusEffect(StatusEffectType.DeepWounds);
 
 【回復不可】を60%無効
-targetUnit.battleContext.nullInvalidatesHealRatio = 0.6
+targetUnit.battleContext.nullInvalidatesHealRatio = 0.6;
 
 杖の補助スキルによる回復量
 calcHealAmountFuncMap.set(skillId,

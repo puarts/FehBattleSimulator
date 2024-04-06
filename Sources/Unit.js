@@ -2851,7 +2851,9 @@ class Unit extends BattleMapElement {
         return Math.round((100 * this.hp / this.maxHpWithSkills) * 100) / 100;
     }
 
-    /// 戦闘のダメージ計算時の残りHPです。戦闘のダメージ計算のみで使用できます。
+    /**
+     * 戦闘のダメージ計算時の残りHPです。戦闘のダメージ計算のみで使用できます。
+     */
     get restHpPercentage() {
         if (this.restHp >= this.maxHpWithSkills) {
             return 100;
@@ -2859,7 +2861,9 @@ class Unit extends BattleMapElement {
         return 100 * this.restHp / this.maxHpWithSkills;
     }
 
-    /// ターン開始時スキルで使用する残りのHP割合です。
+    /**
+     * ターン開始時スキルで使用する残りのHP割合です。
+     */
     get restHpPercentageAtBeginningOfTurn() {
         if (this.hp >= this.maxHpWithSkills) {
             return 100;

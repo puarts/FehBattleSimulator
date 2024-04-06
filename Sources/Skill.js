@@ -1559,6 +1559,7 @@ const applyMovementSkillAfterCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 const applyPotentSkillEffectFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, canActivateAttackerSpecial: boolean) => void>} */
 const applySkillEffectsPerAttackFuncMap = new Map();
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 const canActivateSaveSkillFuncMap = new Map();

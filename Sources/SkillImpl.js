@@ -1,5 +1,59 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 戦神の戦斧
+{
+    let skillId = Weapon.NewWarAxe;
+    // 威力：16射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // - 戦闘中、攻撃、守備、魔防が、戦闘開始時の敵の攻撃の25%-4だけ増加（最大14、最低5）、
+                let amount = MathUtil.ensureMinMax(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25 - 4), 5, 14);
+                targetUnit.addAllSpur(amount);
+                // - 敵の奥義発動カウント変動量＋を無効、
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                    }
+                );
+                // - かつ自身の奥義発動カウント変動量ーを無効、
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                // - 自分の【回復不可」を50%無効、
+                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5;
+                // - 敵から受けた追撃のダメージを80%軽減（追撃：通常の攻撃は、2回目の攻撃「2回攻撃」は、3～4回目の攻撃）、
+                targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
+            }
+        }
+    );
+    // - かつ戦闘中、攻撃時に発動する奥義発動時、
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+            if (isNormalAttackSpecial(targetUnit.special)) {
+                let percentage = 10 + targetUnit.maxSpecialCount * 10;
+                let ratio = percentage / 100.0;
+                let amount = Math.trunc(targetUnit.getDefInCombat(enemyUnit) * ratio);
+                //     - 自身のHPが70%以上なら、
+                //         - ダメージ＋●、
+                //     - 自身のHPが70%未満なら、
+                //         - 自分のHP●回復、
+                //     - ●は、守備の（10+奥義発動カウント最大値x10）％（範囲奥義を除く）
+                if (targetUnit.restHpPercentage >= 70) {
+                    targetUnit.battleContext.damageReductionValuePerAttack += amount;
+                } else {
+                    targetUnit.battleContext.healedHpByAttackPerAttack += amount;
+                }
+            }
+        }
+    );
+}
+
 // 戦神の聖杖
 {
     let skillId = Weapon.ExaltsWarStaff;

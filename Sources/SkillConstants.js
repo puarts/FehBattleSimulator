@@ -1805,6 +1805,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=UsOQmElHxKM&t=2s&ab_channel=NintendoMobile
     FellWarTome: 2837, // 戦神の魔書
     ExaltsWarStaff: 2840, // 戦神の聖杖
+    NewWarAxe: 2844, // 戦神の戦斧
 };
 
 const Support = {
