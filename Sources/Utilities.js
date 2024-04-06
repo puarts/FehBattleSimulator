@@ -1114,6 +1114,35 @@ class IterUtil {
      * @template T
      * @param {Iterable<T>} iterable
      * @param {(i: T) => number} valueFunc
+     * @param {number} initValue
+     * @returns {number}
+     */
+    static maxValue(iterable, valueFunc, initValue) {
+        let maxValue = initValue;
+        for (let e of iterable) {
+            let value = valueFunc(e);
+            if (value >= maxValue) {
+                maxValue = value;
+            }
+        }
+        return maxValue;
+    }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @param {(i: T) => number} valueFunc
+     * @param {number} initValue
+     * @returns {number}
+     */
+    static minValue(iterable, valueFunc, initValue) {
+        return this.maxValue(iterable, e => -valueFunc(e), initValue);
+    }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @param {(i: T) => number} valueFunc
      * @returns {T}
      */
     static maxElement(iterable, valueFunc) {

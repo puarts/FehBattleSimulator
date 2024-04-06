@@ -2529,6 +2529,7 @@ const PassiveB = {
     DefCantrip3: 1471,
     ResCantrip3: 1589,
 
+    // 連携
     AtkSpdLink2: 1133, // 攻撃速さの連携2
     AtkSpdLink3: 648, // 攻撃速さの連携3
     AtkResLink3: 760,
@@ -2536,6 +2537,7 @@ const PassiveB = {
     SpdDefLink3: 860, // 速さ守備の連携3
     SpdResLink3: 650, // 速さ魔防の連携3
     DefResLink3: 651, // 守備魔防の連携3
+    AtkSpdLink4: 2843, // 攻撃速さの連携4
 
     Swordbreaker3: 618, // 剣殺し3
     Lancebreaker3: 619,

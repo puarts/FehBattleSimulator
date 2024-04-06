@@ -1,5 +1,44 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 連携4
+{
+    /** @type {(id: number, statusFlags: [boolean, boolean, boolean, boolean], spurFunc: (u: Unit) => void) => void} */
+    let setSkill = (skillId, statusFlags, spurFunc) => {
+        // 移動系補助（体当たり、引き戻し、回り込み等）を使用した時、または自分に使用された時、自分と相手の攻撃、速さ＋6、【再移動（1）】を付与（1ターン）
+        applyMovementAssistSkillFuncMap.set(skillId,
+            function (assistUnit, targetUnit) {
+                let buffs = statusFlags.map(f => f ? 6 : 0);
+                assistUnit.applyBuffs(...buffs);
+                targetUnit.applyBuffs(...buffs);
+                assistUnit.addStatusEffect(StatusEffectType.Canto1);
+                targetUnit.addStatusEffect(StatusEffectType.Canto1);
+            }
+        );
+
+        // 戦闘中、敵の速さー4、守備、魔防-2、自分が与えるダメージ＋●、
+        // ●は、自分と、【再移動（1）1が付与されている味方のうち、攻撃、速さの強化の合計値が最も高い値（範囲奥義を除く）
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                spurFunc(enemyUnit);
+                let allies = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                let cantoAllies =
+                    GeneratorUtil.filter(allies, u => u.hasStatusEffect(StatusEffectType.Canto1));
+                let sumBuffs = buffs => buffs.map((b, i) => statusFlags[i] ? b : 0).reduce((a, c) => a + c, 0);
+                let getBuffAmount = u => sumBuffs(u.getBuffs());
+                let initValue = sumBuffs(targetUnit.getBuffsInCombat(enemyUnit));
+                let maxBuff = IterUtil.maxValue(cantoAllies, getBuffAmount, initValue);
+                this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.passiveBInfo.name}によりダメージ+${maxBuff}`);
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    targetUnit.battleContext.additionalDamage += maxBuff;
+                });
+            }
+        );
+    }
+    // 攻撃速さの連携4
+    setSkill(PassiveB.AtkSpdLink4, [true, true, false, false], u => u.addSpurs(0, -4, -2, -2));
+}
+
 // 邪竜の暗鱗
 {
     let skillId = PassiveA.FellWyrmscale;
