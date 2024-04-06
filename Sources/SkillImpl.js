@@ -1,5 +1,46 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 秘奥
+{
+    /** @type {(skillId: number, spurs: [number, number, number, number], canHeal : boolean) => void} */
+    let setSkill = (skillId, spurs, canHeal = false) => {
+        applySkillEffectsPerAttackFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+                // 秘奥共通効果
+                if (targetUnit.battleContext.passiveASkillCondSatisfied) {
+                    let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
+                    if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                        targetUnit.battleContext.additionalDamagePerAttack += 5;
+                        if (canHeal) {
+                            targetUnit.battleContext.healedHpByAttackPerAttack += 7;
+                        }
+                    }
+                }
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.battleContext.passiveASkillCondSatisfied = true;
+                    targetUnit.addSpurs(...spurs);
+                }
+            }
+        );
+    }
+    // 秘奥3
+    setSkill(PassiveA.AtkSpdFinish3, [6, 6, 0, 0]);
+    setSkill(PassiveA.AtkDefFinish3, [6, 0, 6, 0]);
+    setSkill(PassiveA.AtkResFinish3, [6, 0, 0, 6]);
+    setSkill(PassiveA.SpdResFinish3, [0, 6, 0, 6]);
+    setSkill(PassiveA.DefResFinish3, [0, 0, 6, 6]);
+    // 秘奥4
+    setSkill(PassiveA.AtkSpdFinish4, [7, 7, 0, 0], true);
+    setSkill(PassiveA.AtkDefFinish4, [7, 0, 7, 0], true);
+    setSkill(PassiveA.AtkResFinish4, [7, 0, 0, 7], true);
+    setSkill(PassiveA.SpdResFinish4, [0, 7, 0, 7], true);
+    setSkill(PassiveA.DefResFinish4, [0, 0, 7, 7], true);
+}
+
 // 戦神の戦斧
 {
     let skillId = Weapon.NewWarAxe;

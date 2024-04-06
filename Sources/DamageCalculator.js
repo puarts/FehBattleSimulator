@@ -1620,36 +1620,8 @@ class DamageCalculator {
                         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = true;
                     }
                     break;
-                // 秘奥3共通効果(固定ダメージ)
-                case PassiveA.AtkSpdFinish3:
-                case PassiveA.AtkDefFinish3:
-                case PassiveA.AtkResFinish3:
-                case PassiveA.SpdResFinish3:
-                case PassiveA.DefResFinish3:
-                    if (atkUnit.battleContext.passiveASkillCondSatisfied) {
-                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
-                            atkUnit.battleContext.additionalDamagePerAttack += 5;
-                        }
-                    }
-                    break;
                 case Weapon.Sekuvaveku:
                     if (atkUnit.isWeaponRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
-                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
-                            atkUnit.battleContext.additionalDamagePerAttack += 5;
-                            atkUnit.battleContext.healedHpByAttackPerAttack += 7;
-                        }
-                    }
-                    break;
-                // 秘奥4共通効果(固定ダメージ、固定回復)
-                case PassiveA.AtkSpdFinish4:
-                case PassiveA.AtkDefFinish4:
-                case PassiveA.AtkResFinish4:
-                case PassiveA.SpdResFinish4:
-                case PassiveA.DefResFinish4:
-                case PassiveA.VerdictOfSacae:
-                    if (atkUnit.battleContext.passiveASkillCondSatisfied) {
                         let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
                         if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
                             atkUnit.battleContext.additionalDamagePerAttack += 5;

@@ -4894,42 +4894,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkSpdFinish4] = (targetUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.passiveASkillCondSatisfied = true;
-                targetUnit.addSpurs(7, 7, 0, 0);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkDefFinish4] = (targetUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.passiveASkillCondSatisfied = true;
-                targetUnit.addSpurs(7, 0, 7, 0);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.AtkResFinish4] = (targetUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.passiveASkillCondSatisfied = true;
-                targetUnit.addSpurs(7, 0, 0, 7);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.SpdResFinish3] = (targetUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.passiveASkillCondSatisfied = true;
-                targetUnit.addSpurs(0, 6, 0, 6);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.SpdResFinish4] = (targetUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.passiveASkillCondSatisfied = true;
-                targetUnit.addSpurs(0, 7, 0, 7);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[PassiveA.DefResFinish4] = (targetUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.passiveASkillCondSatisfied = true;
-                targetUnit.addSpurs(0, 0, 7, 7);
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.RemoteBreath] = (targetUnit) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.battleContext.weaponSkillCondSatisfied = true;
