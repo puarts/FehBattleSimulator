@@ -1164,6 +1164,17 @@ class BattleSimulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoRobin:
+                // 自分と自分を中心とした
+                // 縦7x横7マスにいる味方に
+                // 七色の叫び）、
+                // 【デュアルアタック】の状態を付与
+                for (let ally of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    if (ally.isInSquare(duoUnit, 7)) {
+                        ally.addStatusEffects([StatusEffectType.RallySpectrum, StatusEffectType.DualStrike]);
+                    }
+                }
+                break;
             case Hero.HarmonizedChloe:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Incited);

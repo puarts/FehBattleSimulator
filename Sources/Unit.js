@@ -5113,7 +5113,31 @@ class Unit extends BattleMapElement {
         return this.posX === unit.posX || this.posY === unit.posY;
     }
 
-    /// 指定したユニットの指定した距離以内に自身がいるかどうかを取得します。
+    /**
+     * ユニットを中心とした縦横N,Mマスに自身がいるかどうかを取得します。
+     * @param {Unit} unit
+     * @param {number} x
+     * @param {number} y
+     */
+    isInRectangle(unit, x, y) {
+        let xOffset = (x - 1) / 2;
+        let yOffset = (y - 1) / 2;
+        return (unit.posX - xOffset <= this.posX && this.posX <= unit.posX + xOffset)
+            && (unit.posY - yOffset <= this.posY && this.posY <= unit.posY + yOffset);
+    }
+
+    /**
+     * ユニットを中心とした縦横Nマスに自身がいるかどうかを取得します。
+     * @param {Unit} unit
+     * @param {number} n
+     */
+    isInSquare(unit, n) {
+        return this.isInRectangle(unit, n, n);
+    }
+
+    /**
+     * 指定したユニットの指定した距離以内に自身がいるかどうかを取得します。
+     */
     isWithinSpecifiedDistanceFrom(unit, spaces) {
         let diffX = Math.abs(this.posX - unit.posX);
         let diffY = Math.abs(this.posY - unit.posY);
@@ -5122,7 +5146,9 @@ class Unit extends BattleMapElement {
     }
 
 
-    /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
+    /**
+     * ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
+     */
     canDisableAttackOrderSwapSkill(restHpPercentage, defUnit) {
         for (let skillId of this.enumerateSkills()) {
             let funcMap = canDisableAttackOrderSwapSkillFuncMap;
