@@ -1799,6 +1799,10 @@ const Weapon = {
     // https://www.youtube.com/watch?v=87T3lhxU78I&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=YNOIY95CX_Q&ab_channel=NintendoMobile
     EmblemRagnell: 2834, // 蒼炎の勇者の剣
+
+    // 超英雄「不思議な出会い」
+    // https://www.youtube.com/watch?v=EuwsPh1xru0&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=UsOQmElHxKM&t=2s&ab_channel=NintendoMobile
 };
 
 const Support = {
@@ -1903,6 +1907,8 @@ const Support = {
     Return: 1607, // リターン
     NudgePlus: 1737, // プッシュ+
     Nudge: 1738, // プッシュ
+
+    MagicShieldPlus: 2839, // マジックシールド+
 };
 
 const Special = {

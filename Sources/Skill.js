@@ -190,8 +190,16 @@ function isRallyUp(support) {
     }
 }
 
-/// 応援スキルの攻撃の強化量を取得します。
+/** @type {Map<number|string, [number, number, number, number]>} */
+const RALLY_BUFF_AMOUNT_MAP = new Map();
+
+/**
+ * 応援スキルの攻撃の強化量を取得します。
+ */
 function getAtkBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Atk];
+    }
     switch (support) {
         case Support.RallyAttack:
             return 4;
@@ -218,6 +226,9 @@ function getAtkBuffAmount(support) {
 
 /// 応援スキルの速さの強化量を取得します。
 function getSpdBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Spd];
+    }
     switch (support) {
         case Support.RallySpeed:
             return 4;
@@ -244,6 +255,9 @@ function getSpdBuffAmount(support) {
 
 /// 応援スキルの守備の強化量を取得します。
 function getDefBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Def];
+    }
     switch (support) {
         case Support.RallyUpDef:
             return 4;
@@ -270,6 +284,9 @@ function getDefBuffAmount(support) {
 
 /// 応援スキルの魔防の強化量を取得します。
 function getResBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Res];
+    }
     switch (support) {
         case Support.RallyUpRes:
             return 4;
@@ -294,9 +311,17 @@ function getResBuffAmount(support) {
     }
 }
 
-/// 回復系の補助スキルの戦闘前補助実行可能な回復量を取得します。
-/// https://vervefeh.github.io/FEH-AI/charts.html#chartF
+/** @type {Map<number, number>} */
+const PRECOMBAT_HEAL_THRESHOLD_MAP = new Map();
+
+/**
+ * 回復系の補助スキルの戦闘前補助実行可能な回復量を取得します。
+ * https://vervefeh.github.io/FEH-AI/charts.html#chartF
+ */
 function getPrecombatHealThreshold(support) {
+    if (PRECOMBAT_HEAL_THRESHOLD_MAP.has(support)) {
+        return PRECOMBAT_HEAL_THRESHOLD_MAP.get(support);
+    }
     switch (support) {
         case Support.MaidensSolace:
         case Support.Sacrifice:
@@ -456,7 +481,11 @@ function isNormalAttackSpecial(special) {
 
 /// 再行動補助スキルかどうかを判定します。
 const refreshSupportSkillSet = new Set();
-const rallySupportSkillSet = new Set();
+
+/**
+ * 応援扱いの回復サポートスキルIDの集合
+ */
+const RALLY_HEAL_SKILL_SET = new Set();
 
 function isRefreshSupportSkill(skillId) {
     if (refreshSupportSkillSet.has(skillId)) {
@@ -483,8 +512,11 @@ function isRefreshSupportSkill(skillId) {
     }
 }
 
-function isRallySupportSkill(skillId) {
-    return rallySupportSkillSet.has(skillId);
+/**
+ * 応援扱いの回復サポートスキルかどうかを返す
+ */
+function isRallyHealSkill(skillId) {
+    return RALLY_HEAL_SKILL_SET.has(skillId);
 }
 
 const BowWeaponTypeTable = {}
@@ -763,6 +795,23 @@ function weaponTypeToString(weaponType) {
         default:
             return "不明";
     }
+}
+
+function canRallyForciblyByPlayer(unit) {
+    let skillId = unit.support;
+    let funcMap = canRallyForciblyByPlayerFuncMap;
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            let result = func.call(this, unit);
+            if (result) {
+                return true;
+            }
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
+    return false;
 }
 
 /// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
@@ -1461,9 +1510,13 @@ const applyMovementAssistSkillFuncMap = new Map();
 // const applyMovementAssistSkillForSupporterFuncMap = new Map();
 // const applyMovementAssistSkillForTargetUnitFuncMap = new Map();
 // サポートスキル後
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit, supportTile: Tile) => void>} */
 const applySupportSkillForSupporterFuncMap = new Map();
 const applySupportSkillForTargetUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
 const canRallyForciblyFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
+const canRallyForciblyByPlayerFuncMap = new Map();
 const canRalliedForciblyFuncMap = new Map();
 /** @type {Map<number|string, (u: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForUnitFuncMap = new Map();
@@ -1514,5 +1567,11 @@ const hasPathfinderEffectFuncMap = new Map();
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 /** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, attackTarget: Unit) => void>} */
 const applyAttackSkillEffectAfterCombatFuncMap = new Map();
-/** @type {Map<number|string, (supporter: Unit, target: Unit) => void>} */
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySpecialSkillEffectWhenHealingFuncMap = new Map();
+/** @type {Map<number|string, (this: any, supporter: Unit, target: Unit) => boolean>} */
+const canAddStatusEffectByRallyFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit) => number>} */
+const getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, supporter: Unit, target: Unit) => number>} */
+const calcHealAmountFuncMap = new Map();

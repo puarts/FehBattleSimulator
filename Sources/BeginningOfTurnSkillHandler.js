@@ -2876,13 +2876,13 @@ class BeginningOfTurnSkillHandler {
         }
         switch (skillId) {
             case Weapon.InspiritedSpear:
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInCrossWithOffset(unit, 1)) {
-                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
-                        if (isNormalAttackSpecial(skillOwner.special) &&
-                            this.__getStatusEvalUnit(skillOwner).specialCount <= 1 &&
-                            unit.getEvalDefInPrecombat() < skillOwner.getEvalDefInPrecombat()) {
-                            unit.reserveToIncreaseSpecialCount(1);
+                for (let enemyUnit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.isInCrossWithOffset(enemyUnit, 1)) {
+                        enemyUnit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                        if (isNormalAttackSpecial(enemyUnit.special) &&
+                            enemyUnit.statusEvalUnit.specialCount <= 1 &&
+                            skillOwner.isHigherDefInPrecombat(enemyUnit)) {
+                            enemyUnit.reserveToIncreaseSpecialCount(1);
                         }
                     }
                 }

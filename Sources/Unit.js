@@ -144,8 +144,10 @@ class AssistableUnitInfo {
 
     calcAssistTargetPriority(assistUnit, isPrecombat = true) {
         let assistType = assistUnit.supportInfo.assistType;
-        if (isRallySupportSkill(assistUnit.support)) {
-            assistType = AssistType.Rally;
+        // TODO: 検証する。とりあえずHPが減っていた場合は回復スキルとして扱う
+        let skillId = assistUnit.support;
+        if (isRallyHealSkill(skillId)) {
+            assistType = this.targetUnit.isFullHp ? AssistType.Rally : AssistType.Heal;
         }
         switch (assistType) {
             case AssistType.Refresh:
@@ -163,6 +165,13 @@ class AssistableUnitInfo {
             case AssistType.Restore:
                 this.assistTargetPriority = this.__calcRestoreTargetPriority(assistUnit);
                 break;
+        }
+        if (isRallyHealSkill(skillId)) {
+            // 応援より回復優先
+            if (assistType === AssistType.Heal) {
+                // TODO: 適切な数値に修正する
+                this.assistTargetPriority *= 10000000;
+            }
         }
     }
 
@@ -2776,7 +2785,7 @@ class Unit extends BattleMapElement {
     }
 
     get hasHealAssist() {
-        if (isRallySupportSkill(this.support)) {
+        if (isRallyHealSkill(this.support)) {
             return false;
         }
         return this.supportInfo != null
@@ -2784,7 +2793,7 @@ class Unit extends BattleMapElement {
     }
 
     get hasDonorHealAssist() {
-        if (isRallySupportSkill(this.support)) {
+        if (isRallyHealSkill(this.support)) {
             return false;
         }
         return this.supportInfo != null
@@ -2792,7 +2801,7 @@ class Unit extends BattleMapElement {
     }
 
     get hasRestoreAssist() {
-        if (isRallySupportSkill(this.support)) {
+        if (isRallyHealSkill(this.support)) {
             return false;
         }
         return this.supportInfo != null
@@ -2800,7 +2809,7 @@ class Unit extends BattleMapElement {
     }
 
     get hasRallyAssist() {
-        if (isRallySupportSkill(this.support)) {
+        if (isRallyHealSkill(this.support)) {
             return true;
         }
         return this.supportInfo != null
@@ -3496,6 +3505,16 @@ class Unit extends BattleMapElement {
 
     getEvalResInPrecombat() {
         return this.getResInPrecombat() + this.__getEvalResAdd();
+    }
+
+    /**
+     * 守備がn以上高いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherDefInPrecombat(enemyUnit, n = 0) {
+        return this.getEvalDefInPrecombat() > enemyUnit.getEvalDefInPrecombat() + n;
     }
 
     /**
@@ -4851,7 +4870,13 @@ class Unit extends BattleMapElement {
      */
     canRallyTo(targetUnit, buffAmountThreshold) {
         let assistUnit = this;
-        switch (assistUnit.support) {
+        let skillId = assistUnit.support;
+        if (canAddStatusEffectByRallyFuncMap.has(skillId)) {
+            // TODO: 以下を検証する
+            // ステータスを付与できないのであればバフをかけられようとも応援しない。
+            return canAddStatusEffectByRallyFuncMap.get(skillId).call(this, assistUnit, targetUnit);
+        }
+        switch (skillId) {
             case Support.HarshCommandPlus:
                 if (targetUnit.hasNegativeStatusEffect()) {
                     return true;
@@ -4860,17 +4885,17 @@ class Unit extends BattleMapElement {
             case Support.HarshCommand:
                 return this.__canExecuteHarshCommand(targetUnit);
             default:
-                if ((getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff) >= buffAmountThreshold) {
+                if ((getAtkBuffAmount(skillId) - targetUnit.atkBuff) >= buffAmountThreshold) {
                     return true;
                 }
-                if ((getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff) >= buffAmountThreshold) {
+                if ((getSpdBuffAmount(skillId) - targetUnit.spdBuff) >= buffAmountThreshold) {
                     return true;
                 }
-                if ((getDefBuffAmount(assistUnit.support) - targetUnit.defBuff) >= buffAmountThreshold) {
+                if ((getDefBuffAmount(skillId) - targetUnit.defBuff) >= buffAmountThreshold) {
                     return true;
                 }
                 // noinspection RedundantIfStatementJS
-                if ((getResBuffAmount(assistUnit.support) - targetUnit.resBuff) >= buffAmountThreshold) {
+                if ((getResBuffAmount(skillId) - targetUnit.resBuff) >= buffAmountThreshold) {
                     return true;
                 }
                 return false;
@@ -5373,12 +5398,25 @@ function calcBuffAmount(assistUnit, targetUnit) {
     return totalBuffAmount;
 }
 
-/// @brief 回復補助の回復量を取得します。
-/// @param {Unit} assistUnit 補助者のユニット
-/// @param {Unit} targetUnit 補助対象のユニット
+/**
+ * @brief 回復補助の回復量を取得します。
+ * @param {Unit} assistUnit 補助者のユニット
+ * @param {Unit} targetUnit 補助対象のユニット
+ * TODO: マジックシールドについて調査する
+ */
 function calcHealAmount(assistUnit, targetUnit) {
     let healAmount = 0;
-    switch (assistUnit.support) {
+    let skillId = assistUnit.support;
+    let funcMap = calcHealAmountFuncMap;
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            healAmount += func.call(this, assistUnit, targetUnit);
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
+    switch (skillId) {
         case Support.Heal:
             healAmount = 5;
             break;
@@ -5446,8 +5484,6 @@ function calcHealAmount(assistUnit, targetUnit) {
                 healAmount = 15;
             }
             break;
-        default:
-            return 0;
     }
     if (targetUnit.currentDamage < healAmount) {
         return targetUnit.currentDamage;

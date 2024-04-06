@@ -6616,8 +6616,8 @@ class DamageCalculatorWrapper {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
                     targetUnit.addAllSpur(5);
-                    enemyUnit.addSpdDefSpurs(-5);
-                    enemyUnit.addSpdDefSpurs(-Math.min(enemyUnit.getPositiveStatusEffects().length, 4));
+                    enemyUnit.addSpursWithoutRes(-5);
+                    enemyUnit.addSpursWithoutRes(-Math.min(enemyUnit.getPositiveStatusEffects().length, 4));
                     targetUnit.battleContext.invalidateBuffs(true, true, true, false);
                     targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                 }

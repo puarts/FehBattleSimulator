@@ -1,5 +1,60 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// マジックシールド+
+{
+    let skillId = Support.MagicShieldPlus;
+    // TODO: 検証する
+    PRECOMBAT_HEAL_THRESHOLD_MAP.set(skillId, 10);
+    getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap.set(skillId, _ => AssistType.Heal);
+    // このスキルは「応援」として扱われる
+    RALLY_HEAL_SKILL_SET.add(skillId);
+    // TODO: 検証する。とりあえずプレーヤーなら強制的に応援できる。
+    canRallyForciblyByPlayerFuncMap.set(skillId, _ => true);
+    // 対象を攻撃の50%回復（最低8）し、
+    calcHealAmountFuncMap.set(skillId,
+        function (supporterUnit, supportTargetUnit) {
+            return MathUtil.ensureMin(Math.trunc(supporterUnit.getAtkInPrecombat() * 0.5), 8);
+        }
+    );
+    // 対象の攻撃、魔防＋6、
+    RALLY_BUFF_AMOUNT_MAP.set(skillId, [6, 0, 0, 6]);
+    // 「弱化を無効」を付与（1ターン）、
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
+            targetUnit.addStatusEffect(StatusEffectType.NeutralizesPenalties);
+            // 2ターン目以降なら、
+            if (g_appData.currentTurn >= 2) {
+                this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+                if (supporterUnit.restSupportSkillAvailableTurn === 0) {
+                    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
+                    if (!supporterUnit.isOneTimeActionActivatedForSupport &&
+                        supporterUnit.isActionDone) {
+                        supporterUnit.isOneTimeActionActivatedForSupport = true;
+
+                        // その後、自分を行動可能にし、自分とダブル相手に移動を最大1マスに制限する状態異常を付与（次回行動終了時まで）
+                        supporterUnit.isActionDone = false;
+                        supporterUnit.addStatusEffect(StatusEffectType.Gravity);
+                        this.writeLogLine(`${supporterUnit.getNameWithGroup()}は${supporterUnit.supportInfo.name}により再行動`);
+
+                        // （「その後」以降の効果は、その効果が発動後2ターンの間発動しない）
+                        supporterUnit.restSupportSkillAvailableTurn = 2;
+                        this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+                    }
+                } else {
+                    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
+                }
+            }
+        }
+    );
+    canAddStatusEffectByRallyFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            return !targetUnit.hasStatusEffect(StatusEffectType.NeutralizesPenalties);
+        }
+    );
+    // （このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない）
+    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+}
+
 // ハデスΩ
 {
     let skillId = Weapon.HadesuOmega;
@@ -2050,7 +2105,6 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             if (skillOwner.battleContext.restHpPercentage >= 25) {
-                /** @type {[Unit]} */
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3, true);
                 for (let unit of units) {
                     unit.reserveToApplyBuffs(6, 6, 0, 0);
@@ -2061,7 +2115,6 @@
                 /** @type {[Unit]} */
                 let nearestEnemies = this.__findNearestEnemies(skillOwner);
                 for (let unit of nearestEnemies) {
-                    /** @type {[Unit]} */
                     let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3, true);
                     for (let enemy of enemies) {
                         enemy.reserveToApplyDebuffs(0, 0, -6, -6);

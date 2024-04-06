@@ -401,13 +401,15 @@ function dropToUnitImpl(unit, dropTargetId) {
                 if (bestTile != null) {
                     if (unit.supportInfo != null) {
                         let assistType = unit.supportInfo.assistType;
-                        if (isRallySupportSkill(unit.support)) {
+                        // TODO: 検証する。とりあえず応援として実装。
+                        if (isRallyHealSkill(unit.support)) {
                             assistType = AssistType.Rally;
                         }
                         let isNotRally = assistType !== AssistType.Rally;
                         let isRally = assistType === AssistType.Rally;
                         let canRally =
                             unit.canRallyForcibly() ||
+                            canRallyForciblyByPlayer(unit) ||
                             unit.canRallyTo(unitPlacedOnTargetTile, 1) ||
                             unitPlacedOnTargetTile.canRalliedForcibly();
                         let canApplyAssist = isNotRally || (isRally && canRally);
