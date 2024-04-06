@@ -8367,22 +8367,22 @@ class BattleSimulatorBase {
         }
     }
 
-    __applyMovementAssistSkill(unit, targetUnit) {
-        for (let skillId of unit.enumerateSkills()) {
+    __applyMovementAssistSkill(assistUnit, targetUnit) {
+        for (let skillId of assistUnit.enumerateSkills()) {
             let funcMap = applyMovementAssistSkillFuncMap;
             if (funcMap.has(skillId)) {
                 let func = funcMap.get(skillId);
                 if (typeof func === "function") {
-                    func.call(this, unit, targetUnit);
+                    func.call(this, assistUnit, targetUnit);
                 } else {
                     console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                 }
             }
             switch (skillId) {
                 case Weapon.RetainersReport:
-                    if (unit.isWeaponSpecialRefined) {
-                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
-                            if (this.__isInCross(unit, u) ||
+                    if (assistUnit.isWeaponSpecialRefined) {
+                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(assistUnit)) {
+                            if (this.__isInCross(assistUnit, u) ||
                                 this.__isInCross(targetUnit, u)) {
                                 u.applyDebuffs(-7, 0, -7, -7);
                                 u.addStatusEffect(StatusEffectType.Guard);
@@ -8392,7 +8392,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case Weapon.EverlivingBreath: {
-                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true));
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, true));
                     units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
                     // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
                     let unitSet = new Set(units);
@@ -8403,36 +8403,36 @@ class BattleSimulatorBase {
                     break;
                 }
                 case Weapon.AzureLance:
-                    if (unit.isWeaponSpecialRefined) {
-                        unit.applyAtkBuff(6);
-                        unit.applySpdBuff(6);
+                    if (assistUnit.isWeaponSpecialRefined) {
+                        assistUnit.applyAtkBuff(6);
+                        assistUnit.applySpdBuff(6);
                         targetUnit.applyAtkBuff(6);
                         targetUnit.applySpdBuff(6);
-                        unit.heal(10);
+                        assistUnit.heal(10);
                         targetUnit.heal(10);
                     }
                     break;
                 case Weapon.DestinysBow:
                     if (g_appData.currentTurn <= 4) {
-                        if (!unit.isOneTimeActionActivatedForWeapon) {
-                            unit.reduceSpecialCount(1);
+                        if (!assistUnit.isOneTimeActionActivatedForWeapon) {
+                            assistUnit.reduceSpecialCount(1);
                             targetUnit.reduceSpecialCount(1);
-                            unit.isOneTimeActionActivatedForWeapon = true;
+                            assistUnit.isOneTimeActionActivatedForWeapon = true;
                         }
                     }
                     break;
                 case Weapon.GerberaAxe:
-                    unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                    assistUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                     targetUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                     break;
                 case Weapon.Sogun:
-                    if (unit.isWeaponRefined) {
-                        unit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                    if (assistUnit.isWeaponRefined) {
+                        assistUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
                         targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
                     }
                     break;
                 case PassiveB.AtkSpdSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyAtkDebuff(-6);
                         u.applySpdDebuff(-6);
                     }
@@ -8442,7 +8442,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.AtkDefSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyAtkDebuff(-6);
                         u.applyDefDebuff(-6);
                     }
@@ -8452,7 +8452,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.AtkResSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyDebuffs(-6, 0, 0, -6);
                     }
                     for (let u of this.__findNearestEnemies(targetUnit, 4)) {
@@ -8460,7 +8460,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.SpdResSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applySpdDebuff(-6);
                         u.applyResDebuff(-6);
                     }
@@ -8470,7 +8470,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.SpdDefSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applySpdDebuff(-6);
                         u.applyDefDebuff(-6);
                     }
@@ -8480,7 +8480,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.DefResSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyDefDebuff(-6);
                         u.applyResDebuff(-6);
                     }
@@ -8490,14 +8490,14 @@ class BattleSimulatorBase {
                     }
                     break;
                 case Weapon.TrasenshiNoTsumekiba:
-                    if (!unit.isWeaponRefined) {
-                        this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-4));
+                    if (!assistUnit.isWeaponRefined) {
+                        this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-4));
                         this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-4));
                     } else {
-                        this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-5));
+                        this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-5));
                         this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-5));
-                        if (unit.isWeaponSpecialRefined) {
-                            let units = Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 2));
+                        if (assistUnit.isWeaponSpecialRefined) {
+                            let units = Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(assistUnit, 2));
                             units = units.concat(Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)));
                             // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
                             let unitSet = new Set(units);
@@ -8511,43 +8511,43 @@ class BattleSimulatorBase {
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
                         ally.applyAllBuff(4);
                     }
-                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, false)) {
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, false)) {
                         ally.applyAllBuff(4);
                     }
                     break;
                 case PassiveB.AtkSpdLink2:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(4); x.applySpdBuff(4); });
                     break;
                 case Weapon.OrdinNoKokusyo:
                 case Weapon.KinranNoSyo:
-                    if (unit.isWeaponSpecialRefined) {
-                        this.__applyLinkSkill(unit, targetUnit,
+                    if (assistUnit.isWeaponSpecialRefined) {
+                        this.__applyLinkSkill(assistUnit, targetUnit,
                             x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
                     }
                     break;
                 case PassiveB.AtkSpdLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
                     break;
                 case PassiveB.AtkDefLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(6); x.applyDefBuff(6); });
                     break;
                 case PassiveB.AtkResLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(6); x.applyResBuff(6); });
                     break;
                 case PassiveB.SpdDefLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applySpdBuff(6); x.applyDefBuff(6); });
                     break;
                 case PassiveB.SpdResLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applySpdBuff(6); x.applyResBuff(6); });
                     break;
                 case PassiveB.DefResLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyDefBuff(6); x.applyResBuff(6); });
                     break;
             }

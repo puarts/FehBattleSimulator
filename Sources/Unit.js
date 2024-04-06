@@ -5343,6 +5343,21 @@ class Unit extends BattleMapElement {
         return false;
     }
 
+    /**
+     * キラー効果などで奥義カウントの最大値が減らされているかどうか
+     */
+    isReducedMaxSpecialCount() {
+        return this.maxSpecialCount < this.specialInfo.specialCount;
+    }
+
+    hasNormalAttackSpecial() {
+        return isNormalAttackSpecial(this.special);
+    }
+
+    hasDefenseSpecial() {
+        return isDefenseSpecial(this.special);
+    }
+
     // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
     static calcAttackerMoveDistance(unit1, unit2) {
         let unit = unit1.battleContext.initiatesCombat ? unit1 : unit2;

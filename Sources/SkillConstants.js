@@ -1806,6 +1806,7 @@ const Weapon = {
     FellWarTome: 2837, // 戦神の魔書
     ExaltsWarStaff: 2840, // 戦神の聖杖
     NewWarAxe: 2844, // 戦神の戦斧
+    DraconicPacts: 2841, // 邪痕と聖痕の竜血
 };
 
 const Support = {

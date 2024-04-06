@@ -873,9 +873,13 @@ targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += N;
 
 敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)[竜眼]
 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
+自分の最初の攻撃前に自分の奥義発動カウント+N
+targetUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 
 敵の最初の攻撃前に自分の奥義発動カウント-N(Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
+自分の最初の攻撃前に敵の奥義発動カウント-N
+enemyUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
 
 奥義ダメージ+N
 __init__applySpecialSkillEffect() {
@@ -1260,7 +1264,7 @@ function isRefreshSupportSkill(skillId) {return true;}
 
 移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
 applyMovementAssistSkillFuncMap.set(skillId,
-    function (unit1, unit2) {
+    function (assistUnit, targetUnit) {
     }
 );
 または
@@ -1530,10 +1534,7 @@ Unit.js
 const StatusEffectType = {
     XXX: YYY, // XXX
 }
-function statusEffectTypeToIconFilePath(value) {
-    case StatusEffectType.XXX:
-    return g_imageRootPath + "XXX.png";
-}
+function statusEffectTypeToIconFilePath(value) {}
 /// ステータス効果が不利なステータス効果であるかどうかを判定
 // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
 // 有利な場合は不要

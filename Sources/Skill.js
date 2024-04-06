@@ -1503,9 +1503,14 @@ const applySkillEffectsPerCombatFuncMap = new Map();
 const initApplySpecialSkillEffectFuncMap = new Map();
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 // 応援後のスキル
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySkillsAfterRallyForSupporterFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
-// 移動補助スキル後(スキル使用者、被使用者両者入れ替えて呼び出される)
+/**
+ * 移動補助スキル後(スキル使用者、被使用者両者入れ替えて呼び出される)
+ * @type {Map<number|string, (this: BattleSimulatorBase, skillOwner: Unit, ally: Unit) => void>}
+ */
 const applyMovementAssistSkillFuncMap = new Map();
 // 2023年11月時点では片方にだけかかるスキルは存在しない
 // const applyMovementAssistSkillForSupporterFuncMap = new Map();
@@ -1513,6 +1518,7 @@ const applyMovementAssistSkillFuncMap = new Map();
 // サポートスキル後
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit, supportTile: Tile) => void>} */
 const applySupportSkillForSupporterFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit, supportTile: Tile) => void>} */
 const applySupportSkillForTargetUnitFuncMap = new Map();
 /** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
 const canRallyForciblyFuncMap = new Map();

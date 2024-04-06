@@ -1,5 +1,92 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 邪痕と聖痕の竜血
+{
+    let skillId = Weapon.DraconicPacts;
+    // 威力：14射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    // 応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、または自分に使用された時、
+    // - 自身の奥義発動カウントー1、
+    // - 移動後の自分を中心とした縦3列と横3列の敵に【七色の囁き】を付与（敵の次回行動終了時まで）
+    // 【七色の囁き】
+    // 戦闘中、攻撃、速さ、守備、魔防ー5となる状態異常
+    // さらに、自分が攻撃時に発動する奥義を装備している時、
+    // - 戦闘中、自分の最初の攻撃前に自分の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
+    // - さらに、自分の奥義発動カウントの最大値が本来より減少している時（奥義が発動しやすい時）、かつ敵が攻撃時に発動する奥義を装備している時、
+    // - 戦闘中、自分の最初の攻撃前に敵の奥義発動カウントー1
+    /** @type {(this: BattleSimulatorBase, skillOwner: Unit, ally: Unit) => void} */
+    let func = function (skillOwner, ally) {
+        skillOwner.reduceSpecialCount(1);
+        let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let enemy of enemies) {
+            if (enemy.isInCrossWithOffset(skillOwner, 1) ||
+                enemy.isInCrossWithOffset(ally, 1)) {
+                enemy.addStatusEffect(StatusEffectType.HushSpectrum);
+            }
+        }
+    };
+    // 使用した時
+    applySkillsAfterRallyForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            func.call(this, supporterUnit, targetUnit);
+        }
+    );
+    // 使用された時
+    applySkillsAfterRallyForTargetUnitFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            func.call(this, targetUnit, supporterUnit);
+        }
+    );
+    applyMovementAssistSkillFuncMap.set(skillId,
+        function (skillOwner, ally) {
+            func.call(this, skillOwner, ally);
+        }
+    );
+    // 応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、または、行動済みの自分に使用された時、
+    // - 自分を行動可能にする（1ターンに1回のみ）
+    let actionFunc = skillOwner => {
+        if (!skillOwner.isActionDone) {
+            return;
+        }
+        if (!skillOwner.isOneTimeActionActivatedForWeapon) {
+            skillOwner.isOneTimeActionActivatedForWeapon = true;
+            skillOwner.isActionDone = false;
+        }
+    };
+    applySupportSkillForSupporterFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
+            actionFunc(supporterUnit);
+        }
+    );
+    applySupportSkillForTargetUnitFuncMap.set(skillId,
+        function (supporterUnit, targetUnit, supportTile) {
+            actionFunc(targetUnit);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // - 戦闘中、攻撃、速さ、守備、魔防が16一敵の奥義発動カウントの最大値x2だけ増加（最低8、敵が奥義を装備していない時も8）、
+                let amount = MathUtil.ensureMin(16 - targetUnit.maxSpecialCount * 2, 8);
+                if (enemyUnit.special === Special.None) {
+                    amount = 8;
+                }
+                targetUnit.addAllSpur(amount);
+                // - 最初に受けた攻撃と2回攻撃のダメージを30%軽減、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                // - 自身の奥義発動カウント変動量ーを無効
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 秘奥
 {
     /** @type {(skillId: number, spurs: [number, number, number, number], canHeal : boolean) => void} */

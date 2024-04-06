@@ -2240,6 +2240,15 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
             targetUnit.addAllSpur(5);
         }
+        if (targetUnit.hasStatusEffect(StatusEffectType.HushSpectrum)) {
+            targetUnit.addAllSpur(-5);
+            if (targetUnit.hasNormalAttackSpecial()) {
+                targetUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+            }
+            if (targetUnit.isReducedMaxSpecialCount() && enemyUnit.hasNormalAttackSpecial()) {
+                enemyUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += 1;
+            }
+        }
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
         ) {
@@ -11968,16 +11977,6 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
-            if (isNormalAttackSpecial(targetUnit.special)) {
-                let n = 2;
-                if (targetUnit.battleContext.attackCount === 2 ||
-                    targetUnit.maxSpecialCount < targetUnit.specialInfo.specialCount) {
-                    n = 1;
-                }
-                targetUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack += n;
-            }
-        }
         for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
