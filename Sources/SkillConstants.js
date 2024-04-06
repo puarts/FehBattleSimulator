@@ -1807,6 +1807,7 @@ const Weapon = {
     ExaltsWarStaff: 2840, // 戦神の聖杖
     NewWarAxe: 2844, // 戦神の戦斧
     DraconicPacts: 2841, // 邪痕と聖痕の竜血
+    HeavyWarAxe: 2845, // 戦神の護斧
 };
 
 const Support = {

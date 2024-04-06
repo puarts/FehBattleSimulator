@@ -3382,6 +3382,9 @@ class BeginningOfTurnSkillHandler {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
