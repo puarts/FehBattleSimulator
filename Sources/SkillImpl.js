@@ -1,5 +1,30 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 邪竜の暗鱗
+{
+    let skillId = PassiveA.FellWyrmscale;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防＋8、
+                targetUnit.addAllSpur(8);
+                // 敵の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）、
+                targetUnit.battleContext.invalidateAllBuffs();
+                // 自分が与えるダメージ＋攻撃の15%（範囲奥義を除く）、かつ
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Atk, 0.15);
+                });
+                // 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                // 戦闘開始時、自身のHPが25%以上なら、戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 邪痕と聖痕の竜血
 {
     let skillId = Weapon.DraconicPacts;

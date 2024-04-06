@@ -2283,6 +2283,7 @@ const PassiveA = {
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
     // 専用A
+    FellWyrmscale: 2842, // 邪竜の暗鱗
     EmblemsMiracle: 2797, // 紋章の奇跡
     Obsession: 2785, // 執着
     GrayIllusion: 2773, // 鈍色の迷夢
