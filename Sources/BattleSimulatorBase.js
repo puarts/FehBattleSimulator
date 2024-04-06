@@ -9517,6 +9517,7 @@ class BattleSimulatorBase {
         if (isRallyHealSkill(supporterUnit.support)) {
             assistType = AssistType.Rally;
         }
+        let result = false;
         switch (assistType) {
             case AssistType.Refresh:
                 return this.__applyRefresh(supporterUnit, targetUnit);
@@ -9570,7 +9571,7 @@ class BattleSimulatorBase {
                     case Support.GoldSerpent:
                         return this.__applyGoldSerpent(supporterUnit, targetUnit);
                     default:
-                        let result = this.__applyRally(supporterUnit, targetUnit);
+                        result = this.__applyRally(supporterUnit, targetUnit);
                         if (isRallyHealSkill(supporterUnit.support)) {
                             this.__applyHeal(supporterUnit, targetUnit);
                             // TODO: 検証する
