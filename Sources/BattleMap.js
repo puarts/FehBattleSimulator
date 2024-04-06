@@ -2325,7 +2325,7 @@ class BattleMap {
      * @param  {Tile} fromTile
      * @param  {Unit} unit
      * @param  {Number} distance
-     * @returns {Tile[]}
+     * @returns {Generator<Tile>}
      */
     *__enumeratePlacableTilesWithinSpecifiedSpaces(fromTile, unit, distance) {
         for (let tile of this.enumerateTilesWithinSpecifiedDistance(fromTile, distance)) {
@@ -2333,9 +2333,6 @@ class BattleMap {
                 yield tile;
             }
         }
-    }
-
-    * __enumerateNoTiles() {
     }
 
     __canWarp(targetTile, warpUnit) {

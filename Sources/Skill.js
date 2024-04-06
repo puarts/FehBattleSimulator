@@ -1563,6 +1563,7 @@ const applySkillEffectsPerAttackFuncMap = new Map();
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 const canActivateSaveSkillFuncMap = new Map();
 const selectReferencingResOrDefFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleMap, target: Unit, ally: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForAllyFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 const hasPathfinderEffectFuncMap = new Map();

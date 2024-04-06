@@ -1,5 +1,59 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 戦神の聖杖
+{
+    let skillId = Weapon.ExaltsWarStaff;
+    // 射程：2
+    // 威力：14
+    // 敵は反撃不可
+    // 奥義が発動しやすい（発動カウントー1）（奥義発動カウント最大値の下限は1）
+
+    // 自身のHPが60%以下の時、または、現在のターン中に自分が「戦闘を行っているか、補助スキルを使用している」時、
+    // - 味方は、自身の周囲2マス以内に移動可能
+    enumerateTeleportTilesForAllyFuncMap.set(skillId,
+        function* (targetUnit, allyUnit) {
+            if (allyUnit.hpPercentage <= 60 ||
+                allyUnit.isCombatDone || allyUnit.isSupportDone) {
+                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+            }
+        }
+    );
+
+    // 周囲3マス以内の味方は、
+    // - 戦闘中、攻撃、速さ、守備、魔防＋4、
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            if (targetUnit.distance(allyUnit) <= 3) {
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+    // - 戦闘後、7回復
+    applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 3) {
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // - 戦闘中、自身の攻撃、魔防＋6、
+                targetUnit.addAtkResSpurs(6);
+                // - 絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // - ダメージ＋魔防の20％（範囲奥義を除く）
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Res, 0.2);
+                });
+            }
+        }
+    );
+}
+
 // 奥の手・魔道4
 {
     let skillId = PassiveB.MagicGambit4;
@@ -2111,14 +2165,12 @@
 {
     let skillId = PassiveX.SoaringEcho;
     enumerateTeleportTilesForAllyFuncMap.set(skillId,
-        function (targetUnit, allyUnit) {
+        function* (targetUnit, allyUnit) {
             // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
             if (targetUnit.distance(allyUnit) <= 2 &&
                 targetUnit.moveType === MoveType.Infantry ||
                 targetUnit.moveType === MoveType.Flying) {
-                return this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
-            } else {
-                return this.__enumerateNoTiles();
+                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );
