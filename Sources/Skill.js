@@ -1555,6 +1555,7 @@ const canDisableAttackOrderSwapSkillFuncMap = new Map();
 const calcFixedAddDamageFuncMap = new Map();
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 const applyMovementSkillAfterCombatFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 const applyPotentSkillEffectFuncMap = new Map();
 const applySkillEffectsPerAttackFuncMap = new Map();

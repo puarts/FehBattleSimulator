@@ -1,5 +1,59 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 戦神の魔書
+{
+    let skillId = Weapon.FellWarTome;
+    // 射程：2
+    // 威力：14
+    // 速さ＋3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // - 戦闘中、攻撃、速さ、守備、魔防が16一敵の奥義発動カウントの最大値x2だけ増加（最低8、敵が奥義を装備していない時も8）、
+                let amount = MathUtil.ensureMin(16 - enemyUnit.maxSpecialCount * 2, 8);
+                if (enemyUnit.special === Special.None) {
+                    amount = 8;
+                }
+                targetUnit.addAllSpur(amount);
+                // - 最初に受けた攻撃と2回攻撃のダメージを30%軽減、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                // - 自身の奥義発動カウント変動量ーを無効、
+                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        enemyUnit.battleContext.reducesCooldownCount = false;
+                    }
+                );
+                // - かつ自身の奥義発動カウント最大値が3以上の攻撃時発動する奥義が発動した時、
+                //     - 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効（範囲奥義を除く）
+                if (targetUnit.maxSpecialCount >= 3 && isNormalAttackSpecial(targetUnit.special)) {
+                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                }
+            }
+        }
+    );
+    // 自分から攻撃した時、戦闘後、敵のマスと
+    // - 自分から見た敵のマスの左右それぞれ2マスに【天脈・炎】を付与（1ターン）
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
+            }
+        }
+    );
+    // - 戦闘開始後、敵に7ダメージ（戦闘で攻撃可能な時のみ発動）（戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1）、
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.canAttackInCombat()) {
+                let damage = 7;
+                let skillName = DebugUtil.getSkillName(targetUnit, targetUnit.weaponInfo);
+                this.writeDebugLog(`${skillName}により戦闘開始後ダメージ+${damage}。`);
+                enemyUnit.battleContext.damageAfterBeginningOfCombat += damage;
+            }
+        }
+    );
+}
+
 // マジックシールド+
 {
     let skillId = Support.MagicShieldPlus;

@@ -660,4 +660,12 @@ class BattleContext {
     getAttackCount(isCounterAttack) {
         return isCounterAttack ? this.counterattackCount : this.attackCount;
     }
+
+    /**
+     * 反撃可能かが決定しないといけないのでapplySkillEffectRelatedToFollowupAttackPossibilityFuncMapなどから呼び出す。
+     * @returns {boolean}
+     */
+    canAttackInCombat() {
+        return this.initiatesCombat || this.canCounterattack;
+    }
 }
