@@ -1,5 +1,60 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 戦神の護斧
+{
+    let skillId = Weapon.HeavyWarAxe;
+    // 守備+3
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let applySkills = u => {
+                u.reserveToApplyBuffs(6, 0, 6, 0);
+                u.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                u.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+            };
+            // ターン開始時、周囲2マス以内に味方がいる時、自分の攻撃、守備+6、【強化増幅】、「敵は追撃不可」を付与(1ターン)
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                applySkills(skillOwner);
+            }
+            /** @type {Unit[]} */
+            let allies = Array.from(this.enumerateUnitsInTheSameGroupOnMap(skillOwner));
+            let partners = allies.filter(u => u.isPartner(skillOwner));
+            let isInTwoSpaces = u => u.distance(skillOwner) <= 2;
+            // 自軍内に自分と支援を結んでいる相手がいる時、
+            // ターン開始時、周囲2マス以内の支援相手の攻撃、守備+6、【強化増幅】、「敵は追撃不可」を付与(1ターン)
+            if (partners.length > 0) {
+                partners.filter(isInTwoSpaces).forEach(applySkills);
+            }
+            // 自軍内に自分と支援を結んでいる相手がいない時、
+            // ターン開始時、周囲2マス以内の最も守備が高い味方の攻撃、守備+6、【強化増幅】、「敵は追撃不可」を付与(1ターン)
+            if (partners.length === 0) {
+                IterUtil.maxElements(allies.filter(isInTwoSpaces), u => u.getDefInPrecombat()).forEach(applySkills);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // 絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // ダメージ+守備の20%(範囲奥義を除く)、
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Def, 0.2);
+                });
+                // 攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    return 0.3;
+                });
+            }
+        }
+    );
+}
+
 // 連携4
 {
     /** @type {(id: number, statusFlags: [boolean, boolean, boolean, boolean], spurFunc: (u: Unit) => void) => void} */
