@@ -1,5 +1,47 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 奥の手・魔道4
+{
+    let skillId = PassiveB.MagicGambit4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                isRangedWeaponType(enemyUnit.weaponType)) {
+                // - 戦闘中、敵の速さ、魔防ー4、
+                enemyUnit.addSpdResSpurs(-4);
+                // - かつ攻撃時発動の奥義装備時、または、敵から攻撃を受ける際に発動する奥義装備時、
+                let special = targetUnit.special;
+                if (isNormalAttackSpecial(special) || isDefenseSpecial(special)) {
+                    //     - 戦闘中、ダメージ＋（自分の奥義発動カウントの最大値-2）x4（最大12、最低0、範囲奥義を除く）、
+                    targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                        if (isPrecombat) return;
+                        let amount = (atkUnit.maxSpecialCount - 2) * 4;
+                        atkUnit.battleContext.additionalDamage += MathUtil.ensureMinMax(amount, 0, 12);
+                    });
+                    //     - 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを（自分の奥義発動カウントの最大値-1）x10%軽減（最大40%）（巨影の範囲奥義を除く）
+                    targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                        return MathUtil.ensureMax((targetUnit.maxSpecialCount - 1) * 0.1, 0.4);
+                    });
+                }
+            }
+        }
+    );
+    //     - 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを（自分の奥義発動カウントの最大値-1）x10%軽減（最大40%）（巨影の範囲奥義を除く）
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.battleContext.initiatesCombat ||
+                isRangedWeaponType(atkUnit.weaponType)) {
+                let special = defUnit.special;
+                if (isNormalAttackSpecial(special) || isDefenseSpecial(special)) {
+                    let ratio = MathUtil.ensureMax((defUnit.maxSpecialCount - 1) * 0.1, 0.4);
+                    defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+                }
+            }
+        }
+    );
+}
+
 // 戦神の魔書
 {
     let skillId = Weapon.FellWarTome;
