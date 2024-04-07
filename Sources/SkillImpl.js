@@ -646,16 +646,42 @@
 // 暗黒の聖書
 {
     let skillId = Weapon.DarkScripture;
-    // ターン開始時スキル
+    // 攻撃+3
+    /** @type {(this: BeginningOfTurnSkillHandler, skillOwner: Unit) => void} */
+    // 自軍ターン開始時、および、敵軍ターン開始時、
+    // 自分を中心とした縦3列と横3列にいる魔防が「自分の魔防+5」より低い敵の攻撃、魔防-7、
+    // 【混乱】、【回復不可】、「奥義以外の「敵の致死攻撃を受けた時、ダメージをHPが1残るように軽減」する効果を無効」を付与(敵の次回行動終了時まで)
+    let applySkill = function(skillOwner) {
+        /** @type {Generator<Unit>} */
+        let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let enemy of enemies) {
+            if (enemy.isInCrossWithOffset(skillOwner, 1)) {
+                if (skillOwner.isHigherResInPrecombat(enemy, -5)) {
+                    enemy.reserveToApplyDebuffs(-7, 0, 0, -7);
+                    enemy.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                    enemy.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
+                    enemy.reserveToAddStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
+                }
+            }
+        }
+    }
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             if (!skillOwner.isWeaponRefined) {
                 // <通常効果>
             } else {
                 // <錬成効果>
+                applySkill.call(this, skillOwner);
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
                 }
+            }
+        }
+    );
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.isWeaponRefined) {
+                applySkill.call(this, skillOwner);
             }
         }
     );
@@ -672,9 +698,43 @@
                 }
             } else {
                 // <錬成効果>
+                // 敵から攻撃された時、または、周囲1マス以内に味方がいない時、
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                    // 戦闘中、敵の攻撃、魔防-6、速さ-4、
+                    enemyUnit.addSpurs(-6, -4, 0, -6);
+                    // 自分は絶対追撃
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    // 戦闘開始時、自身のHPが25%以上なら、
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        // 戦闘中、敵の攻撃、速さ、魔防-4、
+                        enemyUnit.addSpursWithoutDef(-4);
+                        // 敵は追撃不可、
+                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                        // 自分が与えるダメージ+魔防の20%(範囲奥義を除く)、
+                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
+                            this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                        });
+                        // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                            // 魔防参照
+                            return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                        });
+                    }
                 }
+            }
+        }
+    );
+    // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (defUnit.isWeaponSpecialRefined) {
+                let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
             }
         }
     );
